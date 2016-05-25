@@ -16,7 +16,7 @@ apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
 jar {
-    baseName = 'openlmis-template-service'
+    baseName = 'openlmis-requisition'
     version  = '0.0.1'
 }
 
@@ -38,7 +38,7 @@ dependencies {
 }
 
 flyway {
-    url = "jdbc:postgresql://openlmis-db:5432/open_lmis"
+    url = "jdbc:postgresql://db:5432/open_lmis"
     user = "postgres"
     password = "p@ssw0rd"
     schemas = ['public']

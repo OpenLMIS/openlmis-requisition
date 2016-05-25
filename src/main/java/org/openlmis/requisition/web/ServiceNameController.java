@@ -1,6 +1,6 @@
-package org.openlmis.template.web;
+package org.openlmis.requisition.web;
 
-import org.openlmis.template.util.ServiceSignature;
+import org.openlmis.requisition.util.ServiceSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

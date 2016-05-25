@@ -1,11 +1,11 @@
 version: "2"
 services:
-  template-service:
+  requisition:
     image: openlmis/dev
     volumes:
       - '.:/app'
       - 'gradlecache:/gradle'
-  template-service-build:
+  requisition-build:
     image: openlmis/dev
     entrypoint:
       - 'gradle'

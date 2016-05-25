@@ -1,7 +1,7 @@
 version: "2"
 services:
-  template-service:
-    image: template-service
+  requisition:
+    image: requisition
     links:
       - db
     ports:

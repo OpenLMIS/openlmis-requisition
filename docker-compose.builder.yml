@@ -13,4 +13,4 @@ services:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
   image:
     build: .
-    image: openlmis/template-service
+    image: openlmis/requisition
