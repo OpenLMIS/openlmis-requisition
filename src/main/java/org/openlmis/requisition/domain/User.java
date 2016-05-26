@@ -44,10 +44,6 @@ public class User {
     private String lastName;
 
     @ManyToOne
-    @JoinColumn(name = "supervisorid")
-    private User supervisor;
-
-    @ManyToOne
     @JoinColumn(name = "facilityid")
     private Facility homeFacility;
 
