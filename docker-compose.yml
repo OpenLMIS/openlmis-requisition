@@ -14,4 +14,4 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/template-service:/var/log'
+      - '../logs/requisition:/var/log'
