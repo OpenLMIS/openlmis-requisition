@@ -1,4 +1,4 @@
-package org.openlmis.requisition.domain;
+package org.openlmis.referencedata.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "facility_operators")
+@Table(name = "facility_types")
 @NoArgsConstructor
-public class FacilityOperator {
+public class FacilityType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,4 +40,8 @@ public class FacilityOperator {
     @Getter
     @Setter
     private Integer displayOrder;
+
+    @Getter
+    @Setter
+    private Boolean active;
 }

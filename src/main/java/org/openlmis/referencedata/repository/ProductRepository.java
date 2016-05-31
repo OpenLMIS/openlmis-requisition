@@ -1,6 +1,6 @@
-package org.openlmis.requisition.repository;
+package org.openlmis.referencedata.repository;
 
-import org.openlmis.requisition.domain.Product;
+import org.openlmis.referencedata.domain.Product;
 import org.springframework.data.repository.CrudRepository;
 
 public interface ProductRepository extends CrudRepository<Product, Integer> {

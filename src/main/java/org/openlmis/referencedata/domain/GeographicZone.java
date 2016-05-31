@@ -1,4 +1,4 @@
-package org.openlmis.requisition.domain;
+package org.openlmis.referencedata.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,12 +9,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "facility_types")
+@Table(name = "geographic_zones")
 @NoArgsConstructor
-public class FacilityType {
+public class GeographicZone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,16 +34,29 @@ public class FacilityType {
     @Setter
     private String name;
 
-    @Column(columnDefinition = "text")
+    @ManyToOne
+    @JoinColumn(name = "levelid", nullable = false)
     @Getter
     @Setter
-    private String description;
+    private GeographicLevel level;
+
+//    @ManyToOne
+//    @JoinColumn(name = "parentid")
+//    @Getter
+//    @Setter
+//    private GeographicZone parent;
 
     @Getter
     @Setter
-    private Integer displayOrder;
+    private Integer catchmentPopulation;
 
+    @Column(columnDefinition = "numeric(8,5)")
     @Getter
     @Setter
-    private Boolean active;
+    private Double latitude;
+
+    @Column(columnDefinition = "numeric(8,5)")
+    @Getter
+    @Setter
+    private Double longitude;
 }

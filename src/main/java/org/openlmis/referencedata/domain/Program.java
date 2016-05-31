@@ -1,4 +1,4 @@
-package org.openlmis.requisition.domain;
+package org.openlmis.referencedata.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "geographic_levels")
+@Table(name = "programs")
 @NoArgsConstructor
-public class GeographicLevel {
+public class Program {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,8 +32,12 @@ public class GeographicLevel {
     @Setter
     private String name;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "text")
     @Getter
     @Setter
-    private Integer levelNumber;
+    private String description;
+
+    @Getter
+    @Setter
+    private Boolean active;
 }
