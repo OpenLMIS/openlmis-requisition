@@ -1,0 +1,96 @@
+= Requisition Service Guide
+The OpenLMIS Team;
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+[introduction]
+= Introduction
+This documentation has been provided as a proof-of-concept for how we might use Spring REST Docs (http://projects.spring.io/spring-restdocs/) to document our microservices.
+
+[[overview]]
+= Overview
+The requisition service is a RESTful microservice intended to handle all aspects of the product requisition process.
+
+[[overview-http-verbs]]
+== HTTP verbs
+The requisition service relies on the standard HTTP verbs and response codes.
+
+|===
+| Verb | Usage
+
+| `GET`
+| Used to retrieve a resource
+
+| `POST`
+| Used to create a new resource
+
+| `PATCH`
+| Used to update an existing resource, including partial updates
+
+| `PUT`
+| Used to update an existing resource, full updates only
+
+| `DELETE`
+| Used to delete an existing resource
+|===
+
+[[overview-http-status-codes]]
+== HTTP status codes
+The requisition service tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP status codes. Specifically:
+
+|===
+| Status code | Usage
+
+| `200 OK`
+| Standard response for successful HTTP requests.
+| The actual response will depend on the request method used.
+| In a GET request, the response will contain an entity corresponding to the requested resource.
+| In a POST request, the response will contain an entity describing or containing the result of the action.
+
+| `201 Created`
+| The request has been fulfilled and resulted in a new resource being created.
+
+| `204 No Content`
+| The server successfully processed the request, but is not returning any content.
+
+| `400 Bad Request`
+| The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing).
+
+| `404 Not Found`
+| The requested resource could not be found but may be available again in the future. Subsequent requests by the client are permissible.
+|===
+
+[[resources]]
+= Resources
+The resources listed in the sub-sections below are exposed by the Requisition service.
+
+[[resources-person]]
+== User
+The User resource is used to create, modify and list users. +
+
+This version of the User-Resource documentation is intended to show how Spring Data Rest endpoints might be documented. Specifically, the documentation below was generated in a fairly automated manner. Specifically, *the list of property names and types was created via reflection and without need for the kinds of automated tests used within the context of Spring REST Docs.* Although the property names/values were auto-generated, developers have the ability to easily add property-descriptions if and when they see fit. +
+
+_Note: the utility-code I wrote should be updated such that it exludes properties which lack a @Getter annotation._
+
+include::{snippets}/UserProperties.adoc[]
+
+==== Example request
+
+include::{snippets}/get-user/curl-request.adoc[]
+include::{snippets}/get-user/http-request.adoc[]
+
+== User - Alternative
+This version of the User documentation was created in a more traditional manner. Specifically, a test was written to A) make a specific HTTP request, and B) expect that a particular payload be returned. (These tests are expected to have inherent value, and may be especially important now that we’re seeking to build comprehensive, robust, APIs intended for use with a variety of clients.) This test code creates “snippet” files that describe in detail the HTTP requests and responses that were made. These files, in turn, are incorporated into the final document file intended for end users.
+
+include::{snippets}/get-user-alternative/response-fields.adoc[]
+
+==== Example request
+
+include::{snippets}/get-user-alternative/curl-request.adoc[]
+include::{snippets}/get-user-alternative/http-request.adoc[]
+
