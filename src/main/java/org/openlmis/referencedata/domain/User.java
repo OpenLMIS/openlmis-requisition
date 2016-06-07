@@ -18,42 +18,42 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    @Setter
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Getter
+  @Setter
+  private Integer id;
 
-    @Column(nullable = false, columnDefinition = "text")
-    @Getter
-    @Setter
-    private String username;
+  @Column(nullable = false, columnDefinition = "text")
+  @Getter
+  @Setter
+  private String username;
 
-    @Column(nullable = false, columnDefinition = "text DEFAULT 'not-in-use'::text")
-    @Setter
-    private String password;
+  @Column(nullable = false, columnDefinition = "text DEFAULT 'not-in-use'::text")
+  @Setter
+  private String password;
 
-    @Column(nullable = false, columnDefinition = "text")
-    @Getter
-    @Setter
-    private String firstName;
+  @Column(nullable = false, columnDefinition = "text")
+  @Getter
+  @Setter
+  private String firstName;
 
-    @Column(nullable = false, columnDefinition = "text")
-    @Getter
-    @Setter
-    private String lastName;
+  @Column(nullable = false, columnDefinition = "text")
+  @Getter
+  @Setter
+  private String lastName;
 
-    @ManyToOne
-    @JoinColumn(name = "facilityid")
-    private Facility homeFacility;
+  @ManyToOne
+  @JoinColumn(name = "facilityid")
+  private Facility homeFacility;
 
-    @Column(columnDefinition = "boolean DEFAULT false")
-    @Getter
-    @Setter
-    private Boolean verified;
+  @Column(columnDefinition = "boolean DEFAULT false")
+  @Getter
+  @Setter
+  private Boolean verified;
 
-    @Column(columnDefinition = "boolean DEFAULT false")
-    @Getter
-    @Setter
-    private Boolean active;
+  @Column(columnDefinition = "boolean DEFAULT false")
+  @Getter
+  @Setter
+  private Boolean active;
 }

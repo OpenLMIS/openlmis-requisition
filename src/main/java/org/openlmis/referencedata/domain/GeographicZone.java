@@ -18,45 +18,45 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class GeographicZone {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    @Setter
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Getter
+  @Setter
+  private Integer id;
 
-    @Column(nullable = false, unique = true, columnDefinition = "text")
-    @Getter
-    @Setter
-    private String code;
+  @Column(nullable = false, unique = true, columnDefinition = "text")
+  @Getter
+  @Setter
+  private String code;
 
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String name;
+  @Column(columnDefinition = "text")
+  @Getter
+  @Setter
+  private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "levelid", nullable = false)
-    @Getter
-    @Setter
-    private GeographicLevel level;
+  @ManyToOne
+  @JoinColumn(name = "levelid", nullable = false)
+  @Getter
+  @Setter
+  private GeographicLevel level;
 
-//    @ManyToOne
-//    @JoinColumn(name = "parentid")
-//    @Getter
-//    @Setter
-//    private GeographicZone parent;
+  //@ManyToOne
+  //@JoinColumn(name = "parentid")
+  //@Getter
+  //@Setter
+  //private GeographicZone parent;
 
-    @Getter
-    @Setter
-    private Integer catchmentPopulation;
+  @Getter
+  @Setter
+  private Integer catchmentPopulation;
 
-    @Column(columnDefinition = "numeric(8,5)")
-    @Getter
-    @Setter
-    private Double latitude;
+  @Column(columnDefinition = "numeric(8,5)")
+  @Getter
+  @Setter
+  private Double latitude;
 
-    @Column(columnDefinition = "numeric(8,5)")
-    @Getter
-    @Setter
-    private Double longitude;
+  @Column(columnDefinition = "numeric(8,5)")
+  @Getter
+  @Setter
+  private Double longitude;
 }
