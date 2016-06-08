@@ -4,10 +4,12 @@ import org.openlmis.referencedata.domain.Order;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-public interface OrderRepository extends CrudRepository<Order, Integer> {
+import java.util.UUID;
 
-    // disable DELETE
-    @Override
-    @RestResource(exported = false)
-    void delete(Order o);
+public interface OrderRepository extends CrudRepository<Order, UUID> {
+
+  // disable DELETE
+  @Override
+  @RestResource(exported = false)
+  void delete(Order o);
 }

@@ -21,72 +21,72 @@ import java.math.BigDecimal;
 @SpringApplicationConfiguration(Application.class)
 public class OrderRepositoryIT extends BaseCrudRepositoryIT<Order> {
 
-    @Autowired
-    OrderRepository repository;
+  @Autowired
+  OrderRepository repository;
 
-    @Autowired
-    ProgramRepository programRepository;
+  @Autowired
+  ProgramRepository programRepository;
 
-    @Autowired
-    UserRepository userRepository;
+  @Autowired
+  UserRepository userRepository;
 
-    @Autowired
-    FacilityRepository facilityRepository;
+  @Autowired
+  FacilityRepository facilityRepository;
 
-    OrderRepository getRepository() {
-        return this.repository;
-    }
+  OrderRepository getRepository() {
+    return this.repository;
+  }
 
-    private Facility facility = new Facility();
-    private Program program = new Program();
-    private User user = new User();
+  private Facility facility = new Facility();
+  private Program program = new Program();
+  private User user = new User();
 
-    @Before
-    public void setUp() {
-        facilityRepository.deleteAll();
-        FacilityType facilityType = new FacilityType();
-        facilityType.setCode("OrderRepositoryIT");
+  @Before
+  public void setUp() {
+    facilityRepository.deleteAll();
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("OrderRepositoryIT");
 
-        GeographicLevel level = new GeographicLevel();
-        level.setCode("OrderRepositoryIT");
-        level.setLevelNumber(1);
+    GeographicLevel level = new GeographicLevel();
+    level.setCode("OrderRepositoryIT");
+    level.setLevelNumber(1);
 
-        GeographicZone geographicZone = new GeographicZone();
-        geographicZone.setCode("OrderRepositoryIT");
-        geographicZone.setLevel(level);
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("OrderRepositoryIT");
+    geographicZone.setLevel(level);
 
-        facility.setType(facilityType);
-        facility.setGeographicZone(geographicZone);
-        facility.setCode("OrderRepositoryIT");
-        facility.setName("OrderRepositoryIT");
-        facility.setDescription("Test facility");
-        facility.setActive(true);
-        facility.setEnabled(true);
-        facilityRepository.save(facility);
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("OrderRepositoryIT");
+    facility.setName("OrderRepositoryIT");
+    facility.setDescription("Test facility");
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
 
-        programRepository.deleteAll();
-        program.setCode("OrderRepositoryIT");
-        programRepository.save(program);
+    programRepository.deleteAll();
+    program.setCode("OrderRepositoryIT");
+    programRepository.save(program);
 
-        userRepository.deleteAll();
-        user.setUsername("OrderRepositoryIT");
-        user.setPassword("OrderRepositoryIT");
-        user.setFirstName("Test");
-        user.setLastName("User");
-        userRepository.save(user);
-    }
+    userRepository.deleteAll();
+    user.setUsername("OrderRepositoryIT");
+    user.setPassword("OrderRepositoryIT");
+    user.setFirstName("Test");
+    user.setLastName("User");
+    userRepository.save(user);
+  }
 
-    Order generateInstance() {
-        int instanceNumber = this.getNextInstanceNumber();
-        Order order = new Order();
-        order.setOrderCode("O" + instanceNumber);
-        order.setQuotedCost(new BigDecimal(1.29));
-        order.setStatus(OrderStatus.PICKING);
-        order.setProgram(program);
-        order.setCreatedBy(user);
-        order.setRequestingFacility(facility);
-        order.setReceivingFacility(facility);
-        order.setSupplyingFacility(facility);
-        return order;
-    }
+  Order generateInstance() {
+    int instanceNumber = this.getNextInstanceNumber();
+    Order order = new Order();
+    order.setOrderCode("O" + instanceNumber);
+    order.setQuotedCost(new BigDecimal(1.29));
+    order.setStatus(OrderStatus.PICKING);
+    order.setProgram(program);
+    order.setCreatedBy(user);
+    order.setRequestingFacility(facility);
+    order.setReceivingFacility(facility);
+    order.setSupplyingFacility(facility);
+    return order;
+  }
 }

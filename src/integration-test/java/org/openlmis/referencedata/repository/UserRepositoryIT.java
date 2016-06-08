@@ -11,20 +11,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SpringApplicationConfiguration(Application.class)
 public class UserRepositoryIT extends BaseCrudRepositoryIT<User> {
 
-    @Autowired
-    UserRepository repository;
+  @Autowired
+  UserRepository repository;
 
-    UserRepository getRepository() {
-        return this.repository;
-    }
+  UserRepository getRepository() {
+    return this.repository;
+  }
 
-    User generateInstance() {
-        int instanceNumber = this.getNextInstanceNumber();
-        User user = new User();
-        user.setUsername("user" + instanceNumber);
-        user.setPassword("test" + instanceNumber);
-        user.setFirstName("Test");
-        user.setLastName("User");
-        return user;
-    }
+  User generateInstance() {
+    int instanceNumber = this.getNextInstanceNumber();
+    User user = new User();
+    user.setUsername("user" + instanceNumber);
+    user.setPassword("test" + instanceNumber);
+    user.setFirstName("Test");
+    user.setLastName("User");
+    return user;
+  }
 }

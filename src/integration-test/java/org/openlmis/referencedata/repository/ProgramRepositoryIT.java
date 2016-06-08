@@ -11,16 +11,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SpringApplicationConfiguration(Application.class)
 public class ProgramRepositoryIT extends BaseCrudRepositoryIT<Program> {
 
-    @Autowired
-    ProgramRepository repository;
+  @Autowired
+  ProgramRepository repository;
 
-    ProgramRepository getRepository() {
-        return this.repository;
-    }
+  ProgramRepository getRepository() {
+    return this.repository;
+  }
 
-    Program generateInstance() {
-        Program program = new Program();
-        program.setCode(String.valueOf(this.getNextInstanceNumber()));
-        return program;
-    }
+  Program generateInstance() {
+    Program program = new Program();
+    program.setCode(String.valueOf(this.getNextInstanceNumber()));
+    return program;
+  }
 }

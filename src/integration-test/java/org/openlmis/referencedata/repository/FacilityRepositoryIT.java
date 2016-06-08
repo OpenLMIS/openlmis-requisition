@@ -15,36 +15,36 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SpringApplicationConfiguration(Application.class)
 public class FacilityRepositoryIT extends BaseCrudRepositoryIT<Facility> {
 
-    @Autowired
-    FacilityRepository repository;
+  @Autowired
+  FacilityRepository repository;
 
-    FacilityRepository getRepository() {
-        return this.repository;
-    }
+  FacilityRepository getRepository() {
+    return this.repository;
+  }
 
-    private FacilityType facilityType = new FacilityType();
-    private GeographicZone geographicZone = new GeographicZone();
+  private FacilityType facilityType = new FacilityType();
+  private GeographicZone geographicZone = new GeographicZone();
 
-    @Before
-    public void setUp() {
-        this.facilityType.setCode("FacilityRepositoryIT");
-        GeographicLevel level = new GeographicLevel();
-        level.setCode("FacilityRepositoryIT");
-        level.setLevelNumber(1);
-        this.geographicZone.setCode("FacilityRepositoryIT");
-        this.geographicZone.setLevel(level);
-    }
+  @Before
+  public void setUp() {
+    this.facilityType.setCode("FacilityRepositoryIT");
+    GeographicLevel level = new GeographicLevel();
+    level.setCode("FacilityRepositoryIT");
+    level.setLevelNumber(1);
+    this.geographicZone.setCode("FacilityRepositoryIT");
+    this.geographicZone.setLevel(level);
+  }
 
-    Facility generateInstance() {
-        int instanceNumber = this.getNextInstanceNumber();
-        Facility facility = new Facility();
-        facility.setType(this.facilityType);
-        facility.setGeographicZone(this.geographicZone);
-        facility.setCode("F" + instanceNumber);
-        facility.setName("Facility #" + instanceNumber);
-        facility.setDescription("Test facility");
-        facility.setActive(true);
-        facility.setEnabled(true);
-        return facility;
-    }
+  Facility generateInstance() {
+    int instanceNumber = this.getNextInstanceNumber();
+    Facility facility = new Facility();
+    facility.setType(this.facilityType);
+    facility.setGeographicZone(this.geographicZone);
+    facility.setCode("F" + instanceNumber);
+    facility.setName("Facility #" + instanceNumber);
+    facility.setDescription("Test facility");
+    facility.setActive(true);
+    facility.setEnabled(true);
+    return facility;
+  }
 }
