@@ -6,9 +6,6 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -16,13 +13,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "geographic_zones")
 @NoArgsConstructor
-public class GeographicZone {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Getter
-  @Setter
-  private Integer id;
+public class GeographicZone extends BaseEntity {
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
