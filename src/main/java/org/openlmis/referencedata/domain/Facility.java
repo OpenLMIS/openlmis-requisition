@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -32,13 +33,13 @@ public class Facility extends BaseEntity {
   @Setter
   private String description;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "geographiczoneid", nullable = false)
   @Getter
   @Setter
   private GeographicZone geographicZone;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "typeid", nullable = false)
   @Getter
   @Setter
