@@ -26,35 +26,39 @@ Gradle is our usual build tool.  This template includes common tasks
 that most Services will find useful:
 
 - `clean` to remove build artifacts
-- `build` to build all source
-- `generateMigration -PmigrationName=<yourMigrationName>` to create a 
+- `build` to build all source. `build`, after building sources, also starts unit tests. Build will be successful only if all tests pass.
+- `generateMigration -PmigrationName=<yourMigrationName>` to create a
 "blank" database migration file. The file
-will be generated under `src/main/resources/db/migration`. Put your 
+will be generated under `src/main/resources/db/migration`. Put your
 migration SQL into it.
+- `test` to run unit tests
+- `integrationTest` to run integration tests
 
-While Gradle is our usual build tool, OpenLMIS v3+ is a collection of 
-Independent Services where each Gradle build produces 1 Service. 
-To help work with these Services, we use Docker to develop, build and 
+The **test results** are shown in the console.
+
+While Gradle is our usual build tool, OpenLMIS v3+ is a collection of
+Independent Services where each Gradle build produces 1 Service.
+To help work with these Services, we use Docker to develop, build and
 publish these.
 
-See [Developing with Docker](#devdocker). 
+See [Developing with Docker](#devdocker).
 
 ##<a name="devdocker"></a> Developing with Docker
 
 OpenLMIS utilizes Docker to help with development, building, publishing
-and deployment of OpenLMIS Services. This helps keep development to 
-deployment environments clean, consistent and reproducible and 
+and deployment of OpenLMIS Services. This helps keep development to
+deployment environments clean, consistent and reproducible and
 therefore using Docker is recommended for all OpenLMIS projects.
 
-To enable development in Docker, OpenLMIS publishes a couple Docker 
+To enable development in Docker, OpenLMIS publishes a couple Docker
 Images:
 
-- [openlmis/dev](https://hub.docker.com/r/openlmis/dev/) - for Service 
+- [openlmis/dev](https://hub.docker.com/r/openlmis/dev/) - for Service
 development.  Includes the JDK & Gradle plus common build tools.
-- [openlmis/postgres](https://hub.docker.com/r/openlmis/postgres/) - for 
+- [openlmis/postgres](https://hub.docker.com/r/openlmis/postgres/) - for
 quickly standing up a shared PostgreSQL DB
 
-In addition to these Images, each Service includes Docker Compose 
+In addition to these Images, each Service includes Docker Compose
 instructions to:
 
 - standup a development environment (run Gradle)
@@ -62,8 +66,8 @@ instructions to:
 - publish its deployment image to a Docker Repository
 
 ### Development Environment
-Launches into shell with Gradle & JDK available suitable for building 
-Service.  PostgreSQL connected suitable for testing. If you run the 
+Launches into shell with Gradle & JDK available suitable for building
+Service.  PostgreSQL connected suitable for testing. If you run the
 Service, it should be available on port 8080.
 
 ```shell
@@ -73,8 +77,8 @@ $ gradle bootRun
 ```
 
 ### Build Deployment Image
-The specialized docker-compose.builder.yml is geared toward CI and build 
-servers for automated building, testing and docker image generation of 
+The specialized docker-compose.builder.yml is geared toward CI and build
+servers for automated building, testing and docker image generation of
 the service.
 
 ```shell
@@ -88,11 +92,11 @@ TODO
 ### Docker's file details
 A brief overview of the purpose behind each docker related file
 
-- `Dockerfile`:  build a deployment ready image of this service 
+- `Dockerfile`:  build a deployment ready image of this service
 suitable for publishing.
-- `docker-compose.yml`:  base docker-compose file.  Defines the 
-basic composition from the perspective of working on this singular 
-vertical service.  These aren't expected to be used in the 
+- `docker-compose.yml`:  base docker-compose file.  Defines the
+basic composition from the perspective of working on this singular
+vertical service.  These aren't expected to be used in the
 composition of the Reference Distribution.
 - `docker-compose.override.yml`:  extends the `docker-compose.yml`
 base definition to provide for the normal usage of docker-compose
@@ -102,3 +106,7 @@ volume and maps tomcat's port directly to the host.
 - `docker-compose.builder.yml`:  an alternative docker-compose file
 suitable for CI type of environments to test & build this Service
 and generate a publishable/deployment ready Image of the service.
+
+### Logging
+See the Logging section in the Service Template README at
+https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
