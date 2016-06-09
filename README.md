@@ -112,3 +112,7 @@ https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
 ### Internationalization (i18n)
 See the Internationalization section in the Service Template README at 
 https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
+
+### Debugging
+See the Debugging section in the Service Template README at 
+https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
