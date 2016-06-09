@@ -24,6 +24,7 @@ jar {
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 sourceCompatibility = 1.8
@@ -37,6 +38,7 @@ dependencies {
     compile "org.postgresql:postgresql:9.4.1208"
 
     testCompile "junit:junit"
+    testCompile "org.mockito:mockito-core:1.+"
 }
 
 flyway {
@@ -47,29 +49,6 @@ flyway {
     sqlMigrationPrefix = ''
     placeholderPrefix = '#['
     placeholderSuffix = ']'
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ["src/main/java"]
-        }
-
-        resources {
-            srcDirs = ["src/main/resources"]
-        }
-    }
-
-    test {
-        java {
-            srcDirs = ["src/test/java"]
-        }
-
-        resources {
-            srcDirs = ["src/test/resources"]
-        }
-
-    }
 }
 
 // Usage: gradle generateMigration [-PmigrationName=name_of_migration]
