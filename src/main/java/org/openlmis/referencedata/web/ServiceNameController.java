@@ -27,6 +27,7 @@ public class ServiceNameController {
   public String hello() {
     String[] msgArgs = {"world"};
     logger.debug("Returning hello world message");
-    return messageSource.getMessage("msg.hello", msgArgs, LocaleContextHolder.getLocale());
+    return messageSource.getMessage("requisition.message.hello", msgArgs, LocaleContextHolder
+        .getLocale());
   }
 }
