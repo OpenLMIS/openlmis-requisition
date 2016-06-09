@@ -2,6 +2,9 @@ version: "2"
 services:
   builder:
     image: openlmis/dev
+    links:
+      - db
+      - log
     volumes:
       - '.:/app'
     entrypoint:
