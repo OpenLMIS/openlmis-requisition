@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.openlmis.referencedata.Application;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -12,13 +10,9 @@ import org.openlmis.referencedata.domain.OrderStatus;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.math.BigDecimal;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
 public class OrderRepositoryIT extends BaseCrudRepositoryIT<Order> {
 
   @Autowired
