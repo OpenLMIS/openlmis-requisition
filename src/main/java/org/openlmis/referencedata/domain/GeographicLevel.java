@@ -6,21 +6,12 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "geographic_levels")
 @NoArgsConstructor
-public class GeographicLevel {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Getter
-  @Setter
-  private Integer id;
+public class GeographicLevel extends BaseEntity {
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter

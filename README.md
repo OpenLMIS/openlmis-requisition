@@ -108,5 +108,13 @@ suitable for CI type of environments to test & build this Service
 and generate a publishable/deployment ready Image of the service.
 
 ### Logging
-See the Logging section in the Service Template README at
+See the Logging section in the Service Template README at 
+https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
+
+### Internationalization (i18n)
+See the Internationalization section in the Service Template README at 
+https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
+
+### Debugging
+See the Debugging section in the Service Template README at
 https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md.
