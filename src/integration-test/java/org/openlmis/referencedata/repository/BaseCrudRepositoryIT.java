@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,12 +8,14 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public abstract class BaseCrudRepositoryIT<T extends BaseEntity> {
 
   abstract CrudRepository<T, UUID> getRepository();
@@ -29,11 +30,6 @@ public abstract class BaseCrudRepositoryIT<T extends BaseEntity> {
 
   protected void assertInstance(T instance) {
     Assert.assertNotNull(instance.getId());
-  }
-
-  @After
-  public void cleanUp() {
-    this.getRepository().deleteAll();
   }
 
   @Test

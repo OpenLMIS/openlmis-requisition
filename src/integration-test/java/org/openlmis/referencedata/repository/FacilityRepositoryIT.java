@@ -1,18 +1,12 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.openlmis.referencedata.Application;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
 public class FacilityRepositoryIT extends BaseCrudRepositoryIT<Facility> {
 
   @Autowired

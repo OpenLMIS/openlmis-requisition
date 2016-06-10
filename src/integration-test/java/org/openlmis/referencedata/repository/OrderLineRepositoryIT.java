@@ -18,11 +18,13 @@ import org.openlmis.referencedata.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class OrderLineRepositoryIT {
 
   @Autowired
@@ -48,7 +50,6 @@ public class OrderLineRepositoryIT {
 
   @Before
   public void setUp() {
-    facilityRepository.deleteAll();
     Facility facility = new Facility();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode("OrderLineRepositoryIT");
@@ -70,12 +71,10 @@ public class OrderLineRepositoryIT {
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    programRepository.deleteAll();
     Program program = new Program();
     program.setCode("OrderLineRepositoryIT");
     programRepository.save(program);
 
-    userRepository.deleteAll();
     User user = new User();
     user.setUsername("OrderLineRepositoryIT");
     user.setPassword("OrderLineRepositoryIT");
@@ -83,7 +82,6 @@ public class OrderLineRepositoryIT {
     user.setLastName("User");
     userRepository.save(user);
 
-    orderRepository.deleteAll();
     order.setOrderCode("OrderLineRepositoryIT");
     order.setQuotedCost(new BigDecimal(1.29));
     order.setStatus(OrderStatus.PICKING);
@@ -94,7 +92,6 @@ public class OrderLineRepositoryIT {
     order.setSupplyingFacility(facility);
     orderRepository.save(order);
 
-    productRepository.deleteAll();
     product.setCode("OrderLineRepositoryIT");
     product.setPrimaryName("Product");
     product.setDispensingUnit("unit");
