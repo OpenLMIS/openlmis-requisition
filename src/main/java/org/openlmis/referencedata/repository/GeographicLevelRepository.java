@@ -1,8 +1,17 @@
 package org.openlmis.referencedata.repository;
 
 import org.openlmis.referencedata.domain.GeographicLevel;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-public interface GeographicLevelRepository
-    extends ReferenceDataRepository<GeographicLevel, Integer> {
-    //Add custom GeographicLevel related members here. See UserRepository.java for examples.
+import java.util.UUID;
+
+public interface GeographicLevelRepository extends ReferenceDataRepository<GeographicLevel, UUID> {
+
+  @Override
+  @RestResource(exported = false)
+  <S extends GeographicLevel> S save(S entity);
+
+  @Override
+  @RestResource(exported = false)
+  <S extends GeographicLevel> Iterable<S> save(Iterable<S> entities);
 }
