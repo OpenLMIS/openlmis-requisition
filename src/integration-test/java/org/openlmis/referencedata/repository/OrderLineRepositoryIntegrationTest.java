@@ -48,7 +48,7 @@ public class OrderLineRepositoryIntegrationTest {
   private Order order = new Order();
   private Product product = new Product();
 
-  /** Create related instances. */
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
