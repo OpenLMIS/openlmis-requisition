@@ -12,13 +12,16 @@ This repository holds the files for the OpenLMIS Requisition Independent Service
  ```shell
  git clone https://github.com/OpenLMIS/openlmis-requisition.git
  ```
-2. Develop w/ Docker by running `docker-compose run --service-ports requisition`.
+2. Add an environment file called `.env` to the root folder of the project, with the required 
+project settings and credentials. For a starter environment file, you can use [this 
+one](https://github.com/OpenLMIS/openlmis-config/blob/master/.env).
+3. Develop w/ Docker by running `docker-compose run --service-ports requisition`.
 See [Developing w/ Docker](#devdocker).
-3. You should now be in an interactive shell inside the newly created development 
+4. You should now be in an interactive shell inside the newly created development 
 environment, start the Service with: `gradle bootRun`
-4. Go to `http://<yourDockerIPAddress>:8080/` to see the service name 
+5. Go to `http://<yourDockerIPAddress>:8080/` to see the service name 
 and version. Note that you can determine yourDockerIPAddress by running `docker-machine ip`.
-5. Go to `http://<yourDockerIPAddress>:8080/api/` to see the APIs.
+6. Go to `http://<yourDockerIPAddress>:8080/api/` to see the APIs.
 
 ## Building & Testing
 
@@ -70,6 +73,9 @@ Launches into shell with Gradle & JDK available suitable for building
 Service.  PostgreSQL connected suitable for testing. If you run the
 Service, it should be available on port 8080.
 
+Before starting the development environment, make sure you have a `.env` file as outlined in the 
+Quick Start instructions.
+
 ```shell
 > docker-compose run --service-ports requisition
 $ gradle clean build
@@ -80,6 +86,9 @@ $ gradle bootRun
 The specialized docker-compose.builder.yml is geared toward CI and build
 servers for automated building, testing and docker image generation of
 the service.
+
+Before building the deployment image, make sure you have a `.env` file as outlined in the Quick
+Start instructions.
 
 ```shell
 > docker-compose -f docker-compose.builder.yml run builder
