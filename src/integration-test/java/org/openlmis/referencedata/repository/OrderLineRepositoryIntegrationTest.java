@@ -84,7 +84,7 @@ public class OrderLineRepositoryIntegrationTest {
     userRepository.save(user);
 
     order.setOrderCode("OrderLineRepositoryIntegrationTest");
-    order.setQuotedCost(new BigDecimal(1.29));
+    order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
     order.setCreatedBy(user);

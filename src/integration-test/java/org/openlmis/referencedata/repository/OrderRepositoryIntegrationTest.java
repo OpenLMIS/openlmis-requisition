@@ -75,7 +75,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     int instanceNumber = this.getNextInstanceNumber();
     Order order = new Order();
     order.setOrderCode("O" + instanceNumber);
-    order.setQuotedCost(new BigDecimal(1.29));
+    order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
     order.setCreatedBy(user);
