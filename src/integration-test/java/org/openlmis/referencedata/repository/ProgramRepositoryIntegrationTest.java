@@ -3,7 +3,7 @@ package org.openlmis.referencedata.repository;
 import org.openlmis.referencedata.domain.Program;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class ProgramRepositoryIT extends BaseCrudRepositoryIT<Program> {
+public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Program> {
 
   @Autowired
   ProgramRepository repository;

@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import com.google.gson.Gson;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,27 +26,28 @@ import org.springframework.web.client.RestTemplate;
 @SpringApplicationConfiguration(Application.class)
 @Transactional
 @WebIntegrationTest("server.port:8080")
-public class FacilityControllerIT {
+public class FacilityControllerIntegrationTest {
 
-  private final static String RESOURCE_URL = "http://localhost:8080/api/facilities";
+  private static final String RESOURCE_URL = "http://localhost:8080/api/facilities";
 
   private Facility facility = new Facility();
 
+  /** Create related instances. */
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
-    GeographicZone geographicZone = new GeographicZone();
-    facilityType.setCode("FacilityControllerIT");
+    facilityType.setCode("FacilityControllerIntegrationTest");
     GeographicLevel level = new GeographicLevel();
-    level.setCode("FacilityControllerIT");
+    level.setCode("FacilityControllerIntegrationTest");
     level.setLevelNumber(1);
-    geographicZone.setCode("FacilityControllerIT");
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("FacilityControllerIntegrationTest");
     geographicZone.setLevel(level);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("FacilityControllerIT");
-    facility.setName("FacilityControllerIT");
+    facility.setCode("FacilityControllerIntegrationTest");
+    facility.setName("FacilityControllerIntegrationTest");
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);

@@ -7,7 +7,7 @@ import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class FacilityRepositoryIT extends BaseCrudRepositoryIT<Facility> {
+public class FacilityRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Facility> {
 
   @Autowired
   FacilityRepository repository;
@@ -19,13 +19,14 @@ public class FacilityRepositoryIT extends BaseCrudRepositoryIT<Facility> {
   private FacilityType facilityType = new FacilityType();
   private GeographicZone geographicZone = new GeographicZone();
 
+  /** Create related instances. */
   @Before
   public void setUp() {
-    this.facilityType.setCode("FacilityRepositoryIT");
+    this.facilityType.setCode("FacilityRepositoryIntegrationTest");
     GeographicLevel level = new GeographicLevel();
-    level.setCode("FacilityRepositoryIT");
+    level.setCode("FacilityRepositoryIntegrationTest");
     level.setLevelNumber(1);
-    this.geographicZone.setCode("FacilityRepositoryIT");
+    this.geographicZone.setCode("FacilityRepositoryIntegrationTest");
     this.geographicZone.setLevel(level);
   }
 
