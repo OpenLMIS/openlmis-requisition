@@ -32,7 +32,7 @@ public class FacilityControllerIntegrationTest {
 
   private Facility facility = new Facility();
 
-  /** Create related instances. */
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
