@@ -78,7 +78,7 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
-  @OneToMany(mappedBy="order")
+  @OneToMany(mappedBy = "order")
   @Getter
   private Set<OrderLine> orderLines;
 

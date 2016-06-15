@@ -17,6 +17,7 @@ apply plugin: 'idea'
 apply plugin: 'spring-boot'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
+apply plugin: 'pmd'
 
 jar {
     baseName = 'openlmis-requisition'
@@ -38,15 +39,16 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
     compile "org.postgresql:postgresql:9.4.1208"
     compile "org.springframework:spring-test"
+    compile "com.google.code.gson:gson:2.6.2"
 
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
 }
 
 flyway {
-    url = "jdbc:postgresql://db:5432/open_lmis"
-    user = "postgres"
-    password = "p@ssw0rd"
+    url = "$System.env.DATABASE_URL"
+    user = "$System.env.POSTGRES_USER"
+    password = "$System.env.POSTGRES_PASSWORD"
     schemas = ['public']
     sqlMigrationPrefix = ''
     placeholderPrefix = '#['
@@ -138,3 +140,10 @@ sonarqube {
 build.dependsOn jacocoTestReport
 // Makes sure checkstyle is run before build completes
 build.dependsOn check
+
+pmd {
+    toolVersion = '5.2.3'
+    consoleOutput= true
+    ignoreFailures = false
+    reportsDir = file("build/reports/pmd")
+}

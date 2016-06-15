@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 
-public class OrderRepositoryIT extends BaseCrudRepositoryIT<Order> {
+public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
 
   @Autowired
   OrderRepository repository;
@@ -35,36 +35,37 @@ public class OrderRepositoryIT extends BaseCrudRepositoryIT<Order> {
   private Program program = new Program();
   private User user = new User();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("OrderRepositoryIT");
+    facilityType.setCode("OrderRepositoryIntegrationTest");
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode("OrderRepositoryIT");
+    level.setCode("OrderRepositoryIntegrationTest");
     level.setLevelNumber(1);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("OrderRepositoryIT");
+    geographicZone.setCode("OrderRepositoryIntegrationTest");
     geographicZone.setLevel(level);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("OrderRepositoryIT");
-    facility.setName("OrderRepositoryIT");
+    facility.setCode("OrderRepositoryIntegrationTest");
+    facility.setName("OrderRepositoryIntegrationTest");
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     programRepository.deleteAll();
-    program.setCode("OrderRepositoryIT");
+    program.setCode("OrderRepositoryIntegrationTest");
     programRepository.save(program);
 
     userRepository.deleteAll();
-    user.setUsername("OrderRepositoryIT");
-    user.setPassword("OrderRepositoryIT");
+    user.setUsername("OrderRepositoryIntegrationTest");
+    user.setPassword("OrderRepositoryIntegrationTest");
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);
@@ -74,7 +75,7 @@ public class OrderRepositoryIT extends BaseCrudRepositoryIT<Order> {
     int instanceNumber = this.getNextInstanceNumber();
     Order order = new Order();
     order.setOrderCode("O" + instanceNumber);
-    order.setQuotedCost(new BigDecimal(1.29));
+    order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
     order.setCreatedBy(user);

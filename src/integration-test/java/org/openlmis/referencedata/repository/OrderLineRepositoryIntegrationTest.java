@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @Transactional
-public class OrderLineRepositoryIT {
+public class OrderLineRepositoryIntegrationTest {
 
   @Autowired
   ProductRepository productRepository;
@@ -48,42 +48,43 @@ public class OrderLineRepositoryIT {
   private Order order = new Order();
   private Product product = new Product();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
-    Facility facility = new Facility();
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("OrderLineRepositoryIT");
+    facilityType.setCode("OrderLineRepositoryIntegrationTest");
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode("OrderLineRepositoryIT");
+    level.setCode("OrderLineRepositoryIntegrationTest");
     level.setLevelNumber(1);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("OrderLineRepositoryIT");
+    geographicZone.setCode("OrderLineRepositoryIntegrationTest");
     geographicZone.setLevel(level);
 
+    Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("OrderLineRepositoryIT");
-    facility.setName("OrderLineRepositoryIT");
+    facility.setCode("OrderLineRepositoryIntegrationTest");
+    facility.setName("OrderLineRepositoryIntegrationTest");
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Program program = new Program();
-    program.setCode("OrderLineRepositoryIT");
+    program.setCode("OrderLineRepositoryIntegrationTest");
     programRepository.save(program);
 
     User user = new User();
-    user.setUsername("OrderLineRepositoryIT");
-    user.setPassword("OrderLineRepositoryIT");
+    user.setUsername("OrderLineRepositoryIntegrationTest");
+    user.setPassword("OrderLineRepositoryIntegrationTest");
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);
 
-    order.setOrderCode("OrderLineRepositoryIT");
-    order.setQuotedCost(new BigDecimal(1.29));
+    order.setOrderCode("OrderLineRepositoryIntegrationTest");
+    order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
     order.setCreatedBy(user);
@@ -92,7 +93,7 @@ public class OrderLineRepositoryIT {
     order.setSupplyingFacility(facility);
     orderRepository.save(order);
 
-    product.setCode("OrderLineRepositoryIT");
+    product.setCode("OrderLineRepositoryIntegrationTest");
     product.setPrimaryName("Product");
     product.setDispensingUnit("unit");
     product.setDosesPerDispensingUnit(10);

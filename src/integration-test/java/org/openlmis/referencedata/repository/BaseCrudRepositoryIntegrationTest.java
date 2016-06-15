@@ -16,10 +16,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @Transactional
-public abstract class BaseCrudRepositoryIT<T extends BaseEntity> {
+public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
 
   abstract CrudRepository<T, UUID> getRepository();
 
+  /*
+   * Generate a unique instance of given type.
+   * @return generated instance
+   */
   abstract T generateInstance();
 
   private AtomicInteger instanceNumber = new AtomicInteger(0);

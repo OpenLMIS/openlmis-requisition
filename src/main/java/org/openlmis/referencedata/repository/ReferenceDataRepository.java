@@ -11,29 +11,29 @@ import java.io.Serializable;
     PagingAndSortingRepository and CrudRepository.
  */
 @NoRepositoryBean
-public interface ReferenceDataRepository<T, ID extends Serializable> extends PagingAndSortingRepository<T, ID>
-{
-    @Override
-    @RestResource(exported = false)
-    void delete(T entity);
+public interface ReferenceDataRepository<T, IDT extends Serializable>
+    extends PagingAndSortingRepository<T, IDT> {
+  @Override
+  @RestResource(exported = false)
+  void delete(T entity);
 
-    @Override
-    @RestResource(exported = false)
-    void delete(ID id);
+  @Override
+  @RestResource(exported = false)
+  void delete(IDT id);
 
-    @Override
-    @RestResource(exported = false)
-    void delete(Iterable<? extends T> entities);
+  @Override
+  @RestResource(exported = false)
+  void delete(Iterable<? extends T> entities);
 
-    @Override
-    @RestResource(exported = false)
-    void deleteAll();
+  @Override
+  @RestResource(exported = false)
+  void deleteAll();
 
-    @Override
-    @RestResource(exported = false)
-    <S extends T> S save(S entity);
+  @Override
+  @RestResource(exported = false)
+  <S extends T> S save(S entity);
 
-    @Override
-    @RestResource(exported = false)
-    <S extends T> Iterable<S> save(Iterable<S> entities);
+  @Override
+  @RestResource(exported = false)
+  <S extends T> Iterable<S> save(Iterable<S> entities);
 }
