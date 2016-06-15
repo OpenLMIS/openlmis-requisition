@@ -5,12 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.CrudRepository;
-
-import com.google.common.collect.Iterators;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class ScheduleRepositoryIT extends BaseCrudRepositoryIT<Schedule>{
 
@@ -71,5 +67,5 @@ public class ScheduleRepositoryIT extends BaseCrudRepositoryIT<Schedule>{
         for(Schedule s : iterable) size++;
         return size;
     }
-    
+
 }
