@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
-public class ScheduleRepositoryIT extends BaseCrudRepositoryIT<Schedule>{
+public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Schedule>{
 
     @Autowired
     ScheduleRepository repository;
