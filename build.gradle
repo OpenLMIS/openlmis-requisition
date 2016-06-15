@@ -9,13 +9,15 @@ buildscript {
 
 plugins {
     id "org.flywaydb.flyway" version "4.0"
+    id "org.sonarqube" version "2.0.1"
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
 apply plugin: 'checkstyle'
-apply plugin: "jacoco"
+apply plugin: 'jacoco'
+apply plugin: 'pmd'
 
 jar {
     baseName = 'openlmis-requisition'
@@ -81,6 +83,7 @@ integrationTest.mustRunAfter test
 
 tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
+    reports.junitXml.destination = file("${testResultsDir}/${name}")
 }
 
 // Usage: gradle generateMigration [-PmigrationName=name_of_migration]
@@ -118,6 +121,29 @@ checkstyle {
     toolVersion = "6.19"
 }
 
+//Usage: gradle sonarqube
+sonarqube {
+    properties {
+        property "sonar.projectName", "OpenLMIS Requisition"
+        property "sonar.projectKey", "org.sonarqube:openlmis-requisition"
+        property "sonar.host.url", "http://sonar.openlmis.org"
+        property "sonar.java.coveragePlugin", "jacoco"
+        //Tells SonarQube where the unit tests execution reports are
+        property "sonar.junit.reportsPath", "build/test-results/test"
+        //Tells SonarQube where the unit tests code coverage report is
+        property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
+        //Tells SonarQube where the integration tests code coverage report is
+        property "sonar.jacoco.itReportPath", "build/jacoco/integrationTest.exec"
+    }
+}
+
 build.dependsOn jacocoTestReport
 // Makes sure checkstyle is run before build completes
 build.dependsOn check
+
+pmd {
+    toolVersion = '5.2.3'
+    consoleOutput= true
+    ignoreFailures = false
+    reportsDir = file("build/reports/pmd")
+}

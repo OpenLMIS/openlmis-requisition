@@ -1,15 +1,13 @@
 package org.openlmis.referencedata.web;
 
 import com.google.gson.Gson;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.referencedata.Application;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.FacilityType;
-import org.openlmis.referencedata.domain.GeographicLevel;
-import org.openlmis.referencedata.domain.GeographicZone;
+import org.openlmis.referencedata.domain.Program;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -25,30 +23,17 @@ import org.springframework.web.client.RestTemplate;
 @SpringApplicationConfiguration(Application.class)
 @Transactional
 @WebIntegrationTest("server.port:8080")
-public class FacilityControllerIT {
+public class ProgramControllerIntegrationTest {
 
-  private final static String RESOURCE_URL = "http://localhost:8080/api/facilities";
+  private static final String RESOURCE_URL = "http://localhost:8080/api/programs";
 
-  private Facility facility = new Facility();
+  private Program program = new Program();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
-    FacilityType facilityType = new FacilityType();
-    GeographicZone geographicZone = new GeographicZone();
-    facilityType.setCode("FacilityControllerIT");
-    GeographicLevel level = new GeographicLevel();
-    level.setCode("FacilityControllerIT");
-    level.setLevelNumber(1);
-    geographicZone.setCode("FacilityControllerIT");
-    geographicZone.setLevel(level);
-
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
-    facility.setCode("FacilityControllerIT");
-    facility.setName("FacilityControllerIT");
-    facility.setDescription("Test facility");
-    facility.setActive(true);
-    facility.setEnabled(true);
+    program.setCode("ProgramControllerIntegrationTest");
+    program.setActive(true);
   }
 
   @Test
@@ -58,15 +43,15 @@ public class FacilityControllerIT {
     headers.setContentType(MediaType.APPLICATION_JSON);
 
     Gson gson = new Gson();
-    String json = gson.toJson(facility);
+    String json = gson.toJson(program);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    ResponseEntity<Facility> result = restTemplate.postForEntity(
-        RESOURCE_URL, entity, Facility.class);
+    ResponseEntity<Program> result = restTemplate.postForEntity(
+        RESOURCE_URL, entity, Program.class);
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
 
-    Facility savedFacility = result.getBody();
+    Program savedProgram = result.getBody();
 
-    Assert.assertNotNull(savedFacility.getId());
+    Assert.assertNotNull(savedProgram.getId());
   }
 }

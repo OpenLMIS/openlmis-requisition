@@ -17,26 +17,24 @@ import org.springframework.web.bind.annotation.RequestMethod;
         http://docs.spring.io/spring-data/rest/docs/2.4.0.M1/reference/html/#customizing-sdr.overriding-sdr-response-handlers
  */
 @RepositoryRestController
-public class UserController
-{
-    Logger logger = LoggerFactory.getLogger(UserController.class);
+public class UserController {
+  Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
 
-    //Support the creation of a new user. Note that any optionally-supplied id value will be ignored, and an alternate one generated.
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public ResponseEntity<?> createUser(@RequestBody User user)
-    {
-        if(user == null)
-        {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
-        else
-        {
-            User newUser = userRepository.save(user);
-            return new ResponseEntity(newUser, HttpStatus.CREATED);
-        }
+  /**
+   * Support the creation of a new user.
+   * Note that any optionally-supplied id value will be ignored, and an alternate one generated.
+   */
+  @RequestMapping(value = "/users", method = RequestMethod.POST)
+  public ResponseEntity<?> createUser(@RequestBody User user) {
+    if (user == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      User newUser = userRepository.save(user);
+      return new ResponseEntity(newUser, HttpStatus.CREATED);
     }
+  }
 }
