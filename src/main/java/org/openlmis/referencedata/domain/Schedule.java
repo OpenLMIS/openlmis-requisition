@@ -1,0 +1,44 @@
+package org.openlmis.referencedata.domain;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "schedule")
+@NoArgsConstructor
+public class Schedule extends BaseEntity {
+
+    @Column(nullable = false, unique = true, columnDefinition = "text")
+    @Getter
+    @Setter
+    private String code;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String description;
+
+    @Getter
+    @Setter
+    private LocalDateTime modifiedDate;
+
+    @Column(nullable = false, columnDefinition = "text")
+    @Getter
+    @Setter
+    private String name;
+
+    @PrePersist
+    @PreUpdate
+    private void setModifiedDate() {
+        this.modifiedDate = LocalDateTime.now();
+    }
+
+}
