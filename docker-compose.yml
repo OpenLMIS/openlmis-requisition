@@ -1,13 +1,16 @@
 version: "2"
 services:
   requisition:
-    image: requisition
+    image: openlmis/requisition
     links:
       - db
       - log
     ports:
-      - "8080:8080"
-      - "5005:5005"
+      - "8080"
+    environment:
+      - VIRTUAL_HOST=localhost
+      - VIRTUAL_PORT=8080
+    env_file: .env
   db:
     image: openlmis/postgres
     ports:
@@ -17,3 +20,12 @@ services:
     image: openlmis/rsyslog
     volumes:
       - '../logs/requisition:/var/log'
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    links:
+      - requisition
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
