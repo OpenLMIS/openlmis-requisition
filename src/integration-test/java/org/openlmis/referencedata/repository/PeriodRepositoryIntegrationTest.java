@@ -19,11 +19,11 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     @Autowired
     ScheduleRepository scheduleRepository;
 
+    @Override
     PeriodRepository getRepository() {
         return this.periodRepository;
     }
 
-    private Period period = new Period();
     private Schedule schedule = new Schedule();
 
     @Before
@@ -35,8 +35,10 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         scheduleRepository.save(schedule);
     }
 
+    @Override
     Period generateInstance() {
         int instanceNumber = this.getNextInstanceNumber();
+        Period period = new Period();
         period.setName("period" + instanceNumber);
         period.setProcessingSchedule(schedule);
         period.setDescription("Test period");
@@ -45,26 +47,28 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         return period;
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void testGetAllPeriods() {
-        periodRepository.save(period);
+        periodRepository.save(generateInstance());
         Iterable<Period> result = periodRepository.findAll();
         Assert.assertEquals(1, countSizeOfIterable(result));
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void testPeriodEdit() {
-        UUID id = period.getId();
-        period = periodRepository.findOne(id);
+        Period periodFromRepo = this.generateInstance();
+        periodFromRepo = periodRepository.save(periodFromRepo);
+        UUID id = periodFromRepo.getId();
+        periodFromRepo = periodRepository.findOne(id);
         String description = "New test description";
-        Assert.assertNotEquals(description, period.getDescription());
-        period.setDescription(description);
-        period.setStartDate(java.sql.Date.valueOf("2013-09-04"));
-        period.setEndDate(java.sql.Date.valueOf("2014-09-04"));
-        periodRepository.save(period);
-        Assert.assertEquals(description, period.getDescription());
+        Assert.assertNotEquals(description, periodFromRepo.getDescription());
+        periodFromRepo.setDescription(description);
+        periodFromRepo.setStartDate(java.sql.Date.valueOf("2013-09-04"));
+        periodFromRepo.setEndDate(java.sql.Date.valueOf("2014-09-04"));
+        periodRepository.save(periodFromRepo);
+        Assert.assertEquals(description, periodFromRepo.getDescription());
     }
 
     private int countSizeOfIterable(Iterable<Period> iterable) {
