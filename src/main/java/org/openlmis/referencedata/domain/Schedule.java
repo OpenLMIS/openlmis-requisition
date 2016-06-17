@@ -30,7 +30,7 @@ public class Schedule extends BaseEntity {
     @Setter
     private LocalDateTime modifiedDate;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(nullable = false, unique = true, columnDefinition = "text")
     @Getter
     @Setter
     private String name;
