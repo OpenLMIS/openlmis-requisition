@@ -40,7 +40,6 @@ dependencies {
     compile "org.postgresql:postgresql:9.4.1208"
     compile "org.springframework:spring-test"
     compile "com.google.code.gson:gson:2.6.2"
-    compile group: 'org.mvel', name: 'mvel2', version: '2.2.8.Final'
 
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
