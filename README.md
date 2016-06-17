@@ -14,7 +14,11 @@ This repository holds the files for the OpenLMIS Requisition Independent Service
  ```
 2. Add an environment file called `.env` to the root folder of the project, with the required 
 project settings and credentials. For a starter environment file, you can use [this 
-one](https://github.com/OpenLMIS/openlmis-config/blob/master/.env).
+one](https://github.com/OpenLMIS/openlmis-config/blob/master/.env). e.g.
+```shell
+cd openlmis-requisition
+curl -LO https://raw.githubusercontent.com/OpenLMIS/openlmis-config/master/.env
+```
 3. Develop w/ Docker by running `docker-compose run --service-ports requisition`.
 See [Developing w/ Docker](#devdocker).
 4. You should now be in an interactive shell inside the newly created development 
@@ -116,6 +120,16 @@ volume and maps tomcat's port directly to the host.
 - `docker-compose.builder.yml`:  an alternative docker-compose file
 suitable for CI type of environments to test & build this Service
 and generate a publishable/deployment ready Image of the service.
+- `docker-compose.prod.yml`:  Docker-compose file suitable for production.
+Contains nginx-proxy image and virtual host configuration of each service.
+
+### Running complete application with nginx proxy
+1. Enter desired `VIRTUAL_HOST` for each service in the `docker-compose.prod.yml` file.
+2. Start up containers
+```shell
+> docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+```
+3. The application should be available at port 80.
 
 ### Logging
 See the Logging section in the Service Template README at 
