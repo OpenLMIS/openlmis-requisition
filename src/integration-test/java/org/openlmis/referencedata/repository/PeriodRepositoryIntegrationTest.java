@@ -8,7 +8,7 @@ import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period>{
@@ -19,7 +19,6 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     @Autowired
     ScheduleRepository scheduleRepository;
 
-    @Override
     PeriodRepository getRepository() {
         return this.periodRepository;
     }
@@ -28,6 +27,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
     @Before
     public void setUp() {
+        periodRepository.deleteAll();
         scheduleRepository.deleteAll();
         schedule.setCode("code");
         schedule.setName("schedule");
@@ -35,15 +35,14 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         scheduleRepository.save(schedule);
     }
 
-    @Override
     Period generateInstance() {
         int instanceNumber = this.getNextInstanceNumber();
         Period period = new Period();
         period.setName("period" + instanceNumber);
         period.setProcessingSchedule(schedule);
         period.setDescription("Test period");
-        period.setStartDate(java.sql.Date.valueOf("2013-09-04"));
-        period.setEndDate(java.sql.Date.valueOf("2014-09-04"));
+        period.setStartDate(LocalDate.of(2016, 1, 1));
+        period.setEndDate(LocalDate.of(2016, 2, 1));
         return period;
     }
 
@@ -55,7 +54,6 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         Assert.assertEquals(1, countSizeOfIterable(result));
     }
 
-    //@Ignore
     @Test
     public void testPeriodEdit() {
         Period periodFromRepo = this.generateInstance();
@@ -65,8 +63,8 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         String description = "New test description";
         Assert.assertNotEquals(description, periodFromRepo.getDescription());
         periodFromRepo.setDescription(description);
-        periodFromRepo.setStartDate(java.sql.Date.valueOf("2013-09-04"));
-        periodFromRepo.setEndDate(java.sql.Date.valueOf("2014-09-04"));
+        periodFromRepo.setStartDate(LocalDate.of(2016, 2, 2));
+        periodFromRepo.setEndDate(LocalDate.of(2016, 3, 2));
         periodRepository.save(periodFromRepo);
         Assert.assertEquals(description, periodFromRepo.getDescription());
     }

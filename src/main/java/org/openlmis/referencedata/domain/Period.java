@@ -1,24 +1,27 @@
 package org.openlmis.referencedata.domain;
 
+import org.openlmis.referencedata.validate.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "period")
+@Table(name = "periods")
 @NoArgsConstructor
+//@DateValidator(start="startDate", end="endDate")
 public class Period extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "scheduleId", nullable = false)
+    @JoinColumn(name = "processingScheduleId",  nullable = false)
     @Getter
     @Setter
     private Schedule processingSchedule;
@@ -36,11 +39,11 @@ public class Period extends BaseEntity {
     @Column(nullable = false)
     @Getter
     @Setter
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(nullable = false)
     @Getter
     @Setter
-    private Date endDate;
+    private LocalDate endDate;
 
 }
