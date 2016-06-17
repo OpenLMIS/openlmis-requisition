@@ -18,8 +18,8 @@ services:
   image:
     build: .
     image: openlmis/requisition
-  template-service:
-    image: openlmis/template-service
+  requisition:
+    image: openlmis/requisition
     links:
       - db
       - log
@@ -37,4 +37,4 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/template-service:/var/log'
+      - '../logs/requisition:/var/log'
