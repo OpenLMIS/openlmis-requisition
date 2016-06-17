@@ -147,3 +147,10 @@ pmd {
     ignoreFailures = false
     reportsDir = file("build/reports/pmd")
 }
+
+tasks.withType(Pmd){
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
