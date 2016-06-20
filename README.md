@@ -15,6 +15,7 @@ This repository holds the files for the OpenLMIS Requisition Independent Service
 2. Add an environment file called `.env` to the root folder of the project, with the required 
 project settings and credentials. For a starter environment file, you can use [this 
 one](https://github.com/OpenLMIS/openlmis-config/blob/master/.env). e.g.
+
 ```shell
 cd openlmis-requisition
 curl -LO https://raw.githubusercontent.com/OpenLMIS/openlmis-config/master/.env
