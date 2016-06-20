@@ -45,6 +45,8 @@ public class OrderLineRepositoryIntegrationTest {
   @Autowired
   FacilityRepository facilityRepository;
 
+  private String orderLine = "OrderLineRepositoryIntegrationTest";
+
   private Order order = new Order();
   private Product product = new Product();
 
@@ -52,38 +54,38 @@ public class OrderLineRepositoryIntegrationTest {
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("OrderLineRepositoryIntegrationTest");
+    facilityType.setCode(orderLine);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode("OrderLineRepositoryIntegrationTest");
+    level.setCode(orderLine);
     level.setLevelNumber(1);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("OrderLineRepositoryIntegrationTest");
+    geographicZone.setCode(orderLine);
     geographicZone.setLevel(level);
 
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("OrderLineRepositoryIntegrationTest");
-    facility.setName("OrderLineRepositoryIntegrationTest");
+    facility.setCode(orderLine);
+    facility.setName(orderLine);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Program program = new Program();
-    program.setCode("OrderLineRepositoryIntegrationTest");
+    program.setCode(orderLine);
     programRepository.save(program);
 
     User user = new User();
-    user.setUsername("OrderLineRepositoryIntegrationTest");
-    user.setPassword("OrderLineRepositoryIntegrationTest");
+    user.setUsername(orderLine);
+    user.setPassword(orderLine);
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);
 
-    order.setOrderCode("OrderLineRepositoryIntegrationTest");
+    order.setOrderCode(orderLine);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
@@ -93,7 +95,7 @@ public class OrderLineRepositoryIntegrationTest {
     order.setSupplyingFacility(facility);
     orderRepository.save(order);
 
-    product.setCode("OrderLineRepositoryIntegrationTest");
+    product.setCode(orderLine);
     product.setPrimaryName("Product");
     product.setDispensingUnit("unit");
     product.setDosesPerDispensingUnit(10);

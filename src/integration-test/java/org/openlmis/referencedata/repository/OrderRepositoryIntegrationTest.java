@@ -31,6 +31,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     return this.repository;
   }
 
+  private String orderRepository = "OrderRepositoryIntegrationTest";
+
   private Facility facility = new Facility();
   private Program program = new Program();
   private User user = new User();
@@ -40,32 +42,32 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void setUp() {
     facilityRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("OrderRepositoryIntegrationTest");
+    facilityType.setCode(orderRepository);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode("OrderRepositoryIntegrationTest");
+    level.setCode(orderRepository);
     level.setLevelNumber(1);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("OrderRepositoryIntegrationTest");
+    geographicZone.setCode(orderRepository);
     geographicZone.setLevel(level);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("OrderRepositoryIntegrationTest");
-    facility.setName("OrderRepositoryIntegrationTest");
+    facility.setCode(orderRepository);
+    facility.setName(orderRepository);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     programRepository.deleteAll();
-    program.setCode("OrderRepositoryIntegrationTest");
+    program.setCode(orderRepository);
     programRepository.save(program);
 
     userRepository.deleteAll();
-    user.setUsername("OrderRepositoryIntegrationTest");
-    user.setPassword("OrderRepositoryIntegrationTest");
+    user.setUsername(orderRepository);
+    user.setPassword(orderRepository);
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);

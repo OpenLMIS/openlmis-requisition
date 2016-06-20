@@ -33,22 +33,24 @@ public class FacilityControllerIntegrationTest {
 
   private Facility facility = new Facility();
 
+  private String facilityController = "FacilityControllerIntegrationTest";
+
   /** Prepare the test environment. */
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("FacilityControllerIntegrationTest");
+    facilityType.setCode(facilityController);
     GeographicLevel level = new GeographicLevel();
-    level.setCode("FacilityControllerIntegrationTest");
+    level.setCode(facilityController);
     level.setLevelNumber(1);
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("FacilityControllerIntegrationTest");
+    geographicZone.setCode(facilityController);
     geographicZone.setLevel(level);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("FacilityControllerIntegrationTest");
-    facility.setName("FacilityControllerIntegrationTest");
+    facility.setCode(facilityController);
+    facility.setName(facilityController);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
