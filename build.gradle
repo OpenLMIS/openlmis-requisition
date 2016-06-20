@@ -39,7 +39,6 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
     compile "org.postgresql:postgresql:9.4.1208"
     compile "org.springframework:spring-test"
-    compile "com.google.code.gson:gson:2.6.2"
 
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
@@ -142,9 +141,10 @@ build.dependsOn jacocoTestReport
 build.dependsOn check
 
 pmd {
-    toolVersion = '5.2.3'
+    toolVersion = '5.4.0'
     consoleOutput= true
     ignoreFailures = false
+    ruleSetFiles = files("config/pmd/ruleset.xml")
     reportsDir = file("build/reports/pmd")
 }
 

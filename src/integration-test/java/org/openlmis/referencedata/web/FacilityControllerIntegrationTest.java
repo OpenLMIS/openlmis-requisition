@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,35 +33,37 @@ public class FacilityControllerIntegrationTest {
 
   private Facility facility = new Facility();
 
+  private String facilityController = "FacilityControllerIntegrationTest";
+
   /** Prepare the test environment. */
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("FacilityControllerIntegrationTest");
+    facilityType.setCode(facilityController);
     GeographicLevel level = new GeographicLevel();
-    level.setCode("FacilityControllerIntegrationTest");
+    level.setCode(facilityController);
     level.setLevelNumber(1);
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("FacilityControllerIntegrationTest");
+    geographicZone.setCode(facilityController);
     geographicZone.setLevel(level);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("FacilityControllerIntegrationTest");
-    facility.setName("FacilityControllerIntegrationTest");
+    facility.setCode(facilityController);
+    facility.setName(facilityController);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
   }
 
   @Test
-  public void testCreate() {
+  public void testCreate() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    Gson gson = new Gson();
-    String json = gson.toJson(facility);
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(facility);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
     ResponseEntity<Facility> result = restTemplate.postForEntity(
