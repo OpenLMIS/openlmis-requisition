@@ -8,10 +8,10 @@ import java.util.UUID;
 public interface GeographicLevelRepository extends ReferenceDataRepository<GeographicLevel, UUID> {
 
   @Override
-  @RestResource(exported = false)
+  @RestResource
   <S extends GeographicLevel> S save(S entity);
 
   @Override
-  @RestResource(exported = false)
+  @RestResource
   <S extends GeographicLevel> Iterable<S> save(Iterable<S> entities);
 }
