@@ -15,8 +15,12 @@ import javax.validation.ConstraintValidatorContext;
 @SuppressWarnings("unused")
 public class DateConstraintValidator implements ConstraintValidator<DateValidator, Period> {
 
+    private PeriodRepository periodRepository;
+
     @Autowired
-    PeriodRepository periodRepository;
+    public DateConstraintValidator(PeriodRepository periodRepository){
+        this.periodRepository = periodRepository;
+    }
 
     private DateValidator dateValidator;
 
@@ -42,11 +46,11 @@ public class DateConstraintValidator implements ConstraintValidator<DateValidato
         LocalDate startDate = object.getStartDate();
         LocalDate endDate = object.getEndDate();
 
-        if (!endDate.isBefore(startDate)){
+        if (endDate.isAfter(startDate)){
             if(countSizeOfIterable(iterable) != 0) {
                 Period periodFromRepo = iterable.iterator().next();
                 LocalDate lastEndDate = periodFromRepo.getEndDate();
-                if (!startDate.equals(lastEndDate.plusDays(1)) && !startDate.equals(lastEndDate)) {
+                if (!startDate.equals(lastEndDate.plusDays(1))) {
                     cxt.disableDefaultConstraintViolation();
                     cxt.buildConstraintViolationWithTemplate("{gap.between.lastEndDate.and.startDate.validation.error}")
                             .addConstraintViolation();
