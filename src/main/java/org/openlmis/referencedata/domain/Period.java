@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name = "periods")
 @NoArgsConstructor
-//@DateValidator(start="startDate", end="endDate")
+@DateValidator(start="startDate", end="endDate")
 public class Period extends BaseEntity {
 
     @ManyToOne

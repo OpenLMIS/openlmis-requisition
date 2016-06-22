@@ -1,16 +1,20 @@
 package org.openlmis.referencedata.repository;
 
+import java.time.LocalDate;
+import java.util.Set;
+import java.util.UUID;
+import javax.annotation.Resource;
+import javax.validation.*;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
+@SuppressWarnings("PMD.UnusedLocalVariable")
 public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period>{
 
     @Autowired
@@ -23,12 +27,20 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         return this.periodRepository;
     }
 
-    private Schedule schedule = new Schedule();
+    private Schedule schedule;
+
+    private Validator validator;
+
+    @BeforeClass
+    public static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+    }
 
     @Before
     public void setUp() {
-        periodRepository.deleteAll();
         scheduleRepository.deleteAll();
+        schedule = new Schedule();
         schedule.setCode("code");
         schedule.setName("schedule");
         schedule.setDescription("Test schedule");
@@ -46,11 +58,25 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         return period;
     }
 
-    //@Ignore
     @Test
-    public void testGetAllPeriods() {
-        periodRepository.save(generateInstance());
-        Iterable<Period> result = periodRepository.findAll();
+    public void testValidation(){
+        int instanceNumber = this.getNextInstanceNumber();
+        Period period = new Period();
+        period.setName("period" + instanceNumber);
+        period.setProcessingSchedule(schedule);
+        period.setDescription("Test period");
+        period.setStartDate(LocalDate.of(2016, 1, 1));
+        period.setStartDate(LocalDate.of(2016, 2, 1));
+
+        Set<ConstraintViolation<Period>> constraintViolations =
+                validator.validate(period);
+        Assert.assertEquals(0, constraintViolations.size());
+    }
+
+    @Test
+    public void testFindByProcessingSchedule() {
+        periodRepository.save(this.generateInstance());
+        Iterable<Period> result = periodRepository.findByProcessingSchedule(schedule);
         Assert.assertEquals(1, countSizeOfIterable(result));
     }
 
@@ -71,8 +97,9 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
     private int countSizeOfIterable(Iterable<Period> iterable) {
         int size = 0;
-        for(Period p : iterable) size++;
+        for(Period p : iterable){
+            size++;
+        }
         return size;
     }
-
 }
