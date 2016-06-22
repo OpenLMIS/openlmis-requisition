@@ -1,18 +1,13 @@
 package org.openlmis.referencedata.repository;
 
 import java.time.LocalDate;
-import java.util.Set;
 import java.util.UUID;
-import javax.annotation.Resource;
-import javax.validation.*;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @SuppressWarnings("PMD.UnusedLocalVariable")
 public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period>{
@@ -28,14 +23,6 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     }
 
     private Schedule schedule;
-
-    private Validator validator;
-
-    @BeforeClass
-    public static void setUpValidator() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-    }
 
     @Before
     public void setUp() {
@@ -67,10 +54,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
         period.setDescription("Test period");
         period.setStartDate(LocalDate.of(2016, 1, 1));
         period.setStartDate(LocalDate.of(2016, 2, 1));
-
-        Set<ConstraintViolation<Period>> constraintViolations =
-                validator.validate(period);
-        Assert.assertEquals(0, constraintViolations.size());
+        Assert.assertTrue(period.isValid());
     }
 
     @Test

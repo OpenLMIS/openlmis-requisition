@@ -21,13 +21,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface DateValidator {
 
-    String message() default "{end} should be later than {start}";
+    String message() default "invalid.date.message";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
-    String start();
-
-    String end();
 }
