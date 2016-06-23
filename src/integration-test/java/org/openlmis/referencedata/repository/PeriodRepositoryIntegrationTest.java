@@ -27,7 +27,6 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
     @Before
     public void setUp() {
-        periodRepository.deleteAll();
         scheduleRepository.deleteAll();
         schedule = new Schedule();
         schedule.setCode("code");
@@ -48,26 +47,26 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     }
 
     @Test
-    public void testValidation(){
+    public void testFindByProcessingSchedule() {
+        periodRepository.save(this.generateInstance());
+        Iterable<Period> result = periodRepository.findByProcessingSchedule(this.schedule);
+        Assert.assertEquals(1, countSizeOfIterable(result));
+    }
+
+    @Test(expected = ValidationException.class)
+    public void testStartDateIsAfterEndDate(){
         int instanceNumber = this.getNextInstanceNumber();
         Period period = new Period();
         period.setName("period" + instanceNumber);
         period.setProcessingSchedule(schedule);
         period.setDescription("Test period");
-        period.setStartDate(LocalDate.of(2016, 1, 1));
+        period.setStartDate(LocalDate.of(2016, 2, 1));
         period.setEndDate(LocalDate.of(2016, 1, 1));
         Assert.assertTrue(period.isValid());
     }
 
-    @Test
-    public void testFindByProcessingSchedule() {
-        periodRepository.save(this.generateInstance());
-        Iterable<Period> result = periodRepository.findByProcessingSchedule(schedule);
-        Assert.assertEquals(1, countSizeOfIterable(result));
-    }
-
     @Test(expected = ValidationException.class)
-    public void testValidationException(){
+    public void testStartDateEqualsLastEndDate(){
         int instanceNumber = this.getNextInstanceNumber();
         Period period = new Period();
         period.setName("period" + instanceNumber);

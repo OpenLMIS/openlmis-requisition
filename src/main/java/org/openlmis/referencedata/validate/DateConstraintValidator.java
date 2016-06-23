@@ -1,9 +1,5 @@
 package org.openlmis.referencedata.validate;
 
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.repository.PeriodRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -11,16 +7,16 @@ import java.util.Date;
 import javax.validation.constraintvalidation.ValidationTarget;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.repository.PeriodRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @SuppressWarnings("unused")
 public class DateConstraintValidator implements ConstraintValidator<DateValidator, Period> {
 
-    private PeriodRepository periodRepository;
-
     @Autowired
-    public DateConstraintValidator(PeriodRepository periodRepository){
-        this.periodRepository = periodRepository;
-    }
+    PeriodRepository periodRepository;
 
     private DateValidator dateValidator;
 

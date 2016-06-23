@@ -20,7 +20,7 @@ import javax.validation.ValidatorFactory;
 @Entity
 @Table(name = "periods")
 @NoArgsConstructor
-//@DateValidator
+@DateValidator
 public class Period extends BaseEntity {
 
     @ManyToOne
