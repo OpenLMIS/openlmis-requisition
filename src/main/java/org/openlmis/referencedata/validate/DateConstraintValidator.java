@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.validate;
+/*package org.openlmis.referencedata.validate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -19,8 +19,6 @@ public class DateConstraintValidator implements ConstraintValidator<DateValidato
     PeriodRepository periodRepository;
 
     private DateValidator dateValidator;
-
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MMM-dd");
 
     @Override
     public void initialize(DateValidator dateValidator) {
@@ -70,4 +68,4 @@ public class DateConstraintValidator implements ConstraintValidator<DateValidato
         }
         return size;
     }
-}
+}*/

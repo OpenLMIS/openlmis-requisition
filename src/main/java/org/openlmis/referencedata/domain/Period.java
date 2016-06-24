@@ -1,6 +1,6 @@
 package org.openlmis.referencedata.domain;
 
-import org.openlmis.referencedata.validate.DateValidator;
+//import org.openlmis.referencedata.validate.DateValidator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +20,7 @@ import javax.validation.ValidatorFactory;
 @Entity
 @Table(name = "periods")
 @NoArgsConstructor
-@DateValidator
+//@DateValidator
 public class Period extends BaseEntity {
 
     @ManyToOne
@@ -49,13 +49,4 @@ public class Period extends BaseEntity {
     @Setter
     private LocalDate endDate;
 
-    public Set<ConstraintViolation<Period>> getValidationViolations() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-            return validator.validate(this);
-    }
-
-    public boolean isValid() {
-        return getValidationViolations().size() == 0;
-    }
 }

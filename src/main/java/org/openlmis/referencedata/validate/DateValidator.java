@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.validate;
+/*package org.openlmis.referencedata.validate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -26,4 +26,4 @@ public @interface DateValidator {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-}
+}*/
