@@ -44,6 +44,80 @@ public class RequisitionTemplate extends BaseEntity {
     @Setter
     private String quantityApproved;
 
-    // other
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String lossessAndAdjustments;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String stockOutDays;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String normalizedConsumption;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String quantityRequested;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String reasonForRequestedQuantity;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String newPatientCount;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String cost;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String price;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String total;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String product;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String dispensingUnit;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String productCode;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String packsToShip;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String skipped;
+
+    @Column(columnDefinition = "text")
+    @Getter
+    @Setter
+    private String calculatedOrderQuantity;
+
 */
 }
