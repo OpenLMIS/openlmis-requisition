@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.RequisitionTemplate;
 import org.openlmis.referencedata.repository.RequisitionTemplateRepository;
 import org.slf4j.Logger;
@@ -12,9 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.ArrayList;
-import java.util.UUID;
 
 @RepositoryRestController
 public class RequisitionTemplateController {
@@ -38,11 +34,14 @@ public class RequisitionTemplateController {
             // Ignore provided id
             requisitionTemplate.setId(null);
 
-            //ArrayList<RequisitionTemplate> templates =
-            //        (ArrayList<RequisitionTemplate>)requisitionTemplateRepository.findByRemarks(requisitionTemplate.getRemarks());
+            Iterable<RequisitionTemplate> it = requisitionTemplateRepository.findAll();
 
-
-
+            for(RequisitionTemplate template : it) {
+                if(requisitionTemplate.getProgram().getId().equals(template.getProgram().getId())) {
+                    requisitionTemplateRepository.delete(template);
+                    break;
+                }
+            }
             RequisitionTemplate newRequisitionTemplate = requisitionTemplateRepository.save(requisitionTemplate);
             return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
         }

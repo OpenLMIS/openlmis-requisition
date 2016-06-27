@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
-    @OneToOne(cascade=CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "programid")
     @Getter
     @Setter

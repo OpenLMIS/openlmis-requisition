@@ -8,7 +8,5 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public interface RequisitionTemplateRepository extends ReferenceDataRepository<RequisitionTemplate, UUID> {
-    // if the relation is OneToOne, simply RequisitionTemplate can be return value
-    //ArrayList<RequisitionTemplate> findByProgram(@Param("programid") Program program);
-    //Iterable<RequisitionTemplate> findByRemarks(@Param("remarks") String remark);
+    //Add custom Program related members here. See UserRepository.java for examples.
 }
