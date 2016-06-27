@@ -2,7 +2,6 @@ package org.openlmis.referencedata.validate;
 
 import java.time.LocalDate;
 import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;

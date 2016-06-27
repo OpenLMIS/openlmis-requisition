@@ -1,11 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.validate.PeriodValidator;
@@ -13,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +39,7 @@ public class PeriodController
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         } else {
             logger.debug("Creating new period");
+            period.setId(null);
             Period newPeriod = periodRepository.save(period);
             return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
         }

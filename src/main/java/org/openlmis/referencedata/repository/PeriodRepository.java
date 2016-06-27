@@ -3,7 +3,6 @@ package org.openlmis.referencedata.repository;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;
