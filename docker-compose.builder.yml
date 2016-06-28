@@ -12,6 +12,18 @@ services:
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
     env_file: .env
+  sonar:
+    image: openlmis/dev
+    links:
+      - db
+      - log
+    volumes:
+      - '.:/app'
+    command:
+      - './sonar.sh'
+    environment:
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+    env_file: .env
   image:
     build: .
     image: openlmis/requisition
