@@ -7,19 +7,27 @@ services:
       - log
     volumes:
       - '.:/app'
+    command:
+      - './build.sh'
+    environment:
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+    env_file: .env
+  sonar:
+    image: openlmis/dev
+    volumes:
+      - '.:/app'
     entrypoint:
       - 'gradle'
     command:
-      - 'clean'
-      - 'build'
+      - 'sonarqube'
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
     env_file: .env
   image:
     build: .
     image: openlmis/requisition
-  template-service:
-    image: openlmis/template-service
+  requisition:
+    image: openlmis/requisition
     links:
       - db
       - log
@@ -37,4 +45,4 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/template-service:/var/log'
+      - '../logs/requisition:/var/log'

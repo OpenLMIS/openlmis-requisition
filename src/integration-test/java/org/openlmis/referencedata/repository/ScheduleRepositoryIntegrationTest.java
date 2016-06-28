@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
+@SuppressWarnings("PMD.UnusedLocalVariable")
 public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Schedule>{
 
     @Autowired
@@ -45,7 +46,7 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
         Assert.assertNotEquals(newDescription, scheduleFromRepo.getDescription());
 
         scheduleFromRepo.setDescription(newDescription);
-        LocalDateTime savingDateTime = LocalDateTime.now();
+        LocalDateTime savingDateTime = scheduleFromRepo.getModifiedDate();
         repository.save(scheduleFromRepo);
         iterable = repository.findAll();
         scheduleFromRepo = iterable.iterator().next();
@@ -64,7 +65,9 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
 
     private int countSizeOfIterable(Iterable<Schedule> iterable) {
         int size = 0;
-        for(Schedule s : iterable) size++;
+        for(Schedule s : iterable){
+            size++;
+        }
         return size;
     }
 

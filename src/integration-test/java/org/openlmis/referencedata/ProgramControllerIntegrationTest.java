@@ -1,7 +1,7 @@
 package org.openlmis.referencedata;
 
-import com.google.gson.Gson;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +37,13 @@ public class ProgramControllerIntegrationTest {
   }
 
   @Test
-  public void testCreate() {
+  public void testCreate() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    Gson gson = new Gson();
-    String json = gson.toJson(program);
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(program);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
     ResponseEntity<Program> result = restTemplate.postForEntity(

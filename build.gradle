@@ -41,6 +41,7 @@ dependencies {
     compile "org.postgresql:postgresql:9.4.1208"
     compile "org.springframework:spring-test"
     compile "com.google.code.gson:gson:2.6.2"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'
@@ -157,8 +158,16 @@ build.dependsOn check // Makes sure checkstyle is run before build completes
 
 
 pmd {
-    toolVersion = '5.2.3'
+    toolVersion = '5.4.0'
     consoleOutput= true
     ignoreFailures = false
+    ruleSetFiles = files("config/pmd/ruleset.xml")
     reportsDir = file("build/reports/pmd")
+}
+
+tasks.withType(Pmd){
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
 }

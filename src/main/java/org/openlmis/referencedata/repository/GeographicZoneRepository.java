@@ -8,10 +8,10 @@ import java.util.UUID;
 public interface GeographicZoneRepository extends ReferenceDataRepository<GeographicZone, UUID> {
 
   @Override
-  @RestResource(exported = false)
+  @RestResource
   <S extends GeographicZone> S save(S entity);
 
   @Override
-  @RestResource(exported = false)
+  @RestResource
   <S extends GeographicZone> Iterable<S> save(Iterable<S> entities);
 }

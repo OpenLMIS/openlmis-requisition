@@ -9,3 +9,4 @@ out/
 node-*
 node_modules
 requisition-service.json
+.tx/

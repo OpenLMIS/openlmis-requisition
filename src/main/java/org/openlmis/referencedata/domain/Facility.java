@@ -18,17 +18,19 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class Facility extends BaseEntity {
 
-  @Column(nullable = false, unique = true, columnDefinition = "text")
+  public static final String TEXT = "text";
+
+  @Column(nullable = false, unique = true, columnDefinition = TEXT)
   @Getter
   @Setter
   private String code;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT)
   @Getter
   @Setter
   private String name;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT)
   @Getter
   @Setter
   private String description;
@@ -64,7 +66,7 @@ public class Facility extends BaseEntity {
   @Setter
   private Date goDownDate;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT)
   @Getter
   @Setter
   private String comment;

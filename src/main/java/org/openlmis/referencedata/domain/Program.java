@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "programs")
@@ -31,4 +29,5 @@ public class Program extends BaseEntity {
   @Getter
   @Setter
   private Boolean active;
+
 }
