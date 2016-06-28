@@ -4,19 +4,11 @@
 
   "devDependencies":
   {
-    "hippie-swagger": "~1.3.0",
-    "mocha": "~2.5.3",
-    "mocha-cli": "~1.0.0",
-    "swagger-parser": "~3.4.1",
-    "chai" : "~3.5.0",
-
     "api-spec-converter" :  "~1.9.0"
-
   },
 
   "scripts":
   {
-    "mochaRunScript": "mocha /app/src/integration-test/javascript/test.js" ,
     "runApiSpecConverter": "api-spec-converter --from raml --to swagger_2 /app/src/test/resources/requisition-service.yaml > /app/src/main/webapp/requisition-service.json"
   }
 }

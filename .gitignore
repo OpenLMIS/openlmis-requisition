@@ -8,3 +8,4 @@ out/
 .env
 node-*
 node_modules
+requisition-service.json
