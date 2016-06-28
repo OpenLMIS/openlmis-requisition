@@ -34,7 +34,6 @@ public class PeriodController
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         } else {
             logger.debug("Creating new period");
-            period.setId(null);
             validator.validate(period, bindingResult);
             if(bindingResult.getErrorCount() == 0) {
                 Period newPeriod = periodRepository.save(period);
