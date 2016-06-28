@@ -23,8 +23,8 @@ public class PeriodValidator implements Validator
     @Override
     public void validate(Object obj, Errors e)
     {
-        ValidationUtils.rejectIfEmpty(e, "startDate", "startDate.empty");
-        ValidationUtils.rejectIfEmpty(e, "endDate", "endDate.empty");
+        ValidationUtils.rejectIfEmpty(e, "startDate", "startDate.empty", "Start date id null");
+        ValidationUtils.rejectIfEmpty(e, "endDate", "endDate.empty", "End date is null");
 
         Period period = (Period) obj;
         Iterable<Period> iterable = periodRepository.findByProcessingSchedule(period.getProcessingSchedule());
@@ -37,13 +37,16 @@ public class PeriodValidator implements Validator
                 Period periodFromRepo = iterable.iterator().next();
                 LocalDate lastEndDate = periodFromRepo.getEndDate();
                 if (!startDate.equals(lastEndDate.plusDays(1))) {
-                    e.rejectValue("startDate", "{gap.between.lastEndDate.and.startDate.validation.error}");
+                    e.rejectValue("startDate", "{gap.between.lastEndDate.and.startDate.validation.error}",
+                            "Start date should be one day after last added end date");
                 }
             }
         }
         else {
-            e.rejectValue("startDate", "{startDate.after.endDate.validation.error}");
-            e.rejectValue("endDate", "{startDate.after.endDate.validation.error}");
+            e.rejectValue("startDate", "{startDate.after.endDate.validation.error}",
+                    "Start date should be before end date");
+            e.rejectValue("endDate", "{startDate.after.endDate.validation.error}",
+                    "End date should be after start date");
         }
     }
 

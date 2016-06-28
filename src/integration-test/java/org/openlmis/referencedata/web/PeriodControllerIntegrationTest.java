@@ -32,10 +32,10 @@ public class PeriodControllerIntegrationTest {
     private static final String SCHEDULE_URL = "http://localhost:8080/api/schedules";
 
     private Period period = new Period();
+    private Schedule schedule = new Schedule();
 
     @Before
     public void setUp() {
-        Schedule schedule = new Schedule();
         schedule.setCode("code");
         schedule.setName("schedule");
         schedule.setDescription("Test schedule");
@@ -65,7 +65,6 @@ public class PeriodControllerIntegrationTest {
 
         ResponseEntity<Period> result = restTemplate.postForEntity(
                 RESOURCE_URL, entity, Period.class);
-
 
         period.setStartDate(LocalDate.of(2016, 2, 2));
         period.setEndDate(LocalDate.of(2016, 3, 2));

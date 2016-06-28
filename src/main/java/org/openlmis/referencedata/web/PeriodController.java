@@ -1,5 +1,7 @@
 package org.openlmis.referencedata.web;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.validate.PeriodValidator;
@@ -11,6 +13,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 
@@ -26,13 +29,6 @@ public class PeriodController
     @Autowired
     PeriodRepository periodRepository;
 
-    @RequestMapping(path = "/api/periods/validate", method = RequestMethod.POST)
-    public boolean getValid(@RequestBody Period period, BindingResult bindingResult, SessionStatus status)
-    {
-        validator.validate(period, bindingResult);
-        return bindingResult.getErrorCount() == 0;
-    }
-
     @RequestMapping(value = "/periods", method = RequestMethod.POST)
     public ResponseEntity<?> createPeriod(@RequestBody Period period, BindingResult bindingResult, SessionStatus status) {
         if (period == null) {
@@ -46,7 +42,15 @@ public class PeriodController
                 return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
             }
             else
-                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private Map<String, String> getPeriodErrors(final BindingResult bindingResult) {
+        return new HashMap<String, String>() {{
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                put(error.getField(), error.getDefaultMessage());
+            }
+        }};
     }
 }
