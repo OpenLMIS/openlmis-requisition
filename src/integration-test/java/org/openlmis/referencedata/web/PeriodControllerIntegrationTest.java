@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -31,7 +32,8 @@ public class PeriodControllerIntegrationTest {
     private static final String RESOURCE_URL = "http://localhost:8080/api/periods";
     private static final String SCHEDULE_URL = "http://localhost:8080/api/schedules";
 
-    private Period period = new Period();
+    private Period firstPeriod = new Period();
+    private Period secondPeriod = new Period();
     private Schedule schedule = new Schedule();
 
     @Before
@@ -39,11 +41,14 @@ public class PeriodControllerIntegrationTest {
         schedule.setCode("code");
         schedule.setName("schedule");
         schedule.setDescription("Test schedule");
-        period.setName("period");
-        period.setProcessingSchedule(schedule);
-        period.setDescription("Test period");
-        period.setStartDate(LocalDate.of(2016, 1, 1));
-        period.setEndDate(LocalDate.of(2016, 2, 1));
+        firstPeriod.setName("period");
+        firstPeriod.setDescription("Test period");
+        firstPeriod.setStartDate(LocalDate.of(2016, 1, 1));
+        firstPeriod.setEndDate(LocalDate.of(2016, 2, 1));
+        secondPeriod.setName("period");
+        secondPeriod.setDescription("Test period");
+        secondPeriod.setStartDate(LocalDate.of(2016, 2, 2));
+        secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
     }
 
     @Test
@@ -60,47 +65,63 @@ public class PeriodControllerIntegrationTest {
         ResponseEntity<Schedule> scheduleResult = restTemplate.postForEntity(
                 SCHEDULE_URL, scheduleEntity, Schedule.class);
 
-        String json = mapper.writeValueAsString(period);
-        HttpEntity<String> entity = new HttpEntity<>(json, headers);
+        schedule.setId(scheduleResult.getBody().getId());
+        firstPeriod.setProcessingSchedule(schedule);
+
+        String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
+
+        HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
+
+        restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
+
+        secondPeriod.setProcessingSchedule(schedule);
+
+        String secondPeriodJson = mapper.writeValueAsString(secondPeriod);
+
+        HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
 
         ResponseEntity<Period> result = restTemplate.postForEntity(
-                RESOURCE_URL, entity, Period.class);
+                RESOURCE_URL, secondPeriodEntity, Period.class);
 
-        period.setStartDate(LocalDate.of(2016, 2, 2));
-        period.setEndDate(LocalDate.of(2016, 3, 2));
-        ResponseEntity<Period> result2 = restTemplate.postForEntity(
-                RESOURCE_URL, entity, Period.class);
-
+        Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
         Period savedPeriod = result.getBody();
-        Period savedPeriod2 = result2.getBody();
-
         Assert.assertNotNull(savedPeriod.getId());
-        Assert.assertNull(savedPeriod2.getId());
     }
 
-    @Test
+    @Test(expected = HttpClientErrorException.class)
     public void testCreatePeriodsWithAGap() throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(period);
-        HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-        ResponseEntity<Period> result = restTemplate.postForEntity(
-                RESOURCE_URL, entity, Period.class);
+        schedule.setCode("newCode");
+        schedule.setName("newSchedule");
 
-        period.setStartDate(LocalDate.of(2016, 2, 3));
-        period.setEndDate(LocalDate.of(2016, 3, 3));
-        ResponseEntity<Period> result2 = restTemplate.postForEntity(
-                RESOURCE_URL, entity, Period.class);
+        String scheduleJson = mapper.writeValueAsString(schedule);
+        HttpEntity<String> scheduleEntity = new HttpEntity<>(scheduleJson, headers);
 
-        Assert.assertEquals(HttpStatus.CREATED, result2.getStatusCode());
+        ResponseEntity<Schedule> scheduleResult = restTemplate.postForEntity(
+                SCHEDULE_URL, scheduleEntity, Schedule.class);
 
-        Period savedPeriod = result.getBody();
+        schedule.setId(scheduleResult.getBody().getId());
+        firstPeriod.setProcessingSchedule(schedule);
 
-        Assert.assertNull(savedPeriod.getId());
+        String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
+
+        HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
+
+        restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
+
+        secondPeriod.setStartDate(LocalDate.of(2016, 2, 3));
+        secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
+        secondPeriod.setProcessingSchedule(schedule);
+
+        String secondPeriodJson = mapper.writeValueAsString(secondPeriod);
+
+        HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
+
+        restTemplate.postForEntity(RESOURCE_URL, secondPeriodEntity, Period.class);
     }
-
 }

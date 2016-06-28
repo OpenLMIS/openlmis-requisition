@@ -23,7 +23,7 @@ public class PeriodValidator implements Validator
     @Override
     public void validate(Object obj, Errors e)
     {
-        ValidationUtils.rejectIfEmpty(e, "startDate", "startDate.empty", "Start date id null");
+        ValidationUtils.rejectIfEmpty(e, "startDate", "startDate.empty", "Start date is null");
         ValidationUtils.rejectIfEmpty(e, "endDate", "endDate.empty", "End date is null");
 
         Period period = (Period) obj;

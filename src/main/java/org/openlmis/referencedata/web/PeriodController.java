@@ -41,8 +41,9 @@ public class PeriodController
                 Period newPeriod = periodRepository.save(period);
                 return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
             }
-            else
+            else {
                 return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
+            }
         }
     }
 
