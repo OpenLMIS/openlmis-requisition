@@ -24,18 +24,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
   private Program program;
   private static int programsCounter = 0;
 
-  RequisitionTemplateRepository getRepository() {
-    return this.repository;
-  }
-
-  @Override
-  RequisitionTemplate generateInstance() {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(null);
-    requisitionTemplate.setProgram(program);
-    return requisitionTemplate;
-
-  }
-
   @Before
   public void setUp() throws JsonProcessingException {
     program = new Program();
@@ -54,4 +42,18 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
     program = result.getBody();
   }
+
+  RequisitionTemplateRepository getRepository() {
+    return this.repository;
+  }
+
+  @Override
+  RequisitionTemplate generateInstance() {
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(null);
+    requisitionTemplate.setProgram(program);
+    return requisitionTemplate;
+
+  }
+
+
 }

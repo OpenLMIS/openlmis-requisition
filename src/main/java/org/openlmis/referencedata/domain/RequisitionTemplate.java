@@ -7,7 +7,6 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.OneToOne;
-import javax.persistence.CascadeType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ElementCollection;
 import javax.persistence.MapKeyColumn;
@@ -21,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
-  @OneToOne(cascade = CascadeType.MERGE)
+  @OneToOne
   @JoinColumn(name = "programid", nullable=false)
   @Getter
   @Setter
@@ -34,7 +33,6 @@ public class RequisitionTemplate extends BaseEntity {
   private Map<String,String> columnsMap = new HashMap<>();
 
   public RequisitionTemplate(List<? extends String> columns) {
-    columnsMap = new HashMap<>();
     if(columns != null) {
       for (String column : columns) {
         columnsMap.put(column, column);

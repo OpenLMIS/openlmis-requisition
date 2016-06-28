@@ -50,7 +50,7 @@ public class RequisitionTemplateControllerIntegrationTest {
     ResponseEntity<Program> result = restTemplate.postForEntity(
             RESOURCE_URL_PROGRAMS, entity, Program.class);
 
-    requisitionTemplate = new RequisitionTemplate(null);
+    requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(result.getBody());
   }
 
