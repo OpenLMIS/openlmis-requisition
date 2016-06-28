@@ -5,119 +5,32 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.*;
 
 @Entity
 @Table(name = "requisitionTemplates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
-    @OneToOne
-    @JoinColumn(name = "programid")
-    @Getter
-    @Setter
-    private Program program;
+  @OneToOne(cascade = CascadeType.MERGE)
+  @JoinColumn(name = "programid", nullable=false)
+  @Getter
+  @Setter
+  private Program program;
 
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String remarks;
+  @ElementCollection
+  @MapKeyColumn(name = "key")
+  @Column(name = "value")
+  // second String is temporary, needs to be replaced with RequisitionTemplateColumn
+  private Map<String,String> columnsMap = new HashMap<>();
 
+  public RequisitionTemplate(List<? extends String> columns) {
+    columnsMap = new HashMap<>();
+    if(columns != null) {
+      for (String column : columns) {
+        columnsMap.put(column, column);
+      }
+    }
+  }
 
-/*
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String quantityDispensed;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String beginningBalance;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String quantityReceived;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String quantityApproved;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String lossessAndAdjustments;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String stockOutDays;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String normalizedConsumption;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String quantityRequested;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String reasonForRequestedQuantity;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String newPatientCount;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String cost;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String price;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String total;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String product;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String dispensingUnit;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String productCode;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String packsToShip;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String skipped;
-
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String calculatedOrderQuantity;
-
-*/
 }

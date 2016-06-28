@@ -26,7 +26,8 @@ public class RequisitionTemplateController {
      * @return ResponseEntity containing the created program
      */
     @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
-    public ResponseEntity<?> createRequisitionTemplate(@RequestBody RequisitionTemplate requisitionTemplate) {
+    public ResponseEntity<?> createRequisitionTemplate(
+            @RequestBody RequisitionTemplate requisitionTemplate) {
         if (requisitionTemplate == null) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         } else {
@@ -36,14 +37,17 @@ public class RequisitionTemplateController {
 
             Iterable<RequisitionTemplate> it = requisitionTemplateRepository.findAll();
 
-            for(RequisitionTemplate template : it) {
-                if(requisitionTemplate.getProgram().getId().equals(template.getProgram().getId())) {
+            for (RequisitionTemplate template : it) {
+                if (requisitionTemplate.getProgram().getId().equals(
+                        template.getProgram().getId())) {
                     requisitionTemplateRepository.delete(template);
                     break;
                 }
             }
-            RequisitionTemplate newRequisitionTemplate = requisitionTemplateRepository.save(requisitionTemplate);
-            return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
+            RequisitionTemplate newRequisitionTemplate =
+                    requisitionTemplateRepository.save(requisitionTemplate);
+            return new ResponseEntity<RequisitionTemplate>(
+                    newRequisitionTemplate, HttpStatus.CREATED);
         }
     }
 }
