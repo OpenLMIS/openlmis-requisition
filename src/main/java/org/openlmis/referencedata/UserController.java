@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.referencedata;
 
 import org.openlmis.referencedata.domain.User;
 import org.openlmis.referencedata.repository.UserRepository;
@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.List;
 
 /* See:
         https://jira.spring.io/si/jira.issueviews:issue-html/DATAREST-522/DATAREST-522.html
@@ -37,4 +39,5 @@ public class UserController {
       return new ResponseEntity(newUser, HttpStatus.CREATED);
     }
   }
+
 }

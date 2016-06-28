@@ -4,6 +4,7 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.User;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;
 
@@ -31,4 +32,9 @@ public interface UserRepository extends ReferenceDataRepository<User, UUID> {
 
   //Accessible via http://127.0.0.1:8080/api/users/search/findByVerified?verified={verified}
   Iterable<User> findByVerified(@Param("verified") boolean verified);
+
+  //Specify that SDR shouldn't expose findAll(), because we'll implement our own version of the endpoint
+  @Override
+  @RestResource(exported = false)
+  Iterable<User> findAll();
 }

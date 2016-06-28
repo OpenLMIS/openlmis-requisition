@@ -1,0 +1,296 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "No description",
+    "version" : "1.0.0",
+    "title" : "requisition-service",
+    "contact" : { }
+  },
+  "host" : "localhost:8080",
+  "basePath" : "/api",
+  "tags" : [ {
+    "name" : "Default",
+    "description" : "Default section"
+  }, {
+    "name" : "users"
+  } ],
+  "schemes" : [ "http" ],
+  "paths" : {
+    "/users" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Note that a 404 response-code, rather than an empty array paired with a 200 response-code, is used to signal that no users exist.",
+        "description" : "Note that a 404 response-code, rather than an empty array paired with a 200 response-code, is used to signal that no users exist.",
+        "operationId" : "getUsers",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "[{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}]"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "Create a new user",
+        "operationId" : "postUsers",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "201" : {
+            "description" : "The request has been fulfilled and resulted in a new resource being created",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}"
+            }
+          },
+          "400" : {
+            "description" : "Returned if, for instance, a non-valid user is submitted as a candidate for creation."
+          }
+        }
+      }
+    },
+    "/users/search/findByActive" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Depending on the query parameter, return either all active or all inactive users.",
+        "description" : "Depending on the query parameter, return either all active or all inactive users.",
+        "operationId" : "getUsersSearchFindByActive",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "active",
+          "in" : "query",
+          "required" : true,
+          "type" : "boolean",
+          "x-example" : true
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "[{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}]"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByFirstNameAndLastName" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "operationId" : "getUsersSearchFindByFirstNameAndLastName",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "firstName",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "x-example" : "someFirstName"
+        }, {
+          "name" : "lastName",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "x-example" : "someLastName"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "[{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}]"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByHomeFacility" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "operationId" : "getUsersSearchFindByHomeFacility",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "homeFacility",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "x-example" : "homeFacilityID"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "[{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}]"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByLastName" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "operationId" : "getUsersSearchFindByLastName",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "lastName",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "x-example" : "someLastName"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "[{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}]"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByUsername" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "operationId" : "getUsersSearchFindByUsername",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "x-example" : "SomeUserName"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByVerified" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Depending on the query parameter, return either all verified or all unverified users.",
+        "description" : "Depending on the query parameter, return either all verified or all unverified users.",
+        "operationId" : "getUsersSearchFindByVerified",
+        "consumes" : [ ],
+        "produces" : [ ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/users/{id}" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Retrieve a specific user by ID",
+        "operationId" : "getUsersId",
+        "consumes" : [ ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The request has succeeded",
+            "schema" : {
+              "$ref" : "#/definitions/user"
+            },
+            "examples" : {
+              "application/json" : "{\"id\":\"sample id\",\"username\":\"sample username\",\"password\":\"sample password\",\"firstName\":\"sample firstName\",\"lastName\":\"sample lastName\",\"homeFacility\":null,\"verified\":false,\"active\":false}"
+            }
+          },
+          "404" : {
+            "description" : "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "user" : {
+      "type" : "object",
+      "required" : [ "firstName", "id", "lastName", "password", "username" ],
+      "properties" : {
+        "active" : {
+          "type" : "boolean",
+          "default" : false
+        },
+        "firstName" : {
+          "type" : "string"
+        },
+        "id" : {
+          "type" : "string"
+        },
+        "lastName" : {
+          "type" : "string"
+        },
+        "password" : {
+          "type" : "string"
+        },
+        "username" : {
+          "type" : "string"
+        },
+        "verified" : {
+          "type" : "boolean",
+          "default" : false
+        }
+      }
+    }
+  }
+}

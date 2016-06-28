@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.referencedata;
 
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.slf4j.Logger;

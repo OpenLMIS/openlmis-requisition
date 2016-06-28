@@ -1,0 +1,220 @@
+#%RAML 0.8
+title: requisition-service
+version: "1.0.0"
+baseUri: "http://192.168.99.100:8080/api"
+schemas:
+    -
+        user: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"user","properties":{"id":{"type":"string","required":false,"title":"id"},"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":false,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"}}}'
+    -
+        error: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"error","properties":{"timestamp":{"type":"integer","required":false,"title":"timestamp"},"status":{"type":"integer","required":false,"title":"status"},"error":{"type":"string","required":false,"title":"error"},"message":{"type":"string","required":false,"title":"message"},"path":{"type":"string","required":false,"title":"path"}}}'
+/users:
+    displayName: Users
+    get:
+        description: Note that a 404 response-code, rather than an empty array paired with a 200 response-code, is used to signal that no users exist.
+        displayName: Note that a 404 response-code, rather than an empty array paired with a 200 response-code, is used to signal that no users exist.
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '[{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}]'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+    post:
+        displayName: Create a new user
+        body:
+            application/json:
+                schema: user
+                example: '{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","verified":false,"active":false}'
+        responses:
+            "201":
+                description: The request has been fulfilled and resulted in a new resource being created
+                body:
+                    application/json:
+                        schema: user
+                        example: '{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}'
+            "400":
+                description: Returned if, for instance, a non-valid user is submitted as a candidate for creation.
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/{id}:
+    displayName: UsersId
+    uriParameters:
+        id:
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    get:
+        displayName: Retrieve a specific user by ID
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/search/findByUsername:
+    displayName: UsersSearchFindByUsername
+    get:
+        queryParameters:
+            username:
+                displayName: username
+                type: string
+                required: true
+                repeat: false
+                example: SomeUserName
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/search/findByLastName:
+    displayName: UsersSearchFindByLastName
+    get:
+        queryParameters:
+            lastName:
+                displayName: lastName
+                type: string
+                required: true
+                repeat: false
+                example: someLastName
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '[{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}]'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/search/findByFirstNameAndLastName:
+    displayName: UsersSearchFindByFirstNameAndLastName
+    get:
+        queryParameters:
+            firstName:
+                displayName: firstName
+                type: string
+                required: true
+                repeat: false
+                example: someFirstName
+            lastName:
+                displayName: lastName
+                type: string
+                required: true
+                repeat: false
+                example: someLastName
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '[{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}]'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/search/findByHomeFacility:
+    displayName: UsersSearchFindByHomeFacility
+    get:
+        queryParameters:
+            homeFacility:
+                displayName: homeFacility
+                type: string
+                required: true
+                repeat: false
+                example: homeFacilityID
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '[{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}]'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/search/findByActive:
+    displayName: Return all active users
+    description: Return all active users
+    get:
+        description: Depending on the query parameter, return either all active or all inactive users.
+        displayName: Depending on the query parameter, return either all active or all inactive users.
+        queryParameters:
+            active:
+                displayName: active
+                type: boolean
+                required: true
+                repeat: false
+                example: "true"
+        responses:
+            "200":
+                description: The request has succeeded
+                body:
+                    application/json:
+                        schema: user
+                        example: '[{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","homeFacility":null,"verified":false,"active":false}]'
+            "404":
+                description: The server has not found anything matching the request URI
+                body:
+                    application/json:
+                        schema: error
+                        example: '{"timestamp":1,"status":1,"error":"sample error","message":"sample message","path":"sample path"}'
+/users/search/findByVerified:
+    displayName: UsersSearchFindByVerified
+    get:
+        description: Depending on the query parameter, return either all verified or all unverified users.
+        displayName: Depending on the query parameter, return either all verified or all unverified users.
+/v2/users:
+    displayName: ""
+    description: This endpoint exists exclusively for the sake of allowing for the demonstration of API related test code.
+    get:
+        description: This operation exists exclusively for the sake of allowing for the demonstration of API related test code.
+        displayName: This operation exists exclusively for the sake of allowing for the demonstration of API related test code.
+        responses:
+            "200":
+                body:
+                    application/json:
+                        schema: user
+                        example: '[{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","verified":false,"active":false}]'
+            "404":
+    post:
+        description: This operation exists exclusively for the sake of allowing for the demonstration of API related test code.
+        displayName: This operation exists exclusively for the sake of allowing for the demonstration of API related test code.
+        responses:
+            "201":
+                body:
+                    application/json:
+                        schema: user
+                        example: '{"id":"sample id","username":"sample username","password":"sample password","firstName":"sample firstName","lastName":"sample lastName","verified":false,"active":false}'

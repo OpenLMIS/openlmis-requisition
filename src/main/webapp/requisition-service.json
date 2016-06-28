@@ -1,0 +1,264 @@
+{
+  "basePath": "/api",
+  "definitions": {
+    "user": {
+      "properties": {
+        "active": {
+          "title": "active",
+          "type": "boolean"
+        },
+        "firstName": {
+          "title": "firstName",
+          "type": "string"
+        },
+        "id": {
+          "title": "id",
+          "type": "string"
+        },
+        "lastName": {
+          "title": "lastName",
+          "type": "string"
+        },
+        "password": {
+          "title": "password",
+          "type": "string"
+        },
+        "username": {
+          "title": "username",
+          "type": "string"
+        },
+        "verified": {
+          "title": "verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "password",
+        "firstName",
+        "lastName"
+      ],
+      "title": "user",
+      "type": "object"
+    }
+  },
+  "host": "localhost:8080",
+  "info": {
+    "title": "requisition-service",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "description": "Note that a 404 response-code, rather than an empty array paired with a 200 response-code, is used to signal that no users exist.",
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "The request has been fulfilled and resulted in a new resource being created",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "400": {
+            "description": "Returned if, for instance, a non-valid user is submitted as a candidate for creation."
+          }
+        }
+      }
+    },
+    "/users/search/findByActive": {
+      "get": {
+        "description": "Depending on the query parameter, return either all active or all inactive users.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "active",
+            "required": true,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByFirstNameAndLastName": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "firstName",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "lastName",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByHomeFacility": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "homeFacility",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByLastName": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lastName",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByUsername": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "username",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/users/search/findByVerified": {
+      "get": {
+        "description": "Depending on the query parameter, return either all verified or all unverified users."
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "The server has not found anything matching the request URI"
+          }
+        }
+      }
+    },
+    "/v2/users": {
+      "get": {
+        "description": "This operation exists exclusively for the sake of allowing for the demonstration of API related test code.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "description": "This operation exists exclusively for the sake of allowing for the demonstration of API related test code.",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          }
+        }
+      }
+    }
+  },
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {},
+  "swagger": "2.0"
+}

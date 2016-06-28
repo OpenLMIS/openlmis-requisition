@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.referencedata;
 
 import org.openlmis.referencedata.util.ServiceSignature;
 import org.slf4j.Logger;

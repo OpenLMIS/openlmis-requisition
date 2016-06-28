@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.referencedata;
 
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.repository.ProgramRepository;
