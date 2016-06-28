@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 public class PeriodControllerIntegrationTest {
 
     private static final String RESOURCE_URL = "http://localhost:8080/api/periods";
+    private static final String SCHEDULE_URL = "http://localhost:8080/api/schedules";
 
     private Period period = new Period();
 
@@ -52,11 +53,19 @@ public class PeriodControllerIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ObjectMapper mapper = new ObjectMapper();
+
+        String scheduleJson = mapper.writeValueAsString(schedule);
+        HttpEntity<String> scheduleEntity = new HttpEntity<>(scheduleJson, headers);
+
+        ResponseEntity<Schedule> scheduleResult = restTemplate.postForEntity(
+                SCHEDULE_URL, scheduleEntity, Schedule.class);
+
         String json = mapper.writeValueAsString(period);
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
         ResponseEntity<Period> result = restTemplate.postForEntity(
                 RESOURCE_URL, entity, Period.class);
+
 
         period.setStartDate(LocalDate.of(2016, 2, 2));
         period.setEndDate(LocalDate.of(2016, 3, 2));

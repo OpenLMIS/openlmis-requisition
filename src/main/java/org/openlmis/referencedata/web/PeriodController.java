@@ -34,14 +34,19 @@ public class PeriodController
     }
 
     @RequestMapping(value = "/periods", method = RequestMethod.POST)
-    public ResponseEntity<?> createPeriod(@RequestBody Period period) {
+    public ResponseEntity<?> createPeriod(@RequestBody Period period, BindingResult bindingResult, SessionStatus status) {
         if (period == null) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         } else {
             logger.debug("Creating new period");
             period.setId(null);
-            Period newPeriod = periodRepository.save(period);
-            return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
+            validator.validate(period, bindingResult);
+            if(bindingResult.getErrorCount() == 0) {
+                Period newPeriod = periodRepository.save(period);
+                return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
+            }
+            else
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
     }
 }
