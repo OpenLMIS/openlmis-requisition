@@ -14,13 +14,12 @@ services:
     env_file: .env
   sonar:
     image: openlmis/dev
-    links:
-      - db
-      - log
     volumes:
       - '.:/app'
+    entrypoint:
+      - 'gradle'
     command:
-      - './sonar.sh'
+      - 'sonarqube'
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
     env_file: .env
