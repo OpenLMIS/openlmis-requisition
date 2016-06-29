@@ -46,8 +46,8 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
     Assert.assertNotEquals(newDescription, scheduleFromRepo.getDescription());
 
     scheduleFromRepo.setDescription(newDescription);
-    LocalDateTime savingDateTime = scheduleFromRepo.getModifiedDate();
     repository.save(scheduleFromRepo);
+    LocalDateTime savingDateTime = scheduleFromRepo.getModifiedDate();
     iterable = repository.findAll();
     scheduleFromRepo = iterable.iterator().next();
     Assert.assertTrue(savingDateTime.isBefore(scheduleFromRepo.getModifiedDate()));
