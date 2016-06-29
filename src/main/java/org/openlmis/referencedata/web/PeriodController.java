@@ -21,57 +21,58 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 
 @RepositoryRestController
-public class PeriodController
-{
-    private Logger logger = LoggerFactory.getLogger(PeriodController.class);
+public class PeriodController {
+  private Logger logger = LoggerFactory.getLogger(PeriodController.class);
 
-    @Autowired @Qualifier("beforeSavePeriodValidator")
-    PeriodValidator validator;
+  @Autowired @Qualifier("beforeSavePeriodValidator")
+  PeriodValidator validator;
 
-    @Autowired
-    PeriodRepository periodRepository;
+  @Autowired
+  PeriodRepository periodRepository;
 
-    @Autowired
-    private ExposedMessageSource messageSource;
+  @Autowired
+  private ExposedMessageSource messageSource;
 
-    @RequestMapping(value = "/periods", method = RequestMethod.POST)
-    public ResponseEntity<?> createPeriod(@RequestBody Period period, BindingResult bindingResult, SessionStatus status) {
-        if (period == null) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        } else {
-            logger.debug("Creating new period");
-            validator.validate(period, bindingResult);
-            if(bindingResult.getErrorCount() == 0) {
-                Period newPeriod = periodRepository.save(period);
-                return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
-            }
-            else {
-                return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
-            }
+  @RequestMapping(value = "/periods", method = RequestMethod.POST)
+  public ResponseEntity<?> createPeriod(@RequestBody Period period,
+                                        BindingResult bindingResult, SessionStatus status) {
+    if (period == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Creating new period");
+      validator.validate(period, bindingResult);
+      if (bindingResult.getErrorCount() == 0) {
+        Period newPeriod = periodRepository.save(period);
+        return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
+      } else {
+        return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      }
+    }
+  }
+
+  private Map<String, String> getPeriodErrors(final BindingResult bindingResult) {
+    return new HashMap<String, String>() {
+      {
+        for (FieldError error : bindingResult.getFieldErrors()) {
+          put(error.getField(), error.getDefaultMessage());
         }
-    }
+      }
+    };
+  }
 
-    private Map<String, String> getPeriodErrors(final BindingResult bindingResult) {
-        return new HashMap<String, String>() {{
-            for (FieldError error : bindingResult.getFieldErrors()) {
-                put(error.getField(), error.getDefaultMessage());
-            }
-        }};
-    }
+  @RequestMapping(value = "/periods/{id}/difference", method = RequestMethod.GET)
+  @ResponseBody
+  public String getTotalDifference(@PathVariable("id") UUID periodId) {
+    Period period = periodRepository.findOne(periodId);
 
-    @RequestMapping(value = "/periods/{id}/difference", method = RequestMethod.GET)
-    @ResponseBody
-    public String getTotalDifference(@PathVariable("id") UUID periodId){
-        Period period = periodRepository.findOne(periodId);
+    java.time.Period total = java.time.Period.between(period.getStartDate(), period.getEndDate());
+    String months = Integer.toString(total.getMonths());
+    String days = Integer.toString(total.getDays());
 
-        java.time.Period p = java.time.Period.between(period.getStartDate(), period.getEndDate());
-        String months = Integer.toString(p.getMonths());
-        String days = Integer.toString(p.getDays());
+    String[] msgArgs = {months, days};
+    logger.debug("Returning total days and months of schedule periods");
 
-        String[] msgArgs = {months, days};
-        logger.debug("Returning total days and months of schedule periods");
-
-        return messageSource.getMessage("requisition.message.totalPeriod", msgArgs, LocaleContextHolder
-                .getLocale());
-    }
+    return messageSource.getMessage("requisition.message.totalPeriod", msgArgs, LocaleContextHolder
+            .getLocale());
+  }
 }

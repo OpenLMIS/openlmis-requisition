@@ -16,29 +16,29 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Schedule extends BaseEntity {
 
-    @Column(nullable = false, unique = true, columnDefinition = "text")
-    @Getter
-    @Setter
-    private String code;
+  @Column(nullable = false, unique = true, columnDefinition = "text")
+  @Getter
+  @Setter
+  private String code;
 
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String description;
+  @Column(columnDefinition = "text")
+  @Getter
+  @Setter
+  private String description;
 
-    @Getter
-    @Setter
-    private LocalDateTime modifiedDate;
+  @Getter
+  @Setter
+  private LocalDateTime modifiedDate;
 
-    @Column(nullable = false, unique = true, columnDefinition = "text")
-    @Getter
-    @Setter
-    private String name;
+  @Column(nullable = false, unique = true, columnDefinition = "text")
+  @Getter
+  @Setter
+  private String name;
 
-    @PrePersist
-    @PreUpdate
-    private void setModifiedDate() {
-        this.modifiedDate = LocalDateTime.now();
-    }
+  @PrePersist
+  @PreUpdate
+  private void setModifiedDate() {
+    this.modifiedDate = LocalDateTime.now();
+  }
 
 }

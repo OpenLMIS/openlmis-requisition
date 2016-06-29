@@ -17,59 +17,59 @@ import org.springframework.web.bind.annotation.*;
 
 @RepositoryRestController
 public class ScheduleController {
-    private Logger logger = LoggerFactory.getLogger(ScheduleController.class);
+  private Logger logger = LoggerFactory.getLogger(ScheduleController.class);
 
-    @Autowired
-    private ScheduleRepository scheduleRepository;
+  @Autowired
+  private ScheduleRepository scheduleRepository;
 
-    @Autowired
-    private PeriodRepository periodRepository;
+  @Autowired
+  private PeriodRepository periodRepository;
 
-    @Autowired
-    private ExposedMessageSource messageSource;
+  @Autowired
+  private ExposedMessageSource messageSource;
 
-    @RequestMapping(value = "/schedules", method = RequestMethod.POST)
-    public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
-        if (schedule == null) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        } else {
-            logger.debug("Creating new schedule");
-            Schedule newSchedule = scheduleRepository.save(schedule);
-            return new ResponseEntity<Schedule>(newSchedule, HttpStatus.CREATED);
-        }
+  @RequestMapping(value = "/schedules", method = RequestMethod.POST)
+  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
+    if (schedule == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Creating new schedule");
+      Schedule newSchedule = scheduleRepository.save(schedule);
+      return new ResponseEntity<Schedule>(newSchedule, HttpStatus.CREATED);
     }
+  }
 
-    @RequestMapping(value = "/schedules/{id}/difference", method = RequestMethod.GET)
-    @ResponseBody
-    public String getTotalDifference(@PathVariable("id") UUID scheduleId){
-        Schedule schedule = scheduleRepository.findOne(scheduleId);
+  @RequestMapping(value = "/schedules/{id}/difference", method = RequestMethod.GET)
+  @ResponseBody
+  public String getTotalDifference(@PathVariable("id") UUID scheduleId) {
+    Schedule schedule = scheduleRepository.findOne(scheduleId);
 
-        Iterable<Period> allPeriods = periodRepository.findByProcessingSchedule(schedule);
-        if (allPeriods.equals(null)) {
-            Period firstPeriod = allPeriods.iterator().next();
-            Period lastPeriod = lastPeriod(allPeriods);
-            java.time.Period p = java.time.Period.between(firstPeriod.getStartDate(), lastPeriod.getEndDate());
-            String months = Integer.toString(p.getMonths());
-            String days = Integer.toString(p.getDays());
+    Iterable<Period> allPeriods = periodRepository.findByProcessingSchedule(schedule);
+    if (allPeriods.equals(null)) {
+      Period firstPeriod = allPeriods.iterator().next();
+      Period lastPeriod = lastPeriod(allPeriods);
+      java.time.Period total = java.time.Period.between(firstPeriod.getStartDate(),
+              lastPeriod.getEndDate());
+      String months = Integer.toString(total.getMonths());
+      String days = Integer.toString(total.getDays());
 
-            String[] msgArgs = {months, days};
-            logger.debug("Returning total days and months of schedule periods");
+      String[] msgArgs = {months, days};
+      logger.debug("Returning total days and months of schedule periods");
 
-            return messageSource.getMessage("requisition.message.totalPeriod", msgArgs, LocaleContextHolder
-                    .getLocale());
-        }
-        else {
-            String[] messageArgs = {"0","0"};
-            return messageSource.getMessage("requisition.message.totalPeriod", messageArgs, LocaleContextHolder
-                    .getLocale());
-        }
+      return messageSource.getMessage("requisition.message.totalPeriod", msgArgs,
+              LocaleContextHolder.getLocale());
+    } else {
+      String[] messageArgs = {"0","0"};
+      return messageSource.getMessage("requisition.message.totalPeriod", messageArgs,
+              LocaleContextHolder.getLocale());
     }
+  }
 
-    private Period lastPeriod(Iterable<Period> iterable) {
-        Period last = null;
-        for(Period p : iterable){
-            last = p;
-        }
-        return last;
+  private Period lastPeriod(Iterable<Period> iterable) {
+    Period last = null;
+    for (Period p : iterable) {
+      last = p;
     }
+    return last;
+  }
 }
