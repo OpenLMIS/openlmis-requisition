@@ -34,7 +34,7 @@ public class PeriodValidator implements Validator
 
         if (endDate.isAfter(startDate)){
             if(countSizeOfIterable(iterable) != 0) {
-                Period periodFromRepo = iterable.iterator().next();
+                Period periodFromRepo = lastPeriod(iterable);
                 LocalDate lastEndDate = periodFromRepo.getEndDate();
                 if (!startDate.equals(lastEndDate.plusDays(1))) {
                     e.rejectValue("startDate", "{gap.between.lastEndDate.and.startDate.validation.error}",
@@ -56,5 +56,13 @@ public class PeriodValidator implements Validator
             size++;
         }
         return size;
+    }
+
+    private Period lastPeriod(Iterable<Period> iterable) {
+        Period last = null;
+        for(Period p : iterable){
+            last = p;
+        }
+        return last;
     }
 }
