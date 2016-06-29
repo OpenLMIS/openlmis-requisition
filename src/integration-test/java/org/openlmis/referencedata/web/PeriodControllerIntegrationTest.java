@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Test;
 import org.openlmis.referencedata.Application;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 @SpringApplicationConfiguration(Application.class)
 @Transactional
 @WebIntegrationTest("server.port:8080")
-public class PeriodControllerIntegrationTest{
+public class PeriodControllerIntegrationTest {
 
   private static final String RESOURCE_URL = "http://localhost:8080/api/periods";
   private static final String SCHEDULE_URL = "http://localhost:8080/api/schedules";
@@ -37,7 +37,7 @@ public class PeriodControllerIntegrationTest{
   private Schedule schedule = new Schedule();
 
   @Before
-  public void setUp(){
+  public void setUp() {
     schedule.setCode("code");
     schedule.setName("schedule");
     schedule.setDescription("Test schedule");
@@ -52,10 +52,10 @@ public class PeriodControllerIntegrationTest{
   }
 
   @Test
-  public void testCreatePeriodsWithoutGap() throws JsonProcessingException{
-    RestTemplate restTemplate = new RestTemplate();
+  public void testCreatePeriodsWithoutGap() throws JsonProcessingException {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
+    RestTemplate restTemplate = new RestTemplate();
 
     ObjectMapper mapper = new ObjectMapper();
 
@@ -89,10 +89,10 @@ public class PeriodControllerIntegrationTest{
   }
 
   @Test(expected = HttpClientErrorException.class)
-  public void testCreatePeriodsWithAGap() throws JsonProcessingException{
-    RestTemplate restTemplate = new RestTemplate();
+  public void testCreatePeriodsWithAGap() throws JsonProcessingException {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
+    RestTemplate restTemplate = new RestTemplate();
 
     ObjectMapper mapper = new ObjectMapper();
 

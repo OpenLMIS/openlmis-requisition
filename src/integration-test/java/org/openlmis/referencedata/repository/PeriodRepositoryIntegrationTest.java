@@ -10,7 +10,7 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @SuppressWarnings("PMD.UnusedLocalVariable")
-public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period>{
+public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period> {
 
   @Autowired
   PeriodRepository periodRepository;
@@ -19,13 +19,13 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
   ScheduleRepository scheduleRepository;
 
   PeriodRepository getRepository() {
-        return this.periodRepository;
+    return this.periodRepository;
   }
 
   private Schedule schedule;
 
   @Before
-  public void setUp(){
+  public void setUp() {
     scheduleRepository.deleteAll();
     schedule = new Schedule();
     schedule.setCode("code");
@@ -34,7 +34,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     scheduleRepository.save(schedule);
   }
 
-  Period generateInstance(){
+  Period generateInstance() {
     int instanceNumber = this.getNextInstanceNumber();
     Period period = new Period();
     period.setName("period" + instanceNumber);
@@ -46,14 +46,14 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
   }
 
   @Test
-  public void testFindByProcessingSchedule(){
+  public void testFindByProcessingSchedule() {
     periodRepository.save(this.generateInstance());
     Iterable<Period> result = periodRepository.findByProcessingSchedule(this.schedule);
     Assert.assertEquals(1, countSizeOfIterable(result));
   }
 
   @Test
-  public void testPeriodEdit(){
+  public void testPeriodEdit() {
     Period periodFromRepo = this.generateInstance();
     periodFromRepo = periodRepository.save(periodFromRepo);
     UUID id = periodFromRepo.getId();
@@ -67,10 +67,10 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     Assert.assertEquals(description, periodFromRepo.getDescription());
   }
 
-  private int countSizeOfIterable(Iterable<Period> iterable){
+  private int countSizeOfIterable(Iterable<Period> iterable) {
     int size = 0;
-    for(Period p : iterable){
-       size++;
+    for (Period p : iterable) {
+      size++;
     }
     return size;
   }
