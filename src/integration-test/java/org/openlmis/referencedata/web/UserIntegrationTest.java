@@ -1,4 +1,4 @@
-package org.openlmis.referencedata;
+package org.openlmis.referencedata.web;
 
 import com.jayway.restassured.RestAssured;
 import guru.nidi.ramltester.RamlDefinition;
@@ -37,12 +37,8 @@ import static org.junit.Assert.assertThat;
 @WebIntegrationTest("server.port:8080")
 public class UserIntegrationTest
 {
-  private static final String BASE_URL = "http://192.168.99.100:8080";
+  private static final String BASE_URL = "http://localhost:8080";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
-
-  @Before
-  public void setUp()
-  { }
 
   @Test
   public void testCreate() {
