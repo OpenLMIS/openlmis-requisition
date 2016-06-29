@@ -67,7 +67,7 @@ public class PeriodController {
 
     java.time.Period total = java.time.Period.between(period.getStartDate(), period.getEndDate());
     String months = Integer.toString(total.getMonths());
-    String days = Integer.toString(total.getDays());
+    String days = Integer.toString(total.getDays() +1);
 
     String[] msgArgs = {months, days};
     logger.debug("Returning total days and months of schedule periods");

@@ -45,7 +45,7 @@ public class ScheduleController {
     Schedule schedule = scheduleRepository.findOne(scheduleId);
 
     Iterable<Period> allPeriods = periodRepository.findByProcessingSchedule(schedule);
-    if (allPeriods.equals(null)) {
+    if (!allPeriods.equals(null)) {
       Period firstPeriod = allPeriods.iterator().next();
       Period lastPeriod = lastPeriod(allPeriods);
       java.time.Period total = java.time.Period.between(firstPeriod.getStartDate(),

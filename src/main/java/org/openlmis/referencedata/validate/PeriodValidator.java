@@ -10,7 +10,6 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
-@SuppressWarnings("PMD.UnusedLocalVariable")
 public class PeriodValidator implements Validator {
   @Autowired
   PeriodRepository periodRepository;
@@ -33,7 +32,7 @@ public class PeriodValidator implements Validator {
     LocalDate endDate = period.getEndDate();
 
     if (endDate.isAfter(startDate)) {
-      if (countSizeOfIterable(iterable) != 0) {
+      if (iterable.iterator().hasNext()) {
         Period periodFromRepo = lastPeriod(iterable);
         LocalDate lastEndDate = periodFromRepo.getEndDate();
         if (!startDate.equals(lastEndDate.plusDays(1))) {
@@ -47,14 +46,6 @@ public class PeriodValidator implements Validator {
       err.rejectValue("endDate", "{startDate.after.endDate.validation.error}",
               "End date should be after start date");
     }
-  }
-
-  private int countSizeOfIterable(Iterable<Period> iterable) {
-    int size = 0;
-    for (Period p : iterable) {
-      size++;
-    }
-    return size;
   }
 
   private Period lastPeriod(Iterable<Period> iterable) {
