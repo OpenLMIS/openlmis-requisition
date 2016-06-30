@@ -20,7 +20,7 @@ public class RequisitionTemplateController {
     private RequisitionTemplateRepository requisitionTemplateRepository;
 
     /**
-     * Allows creating new programs.
+     * Allows creating new requisition templates.
      *
      * @param requisitionTemplate A requisition template bound to the request body
      * @return ResponseEntity containing the created program
