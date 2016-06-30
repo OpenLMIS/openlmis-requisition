@@ -1,13 +1,15 @@
 package org.openlmis.referencedata.repository;
 
-import java.time.LocalDate;
-import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.UnusedLocalVariable")
 public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period> {

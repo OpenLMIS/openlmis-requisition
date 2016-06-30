@@ -14,40 +14,40 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @RepositoryRestController
 public class RequisitionTemplateController {
-    private Logger logger = LoggerFactory.getLogger(RequisitionTemplateController.class);
+  private Logger logger = LoggerFactory.getLogger(RequisitionTemplateController.class);
 
-    @Autowired
-    private RequisitionTemplateRepository requisitionTemplateRepository;
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
-    /**
-     * Allows creating new requisition templates.
-     *
-     * @param requisitionTemplate A requisition template bound to the request body
-     * @return ResponseEntity containing the created program
-     */
-    @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
-    public ResponseEntity<?> createRequisitionTemplate(
-            @RequestBody RequisitionTemplate requisitionTemplate) {
-        if (requisitionTemplate == null) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        } else {
-            logger.debug("Creating new requisitionTemplate");
-            // Ignore provided id
-            requisitionTemplate.setId(null);
+  /**
+   * Allows creating new requisition templates.
+   *
+   * @param requisitionTemplate A requisition template bound to the request body
+   * @return ResponseEntity containing the created program
+   */
+  @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
+  public ResponseEntity<?> createRequisitionTemplate(
+          @RequestBody RequisitionTemplate requisitionTemplate) {
+    if (requisitionTemplate == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Creating new requisitionTemplate");
+      // Ignore provided id
+      requisitionTemplate.setId(null);
 
-            Iterable<RequisitionTemplate> it = requisitionTemplateRepository.findAll();
+      Iterable<RequisitionTemplate> it = requisitionTemplateRepository.findAll();
 
-            for (RequisitionTemplate template : it) {
-                if (requisitionTemplate.getProgram().getId().equals(
-                        template.getProgram().getId())) {
-                    requisitionTemplateRepository.delete(template);
-                    break;
-                }
-            }
-            RequisitionTemplate newRequisitionTemplate =
-                    requisitionTemplateRepository.save(requisitionTemplate);
-            return new ResponseEntity<RequisitionTemplate>(
-                    newRequisitionTemplate, HttpStatus.CREATED);
+      for (RequisitionTemplate template : it) {
+        if (requisitionTemplate.getProgram().getId().equals(
+              template.getProgram().getId())) {
+          requisitionTemplateRepository.delete(template);
+          break;
         }
+      }
+      RequisitionTemplate newRequisitionTemplate =
+              requisitionTemplateRepository.save(requisitionTemplate);
+      return new ResponseEntity<RequisitionTemplate>(
+              newRequisitionTemplate, HttpStatus.CREATED);
     }
+  }
 }

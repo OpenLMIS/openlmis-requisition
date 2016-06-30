@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+/** Allow testing requisitionTemplateRepository. */
+
 @WebIntegrationTest("server.port:8080")
 public class RequisitionTemplateRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RequisitionTemplate> {
@@ -24,6 +26,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   private Program program;
   private static int programsCounter = 0;
 
+  /** Allow setup environment before test. */
   @Before
   public void setUp() throws JsonProcessingException {
     program = new Program();
