@@ -1,19 +1,19 @@
 package org.openlmis.referencedata.domain;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.OneToOne;
-import javax.persistence.JoinColumn;
-import javax.persistence.ElementCollection;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.Column;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 
 @Entity
 @Table(name = "requisitionTemplates")
@@ -21,7 +21,7 @@ import java.util.List;
 public class RequisitionTemplate extends BaseEntity {
 
   @OneToOne
-  @JoinColumn(name = "programid", nullable=false)
+  @JoinColumn(name = "programid", nullable = false)
   @Getter
   @Setter
   private Program program;
@@ -33,7 +33,7 @@ public class RequisitionTemplate extends BaseEntity {
   private Map<String,String> columnsMap = new HashMap<>();
 
   public RequisitionTemplate(List<? extends String> columns) {
-    if(columns != null) {
+    if (columns != null) {
       for (String column : columns) {
         columnsMap.put(column, column);
       }

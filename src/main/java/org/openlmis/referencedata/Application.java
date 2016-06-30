@@ -37,14 +37,12 @@ public class Application {
   }
 
   @Bean
-  public PeriodValidator beforeCreatePeriodValidator()
-  {
+  public PeriodValidator beforeCreatePeriodValidator() {
     return new PeriodValidator();
   }
 
   @Bean
-  public PeriodValidator beforeSavePeriodValidator()
-  {
+  public PeriodValidator beforeSavePeriodValidator() {
     return new PeriodValidator();
   }
 }
