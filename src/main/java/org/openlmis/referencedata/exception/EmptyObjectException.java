@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
-public class NullException extends Exception {
+public class EmptyObjectException extends Exception {
 
   private String errorMessage;
 }

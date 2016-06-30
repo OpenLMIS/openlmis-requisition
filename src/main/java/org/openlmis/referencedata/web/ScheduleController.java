@@ -2,7 +2,7 @@ package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.exception.NullException;
+import org.openlmis.referencedata.exception.EmptyObjectException;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -31,9 +31,9 @@ public class ScheduleController {
   private ExposedMessageSource messageSource;
 
   @RequestMapping(value = "/schedules", method = RequestMethod.POST)
-  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) throws NullException {
+  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) throws EmptyObjectException {
     if (schedule.getName() == null || schedule.getCode() == null) {
-      throw new NullException("Schedule's fields cannot be empty");
+      throw new EmptyObjectException("Schedule's fields cannot be empty");
     } else {
       logger.debug("Creating new schedule");
       Schedule newSchedule = scheduleRepository.save(schedule);

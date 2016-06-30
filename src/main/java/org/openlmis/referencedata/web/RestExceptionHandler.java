@@ -2,7 +2,7 @@ package org.openlmis.referencedata.web;
 
 
 import org.openlmis.referencedata.exception.ExceptionDetail;
-import org.openlmis.referencedata.exception.NullException;
+import org.openlmis.referencedata.exception.EmptyObjectException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -35,7 +35,7 @@ public class RestExceptionHandler {
     return new ResponseEntity<>(exceptionDetail, null, status);
   }
 
-  @ExceptionHandler(NullException.class)
+  @ExceptionHandler(EmptyObjectException.class)
   public ResponseEntity<ExceptionDetail> nullExceptionHandler(Exception ex, HttpServletRequest request) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     String title = "Resource Property Validation Failure";

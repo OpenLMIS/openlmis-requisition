@@ -1,7 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.exception.NullException;
+import org.openlmis.referencedata.exception.EmptyObjectException;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.validate.PeriodValidator;
@@ -37,10 +37,10 @@ public class PeriodController {
 
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
-                                        BindingResult bindingResult, SessionStatus status) throws NullException {
+                                        BindingResult bindingResult, SessionStatus status) throws EmptyObjectException {
     if (period.getName() == null || period.getStartDate() == null ||
           period.getEndDate() == null || period.getProcessingSchedule() == null ) {
-      throw new NullException("Period's fields cannot be empty");
+      throw new EmptyObjectException("Period's fields cannot be empty");
     } else {
       logger.debug("Creating new period");
       validator.validate(period, bindingResult);
