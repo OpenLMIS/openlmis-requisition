@@ -1,8 +1,8 @@
 package org.openlmis.referencedata.web;
 
-import java.util.UUID;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.exception.NullException;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -14,6 +14,8 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RepositoryRestController
 public class ScheduleController {
@@ -29,9 +31,9 @@ public class ScheduleController {
   private ExposedMessageSource messageSource;
 
   @RequestMapping(value = "/schedules", method = RequestMethod.POST)
-  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
-    if (schedule == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) throws NullException {
+    if (schedule.getName() == null || schedule.getCode() == null) {
+      throw new NullException("Schedule's fields cannot be empty");
     } else {
       logger.debug("Creating new schedule");
       Schedule newSchedule = scheduleRepository.save(schedule);

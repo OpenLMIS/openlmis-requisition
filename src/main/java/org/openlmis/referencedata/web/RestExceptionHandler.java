@@ -2,6 +2,7 @@ package org.openlmis.referencedata.web;
 
 
 import org.openlmis.referencedata.exception.ExceptionDetail;
+import org.openlmis.referencedata.exception.NullException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -23,7 +24,6 @@ public class RestExceptionHandler {
     return new ResponseEntity<>(exceptionDetail, null, status);
   }
 
-  //TODO: Determine why this ExceptionHandler isn't being used
   @ExceptionHandler(org.hibernate.exception.ConstraintViolationException.class)
   public ResponseEntity<?> handleConstraintViolationException2(
           org.hibernate.exception.ConstraintViolationException exception,
@@ -33,6 +33,14 @@ public class RestExceptionHandler {
     ExceptionDetail exceptionDetail = getExceptionDetail(exception, status, title);
 
     return new ResponseEntity<>(exceptionDetail, null, status);
+  }
+
+  @ExceptionHandler(NullException.class)
+  public ResponseEntity<ExceptionDetail> nullExceptionHandler(Exception ex, HttpServletRequest request) {
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    String title = "Resource Property Validation Failure";
+    ExceptionDetail exceptionDetail = getExceptionDetail(ex, status, title);
+    return new ResponseEntity<ExceptionDetail>(exceptionDetail, null, status);
   }
 
   private static ExceptionDetail getExceptionDetail(

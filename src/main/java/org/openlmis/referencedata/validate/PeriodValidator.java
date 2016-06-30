@@ -1,18 +1,17 @@
 package org.openlmis.referencedata.validate;
 
-import java.time.LocalDate;
-
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.repository.PeriodRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import java.time.LocalDate;
+
 public class PeriodValidator implements Validator {
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
 
   @Override
   public boolean supports(Class<?> clazz) {

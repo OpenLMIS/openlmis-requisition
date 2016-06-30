@@ -1,9 +1,7 @@
 package org.openlmis.referencedata.web;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.exception.NullException;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.validate.PeriodValidator;
@@ -20,24 +18,29 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 @RepositoryRestController
 public class PeriodController {
   private Logger logger = LoggerFactory.getLogger(PeriodController.class);
 
   @Autowired @Qualifier("beforeSavePeriodValidator")
-  PeriodValidator validator;
+  private PeriodValidator validator;
 
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
 
   @Autowired
   private ExposedMessageSource messageSource;
 
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
-                                        BindingResult bindingResult, SessionStatus status) {
-    if (period == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+                                        BindingResult bindingResult, SessionStatus status) throws NullException {
+    if (period.getName() == null || period.getStartDate() == null ||
+          period.getEndDate() == null || period.getProcessingSchedule() == null ) {
+      throw new NullException("Period's fields cannot be empty");
     } else {
       logger.debug("Creating new period");
       validator.validate(period, bindingResult);

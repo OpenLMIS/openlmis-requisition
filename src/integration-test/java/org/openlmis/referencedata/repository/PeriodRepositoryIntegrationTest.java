@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.repository;
 
 
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,14 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@SuppressWarnings("PMD.UnusedLocalVariable")
 public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period> {
 
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
 
   @Autowired
-  ScheduleRepository scheduleRepository;
+  private ScheduleRepository scheduleRepository;
 
   PeriodRepository getRepository() {
     return this.periodRepository;
@@ -51,7 +51,8 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
   public void testFindByProcessingSchedule() {
     periodRepository.save(this.generateInstance());
     Iterable<Period> result = periodRepository.findByProcessingSchedule(this.schedule);
-    Assert.assertEquals(1, countSizeOfIterable(result));
+    int size = Lists.newArrayList(result).size();
+    Assert.assertEquals(1, size);
   }
 
   @Test
@@ -67,13 +68,5 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     periodFromRepo.setEndDate(LocalDate.of(2016, 3, 2));
     periodRepository.save(periodFromRepo);
     Assert.assertEquals(description, periodFromRepo.getDescription());
-  }
-
-  private int countSizeOfIterable(Iterable<Period> iterable) {
-    int size = 0;
-    for (Period p : iterable) {
-      size++;
-    }
-    return size;
   }
 }
