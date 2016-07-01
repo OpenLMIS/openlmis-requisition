@@ -39,8 +39,6 @@ services:
       - '../logback.xml:/logback.xml'
   db:
     image: openlmis/postgres
-    ports:
-      - "5432"
     env_file: .env
   log:
     image: openlmis/rsyslog
