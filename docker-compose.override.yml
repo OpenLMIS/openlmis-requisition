@@ -8,6 +8,9 @@ services:
     volumes:
       - '.:/app'
       - 'gradlecache:/gradle'
+  db:
+    ports:
+      - "5432"
 volumes:
   gradlecache:
     external: false
