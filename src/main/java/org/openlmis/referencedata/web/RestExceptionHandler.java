@@ -15,7 +15,7 @@ import java.util.Date;
 public class RestExceptionHandler {
   
   @ExceptionHandler(EmptyObjectException.class)
-  public ResponseEntity<ExceptionDetail> nullExceptionHandler(Exception ex, HttpServletRequest request) {
+  public ResponseEntity<ExceptionDetail> emptyObjectExceptionHandler(RuntimeException ex, HttpServletRequest request) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     String title = "Resource Property Validation Failure";
     ExceptionDetail exceptionDetail = getExceptionDetail(ex, status, title);

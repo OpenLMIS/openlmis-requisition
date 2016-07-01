@@ -32,7 +32,7 @@ public class ScheduleController {
 
   @RequestMapping(value = "/schedules", method = RequestMethod.POST)
   public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) throws EmptyObjectException {
-    if (schedule.getName() == null || schedule.getCode() == null) {
+    if (schedule == null) {
       throw new EmptyObjectException("Schedule's fields cannot be empty");
     } else {
       logger.debug("Creating new schedule");
