@@ -13,28 +13,7 @@ import java.util.Date;
 
 @ControllerAdvice
 public class RestExceptionHandler {
-  @ExceptionHandler(javax.validation.ConstraintViolationException.class)
-  public ResponseEntity<?> handleConstraintViolationException(
-          javax.validation.ConstraintViolationException exception,
-          HttpServletRequest request) {
-    HttpStatus status = HttpStatus.BAD_REQUEST;
-    String title = "Resource Property Validation Failure";
-    ExceptionDetail exceptionDetail = getExceptionDetail(exception, status, title);
-
-    return new ResponseEntity<>(exceptionDetail, null, status);
-  }
-
-  @ExceptionHandler(org.hibernate.exception.ConstraintViolationException.class)
-  public ResponseEntity<?> handleConstraintViolationException2(
-          org.hibernate.exception.ConstraintViolationException exception,
-          HttpServletRequest request) {
-    HttpStatus status = HttpStatus.BAD_REQUEST;
-    String title = "Resource Property Validation Failure";
-    ExceptionDetail exceptionDetail = getExceptionDetail(exception, status, title);
-
-    return new ResponseEntity<>(exceptionDetail, null, status);
-  }
-
+  
   @ExceptionHandler(EmptyObjectException.class)
   public ResponseEntity<ExceptionDetail> nullExceptionHandler(Exception ex, HttpServletRequest request) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
