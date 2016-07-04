@@ -26,7 +26,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void setUp() throws JsonProcessingException {
     program = new Program();
     program.setCode(requisitionTemplateRepository + "" + (programsCounter++));
-
     programRepository.save(program);
   }
 
@@ -38,8 +37,5 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
-
   }
-
-
 }
