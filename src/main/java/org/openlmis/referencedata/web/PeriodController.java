@@ -37,9 +37,9 @@ public class PeriodController {
 
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
-                                        BindingResult bindingResult, SessionStatus status) throws EmptyObjectException {
+                                        BindingResult bindingResult, SessionStatus status) {
     if (period == null) {
-      throw new EmptyObjectException("Period's fields cannot be empty");
+      throw new EmptyObjectException("null.period.error");
     } else {
       logger.debug("Creating new period");
       validator.validate(period, bindingResult);
