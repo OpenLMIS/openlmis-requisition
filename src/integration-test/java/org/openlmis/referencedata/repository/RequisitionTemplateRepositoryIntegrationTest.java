@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Before;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.RequisitionTemplate;
@@ -23,7 +22,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   /** Allow setup environment before test. */
   @Before
-  public void setUp() throws JsonProcessingException {
+  public void setUp() {
     program = new Program();
     program.setCode(requisitionTemplateRepository + "" + (programsCounter++));
     programRepository.save(program);

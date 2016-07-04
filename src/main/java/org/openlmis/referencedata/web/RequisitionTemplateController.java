@@ -40,7 +40,7 @@ public class RequisitionTemplateController {
       if (it != null) {
         requisitionTemplateRepository.delete(it);
       }
-      
+
       RequisitionTemplate newRequisitionTemplate =
               requisitionTemplateRepository.save(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(
