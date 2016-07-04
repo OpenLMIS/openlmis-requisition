@@ -35,8 +35,4 @@ public class FacilityType extends BaseEntity {
   @Getter
   @Setter
   private Boolean active;
-
-  public FacilityType(String code) {
-    this.code = code;
-  }
 }
