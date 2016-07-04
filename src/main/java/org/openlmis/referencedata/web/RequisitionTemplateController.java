@@ -35,16 +35,12 @@ public class RequisitionTemplateController {
       // Ignore provided id
       requisitionTemplate.setId(null);
 
-      Iterable<RequisitionTemplate> it = requisitionTemplateRepository.findAll();
-
-      for (RequisitionTemplate template : it) {
-        if (requisitionTemplate.getProgram().getId().equals(
-              template.getProgram().getId())) {
-          requisitionTemplateRepository.delete(template);
-          logger.debug("Overwriting existing template");
-          break;
-        }
+      RequisitionTemplate it = requisitionTemplateRepository.findByProgram(
+              requisitionTemplate.getProgram());
+      if (it != null) {
+        requisitionTemplateRepository.delete(it);
       }
+      
       RequisitionTemplate newRequisitionTemplate =
               requisitionTemplateRepository.save(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(
