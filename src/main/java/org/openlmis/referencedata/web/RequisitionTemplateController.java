@@ -41,6 +41,7 @@ public class RequisitionTemplateController {
         if (requisitionTemplate.getProgram().getId().equals(
               template.getProgram().getId())) {
           requisitionTemplateRepository.delete(template);
+          logger.debug("Overwriting existing template");
           break;
         }
       }

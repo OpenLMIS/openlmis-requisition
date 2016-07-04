@@ -1,5 +1,9 @@
 package org.openlmis.referencedata.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +15,8 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 @Entity
-@Table(name = "requisitionTemplates")
+@Table(name = "requisition_templates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
@@ -32,6 +32,7 @@ public class RequisitionTemplate extends BaseEntity {
   // second String is temporary, needs to be replaced with RequisitionTemplateColumn
   private Map<String,String> columnsMap = new HashMap<>();
 
+  /** Allows creating RequisitionTemplate with pre existing columns. */
   public RequisitionTemplate(List<? extends String> columns) {
     if (columns != null) {
       for (String column : columns) {
