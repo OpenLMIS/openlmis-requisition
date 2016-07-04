@@ -1,7 +1,11 @@
 package org.openlmis.referencedata.repository;
 
+import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Program> {
 
@@ -15,6 +19,21 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
   Program generateInstance() {
     Program program = new Program();
     program.setCode(String.valueOf(this.getNextInstanceNumber()));
+    program.setSkippable(true);
     return program;
   }
+
+  @Test
+  public void testSkippableEdit(){
+    Program testProgram = this.generateInstance();
+    testProgram = repository.save(testProgram);
+    testProgram = repository.findOne(testProgram.getId());
+    assertTrue(testProgram.getSkippable());
+
+    testProgram.setSkippable(false);
+    testProgram = repository.save(testProgram);
+    testProgram = repository.findOne(testProgram.getId());
+    assertFalse(testProgram.getSkippable());
+  }
+
 }
