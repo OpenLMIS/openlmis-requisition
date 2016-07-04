@@ -30,4 +30,7 @@ public class Program extends BaseEntity {
   @Setter
   private Boolean active;
 
+  @Getter
+  @Setter
+  private Boolean skippable;
 }

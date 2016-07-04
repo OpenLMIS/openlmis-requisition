@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface RequisitionTemplateRepository
         extends ReferenceDataRepository<RequisitionTemplate, UUID> {
-    //Add custom RequisitionTemplate related members here. See UserRepository.java for examples.
+  //Add custom RequisitionTemplate related members here. See UserRepository.java for examples.
 }
