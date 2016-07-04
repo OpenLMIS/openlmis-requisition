@@ -31,9 +31,9 @@ public class ScheduleController {
   private ExposedMessageSource messageSource;
 
   @RequestMapping(value = "/schedules", method = RequestMethod.POST)
-  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) throws EmptyObjectException {
+  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
     if (schedule == null) {
-      throw new EmptyObjectException("Schedule's fields cannot be empty");
+      throw new EmptyObjectException("null.schedule.error");
     } else {
       logger.debug("Creating new schedule");
       Schedule newSchedule = scheduleRepository.save(schedule);
