@@ -1,12 +1,8 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +29,7 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
     testProgram = repository.save(testProgram);
     testProgram = repository.findOne(testProgram.getId());
     assertTrue(testProgram.getSkippable());
-    
+
     testProgram.setSkippable(false);
     testProgram = repository.save(testProgram);
     testProgram = repository.findOne(testProgram.getId());
