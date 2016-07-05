@@ -1,8 +1,8 @@
 package org.openlmis.referencedata.domain;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -29,15 +29,21 @@ public class RequisitionTemplate extends BaseEntity {
   @ElementCollection
   @MapKeyColumn(name = "key")
   @Column(name = "value")
-  // second String is temporary, needs to be replaced with RequisitionTemplateColumn
-  private Map<String,String> columnsMap = new HashMap<>();
+  @Getter
+  @Setter
+  private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
-  public RequisitionTemplate(List<? extends String> columns) {
-    if (columns != null) {
-      for (String column : columns) {
-        columnsMap.put(column, column);
-      }
+  public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet())
+    {
+      columnsMap.put(entry.getKey(), entry.getValue());
     }
+  }
+
+  public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
+    RequisitionTemplateColumn column= columnsMap.get(key);
+    column.setDisplayOrder(newDisplayOrder);
+    columnsMap.put(key, column);
   }
 
 }

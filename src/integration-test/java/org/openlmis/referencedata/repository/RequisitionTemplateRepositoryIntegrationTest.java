@@ -1,10 +1,14 @@
 package org.openlmis.referencedata.repository;
 
+import static org.junit.Assert.assertEquals;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.RequisitionTemplate;
+import org.openlmis.referencedata.domain.RequisitionTemplateColumn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -13,11 +17,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** Allow testing requisitionTemplateRepository. */
 
 @WebIntegrationTest("server.port:8080")
 public class RequisitionTemplateRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RequisitionTemplate> {
+
   @Autowired
   RequisitionTemplateRepository repository;
 
@@ -52,10 +60,31 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   @Override
   RequisitionTemplate generateInstance() {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(null);
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(new HashMap<String, RequisitionTemplateColumn>());
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
 
+  }
+
+  @Test
+  public void testChangeRequisitionTemplateColumnOrder() {
+    String columnKey = "columnKey";
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+    RequisitionTemplateColumn testColumn = new RequisitionTemplateColumn("name", "label", 1);
+    columns.put(columnKey, testColumn);
+
+    RequisitionTemplate requisitionTemplate = generateInstance();
+    requisitionTemplate.setColumnsMap(columns);
+    requisitionTemplate = repository.save(requisitionTemplate);
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
+    assertEquals(1, testColumn.getDisplayOrder());
+
+    requisitionTemplate.changeColumnDisplayOrder(columnKey, 2);
+    requisitionTemplate = repository.save(requisitionTemplate);
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
+    assertEquals(2, testColumn.getDisplayOrder());
   }
 
 
