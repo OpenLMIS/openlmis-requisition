@@ -13,6 +13,7 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Iterator;
 import java.math.BigDecimal;
 
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
@@ -123,8 +124,10 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   private int countSizeOfIterable(Iterable<Order> iterable) {
     int size = 0;
-    for (Order s : iterable) {
+    Iterator<Order> iterator = iterable.iterator();
+    while(iterator.hasNext()){
       size++;
+      iterator.next();
     }
     return size;
   }
