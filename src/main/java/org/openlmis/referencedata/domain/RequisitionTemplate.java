@@ -34,14 +34,13 @@ public class RequisitionTemplate extends BaseEntity {
   private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet())
-    {
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
       columnsMap.put(entry.getKey(), entry.getValue());
     }
   }
 
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
-    RequisitionTemplateColumn column= columnsMap.get(key);
+    RequisitionTemplateColumn column = columnsMap.get(key);
     column.setDisplayOrder(newDisplayOrder);
     columnsMap.put(key, column);
   }
