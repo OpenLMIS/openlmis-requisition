@@ -10,8 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class RequisitionTemplateColumn{
-
+public class RequisitionTemplateColumn {
     String name;
 
     String label;
@@ -23,5 +22,4 @@ public class RequisitionTemplateColumn{
         this.label = label;
         this.displayOrder = displayOrder;
     }
-
 }
