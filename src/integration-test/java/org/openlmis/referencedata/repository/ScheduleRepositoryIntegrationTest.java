@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.repository;
 
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
-@SuppressWarnings("PMD.UnusedLocalVariable")
 public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Schedule> {
 
   @Autowired
@@ -34,8 +34,8 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
   public void testGetAllSchedules() {
     repository.save(getExampleSchedule());
     Iterable<Schedule> result = repository.findAll();
-
-    Assert.assertEquals(2, countSizeOfIterable(result));
+    int size = Lists.newArrayList(result).size();
+    Assert.assertEquals(2, size);
   }
 
   @Test
@@ -61,13 +61,5 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
     schedule.setName("schedule#" + instanceNumber);
     schedule.setDescription("Test schedule");
     return schedule;
-  }
-
-  private int countSizeOfIterable(Iterable<Schedule> iterable) {
-    int size = 0;
-    for (Schedule s : iterable) {
-      size++;
-    }
-    return size;
   }
 }

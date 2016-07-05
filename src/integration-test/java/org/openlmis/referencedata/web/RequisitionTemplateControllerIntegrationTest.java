@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.web;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -12,7 +11,11 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.RequisitionTemplate;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -30,7 +33,7 @@ public class RequisitionTemplateControllerIntegrationTest {
 
   private String requisitionTemplateController = "RequisitionTemplateControllerIntegrationTest";
 
-  //** Prepare the rest environment. *//*
+  /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
     Program program = new Program();
@@ -65,8 +68,8 @@ public class RequisitionTemplateControllerIntegrationTest {
             RESOURCE_URL, entity, RequisitionTemplate.class);
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
 
-    RequisitionTemplate saverRequisitionTemplate = result.getBody();
+    RequisitionTemplate savedRequisitionTemplate = result.getBody();
 
-    Assert.assertNotNull(saverRequisitionTemplate.getId());
+    Assert.assertNotNull(savedRequisitionTemplate.getId());
   }
 }
