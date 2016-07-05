@@ -32,6 +32,7 @@ public class Requisition extends BaseEntity {
   private LocalDateTime createdDate;
 
   @OneToMany(mappedBy = "requisition")
+  @Column
   @Getter
   private Set<RequisitionLine> requisitionLines;
 

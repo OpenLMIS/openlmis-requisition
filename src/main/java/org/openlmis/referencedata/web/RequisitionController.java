@@ -18,7 +18,7 @@ public class RequisitionController {
   Logger logger = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
-  private RequisitionRepository repository;
+  RequisitionRepository requisitionRepository;
 
   /**
    * Submits earlier initiated requisition.
@@ -30,8 +30,8 @@ public class RequisitionController {
     } else {
       logger.debug("Submitting a requisition");
       requisition.setStatus(RequisitionStatus.SUBMITTED);
-      Requisition newRequisition = repository.save(requisition);
-      return new ResponseEntity<Requisition>(newRequisition, HttpStatus.CREATED);
+      Requisition newRequisition = requisitionRepository.save(requisition);
+      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
     }
   }
 }

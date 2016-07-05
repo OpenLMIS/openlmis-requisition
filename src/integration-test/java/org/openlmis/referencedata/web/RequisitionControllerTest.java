@@ -14,6 +14,7 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Requisition;
+import org.openlmis.referencedata.domain.RequisitionStatus;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
@@ -29,18 +30,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
-@Transactional
 @WebIntegrationTest("server.port:8080")
 public class RequisitionControllerTest {
 
-  private static final String requisitionRepository = "RequisitionRepositoryIntegrationTest";
+  private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String RESOURCE_URL = "http://localhost:8080/api/requisitions/submit";
 
   @Autowired
@@ -56,7 +55,7 @@ public class RequisitionControllerTest {
   FacilityRepository facilityRepository;
 
   @Autowired
-  RequisitionRepository repository;
+  RequisitionRepository requisitionRepository;
 
   private Program program = new Program();
   private Period period = new Period();
@@ -64,36 +63,38 @@ public class RequisitionControllerTest {
   private Facility facility = new Facility();
   private Requisition requisition = new Requisition();
 
+  /**
+   * Prepare the test environment.
+   */
   @Before
   public void setUp() throws JsonProcessingException {
-
-    schedule.setCode(requisitionRepository);
-    schedule.setName(requisitionRepository);
+    schedule.setCode(requisitionRepositoryName);
+    schedule.setName(requisitionRepositoryName);
     scheduleRepository.save(schedule);
 
-    period.setName(requisitionRepository);
+    period.setName(requisitionRepositoryName);
     period.setProcessingSchedule(schedule);
-    period.setDescription(requisitionRepository);
+    period.setDescription(requisitionRepositoryName);
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
-    program.setCode(requisitionRepository);
+    program.setCode(requisitionRepositoryName);
     programRepository.save(program);
 
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(requisitionRepository);
+    facilityType.setCode(requisitionRepositoryName);
     facilityType.setActive(true);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode(requisitionRepository);
+    level.setCode(requisitionRepositoryName);
     level.setLevelNumber(1);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(requisitionRepository);
+    geographicZone.setCode(requisitionRepositoryName);
     geographicZone.setLevel(level);
 
-    facility.setCode(requisitionRepository);
+    facility.setCode(requisitionRepositoryName);
     facility.setGeographicZone(geographicZone);
     facility.setType(facilityType);
     facility.setActive(true);
@@ -103,7 +104,7 @@ public class RequisitionControllerTest {
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
-    repository.save(requisition);
+    requisitionRepository.save(requisition);
   }
 
   @Test
@@ -111,14 +112,18 @@ public class RequisitionControllerTest {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    ObjectMapper mapper = new ObjectMapper();
 
+    ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(requisition);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);;
-    ResponseEntity<Requisition> result = restTemplate.postForEntity(RESOURCE_URL, entity, Requisition.class);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    ResponseEntity<Requisition> result = restTemplate.postForEntity(
+        RESOURCE_URL, entity, Requisition.class);
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
 
     Requisition savedRequisition = result.getBody();
     Assert.assertNotNull(savedRequisition.getId());
+    Assert.assertEquals(requisition.getId(), savedRequisition.getId());
+    Assert.assertEquals(RequisitionStatus.SUBMITTED, savedRequisition.getStatus());
   }
 }
