@@ -26,16 +26,18 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
   @RestResource(exported = false)
   void deleteAll();
 
-  Iterable<Order> findBySupplyingFacility(@Param("supplyingFacility") Facility supplyingFacility);
+  String supplyingFacilityString = "supplyingFacility";
 
-  Iterable<Order> findBySupplyingFacilityAndRequestingFacility(@Param("supplyingFacility") Facility supplyingFacility,
+  Iterable<Order> findBySupplyingFacility(@Param(supplyingFacilityString) Facility supplyingFacility);
+
+  Iterable<Order> findBySupplyingFacilityAndRequestingFacility(@Param(supplyingFacilityString) Facility supplyingFacility,
                                                     @Param("requestingFacility") Facility requestingFacility);
 
-  Iterable<Order> findBySupplyingFacilityAndProgram(@Param("supplyingFacility") Facility supplyingFacility,
+  Iterable<Order> findBySupplyingFacilityAndProgram(@Param(supplyingFacilityString) Facility supplyingFacility,
                                                     @Param("program") Program program);
 
   Iterable<Order> findBySupplyingFacilityAndRequestingFacilityAndProgram(
-          @Param("supplyingFacility") Facility supplyingFacility,
+          @Param(supplyingFacilityString) Facility supplyingFacility,
           @Param("requestingFacility") Facility requestingFacility,
           @Param("program") Program program);
 }
