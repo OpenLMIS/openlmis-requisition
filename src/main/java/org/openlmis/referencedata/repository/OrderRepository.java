@@ -1,7 +1,10 @@
 package org.openlmis.referencedata.repository;
 
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Order;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;
@@ -22,4 +25,17 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
   @Override
   @RestResource(exported = false)
   void deleteAll();
+
+  Iterable<Order> findBySupplyingFacility(@Param("supplyingFacility") Facility supplyingFacility);
+
+  Iterable<Order> findBySupplyingFacilityAndRequestingFacility(@Param("supplyingFacility") Facility supplyingFacility,
+                                                    @Param("requestingFacility") Facility requestingFacility);
+
+  Iterable<Order> findBySupplyingFacilityAndProgram(@Param("supplyingFacility") Facility supplyingFacility,
+                                                    @Param("program") Program program);
+
+  Iterable<Order> findBySupplyingFacilityAndRequestingFacilityAndProgram(
+          @Param("supplyingFacility") Facility supplyingFacility,
+          @Param("requestingFacility") Facility requestingFacility,
+          @Param("program") Program program);
 }

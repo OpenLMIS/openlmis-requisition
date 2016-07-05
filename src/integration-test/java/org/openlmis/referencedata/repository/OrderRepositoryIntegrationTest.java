@@ -1,6 +1,8 @@
 package org.openlmis.referencedata.repository;
 
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -85,5 +87,45 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setReceivingFacility(facility);
     order.setSupplyingFacility(facility);
     return order;
+  }
+
+  @Test
+  public void testFindBySupplyingFacility(){
+    repository.save(generateInstance());
+    Iterable<Order> result = repository.findBySupplyingFacility(facility);
+
+    Assert.assertEquals(1, countSizeOfIterable(result));
+  }
+
+  @Test
+  public void testFindBySupplyingFacilityAndRequestingFacility(){
+    repository.save(generateInstance());
+    Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(facility,facility);
+
+    Assert.assertEquals(1, countSizeOfIterable(result));
+  }
+
+  @Test
+  public void testFindBySupplyingFacilityAndProgram(){
+    repository.save(generateInstance());
+    Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(facility,program);
+
+    Assert.assertEquals(1, countSizeOfIterable(result));
+  }
+
+  @Test
+  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram(){
+    repository.save(generateInstance());
+    Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(facility,facility,program);
+
+    Assert.assertEquals(1, countSizeOfIterable(result));
+  }
+
+  private int countSizeOfIterable(Iterable<Order> iterable) {
+    int size = 0;
+    for (Order s : iterable) {
+      size++;
+    }
+    return size;
   }
 }
