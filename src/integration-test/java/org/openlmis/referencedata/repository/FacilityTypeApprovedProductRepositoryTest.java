@@ -12,7 +12,7 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProgramProduct;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositoryIntegrationTest<FacilityTypeApprovedProduct>{
+public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositoryIntegrationTest<FacilityTypeApprovedProduct> {
 
   @Autowired
   private FacilityTypeApprovedProductRepository ftapRepository;
@@ -99,7 +99,7 @@ public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositor
   }
 
   @Test
-  public void testEditExistingProducts(){
+  public void testEditExistingProducts() {
     ftapRepository.save(this.generateInstance());
     Iterable<FacilityTypeApprovedProduct> all = ftapRepository.findAll();
     FacilityTypeApprovedProduct ftap = all.iterator().next();

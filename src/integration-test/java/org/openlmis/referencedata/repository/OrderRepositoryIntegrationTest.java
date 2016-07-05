@@ -90,7 +90,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacility(){
+  public void testFindBySupplyingFacility() {
     repository.save(generateInstance());
     Iterable<Order> result = repository.findBySupplyingFacility(facility);
 
@@ -98,7 +98,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndRequestingFacility(){
+  public void testFindBySupplyingFacilityAndRequestingFacility() {
     repository.save(generateInstance());
     Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(facility,facility);
 
@@ -106,7 +106,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndProgram(){
+  public void testFindBySupplyingFacilityAndProgram() {
     repository.save(generateInstance());
     Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(facility,program);
 
@@ -114,7 +114,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram(){
+  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     repository.save(generateInstance());
     Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(facility,facility,program);
 
