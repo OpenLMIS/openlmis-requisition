@@ -6,12 +6,17 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.*;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.FacilityType;
+import org.openlmis.referencedata.domain.GeographicLevel;
+import org.openlmis.referencedata.domain.GeographicZone;
+import org.openlmis.referencedata.domain.Program;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CSVGeneratorTest {
+public class CsvGeneratorTest {
 
   private Facility facility = new Facility();
   private Program program = new Program();
@@ -30,6 +35,7 @@ public class CSVGeneratorTest {
     return order;
   }
 
+  /**Set up test.*/
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
@@ -60,15 +66,14 @@ public class CSVGeneratorTest {
   }
 
   @Test
-  public void testCSVWrite() {
-    CsvGenerator generator = new CsvGenerator();
-    Order testOrder = generateInstance();
-
+  public void testCsvWrite() {
     List<String> headlines = new ArrayList<String>();
     headlines.add("U");
     headlines.add("O");
     headlines.add("Q");
     headlines.add("F");
+
+    Order testOrder = generateInstance();
 
     List<String> fields = new ArrayList<String>();
     fields.add(testOrder.getCreatedBy().getUsername());
@@ -76,6 +81,7 @@ public class CSVGeneratorTest {
     fields.add(testOrder.getQuotedCost().toString());
     fields.add(testOrder.getReceivingFacility().getName());
 
+    CsvGenerator generator = new CsvGenerator();
     String tmp = generator.appendHeadlines(headlines);
     String csv = generator.appendRecord(fields, tmp);
 
