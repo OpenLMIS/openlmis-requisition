@@ -1,0 +1,38 @@
+#%RAML 0.8
+title: Product Order
+version: "1.0.0"
+baseUri: "https://localhost:443/api"
+schemas: 
+    - 
+        GlobalProduct: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GlobalProduct","properties":{"uuid":{"type":"string","required":true,"title":"uuid"},"shortName":{"type":"string","required":true,"title":"shortName"},"longName":{"type":"string","required":false,"title":"longName"},"description":{"type":"string","required":false,"title":"description"},"unit":{"type":"string","required":true,"title":"unit"},"defaultPackSize":{"type":"integer","required":true,"title":"defaultPackSize"}}}'
+    - 
+        Order: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Order","properties":{"requisitionUUID":{"type":"string","required":true,"title":"requisitionUUID"},"requestingLogisticsLocationUUID":{"type":"string","required":true,"title":"requestingLogisticsLocationUUID"},"receivingLogisticsLocationUUID":{"type":"string","required":false,"title":"receivingLogisticsLocationUUID"},"orderNumber":{"type":"string","required":false,"title":"orderNumber"},"quotedCost":{"type":"number","required":false,"title":"quotedCost"},"lineItems":{"type":"array","required":true,"title":"lineItems","items":{"type":"object","$ref":"#/schemas/OrderLineItem"},"uniqueItems":false}}}'
+    - 
+        OrderLineItem: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"OrderLineItem","properties":{"uuid":{"type":"string","required":true,"title":"uuid"},"globalProductUUID":{"type":"string","required":false,"title":"globalProductUUID"},"tradeItemUUID":{"type":"string","required":false,"title":"tradeItemUUID"},"quantity":{"type":"integer","required":true,"title":"quantity"}}}'
+    - 
+        TradeItem: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"TradeItem","properties":{"uuid":{"type":"string","required":true,"title":"uuid"},"globalProductUUID":{"type":"string","required":false,"title":"globalProductUUID"},"shortName":{"type":"string","required":true,"title":"shortName"},"longName":{"type":"string","required":false,"title":"longName"},"description":{"type":"string","required":false,"title":"description"},"unit":{"type":"string","required":true,"title":"unit"},"gtin":{"type":"string","required":false,"title":"gtin"},"packSize":{"type":"integer","required":true,"title":"packSize"}}}'
+/logisticsLocations/{locationId}/orders: 
+    displayName: Endpoint dealing with orders
+    uriParameters: 
+        locationId: 
+            displayName: locationId
+            description: Location of fulfiller
+            type: string
+            required: false
+            repeat: false
+    post: 
+        description: Multiple orders may be created
+        displayName: Create orders
+        body: 
+            application/json: 
+                schema: Order
+                example: '[{"requisitionUUID":"sample requisitionUUID","requestingLogisticsLocationUUID":"sample requestingLogisticsLocationUUID","receivingLogisticsLocationUUID":"sample receivingLogisticsLocationUUID","orderNumber":"sample orderNumber","quotedCost":1.1,"lineItems":[]}]'
+        responses: 
+            "201": 
+                description: Assumption that the create is synchronous. If not, a 202 should be returned instead with current status, a place to monitor status and/or estimate of when it should be finished.
+            "400": 
+                description: The orders to create were malformed
+            "401": 
+                description: Missing or invalid authentication token
+            "403": 
+                description: User does not have permissions to create these orders
