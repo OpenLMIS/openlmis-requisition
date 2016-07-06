@@ -7,8 +7,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.RequisitionTemplate;
-import org.openlmis.referencedata.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;

@@ -1,6 +1,6 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.requisition.repository;
 
-import org.openlmis.referencedata.domain.Requisition;
+import org.openlmis.requisition.domain.Requisition;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;

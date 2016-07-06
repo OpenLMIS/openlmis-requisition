@@ -1,4 +1,4 @@
-package org.openlmis.referencedata;
+package org.openlmis;
 
 
 import org.springframework.beans.factory.ListableBeanFactory;

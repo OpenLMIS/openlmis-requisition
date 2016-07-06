@@ -9,6 +9,8 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
 
 @Entity
 @Table(name = "program_products")

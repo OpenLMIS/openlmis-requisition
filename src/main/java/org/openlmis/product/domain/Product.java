@@ -1,8 +1,9 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.product.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.domain.BaseEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

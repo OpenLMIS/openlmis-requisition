@@ -1,8 +1,10 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.requisition.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Program;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -7,6 +7,10 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.domain.Period;
 
 import java.time.LocalDateTime;
 import java.util.Set;

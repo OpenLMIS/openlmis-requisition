@@ -1,8 +1,8 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.fulfillment.repository;
 
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Order;
+import org.openlmis.fulfillment.domain.Order;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;

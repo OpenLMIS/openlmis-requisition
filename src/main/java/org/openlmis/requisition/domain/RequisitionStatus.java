@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.requisition.domain;
 
 public enum RequisitionStatus {
   INITIATED,

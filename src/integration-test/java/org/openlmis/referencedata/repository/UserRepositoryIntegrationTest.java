@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.repository;
 
-import org.openlmis.referencedata.domain.User;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<User> {

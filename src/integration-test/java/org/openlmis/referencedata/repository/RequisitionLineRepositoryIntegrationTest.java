@@ -1,16 +1,19 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
+import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Product;
+import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Requisition;
-import org.openlmis.referencedata.domain.RequisitionLine;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
