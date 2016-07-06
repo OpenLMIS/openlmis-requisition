@@ -1,13 +1,18 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.hierarchyandsupervision.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Role;
 
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
@@ -48,4 +53,10 @@ public class User extends BaseEntity {
   @Getter
   @Setter
   private Boolean active;
+
+  @OneToMany
+  @JoinColumn(name = "roleid")
+  @Getter
+  @Setter
+  private List<Role> roles;
 }

@@ -15,7 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.support.SessionStatus;
 
 import java.util.HashMap;
@@ -37,9 +41,9 @@ public class PeriodController {
 
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
-                                        BindingResult bindingResult, SessionStatus status) throws EmptyObjectException {
+                                        BindingResult bindingResult, SessionStatus status) {
     if (period == null) {
-      throw new EmptyObjectException("Period's fields cannot be empty");
+      throw new EmptyObjectException("null.period.error");
     } else {
       logger.debug("Creating new period");
       validator.validate(period, bindingResult);
@@ -69,7 +73,7 @@ public class PeriodController {
 
     java.time.Period total = java.time.Period.between(period.getStartDate(), period.getEndDate());
     String months = Integer.toString(total.getMonths());
-    String days = Integer.toString(total.getDays() +1);
+    String days = Integer.toString(total.getDays() + 1);
 
     String[] msgArgs = {months, days};
     logger.debug("Returning total days and months of schedule periods");

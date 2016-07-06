@@ -1,6 +1,6 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.fulfillment.repository;
 
-import org.openlmis.referencedata.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLine;
 import org.springframework.data.repository.Repository;
 
 import java.util.UUID;

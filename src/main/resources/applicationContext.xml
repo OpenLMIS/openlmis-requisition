@@ -13,7 +13,7 @@
     <context:annotation-config/>
     <context:spring-configured/>
 
-    <context:component-scan base-package="org.openlmis.referencedata"/>
+    <context:component-scan base-package="org.openlmis"/>
 
     <bean id="localeResolver"
           class="org.springframework.web.servlet.i18n.SessionLocaleResolver">

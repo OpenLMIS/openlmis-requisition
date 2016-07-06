@@ -1,5 +1,7 @@
 package org.openlmis.referencedata.validate;
 
+import com.google.common.collect.Lists;
+
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +50,12 @@ public class PeriodValidator implements Validator {
   }
 
   private Period lastPeriod(Iterable<Period> iterable) {
-    Period last = null;
+    int size = Lists.newArrayList(iterable).size();
+    Period last = Lists.newArrayList(iterable).get(size - 1);
     for (Period p : iterable) {
-      last = p;
+      if (p.getEndDate().isAfter(last.getEndDate())) {
+        last = p;
+      }
     }
     return last;
   }

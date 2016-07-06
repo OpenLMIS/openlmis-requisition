@@ -1,7 +1,7 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.requisition.web;
 
-import org.openlmis.referencedata.domain.RequisitionTemplate;
-import org.openlmis.referencedata.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,16 +35,12 @@ public class RequisitionTemplateController {
       // Ignore provided id
       requisitionTemplate.setId(null);
 
-      Iterable<RequisitionTemplate> it = requisitionTemplateRepository.findAll();
-
-      for (RequisitionTemplate template : it) {
-        if (requisitionTemplate.getProgram().getId().equals(
-              template.getProgram().getId())) {
-          requisitionTemplateRepository.delete(template);
-          logger.debug("Overwriting existing template");
-          break;
-        }
+      RequisitionTemplate it = requisitionTemplateRepository.findByProgram(
+              requisitionTemplate.getProgram());
+      if (it != null) {
+        requisitionTemplateRepository.delete(it);
       }
+
       RequisitionTemplate newRequisitionTemplate =
               requisitionTemplateRepository.save(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(

@@ -1,11 +1,11 @@
 package org.openlmis.referencedata.repository;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Program> {
 

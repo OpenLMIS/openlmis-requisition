@@ -7,8 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.referencedata.domain.Right;
+import org.openlmis.referencedata.domain.Role;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -20,56 +20,74 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @Transactional
 @WebIntegrationTest("server.port:8080")
-public class RequisitionTemplateControllerIntegrationTest {
+public class RoleRightsControllerIntegrationTest {
 
-  private static final String RESOURCE_URL = "http://localhost:8080/api/requisitionTemplates";
-  private static final String RESOURCE_URL_PROGRAMS = "http://localhost:8080/api/programs";
+  private static final String RESOURCE_URL_ROLES = "http://localhost:8080/api/roles";
+  private static final String RESOURCE_URL_RIGHTS = "http://localhost:8080/api/rights";
 
-  private RequisitionTemplate requisitionTemplate;
+  private String roleRightsController = "RoleRightsControllerIntegrationTest";
 
-  private String requisitionTemplateController = "RequisitionTemplateControllerIntegrationTest";
+  private Right right;
+  private Role role;
+
+  private Right savedRight;
 
   /** Prepare the test environment. */
   @Before
-  public void setUp() throws JsonProcessingException {
-    Program program = new Program();
-    program.setCode(requisitionTemplateController);
-
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(program);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
-
-    ResponseEntity<Program> result = restTemplate.postForEntity(
-            RESOURCE_URL_PROGRAMS, entity, Program.class);
-
-    requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(result.getBody());
+  public void setUp() {
+    right = new Right();
+    right.setName(roleRightsController);
+    right.setRightType(roleRightsController);
+    role = new Role();
+    role.setName(roleRightsController);
   }
 
   @Test
-  public void testCreate() throws JsonProcessingException {
+  public void testCreateRight() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
     ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(requisitionTemplate);
+    String json = mapper.writeValueAsString(right);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    ResponseEntity<RequisitionTemplate> result = restTemplate.postForEntity(
-            RESOURCE_URL, entity, RequisitionTemplate.class);
+    ResponseEntity<Right> result = restTemplate.postForEntity(
+            RESOURCE_URL_RIGHTS, entity, Right.class);
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
 
-    RequisitionTemplate savedRequisitionTemplate = result.getBody();
+    savedRight = result.getBody();
 
-    Assert.assertNotNull(savedRequisitionTemplate.getId());
+    Assert.assertNotNull(savedRight.getId());
   }
+
+  @Test
+  public void testCreateRole() throws JsonProcessingException {
+    ArrayList<Right> rights = new ArrayList<>();
+    rights.add(savedRight);
+    role.setRights(rights);
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(role);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    ResponseEntity<Role> result = restTemplate.postForEntity(
+            RESOURCE_URL_ROLES, entity, Role.class);
+    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+
+    Role savedRole = result.getBody();
+
+    Assert.assertNotNull(savedRole.getId());
+  }
+
+
 }

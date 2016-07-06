@@ -1,8 +1,4 @@
-package org.openlmis.referencedata.domain;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package org.openlmis.fulfillment.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,6 +13,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.domain.Facility;
 
 @Entity
 @Table(name = "orders")
