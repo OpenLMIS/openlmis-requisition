@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.util;
+package org.openlmis.referencedata.utils;
 
 import lombok.Getter;
 import lombok.Setter;

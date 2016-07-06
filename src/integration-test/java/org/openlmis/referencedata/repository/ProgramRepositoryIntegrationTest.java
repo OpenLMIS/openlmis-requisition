@@ -24,7 +24,7 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
   }
 
   @Test
-  public void testSkippableEdit(){
+  public void testSkippableEdit() {
     Program testProgram = this.generateInstance();
     testProgram = repository.save(testProgram);
     testProgram = repository.findOne(testProgram.getId());
@@ -35,5 +35,4 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
     testProgram = repository.findOne(testProgram.getId());
     assertFalse(testProgram.getSkippable());
   }
-
 }
