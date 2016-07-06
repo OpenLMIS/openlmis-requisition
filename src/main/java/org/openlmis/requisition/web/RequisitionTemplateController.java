@@ -1,7 +1,7 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.requisition.web;
 
-import org.openlmis.referencedata.domain.RequisitionTemplate;
-import org.openlmis.referencedata.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,15 +1,15 @@
 package org.openlmis.referencedata.web;
 
-
-import org.openlmis.referencedata.exception.ExceptionDetail;
 import org.openlmis.referencedata.exception.EmptyObjectException;
+import org.openlmis.referencedata.exception.ExceptionDetail;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class RestExceptionHandler {

@@ -1,7 +1,8 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.requisition.repository;
 
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.referencedata.repository.ReferenceDataRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;

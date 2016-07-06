@@ -1,4 +1,4 @@
-package org.openlmis.referencedata;
+package org.openlmis;
 
 import org.openlmis.referencedata.i18n.ExposedMessageSourceImpl;
 import org.openlmis.referencedata.validate.PeriodValidator;

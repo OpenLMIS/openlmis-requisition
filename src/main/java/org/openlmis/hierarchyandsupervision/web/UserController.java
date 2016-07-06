@@ -1,7 +1,7 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.hierarchyandsupervision.web;
 
-import org.openlmis.referencedata.domain.User;
-import org.openlmis.referencedata.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

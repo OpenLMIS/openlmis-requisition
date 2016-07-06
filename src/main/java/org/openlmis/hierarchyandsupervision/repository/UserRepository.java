@@ -1,7 +1,8 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.hierarchyandsupervision.repository;
 
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.User;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.referencedata.repository.ReferenceDataRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 

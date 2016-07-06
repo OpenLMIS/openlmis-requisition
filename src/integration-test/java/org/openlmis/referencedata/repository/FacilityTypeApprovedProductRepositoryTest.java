@@ -3,10 +3,18 @@ package org.openlmis.referencedata.repository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.referencedata.domain.*;
+import org.openlmis.product.repository.ProductCategoryRepository;
+import org.openlmis.product.repository.ProductRepository;
+import org.openlmis.referencedata.domain.FacilityType;
+import org.openlmis.referencedata.domain.FacilityTypeApprovedProduct;
+import org.openlmis.referencedata.domain.Money;
+import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.domain.ProgramProduct;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositoryIntegrationTest<FacilityTypeApprovedProduct>{
+public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositoryIntegrationTest<FacilityTypeApprovedProduct> {
 
   @Autowired
   private FacilityTypeApprovedProductRepository ftapRepository;
@@ -93,7 +101,7 @@ public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositor
   }
 
   @Test
-  public void testEditExistingProducts(){
+  public void testEditExistingProducts() {
     ftapRepository.save(this.generateInstance());
     Iterable<FacilityTypeApprovedProduct> all = ftapRepository.findAll();
     FacilityTypeApprovedProduct ftap = all.iterator().next();

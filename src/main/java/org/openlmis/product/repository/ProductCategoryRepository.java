@@ -1,6 +1,6 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.product.repository;
 
-import org.openlmis.referencedata.domain.ProductCategory;
+import org.openlmis.product.domain.ProductCategory;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 

@@ -3,7 +3,7 @@ package org.openlmis.referencedata.repository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openlmis.referencedata.Application;
+import org.openlmis.Application;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.repository.CrudRepository;
