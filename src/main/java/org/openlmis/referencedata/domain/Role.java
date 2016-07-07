@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -29,8 +30,8 @@ public class Role extends BaseEntity {
   @Setter
   private String description;
 
-  @OneToMany
-  @JoinColumn(name = "rightid")
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "rightId")
   @Getter
   @Setter
   private List<Right> rights;

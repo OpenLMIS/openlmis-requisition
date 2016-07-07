@@ -15,9 +15,6 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
   @Autowired
   UserRepository repository;
 
-  @Autowired
-  RoleRightsRepository roleRightsRepository;
-
   UserRepository getRepository() {
     return this.repository;
   }
