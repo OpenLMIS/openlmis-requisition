@@ -46,6 +46,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   RequisitionTemplate generateInstance() {
+
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
             new HashMap<String, RequisitionTemplateColumn>());
 
@@ -72,6 +73,59 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(2, testColumn.getDisplayOrder());
+  }
+
+  @Test
+  public void testChangeRequisitionTemplateColumnOrderWithCanChangeOrderFalse() {
+    String column1Key = "columnKey";
+    String column2Key = "columnKey2";
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+    RequisitionTemplateColumn testColumn1 =
+            new RequisitionTemplateColumn("zxc", "sdf", 1, false, false, false);
+    RequisitionTemplateColumn testColumn2 =
+            new RequisitionTemplateColumn("hjk", "efd", 2, false, false, false);
+    columns.put(column1Key, testColumn1);
+    columns.put(column2Key, testColumn2);
+
+    RequisitionTemplate requisitionTemplate = generateInstance();
+    requisitionTemplate.setColumnsMap(columns);
+    requisitionTemplate = repository.save(requisitionTemplate);
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    testColumn1 = requisitionTemplate.getColumnsMap().get(column1Key);
+    requisitionTemplate.changeColumnDisplayOrder(column1Key,2);
+    assertEquals(1, testColumn1.getDisplayOrder());
+
+    testColumn2 = requisitionTemplate.getColumnsMap().get(column2Key);
+    requisitionTemplate.changeColumnDisplayOrder(column2Key,1);
+    assertEquals(2, testColumn2.getDisplayOrder());
+
+    testColumn1.setCanChangeOrder(true);
+    requisitionTemplate.changeColumnDisplayOrder(column1Key,2);
+    assertEquals(2, testColumn1.getDisplayOrder());
+  }
+
+  @Test
+  public void testChangeRequisitionTemplateDisplayStatus() {
+    String column1Key = "columnKey";
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+    RequisitionTemplateColumn testColumn1 =
+            new RequisitionTemplateColumn("abc", "def", 1, false, false, false);
+    columns.put(column1Key, testColumn1);
+
+    RequisitionTemplate requisitionTemplate = generateInstance();
+    requisitionTemplate.setColumnsMap(columns);
+    requisitionTemplate = repository.save(requisitionTemplate);
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    testColumn1 = requisitionTemplate.getColumnsMap().get(column1Key);
+
+    requisitionTemplate.changeColumnDisplay(column1Key, true);
+    assertEquals(false, testColumn1.getIsDisplayRequired());
+    assertEquals(true, testColumn1.getIsDisplayed());
+
+    testColumn1.setIsDisplayRequired(true);
+    requisitionTemplate.changeColumnDisplay(column1Key,false);
+    assertEquals(true, testColumn1.getIsDisplayRequired());
+    assertEquals(true, testColumn1.getIsDisplayed());
   }
 
 }

@@ -54,8 +54,24 @@ public class RequisitionTemplate extends BaseEntity {
    */
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
     RequisitionTemplateColumn column = columnsMap.get(key);
-    column.setDisplayOrder(newDisplayOrder);
-    columnsMap.put(key, column);
+    if (column.getCanChangeOrder()) {
+      column.setDisplayOrder(newDisplayOrder);
+      columnsMap.put(key, column);
+    }
   }
+
+  /**
+   *
+   * @param key Column key.
+   * @param display Should column be displayed.
+   */
+  public void changeColumnDisplay(String key, boolean display) {
+    RequisitionTemplateColumn column = columnsMap.get(key);
+    if (!column.getIsDisplayRequired()) {
+      column.setIsDisplayed(display);
+      columnsMap.put(key, column);
+    }
+  }
+
 
 }
