@@ -52,10 +52,13 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
     Role role = new Role();
     role.setName("Test");
     List<Role> roles = new ArrayList<Role>();
+    roles.add(role);
     user1.setRoles(roles);
+    user1 = repository.save(user1);
     User user2 = this.generateInstance();
     Assert.assertNotEquals(user1.getRoles(), user2.getRoles());
-    user2.setRoles(roles);
+    user2.setRoles(user1.getRoles());
+    user2 = repository.save(user2);
     Assert.assertEquals(user1.getRoles(), user2.getRoles());
   }
 }
