@@ -7,6 +7,8 @@ import org.openlmis.referencedata.domain.BaseEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -63,4 +65,10 @@ public class Product extends BaseEntity {
   @Getter
   @Setter
   private Boolean tracer;
+
+  @ManyToOne
+  @JoinColumn(name = "productCategoryId", nullable = false)
+  @Getter
+  @Setter
+  private ProductCategory productCategory;
 }

@@ -12,6 +12,8 @@ import org.openlmis.Application;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
@@ -104,6 +106,9 @@ public class RequisitionControllerIntegrationTest {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  ProductCategoryRepository productCategoryRepository;
+
   private Requisition requisition = new Requisition();
   private Requisition requisition2 = new Requisition();
   private Requisition requisition3 = new Requisition();
@@ -125,6 +130,12 @@ public class RequisitionControllerIntegrationTest {
     user.setLastName("User");
     userRepository.save(user);
 
+    ProductCategory productCategory1 = new ProductCategory();
+    productCategory1.setCode("PC1");
+    productCategory1.setName("PC1 name");
+    productCategory1.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory1);
+
     product.setCode(requisitionRepositoryName);
     product.setPrimaryName(requisitionRepositoryName);
     product.setDispensingUnit(requisitionRepositoryName);
@@ -135,6 +146,7 @@ public class RequisitionControllerIntegrationTest {
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
+    product.setProductCategory(productCategory1);
     productRepository.save(product);
 
     program.setCode(requisitionRepositoryName);
@@ -258,6 +270,7 @@ public class RequisitionControllerIntegrationTest {
     userRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
+    productCategoryRepository.deleteAll();
   }
 
   @Test

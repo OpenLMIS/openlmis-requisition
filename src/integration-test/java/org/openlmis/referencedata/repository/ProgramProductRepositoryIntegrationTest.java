@@ -1,10 +1,7 @@
 package org.openlmis.referencedata.repository;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -14,6 +11,8 @@ import org.openlmis.referencedata.domain.ProgramProduct;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Iterator;
+
+import static org.junit.Assert.assertEquals;
 
 public class ProgramProductRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<ProgramProduct> {
@@ -56,11 +55,13 @@ public class ProgramProductRepositoryIntegrationTest
     this.product.setActive(true);
     this.product.setFullSupply(true);
     this.product.setTracer(false);
-    productRepository.save( this.product);
     this.productCategory.setCode("code3");
     this.productCategory.setName("vaccine");
     this.productCategory.setDisplayOrder(1);
     productCategoryRepositoryRepository.save( this.productCategory);
+    this.product.setProductCategory(productCategory);
+    productRepository.save( this.product);
+
   }
 
   ProgramProduct generateInstance() {

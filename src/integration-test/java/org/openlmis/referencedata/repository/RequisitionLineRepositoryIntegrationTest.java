@@ -2,6 +2,8 @@ package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
 import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
@@ -55,12 +57,23 @@ public class RequisitionLineRepositoryIntegrationTest
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
+  @Autowired
+  ProductCategoryRepository productCategoryRepository;
+
   private Requisition requisition = new Requisition();
   private Product product = new Product();
 
   @Before
   public void setUp() {
     productRepository.deleteAll();
+    productCategoryRepository.deleteAll();
+
+    ProductCategory productCategory1 = new ProductCategory();
+    productCategory1.setCode("PC1");
+    productCategory1.setName("PC1 name");
+    productCategory1.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory1);
+
     product.setCode(requisitionLineRepository);
     product.setPrimaryName(requisitionLineRepository);
     product.setDispensingUnit(requisitionLineRepository);
@@ -71,6 +84,7 @@ public class RequisitionLineRepositoryIntegrationTest
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
+    product.setProductCategory(productCategory1);
     productRepository.save(product);
 
     programRepository.deleteAll();

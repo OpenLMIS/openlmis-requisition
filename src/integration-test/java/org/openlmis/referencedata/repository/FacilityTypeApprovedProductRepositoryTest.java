@@ -73,13 +73,14 @@ public class FacilityTypeApprovedProductRepositoryTest extends
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
-    productRepository.save(product);
     productCategoryRepository.deleteAll();
     productCategory = new ProductCategory();
     productCategory.setCode("productCategoryCode");
     productCategory.setName("productCategoryName");
     productCategory.setDisplayOrder(1);
     productCategoryRepository.save(productCategory);
+    product.setProductCategory(productCategory);
+    productRepository.save(product);
     programProductRepository.deleteAll();
     programProduct = new ProgramProduct();
     programProduct.setProgram(program);
