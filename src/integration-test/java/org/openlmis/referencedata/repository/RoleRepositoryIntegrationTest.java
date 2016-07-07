@@ -53,10 +53,13 @@ public class RoleRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
     Right right = new Right();
     right.setName("Test");
     List<Right> rights = new ArrayList<Right>();
+    rights.add(right);
     role1.setRights(rights);
+    role1 = repository.save(role1);
     Role role2 = this.generateInstance();
     Assert.assertNotEquals(role1.getRights(), role2.getRights());
-    role2.setRights(rights);
+    role2.setRights(role1.getRights());
+    role2 = repository.save(role2);
     Assert.assertEquals(role1.getRights(), role2.getRights());
   }
 }
