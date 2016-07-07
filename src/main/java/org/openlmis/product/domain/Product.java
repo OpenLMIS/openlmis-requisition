@@ -47,6 +47,11 @@ public class Product extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
+  private Integer maxMonthsStock;
+
+  @Column(nullable = false)
+  @Getter
+  @Setter
   private Boolean roundToZero;
 
   @Column(nullable = false)
