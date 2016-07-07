@@ -23,7 +23,7 @@ import javax.persistence.Table;
 public class RequisitionTemplate extends BaseEntity {
 
   @OneToOne
-  @JoinColumn(name = "programId", nullable = false)
+  @JoinColumn(name = "programId", nullable = false, unique = true)
   @Getter
   @Setter
   private Program program;
