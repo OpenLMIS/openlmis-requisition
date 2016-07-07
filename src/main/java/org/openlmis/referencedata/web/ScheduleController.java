@@ -1,8 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import com.google.common.collect.Lists;
+
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.exception.EmptyObjectException;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -11,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,17 +31,6 @@ public class ScheduleController {
 
   @Autowired
   private ExposedMessageSource messageSource;
-
-  @RequestMapping(value = "/schedules", method = RequestMethod.POST)
-  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
-    if (schedule == null) {
-      throw new EmptyObjectException("null.schedule.error");
-    } else {
-      logger.debug("Creating new schedule");
-      Schedule newSchedule = scheduleRepository.save(schedule);
-      return new ResponseEntity<Schedule>(newSchedule, HttpStatus.CREATED);
-    }
-  }
 
   @RequestMapping(value = "/schedules/{id}/difference", method = RequestMethod.GET)
   @ResponseBody
@@ -72,9 +59,12 @@ public class ScheduleController {
   }
 
   private Period lastPeriod(Iterable<Period> iterable) {
-    Period last = null;
+    int size = Lists.newArrayList(iterable).size();
+    Period last = Lists.newArrayList(iterable).get(size - 1);
     for (Period p : iterable) {
-      last = p;
+      if (p.getEndDate().isAfter(last.getEndDate())) {
+        last = p;
+      }
     }
     return last;
   }
