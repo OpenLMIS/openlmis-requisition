@@ -42,7 +42,7 @@ public class RequisitionController {
     } else {
       validator.validate(requisition, bindingResult);
 
-      if(bindingResult.getErrorCount() == 0) {
+      if (bindingResult.getErrorCount() == 0) {
         logger.debug("Submitting a requisition");
         requisition.setStatus(RequisitionStatus.SUBMITTED);
         Requisition newRequisition = requisitionRepository.save(requisition);

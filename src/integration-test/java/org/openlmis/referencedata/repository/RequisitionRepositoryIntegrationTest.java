@@ -7,8 +7,8 @@ import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 

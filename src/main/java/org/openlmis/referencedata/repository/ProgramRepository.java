@@ -14,5 +14,5 @@ public interface ProgramRepository extends ReferenceDataRepository<Program, UUID
 
   @Override
   @RestResource
-  <S extends Program> Iterable<S> save(Iterable<S> entities);
+  <S extends Program> Iterable<S> save (Iterable<S> entities);
 }
