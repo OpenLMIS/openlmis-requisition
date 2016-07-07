@@ -44,7 +44,6 @@ public class Product extends BaseEntity {
   @Setter
   private Integer packRoundingThreshold;
 
-  @Column(nullable = false)
   @Getter
   @Setter
   private Integer maxMonthsStock;
