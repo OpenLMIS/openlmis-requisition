@@ -35,16 +35,41 @@ public class RequisitionTemplate extends BaseEntity {
   @Setter
   private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
+  /**
+   *
+   * @param columns Columns to add to map.
+   */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
     for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
       columnsMap.put(entry.getKey(), entry.getValue());
     }
   }
 
+  /**
+   *
+   * @param key Column key.
+   * @param newDisplayOrder New display position for a column.
+   */
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
     RequisitionTemplateColumn column = columnsMap.get(key);
-    column.setDisplayOrder(newDisplayOrder);
-    columnsMap.put(key, column);
+    if (column.getCanChangeOrder()) {
+      column.setDisplayOrder(newDisplayOrder);
+      columnsMap.put(key, column);
+    }
   }
+
+  /**
+   *
+   * @param key Column key.
+   * @param display Should column be displayed.
+   */
+  public void changeColumnDisplay(String key, boolean display) {
+    RequisitionTemplateColumn column = columnsMap.get(key);
+    if (!column.getIsDisplayRequired()) {
+      column.setIsDisplayed(display);
+      columnsMap.put(key, column);
+    }
+  }
+
 
 }

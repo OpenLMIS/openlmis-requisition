@@ -3,21 +3,24 @@ package org.openlmis.referencedata.repository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.hierarchyandsupervision.domain.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.math.BigDecimal;
 import java.util.List;
 
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
@@ -38,13 +41,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     return this.repository;
   }
 
-  private String[] orderRepository = {
-          "OrderRepositoryIntegrationTest1",
-          "OrderRepositoryIntegrationTest2",
-          "OrderRepositoryIntegrationTest3",
-          "OrderRepositoryIntegrationTest4",
-          "OrderRepositoryIntegrationTest5"};
-
+  private String[] orderRepository = {"OrderRepositoryIntegrationTest1", "OrderRepositoryIntegrationTest2", "OrderRepositoryIntegrationTest3", "OrderRepositoryIntegrationTest4", "OrderRepositoryIntegrationTest5"};
   private List<Facility> testFacilities;
   private List<Program> testPrograms;
   private int testSetSize = 51;
@@ -116,14 +113,13 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacility(){
+  public void testFindBySupplyingFacility() {
     generateTestSet();
-    for ( int i = 0; i < orderRepository.length; i++) {
+    for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacility(testFacilities.get(i));
 
       Iterator iterator = result.iterator();
-      while(iterator.hasNext())
-      {
+      while (iterator.hasNext()) {
         Order order = (Order)iterator.next();
         Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
       }
@@ -131,15 +127,13 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndRequestingFacility(){
+  public void testFindBySupplyingFacilityAndRequestingFacility() {
     generateTestSet();
-    for ( int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result =
-              repository.findBySupplyingFacilityAndRequestingFacility(testFacilities.get(i), testFacilities.get(i));
+    for (int i = 0; i < orderRepository.length; i++) {
+      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(testFacilities.get(i), testFacilities.get(i));
 
       Iterator iterator = result.iterator();
-      while(iterator.hasNext())
-      {
+      while (iterator.hasNext()) {
         Order order = (Order)iterator.next();
         Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
         Assert.assertEquals(order.getRequestingFacility(), testFacilities.get(i));
@@ -148,15 +142,13 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndProgram(){
+  public void testFindBySupplyingFacilityAndProgram() {
     generateTestSet();
-    for ( int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result =
-              repository.findBySupplyingFacilityAndProgram(testFacilities.get(i), testPrograms.get(i));
+    for (int i = 0; i < orderRepository.length; i++) {
+      Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(testFacilities.get(i), testPrograms.get(i));
 
       Iterator iterator = result.iterator();
-      while(iterator.hasNext())
-      {
+      while (iterator.hasNext()) {
         Order order = (Order)iterator.next();
         Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
         Assert.assertEquals(order.getProgram(), testPrograms.get(i));
@@ -165,16 +157,13 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram(){
+  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     generateTestSet();
     for ( int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result =
-              repository.findBySupplyingFacilityAndRequestingFacilityAndProgram
-                      (testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
+      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
 
       Iterator iterator = result.iterator();
-      while(iterator.hasNext())
-      {
+      while (iterator.hasNext()) {
         Order order = (Order)iterator.next();
         Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
         Assert.assertEquals(order.getRequestingFacility(), testFacilities.get(i));
@@ -184,14 +173,12 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
 
-  private void generateTestSet()
-  {
-    for( int i = 0; i < testSetSize; i++)
-    {
+  private void generateTestSet() {
+    for (int i = 0; i < testSetSize; i++) {
       Order tmp = generateInstance();
-      tmp.setSupplyingFacility(testFacilities.get(i%orderRepository.length));
-      tmp.setRequestingFacility(testFacilities.get(i%orderRepository.length));
-      tmp.setProgram(testPrograms.get(i%orderRepository.length));
+      tmp.setSupplyingFacility(testFacilities.get(i % orderRepository.length));
+      tmp.setRequestingFacility(testFacilities.get(i % orderRepository.length));
+      tmp.setProgram(testPrograms.get(i % orderRepository.length));
       repository.save(tmp);
     }
   }
