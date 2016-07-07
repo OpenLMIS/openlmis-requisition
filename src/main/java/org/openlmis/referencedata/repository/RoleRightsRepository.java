@@ -1,11 +1,16 @@
 package org.openlmis.referencedata.repository;
 
 import org.openlmis.referencedata.domain.Role;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;
 
 public interface RoleRightsRepository extends ReferenceDataRepository<Role, UUID> {
-  //Accessible via http://127.0.0.1:8080/api/roles/search/findByName?name={name}
-  Role findByName(@Param("name") String name);
+  @Override
+  @RestResource
+  <S extends Role> S save(S entity);
+
+  @Override
+  @RestResource
+  <S extends Role> Iterable<S> save(Iterable<S> entities);
 }

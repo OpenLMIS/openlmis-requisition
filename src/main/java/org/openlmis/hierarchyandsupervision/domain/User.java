@@ -8,6 +8,7 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Role;
 
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -54,8 +55,8 @@ public class User extends BaseEntity {
   @Setter
   private Boolean active;
 
-  @OneToMany
-  @JoinColumn(name = "roleid")
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "roleId")
   @Getter
   @Setter
   private List<Role> roles;
