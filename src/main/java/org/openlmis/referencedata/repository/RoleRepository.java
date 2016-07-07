@@ -5,7 +5,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;
 
-public interface RoleRightsRepository extends ReferenceDataRepository<Role, UUID> {
+public interface RoleRepository extends ReferenceDataRepository<Role, UUID> {
   @Override
   @RestResource
   <S extends Role> S save(S entity);

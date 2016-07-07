@@ -30,18 +30,32 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
   }
 
   @Test
-  public void testRoleAssignment() {
+  public void testMultipleRoleAssignment() {
     User user = this.generateInstance();
     Role role = new Role();
-    role.setName("Test");
+    role.setName("Test1");
     user = repository.save(user);
-    user = repository.findOne(user.getId());
     List<Role> roles = new ArrayList<Role>();
+    roles.add(role);
+    role = new Role();
+    role.setName("Test2");
     roles.add(role);
     Assert.assertNotEquals(roles, user.getRoles());
     user.setRoles(roles);
     user = repository.save(user);
-    user = repository.findOne(user.getId());
     Assert.assertEquals(roles, user.getRoles());
+  }
+
+  @Test
+  public void testMultipleUsersRoleAssignment() {
+    User user1 = this.generateInstance();
+    Role role = new Role();
+    role.setName("Test");
+    List<Role> roles = new ArrayList<Role>();
+    user1.setRoles(roles);
+    User user2 = this.generateInstance();
+    Assert.assertNotEquals(user1.getRoles(), user2.getRoles());
+    user2.setRoles(roles);
+    Assert.assertEquals(user1.getRoles(), user2.getRoles());
   }
 }
