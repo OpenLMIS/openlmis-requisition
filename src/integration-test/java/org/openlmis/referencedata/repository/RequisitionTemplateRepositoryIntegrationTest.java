@@ -49,7 +49,12 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   @Override
   RequisitionTemplate generateInstance() {
+<<<<<<< HEAD
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(null);
+=======
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
+            new HashMap<String, RequisitionTemplateColumn>());
+>>>>>>> bfdbf05... OLMIS-386: Moved logic from controller to repository
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
 
