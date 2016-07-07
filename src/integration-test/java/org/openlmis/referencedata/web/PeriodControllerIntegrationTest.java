@@ -2,15 +2,15 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -19,18 +19,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
-@Transactional
 @WebIntegrationTest("server.port:8080")
 public class PeriodControllerIntegrationTest {
 
+  @Autowired
+  private ScheduleRepository scheduleRepository;
+
   private static final String RESOURCE_URL = "http://localhost:8080/api/periods";
-  private static final String SCHEDULE_URL = "http://localhost:8080/api/schedules";
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
@@ -41,6 +43,7 @@ public class PeriodControllerIntegrationTest {
     schedule.setCode("code");
     schedule.setName("schedule");
     schedule.setDescription("Test schedule");
+    scheduleRepository.save(schedule);
     firstPeriod.setName("period");
     firstPeriod.setDescription("Test period");
     firstPeriod.setStartDate(LocalDate.of(2016, 1, 1));
@@ -59,13 +62,6 @@ public class PeriodControllerIntegrationTest {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    String scheduleJson = mapper.writeValueAsString(schedule);
-    HttpEntity<String> scheduleEntity = new HttpEntity<>(scheduleJson, headers);
-
-    ResponseEntity<Schedule> scheduleResult = restTemplate.postForEntity(
-            SCHEDULE_URL, scheduleEntity, Schedule.class);
-
-    schedule.setId(scheduleResult.getBody().getId());
     firstPeriod.setProcessingSchedule(schedule);
 
     String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
@@ -98,14 +94,8 @@ public class PeriodControllerIntegrationTest {
 
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
+    scheduleRepository.save(schedule);
 
-    String scheduleJson = mapper.writeValueAsString(schedule);
-    HttpEntity<String> scheduleEntity = new HttpEntity<>(scheduleJson, headers);
-
-    ResponseEntity<Schedule> scheduleResult = restTemplate.postForEntity(
-            SCHEDULE_URL, scheduleEntity, Schedule.class);
-
-    schedule.setId(scheduleResult.getBody().getId());
     firstPeriod.setProcessingSchedule(schedule);
 
     String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
