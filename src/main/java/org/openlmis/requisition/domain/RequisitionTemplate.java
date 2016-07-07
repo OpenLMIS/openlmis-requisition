@@ -23,7 +23,7 @@ import javax.persistence.Table;
 public class RequisitionTemplate extends BaseEntity {
 
   @OneToOne
-  @JoinColumn(name = "programid", nullable = false)
+  @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
   private Program program;
@@ -35,12 +35,23 @@ public class RequisitionTemplate extends BaseEntity {
   @Setter
   private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
+  /**
+   * Allows creating requisition template with predefined columns.
+   *
+   * @param columns Columns to appear in requisition template
+   */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
     for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
       columnsMap.put(entry.getKey(), entry.getValue());
     }
   }
 
+  /**
+   * Allows changing the display order of columns.
+   *
+   * @param key Key to column which needs a new display order
+   * @param newDisplayOrder Number specifying new display order of extracted column
+   */
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setDisplayOrder(newDisplayOrder);

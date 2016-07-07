@@ -46,7 +46,9 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   RequisitionTemplate generateInstance() {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(new HashMap<String, RequisitionTemplateColumn>());
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
+            new HashMap<String, RequisitionTemplateColumn>());
+
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
   }
