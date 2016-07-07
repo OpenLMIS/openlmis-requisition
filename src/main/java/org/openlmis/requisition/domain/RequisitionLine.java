@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "requisition_lines")
@@ -19,6 +20,7 @@ public class RequisitionLine extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "requisitionId", nullable = false)
+  @JsonIgnore
   @Getter
   @Setter
   private Requisition requisition;
@@ -29,7 +31,7 @@ public class RequisitionLine extends BaseEntity {
   @Setter
   private Product product;
 
-  @Column(nullable = false)
+  @Column
   @Getter
   @Setter
   private Integer quantityRequested;

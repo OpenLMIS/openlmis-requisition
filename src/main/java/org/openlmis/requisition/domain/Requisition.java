@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -14,6 +15,8 @@ import org.openlmis.referencedata.domain.Period;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -38,6 +41,7 @@ public class Requisition extends BaseEntity {
   @OneToMany(mappedBy = "requisition")
   @Column
   @Getter
+  @Setter
   private Set<RequisitionLine> requisitionLines;
 
   @OneToOne

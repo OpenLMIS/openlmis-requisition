@@ -2,6 +2,7 @@ package org.openlmis;
 
 import org.openlmis.referencedata.i18n.ExposedMessageSourceImpl;
 import org.openlmis.referencedata.validate.PeriodValidator;
+import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -44,5 +45,10 @@ public class Application {
   @Bean
   public PeriodValidator beforeSavePeriodValidator() {
     return new PeriodValidator();
+  }
+
+  @Bean
+  public RequisitionValidator beforeSaveRequisitionValidator() {
+    return new RequisitionValidator();
   }
 }
