@@ -1,5 +1,7 @@
 package org.openlmis.requisition.web;
 
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -17,7 +19,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,6 +60,25 @@ public class RequisitionController {
         return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
       }
     }
+  }
+
+  @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
+  public ResponseEntity<?> searchRequisitions(
+      @RequestParam(value = "facility", required = false) Facility facility,
+      @RequestParam(value = "program", required = false) Program program,
+      @RequestParam(value = "createdDateFrom", required = false) LocalDateTime createdDateFrom,
+      @RequestParam(value = "createdDateTo", required = false) LocalDateTime createdDateTo) {
+    ArrayList<Requisition> result = new ArrayList<Requisition>();
+    Iterable<Requisition> requisitions = requisitionRepository.findAll();
+    for (Requisition r : requisitions) {
+      if ((facility == null || r.getFacility() == facility) &&
+          (program == null || r.getProgram() == program) &&
+          (createdDateFrom == null || r.getCreatedDate().isAfter(createdDateFrom)) &&
+          (createdDateTo == null || r.getCreatedDate().isBefore(createdDateTo))) {
+        result.add(r);
+      }
+    }
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   /**

@@ -28,8 +28,10 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -47,7 +50,8 @@ import java.util.Set;
 public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-  private static final String RESOURCE_URL = "http://localhost:8080/api/requisitions/submit";
+  private static final String SUBMIT_URL = "http://localhost:8080/api/requisitions/submit";
+  private static final String SEARCH_URL = "http://localhost:8080/api/requisitions/search";
   private static final String SKIP_URL = "http://localhost:8080/api/requisitions/skip";
 
 
@@ -74,6 +78,7 @@ public class RequisitionControllerIntegrationTest {
 
   private Requisition requisition = new Requisition();
   private Product product = new Product();
+  private Program program = new Program();
 
   /**
    * Prepare the test environment.
@@ -101,7 +106,6 @@ public class RequisitionControllerIntegrationTest {
     product.setTracer(false);
     productRepository.save(product);
 
-    Program program = new Program();
     program.setCode(requisitionRepositoryName);
     program.setSkippable(true);
     programRepository.save(program);
@@ -207,7 +211,7 @@ public class RequisitionControllerIntegrationTest {
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
     ResponseEntity<Requisition> result = restTemplate.postForEntity(
-        RESOURCE_URL, entity, Requisition.class);
+        SUBMIT_URL, entity, Requisition.class);
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
 
     Requisition savedRequisition = result.getBody();
@@ -216,4 +220,30 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(RequisitionStatus.SUBMITTED, savedRequisition.getStatus());
   }
 
+  @Test
+  public void testSearch() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL, HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(2, requisitions.size());
+  }
+
+  @Test
+  public void testSearchProgram() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, program.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
+
+    for (Requisition r : requisitions) {
+      Assert.assertEquals(program.getId(), r.getProgram().getId());
+    }
+  }
 }
