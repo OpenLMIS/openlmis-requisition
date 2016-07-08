@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.repository;
 
-import org.openlmis.referencedata.domain.Right;
+import org.openlmis.hierarchyandsupervision.domain.Right;
+import org.openlmis.hierarchyandsupervision.repository.RightRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class RightRepositoryIntegrationTest

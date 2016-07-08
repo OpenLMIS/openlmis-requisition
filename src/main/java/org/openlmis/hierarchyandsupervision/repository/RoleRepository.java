@@ -1,6 +1,7 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.hierarchyandsupervision.repository;
 
-import org.openlmis.referencedata.domain.Role;
+import org.openlmis.hierarchyandsupervision.domain.Role;
+import org.openlmis.referencedata.repository.ReferenceDataRepository;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;

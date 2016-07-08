@@ -1,21 +1,18 @@
-package org.openlmis.referencedata.domain;
-
+package org.openlmis.hierarchyandsupervision.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.domain.BaseEntity;
 
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "rights")
 @NoArgsConstructor
-public class Role extends BaseEntity {
+public class Right extends BaseEntity {
 
   public static final String TEXT = "text";
 
@@ -24,14 +21,13 @@ public class Role extends BaseEntity {
   @Setter
   private String name;
 
+  @Column(nullable = false, columnDefinition = TEXT)
+  @Getter
+  @Setter
+  private String rightType;
+
   @Column(columnDefinition = TEXT)
   @Getter
   @Setter
   private String description;
-
-  @OneToMany
-  @JoinColumn(name = "rightId")
-  @Getter
-  @Setter
-  private List<Right> rights;
 }
