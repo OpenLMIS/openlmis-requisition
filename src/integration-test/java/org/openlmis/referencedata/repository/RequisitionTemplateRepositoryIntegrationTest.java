@@ -128,4 +128,23 @@ public class RequisitionTemplateRepositoryIntegrationTest
     assertEquals(true, testColumn1.getIsDisplayed());
   }
 
+  @Test
+  public void testChangeRequisitionTemplateName() {
+    String column1Key = "columnKeyKey";
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+    RequisitionTemplateColumn testColumn1 =
+            new RequisitionTemplateColumn("name", "label", 1, false, false, false);
+    columns.put(column1Key, testColumn1);
+
+    RequisitionTemplate requisitionTemplate = generateInstance();
+    requisitionTemplate.setColumnsMap(columns);
+    requisitionTemplate = repository.save(requisitionTemplate);
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    testColumn1 = requisitionTemplate.getColumnsMap().get(column1Key);
+
+    requisitionTemplate.changeColumnName("columnKeyKey", "newName");
+    assertEquals(testColumn1.getName(),"newName");
+
+  }
+
 }

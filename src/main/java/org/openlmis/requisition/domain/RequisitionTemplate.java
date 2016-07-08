@@ -38,7 +38,7 @@ public class RequisitionTemplate extends BaseEntity {
   /**
    * Allows creating requisition template with predefined columns.
    *
-   * @param columns Columns to appear in requisition template
+   * @param columns Columns to appear in requisition template.
    */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
     for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
@@ -49,8 +49,8 @@ public class RequisitionTemplate extends BaseEntity {
   /**
    * Allows changing the display order of columns.
    *
-   * @param key Key to column which needs a new display order
-   * @param newDisplayOrder Number specifying new display order of extracted column
+   * @param key Key to column which needs a new display order.
+   * @param newDisplayOrder Number specifying new display order of extracted column.
    */
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
     RequisitionTemplateColumn column = columnsMap.get(key);
@@ -62,7 +62,7 @@ public class RequisitionTemplate extends BaseEntity {
 
   /**
    *
-   * @param key Column key.
+   * @param key Key to column which needs a new display property.
    * @param display Should column be displayed.
    */
   public void changeColumnDisplay(String key, boolean display) {
@@ -71,6 +71,17 @@ public class RequisitionTemplate extends BaseEntity {
       column.setIsDisplayed(display);
       columnsMap.put(key, column);
     }
+  }
+
+  /**
+   *
+   * @param key Key to column which needs a new name.
+   * @param name New name for column.
+   */
+  public void changeColumnName(String key, String name) {
+    RequisitionTemplateColumn column = columnsMap.get(key);
+    column.setName(name);
+    columnsMap.put(key, column);
   }
 
 }
