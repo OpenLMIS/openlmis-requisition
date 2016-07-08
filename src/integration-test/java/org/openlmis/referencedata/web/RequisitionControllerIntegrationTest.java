@@ -77,8 +77,14 @@ public class RequisitionControllerIntegrationTest {
   RequisitionRepository requisitionRepository;
 
   private Requisition requisition = new Requisition();
+  private Requisition requisition2 = new Requisition();
+  private Requisition requisition3 = new Requisition();
+  private Requisition requisition4 = new Requisition();
   private Product product = new Product();
   private Program program = new Program();
+  private Program program2 = new Program();
+  private Facility facility = new Facility();
+  private Facility facility2 = new Facility();
 
   /**
    * Prepare the test environment.
@@ -110,6 +116,10 @@ public class RequisitionControllerIntegrationTest {
     program.setSkippable(true);
     programRepository.save(program);
 
+    program2.setCode(requisitionRepositoryName + "2");
+    program2.setSkippable(true);
+    programRepository.save(program2);
+
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
     GeographicLevel level = new GeographicLevel();
@@ -119,13 +129,28 @@ public class RequisitionControllerIntegrationTest {
     geographicZone.setCode(requisitionRepositoryName);
     geographicZone.setLevel(level);
 
-    Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode(requisitionRepositoryName);
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
+
+    FacilityType facilityType2 = new FacilityType();
+    facilityType2.setCode(requisitionRepositoryName + "2");
+    GeographicLevel level2 = new GeographicLevel();
+    level2.setCode(requisitionRepositoryName + "2");
+    level2.setLevelNumber(1);
+    GeographicZone geographicZone2 = new GeographicZone();
+    geographicZone2.setCode(requisitionRepositoryName + "2");
+    geographicZone2.setLevel(level2);
+
+    facility2.setType(facilityType2);
+    facility2.setGeographicZone(geographicZone2);
+    facility2.setCode(requisitionRepositoryName + "2");
+    facility2.setActive(true);
+    facility2.setEnabled(true);
+    facilityRepository.save(facility2);
 
     Schedule schedule = new Schedule();
     schedule.setCode(requisitionRepositoryName);
@@ -157,6 +182,21 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
+
+    requisition2.setFacility(facility2);
+    requisition2.setProcessingPeriod(period);
+    requisition2.setProgram(program);
+    requisitionRepository.save(requisition2);
+
+    requisition3.setFacility(facility);
+    requisition3.setProcessingPeriod(period);
+    requisition3.setProgram(program2);
+    requisitionRepository.save(requisition3);
+
+    requisition4.setFacility(facility2);
+    requisition4.setProcessingPeriod(period);
+    requisition4.setProgram(program2);
+    requisitionRepository.save(requisition4);
   }
 
   @Test
@@ -228,7 +268,7 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
     List<Requisition> requisitions = result.getBody();
-    Assert.assertEquals(2, requisitions.size());
+    Assert.assertEquals(4, requisitions.size());
   }
 
   @Test
@@ -240,7 +280,7 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
     List<Requisition> requisitions = result.getBody();
-    Assert.assertEquals(1, requisitions.size());
+    Assert.assertEquals(2, requisitions.size());
 
     for (Requisition r : requisitions) {
       Assert.assertEquals(program.getId(), r.getProgram().getId());
