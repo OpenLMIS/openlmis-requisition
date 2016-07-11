@@ -21,7 +21,8 @@ import java.util.Map;
 public class RequisitionTemplateRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RequisitionTemplate> {
 
-  private static final String requisitionTemplateRepository = "RequisitionTemplateRepositoryIntegrationTest";
+  private static final String requisitionTemplateRepository =
+          "RequisitionTemplateRepositoryIntegrationTest";
   private static final String columnKey = "columnKey";
   private static final String source = "source";
 
