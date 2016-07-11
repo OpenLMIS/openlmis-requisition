@@ -29,6 +29,12 @@ public class RequisitionTemplateColumn {
 
   private String source; //todo change String to SourceType {User Input, Reference Data, Calculated}
 
+  /**
+   * Allows changing visibility of specific column.
+   * Modifies display order if column represents product code.
+   *
+   * @param isDisplayed Should the column be displayed.
+   */
   public void setIsDisplayed(boolean isDisplayed) {
     if (this.name.equals("productCode")) {
       this.displayOrder = 1;
