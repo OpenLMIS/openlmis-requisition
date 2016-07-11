@@ -1,7 +1,5 @@
 package org.openlmis.referencedata.validate;
 
-import com.google.common.collect.Lists;
-
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +32,7 @@ public class PeriodValidator implements Validator {
 
     if (endDate.isAfter(startDate)) {
       if (iterable.iterator().hasNext()) {
-        Period periodFromRepo = lastPeriod(iterable);
+        Period periodFromRepo = periodRepository.findFirst1ByOrderByEndDateDesc();
         LocalDate lastEndDate = periodFromRepo.getEndDate();
         if (!startDate.equals(lastEndDate.plusDays(1))) {
           err.rejectValue("startDate", "{gap.between.lastEndDate.and.startDate.validation.error}",
@@ -47,16 +45,5 @@ public class PeriodValidator implements Validator {
       err.rejectValue("endDate", "{startDate.after.endDate.validation.error}",
               "End date should be after start date");
     }
-  }
-
-  private Period lastPeriod(Iterable<Period> iterable) {
-    int size = Lists.newArrayList(iterable).size();
-    Period last = Lists.newArrayList(iterable).get(size - 1);
-    for (Period p : iterable) {
-      if (p.getEndDate().isAfter(last.getEndDate())) {
-        last = p;
-      }
-    }
-    return last;
   }
 }
