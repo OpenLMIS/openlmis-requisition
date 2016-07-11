@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.exception.EmptyObjectException;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.validate.PeriodValidator;
@@ -42,17 +41,13 @@ public class PeriodController {
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
                                         BindingResult bindingResult, SessionStatus status) {
-    if (period == null) {
-      throw new EmptyObjectException("null.period.error");
+    logger.debug("Creating new period");
+    validator.validate(period, bindingResult);
+    if (bindingResult.getErrorCount() == 0) {
+      Period newPeriod = periodRepository.save(period);
+      return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
     } else {
-      logger.debug("Creating new period");
-      validator.validate(period, bindingResult);
-      if (bindingResult.getErrorCount() == 0) {
-        Period newPeriod = periodRepository.save(period);
-        return new ResponseEntity<Period>(newPeriod, HttpStatus.CREATED);
-      } else {
-        return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
-      }
+      return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
   }
 
