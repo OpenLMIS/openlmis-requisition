@@ -40,6 +40,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -187,15 +188,21 @@ public class RequisitionControllerIntegrationTest {
     requisition2.setProcessingPeriod(period);
     requisition2.setProgram(program);
     requisitionRepository.save(requisition2);
+    requisition2.setCreatedDate(LocalDateTime.parse("2015-04-01T12:00:00"));
+    requisitionRepository.save(requisition2);
 
     requisition3.setFacility(facility);
     requisition3.setProcessingPeriod(period);
     requisition3.setProgram(program2);
     requisitionRepository.save(requisition3);
+    requisition3.setCreatedDate(LocalDateTime.parse("2015-12-01T12:00:00"));
+    requisitionRepository.save(requisition3);
 
     requisition4.setFacility(facility2);
     requisition4.setProcessingPeriod(period);
     requisition4.setProgram(program2);
+    requisitionRepository.save(requisition4);
+    requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
     requisitionRepository.save(requisition4);
   }
 
@@ -261,7 +268,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSearch() throws JsonProcessingException {
+  public void testSearchNoParameter() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
         SEARCH_URL, HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
@@ -285,5 +292,45 @@ public class RequisitionControllerIntegrationTest {
     for (Requisition r : requisitions) {
       Assert.assertEquals(program.getId(), r.getProgram().getId());
     }
+  }
+
+  @Test
+  public void testSearchFacility() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?facility={facility}", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(2, requisitions.size());
+
+    for (Requisition r : requisitions) {
+      Assert.assertEquals(facility2.getId(), r.getFacility().getId());
+    }
+  }
+
+  @Test
+  public void testSearchCreatedDateRange() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?createdDateFrom=2015-03-04T12:00:00&createdDateTo=2016-01-04T12:00:00",
+        HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(2, requisitions.size());
+  }
+
+  @Test
+  public void testSearchProgramAndCreatedDate() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}&createdDateFrom=2015-06-20T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, program.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
   }
 }

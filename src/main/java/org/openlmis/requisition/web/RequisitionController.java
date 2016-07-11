@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -66,8 +67,10 @@ public class RequisitionController {
   public ResponseEntity<?> searchRequisitions(
       @RequestParam(value = "facility", required = false) Facility facility,
       @RequestParam(value = "program", required = false) Program program,
-      @RequestParam(value = "createdDateFrom", required = false) LocalDateTime createdDateFrom,
-      @RequestParam(value = "createdDateTo", required = false) LocalDateTime createdDateTo) {
+      @RequestParam(value = "createdDateFrom", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
+      @RequestParam(value = "createdDateTo", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo) {
     ArrayList<Requisition> result = new ArrayList<Requisition>();
     Iterable<Requisition> requisitions = requisitionRepository.findAll();
     for (Requisition r : requisitions) {
