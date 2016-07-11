@@ -48,7 +48,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
   RequisitionTemplate generateInstance() {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
             new HashMap<String, RequisitionTemplateColumn>());
-
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
   }
@@ -60,13 +59,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
             new RequisitionTemplateColumn(
                     "name", "label", 1,true,true,true, source);
     columns.put(columnKey, testColumn);
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(1, testColumn.getDisplayOrder());
-
     requisitionTemplate.changeColumnDisplayOrder(columnKey, 2);
     requisitionTemplate = repository.save(requisitionTemplate);
     testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
@@ -98,10 +95,8 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
-    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     testColumn1 = requisitionTemplate.getColumnsMap().get(columnKey);
     requisitionTemplate.changeColumnDisplay(columnKey, true);
-
     assertEquals(false, testColumn1.getIsDisplayRequired());
     assertEquals(true, testColumn1.getIsDisplayed());
     testColumn1.setIsDisplayRequired(true);
@@ -117,13 +112,10 @@ public class RequisitionTemplateRepositoryIntegrationTest
             new RequisitionTemplateColumn(
                     "testNameColumn3", "testLabelColumn3", 1, false, false, false, source);
     columns.put(columnKey, testColumn1);
-
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     testColumn1 = requisitionTemplate.getColumnsMap().get(columnKey);
-
     requisitionTemplate.changeColumnLabel(columnKey, "newLabel");
     assertEquals(testColumn1.getLabel(),"newLabel");
 
@@ -135,7 +127,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplateColumn column =
             new RequisitionTemplateColumn("name", "label", 1, false, false, false, source);
     columns.put(columnKey, column);
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
@@ -153,13 +144,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplateColumn column =
             new RequisitionTemplateColumn("productCode", "label", 2, false, false, false, source);
     columns.put(columnKey, column);
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(column.getDisplayOrder(), 2);
-
     requisitionTemplate.changeColumnDisplay(columnKey, true);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
