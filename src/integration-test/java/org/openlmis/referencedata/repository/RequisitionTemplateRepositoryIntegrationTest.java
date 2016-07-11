@@ -97,7 +97,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
-    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     testColumn1 = requisitionTemplate.getColumnsMap().get(columnKey);
     requisitionTemplate.changeColumnDisplay(columnKey, true);
     assertEquals(false, testColumn1.getIsDisplayRequired());
@@ -115,8 +114,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
             new RequisitionTemplateColumn(
                     "testNameColumn3", "testLabelColumn3", 1, false, false, false, source);
     columns.put(columnKey, testColumn1);
-
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
