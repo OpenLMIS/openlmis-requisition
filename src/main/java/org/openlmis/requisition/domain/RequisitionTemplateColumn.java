@@ -1,6 +1,5 @@
 package org.openlmis.requisition.domain;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +13,6 @@ import javax.persistence.Embeddable;
 @Getter
 @Setter
 public class RequisitionTemplateColumn {
-
 
   private String name;
 
