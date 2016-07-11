@@ -21,25 +21,23 @@ import java.util.Map;
 public class RequisitionTemplateRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RequisitionTemplate> {
 
+  private static final String requisitionTemplateRepository = "RequisitionTemplateRepositoryIntegrationTest";
+  private static final String columnKey = "columnKey";
+  private static final String source = "source";
+
   @Autowired
   RequisitionTemplateRepository repository;
-
-  private String requisitionTemplateRepository = "RequisitionTemplateRepositoryIntegrationTest";
-  private String columnKey = "columnKey";
-  private String source = "source";
 
   @Autowired
   ProgramRepository programRepository;
 
-  private Program program;
-
-  private static int programsCounter = 0;
+  private Program program = new Program();
 
   /** Allow setup environment before test. */
   @Before
   public void setUp() {
-    program = new Program();
-    program.setCode(requisitionTemplateRepository + "" + (programsCounter++));
+    programRepository.deleteAll();
+    program.setCode(requisitionTemplateRepository);
     programRepository.save(program);
   }
 
@@ -142,13 +140,15 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
-
+    assertEquals(column.getSource(), source);
     requisitionTemplate.changeColumnSource(columnKey, "newSource");
+    requisitionTemplate = repository.save(requisitionTemplate);
+    column = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(column.getSource(), "newSource");
   }
 
   @Test
-  public void testChangeRequisitionTemplateIsDisplayedChangeDisplayOrder() {
+  public void testIsProductCodeFirstWhenDisplayed() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn column =
             new RequisitionTemplateColumn("productCode", "label", 2, false, false, false, source);
