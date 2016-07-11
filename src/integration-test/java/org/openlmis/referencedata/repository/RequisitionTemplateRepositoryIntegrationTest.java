@@ -50,7 +50,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
   RequisitionTemplate generateInstance() {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
             new HashMap<String, RequisitionTemplateColumn>());
-
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
   }
@@ -62,13 +61,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
             new RequisitionTemplateColumn(
                     "name", "label", 1,true,true,true, source);
     columns.put(columnKey, testColumn);
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(1, testColumn.getDisplayOrder());
-
     requisitionTemplate.changeColumnDisplayOrder(columnKey, 2);
     requisitionTemplate = repository.save(requisitionTemplate);
     testColumn = requisitionTemplate.getColumnsMap().get(columnKey);
