@@ -58,7 +58,6 @@ public class RequisitionServiceTest {
     programRepository.deleteAll();
     periodRepository.deleteAll();
     facilityRepository.deleteAll();
-    periodRepository.deleteAll();
     scheduleRepository.deleteAll();
 
     createTestRequisition();
