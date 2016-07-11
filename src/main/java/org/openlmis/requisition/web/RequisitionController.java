@@ -63,6 +63,9 @@ public class RequisitionController {
     }
   }
 
+  /**
+   * Searching requisitions based on optional parameters
+   */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitions(
       @RequestParam(value = "facility", required = false) Facility facility,
