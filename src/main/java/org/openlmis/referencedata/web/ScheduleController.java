@@ -1,7 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import com.google.common.collect.Lists;
-
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
@@ -40,7 +38,7 @@ public class ScheduleController {
     Iterable<Period> allPeriods = periodRepository.findByProcessingSchedule(schedule);
     if (!allPeriods.equals(null)) {
       Period firstPeriod = allPeriods.iterator().next();
-      Period lastPeriod = lastPeriod(allPeriods);
+      Period lastPeriod = periodRepository.findFirst1ByOrderByEndDateDesc();
       java.time.Period total = java.time.Period.between(firstPeriod.getStartDate(),
               lastPeriod.getEndDate());
       String months = Integer.toString(total.getMonths());
@@ -56,16 +54,5 @@ public class ScheduleController {
       return messageSource.getMessage("requisition.message.totalPeriod", messageArgs,
               LocaleContextHolder.getLocale());
     }
-  }
-
-  private Period lastPeriod(Iterable<Period> iterable) {
-    int size = Lists.newArrayList(iterable).size();
-    Period last = Lists.newArrayList(iterable).get(size - 1);
-    for (Period p : iterable) {
-      if (p.getEndDate().isAfter(last.getEndDate())) {
-        last = p;
-      }
-    }
-    return last;
   }
 }

@@ -12,4 +12,6 @@ public interface PeriodRepository extends PagingAndSortingRepository<Period, UUI
 
   Iterable<Period> findByProcessingSchedule(@Param("processingSchedule")
                                                     Schedule processingScheduleId);
+
+  Period findFirst1ByOrderByEndDateDesc();
 }
