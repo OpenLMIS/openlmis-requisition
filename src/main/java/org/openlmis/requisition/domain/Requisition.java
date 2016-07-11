@@ -26,7 +26,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "requisition")
+@Table(name = "requisitions")
 @NoArgsConstructor
 public class Requisition extends BaseEntity {
 
