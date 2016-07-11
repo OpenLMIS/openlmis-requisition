@@ -83,5 +83,4 @@ public class RequisitionTemplate extends BaseEntity {
     column.setName(name);
     columnsMap.put(key, column);
   }
-
 }
