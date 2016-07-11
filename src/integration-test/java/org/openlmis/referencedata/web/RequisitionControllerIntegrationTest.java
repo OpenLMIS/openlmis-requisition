@@ -333,4 +333,30 @@ public class RequisitionControllerIntegrationTest {
     List<Requisition> requisitions = result.getBody();
     Assert.assertEquals(1, requisitions.size());
   }
+
+  @Test
+  public void testSearchAllParameters() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}&facility={facility}&createdDateFrom=2015-03-20T12:00:00"
+            + "&createdDateTo=2015-05-01T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, program.getId(), facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
+  }
+
+  @Test
+  public void testEmptyResult() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?facility={facility}&createdDateFrom=2015-06-20T12:00:00"
+            + "&createdDateTo=2016-05-01T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(0, requisitions.size());
+  }
 }
