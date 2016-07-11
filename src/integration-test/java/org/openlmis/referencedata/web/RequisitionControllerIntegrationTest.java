@@ -48,6 +48,8 @@ public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String RESOURCE_URL = "http://localhost:8080/api/requisitions/submit";
+  private static final String SKIP_URL = "http://localhost:8080/api/requisitions/skip";
+
 
   @Autowired
   ProductRepository productRepository;
@@ -101,6 +103,7 @@ public class RequisitionControllerIntegrationTest {
 
     Program program = new Program();
     program.setCode(requisitionRepositoryName);
+    program.setSkippable(true);
     programRepository.save(program);
 
     FacilityType facilityType = new FacilityType();
@@ -179,6 +182,21 @@ public class RequisitionControllerIntegrationTest {
     testSubmit();
   }
 
+  @Test
+  public void testSkip() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(requisition);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    ResponseEntity<Requisition> result = restTemplate.postForEntity(
+        SKIP_URL, entity, Requisition.class);
+    Assert.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
+  }
+
   private void testSubmit() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
@@ -197,4 +215,5 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(requisition.getId(), savedRequisition.getId());
     Assert.assertEquals(RequisitionStatus.SUBMITTED, savedRequisition.getStatus());
   }
+
 }

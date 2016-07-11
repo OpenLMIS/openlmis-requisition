@@ -3,6 +3,7 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,9 @@ public class RequisitionController {
   @Qualifier("beforeSaveRequisitionValidator")
   RequisitionValidator validator;
 
+  @Autowired
+  RequisitionService requisitionService;
+
   /**
    * Submits earlier initiated requisition.
    */
@@ -51,6 +55,21 @@ public class RequisitionController {
         return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
       }
     }
+  }
+
+  /**
+   * Skipping chosen requisition period.
+     */
+  @RequestMapping(value = "/requisitions/skip", method = RequestMethod.POST)
+  public ResponseEntity<?> skipRequisition(@RequestBody Requisition requisition) {
+    boolean skipped = requisitionService.skip(requisition);
+    ResponseEntity<Object> responseEntity;
+    if (skipped) {
+      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.ACCEPTED);
+    } else {
+      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.BAD_REQUEST);
+    }
+    return responseEntity;
   }
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
