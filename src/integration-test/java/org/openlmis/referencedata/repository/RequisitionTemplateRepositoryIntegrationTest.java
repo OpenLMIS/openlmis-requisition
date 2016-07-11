@@ -100,7 +100,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     testColumn1 = requisitionTemplate.getColumnsMap().get(columnKey);
     requisitionTemplate.changeColumnDisplay(columnKey, true);
-
     assertEquals(false, testColumn1.getIsDisplayRequired());
     assertEquals(true, testColumn1.getIsDisplayed());
     testColumn1.setIsDisplayRequired(true);
@@ -122,7 +121,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     testColumn1 = requisitionTemplate.getColumnsMap().get(columnKey);
-
     requisitionTemplate.changeColumnLabel(columnKey, "newLabel");
     assertEquals(testColumn1.getLabel(),"newLabel");
 
@@ -134,12 +132,10 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplateColumn column =
             new RequisitionTemplateColumn("name", "label", 1, false, false, false, source);
     columns.put(columnKey, column);
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
-
     requisitionTemplate.changeColumnSource(columnKey, "newSource");
     assertEquals(column.getSource(), "newSource");
   }
@@ -150,13 +146,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplateColumn column =
             new RequisitionTemplateColumn("productCode", "label", 2, false, false, false, source);
     columns.put(columnKey, column);
-
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(column.getDisplayOrder(), 2);
-
     requisitionTemplate.changeColumnDisplay(columnKey, true);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
