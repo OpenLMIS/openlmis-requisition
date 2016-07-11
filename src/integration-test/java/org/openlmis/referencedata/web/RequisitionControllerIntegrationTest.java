@@ -48,6 +48,7 @@ import java.util.Set;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
@@ -348,7 +349,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testEmptyResult() throws JsonProcessingException {
+  public void testSearchEmptyResult() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
         SEARCH_URL + "?facility={facility}&createdDateFrom=2015-06-20T12:00:00"

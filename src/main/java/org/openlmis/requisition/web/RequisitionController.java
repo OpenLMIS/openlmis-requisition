@@ -64,7 +64,7 @@ public class RequisitionController {
   }
 
   /**
-   * Searching requisitions based on optional parameters
+   * Searching requisitions based on optional parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitions(
@@ -77,10 +77,10 @@ public class RequisitionController {
     ArrayList<Requisition> result = new ArrayList<Requisition>();
     Iterable<Requisition> requisitions = requisitionRepository.findAll();
     for (Requisition r : requisitions) {
-      if ((facility == null || r.getFacility() == facility) &&
-          (program == null || r.getProgram() == program) &&
-          (createdDateFrom == null || r.getCreatedDate().isAfter(createdDateFrom)) &&
-          (createdDateTo == null || r.getCreatedDate().isBefore(createdDateTo))) {
+      if ((facility == null || r.getFacility() == facility)
+          && (program == null || r.getProgram() == program)
+          && (createdDateFrom == null || r.getCreatedDate().isAfter(createdDateFrom))
+          && (createdDateTo == null || r.getCreatedDate().isBefore(createdDateTo))) {
         result.add(r);
       }
     }
