@@ -68,6 +68,8 @@ public class RequisitionTemplate extends BaseEntity {
   public void changeColumnDisplay(String key, boolean display) {
     RequisitionTemplateColumn column = columnsMap.get(key);
     if (!column.getIsDisplayRequired()) {
+      if (display && key.equals("productCode"))
+        column.setDisplayOrder(1);
       column.setIsDisplayed(display);
       columnsMap.put(key, column);
     }
@@ -76,12 +78,22 @@ public class RequisitionTemplate extends BaseEntity {
   /**
    *
    * @param key Key to column which needs a new name.
-   * @param name New name for column.
+   * @param name New name for label.
    */
-  public void changeColumnName(String key, String name) {
+  public void changeColumnLabel(String key, String name) {
     RequisitionTemplateColumn column = columnsMap.get(key);
-    column.setName(name);
+    column.setLabel(name);
     columnsMap.put(key, column);
   }
 
+  /**
+   *
+   * @param key Key to column which needs a new name.
+   * @param source New source for column.
+   */
+  public void changeColumnSource(String key, String source) {
+    RequisitionTemplateColumn column = columnsMap.get(key);
+    column.setSource(source);
+    columnsMap.put(key, column);
+  }
 }

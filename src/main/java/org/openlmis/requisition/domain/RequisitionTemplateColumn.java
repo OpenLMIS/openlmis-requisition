@@ -1,65 +1,52 @@
 package org.openlmis.requisition.domain;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class RequisitionTemplateColumn {
-  String name;
 
-  String label;
+  @Getter
+  @Setter
+  private String name;
 
-  int displayOrder;
+  @Getter
+  @Setter
+  private String label;
 
-  Boolean isDisplayed;
+  @Getter
+  @Setter
+  private int displayOrder;
 
-  Boolean isDisplayRequired;
+  @Getter
+  private Boolean isDisplayed;
 
-  Boolean canChangeOrder;
+  @Getter
+  @Setter
+  private Boolean isDisplayRequired;
 
-  /**
-   *
-   * @param name Column name.
-   * @param label Column label.
-   * @param displayOrder Column position.
-   */
-  public RequisitionTemplateColumn(String name, String label, int displayOrder) {
-    this.name = name;
-    this.label = label;
-    this.displayOrder = displayOrder;
-    this.isDisplayed = true;
-    this.isDisplayRequired = false;
-    this.canChangeOrder = true;
-  }
+  @Getter
+  @Setter
+  private Boolean canChangeOrder;
 
-  /**
-   *
-   * @param name Column name.
-   * @param label Column label.
-   * @param displayOrder Column position.
-   * @param isDisplayRequired Should column be always displayed.
-   * @param canChangeOrder Should column always stay at the same position.
-   * @param isDisplayed Is column currently displayed.
-   */
-  public RequisitionTemplateColumn(String name, String label, int displayOrder,
-                                   Boolean isDisplayRequired, Boolean isDisplayed,
-                                   Boolean canChangeOrder) {
-    this.name = name;
-    this.label = label;
-    this.displayOrder = displayOrder;
-    this.isDisplayRequired = isDisplayRequired;
-    if (this.isDisplayRequired == true) {
-      this.isDisplayed = true;
-    } else {
-      this.isDisplayed = isDisplayed;
+  @Getter
+  @Setter
+  private String source; //todo change String to SourceType {User Input, Reference Data, Calculated}
+
+  public void setIsDisplayed(boolean isDisplayed) {
+    if (this.name.equals("productCode")) {
+      this.displayOrder = 1;
     }
-    this.canChangeOrder = canChangeOrder;
+    this.isDisplayed = isDisplayed;
   }
 }
