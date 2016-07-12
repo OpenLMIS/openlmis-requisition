@@ -58,5 +58,10 @@ public class ProgramProduct extends BaseEntity {
   @Column
   @Getter
   @Setter
+  private Integer maxMonthsStock;
+
+  @Column
+  @Getter
+  @Setter
   private Money pricePerPack;
 }
