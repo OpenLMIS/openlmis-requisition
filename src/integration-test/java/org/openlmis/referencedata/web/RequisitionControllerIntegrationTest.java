@@ -52,7 +52,7 @@ public class RequisitionControllerIntegrationTest {
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String SUBMIT_URL = "http://localhost:8080/api/requisitions/submit";
   private static final String SKIP_URL = "http://localhost:8080/api/requisitions/{id}/skip";
-
+  private static final String REJECT_URL = "http://localhost:8080/api/requisitions/{id}/reject";
 
   @Autowired
   ProductRepository productRepository;
@@ -200,6 +200,26 @@ public class RequisitionControllerIntegrationTest {
     ResponseEntity<Object> result = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+  }
+  @Test
+  public void testReject() throws JsonProcessingException {
+
+    requisition.setRequisitionLines(null);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(REJECT_URL)
+        .build()
+        .expand(requisition.getId().toString())
+        .encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+    ResponseEntity<Object> response = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+
+    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   private void testSubmit() throws JsonProcessingException {

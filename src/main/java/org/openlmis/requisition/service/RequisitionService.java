@@ -35,4 +35,20 @@ public class RequisitionService {
     return false;
   }
 
+  public boolean reject(UUID requisitionId) {
+
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      logger.debug("Reject failed - requisition cannot be null");
+    } else if (!requisition.getStatus().equals(RequisitionStatus.AUTHORIZED)) {
+      logger.debug("Reject failed - requisition must waiting for approve to be rejected");
+    } else {
+      logger.debug("Requisition rejected");
+      requisition.setStatus(RequisitionStatus.INITIATED);
+      requisitionRepository.save(requisition);
+      return true;
+    }
+    return false;
+  }
+
 }

@@ -65,10 +65,26 @@ public class RequisitionController {
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId) {
     boolean skipped = requisitionService.skip(requisitionId);
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
     ResponseEntity<Object> responseEntity;
     if (skipped) {
+      Requisition requisition = requisitionRepository.findOne(requisitionId);
       responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.OK);
+    } else {
+      responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+    }
+    return responseEntity;
+  }
+
+  /**
+   * Rejecting requisition which is waiting for approve.
+   */
+  @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
+  public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id) {
+    boolean rejected = requisitionService.reject(id);
+    ResponseEntity<Object> responseEntity;
+    if (rejected) {
+      Requisition rejectedRequisition = requisitionRepository.findOne(id);
+      responseEntity = new ResponseEntity<Object>(rejectedRequisition, HttpStatus.OK);
     } else {
       responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
     }

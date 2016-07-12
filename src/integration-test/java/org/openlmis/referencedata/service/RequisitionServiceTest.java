@@ -87,6 +87,34 @@ public class RequisitionServiceTest {
 
   }
 
+  @Test
+  public void shouldRejectRequisition() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+
+    boolean rejectionResult = requisitionService.reject(requisition.getId());
+
+    Assert.assertTrue(rejectionResult);
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
+  }
+
+  @Test
+  public void shouldNotAllowRejectionIfRequisitionStatusIsWrong() {
+
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisitionRepository.save(requisition);
+
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
+
+    boolean rejectionResult = requisitionService.reject(requisition.getId());
+
+    Assert.assertFalse(rejectionResult);
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
+  }
+
   private void createTestRequisition() {
 
     Program program = new Program();
