@@ -24,6 +24,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import javax.persistence.CascadeType;
 
 @Entity
 @Table(name = "requisitions")
@@ -36,7 +37,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @OneToMany(mappedBy = "requisition")
+  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE})
   @Column
   @Getter
   @Setter
