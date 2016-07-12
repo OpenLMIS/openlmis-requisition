@@ -14,12 +14,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RepositoryRestController
 public class RequisitionController {
@@ -59,15 +61,16 @@ public class RequisitionController {
 
   /**
    * Skipping chosen requisition period.
-     */
-  @RequestMapping(value = "/requisitions/skip", method = RequestMethod.POST)
-  public ResponseEntity<?> skipRequisition(@RequestBody Requisition requisition) {
-    boolean skipped = requisitionService.skip(requisition);
+   */
+  @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
+  public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId) {
+    boolean skipped = requisitionService.skip(requisitionId);
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
     ResponseEntity<Object> responseEntity;
     if (skipped) {
-      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.ACCEPTED);
+      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.OK);
     } else {
-      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.BAD_REQUEST);
+      responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
     }
     return responseEntity;
   }

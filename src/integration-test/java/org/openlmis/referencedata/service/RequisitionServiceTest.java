@@ -53,7 +53,7 @@ public class RequisitionServiceTest {
   private Requisition requisition = new Requisition();
 
   @Before
-  public void setUp(){
+  public void setUp() {
     requisitionRepository.deleteAll();
     programRepository.deleteAll();
     periodRepository.deleteAll();
@@ -68,8 +68,7 @@ public class RequisitionServiceTest {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
 
-    boolean skipResult;
-    skipResult = requisitionService.skip(requisition);
+    boolean skipResult = requisitionService.skip(requisition.getId());
 
     Assert.assertTrue(skipResult);
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.SKIPPED);
@@ -81,8 +80,7 @@ public class RequisitionServiceTest {
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
 
     requisition.getProgram().setSkippable(false);
-    boolean skipResult;
-    skipResult = requisitionService.skip(requisition);
+    boolean skipResult = requisitionService.skip(requisition.getId());
 
     Assert.assertFalse(skipResult);
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);

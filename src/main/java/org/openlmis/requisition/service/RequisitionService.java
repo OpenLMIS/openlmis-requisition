@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class RequisitionService {
 
@@ -16,8 +18,8 @@ public class RequisitionService {
   @Autowired
   RequisitionRepository requisitionRepository;
 
-  public boolean skip(Requisition requisition) {
-
+  public boolean skip(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       logger.debug("Skip failed - requisition cannot be null");
     } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {

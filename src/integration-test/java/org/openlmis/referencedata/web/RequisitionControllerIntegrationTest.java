@@ -30,12 +30,15 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -48,7 +51,7 @@ public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String SUBMIT_URL = "http://localhost:8080/api/requisitions/submit";
-  private static final String SKIP_URL = "http://localhost:8080/api/requisitions/skip";
+  private static final String SKIP_URL = "http://localhost:8080/api/requisitions/{id}/skip";
 
 
   @Autowired
@@ -186,15 +189,17 @@ public class RequisitionControllerIntegrationTest {
   public void testSkip() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
 
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(requisition);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SKIP_URL)
+      .build()
+      .expand(requisition.getId().toString())
+      .encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    ResponseEntity<Requisition> result = restTemplate.postForEntity(
-        SKIP_URL, entity, Requisition.class);
-    Assert.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
+    ResponseEntity<Object> result = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 
   private void testSubmit() throws JsonProcessingException {
