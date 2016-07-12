@@ -27,13 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
 @RepositoryRestController
 public class RequisitionController {
   Logger logger = LoggerFactory.getLogger(RequisitionController.class);
@@ -47,9 +40,6 @@ public class RequisitionController {
 
   @Autowired
   RequisitionService requisitionService;
-
-  @PersistenceContext
-  EntityManager entityManager;
 
   /**
    * Submits earlier initiated requisition.
@@ -84,35 +74,16 @@ public class RequisitionController {
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    Root<Requisition> root = query.from(Requisition.class);
 
-    Predicate predicate = builder.conjunction();
-    if (facility != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
-    }
-    if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("program"), program));
-    }
-    if (createdDateFrom != null) {
-      predicate = builder.and(predicate,
-          builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
-    }
-    if (createdDateTo != null) {
-      predicate = builder.and(predicate,
-          builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
-    }
-
-    query.where(predicate);
-    List<Requisition> result = entityManager.createQuery(query).getResultList();
+    List<Requisition> result = requisitionService.searchRequisitions(facility, program,
+        createdDateFrom, createdDateTo);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   /**
    * Skipping chosen requisition period.
-     */
+   */
   @RequestMapping(value = "/requisitions/skip", method = RequestMethod.POST)
   public ResponseEntity<?> skipRequisition(@RequestBody Requisition requisition) {
     boolean skipped = requisitionService.skip(requisition);
