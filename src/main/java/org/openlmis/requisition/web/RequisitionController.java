@@ -72,6 +72,15 @@ public class RequisitionController {
   }
 
   /**
+   * Searching requisitions created by logged user.
+   */
+  @RequestMapping(value = "/requisitions/creator/{creatorId}", method = RequestMethod.GET)
+  public ResponseEntity<?> createdByLoggedUser(@PathVariable("creatorId") UUID id) {
+    Iterable<Requisition> result = requisitionRepository.findByCreatorId(id);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  /**
    * Skipping chosen requisition period.
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)

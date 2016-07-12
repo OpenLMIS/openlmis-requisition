@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
@@ -20,6 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -66,6 +68,12 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   private RequisitionStatus status;
+
+  @ManyToOne
+  @JoinColumn(name = "creatorId")
+  @Getter
+  @Setter
+  private User creator;
 
   @PrePersist
   private void prePersist() {

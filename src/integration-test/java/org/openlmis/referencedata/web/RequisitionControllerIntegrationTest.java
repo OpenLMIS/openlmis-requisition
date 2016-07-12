@@ -2,11 +2,14 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
@@ -28,6 +31,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,6 +46,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,6 +60,7 @@ public class RequisitionControllerIntegrationTest {
   private static final String SKIP_URL = "http://localhost:8080/api/requisitions/{id}/skip";
   private static final String REJECT_URL = "http://localhost:8080/api/requisitions/{id}/reject";
   private static final String DELETE_URL = "http://localhost:8080/api/requisitions/{id}";
+  private static final String CREATED_BY_LOGGED_USER_URL = "http://localhost:8080/api/requisitions/creator/{creatorId}";
 
   @Autowired
   ProductRepository productRepository;
@@ -77,10 +83,14 @@ public class RequisitionControllerIntegrationTest {
   @Autowired
   RequisitionRepository requisitionRepository;
 
+  @Autowired
+  UserRepository userRepository;
+
   private Requisition requisition = new Requisition();
   private Product product = new Product();
   private Program program = new Program();
   private Facility facility = new Facility();
+  private User user = new User();
 
   /**
    * Prepare the test environment.
@@ -95,6 +105,13 @@ public class RequisitionControllerIntegrationTest {
     facilityRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
+    userRepository.deleteAll();
+
+    user.setUsername("testUser");
+    user.setPassword("password");
+    user.setFirstName("Test");
+    user.setLastName("User");
+    userRepository.save(user);
 
     product.setCode(requisitionRepositoryName);
     product.setPrimaryName(requisitionRepositoryName);
@@ -141,6 +158,7 @@ public class RequisitionControllerIntegrationTest {
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
+    requisition.setCreator(user);
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
@@ -253,6 +271,8 @@ public class RequisitionControllerIntegrationTest {
     headers.setContentType(MediaType.APPLICATION_JSON);
 
     ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+
     String json = mapper.writeValueAsString(requisition);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
@@ -264,5 +284,17 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertNotNull(savedRequisition.getId());
     Assert.assertEquals(requisition.getId(), savedRequisition.getId());
     Assert.assertEquals(RequisitionStatus.SUBMITTED, savedRequisition.getStatus());
+  }
+
+  @Test
+  public void testSearchByCreatorId() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, user.getId());
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
   }
 }
