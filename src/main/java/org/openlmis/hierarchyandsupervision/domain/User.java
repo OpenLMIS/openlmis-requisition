@@ -16,7 +16,7 @@ import javax.persistence.Table;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "referencedata")
 @NoArgsConstructor
 public class User extends BaseEntity {
 

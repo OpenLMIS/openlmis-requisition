@@ -18,7 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "periods")
+@Table(name = "periods", schema = "referencedata")
 @NoArgsConstructor
 public class Period extends BaseEntity {
 

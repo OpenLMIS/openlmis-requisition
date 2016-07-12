@@ -14,7 +14,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "roles", schema = "referencedata")
 @NoArgsConstructor
 public class Role extends BaseEntity {
 

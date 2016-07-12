@@ -13,7 +13,7 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 
 @Entity
-@Table(name = "program_products")
+@Table(name = "program_products", schema = "referencedata")
 @NoArgsConstructor
 public class ProgramProduct extends BaseEntity {
 

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "facility_type_approved_products")
+@Table(name = "facility_type_approved_products", schema = "referencedata")
 @NoArgsConstructor
 public class FacilityTypeApprovedProduct extends BaseEntity {
 

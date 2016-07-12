@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "facility_types")
+@Table(name = "facility_types", schema = "referencedata")
 @NoArgsConstructor
 public class FacilityType extends BaseEntity {
 

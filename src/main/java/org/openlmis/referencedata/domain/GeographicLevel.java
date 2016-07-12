@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "geographic_levels")
+@Table(name = "geographic_levels", schema = "referencedata")
 @NoArgsConstructor
 public class GeographicLevel extends BaseEntity {
 

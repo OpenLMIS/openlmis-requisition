@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "rights")
+@Table(name = "rights", schema = "referencedata")
 @NoArgsConstructor
 public class Right extends BaseEntity {
 

@@ -14,7 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "facilities")
+@Table(name = "facilities", schema = "referencedata")
 @NoArgsConstructor
 public class Facility extends BaseEntity {
 
