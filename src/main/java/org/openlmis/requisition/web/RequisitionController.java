@@ -54,8 +54,20 @@ public class RequisitionController {
         Requisition newRequisition = requisitionRepository.save(requisition);
         return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
       } else {
-        return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
       }
+    }
+  }
+
+  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    boolean deleted = requisitionService.tryDelete(requisition);
+
+    if (deleted) {
+      return new ResponseEntity(HttpStatus.NO_CONTENT);
+    } else {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

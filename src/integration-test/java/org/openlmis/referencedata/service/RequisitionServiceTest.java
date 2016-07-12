@@ -64,6 +64,24 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void testTryDelete() {
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+
+    boolean deleted = requisitionService.tryDelete(requisition);
+    Assert.assertTrue(deleted);
+  }
+
+  @Test
+  public void testTryDeleteBadStatus() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    boolean deleted = requisitionService.tryDelete(requisition);
+    Assert.assertFalse(deleted);
+  }
+
+  @Test
   public void shouldSkipRequisition() {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
