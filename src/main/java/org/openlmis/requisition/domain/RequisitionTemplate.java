@@ -54,9 +54,49 @@ public class RequisitionTemplate extends BaseEntity {
    */
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
     RequisitionTemplateColumn column = columnsMap.get(key);
+    Integer oldDisplayOrder = column.getDisplayOrder();
+    if (oldDisplayOrder == null) {
+      moveDownAllColumnsBelowIndex(newDisplayOrder);
+    } else {
+      if (newDisplayOrder > oldDisplayOrder) {
+        moveUpAllColumnsBetweenIndexes(newDisplayOrder, oldDisplayOrder);
+      } else {
+        moveDownAllColumnsBetweenIndexes(newDisplayOrder, oldDisplayOrder);
+      }
+    }
     if (column.getCanChangeOrder()) {
       column.setDisplayOrder(newDisplayOrder);
       columnsMap.put(key, column);
+    }
+  }
+
+  private void moveDownAllColumnsBelowIndex(int beginIndex) {
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
+      RequisitionTemplateColumn tempColumn = entry.getValue();
+      if (tempColumn.getDisplayOrder() >= beginIndex) {
+        tempColumn.setDisplayOrder(tempColumn.getDisplayOrder() + 1);
+        columnsMap.put(entry.getKey(), tempColumn);
+      }
+    }
+  }
+
+  private void moveUpAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
+      RequisitionTemplateColumn tempColumn = entry.getValue();
+      if (tempColumn.getDisplayOrder() <= beginIndex && tempColumn.getDisplayOrder() > endIndex) {
+        tempColumn.setDisplayOrder(tempColumn.getDisplayOrder() - 1);
+        columnsMap.put(entry.getKey(), tempColumn);
+      }
+    }
+  }
+
+  private void moveDownAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
+      RequisitionTemplateColumn tempColumn = entry.getValue();
+      if (tempColumn.getDisplayOrder() >= beginIndex && tempColumn.getDisplayOrder() < endIndex) {
+        tempColumn.setDisplayOrder(tempColumn.getDisplayOrder() + 1);
+        columnsMap.put(entry.getKey(), tempColumn);
+      }
     }
   }
 
