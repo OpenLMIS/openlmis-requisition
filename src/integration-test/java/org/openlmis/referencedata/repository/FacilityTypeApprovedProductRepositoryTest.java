@@ -45,7 +45,7 @@ public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositor
   private Program program;
   private Product product;
 
-  private static final double DELTA = 1e-15;
+  private static final double maxMonthsOfStockDelta = 1e-15;
 
   @Before
   public void setUp(){
@@ -109,6 +109,6 @@ public class FacilityTypeApprovedProductRepositoryTest extends BaseCrudRepositor
     ftap.setFacilityType(facilityType2);
     ftapRepository.save(ftap);
     Assert.assertEquals("newFacilityType", ftap.getFacilityType().getCode());
-    Assert.assertEquals(10.00, ftap.getMaxMonthsOfStock(), DELTA);
+    Assert.assertEquals(10.00, ftap.getMaxMonthsOfStock(), maxMonthsOfStockDelta);
   }
 }
