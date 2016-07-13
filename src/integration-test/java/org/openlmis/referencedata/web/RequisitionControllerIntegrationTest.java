@@ -162,6 +162,7 @@ public class RequisitionControllerIntegrationTest {
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
+    requisition.setStatus(RequisitionStatus.INITIATED);
 
     requisitionRepository.save(requisition);
 

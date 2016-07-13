@@ -78,6 +78,5 @@ public class Requisition extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
-    this.status = RequisitionStatus.INITIATED;
   }
 }

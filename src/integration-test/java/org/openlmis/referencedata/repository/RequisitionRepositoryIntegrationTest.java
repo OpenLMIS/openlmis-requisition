@@ -9,6 +9,7 @@ import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,6 +90,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
+    requisition.setStatus(RequisitionStatus.INITIATED);
     return requisition;
   }
 }
