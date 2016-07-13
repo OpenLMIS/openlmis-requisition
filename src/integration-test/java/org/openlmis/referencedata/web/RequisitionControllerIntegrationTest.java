@@ -209,6 +209,7 @@ public class RequisitionControllerIntegrationTest {
     requisition2.setFacility(facility2);
     requisition2.setProcessingPeriod(period);
     requisition2.setProgram(program);
+    requisition2.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition2);
     requisition2.setCreatedDate(LocalDateTime.parse("2015-04-01T12:00:00"));
     requisitionRepository.save(requisition2);
@@ -216,6 +217,7 @@ public class RequisitionControllerIntegrationTest {
     requisition3.setFacility(facility);
     requisition3.setProcessingPeriod(period);
     requisition3.setProgram(program2);
+    requisition3.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition3);
     requisition3.setCreatedDate(LocalDateTime.parse("2015-12-01T12:00:00"));
     requisitionRepository.save(requisition3);
@@ -223,6 +225,7 @@ public class RequisitionControllerIntegrationTest {
     requisition4.setFacility(facility2);
     requisition4.setProcessingPeriod(period);
     requisition4.setProgram(program2);
+    requisition4.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition4);
     requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
     requisitionRepository.save(requisition4);
