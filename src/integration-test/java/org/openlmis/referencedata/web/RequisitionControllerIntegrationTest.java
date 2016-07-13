@@ -45,6 +45,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,7 @@ import java.util.UUID;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
@@ -61,6 +63,7 @@ public class RequisitionControllerIntegrationTest {
   private static final String REJECT_URL = "http://localhost:8080/api/requisitions/{id}/reject";
   private static final String DELETE_URL = "http://localhost:8080/api/requisitions/{id}";
   private static final String CREATED_BY_LOGGED_USER_URL = "http://localhost:8080/api/requisitions/creator/{creatorId}";
+  private static final String SEARCH_URL = "http://localhost:8080/api/requisitions/search";
 
   @Autowired
   ProductRepository productRepository;
@@ -87,9 +90,14 @@ public class RequisitionControllerIntegrationTest {
   UserRepository userRepository;
 
   private Requisition requisition = new Requisition();
+  private Requisition requisition2 = new Requisition();
+  private Requisition requisition3 = new Requisition();
+  private Requisition requisition4 = new Requisition();
   private Product product = new Product();
   private Program program = new Program();
+  private Program program2 = new Program();
   private Facility facility = new Facility();
+  private Facility facility2 = new Facility();
   private User user = new User();
 
   /**
@@ -129,6 +137,10 @@ public class RequisitionControllerIntegrationTest {
     program.setSkippable(true);
     programRepository.save(program);
 
+    program2.setCode(requisitionRepositoryName + "2");
+    program2.setSkippable(true);
+    programRepository.save(program2);
+
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
     GeographicLevel level = new GeographicLevel();
@@ -144,6 +156,22 @@ public class RequisitionControllerIntegrationTest {
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
+
+    FacilityType facilityType2 = new FacilityType();
+    facilityType2.setCode(requisitionRepositoryName + "2");
+    GeographicLevel level2 = new GeographicLevel();
+    level2.setCode(requisitionRepositoryName + "2");
+    level2.setLevelNumber(1);
+    GeographicZone geographicZone2 = new GeographicZone();
+    geographicZone2.setCode(requisitionRepositoryName + "2");
+    geographicZone2.setLevel(level2);
+
+    facility2.setType(facilityType2);
+    facility2.setGeographicZone(geographicZone2);
+    facility2.setCode(requisitionRepositoryName + "2");
+    facility2.setActive(true);
+    facility2.setEnabled(true);
+    facilityRepository.save(facility2);
 
     Schedule schedule = new Schedule();
     schedule.setCode(requisitionRepositoryName);
@@ -177,6 +205,27 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
+
+    requisition2.setFacility(facility2);
+    requisition2.setProcessingPeriod(period);
+    requisition2.setProgram(program);
+    requisitionRepository.save(requisition2);
+    requisition2.setCreatedDate(LocalDateTime.parse("2015-04-01T12:00:00"));
+    requisitionRepository.save(requisition2);
+
+    requisition3.setFacility(facility);
+    requisition3.setProcessingPeriod(period);
+    requisition3.setProgram(program2);
+    requisitionRepository.save(requisition3);
+    requisition3.setCreatedDate(LocalDateTime.parse("2015-12-01T12:00:00"));
+    requisitionRepository.save(requisition3);
+
+    requisition4.setFacility(facility2);
+    requisition4.setProcessingPeriod(period);
+    requisition4.setProgram(program2);
+    requisitionRepository.save(requisition4);
+    requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
+    requisitionRepository.save(requisition4);
   }
 
   @Test
@@ -291,11 +340,149 @@ public class RequisitionControllerIntegrationTest {
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<Requisition>>() {}, user.getId());
+        new ParameterizedTypeReference<List<Requisition>>() {
+        }, user.getId());
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
     List<Requisition> requisitions = result.getBody();
     Assert.assertEquals(1, requisitions.size());
+  }
+
+  @Test
+  public void testFindByNoParameter() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL, HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(4, requisitions.size());
+  }
+
+  @Test
+  public void testFindByProgram() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, program.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(2, requisitions.size());
+
+    for (Requisition r : requisitions) {
+      Assert.assertEquals(program.getId(), r.getProgram().getId());
+    }
+  }
+
+  @Test
+  public void testFindByFacility() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?facility={facility}", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(2, requisitions.size());
+
+    for (Requisition r : requisitions) {
+      Assert.assertEquals(facility2.getId(), r.getFacility().getId());
+    }
+  }
+
+  @Test
+  public void testFindByProgramAndFacility() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}&facility={facility}", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {},
+        program2.getId(), facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
+    Requisition req = requisitions.get(0);
+    Assert.assertEquals(program2.getId(), req.getProgram().getId());
+    Assert.assertEquals(facility2.getId(), req.getFacility().getId());
+  }
+
+  @Test
+  public void testFindByCreatedDateRange() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?createdDateFrom=2015-03-04T12:00:00&createdDateTo=2016-01-04T12:00:00",
+        HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(2, requisitions.size());
+
+    for (Requisition r : requisitions) {
+      Assert.assertTrue(r.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-04T12:00:00")));
+      Assert.assertTrue(r.getCreatedDate().isBefore(LocalDateTime.parse("2016-01-04T12:00:00")));
+    }
+  }
+
+  @Test
+  public void testFindByProgramAndCreatedDate() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}&createdDateFrom=2015-06-20T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, program.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
+    Requisition req = requisitions.get(0);
+    Assert.assertEquals(program.getId(), req.getProgram().getId());
+    Assert.assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-06-20T12:00:00")));
+  }
+
+  @Test
+  public void testFindByFacilityAndCreatedDate() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?facility={facility}&createdDateTo=2016-02-20T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, facility.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
+    Requisition req = requisitions.get(0);
+    Assert.assertEquals(facility.getId(), req.getFacility().getId());
+    Assert.assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2016-02-20T12:00:00")));
+  }
+
+  @Test
+  public void testFindByAllParameters() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?program={program}&facility={facility}&createdDateFrom=2015-03-20T12:00:00"
+            + "&createdDateTo=2015-05-01T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, program.getId(), facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(1, requisitions.size());
+    Requisition req = requisitions.get(0);
+    Assert.assertEquals(program.getId(), req.getProgram().getId());
+    Assert.assertEquals(facility2.getId(), req.getFacility().getId());
+    Assert.assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-20T12:00:00")));
+    Assert.assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2015-05-01T12:00:00")));
+  }
+
+  @Test
+  public void testFindEmptyResult() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<List<Requisition>> result = restTemplate.exchange(
+        SEARCH_URL + "?facility={facility}&createdDateFrom=2015-06-20T12:00:00"
+            + "&createdDateTo=2016-05-01T12:00:00", HttpMethod.GET, null,
+        new ParameterizedTypeReference<List<Requisition>>() {}, facility2.getId());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    List<Requisition> requisitions = result.getBody();
+    Assert.assertEquals(0, requisitions.size());
   }
 }

@@ -1,5 +1,7 @@
 package org.openlmis.requisition.web;
 
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,8 +22,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -78,6 +84,24 @@ public class RequisitionController {
   @RequestMapping(value = "/requisitions/creator/{creatorId}", method = RequestMethod.GET)
   public ResponseEntity<?> createdByLoggedUser(@PathVariable("creatorId") UUID id) {
     Iterable<Requisition> result = requisitionRepository.findByCreatorId(id);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  /**
+   * Finds requisitions matching all of provided parameters.
+   */
+  @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
+  public ResponseEntity<?> searchRequisitions(
+      @RequestParam(value = "facility", required = false) Facility facility,
+      @RequestParam(value = "program", required = false) Program program,
+      @RequestParam(value = "createdDateFrom", required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
+      @RequestParam(value = "createdDateTo", required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo) {
+
+    List<Requisition> result = requisitionService.searchRequisitions(facility, program,
+        createdDateFrom, createdDateTo);
+
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 

@@ -1,5 +1,7 @@
 package org.openlmis.requisition.service;
 
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -9,7 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 @Service
 public class RequisitionService {
@@ -21,6 +32,9 @@ public class RequisitionService {
 
   @Autowired
   RequisitionRepository requisitionRepository;
+
+  @PersistenceContext
+  EntityManager entityManager;
 
   public boolean tryDelete(Requisition requisition) {
     if (requisition == null) {
@@ -69,4 +83,33 @@ public class RequisitionService {
     }
   }
 
+  /**
+   * Finds requisitions matching all of provided parameters.
+   */
+  public List<Requisition> searchRequisitions(Facility facility, Program program,
+                                              LocalDateTime createdDateFrom,
+                                              LocalDateTime createdDateTo) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    Predicate predicate = builder.conjunction();
+    if (facility != null) {
+      predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
+    }
+    if (program != null) {
+      predicate = builder.and(predicate, builder.equal(root.get("program"), program));
+    }
+    if (createdDateFrom != null) {
+      predicate = builder.and(predicate,
+          builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
+    }
+    if (createdDateTo != null) {
+      predicate = builder.and(predicate,
+          builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
+    }
+
+    query.where(predicate);
+    return entityManager.createQuery(query).getResultList();
+  }
 }
