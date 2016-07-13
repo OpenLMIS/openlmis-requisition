@@ -74,29 +74,36 @@ public class ProgramProductRepositoryIntegrationTest
     return programProduct;
   }
 
-
   @Test
   public void testGetAllProgramProducts() {
-    ProgramProduct testProgram = this.generateInstance();
-    testProgram.setFullSupply(true);
-    ProgramProduct testProgram2 = this.generateInstance();
-    testProgram.setFullSupply(false);
-    programProductRepository.save(testProgram);
-    programProductRepository.save(testProgram2);
-    assertEquals(2, getIterableSize(programProductRepository.findByProgram(program)));
+    for ( int i = 0; i < 10; i++ ) {
+      ProgramProduct testProgram = this.generateInstance();
+      testProgram.setFullSupply(true);
+      programProductRepository.save(testProgram);
+    }
+    for ( int i = 0; i < 5; i++ ) {
+      ProgramProduct testProgram2 = this.generateInstance();
+      testProgram2.setFullSupply(false);
+      programProductRepository.save(testProgram2);
+    }
+    assertEquals(15, getIterableSize(programProductRepository.findByProgram(program)));
   }
 
   @Test
   public void testGetProductsWhenFullSupplyTrue() {
-    ProgramProduct testProgram = this.generateInstance();
-    testProgram.setFullSupply(true);
-    ProgramProduct testProgram2 = this.generateInstance();
-    testProgram2.setFullSupply(false);
-    programProductRepository.save(testProgram);
-    programProductRepository.save(testProgram2);
+    for ( int i = 0; i < 10 ; i++ ) {
+      ProgramProduct testProgram = this.generateInstance();
+      testProgram.setFullSupply(true);
+      programProductRepository.save(testProgram);
+    }
+    for ( int i = 0; i < 5; i ++ ) {
+      ProgramProduct testProgram2 = this.generateInstance();
+      testProgram2.setFullSupply(false);
+      programProductRepository.save(testProgram2);
+    }
     Iterable<ProgramProduct> programProductIterable =
             programProductRepository.findByProgramAndFullSupply(program,true);
-    assertEquals(1, getIterableSize(programProductIterable));
+    assertEquals(10, getIterableSize(programProductIterable));
     for (ProgramProduct programProduct : programProductIterable ) {
       assertEquals(true, programProduct.isFullSupply());
     }
@@ -104,18 +111,19 @@ public class ProgramProductRepositoryIntegrationTest
 
   @Test
   public void testGetProductsWhenFullSupplyFalse() {
-    ProgramProduct testProgram = this.generateInstance();
-    testProgram.setFullSupply(true);
-    ProgramProduct testProgram2 = this.generateInstance();
-    testProgram2.setFullSupply(false);
-    ProgramProduct testProgram3 = this.generateInstance();
-    testProgram3.setFullSupply(false);
-    programProductRepository.save(testProgram);
-    programProductRepository.save(testProgram2);
-    programProductRepository.save(testProgram3);
+    for ( int i = 0; i < 10; i++ ) {
+      ProgramProduct testProgram = this.generateInstance();
+      testProgram.setFullSupply(true);
+      programProductRepository.save(testProgram);
+    }
+    for ( int i = 0; i < 5; i ++ ) {
+      ProgramProduct testProgram2 = this.generateInstance();
+      testProgram2.setFullSupply(false);
+      programProductRepository.save(testProgram2);
+    }
     Iterable<ProgramProduct> programProductIterable =
             programProductRepository.findByProgramAndFullSupply(program,false);
-    assertEquals(2, getIterableSize(programProductIterable));
+    assertEquals(5, getIterableSize(programProductIterable));
     for (ProgramProduct programProduct : programProductIterable ) {
       assertEquals(false, programProduct.isFullSupply());
     }
