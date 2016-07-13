@@ -2,6 +2,7 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Service
 public class RequisitionService {
   private final String requisitionNullMessage = "requisition cannot be null";
+  private final String requisitionNotExistsMessage = "Requisition does not exists: ";
   private final String requisitionBadStatusMessage = "requisition has bad status";
 
   private Logger logger = LoggerFactory.getLogger(RequisitionService.class);
@@ -52,20 +54,19 @@ public class RequisitionService {
     return false;
   }
 
-  public boolean reject(UUID requisitionId) {
+  public void reject(UUID requisitionId) {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      logger.debug("Reject failed - " + requisitionNullMessage);
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
     } else if (!requisition.getStatus().equals(RequisitionStatus.AUTHORIZED)) {
-      logger.debug("Reject failed - requisition must waiting for approve to be rejected");
+      throw new RequisitionException("Cannot reject requisition: " + requisitionId +
+          " .Requisition must be waiting for approval to be rejected");
     } else {
-      logger.debug("Requisition rejected");
+      logger.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       requisitionRepository.save(requisition);
-      return true;
     }
-    return false;
   }
 
 }

@@ -18,6 +18,7 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,13 +114,12 @@ public class RequisitionServiceTest {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
 
-    boolean rejectionResult = requisitionService.reject(requisition.getId());
+    requisitionService.reject(requisition.getId());
 
-    Assert.assertTrue(rejectionResult);
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
-  @Test
+  @Test(expected = RequisitionException.class)
   public void shouldNotAllowRejectionIfRequisitionStatusIsWrong() {
 
     requisition.setStatus(RequisitionStatus.APPROVED);
@@ -127,10 +127,7 @@ public class RequisitionServiceTest {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
 
-    boolean rejectionResult = requisitionService.reject(requisition.getId());
-
-    Assert.assertFalse(rejectionResult);
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
+    requisitionService.reject(requisition.getId());
   }
 
   private void createTestRequisition() {

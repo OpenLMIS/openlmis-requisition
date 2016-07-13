@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -101,15 +102,15 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id) {
-    boolean rejected = requisitionService.reject(id);
-    ResponseEntity<Object> responseEntity;
-    if (rejected) {
-      Requisition rejectedRequisition = requisitionRepository.findOne(id);
-      responseEntity = new ResponseEntity<Object>(rejectedRequisition, HttpStatus.OK);
-    } else {
-      responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+
+    try {
+      requisitionService.reject(id);
+    } catch (RequisitionException ex) {
+      logger.debug(ex.getMessage(), ex);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    return responseEntity;
+    Requisition rejectedRequisition = requisitionRepository.findOne(id);
+    return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
   }
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
