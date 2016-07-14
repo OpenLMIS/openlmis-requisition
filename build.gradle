@@ -41,7 +41,7 @@ dependencies {
     compile "org.springframework:spring-test"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:2.4.0"
-    compile "org.apache.commons:commons-csv:1.4"
+    compile "net.sf.supercsv:super-csv-dozer:2.4.0"
 
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
