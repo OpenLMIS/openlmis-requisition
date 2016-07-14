@@ -1,0 +1,123 @@
+#%RAML 0.8
+---
+title: OpenLMIS Requisition API
+version: "1.0.0"
+baseUri: "http://localhost:8080/api"
+
+documentation:
+    - title: Getting Started
+      content: Welcome to the OpenLMIS requisition-service documentation. This minimal API is intended for illustrative purposes.
+
+schemas:
+  - program: |
+      {   "$schema": "http://json-schema.org/draft-03/schema",
+          "description": "A single program",
+          "type": "object",
+          "properties": {
+              "id": { "type": "string", "required": true},
+              "code":  { "type": "string", "required": true },
+              "name":  { "type": "string", "required": false },
+              "description":  { "type": "string", "required": false },
+              "active":  { "type": "boolean", "required": false },
+              "skippable":  { "type": "boolean", "required": true },
+              "showNonFullSupplyTab":  { "type": "boolean", "required": false }
+          }
+      }
+
+resourceTypes:
+    - collection:
+        get:
+            responses:
+                200:
+                  description: Collection retrieved successfully
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+                          schema: <<schema>>
+                404:
+                  description: Collection is empty.
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+        post:
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                201:
+                  description: Item created successfully
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+                          schema: <<schema>>
+    - member:
+        get:
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        post:
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        delete:
+            responses:
+                200:
+
+
+/programs:
+    displayName: ProgramsResource
+    /update:
+        post:
+          description: Update a program
+          body:
+            application/json:
+              schema: |
+                {   "$schema": "http://json-schema.org/draft-03/schema",
+                    "type": "object",
+                    "properties": {
+                        "id": { "type": "string", "required": true},
+                        "code":  { "type": "string", "required": true },
+                        "name":  { "type": "string", "required": false }
+                    }
+                }
+          responses:
+            201:
+              description: Program sucessfully updated.
+              headers:
+                X-Content-Type-Options:
+                X-XSS-Protection:
+              body:
+                application/json:
+                  schema: program
+
+/schedules:
+    displayName: Schedule
+    /{id}/difference:
+        uriParameters:
+            id:
+                displayName: Schedule id
+                type: string
+        get:
+            description: Get total difference
+            responses:
+              200:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+              404:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
