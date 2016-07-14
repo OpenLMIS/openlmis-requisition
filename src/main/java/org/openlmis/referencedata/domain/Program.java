@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 @Entity
@@ -32,6 +33,7 @@ public class Program extends BaseEntity {
   @Setter
   private Boolean active;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   private Boolean skippable;
@@ -39,4 +41,11 @@ public class Program extends BaseEntity {
   @Getter
   @Setter
   private Boolean showNonFullSupplyTab;
+
+  @PrePersist
+  private void prePersist() {
+    if(this.skippable == null) {
+      this.skippable = false;
+    }
+  }
 }
