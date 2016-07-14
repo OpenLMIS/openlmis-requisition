@@ -3,6 +3,7 @@ package org.openlmis.referencedata.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -105,15 +106,7 @@ public class RequisitionControllerIntegrationTest {
    */
   @Before
   public void setUp() throws JsonProcessingException {
-    requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    userRepository.deleteAll();
+    cleanup();
 
     user.setUsername("testUser");
     user.setPassword("password");
@@ -229,6 +222,19 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition4);
     requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
     requisitionRepository.save(requisition4);
+  }
+
+  @After
+  public void cleanup() {
+    requisitionLineRepository.deleteAll();
+    productRepository.deleteAll();
+    requisitionRepository.deleteAll();
+    programRepository.deleteAll();
+    periodRepository.deleteAll();
+    facilityRepository.deleteAll();
+    periodRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    userRepository.deleteAll();
   }
 
   @Test
