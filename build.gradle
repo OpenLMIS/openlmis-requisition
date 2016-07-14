@@ -10,6 +10,7 @@ buildscript {
 plugins {
     id "org.flywaydb.flyway" version "4.0"
     id "org.sonarqube" version "2.0.1"
+    id "com.moowork.node" version "0.12"
 }
 
 apply plugin: 'java'
@@ -42,6 +43,14 @@ dependencies {
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:2.4.0"
     compile "net.sf.supercsv:super-csv-dozer:2.4.0"
+
+    testCompile 'io.rest-assured:rest-assured:3.0.0'
+    testCompile 'io.rest-assured:json-schema-validator:3.0.0'
+    testCompile 'io.rest-assured:spring-mock-mvc:3.0.0'
+    testCompile "com.jayway.restassured:rest-assured:2.7.0"
+
+    testCompile "org.springframework.boot:spring-boot-starter-test"
+    testCompile "guru.nidi.raml:raml-tester:0.8.9"
 
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
@@ -139,9 +148,16 @@ sonarqube {
     }
 }
 
+task ramlToSwagger(type: Exec) {
+    description = 'Convert RAML to Swagger'
+    commandLine 'npm', 'run', 'runApiSpecConverter'
+}
+ramlToSwagger.dependsOn(npm_install)
+
 build.dependsOn jacocoTestReport
 // Makes sure checkstyle is run before build completes
 build.dependsOn check
+build.dependsOn ramlToSwagger
 
 pmd {
     toolVersion = '5.4.0'

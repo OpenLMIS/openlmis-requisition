@@ -7,3 +7,5 @@ out/
 .idea/
 .env
 .tx/
+node_modules/
+api-definition.json

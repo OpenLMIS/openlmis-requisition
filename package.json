@@ -1,0 +1,14 @@
+{
+  "name": "openlmis-requisition",
+  "version": "0.0.1",
+
+  "devDependencies":
+  {
+    "api-spec-converter" :  "~1.9.0"
+  },
+
+  "scripts":
+  {
+    "runApiSpecConverter": "api-spec-converter --from raml --to swagger_2 /app/src/main/resources/api-definition.yaml > /app/src/main/webapp/api-definition.json"
+  }
+}
