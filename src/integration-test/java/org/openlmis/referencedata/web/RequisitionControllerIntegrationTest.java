@@ -188,7 +188,6 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition);
 
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
     requisitionLine.setQuantityRequested(1);
     requisitionLineRepository.save(requisitionLine);
@@ -252,7 +251,6 @@ public class RequisitionControllerIntegrationTest {
   @Test(expected = HttpClientErrorException.class)
   public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
     requisitionLineRepository.save(requisitionLine);
 
@@ -270,16 +268,16 @@ public class RequisitionControllerIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
 
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SKIP_URL)
-      .build()
-      .expand(requisition.getId().toString())
-      .encode();
+        .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    ResponseEntity<Object> result = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+    ResponseEntity<Object> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
+
   @Test
   public void testReject() throws JsonProcessingException {
 
@@ -296,7 +294,8 @@ public class RequisitionControllerIntegrationTest {
         .encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<Object> response = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+    ResponseEntity<Object> response =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
   }
@@ -348,7 +347,8 @@ public class RequisitionControllerIntegrationTest {
   @Test
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<List<Requisition>> result = restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
+    ResponseEntity<List<Requisition>> result =
+        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {
         }, user.getId());
 

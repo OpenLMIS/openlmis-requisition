@@ -1,6 +1,5 @@
 package org.openlmis.requisition.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,13 +16,6 @@ import javax.persistence.Table;
 @Table(name = "requisition_lines")
 @NoArgsConstructor
 public class RequisitionLine extends BaseEntity {
-
-  @ManyToOne
-  @JoinColumn(name = "requisitionId", nullable = false)
-  @JsonIgnore
-  @Getter
-  @Setter
-  private Requisition requisition;
 
   @ManyToOne
   @JoinColumn(name = "productId", nullable = false)
