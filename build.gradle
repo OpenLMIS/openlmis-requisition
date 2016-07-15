@@ -148,11 +148,32 @@ sonarqube {
     }
 }
 
+def ramlToCopy = copySpec {
+    from 'src/main/resources'
+    include 'api-definition.yaml'
+    rename { 'api-definition-raml.yaml' }
+    expand([
+            baseUrl: "$System.env.BASE_URL",
+            schema: "\$schema"
+    ])
+}
+
+task copyRaml(type:Copy) {
+    with ramlToCopy
+    into 'src/main/resources'
+}
+
+task copyRamlForTest(type:Copy) {
+    with ramlToCopy
+    into 'build/resources/main'
+}
+
 task ramlToSwagger(type: Exec) {
     description = 'Convert RAML to Swagger'
     commandLine 'npm', 'run', 'runApiSpecConverter'
 }
-ramlToSwagger.dependsOn(npm_install)
+ramlToSwagger.dependsOn(npm_install, copyRaml)
+test.dependsOn(copyRamlForTest)
 
 build.dependsOn jacocoTestReport
 // Makes sure checkstyle is run before build completes

@@ -2,7 +2,7 @@
 ---
 title: OpenLMIS Requisition API
 version: "1.0.0"
-baseUri: "http://localhost:8080/api"
+baseUri: "${baseUrl}/api"
 
 documentation:
     - title: Getting Started

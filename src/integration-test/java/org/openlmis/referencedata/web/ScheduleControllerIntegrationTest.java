@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public class ScheduleControllerIntegrationTest {
-  private static final String BASE_URL = "http://localhost:8080";
+  private static final String BASE_URL = System.getenv("BASE_URL");
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
   @Autowired
@@ -46,7 +46,7 @@ public class ScheduleControllerIntegrationTest {
   @Before
   public void setUp() {
     RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition.yaml");
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
     restAssured = ramlDefinition.createRestAssured();
 
     cleanup();

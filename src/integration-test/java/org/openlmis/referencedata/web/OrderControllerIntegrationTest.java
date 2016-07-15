@@ -84,7 +84,7 @@ public class OrderControllerIntegrationTest {
   @Autowired
   private StockInventoryRepository stockInventoryRepository;
 
-  private static final String RESOURCE_URL = "http://localhost:8080/api/orders/finalizeOrder";
+  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders/finalizeOrder";
 
   private Order order = new Order();
   private Product firstProduct = new Product();

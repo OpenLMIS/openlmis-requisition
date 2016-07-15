@@ -59,12 +59,13 @@ import java.util.UUID;
 public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-  private static final String SUBMIT_URL = "http://localhost:8080/api/requisitions/submit";
-  private static final String SKIP_URL = "http://localhost:8080/api/requisitions/{id}/skip";
-  private static final String REJECT_URL = "http://localhost:8080/api/requisitions/{id}/reject";
-  private static final String DELETE_URL = "http://localhost:8080/api/requisitions/{id}";
-  private static final String CREATED_BY_LOGGED_USER_URL = "http://localhost:8080/api/requisitions/creator/{creatorId}";
-  private static final String SEARCH_URL = "http://localhost:8080/api/requisitions/search";
+  private static final String BASE_URL = System.getenv("BASE_URL");
+  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/submit";
+  private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
+  private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
+  private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
+  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL + "/api/requisitions/creator/{creatorId}";
+  private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
 
   @Autowired
   ProductRepository productRepository;

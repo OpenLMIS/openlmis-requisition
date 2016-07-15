@@ -37,7 +37,7 @@ public class PeriodControllerIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private static final String RESOURCE_URL = "http://localhost:8080/api/periods";
+  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/periods";
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
