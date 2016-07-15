@@ -75,4 +75,8 @@ public class Facility extends BaseEntity {
   @Getter
   @Setter
   private Boolean enabled;
+
+  @Getter
+  @Setter
+  private Boolean openLmisAccessAbility;
 }
