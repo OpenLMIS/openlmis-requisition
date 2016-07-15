@@ -56,3 +56,57 @@ schemas:
                 required: true
                 repeat: false
                 example: supplyingFacility=abc
+/api/requisitions/search:
+    displayName: ApiRequisitionsSearch
+    get:
+        queryParameters:
+            facility:
+                displayName: facility
+                type: string
+                required: false
+                repeat: false
+            program:
+                displayName: program
+                type: string
+                required: false
+                repeat: false
+            createdDateFrom:
+                displayName: createdDateFrom
+                type: string
+                required: false
+                repeat: false
+            createdDateTo:
+                displayName: createdDateTo
+                type: string
+                required: false
+                repeat: false
+/api/requisitions/submit:
+    displayName: ApiRequisitionsSubmit
+    post:
+/api/requisitions/{id}/skip:
+    displayName: ApiRequisitionsIdSkip
+    uriParameters:
+        id:
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    put:
+/api/requisitions/{id}/reject:
+    displayName: ApiRequisitionsIdReject
+    uriParameters:
+        id:
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    put:
+/api/requisitions/creator/{creatorId}:
+    displayName: ApiRequisitionsCreatorCreatorId
+    uriParameters:
+        creatorId:
+            displayName: creatorId
+            type: string
+            required: false
+            repeat: false
+    get: 
