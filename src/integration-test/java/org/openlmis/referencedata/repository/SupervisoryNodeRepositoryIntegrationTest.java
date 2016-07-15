@@ -38,26 +38,28 @@ public class SupervisoryNodeRepositoryIntegrationTest extends BaseCrudRepository
 
   @Before
   public void setUp() {
+    String code = "code";
+
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
 
-    geographicLevel.setCode("code");
+    geographicLevel.setCode(code);
     geographicLevel.setLevelNumber(1);
     geographicLevelRepository.save(geographicLevel);
 
-    geographicZone.setCode("code");
+    geographicZone.setCode(code);
     geographicZone.setLevel(geographicLevel);
     geographicZoneRepository.save(geographicZone);
 
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("code");
+    facilityType.setCode(code);
     facilityTypeRepository.save(facilityType);
 
     facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode("code");
+    facility.setCode(code);
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
