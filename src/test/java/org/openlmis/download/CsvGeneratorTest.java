@@ -18,7 +18,11 @@ import org.openlmis.referencedata.domain.Program;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class CsvGeneratorTest {
 
@@ -80,8 +84,6 @@ public class CsvGeneratorTest {
     Order testOrder = Mockito.spy(generateInstance());
     Mockito.doReturn(orderLines).when(testOrder).getOrderLines();
 
-    CsvOrderGenerator generator = new CsvOrderGenerator();
-
     List<String> header = new ArrayList<>();
     header.add(CsvOrderGenerator.DEFAULT_COLUMNS[0]);
     header.add(CsvOrderGenerator.DEFAULT_COLUMNS[1]);
@@ -89,6 +91,7 @@ public class CsvGeneratorTest {
     header.add(CsvOrderGenerator.DEFAULT_COLUMNS[4]);
     header.add(CsvOrderGenerator.DEFAULT_COLUMNS[5]);
 
+    CsvOrderGenerator generator = new CsvOrderGenerator();
     String csv = generator.orderToCsv(testOrder, header.toArray(new String[0]));
 
     String exp = "facilityCode,createdDate,productName,productCode,orderedQuantity\r\n"
@@ -100,7 +103,6 @@ public class CsvGeneratorTest {
 
   private Set<OrderLine> generateOrderLines() {
     Set<OrderLine> orderLines = new LinkedHashSet<>();
-
     orderLines.add(generateOrderLine("Example pName", "1Q1Q1Q1", 11111111));
     orderLines.add(generateOrderLine("Example pName 2", "2Q2Q2Q2", 22222222));
     orderLines.add(generateOrderLine("Example pName 3", "3Q3Q3Q3", 33333333));

@@ -32,14 +32,13 @@ public class CsvGenerator {
    */
   public String toCsv(List<Map<String, Object>> rows, String[] chosenColumns) {
     String csv = null;
-
+    
     if (!rows.isEmpty()) {
       StringWriter writer = new StringWriter();
 
       ICsvMapWriter mapWriter = null;
       try {
         mapWriter = new CsvMapWriter(writer, CsvPreference.STANDARD_PREFERENCE);
-
         mapWriter.writeHeader(chosenColumns);
 
         for (Map<String, Object> row : rows) {
@@ -71,7 +70,6 @@ public class CsvGenerator {
       ICsvMapWriter mapWriter = null;
       try {
         mapWriter = new CsvMapWriter(writer, CsvPreference.STANDARD_PREFERENCE);
-
         mapWriter.writeHeader(chosenColumns);
 
         for (Map<String, Object> row : rows) {
