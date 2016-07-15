@@ -1,5 +1,32 @@
 #%RAML 0.8
-
 title: OpenLMIS Requsition
 version: "1.0.0"
-baseUri: "http://localhost:8080/api"
+baseUri: "http://localhost:8080"
+schemas: 
+    - 
+        Product: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Product","properties":{"code":{"type":"string","required":true,"title":"code"},"primaryName":{"type":"string","required":true,"title":"primaryName"},"dispensingUnit":{"type":"string","required":true,"title":"dispensingUnit"},"dosesPerDispensingUnit":{"type":"integer","required":true,"title":"dosesPerDispensingUnit"},"packSize":{"type":"integer","required":true,"title":"packSize"},"packRoundingThreshold":{"type":"integer","required":true,"title":"packRoundingThreshold"},"roundToZero":{"type":"boolean","required":true,"title":"roundToZero"},"active":{"type":"boolean","required":true,"title":"active"},"fullSupply":{"type":"boolean","required":true,"title":"fullSupply"},"tracer":{"type":"boolean","required":true,"title":"tracer"}}}'
+/api/products: 
+    displayName: ApiProducts
+    get: 
+        description: Get a list of all products in the system.
+        responses: 
+            "200": 
+                description: The request has succeeded
+                body: 
+                    application/json: 
+                        schema: Product
+                        example: '[{"code":"sample code","primaryName":"sample primaryName","dispensingUnit":"sample dispensingUnit","dosesPerDispensingUnit":1}]'
+    post: 
+        description: Create a product.
+        body: 
+            application/json: 
+                schema: Product
+                example: '{"code":"sample code","primaryName":"sample primaryName","dispensingUnit":"sample dispensingUnit","dosesPerDispensingUnit":1,"packSize":1,"packRoundingThreshold":1,"roundToZero":false,"active":false,"fullSupply":false,"tracer":false}'
+        responses: 
+            "201": 
+                description: The request has been fulfilled and resulted in a new resource being created
+                body: 
+                    application/json: 
+                        schema: Product
+                        example: '[{"code":"sample code","primaryName":"sample primaryName","dispensingUnit":"sample dispensingUnit","dosesPerDispensingUnit":1}]'
+
