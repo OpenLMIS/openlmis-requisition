@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.mockito.Mockito;
+import org.openlmis.csv.CsvOrderGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;

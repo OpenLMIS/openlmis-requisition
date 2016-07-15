@@ -1,4 +1,4 @@
-package org.openlmis.download;
+package org.openlmis.csv;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
@@ -24,11 +24,14 @@ public class CsvOrderGenerator {
    *        defines what fields of Object will be written to CSV
    */
   public String orderToCsv(Order order, String[] chosenColumns) {
-    List<Map<String, Object>> csvRows = orderToCsvRows(order);
+    if (order != null) {
+      List<Map<String, Object>> csvRows = orderToCsvRows(order);
+      CsvGenerator generator = new CsvGenerator();
 
-    CsvGenerator generator = new CsvGenerator();
+      return generator.toCsv(csvRows, chosenColumns);
+    }
 
-    return generator.toCsv(csvRows, chosenColumns);
+    return null;
   }
 
   private List<Map<String, Object>> orderToCsvRows(Order order) {
