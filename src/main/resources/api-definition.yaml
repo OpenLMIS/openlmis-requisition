@@ -5,28 +5,10 @@ baseUri: "http://localhost:8080"
 schemas: 
     - 
         Product: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Product","properties":{"code":{"type":"string","required":true,"title":"code"},"primaryName":{"type":"string","required":true,"title":"primaryName"},"dispensingUnit":{"type":"string","required":true,"title":"dispensingUnit"},"dosesPerDispensingUnit":{"type":"integer","required":true,"title":"dosesPerDispensingUnit"},"packSize":{"type":"integer","required":true,"title":"packSize"},"packRoundingThreshold":{"type":"integer","required":true,"title":"packRoundingThreshold"},"roundToZero":{"type":"boolean","required":true,"title":"roundToZero"},"active":{"type":"boolean","required":true,"title":"active"},"fullSupply":{"type":"boolean","required":true,"title":"fullSupply"},"tracer":{"type":"boolean","required":true,"title":"tracer"}}}'
-/api/products: 
-    displayName: ApiProducts
-    get: 
-        description: Get a list of all products in the system.
-        responses: 
-            "200": 
-                description: The request has succeeded
-                body: 
-                    application/json: 
-                        schema: Product
-                        example: '[{"code":"sample code","primaryName":"sample primaryName","dispensingUnit":"sample dispensingUnit","dosesPerDispensingUnit":1}]'
-    post: 
-        description: Create a product.
-        body: 
-            application/json: 
-                schema: Product
-                example: '{"code":"sample code","primaryName":"sample primaryName","dispensingUnit":"sample dispensingUnit","dosesPerDispensingUnit":1,"packSize":1,"packRoundingThreshold":1,"roundToZero":false,"active":false,"fullSupply":false,"tracer":false}'
-        responses: 
-            "201": 
-                description: The request has been fulfilled and resulted in a new resource being created
-                body: 
-                    application/json: 
-                        schema: Product
-                        example: '[{"code":"sample code","primaryName":"sample primaryName","dispensingUnit":"sample dispensingUnit","dosesPerDispensingUnit":1}]'
+    - 
+        Right: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Right","properties":{"name":{"type":"string","required":true,"title":"name"},"rightType":{"type":"string","required":true,"title":"rightType"},"description":{"type":"string","required":false,"title":"description"}}}'
+    - 
+        RequisitionTemplateColumn: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionTemplateColumn","properties":{"name":{"type":"string","required":false,"title":"name"},"label":{"type":"string","required":false,"title":"label"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"isDisplayed":{"type":"boolean","required":false,"title":"isDisplayed"},"isDisplayRequired":{"type":"boolean","required":false,"title":"isDisplayRequired"},"canChangeOrder":{"type":"boolean","required":false,"title":"canChangeOrder"},"source":{"type":"string","required":false,"title":"source"}}}'
+    - 
+        ProductCategory: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"ProductCategory","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"displayOrder":{"type":"integer","required":true,"title":"displayOrder"}}}'
 
