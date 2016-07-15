@@ -1,9 +1,9 @@
 #%RAML 0.8
-title: OpenLMIS Requsition
+title: OpenLMIS Requisition API
 version: "1.0.0"
 baseUri: "http://localhost:8080"
-schemas: 
-    - 
+schemas:
+    -
         Product: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Product","properties":{"code":{"type":"string","required":true,"title":"code"},"primaryName":{"type":"string","required":true,"title":"primaryName"},"dispensingUnit":{"type":"string","required":true,"title":"dispensingUnit"},"dosesPerDispensingUnit":{"type":"integer","required":true,"title":"dosesPerDispensingUnit"},"packSize":{"type":"integer","required":true,"title":"packSize"},"packRoundingThreshold":{"type":"integer","required":true,"title":"packRoundingThreshold"},"roundToZero":{"type":"boolean","required":true,"title":"roundToZero"},"active":{"type":"boolean","required":true,"title":"active"},"fullSupply":{"type":"boolean","required":true,"title":"fullSupply"},"tracer":{"type":"boolean","required":true,"title":"tracer"}}}'
     - 
         Right: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Right","properties":{"name":{"type":"string","required":true,"title":"name"},"rightType":{"type":"string","required":true,"title":"rightType"},"description":{"type":"string","required":false,"title":"description"}}}'
@@ -11,4 +11,18 @@ schemas:
         RequisitionTemplateColumn: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionTemplateColumn","properties":{"name":{"type":"string","required":false,"title":"name"},"label":{"type":"string","required":false,"title":"label"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"isDisplayed":{"type":"boolean","required":false,"title":"isDisplayed"},"isDisplayRequired":{"type":"boolean","required":false,"title":"isDisplayRequired"},"canChangeOrder":{"type":"boolean","required":false,"title":"canChangeOrder"},"source":{"type":"string","required":false,"title":"source"}}}'
     - 
         ProductCategory: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"ProductCategory","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"displayOrder":{"type":"integer","required":true,"title":"displayOrder"}}}'
+    -
+        GeographicLevel: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicLevel","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"levelNumber":{"type":"integer","required":true,"title":"levelNumber"}}}'
+    -
+        FacilityOperator: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityOperator","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"}}}'
+    -
+        FacilityType: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityType","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"active":{"type":"boolean","required":false,"title":"active"}}}'
+    -
+        Program: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Program","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"active":{"type":"boolean","required":false,"title":"active"},"skippable":{"type":"boolean","required":true,"title":"skippable"},"showNonFullSupplyTab":{"type":"boolean","required":false,"title":"showNonFullSupplyTab"}}}'
 
+/api/products:
+    displayName: Products
+/api/geographicLevels:
+    displayName: GeographicLevels
+/api/facilityOperators:
+    displayName: FacilityTypes
