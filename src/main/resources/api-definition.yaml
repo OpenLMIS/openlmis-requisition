@@ -1,5 +1,40 @@
 #%RAML 0.8
-
-title: OpenLMIS Requsition
+title: OpenLMIS Requisition API
 version: "1.0.0"
 baseUri: "http://localhost:8080/api"
+schemas:
+    -
+        geographicLevel: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","description":"A single GeographicLevel representation","title":"geographicLevel","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"levelNumber":{"type":"string","required":true,"title":"levelNumber"}}}'
+    -
+        geographicZone: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","description":"A single GeographicZone representation","title":"geographicZone","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"level":{"type":"object","$ref":"#/schemas/geographicLevel","required":true,"title":"level"},"catchmentPopulation":{"type":"integer","required":false,"title":"catchmentPopulation"},"latitude":{"type":"number","required":false,"title":"latitude"},"longitude":{"type":"number","required":false,"title":"longitude"}}}'
+/geographicZones:
+    displayName: GeographicZones
+    get:
+        description: Get a list of all of the geographicZones entities in the system.
+        displayName: GET geographicZones
+        responses:
+            "200":
+                description: Returns all geographicZones
+                body:
+                    application/json:
+                        schema: geographicZone
+                        example: '[{"code":"sample code","name":"sample name","level":null,"catchmentPopulation":1,"latitude":1.1,"longitude":1.1}]'
+            "404":
+                description: No geographicZones found.
+    post:
+        description: Creates new GeographicZone entity.
+        displayName: CREATE geographicZone entity
+        body:
+            application/json:
+                schema: geographicZone
+                example: '{"code":"sample code","name":"sample name","level":null,"catchmentPopulation":1,"latitude":1.1,"longitude":1.1}'
+/geographicLevels:
+    displayName: GeographicLevels
+    get:
+        description: Get a list of all of the geographicLevel entities in the system.
+        displayName: GET geographicLevels
+    post:
+        displayName: CREATE geographicLevel entity
+        responses:
+            "200":
+                description: Geographic level created
