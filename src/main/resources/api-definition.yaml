@@ -110,3 +110,24 @@ schemas:
             required: false
             repeat: false
     get:
+/periods/{id}/difference:
+    displayName: PeriodsIdDifference
+    uriParameters:
+        id:
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    get:
+/periods/search/findByProcessingSchedule:
+    displayName: PeriodsSearchFindByProcessingSchedule
+    get:
+        queryParameters:
+            processingSchedule:
+                displayName: processingSchedule
+                type: string
+                required: true
+                repeat: false
+/periods/search/findFirst1ByOrderByEndDateDesc:
+    displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
+    get:
