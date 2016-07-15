@@ -1,8 +1,8 @@
 #%RAML 0.8
 title: OpenLMIS Requisition API
 version: "1.0.0"
-baseUri: "http://localhost:8080"
-schemas: 
+baseUri: "http://localhost:8080/api"
+schemas:
     - 
         Facility: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Facility","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"geographicZone":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"geographicZone"},"type":{"type":"object","$ref":"#/schemas/FacilityType","required":true,"title":"type"},"operator":{"type":"object","$ref":"#/schemas/FacilityOperator","required":false,"title":"operator"},"active":{"type":"boolean","required":true,"title":"active"},"goLiveDate":{"type":"string","required":false,"title":"goLiveDate"},"goDownDate":{"type":"string","required":false,"title":"goDownDate"},"comment":{"type":"string","required":false,"title":"comment"},"enabled":{"type":"boolean","required":true,"title":"enabled"}}}'
     - 
@@ -45,7 +45,7 @@ schemas:
         Schedule: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Schedule","properties":{"code":{"type":"string","required":true,"title":"code"},"description":{"type":"string","required":false,"title":"description"},"modifiedDate":{"type":"string","required":false,"title":"modifiedDate"},"name":{"type":"string","required":true,"title":"name"}}}'
     -
         User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
-/api/orders/search/findBySupplyingFacility:
+/orders/search/findBySupplyingFacility:
     displayName: Search Orders with matched SupplyingFacility
     description: Search Orders with matched SupplyingFacility
     get:
@@ -56,7 +56,7 @@ schemas:
                 required: true
                 repeat: false
                 example: supplyingFacility=abc
-/api/requisitions/search:
+/requisitions/search:
     displayName: ApiRequisitionsSearch
     get:
         queryParameters:
@@ -80,10 +80,10 @@ schemas:
                 type: string
                 required: false
                 repeat: false
-/api/requisitions/submit:
+/requisitions/submit:
     displayName: ApiRequisitionsSubmit
     post:
-/api/requisitions/{id}/skip:
+/requisitions/{id}/skip:
     displayName: ApiRequisitionsIdSkip
     uriParameters:
         id:
@@ -92,7 +92,7 @@ schemas:
             required: false
             repeat: false
     put:
-/api/requisitions/{id}/reject:
+/requisitions/{id}/reject:
     displayName: ApiRequisitionsIdReject
     uriParameters:
         id:
@@ -101,7 +101,7 @@ schemas:
             required: false
             repeat: false
     put:
-/api/requisitions/creator/{creatorId}:
+/requisitions/creator/{creatorId}:
     displayName: ApiRequisitionsCreatorCreatorId
     uriParameters:
         creatorId:
@@ -109,4 +109,4 @@ schemas:
             type: string
             required: false
             repeat: false
-    get: 
+    get:
