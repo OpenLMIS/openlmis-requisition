@@ -17,7 +17,7 @@ public class CsvOrderGenerator {
 
   /**
    * Method prepares csv-formatted rows from Order object and
-   *        then hands over this rows to CsvGenerator.
+   * then hands over this rows to CsvGenerator.
    *
    * @param order to be saved in CSV format
    * @param chosenColumns - array of chosen columns names which
@@ -43,7 +43,7 @@ public class CsvOrderGenerator {
 
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
-      row.put(DEFAULT_COLUMNS[2],orderNum);
+      row.put(DEFAULT_COLUMNS[2], orderNum);
       row.put(DEFAULT_COLUMNS[3], orderLine.getProduct().getPrimaryName());
       row.put(DEFAULT_COLUMNS[4], orderLine.getProduct().getCode());
       row.put(DEFAULT_COLUMNS[5], orderLine.getOrderedQuantity());

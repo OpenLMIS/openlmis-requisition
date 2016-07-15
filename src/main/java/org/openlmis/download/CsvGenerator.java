@@ -1,5 +1,6 @@
 package org.openlmis.download;
 
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.supercsv.io.CsvMapWriter;
@@ -16,15 +17,13 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public class CsvGenerator {
 
   Logger logger = LoggerFactory.getLogger(CsvGenerator.class);
 
-  public CsvGenerator() {
-  }
-
   /**
-   * generates CSV String from given rows.
+   * Generates CSV String from given rows.
    *
    * @param rows - list of Map which values are Csv row values
    * @param chosenColumns - array of chosen columns names which defines
@@ -35,7 +34,6 @@ public class CsvGenerator {
     String csv = null;
 
     if (!rows.isEmpty()) {
-
       StringWriter writer = new StringWriter();
 
       ICsvMapWriter mapWriter = null;
@@ -59,7 +57,7 @@ public class CsvGenerator {
   }
 
   /**
-   * generates CSV file to given output builded from given rows.
+   * Generates CSV file to given output builded from given rows.
    *
    * @param rows - list of Map which values are Csv row values
    * @param chosenColumns - array of chosen columns names which defines
