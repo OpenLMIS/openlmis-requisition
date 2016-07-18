@@ -3,17 +3,17 @@ title: OpenLMIS Requisition API
 version: "1.0.0"
 baseUri: "http://localhost:8080/api"
 schemas:
-    - 
+    -
         Facility: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Facility","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"geographicZone":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"geographicZone"},"type":{"type":"object","$ref":"#/schemas/FacilityType","required":true,"title":"type"},"operator":{"type":"object","$ref":"#/schemas/FacilityOperator","required":false,"title":"operator"},"active":{"type":"boolean","required":true,"title":"active"},"goLiveDate":{"type":"string","required":false,"title":"goLiveDate"},"goDownDate":{"type":"string","required":false,"title":"goDownDate"},"comment":{"type":"string","required":false,"title":"comment"},"enabled":{"type":"boolean","required":true,"title":"enabled"}}}'
-    - 
+    -
         FacilityOperator: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityOperator","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"}}}'
-    - 
+    -
         FacilityType: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityType","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"active":{"type":"boolean","required":false,"title":"active"}}}'
-    - 
+    -
         FacilityTypeApprovedProduct: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityTypeApprovedProduct","properties":{"facilityType":{"type":"object","$ref":"#/schemas/FacilityType","required":true,"title":"facilityType"},"programProduct":{"type":"object","$ref":"#/schemas/ProgramProduct","required":true,"title":"programProduct"},"maxMonthsOfStock":{"type":"number","required":true,"title":"maxMonthsOfStock"},"minMonthsOfStock":{"type":"number","required":false,"title":"minMonthsOfStock"},"emergencyOrderPoint":{"type":"number","required":false,"title":"emergencyOrderPoint"}}}'
-    - 
+    -
         GeographicLevel: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicLevel","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"levelNumber":{"type":"integer","required":true,"title":"levelNumber"}}}'
-    - 
+    -
         GeographicZone: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicZone","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"level":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"level"},"catchmentPopulation":{"type":"integer","required":false,"title":"catchmentPopulation"},"latitude":{"type":"number","required":false,"title":"latitude"},"longitude":{"type":"number","required":false,"title":"longitude"}}}'
     -
         Order: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Order","properties":{"requisitionCode":{"type":"string","required":false,"title":"requisitionCode"},"createdDate":{"type":"string","required":false,"title":"createdDate"},"createdBy":{"type":"object","$ref":"#/schemas/User","required":true,"title":"createdBy"},"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"requestingFacility":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"requestingFacility"},"receivingFacilityId":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"receivingFacilityId"},"supplyingFacilityId":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"supplyingFacilityId"},"orderCode":{"type":"string","required":true,"title":"orderCode"},"status":{"type":"string","required":true,"title":"status"},"quotedCost":{"type":"integer","required":true,"title":"quotedCost"},"orderLines":{"type":"array","required":false,"title":"orderLines","items":{"type":"object","$ref":"#/schemas/OrderLine"},"uniqueItems":false}}}'
@@ -46,9 +46,11 @@ schemas:
     -
         User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
 /orders/search/findBySupplyingFacility:
-    displayName: Search Orders with matched SupplyingFacility
-    description: Search Orders with matched SupplyingFacility
+    displayName: ApiFindBySupplyingFacility
+    description: ""
     get:
+        description: Find Orders with matched SupplyingFacility
+        displayName: Find Orders with matched SupplyingFacility
         queryParameters:
             supplyingFacility:
                 displayName: supplyingFacility
@@ -131,3 +133,90 @@ schemas:
 /periods/search/findFirst1ByOrderByEndDateDesc:
     displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
     get:
+/orders/search/findBySupplyingFacilityAndRequestingFacility:
+    displayName: ApiFindBySupplyingFacilityAndRequestingFacility
+    description: ""
+    get:
+        description: Find Orders with matched SupplyingFacility and RequestingFacility
+        displayName: Find Orders with matched SupplyingFacility and RequestingFacility
+        queryParameters:
+            SupplyingFacility:
+                displayName: SupplyingFacility
+                type: string
+                required: true
+                repeat: false
+            RequestingFacility:
+                displayName: RequestingFacility
+                type: string
+                required: true
+                repeat: false
+/orders/search/findBySupplyingFacilityAndProgram:
+    displayName: ApiFindBySupplyingFacilityAndProgram
+    description: ""
+    get:
+        description: Find Orders with matched SupplyingFacility and Program
+        displayName: Find Orders with matched SupplyingFacility and Program
+        queryParameters:
+            SupplyingFacility:
+                displayName: SupplyingFacility
+                type: string
+                required: true
+                repeat: false
+            Program:
+                displayName: Program
+                type: string
+                required: true
+                repeat: false
+/orders/search/findBySupplyingFacilityAndRequestingFacilityAndProgram:
+    displayName: ApiFindBySupplyingFacilityAndRequestingFacilityAndProgram
+    get:
+        description: Find Orders with matched SupplyingFacility, RequestingFacility and Program
+        displayName: Find Orders with matched SupplyingFacility, RequestingFacility and Program
+        queryParameters:
+            SupplyingFacility:
+                displayName: SupplyingFacility
+                type: string
+                required: true
+                repeat: false
+            RequestingFacility:
+                displayName: RequestingFacility
+                type: string
+                required: true
+                repeat: false
+            Program:
+                displayName: Program
+                type: string
+                required: true
+                repeat: false
+/programProducts/search/findByProgram:
+    displayName: ApiFindByProgram
+    get:
+        description: Find ProgramProducts with matched Program.
+        displayName: Find ProgramProducts with matched Program.
+/programProducts/search/findByProgramAndFullSupply:
+    displayName: ApiFindByProgramAndFullSupply
+    get:
+        description: Find ProgramProducts with matched Program and FullSupply.
+        displayName: Find ProgramProducts with matched Program and FullSupply.
+        queryParameters:
+            Program:
+                displayName: Program
+                type: string
+                required: true
+                repeat: false
+            FullSupply:
+                displayName: FullSupply
+                type: boolean
+                required: true
+                repeat: false
+/api/productCategories/search/findByCode:
+    displayName: ApiFindByCode
+    get:
+        description: Find ProductCategories with matched Code.
+        displayName: Find ProductCategories with matched Code.
+        queryParameters:
+            Code:
+                displayName: Code
+                type: string
+                required: true
+                repeat: false
