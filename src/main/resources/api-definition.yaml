@@ -45,12 +45,6 @@ schemas:
         Schedule: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Schedule","properties":{"code":{"type":"string","required":true,"title":"code"},"description":{"type":"string","required":false,"title":"description"},"modifiedDate":{"type":"string","required":false,"title":"modifiedDate"},"name":{"type":"string","required":true,"title":"name"}}}'
     - 
         User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
-/api/products: 
-    displayName: Products
-/api/geographicLevels: 
-    displayName: GeographicLevels
-/api/facilityOperators: 
-    displayName: FacilityTypes
 /users/search/findByFirstNameAndLastName: 
     displayName: findByFirstNameAndLastName
     description: ""
