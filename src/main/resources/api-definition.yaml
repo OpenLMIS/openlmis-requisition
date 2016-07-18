@@ -46,260 +46,279 @@ schemas:
     - 
         User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
 /orders/search/findBySupplyingFacility: 
-    displayName: ApiFindBySupplyingFacility
-    description: ApiFindBySupplyingFacility
-    get: 
-        description: Find Orders with matched SupplyingFacility
-        displayName: Find Orders with matched SupplyingFacility
-        queryParameters: 
-            supplyingFacility: 
+    displayName: findBySupplyingFacility
+    description: ApiFindBySupplyingFacility.
+    get:
+        description: Find Orders with matched SupplyingFacility.
+        queryParameters:
+            supplyingFacility:
                 displayName: supplyingFacility
+                description: SupplyingFacility ID.
                 type: string
-                required: false
+                required: true
                 repeat: false
-/users/search/findByFirstNameAndLastName: 
+/users/search/findByFirstNameAndLastName:
     displayName: findByFirstNameAndLastName
     description: ApiFindByFirstNameAndLastName
-    get: 
+    get:
         description: Search Users with matched FirstName and LastName
-        queryParameters: 
-            firstName: 
+        queryParameters:
+            firstName:
                 displayName: firstName
                 type: string
                 required: true
                 repeat: false
-            lastName: 
+            lastName:
                 displayName: lastName
                 type: string
                 required: true
                 repeat: false
-/requisitions/search: 
+/requisitions/search:
     displayName: ApiRequisitionsSearch
-    get: 
-        queryParameters: 
-            facility: 
+    get:
+        queryParameters:
+            facility:
                 displayName: facility
                 type: string
                 required: false
                 repeat: false
-            program: 
+            program:
                 displayName: program
                 type: string
                 required: false
                 repeat: false
-            createdDateFrom: 
+            createdDateFrom:
                 displayName: createdDateFrom
                 type: string
                 required: false
                 repeat: false
-            createdDateTo: 
+            createdDateTo:
                 displayName: createdDateTo
                 type: string
                 required: false
                 repeat: false
-/requisitions/submit: 
+/requisitions/submit:
     displayName: ApiRequisitionsSubmit
-    post: 
-/requisitions/{id}/skip: 
+    post:
+/requisitions/{id}/skip:
     displayName: ApiRequisitionsIdSkip
-    uriParameters: 
-        id: 
+    uriParameters:
+        id:
             displayName: id
             type: string
             required: false
             repeat: false
-    put: 
-/requisitions/{id}/reject: 
+    put:
+/requisitions/{id}/reject:
     displayName: ApiRequisitionsIdReject
-    uriParameters: 
-        id: 
+    uriParameters:
+        id:
             displayName: id
             type: string
             required: false
             repeat: false
-    put: 
-/requisitions/creator/{creatorId}: 
+    put:
+/requisitions/creator/{creatorId}:
     displayName: ApiRequisitionsCreatorCreatorId
-    uriParameters: 
-        creatorId: 
+    uriParameters:
+        creatorId:
             displayName: creatorId
             type: string
             required: false
             repeat: false
-    get: 
-/periods/{id}/difference: 
+    get:
+/periods/{id}/difference:
     displayName: PeriodsIdDifference
-    uriParameters: 
-        id: 
+    uriParameters:
+        id:
             displayName: id
             type: string
             required: false
             repeat: false
-    get: 
-/periods/search/findByProcessingSchedule: 
+    get:
+/periods/search/findByProcessingSchedule:
     displayName: PeriodsSearchFindByProcessingSchedule
-    get: 
-        queryParameters: 
-            processingSchedule: 
+    get:
+        queryParameters:
+            processingSchedule:
                 displayName: processingSchedule
                 type: string
                 required: true
                 repeat: false
-/periods/search/findFirst1ByOrderByEndDateDesc: 
+/periods/search/findFirst1ByOrderByEndDateDesc:
     displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
-    get: 
-/orders/search/findBySupplyingFacilityAndRequestingFacility: 
-    displayName: ApiFindBySupplyingFacilityAndRequestingFacility
-    description: ApiFindBySupplyingFacilityAndRequestingFacility
-    get: 
+    get:
+/orders/search/findBySupplyingFacilityAndRequestingFacility:
+    displayName: findBySupplyingFacilityAndRequestingFacility
+    description: ApiFindBySupplyingFacilityAndRequestingFacility.
+    get:
         description: Find Orders with matched SupplyingFacility and RequestingFacility
-        displayName: Find Orders with matched SupplyingFacility and RequestingFacility
-        queryParameters: 
-            SupplyingFacility: 
+        queryParameters:
+            SupplyingFacility:
                 displayName: SupplyingFacility
+                description: SupplyingFacility ID.
                 type: string
                 required: true
                 repeat: false
-            RequestingFacility: 
+            RequestingFacility:
                 displayName: RequestingFacility
+                description: RequestingFacility ID.
                 type: string
                 required: true
                 repeat: false
-/orders/search/findBySupplyingFacilityAndProgram: 
-    displayName: ApiFindBySupplyingFacilityAndProgram
+/orders/search/findBySupplyingFacilityAndProgram:
+    displayName: findBySupplyingFacilityAndProgram
     description: ApiFindBySupplyingFacilityAndProgram
-    get: 
+    get:
         description: Find Orders with matched SupplyingFacility and Program
-        displayName: Find Orders with matched SupplyingFacility and Program
-        queryParameters: 
-            SupplyingFacility: 
+        queryParameters:
+            SupplyingFacility:
                 displayName: SupplyingFacility
+                description: SupplyingFacility ID.
                 type: string
                 required: true
                 repeat: false
-            Program: 
+            Program:
                 displayName: Program
+                description: Program ID.
                 type: string
                 required: true
                 repeat: false
-/orders/search/findBySupplyingFacilityAndRequestingFacilityAndProgram: 
-    displayName: ApiFindBySupplyingFacilityAndRequestingFacilityAndProgram
+/orders/search/findBySupplyingFacilityAndRequestingFacilityAndProgram:
+    displayName: findBySupplyingFacilityAndRequestingFacilityAndProgram
     description: ApiFindBySupplyingFacilityAndRequestingFacilityAndProgram
-    get: 
+    get:
         description: Find Orders with matched SupplyingFacility, RequestingFacility and Program
-        displayName: Find Orders with matched SupplyingFacility, RequestingFacility and Program
-        queryParameters: 
-            SupplyingFacility: 
+        queryParameters:
+            SupplyingFacility:
                 displayName: SupplyingFacility
+                description: SupplyingFacility ID.
                 type: string
                 required: true
                 repeat: false
-            RequestingFacility: 
+            RequestingFacility:
                 displayName: RequestingFacility
+                description: RequestingFacility ID.
                 type: string
                 required: true
                 repeat: false
-            Program: 
+            Program:
                 displayName: Program
+                description: Program ID.
                 type: string
                 required: true
                 repeat: false
-/programProducts/search/findByProgram: 
-    displayName: ApiFindByProgram
-    get: 
+/programProducts/search/findByProgram:
+    displayName: findByProgram
+    description: ApiFindByProgram.
+    get:
         description: Find ProgramProducts with matched Program.
-        displayName: Find ProgramProducts with matched Program.
-/programProducts/search/findByProgramAndFullSupply: 
-    displayName: ApiFindByProgramAndFullSupply
-    get: 
-        description: Find ProgramProducts with matched Program and FullSupply.
-        displayName: Find ProgramProducts with matched Program and FullSupply.
-        queryParameters: 
-            Program: 
+        queryParameters:
+            Program:
                 displayName: Program
+                description: Program ID.
                 type: string
                 required: true
                 repeat: false
-            FullSupply: 
+/programProducts/search/findByProgramAndFullSupply:
+    displayName: ApiFindByProgramAndFullSupply
+    get:
+        description: Find ProgramProducts with matched Program and FullSupply.
+        queryParameters:
+            Program:
+                displayName: Program
+                description: Program ID.
+                type: string
+                required: true
+                repeat: false
+            FullSupply:
                 displayName: FullSupply
+                description: Is programProduct fullSupply?
                 type: boolean
                 required: true
                 repeat: false
 /productCategories/search/findByCode:
     displayName: ApiFindByCode
-    get: 
-/schedules/{id}/difference: 
+    get:
+        description: Find ProductCategories with matched Code.
+        queryParameters:
+            Code:
+                displayName: Code
+                description: productCategory code.
+                type: string
+                required: true
+                repeat: false
+/schedules/{id}/difference:
     displayName: schedulesIdDifference
-    uriParameters: 
-        id: 
+    uriParameters:
+        id:
             displayName: id
             type: string
             required: false
             repeat: false
-    get: 
-/users/search/findByFirstName: 
+    get:
+/users/search/findByFirstName:
     displayName: findByFirstName
-    get: 
+    get:
         description: Search Users with matched FirstName
-        queryParameters: 
-            firstName: 
+        queryParameters:
+            firstName:
                 displayName: firstName
                 type: string
                 required: true
                 repeat: false
-/users/search/findByLastName: 
+/users/search/findByLastName:
     displayName: findByLastName
     description: ApiFindByLastName
-    get: 
+    get:
         description: Search Users with matched LastName
-        queryParameters: 
-            lastName: 
+        queryParameters:
+            lastName:
                 displayName: lastName
                 type: string
                 required: true
                 repeat: false
-/users/search/findByVerified: 
+/users/search/findByVerified:
     displayName: findByVerified
     description: ApiFindByVerified
-    get: 
+    get:
         description: Search Users with matched Verified
-        queryParameters: 
-            verified: 
+        queryParameters:
+            verified:
                 displayName: verified
                 type: boolean
                 required: true
                 repeat: false
-/users/search/findByActive: 
+/users/search/findByActive:
     displayName: findByActive
     description: ApiFindByActive
-    get: 
+    get:
         description: Search Users with matched Active
-        queryParameters: 
-            active: 
+        queryParameters:
+            active:
                 displayName: active
                 type: boolean
                 required: true
                 repeat: false
-/users/search/findByHomeFacility: 
+/users/search/findByHomeFacility:
     displayName: findByHomeFacility
     description: ApiFindByHomeFacility
-    get: 
+    get:
         description: Search Users with matched HomeFacility
-        queryParameters: 
-            homeFacility: 
+        queryParameters:
+            homeFacility:
                 displayName: homeFacility
                 type: string
                 required: true
                 repeat: false
-/users/search/findByUsername: 
+/users/search/findByUsername:
     displayName: findByUsername
     description: ApiFindByUsername
-    get: 
+    get:
         description: Search Users with matched Username
-        queryParameters: 
-            username: 
+        queryParameters:
+            username:
                 displayName: username
                 type: string
                 required: true
                 repeat: false
-
