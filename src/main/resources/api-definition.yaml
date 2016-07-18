@@ -76,6 +76,8 @@ schemas:
 /requisitions/search:
     displayName: ApiRequisitionsSearch
     get:
+        description: Find requisitions matching all of provided parameters.
+        displayName: Find requisitions matching all of provided parameters.
         queryParameters:
             facility:
                 displayName: facility
@@ -87,12 +89,12 @@ schemas:
                 type: string
                 required: false
                 repeat: false
-            createdDateFrom: 
+            createdDateFrom:
                 displayName: createdDateFrom
                 type: string
                 required: false
                 repeat: false
-            createdDateTo: 
+            createdDateTo:
                 displayName: createdDateTo
                 type: string
                 required: false
@@ -100,6 +102,8 @@ schemas:
 /requisitions/submit:
     displayName: ApiRequisitionsSubmit
     post:
+        description: Submit earlier initiated requisition.
+        displayName: Submit earlier initiated requisition.
 /requisitions/{id}/skip:
     displayName: ApiRequisitionsIdSkip
     uriParameters:
@@ -109,6 +113,8 @@ schemas:
             required: false
             repeat: false
     put:
+        description: Skip chosen requisition period.
+        displayName: Skip chosen requisition period.
 /requisitions/{id}/reject:
     displayName: ApiRequisitionsIdReject
     uriParameters:
@@ -118,6 +124,8 @@ schemas:
             required: false
             repeat: false
     put:
+        description: Reject requisition which is waiting for approval.
+        displayName: Reject requisition which is waiting for approval.
 /requisitions/creator/{creatorId}:
     displayName: ApiRequisitionsCreatorCreatorId
     uriParameters:
@@ -127,6 +135,8 @@ schemas:
             required: false
             repeat: false
     get:
+        description: Search requisitions created by logged user.
+        displayName: Search requisitions created by logged user.
 /periods/{id}/difference:
     displayName: PeriodsIdDifference
     uriParameters:
@@ -136,9 +146,13 @@ schemas:
             required: false
             repeat: false
     get:
+        description: Display total days of period.
+        displayName: Display total days of period.
 /periods/search/findByProcessingSchedule:
     displayName: PeriodsSearchFindByProcessingSchedule
     get:
+        description: Find Periods with matched ProcessingSchedule.
+        displayName: Find Periods with matched ProcessingSchedule.
         queryParameters:
             processingSchedule:
                 displayName: processingSchedule
@@ -148,6 +162,8 @@ schemas:
 /periods/search/findFirst1ByOrderByEndDateDesc:
     displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
     get:
+        description: Get last Period.
+        displayName: Get last Period.
 /orders/search/findBySupplyingFacilityAndRequestingFacility:
     displayName: ApiFindBySupplyingFacilityAndRequestingFacility
     description: ApiFindBySupplyingFacilityAndRequestingFacility
