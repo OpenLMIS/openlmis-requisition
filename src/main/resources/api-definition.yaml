@@ -224,7 +224,7 @@ schemas:
                 type: boolean
                 required: true
                 repeat: false
-/api/productCategories/search/findByCode:
+/productCategories/search/findByCode:
     displayName: ApiFindByCode
     get:
 /schedules/{id}/difference: 
