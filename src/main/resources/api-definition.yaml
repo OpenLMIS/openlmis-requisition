@@ -1,7 +1,7 @@
 #%RAML 0.8
 title: OpenLMIS Requisition API
 version: "1.0.0"
-baseUri: "http://localhost:8080"
+baseUri: "http://localhost:8080/api"
 schemas: 
     - 
         Facility: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Facility","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"geographicZone":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"geographicZone"},"type":{"type":"object","$ref":"#/schemas/FacilityType","required":true,"title":"type"},"operator":{"type":"object","$ref":"#/schemas/FacilityOperator","required":false,"title":"operator"},"active":{"type":"boolean","required":true,"title":"active"},"goLiveDate":{"type":"string","required":false,"title":"goLiveDate"},"goDownDate":{"type":"string","required":false,"title":"goDownDate"},"comment":{"type":"string","required":false,"title":"comment"},"enabled":{"type":"boolean","required":true,"title":"enabled"}}}'
@@ -51,7 +51,7 @@ schemas:
     displayName: GeographicLevels
 /api/facilityOperators: 
     displayName: FacilityTypes
-/api/users/search/findByFirstNameAndLastName: 
+/users/search/findByFirstNameAndLastName: 
     displayName: findByFirstNameAndLastName
     description: ""
     get: 
@@ -68,4 +68,153 @@ schemas:
                 type: string
                 required: true
                 repeat: false
-
+/orders/search/findBySupplyingFacility: 
+    displayName: Search Orders with matched SupplyingFacility
+    description: Search Orders with matched SupplyingFacility
+    get: 
+        queryParameters: 
+            supplyingFacility: 
+                displayName: supplyingFacility
+                type: string
+                required: true
+                repeat: false
+                example: supplyingFacility=abc
+/requisitions/search: 
+    displayName: ApiRequisitionsSearch
+    get: 
+        queryParameters: 
+            facility: 
+                displayName: facility
+                type: string
+                required: false
+                repeat: false
+            program: 
+                displayName: program
+                type: string
+                required: false
+                repeat: false
+            createdDateFrom: 
+                displayName: createdDateFrom
+                type: string
+                required: false
+                repeat: false
+            createdDateTo: 
+                displayName: createdDateTo
+                type: string
+                required: false
+                repeat: false
+/requisitions/submit: 
+    displayName: ApiRequisitionsSubmit
+    post: 
+/requisitions/{id}/skip: 
+    displayName: ApiRequisitionsIdSkip
+    uriParameters: 
+        id: 
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    put: 
+/requisitions/{id}/reject: 
+    displayName: ApiRequisitionsIdReject
+    uriParameters: 
+        id: 
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    put: 
+/requisitions/creator/{creatorId}: 
+    displayName: ApiRequisitionsCreatorCreatorId
+    uriParameters: 
+        creatorId: 
+            displayName: creatorId
+            type: string
+            required: false
+            repeat: false
+    get: 
+/periods/{id}/difference: 
+    displayName: PeriodsIdDifference
+    uriParameters: 
+        id: 
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    get: 
+/periods/search/findByProcessingSchedule: 
+    displayName: PeriodsSearchFindByProcessingSchedule
+    get: 
+        queryParameters: 
+            processingSchedule: 
+                displayName: processingSchedule
+                type: string
+                required: true
+                repeat: false
+/periods/search/findFirst1ByOrderByEndDateDesc: 
+    displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
+    get: 
+/schedules/{id}/difference: 
+    displayName: schedulesIdDifference
+    uriParameters: 
+        id: 
+            displayName: id
+            type: string
+            required: false
+            repeat: false
+    get: 
+/users/search/findByFirstName: 
+    displayName: findByFirstName
+    description: ""
+    get: 
+        queryParameters: 
+            firstName: 
+                displayName: firstName
+                type: string
+                required: true
+                repeat: false
+/users/search/findByLastName: 
+    displayName: findByLastName
+    get: 
+        queryParameters: 
+            lastName: 
+                displayName: lastName
+                type: string
+                required: true
+                repeat: false
+/users/search/findByVerified: 
+    displayName: findByVerified
+    get: 
+        queryParameters: 
+            verified: 
+                displayName: verified
+                type: boolean
+                required: true
+                repeat: false
+/users/search/findByActive: 
+    displayName: findByActive
+    get: 
+        queryParameters: 
+            active: 
+                displayName: active
+                type: boolean
+                required: true
+                repeat: false
+/users/search/findByHomeFacility: 
+    displayName: findByHomeFacility
+    get: 
+        queryParameters: 
+            homeFacility: 
+                displayName: homeFacility
+                type: string
+                required: true
+                repeat: false
+/users/search/findByUsername: 
+    displayName: findByUsername
+    get: 
+        queryParameters: 
+            username: 
+                displayName: username
+                type: string
+                required: true
+                repeat: false
