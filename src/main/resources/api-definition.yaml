@@ -134,7 +134,7 @@ schemas:
         id:
             displayName: id
             type: string
-            required: false
+            required: true
             repeat: false
     put:
         description: Skip chosen requisition period.
@@ -150,7 +150,7 @@ schemas:
         id:
             displayName: id
             type: string
-            required: false
+            required: true
             repeat: false
     put:
         description: Reject requisition which is waiting for approval.
@@ -166,7 +166,7 @@ schemas:
         creatorId:
             displayName: creatorId
             type: string
-            required: false
+            required: true
             repeat: false
     get:
         description: Search requisitions created by logged user.
@@ -182,7 +182,7 @@ schemas:
         id:
             displayName: id
             type: string
-            required: false
+            required: true
             repeat: false
     get:
         description: Display total days of period.
@@ -363,7 +363,7 @@ schemas:
             displayName: id
             description: ScheduleId
             type: string
-            required: false
+            required: true
             repeat: false
     get:
 /users/search/findByFirstName:
