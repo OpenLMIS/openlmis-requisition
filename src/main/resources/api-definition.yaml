@@ -47,7 +47,6 @@ schemas:
         User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
 /users/search/findByFirstNameAndLastName: 
     displayName: findByFirstNameAndLastName
-    description: ""
     get: 
         description: Search Users with matched FirstName and LastName
         queryParameters: 
@@ -56,7 +55,6 @@ schemas:
                 type: string
                 required: true
                 repeat: false
-                example: ""
             lastName: 
                 displayName: lastName
                 type: string
@@ -159,7 +157,6 @@ schemas:
     get: 
 /users/search/findByFirstName: 
     displayName: findByFirstName
-    description: ""
     get: 
         queryParameters: 
             firstName: 
