@@ -113,11 +113,21 @@ schemas:
                 type: string
                 required: false
                 repeat: false
+        responses:
+            "200":
+                description: Requisitions retrieved successfully
+            "500":
+                description: Wrong parameter provided
 /requisitions/submit:
     displayName: ApiRequisitionsSubmit
     post:
         description: Submit earlier initiated requisition.
         displayName: Submit earlier initiated requisition.
+        responses:
+            "201":
+                description: Requisition submitted successfully
+            "400":
+                description: Wrong requisition provided
 /requisitions/{id}/skip:
     displayName: ApiRequisitionsIdSkip
     uriParameters:
@@ -129,6 +139,11 @@ schemas:
     put:
         description: Skip chosen requisition period.
         displayName: Skip chosen requisition period.
+        responses:
+            "200":
+                description: Requisition skipped
+            "400":
+                description: Wrong ID provided
 /requisitions/{id}/reject:
     displayName: ApiRequisitionsIdReject
     uriParameters:
@@ -140,6 +155,11 @@ schemas:
     put:
         description: Reject requisition which is waiting for approval.
         displayName: Reject requisition which is waiting for approval.
+        responses:
+            "200":
+                description: Requisition rejected
+            "400":
+                description: Wrong ID provided
 /requisitions/creator/{creatorId}:
     displayName: ApiRequisitionsCreatorCreatorId
     uriParameters:
@@ -151,6 +171,11 @@ schemas:
     get:
         description: Search requisitions created by logged user.
         displayName: Search requisitions created by logged user.
+        responses:
+            "200":
+                description: Requisitions retrieved successfully
+            "500":
+                description: Wrong creatorId provided
 /periods/{id}/difference:
     displayName: PeriodsIdDifference
     uriParameters:
@@ -162,6 +187,11 @@ schemas:
     get:
         description: Display total days of period.
         displayName: Display total days of period.
+        responses:
+            "200":
+                description: Displaying total days of period
+            "400":
+                description: Wrong ID provided
 /periods/search/findByProcessingSchedule:
     displayName: PeriodsSearchFindByProcessingSchedule
     get:
@@ -173,11 +203,21 @@ schemas:
                 type: string
                 required: true
                 repeat: false
+        responses:
+            "200":
+                description: Periods retrieved successfully
+            "500":
+                description: Wrong ID provided
 /periods/search/findFirst1ByOrderByEndDateDesc:
     displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
     get:
         description: Get last Period.
         displayName: Get last Period.
+        responses:
+            "200":
+                description: Last Period retrieved successfully
+            "404":
+                description: No Period found
 /orders/search/findBySupplyingFacilityAndRequestingFacility:
     displayName: findBySupplyingFacilityAndRequestingFacility
     description: ApiFindBySupplyingFacilityAndRequestingFacility.
