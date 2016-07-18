@@ -15,15 +15,15 @@ schemas:
         GeographicLevel: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicLevel","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"levelNumber":{"type":"integer","required":true,"title":"levelNumber"}}}'
     - 
         GeographicZone: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicZone","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"level":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"level"},"catchmentPopulation":{"type":"integer","required":false,"title":"catchmentPopulation"},"latitude":{"type":"number","required":false,"title":"latitude"},"longitude":{"type":"number","required":false,"title":"longitude"}}}'
-    -
+    - 
         Order: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Order","properties":{"requisitionCode":{"type":"string","required":false,"title":"requisitionCode"},"createdDate":{"type":"string","required":false,"title":"createdDate"},"createdBy":{"type":"object","$ref":"#/schemas/User","required":true,"title":"createdBy"},"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"requestingFacility":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"requestingFacility"},"receivingFacilityId":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"receivingFacilityId"},"supplyingFacilityId":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"supplyingFacilityId"},"orderCode":{"type":"string","required":true,"title":"orderCode"},"status":{"type":"string","required":true,"title":"status"},"quotedCost":{"type":"integer","required":true,"title":"quotedCost"},"orderLines":{"type":"array","required":false,"title":"orderLines","items":{"type":"object","$ref":"#/schemas/OrderLine"},"uniqueItems":false}}}'
-    -
+    - 
         OrderLine: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"OrderLine","properties":{"product":{"type":"object","$ref":"#/schemas/Product","required":true,"title":"product"},"orderedQuantity":{"type":"integer","required":true,"title":"orderedQuantity"},"order":{"type":"object","$ref":"#/schemas/Order","required":false,"title":"order"}}}'
     - 
         Period: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Period","properties":{"processingSchedule":{"type":"object","$ref":"#/schemas/Schedule","required":true,"title":"processingSchedule"},"name":{"type":"string","required":true,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"startDate":{"type":"string","required":true,"title":"startDate"},"endDate":{"type":"string","required":true,"title":"endDate"}}}'
     - 
         Product: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Product","properties":{"code":{"type":"string","required":true,"title":"code"},"primaryName":{"type":"string","required":true,"title":"primaryName"},"dispensingUnit":{"type":"string","required":true,"title":"dispensingUnit"},"dosesPerDispensingUnit":{"type":"integer","required":true,"title":"dosesPerDispensingUnit"},"packSize":{"type":"integer","required":true,"title":"packSize"},"packRoundingThreshold":{"type":"integer","required":true,"title":"packRoundingThreshold"},"roundToZero":{"type":"boolean","required":true,"title":"roundToZero"},"active":{"type":"boolean","required":true,"title":"active"},"fullSupply":{"type":"boolean","required":true,"title":"fullSupply"},"tracer":{"type":"boolean","required":true,"title":"tracer"}}}'
-    -
+    - 
         ProductCategory: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"ProductCategory","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"displayOrder":{"type":"integer","required":true,"title":"displayOrder"}}}'
     - 
         Program: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Program","properties":{"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"active":{"type":"boolean","required":false,"title":"active"},"skippable":{"type":"boolean","required":true,"title":"skippable"},"showNonFullSupplyTab":{"type":"boolean","required":false,"title":"showNonFullSupplyTab"}}}'
@@ -35,9 +35,9 @@ schemas:
         RequisitionLine: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionLine","properties":{"requisition":{"type":"object","$ref":"#/schemas/Requisition","required":true,"title":"requisition"},"product":{"type":"object","$ref":"#/schemas/Product","required":true,"title":"product"},"quantityRequested":{"type":"integer","required":false,"title":"quantityRequested"}}}'
     - 
         RequisitionTemplate: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionTemplate","properties":{"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"columnsMap":{"type":"array","required":false,"title":"columnsMap","items":{"type":"string","title":"columnsMap"},"uniqueItems":false}}}'
-    -
+    - 
         RequisitionTemplateColumn: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionTemplateColumn","properties":{"name":{"type":"string","required":false,"title":"name"},"label":{"type":"string","required":false,"title":"label"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"isDisplayed":{"type":"boolean","required":false,"title":"isDisplayed"},"isDisplayRequired":{"type":"boolean","required":false,"title":"isDisplayRequired"},"canChangeOrder":{"type":"boolean","required":false,"title":"canChangeOrder"},"source":{"type":"string","required":false,"title":"source"}}}'
-    -
+    - 
         Right: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Right","properties":{"name":{"type":"string","required":true,"title":"name"},"rightType":{"type":"string","required":true,"title":"rightType"},"description":{"type":"string","required":false,"title":"description"}}}'
     - 
         Role: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Role","properties":{"name":{"type":"string","required":true,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"rights":{"type":"array","required":false,"title":"rights","items":{"type":"object","$ref":"#/schemas/Right"},"uniqueItems":false}}}'
@@ -45,10 +45,27 @@ schemas:
         Schedule: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Schedule","properties":{"code":{"type":"string","required":true,"title":"code"},"description":{"type":"string","required":false,"title":"description"},"modifiedDate":{"type":"string","required":false,"title":"modifiedDate"},"name":{"type":"string","required":true,"title":"name"}}}'
     - 
         User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
-
-/api/products:
+/api/products: 
     displayName: Products
-/api/geographicLevels:
+/api/geographicLevels: 
     displayName: GeographicLevels
-/api/facilityOperators:
+/api/facilityOperators: 
     displayName: FacilityTypes
+/api/users/search/findByFirstNameAndLastName: 
+    displayName: findByFirstNameAndLastName
+    description: ""
+    get: 
+        description: Search Users with matched FirstName and LastName
+        queryParameters: 
+            firstName: 
+                displayName: firstName
+                type: string
+                required: true
+                repeat: false
+                example: ""
+            lastName: 
+                displayName: lastName
+                type: string
+                required: true
+                repeat: false
+
