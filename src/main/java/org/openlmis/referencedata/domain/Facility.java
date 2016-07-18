@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -79,4 +80,10 @@ public class Facility extends BaseEntity {
   @Getter
   @Setter
   private Boolean openLmisAccessAbility;
+
+  @OneToOne
+  @JoinColumn(name = "stockInventoryId")
+  @Getter
+  @Setter
+  private StockInventory stockInventory;
 }
