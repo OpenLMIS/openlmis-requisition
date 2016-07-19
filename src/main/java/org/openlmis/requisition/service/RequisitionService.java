@@ -1,11 +1,16 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.repository.FacilityRepository;
+import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +38,54 @@ public class RequisitionService {
   @Autowired
   RequisitionRepository requisitionRepository;
 
+  @Autowired
+  RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  PeriodRepository periodRepository;
+
+  @Autowired
+  FacilityRepository facilityRepository;
+
+  @Autowired
+  ProgramRepository programRepository;
+
+  @Autowired
+  RequisitionLineService requisitionLineService;
+
   @PersistenceContext
   EntityManager entityManager;
+
+  public Requisition initiateRequisition(UUID facilityId,
+                                         UUID programId, UUID periodId, boolean emergency) {
+
+    Program program = programRepository.findOne(programId);
+    Facility facility = facilityRepository.findOne(facilityId);
+    Period period = periodRepository.findOne(periodId);
+
+    if (facility == null) {
+      throw new RequisitionException("Facility with facility Id: "
+          + facilityId + ", does not exists");
+    }
+    if (program == null) {
+      throw new RequisitionException("Program with program Id: " + programId + ", does not exists");
+    }
+    if (period == null) {
+      throw new RequisitionException("Period with period Id: " + periodId + ", does not exists");
+    }
+
+    Requisition requisition = new Requisition();
+
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setProgram(program);
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(period);
+
+    requisitionLineService.initiateRequisitionLineFields(requisition);
+    requisitionRepository.save(requisition);
+
+    return requisition;
+  }
 
   public boolean tryDelete(Requisition requisition) {
     if (requisition == null) {
@@ -54,11 +105,14 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      logger.debug("Skip failed - " + requisitionNullMessage);
+      logger.debug("Skip failed - "
+          + requisitionNullMessage);
     } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
-      logger.debug("Skip failed - " + requisitionBadStatusMessage);
+      logger.debug("Skip failed - "
+          + requisitionBadStatusMessage);
     } else if (!requisition.getProgram().getPeriodsSkippable()) {
-      logger.debug("Skip failed - requisition program does not allow skipping");
+      logger.debug("Skip failed " +
+          "- requisition program does not allow skipping");
     } else {
       logger.debug("Requisition skipped");
       requisition.setStatus(RequisitionStatus.SKIPPED);
@@ -112,4 +166,5 @@ public class RequisitionService {
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
   }
+
 }

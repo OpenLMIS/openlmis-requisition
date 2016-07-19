@@ -1,7 +1,7 @@
 package org.openlmis.referencedata.repository;
 
 import com.google.common.collect.Lists;
-
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,41 +24,66 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     return this.periodRepository;
   }
 
-  private Schedule schedule;
+  private Schedule testSchedule;
 
   /** Prepare the test environment. */
   @Before
   public void setUp() {
     scheduleRepository.deleteAll();
-    schedule = new Schedule();
-    schedule.setCode("code");
-    schedule.setName("schedule");
-    schedule.setDescription("Test schedule");
-    scheduleRepository.save(schedule);
+    periodRepository.deleteAll();
+    testSchedule = generateScheduleInstance("name", "code", "Test schedule");
+    scheduleRepository.save(testSchedule);
+  }
+
+  @After
+  public void cleanUp() {
+    scheduleRepository.deleteAll();
+    periodRepository.deleteAll();
+  }
+
+  private Schedule generateScheduleInstance(String name, String code, String description) {
+    Schedule schedule = new Schedule();
+    schedule.setName(name);
+    schedule.setDescription(description);
+    schedule.setCode(code);
+    return schedule;
+  }
+
+  private Period generatePeriodInstance(
+      String name, Schedule schedule, String description, LocalDate startDate, LocalDate endDate) {
+    Period period = new Period();
+    period.setName(name);
+    period.setProcessingSchedule(schedule);
+    period.setDescription(description);
+    period.setStartDate(startDate);
+    period.setEndDate(endDate);
+    return period;
   }
 
   Period generateInstance() {
     int instanceNumber = this.getNextInstanceNumber();
     Period period = new Period();
     period.setName("period" + instanceNumber);
-    period.setProcessingSchedule(schedule);
     period.setDescription("Test period");
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
+    period.setProcessingSchedule(testSchedule);
     return period;
   }
 
   @Test
   public void testFindByProcessingSchedule() {
-    periodRepository.save(this.generateInstance());
-    Iterable<Period> result = periodRepository.findByProcessingSchedule(this.schedule);
+    periodRepository.save(generatePeriodInstance("period" + getNextInstanceNumber(),
+        testSchedule, "Test period", LocalDate.of(2016, 1, 1), LocalDate.of(2016, 2, 1)));
+    Iterable<Period> result = periodRepository.findByProcessingSchedule(this.testSchedule);
     int size = Lists.newArrayList(result).size();
     Assert.assertEquals(1, size);
   }
 
   @Test
   public void testPeriodEdit() {
-    Period periodFromRepo = this.generateInstance();
+    Period periodFromRepo = generatePeriodInstance("period" + getNextInstanceNumber(),
+        testSchedule, "Test period", LocalDate.of(2016, 1, 1), LocalDate.of(2016, 2, 1));
     periodFromRepo = periodRepository.save(periodFromRepo);
     UUID id = periodFromRepo.getId();
     periodFromRepo = periodRepository.findOne(id);
@@ -69,5 +94,38 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     periodFromRepo.setEndDate(LocalDate.of(2016, 3, 2));
     periodRepository.save(periodFromRepo);
     Assert.assertEquals(description, periodFromRepo.getDescription());
+  }
+
+  @Test
+  public void shouldFindPreviousPeriod() {
+    Schedule secondSchedule = generateScheduleInstance("name2", "code2", "description");
+    scheduleRepository.save(secondSchedule);
+
+    Period firstPeriod = generatePeriodInstance(
+        "first", secondSchedule, "", LocalDate.of(2016, 2, 1), LocalDate.of(2016,3,1));
+    Period secondPeriod = generatePeriodInstance(
+        "second", testSchedule, "", LocalDate.of(2016, 3, 1), LocalDate.of(2016,4,1));
+    Period thirdPeriod = generatePeriodInstance(
+        "third", testSchedule, "", LocalDate.of(2016, 4, 1), LocalDate.of(2016,5,1));
+    Period fourthPeriod = generatePeriodInstance(
+        "fourth", secondSchedule, "", LocalDate.of(2016, 5, 1), LocalDate.of(2016,6,1));
+
+    periodRepository.save(firstPeriod);
+    periodRepository.save(secondPeriod);
+    periodRepository.save(thirdPeriod);
+    periodRepository.save(fourthPeriod);
+
+    Iterable<Period> previousPeriods = periodRepository.findPreviousPeriods(
+        thirdPeriod.getProcessingSchedule(), thirdPeriod.getStartDate());
+
+    Assert.assertEquals(previousPeriods.iterator().next(), secondPeriod);
+
+    previousPeriods = periodRepository.findPreviousPeriods(
+        fourthPeriod.getProcessingSchedule(), fourthPeriod.getStartDate());
+    Assert.assertEquals(previousPeriods.iterator().next(), firstPeriod);
+
+    previousPeriods = periodRepository.findPreviousPeriods(
+        firstPeriod.getProcessingSchedule(), firstPeriod.getStartDate());
+    Assert.assertFalse(previousPeriods.iterator().hasNext());
   }
 }

@@ -26,6 +26,8 @@ public class RequisitionTemplateColumn {
 
   private Boolean canChangeOrder;
 
+  private Boolean canBeChangedByUser;
+
   private String source; //todo change String to SourceType {User Input, Reference Data, Calculated}
 
   /**

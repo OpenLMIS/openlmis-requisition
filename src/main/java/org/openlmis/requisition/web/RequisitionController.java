@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RepositoryRestController
 public class RequisitionController {
   Logger logger = LoggerFactory.getLogger(RequisitionController.class);
@@ -43,6 +47,23 @@ public class RequisitionController {
 
   @Autowired
   RequisitionService requisitionService;
+
+  @RequestMapping(value = "/requisitions", method = POST)
+  public ResponseEntity<?> initiateRnr(@RequestParam("facilityId") UUID facilityId,
+                                       @RequestParam("programId") UUID programId,
+                                       @RequestParam("periodId") UUID periodId,
+                                       @RequestParam("emergency") Boolean emergency) {
+    try {
+
+      Requisition requisition = requisitionService.initiateRequisition(
+          facilityId, programId, periodId, emergency);
+      ResponseEntity response = new ResponseEntity<>(requisition, CREATED);
+      return response;
+
+    } catch (RequisitionException ex) {
+      return new ResponseEntity(BAD_REQUEST);
+    }
+  }
 
   /**
    * Submits earlier initiated requisition.

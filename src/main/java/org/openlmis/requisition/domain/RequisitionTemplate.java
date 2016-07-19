@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
@@ -28,7 +29,7 @@ public class RequisitionTemplate extends BaseEntity {
   @Setter
   private Program program;
 
-  @ElementCollection
+  @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
   @Getter
@@ -135,6 +136,17 @@ public class RequisitionTemplate extends BaseEntity {
   public void changeColumnSource(String key, String source) {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setSource(source);
+    columnsMap.put(key, column);
+  }
+
+  /**
+   *
+   * @param key Key to column which needs a new name.
+   * @param canBeChangedByUser Is it allowed to change column cells value by user input.
+   */
+  public void changeCanBeChangedByUserSetting(String key, Boolean canBeChangedByUser) {
+    RequisitionTemplateColumn column = columnsMap.get(key);
+    column.setCanBeChangedByUser(canBeChangedByUser);
     columnsMap.put(key, column);
   }
 }

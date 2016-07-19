@@ -41,8 +41,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @OneToMany(cascade = {CascadeType.REMOVE})
-  @JoinColumn(name = "requisitionLineId")
+  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE})
   @Getter
   @Setter
   private Set<RequisitionLine> requisitionLines;

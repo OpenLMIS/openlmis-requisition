@@ -23,8 +23,25 @@ public class RequisitionLine extends BaseEntity {
   @Setter
   private Product product;
 
+  @ManyToOne
+  @JoinColumn(name = "requisitionId")
+  @Getter
+  @Setter
+  private Requisition requisition;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer stockInHand;
+
   @Column
   @Getter
   @Setter
   private Integer quantityRequested;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer beginningBalance;
+  
 }

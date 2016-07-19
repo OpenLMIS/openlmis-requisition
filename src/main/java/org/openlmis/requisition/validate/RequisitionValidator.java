@@ -25,6 +25,11 @@ public class RequisitionValidator implements Validator {
           errors.rejectValue("requisitionLines",
               "A quantity must be entered prior to submission of a requisition.");
         }
+        if (requisitionLine.getBeginningBalance() != null
+            && requisitionLine.getBeginningBalance() < 0) {
+          errors.rejectValue("requisitionLines",
+              "A beginning balance must be positive value.");
+        }
       }
     }
 
