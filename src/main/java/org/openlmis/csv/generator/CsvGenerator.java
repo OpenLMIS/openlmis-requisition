@@ -1,4 +1,4 @@
-package org.openlmis.csv;
+package org.openlmis.csv.generator;
 
 import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
 
