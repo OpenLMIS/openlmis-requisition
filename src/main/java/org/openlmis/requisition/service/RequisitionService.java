@@ -57,7 +57,7 @@ public class RequisitionService {
       logger.debug("Skip failed - " + requisitionNullMessage);
     } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
       logger.debug("Skip failed - " + requisitionBadStatusMessage);
-    } else if (!requisition.getProgram().getSkippable()) {
+    } else if (!requisition.getProgram().getPeriodsSkippable()) {
       logger.debug("Skip failed - requisition program does not allow skipping");
     } else {
       logger.debug("Requisition skipped");

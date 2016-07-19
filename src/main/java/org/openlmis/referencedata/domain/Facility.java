@@ -79,7 +79,7 @@ public class Facility extends BaseEntity {
 
   @Getter
   @Setter
-  private Boolean openLmisAccessAbility;
+  private Boolean openLmisAccessible;
 
   @OneToOne
   @JoinColumn(name = "stockInventoryId")

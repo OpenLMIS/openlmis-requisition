@@ -19,7 +19,7 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
   Program generateInstance() {
     Program program = new Program();
     program.setCode(String.valueOf(this.getNextInstanceNumber()));
-    program.setSkippable(true);
+    program.setPeriodsSkippable(true);
     return program;
   }
 
@@ -28,11 +28,11 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
     Program testProgram = this.generateInstance();
     testProgram = repository.save(testProgram);
     testProgram = repository.findOne(testProgram.getId());
-    assertTrue(testProgram.getSkippable());
+    assertTrue(testProgram.getPeriodsSkippable());
 
-    testProgram.setSkippable(false);
+    testProgram.setPeriodsSkippable(false);
     testProgram = repository.save(testProgram);
     testProgram = repository.findOne(testProgram.getId());
-    assertFalse(testProgram.getSkippable());
+    assertFalse(testProgram.getPeriodsSkippable());
   }
 }

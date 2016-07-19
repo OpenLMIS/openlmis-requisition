@@ -128,11 +128,11 @@ public class RequisitionControllerIntegrationTest {
     productRepository.save(product);
 
     program.setCode(requisitionRepositoryName);
-    program.setSkippable(true);
+    program.setPeriodsSkippable(true);
     programRepository.save(program);
 
     program2.setCode(requisitionRepositoryName + "2");
-    program2.setSkippable(true);
+    program2.setPeriodsSkippable(true);
     programRepository.save(program2);
 
     FacilityType facilityType = new FacilityType();
