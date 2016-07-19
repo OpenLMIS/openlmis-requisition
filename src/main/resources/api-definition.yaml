@@ -9,6 +9,33 @@ documentation:
       content: Welcome to the OpenLMIS requisition-service documentation. This minimal API is intended for illustrative purposes.
 
 schemas:
+  - geographicLevel: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "GeographicLevel",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "levelNumber": { "type": "integer", "required": true, "title": "levelNumber" }
+          }
+      }
+  - geographicZone: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "GeographicZone",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": false, "title": "name" },
+              "level": { "type": "object", "$ref": "#/schemas/geographicLevel",
+              "required": true, "title": "level" },
+              "catchmentPopulation": { "type": "integer",
+              "required": false, "title": "catchmentPopulation" },
+              "latitude": { "type": "number", "required": false, "title": "latitude" },
+              "longitude": { "type": "number", "required": false, "title": "longitude" }
+          }
+      }
   - program: |
       {   "$schema": "http://json-schema.org/draft-03/schema",
           "description": "A single program",
@@ -21,6 +48,24 @@ schemas:
               "active":  { "type": "boolean", "required": false },
               "skippable":  { "type": "boolean", "required": true },
               "showNonFullSupplyTab":  { "type": "boolean", "required": false }
+          }
+      }
+  - product: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "Product",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "primaryName": { "type": "string", "required": true, "title": "primaryName" },
+              "dispensingUnit": { "type": "string", "required": true, "title": "dispensingUnit" },
+              "dosesPerDispensingUnit": { "type": "integer", "required": true, "title": "dosesPerDispensingUnit" },
+              "packSize": { "type": "integer", "required": true, "title": "packSize" },
+              "packRoundingThreshold": { "type": "integer", "required": true, "title": "packRoundingThreshold" },
+              "roundToZero": { "type": "boolean", "required": true, "title": "roundToZero" },
+              "active": { "type": "boolean", "required": true, "title": "active" },
+              "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
+              "tracer": { "type": "boolean", "required": true, "title": "tracer" }
           }
       }
 
