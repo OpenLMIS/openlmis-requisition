@@ -36,7 +36,7 @@ public class Program extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  private Boolean skippable;
+  private Boolean periodsSkippable;
 
   @Getter
   @Setter
@@ -44,8 +44,8 @@ public class Program extends BaseEntity {
 
   @PrePersist
   private void prePersist() {
-    if(this.skippable == null) {
-      this.skippable = false;
+    if(this.periodsSkippable == null) {
+      this.periodsSkippable = false;
     }
   }
 }
