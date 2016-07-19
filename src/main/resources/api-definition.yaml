@@ -120,7 +120,10 @@ schemas:
                 description: Wrong parameter provided
 /requisitions/submit: 
     displayName: ApiRequisitionsSubmit
-    post: 
+    post:
+        body:
+            application/json:
+                schema: Requsition
         description: Submit earlier initiated requisition.
         displayName: Submit earlier initiated requisition.
         responses: 
@@ -134,7 +137,7 @@ schemas:
         id: 
             displayName: id
             type: string
-            required: false
+            required: true
             repeat: false
     put: 
         description: Skip chosen requisition period.
@@ -150,7 +153,7 @@ schemas:
         id: 
             displayName: id
             type: string
-            required: false
+            required: true
             repeat: false
     put: 
         description: Reject requisition which is waiting for approval.
@@ -166,7 +169,7 @@ schemas:
         creatorId: 
             displayName: creatorId
             type: string
-            required: false
+            required: true
             repeat: false
     get: 
         description: Search requisitions created by logged user.
@@ -175,6 +178,7 @@ schemas:
             "200": 
                 description: Requisitions retrieved successfully
             "500": 
+            "400":
                 description: Wrong creatorId provided
 /periods/{id}/difference: 
     displayName: PeriodsIdDifference
@@ -182,7 +186,7 @@ schemas:
         id: 
             displayName: id
             type: string
-            required: false
+            required: true
             repeat: false
     get: 
         description: Display total days of period.
@@ -363,7 +367,7 @@ schemas:
             displayName: id
             description: ScheduleId
             type: string
-            required: false
+            required: true
             repeat: false
     get: 
         description: Display total days and months of schedule periods
