@@ -74,8 +74,8 @@ public class RequisitionService {
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
     } else if (!requisition.getStatus().equals(RequisitionStatus.AUTHORIZED)) {
-      throw new RequisitionException("Cannot reject requisition: " + requisitionId +
-          " .Requisition must be waiting for approval to be rejected");
+      throw new RequisitionException("Cannot reject requisition: " + requisitionId 
+          + " .Requisition must be waiting for approval to be rejected");
     } else {
       logger.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);

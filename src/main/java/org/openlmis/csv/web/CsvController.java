@@ -26,7 +26,7 @@ public class CsvController {
   private OrderRepository orderRepository;
 
   /**
-   * Get CSV from Order
+   * Get CSV from Order.
    */
   @RequestMapping(value = "/orders/csv/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getCsv(@PathVariable("id") UUID orderId) {

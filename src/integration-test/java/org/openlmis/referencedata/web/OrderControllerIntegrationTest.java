@@ -83,8 +83,9 @@ public class OrderControllerIntegrationTest {
 
   @Autowired
   private StockInventoryRepository stockInventoryRepository;
-
-  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders/finalizeOrder";
+  
+  private static final String RESOURCE_URL = System.getenv("BASE_URL")
+      + "/api/orders/finalizeOrder";
 
   private Order order = new Order();
   private Product firstProduct = new Product();
@@ -167,7 +168,7 @@ public class OrderControllerIntegrationTest {
   }
 
   @After
-  public void cleanUp(){
+  public void cleanUp() {
     stockRepository.deleteAll();
     orderLineRepository.deleteAll();
     productRepository.deleteAll();
@@ -216,7 +217,7 @@ public class OrderControllerIntegrationTest {
     String orderJson = mapper.writeValueAsString(order.getId());
     HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
 
-    ResponseEntity<?> result=restTemplate.postForEntity(RESOURCE_URL, entity, String.class);
+    ResponseEntity<?> result = restTemplate.postForEntity(RESOURCE_URL, entity, String.class);
 
     Assert.assertEquals(result.getStatusCode(), HttpStatus.OK);
   }

@@ -6,13 +6,13 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import java.util.UUID;
 
 public interface ProgramRepository extends ReferenceDataRepository<Program, UUID> {
-    //Add custom Program related members here. See UserRepository.java for examples.
+  // Add custom Program related members here. See UserRepository.java for examples.
 
   @Override
   @RestResource
-  <S extends Program> S save (S entity);
+  <S extends Program> S save(S entity);
 
   @Override
   @RestResource
-  <S extends Program> Iterable<S> save (Iterable<S> entities);
+  <S extends Program> Iterable<S> save(Iterable<S> entities);
 }

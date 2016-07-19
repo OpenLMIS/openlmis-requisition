@@ -16,7 +16,8 @@ import java.io.IOException;
 public class MoneySerializer extends JsonSerializer<Money> {
 
   @Override
-  public void serialize(Money value, JsonGenerator generator, SerializerProvider provider) throws IOException, JsonProcessingException {
+  public void serialize(Money value, JsonGenerator generator, SerializerProvider provider) 
+      throws IOException, JsonProcessingException {
     generator.writeString(value.toString());
   }
 }

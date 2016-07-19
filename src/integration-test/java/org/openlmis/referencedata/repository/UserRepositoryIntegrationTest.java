@@ -2,9 +2,9 @@ package org.openlmis.referencedata.repository;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;

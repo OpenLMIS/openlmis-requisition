@@ -7,14 +7,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class RestExceptionHandler {
 
   @ExceptionHandler(CsvInputNotValidException.class)
-  public ResponseEntity<ExceptionDetail> csvInputNotValidExceptionHandler(RuntimeException ex, HttpServletRequest request) {
+  public ResponseEntity<ExceptionDetail> csvInputNotValidExceptionHandler(
+      RuntimeException ex, 
+      HttpServletRequest request) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     String title = "Resource Property Validation Failure";
     ExceptionDetail exceptionDetail = getExceptionDetail(ex, status, title);

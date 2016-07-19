@@ -101,9 +101,6 @@ public class PeriodControllerIntegrationTest {
   public void testCreatePeriodsWithAGap() throws JsonProcessingException {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    RestTemplate restTemplate = new RestTemplate();
-
-    ObjectMapper mapper = new ObjectMapper();
 
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
@@ -111,10 +108,12 @@ public class PeriodControllerIntegrationTest {
 
     firstPeriod.setProcessingSchedule(schedule);
 
+    ObjectMapper mapper = new ObjectMapper();
     String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
 
     HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
 
+    RestTemplate restTemplate = new RestTemplate();
     restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
 
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 3));
