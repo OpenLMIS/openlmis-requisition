@@ -74,6 +74,26 @@ resourceTypes:
             responses:
                 200:
 
+/orders:
+    displayName: Schedule
+    /csv/{id}:
+        uriParameters:
+            id:
+                displayName: Schedule id
+                type: string
+        get:
+            description: Get total difference
+            responses:
+              200:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+              400:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
 
 /programs:
     displayName: ProgramsResource
@@ -121,3 +141,6 @@ resourceTypes:
                 headers:
                   X-Content-Type-Options:
                   X-XSS-Protection:
+
+
+
