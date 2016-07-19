@@ -75,14 +75,14 @@ resourceTypes:
                 200:
 
 /orders:
-    displayName: Schedule
+    displayName: Order
     /csv/{id}:
         uriParameters:
             id:
-                displayName: Schedule id
+                displayName: Order id
                 type: string
         get:
-            description: Get total difference
+            description: Get CSV from Order
             responses:
               200:
                 headers:
