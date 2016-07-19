@@ -196,6 +196,8 @@ schemas:
                 description: Displaying total days of period
             "400": 
                 description: Wrong ID provided
+            "500":
+                description: Period with provided ID does not exist
 /periods/search/findByProcessingSchedule: 
     displayName: PeriodsSearchFindByProcessingSchedule
     get: 
