@@ -121,6 +121,9 @@ schemas:
 /requisitions/submit:
     displayName: ApiRequisitionsSubmit
     post:
+        body:
+            application/json:
+                schema: Requsition
         description: Submit earlier initiated requisition.
         displayName: Submit earlier initiated requisition.
         responses:
@@ -174,7 +177,7 @@ schemas:
         responses:
             "200":
                 description: Requisitions retrieved successfully
-            "500":
+            "400":
                 description: Wrong creatorId provided
 /periods/{id}/difference:
     displayName: PeriodsIdDifference
