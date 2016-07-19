@@ -98,7 +98,7 @@ public class RequisitionServiceTest {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
 
-    requisition.getProgram().setSkippable(false);
+    requisition.getProgram().setPeriodsSkippable(false);
     boolean skipResult = requisitionService.skip(requisition.getId());
 
     Assert.assertFalse(skipResult);
@@ -134,7 +134,7 @@ public class RequisitionServiceTest {
 
     Program program = new Program();
     program.setCode(requisitionRepositoryName);
-    program.setSkippable(true);
+    program.setPeriodsSkippable(true);
     programRepository.save(program);
 
     FacilityType facilityType = new FacilityType();

@@ -25,7 +25,7 @@ import java.util.UUID;
 @WebIntegrationTest("server.port:8080")
 public class ProgramControllerIntegrationTest {
 
-  private static final String UPDATE_URL = "http://localhost:8080/api/programs/update";
+  private static final String UPDATE_URL = System.getenv("BASE_URL") + "/api/programs/update";
 
   @Autowired
   private ProgramRepository programRepository;

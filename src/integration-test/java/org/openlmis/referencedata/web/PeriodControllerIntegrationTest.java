@@ -2,6 +2,7 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -32,7 +34,10 @@ public class PeriodControllerIntegrationTest {
   @Autowired
   private ScheduleRepository scheduleRepository;
 
-  private static final String RESOURCE_URL = "http://localhost:8080/api/periods";
+  @Autowired
+  private PeriodRepository periodRepository;
+
+  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/periods";
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
@@ -40,6 +45,8 @@ public class PeriodControllerIntegrationTest {
 
   @Before
   public void setUp() {
+    cleanup();
+
     schedule.setCode("code");
     schedule.setName("schedule");
     schedule.setDescription("Test schedule");
@@ -52,6 +59,12 @@ public class PeriodControllerIntegrationTest {
     secondPeriod.setDescription("Test period");
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 2));
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
+  }
+
+  @After
+  public void cleanup() {
+    periodRepository.deleteAll();
+    scheduleRepository.deleteAll();
   }
 
   @Test

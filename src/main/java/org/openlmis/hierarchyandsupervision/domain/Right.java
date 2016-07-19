@@ -13,8 +13,7 @@ import javax.persistence.Table;
 @Table(name = "rights", schema = "referencedata")
 @NoArgsConstructor
 public class Right extends BaseEntity {
-
-  public static final String TEXT = "text";
+  private final String TEXT = "text";
 
   @Column(nullable = false, unique = true, columnDefinition = TEXT)
   @Getter

@@ -120,7 +120,6 @@ public class RequisitionLineRepositoryIntegrationTest
   RequisitionLine generateInstance() {
     repository.deleteAll();
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
     requisitionLine.setQuantityRequested(1);
     return requisitionLine;

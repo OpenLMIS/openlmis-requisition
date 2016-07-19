@@ -59,12 +59,13 @@ import java.util.UUID;
 public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-  private static final String SUBMIT_URL = "http://localhost:8080/api/requisitions/submit";
-  private static final String SKIP_URL = "http://localhost:8080/api/requisitions/{id}/skip";
-  private static final String REJECT_URL = "http://localhost:8080/api/requisitions/{id}/reject";
-  private static final String DELETE_URL = "http://localhost:8080/api/requisitions/{id}";
-  private static final String CREATED_BY_LOGGED_USER_URL = "http://localhost:8080/api/requisitions/creator/{creatorId}";
-  private static final String SEARCH_URL = "http://localhost:8080/api/requisitions/search";
+  private static final String BASE_URL = System.getenv("BASE_URL");
+  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/submit";
+  private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
+  private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
+  private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
+  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL + "/api/requisitions/creator/{creatorId}";
+  private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
 
   @Autowired
   ProductRepository productRepository;
@@ -127,11 +128,11 @@ public class RequisitionControllerIntegrationTest {
     productRepository.save(product);
 
     program.setCode(requisitionRepositoryName);
-    program.setSkippable(true);
+    program.setPeriodsSkippable(true);
     programRepository.save(program);
 
     program2.setCode(requisitionRepositoryName + "2");
-    program2.setSkippable(true);
+    program2.setPeriodsSkippable(true);
     programRepository.save(program2);
 
     FacilityType facilityType = new FacilityType();
@@ -188,7 +189,6 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition);
 
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
     requisitionLine.setQuantityRequested(1);
     requisitionLineRepository.save(requisitionLine);
@@ -252,7 +252,6 @@ public class RequisitionControllerIntegrationTest {
   @Test(expected = HttpClientErrorException.class)
   public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
     requisitionLineRepository.save(requisitionLine);
 
@@ -270,16 +269,16 @@ public class RequisitionControllerIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
 
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SKIP_URL)
-      .build()
-      .expand(requisition.getId().toString())
-      .encode();
+        .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    ResponseEntity<Object> result = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+    ResponseEntity<Object> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
+
   @Test
   public void testReject() throws JsonProcessingException {
 
@@ -296,7 +295,8 @@ public class RequisitionControllerIntegrationTest {
         .encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<Object> response = restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+    ResponseEntity<Object> response =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
   }
@@ -348,7 +348,8 @@ public class RequisitionControllerIntegrationTest {
   @Test
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<List<Requisition>> result = restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
+    ResponseEntity<List<Requisition>> result =
+        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {
         }, user.getId());
 

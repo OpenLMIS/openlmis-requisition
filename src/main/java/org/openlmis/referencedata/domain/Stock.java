@@ -1,21 +1,25 @@
-package org.openlmis.requisition.domain;
+package org.openlmis.referencedata.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.BaseEntity;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "requisition_lines")
+@Table(name = "stocks", schema = "referencedata")
 @NoArgsConstructor
-public class RequisitionLine extends BaseEntity {
+public class Stock extends BaseEntity {
+
+  @ManyToOne
+  @JoinColumn(name = "stockInventoryId", nullable = false)
+  @Getter
+  @Setter
+  private StockInventory stockInventory;
 
   @ManyToOne
   @JoinColumn(name = "productId", nullable = false)
@@ -23,8 +27,7 @@ public class RequisitionLine extends BaseEntity {
   @Setter
   private Product product;
 
-  @Column
   @Getter
   @Setter
-  private Integer quantityRequested;
+  private Long storedQuantity;
 }

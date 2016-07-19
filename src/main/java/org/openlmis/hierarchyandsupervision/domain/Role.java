@@ -17,8 +17,7 @@ import javax.persistence.Table;
 @Table(name = "roles", schema = "referencedata")
 @NoArgsConstructor
 public class Role extends BaseEntity {
-
-  public static final String TEXT = "text";
+  private final String TEXT = "text";
 
   @Column(nullable = false, unique = true, columnDefinition = TEXT)
   @Getter

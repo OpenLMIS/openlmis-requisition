@@ -6,14 +6,16 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.PrePersist;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Set;
 
 @Entity
-@Table(name = "programs", schema = "referencedata")
+@Table(name = "supervisory_nodes", schema = "referencedata")
 @NoArgsConstructor
-public class Program extends BaseEntity {
-
+public class SupervisoryNode extends BaseEntity {
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
@@ -29,23 +31,25 @@ public class Program extends BaseEntity {
   @Setter
   private String description;
 
-  @Getter
-  @Setter
-  private Boolean active;
-
   @Column(nullable = false)
   @Getter
   @Setter
-  private Boolean periodsSkippable;
+  private Integer supervisorCount;
 
+  @ManyToOne
+  @JoinColumn(nullable = false, name = "facilityid")
   @Getter
   @Setter
-  private Boolean showNonFullSupplyTab;
+  private Facility facility;
 
-  @PrePersist
-  private void prePersist() {
-    if(this.periodsSkippable == null) {
-      this.periodsSkippable = false;
-    }
-  }
+  @ManyToOne
+  @JoinColumn(name = "parentid")
+  @Getter
+  @Setter
+  private SupervisoryNode parentNode;
+
+  @OneToMany(mappedBy = "parentNode")
+  @Getter
+  @Setter
+  private Set<SupervisoryNode> childNodes;
 }

@@ -1,486 +1,123 @@
 #%RAML 0.8
+---
 title: OpenLMIS Requisition API
 version: "1.0.0"
-baseUri: "http://localhost:8080/api"
-schemas: 
-    - 
-        Facility: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Facility","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"geographicZone":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"geographicZone"},"type":{"type":"object","$ref":"#/schemas/FacilityType","required":true,"title":"type"},"operator":{"type":"object","$ref":"#/schemas/FacilityOperator","required":false,"title":"operator"},"active":{"type":"boolean","required":true,"title":"active"},"goLiveDate":{"type":"string","required":false,"title":"goLiveDate"},"goDownDate":{"type":"string","required":false,"title":"goDownDate"},"comment":{"type":"string","required":false,"title":"comment"},"enabled":{"type":"boolean","required":true,"title":"enabled"}}}'
-    - 
-        FacilityOperator: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityOperator","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"}}}'
-    - 
-        FacilityType: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityType","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"active":{"type":"boolean","required":false,"title":"active"}}}'
-    - 
-        FacilityTypeApprovedProduct: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"FacilityTypeApprovedProduct","properties":{"id":{"type":"string","required":true,"title":"id"},"facilityType":{"type":"object","$ref":"#/schemas/FacilityType","required":true,"title":"facilityType"},"programProduct":{"type":"object","$ref":"#/schemas/ProgramProduct","required":true,"title":"programProduct"},"maxMonthsOfStock":{"type":"number","required":true,"title":"maxMonthsOfStock"},"minMonthsOfStock":{"type":"number","required":false,"title":"minMonthsOfStock"},"emergencyOrderPoint":{"type":"number","required":false,"title":"emergencyOrderPoint"}}}'
-    - 
-        GeographicLevel: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicLevel","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"levelNumber":{"type":"integer","required":true,"title":"levelNumber"}}}'
-    - 
-        GeographicZone: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"GeographicZone","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"level":{"type":"object","$ref":"#/schemas/GeographicZone","required":true,"title":"level"},"catchmentPopulation":{"type":"integer","required":false,"title":"catchmentPopulation"},"latitude":{"type":"number","required":false,"title":"latitude"},"longitude":{"type":"number","required":false,"title":"longitude"}}}'
-    - 
-        Order: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Order","properties":{"id":{"type":"string","required":true,"title":"id"},"requisitionCode":{"type":"string","required":false,"title":"requisitionCode"},"createdDate":{"type":"string","required":false,"title":"createdDate"},"createdBy":{"type":"object","$ref":"#/schemas/User","required":true,"title":"createdBy"},"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"requestingFacility":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"requestingFacility"},"receivingFacilityId":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"receivingFacilityId"},"supplyingFacilityId":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"supplyingFacilityId"},"orderCode":{"type":"string","required":true,"title":"orderCode"},"status":{"type":"string","required":true,"title":"status"},"quotedCost":{"type":"integer","required":true,"title":"quotedCost"},"orderLines":{"type":"array","required":false,"title":"orderLines","items":{"type":"object","$ref":"#/schemas/OrderLine"},"uniqueItems":false}}}'
-    - 
-        OrderLine: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"OrderLine","properties":{"id":{"type":"string","required":true,"title":"id"},"product":{"type":"object","$ref":"#/schemas/Product","required":true,"title":"product"},"orderedQuantity":{"type":"integer","required":true,"title":"orderedQuantity"},"order":{"type":"object","$ref":"#/schemas/Order","required":false,"title":"order"}}}'
-    - 
-        Period: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Period","properties":{"id":{"type":"string","required":true,"title":"id"},"processingSchedule":{"type":"object","$ref":"#/schemas/Schedule","required":true,"title":"processingSchedule"},"name":{"type":"string","required":true,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"startDate":{"type":"string","required":true,"title":"startDate"},"endDate":{"type":"string","required":true,"title":"endDate"}}}'
-    - 
-        Product: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Product","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"primaryName":{"type":"string","required":true,"title":"primaryName"},"dispensingUnit":{"type":"string","required":true,"title":"dispensingUnit"},"dosesPerDispensingUnit":{"type":"integer","required":true,"title":"dosesPerDispensingUnit"},"packSize":{"type":"integer","required":true,"title":"packSize"},"packRoundingThreshold":{"type":"integer","required":true,"title":"packRoundingThreshold"},"roundToZero":{"type":"boolean","required":true,"title":"roundToZero"},"active":{"type":"boolean","required":true,"title":"active"},"fullSupply":{"type":"boolean","required":true,"title":"fullSupply"},"tracer":{"type":"boolean","required":true,"title":"tracer"}}}'
-    - 
-        ProductCategory: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"ProductCategory","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":true,"title":"name"},"displayOrder":{"type":"integer","required":true,"title":"displayOrder"}}}'
-    - 
-        Program: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Program","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"name":{"type":"string","required":false,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"active":{"type":"boolean","required":false,"title":"active"},"skippable":{"type":"boolean","required":true,"title":"skippable"},"showNonFullSupplyTab":{"type":"boolean","required":false,"title":"showNonFullSupplyTab"}}}'
-    - 
-        ProgramProduct: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"ProgramProduct","properties":{"id":{"type":"string","required":true,"title":"id"},"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"product":{"type":"object","$ref":"#/schemas/Product","required":true,"title":"product"},"dosesPerMonth":{"type":"integer","required":true,"title":"dosesPerMonth"},"active":{"type":"boolean","required":true,"title":"active"},"productCategory":{"type":"string","required":true,"title":"productCategory"},"fullSupply":{"type":"boolean","required":true,"title":"fullSupply"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"maxMonthsStock":{"type":"integer","required":false,"title":"maxMonthsStock"},"pricePerPack":{"type":"string","required":false,"title":"pricePerPack"}}}'
-    - 
-        Requisition: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Requisition","properties":{"id":{"type":"string","required":true,"title":"id"},"createdDate":{"type":"string","required":false,"title":"createdDate"},"facility":{"type":"object","$ref":"#/schemas/Facility","required":true,"title":"facility"},"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"processingPeriod":{"type":"object","$ref":"#/schemas/Period","required":true,"title":"processingPeriod"},"status":{"type":"string","required":true,"title":"status"},"creator":{"type":"object","$ref":"#/schemas/User","required":false,"title":"creator"},"requisitionLines":{"type":"array","required":false,"title":"requisitionLines","items":{"type":"object","$ref":"#/schemas/RequisitionLine"},"uniqueItems":false}}}'
-    - 
-        RequisitionLine: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionLine","properties":{"id":{"type":"string","required":true,"title":"id"},"requisition":{"type":"object","$ref":"#/schemas/Requisition","required":true,"title":"requisition"},"product":{"type":"object","$ref":"#/schemas/Product","required":true,"title":"product"},"quantityRequested":{"type":"integer","required":false,"title":"quantityRequested"}}}'
-    - 
-        RequisitionTemplate: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionTemplate","properties":{"id":{"type":"string","required":true,"title":"id"},"program":{"type":"object","$ref":"#/schemas/Program","required":true,"title":"program"},"columnsMap":{"type":"array","required":false,"title":"columnsMap","items":{"type":"string","title":"columnsMap"},"uniqueItems":false}}}'
-    - 
-        RequisitionTemplateColumn: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"RequisitionTemplateColumn","properties":{"id":{"type":"string","required":true,"title":"id"},"name":{"type":"string","required":false,"title":"name"},"label":{"type":"string","required":false,"title":"label"},"displayOrder":{"type":"integer","required":false,"title":"displayOrder"},"isDisplayed":{"type":"boolean","required":false,"title":"isDisplayed"},"isDisplayRequired":{"type":"boolean","required":false,"title":"isDisplayRequired"},"canChangeOrder":{"type":"boolean","required":false,"title":"canChangeOrder"},"source":{"type":"string","required":false,"title":"source"}}}'
-    - 
-        Right: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Right","properties":{"id":{"type":"string","required":true,"title":"id"},"name":{"type":"string","required":true,"title":"name"},"rightType":{"type":"string","required":true,"title":"rightType"},"description":{"type":"string","required":false,"title":"description"}}}'
-    - 
-        Role: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Role","properties":{"id":{"type":"string","required":true,"title":"id"},"name":{"type":"string","required":true,"title":"name"},"description":{"type":"string","required":false,"title":"description"},"rights":{"type":"array","required":false,"title":"rights","items":{"type":"object","$ref":"#/schemas/Right"},"uniqueItems":false}}}'
-    - 
-        Schedule: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"Schedule","properties":{"id":{"type":"string","required":true,"title":"id"},"code":{"type":"string","required":true,"title":"code"},"description":{"type":"string","required":false,"title":"description"},"modifiedDate":{"type":"string","required":false,"title":"modifiedDate"},"name":{"type":"string","required":true,"title":"name"}}}'
-    - 
-        User: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","title":"User","properties":{"id":{"type":"string","required":true,"title":"id"},"username":{"type":"string","required":true,"title":"username"},"password":{"type":"string","required":true,"title":"password"},"firstName":{"type":"string","required":true,"title":"firstName"},"lastName":{"type":"string","required":true,"title":"lastName"},"homeFacility":{"type":"object","$ref":"#/schemas/Facility","required":false,"title":"homeFacility"},"verified":{"type":"boolean","required":false,"title":"verified"},"active":{"type":"boolean","required":false,"title":"active"},"roles":{"type":"array","required":false,"title":"roles","items":{"type":"object","$ref":"#/schemas/Product"},"uniqueItems":false}}}'
-/orders/search/findBySupplyingFacility: 
-    displayName: findBySupplyingFacility
-    description: ApiFindBySupplyingFacility.
-    get: 
-        description: Find Orders with matched SupplyingFacility.
-        displayName: Find Orders with matched SupplyingFacility.
-        queryParameters: 
-            supplyingFacility: 
-                displayName: supplyingFacility
-                description: SupplyingFacility ID.
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: Orders retrieved successfully.
-            "500": 
-                description: Wrong supplyingFacility id (href) provided.
-/users/search/findByFirstNameAndLastName: 
-    displayName: findByFirstNameAndLastName
-    description: ApiFindByFirstNameAndLastName
-    get: 
-        description: Search Users with matched FirstName and LastName
-        displayName: Search Users with matched FirstName and LastName
-        queryParameters: 
-            firstName: 
-                displayName: firstName
-                description: FirstName
-                type: string
-                required: true
-                repeat: false
-                example: firstName
-            lastName: 
-                displayName: lastName
-                description: LastName
-                type: string
-                required: true
-                repeat: false
-                example: lastName
-        responses: 
-            "200": 
-                description: Users retrieved successfully
-/requisitions/search: 
-    displayName: ApiRequisitionsSearch
-    get: 
-        description: Find requisitions matching all of provided parameters.
-        displayName: Find requisitions matching all of provided parameters.
-        queryParameters: 
-            facility: 
-                displayName: facility
-                type: string
-                required: false
-                repeat: false
-            program: 
-                displayName: program
-                type: string
-                required: false
-                repeat: false
-            createdDateFrom: 
-                displayName: createdDateFrom
-                type: string
-                required: false
-                repeat: false
-            createdDateTo: 
-                displayName: createdDateTo
-                type: string
-                required: false
-                repeat: false
-        responses: 
-            "200": 
-                description: Requisitions retrieved successfully
-            "500": 
-                description: Wrong parameter provided
-/requisitions/submit: 
-    displayName: ApiRequisitionsSubmit
-    post:
-        body:
-            application/json:
-                schema: Requsition
-        description: Submit earlier initiated requisition.
-        displayName: Submit earlier initiated requisition.
-        responses: 
-            "201": 
-                description: Requisition submitted successfully
-            "400": 
-                description: Wrong requisition provided
-/requisitions/{id}/skip: 
-    displayName: ApiRequisitionsIdSkip
-    uriParameters: 
-        id: 
-            displayName: id
-            type: string
-            required: true
-            repeat: false
-    put: 
-        description: Skip chosen requisition period.
-        displayName: Skip chosen requisition period.
-        responses: 
-            "200": 
-                description: Requisition skipped
-            "400": 
-                description: Wrong ID provided
-/requisitions/{id}/reject: 
-    displayName: ApiRequisitionsIdReject
-    uriParameters: 
-        id: 
-            displayName: id
-            type: string
-            required: true
-            repeat: false
-    put: 
-        description: Reject requisition which is waiting for approval.
-        displayName: Reject requisition which is waiting for approval.
-        responses: 
-            "200": 
-                description: Requisition rejected
-            "400": 
-                description: Wrong ID provided
-/requisitions/creator/{creatorId}: 
-    displayName: ApiRequisitionsCreatorCreatorId
-    uriParameters: 
-        creatorId: 
-            displayName: creatorId
-            type: string
-            required: true
-            repeat: false
-    get: 
-        description: Search requisitions created by logged user.
-        displayName: Search requisitions created by logged user.
-        responses: 
-            "200": 
-                description: Requisitions retrieved successfully
-            "500": 
-            "400":
-                description: Wrong creatorId provided
-/periods/{id}/difference: 
-    displayName: PeriodsIdDifference
-    uriParameters: 
-        id: 
-            displayName: id
-            type: string
-            required: true
-            repeat: false
-    get: 
-        description: Display total days of period.
-        displayName: Display total days of period.
-        responses: 
-            "200": 
-                description: Displaying total days of period
-            "400": 
-                description: Wrong ID provided
-            "500":
-                description: Period with provided ID does not exist
-/periods/search/findByProcessingSchedule: 
-    displayName: PeriodsSearchFindByProcessingSchedule
-    get: 
-        description: Find Periods with matched ProcessingSchedule.
-        displayName: Find Periods with matched ProcessingSchedule.
-        queryParameters: 
-            processingSchedule: 
-                displayName: processingSchedule
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: Periods retrieved successfully
-            "500": 
-                description: Wrong ID provided
-/periods/search/findFirst1ByOrderByEndDateDesc: 
-    displayName: PeriodsSearchFindFirst1ByOrderByEndDateDesc
-    get: 
-        description: Get last Period.
-        displayName: Get last Period.
-        responses: 
-            "200": 
-                description: Last Period retrieved successfully
-            "404": 
-                description: No Period found
-/orders/search/findBySupplyingFacilityAndRequestingFacility: 
-    displayName: findBySupplyingFacilityAndRequestingFacility
-    description: ApiFindBySupplyingFacilityAndRequestingFacility.
-    get: 
-        description: Find Orders with matched SupplyingFacility and RequestingFacility
-        displayName: Find Orders with matched SupplyingFacility and RequestingFacility
-        queryParameters: 
-            supplyingFacility: 
-                displayName: supplyingFacility
-                description: SupplyingFacility ID.
-                type: string
-                required: true
-                repeat: false
-            requestingFacility: 
-                displayName: requestingFacility
-                description: RequestingFacility ID.
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: Orders retrieved successfully.
-            "500": 
-                description: Wrong supplyingFacility or requestingFacility id (href) provided.
-/orders/search/findBySupplyingFacilityAndProgram: 
-    displayName: findBySupplyingFacilityAndProgram
-    description: ApiFindBySupplyingFacilityAndProgram
-    get: 
-        description: Find Orders with matched SupplyingFacility and Program
-        displayName: Find Orders with matched SupplyingFacility and Program
-        queryParameters: 
-            supplyingFacility: 
-                displayName: supplyingFacility
-                description: SupplyingFacility ID.
-                type: string
-                required: true
-                repeat: false
-            program: 
-                displayName: program
-                description: Program ID.
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: Orders retrieved successfully.
-            "500": 
-                description: Wrong supplyingFacility or program id (href) provided.
-/orders/search/findBySupplyingFacilityAndRequestingFacilityAndProgram: 
-    displayName: findBySupplyingFacilityAndRequestingFacilityAndProgram
-    description: ApiFindBySupplyingFacilityAndRequestingFacilityAndProgram
-    get: 
-        description: Find Orders with matched SupplyingFacility, RequestingFacility and Program
-        displayName: Find Orders with matched SupplyingFacility, RequestingFacility and Program
-        queryParameters: 
-            supplyingFacility: 
-                displayName: supplyingFacility
-                description: SupplyingFacility ID.
-                type: string
-                required: true
-                repeat: false
-            requestingFacility: 
-                displayName: requestingFacility
-                description: RequestingFacility ID.
-                type: string
-                required: true
-                repeat: false
-            program: 
-                displayName: program
-                description: Program ID.
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: Orders retrieved successfully.
-            "500": 
-                description: Wrong supplyingFacility, requestingFacility or program id (href) provided.
-/programProducts/search/findByProgram: 
-    displayName: findByProgram
-    description: ApiFindByProgram.
-    get: 
-        description: Find ProgramProducts with matched Program.
-        displayName: Find ProgramProducts with matched Program.
-        queryParameters: 
-            program: 
-                displayName: program
-                description: Program ID.
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: ProgramProducts retrieved successfully.
-            "500": 
-                description: Wrong program id (href) provided.
-/programProducts/search/findByProgramAndFullSupply: 
-    displayName: findByProgramAndFullSupply
-    description: ApiFindByProgramAndFullSupply
-    get: 
-        description: Find ProgramProducts with matched Program and FullSupply.
-        displayName: Find ProgramProducts with matched Program and FullSupply.
-        queryParameters: 
-            program: 
-                displayName: program
-                description: Program ID.
-                type: string
-                required: true
-                repeat: false
-            fullSupply: 
-                displayName: fullSupply
-                description: Is programProduct fullSupply?
-                type: boolean
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: ProgramProducts retrieved successfully.
-            "500": 
-                description: Wrong program id (href) provided.
-/productCategories/search/findByCode: 
-    displayName: ApiFindByCode
-    get: 
-        description: Find ProductCategories with matched Code.
-        displayName: Find ProductCategories with matched Code.
-        queryParameters: 
-            code: 
-                displayName: code
-                description: productCategory code.
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: ProductCategories retrieved successfully.
-            "404": 
-                description: No ProductCategories had been retrieved.
-/schedules/{id}/difference: 
-    displayName: schedulesIdDifference
-    description: ApiSchedulesIdDifference
-    uriParameters: 
-        id: 
-            displayName: id
-            description: ScheduleId
-            type: string
-            required: true
-            repeat: false
-    get: 
-        description: Display total days and months of schedule periods
-        responses: 
-            "200": 
-                description: Total days and months of schedule periods retrieved successfully
-            "400": 
-                description: Wrong ID format
-            "500": 
-                description: Schedule with provided ID does not exist
-/users/search/findByFirstName: 
-    displayName: findByFirstName
-    description: ApiFindByFirstName
-    get: 
-        description: Search Users with matched FirstName
-        displayName: Search Users with matched FirstName
-        queryParameters: 
-            firstName: 
-                displayName: firstName
-                description: FirstName
-                type: string
-                required: true
-                repeat: false
-                example: firstName
-        responses: 
-            "200": 
-                description: Users retrieved successfully
-/users/search/findByLastName: 
-    displayName: findByLastName
-    description: ApiFindByLastName
-    get: 
-        description: Search Users with matched LastName
-        displayName: Search Users with matched LastName
-        queryParameters: 
-            lastName: 
-                displayName: lastName
-                description: LastName
-                type: string
-                required: true
-                repeat: false
-                example: lastName
-        responses: 
-            "200": 
-                description: Users retrieved successfully
-/users/search/findByVerified: 
-    displayName: findByVerified
-    description: ApiFindByVerified
-    get: 
-        description: Search Users with matched Verified
-        displayName: Search Users with matched Verified
-        queryParameters: 
-            verified: 
-                displayName: verified
-                description: Verified
-                type: boolean
-                required: true
-                repeat: false
-                example: "true"
-        responses: 
-            "200": 
-                description: Users retrieved successfully
-/users/search/findByActive: 
-    displayName: findByActive
-    description: ApiFindByActive
-    get: 
-        description: Search Users with matched Active
-        displayName: Search Users with matched Active
-        queryParameters: 
-            active: 
-                displayName: active
-                description: Active
-                type: boolean
-                required: true
-                repeat: false
-                example: "true"
-        responses: 
-            "200": 
-                description: Users retrieved successfully
-/users/search/findByHomeFacility: 
-    displayName: findByHomeFacility
-    description: ApiFindByHomeFacility
-    get: 
-        description: Search Users with matched HomeFacility
-        displayName: Search Users with matched HomeFacility
-        queryParameters: 
-            homeFacility: 
-                displayName: homeFacility
-                description: HomeFacilityId (href)
-                type: string
-                required: true
-                repeat: false
-        responses: 
-            "200": 
-                description: Users retrieved successfully
-            "500": 
-                description: Wrong FacilityId (href) provided
-/users/search/findByUsername: 
-    displayName: findByUsername
-    description: ApiFindByUsername
-    get: 
-        description: Search Users with matched Username
-        displayName: Search Users with matched Username
-        queryParameters: 
-            username: 
-                displayName: username
-                description: Username
-                type: string
-                required: true
-                repeat: false
-                example: username
-        responses: 
-            "200": 
-                description: Users retrieved successfully
+baseUri: "${baseUrl}/api"
 
+documentation:
+    - title: Getting Started
+      content: Welcome to the OpenLMIS requisition-service documentation. This minimal API is intended for illustrative purposes.
+
+schemas:
+  - program: |
+      {   "$schema": "http://json-schema.org/draft-03/schema",
+          "description": "A single program",
+          "type": "object",
+          "properties": {
+              "id": { "type": "string", "required": true},
+              "code":  { "type": "string", "required": true },
+              "name":  { "type": "string", "required": false },
+              "description":  { "type": "string", "required": false },
+              "active":  { "type": "boolean", "required": false },
+              "skippable":  { "type": "boolean", "required": true },
+              "showNonFullSupplyTab":  { "type": "boolean", "required": false }
+          }
+      }
+
+resourceTypes:
+    - collection:
+        get:
+            responses:
+                200:
+                  description: Collection retrieved successfully
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+                          schema: <<schema>>
+                404:
+                  description: Collection is empty.
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+        post:
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                201:
+                  description: Item created successfully
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+                          schema: <<schema>>
+    - member:
+        get:
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        post:
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        delete:
+            responses:
+                200:
+
+
+/programs:
+    displayName: ProgramsResource
+    /update:
+        post:
+          description: Update a program
+          body:
+            application/json:
+              schema: |
+                {   "$schema": "http://json-schema.org/draft-03/schema",
+                    "type": "object",
+                    "properties": {
+                        "id": { "type": "string", "required": true},
+                        "code":  { "type": "string", "required": true },
+                        "name":  { "type": "string", "required": false }
+                    }
+                }
+          responses:
+            201:
+              description: Program sucessfully updated.
+              headers:
+                X-Content-Type-Options:
+                X-XSS-Protection:
+              body:
+                application/json:
+                  schema: program
+
+/schedules:
+    displayName: Schedule
+    /{id}/difference:
+        uriParameters:
+            id:
+                displayName: Schedule id
+                type: string
+        get:
+            description: Get total difference
+            responses:
+              200:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+              404:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
