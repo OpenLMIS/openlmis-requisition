@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
