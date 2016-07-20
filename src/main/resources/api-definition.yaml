@@ -588,109 +588,6 @@ resourceTypes:
                      X-Content-Type-Options:
                      X-XSS-Protection:
 
-/programs:
-    displayName: ProgramsResource
-    /update:
-        post:
-          description: Update a program.
-          body:
-            application/json:
-              schema: |
-                {   "$schema": "http://json-schema.org/draft-03/schema",
-                    "type": "object",
-                    "properties": {
-                        "id": { "type": "string", "required": true},
-                        "code":  { "type": "string", "required": true },
-                        "name":  { "type": "string", "required": false }
-                    }
-                }
-          responses:
-            201:
-              description: Program sucessfully updated
-              headers:
-                X-Content-Type-Options:
-                X-XSS-Protection:
-              body:
-                application/json:
-                  schema: program
-
-/programProducts:
-    displayName: ProgramProduct
-    /search:
-        /findByProgram:
-            get:
-                description: Find ProgramProducts with matched Program.
-                queryParameters:
-                    program:
-                        displayName: program
-                        description: Program ID
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findByProgramAndFullSupply:
-            get:
-                description: Find ProgramProducts with matched Program and FullSupply.
-                queryParameters:
-                    program:
-                        displayName: program
-                        description: Program ID
-                        type: string
-                        required: true
-                        repeat: false
-                    fullSupply:
-                        displayName: fullSupply
-                        description: Is programProduct fullSupply?
-                        type: boolean
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-/productCategories:
-    displayName: ProductCategories
-    /search/findByCode:
-        get:
-            description: Find ProductCategories with matched Code.
-            queryParameters:
-                code:
-                    displayName: code
-                    description: productCategory code.
-                    type: string
-                    required: true
-                    repeat: false
-            responses:
-               "200":
-                   headers:
-                     X-Content-Type-Options:
-                     X-XSS-Protection:
-                   body:
-                     application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-
 /requisitions:
     displayName: Requisition
     /{id}/skip:
@@ -757,6 +654,7 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+
     /search:
         get:
             description: Find requisitions matching all of provided parameters.
@@ -826,15 +724,15 @@ resourceTypes:
             description: Display total days and months of schedule periods.
             responses:
               200:
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
               404:
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
 
 /users:
     displayName: User
