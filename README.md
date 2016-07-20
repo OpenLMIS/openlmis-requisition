@@ -31,9 +31,7 @@ and version. Note that you can determine yourDockerIPAddress by running `docker-
 ## API Definition and Testing
 Our API is defined using RAML. This repository offers a preferred approach for integration-testing the API, generating user-friendly documentation for it, and ensuring that it’s congruous with the specification defined within the project’s RAML.
 
-Specifically, `api-definition.yaml` contains the project’s RAML. As `ScheduleControllerIntegrationTest.java` illustrates, RestAssured and raml-tester are paired in order to test the API's functionality and to ensure that it matches the specification within `api-definition.yaml`.
-
-After running `gradle ramlToSwagger bootRun`, developers can browse to `http://<yourDockerIPAddress>:8080` to see a user-friendly and interactive version of the API spec.
+Specifically, `build/resources/main/api-definition.yaml` contains the project’s RAML. As `ScheduleControllerIntegrationTest.java` illustrates, RestAssured and raml-tester are paired in order to test the API's functionality and to ensure that it matches the specification within `api-definition.yaml`.
 
 ## Building & Testing
 
