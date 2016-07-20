@@ -9,16 +9,18 @@ import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLine;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLine;
 import org.openlmis.requisition.domain.Requisition;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 public class ProofOfDeliveryPdfBuilder extends PdfViewGenerator {
 
@@ -52,8 +54,8 @@ public class ProofOfDeliveryPdfBuilder extends PdfViewGenerator {
     if (proofOfDelivery.getOrder().getProgram().getName() != null) {
       programName = proofOfDelivery.getOrder().getProgram().getName();
     }
-    Paragraph program = new Paragraph("Proof of Delivery for " +
-        programName + "\t").setTextAlignment(TextAlignment.LEFT);
+    Paragraph program = new Paragraph("Proof of Delivery for "
+        + programName + "\t").setTextAlignment(TextAlignment.LEFT);
     headingTable.addCell(new Cell().add(program).setBorder(Border.NO_BORDER));
 
     Paragraph actualDate = new Paragraph(DATE_FORMAT.format(
@@ -64,8 +66,8 @@ public class ProofOfDeliveryPdfBuilder extends PdfViewGenerator {
   }
 
   private void addFirstSeparator(Document document) {
-    SolidLine l = new SolidLine();
-    document.add(new LineSeparator(l));
+    SolidLine solidLine = new SolidLine();
+    document.add(new LineSeparator(solidLine));
     document.add(new Paragraph("\n"));
   }
 
@@ -92,9 +94,6 @@ public class ProofOfDeliveryPdfBuilder extends PdfViewGenerator {
         totalReturned += currentItem.getQuantityReturned();
       }
     }
-    Paragraph totalShippedPacks = new Paragraph("Total Shipped Packs: " + totalShipped);
-    Paragraph totalReceivedPacks = new Paragraph("Total Received Packs: " + totalReceived);
-    Paragraph totalReturnedPacks = new Paragraph("Total Returned Packs: " + totalReturned);
     String deliveredBy = "";
     if (proofOfDelivery.getDeliveredBy() != null) {
       deliveredBy = proofOfDelivery.getDeliveredBy();
@@ -108,6 +107,9 @@ public class ProofOfDeliveryPdfBuilder extends PdfViewGenerator {
     if (proofOfDelivery.getReceivedDate() != null) {
       receivedDate = DATE_FORMAT.format(proofOfDelivery.getReceivedDate());
     }
+    Paragraph totalShippedPacks = new Paragraph("Total Shipped Packs: " + totalShipped);
+    Paragraph totalReceivedPacks = new Paragraph("Total Received Packs: " + totalReceived);
+    Paragraph totalReturnedPacks = new Paragraph("Total Returned Packs: " + totalReturned);
     Paragraph receivedByParagraph = new Paragraph("Received By: " + receivedBy);
     Paragraph receivedDateParagraph = new Paragraph("Received Date: " + receivedDate);
     addSummaryTable(document, totalShippedPacks, totalReceivedPacks, totalReturnedPacks,

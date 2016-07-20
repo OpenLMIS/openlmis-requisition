@@ -18,6 +18,9 @@ public class OrderTableUtils {
   private static final DateTimeFormatter DATE_TIME_FORMAT =
       DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+  /**
+   *  Add Order Data to Proof Of delivery PDF.
+   */
   public OrderTableUtils(Document document, ProofOfDelivery proofOfDelivery,
                          Requisition requisition) {
     Paragraph order = new Paragraph(
@@ -49,7 +52,6 @@ public class OrderTableUtils {
 
   private void addCellsToOrderTable(ProofOfDelivery proofOfDelivery,
                                     Requisition requisition, Table orderTable) {
-    String orderNo = proofOfDelivery.getOrder().getOrderCode();
     String facility = "";
     if (proofOfDelivery.getOrder().getReceivingFacility().getName() != null) {
       facility = proofOfDelivery.getOrder().getReceivingFacility().getName();
@@ -69,6 +71,7 @@ public class OrderTableUtils {
       orderType = getOrderType(requisition, orderType);
       reportingPeriod = getReportingPeriod(requisition, reportingPeriod);
     }
+    String orderNo = proofOfDelivery.getOrder().getOrderCode();
     orderTable.addCell(new Cell().add(new Paragraph(orderNo)));
     orderTable.addCell(new Cell().add(new Paragraph(reportingPeriod)));
     orderTable.addCell(new Cell().add(new Paragraph(facility)));
@@ -78,8 +81,8 @@ public class OrderTableUtils {
   }
 
   private String getReportingPeriod(Requisition requisition, String reportingPeriod) {
-    if (requisition.getProcessingPeriod().getStartDate() != null &&
-        requisition.getProcessingPeriod().getEndDate() != null) {
+    if (requisition.getProcessingPeriod().getStartDate() != null
+        && requisition.getProcessingPeriod().getEndDate() != null) {
       LocalDate localDateStart = requisition.getProcessingPeriod().getStartDate();
       LocalDate localDateEnd = requisition.getProcessingPeriod().getEndDate();
       reportingPeriod = localDateStart.format(DATE_TIME_FORMAT)

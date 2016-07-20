@@ -25,6 +25,9 @@ public class ProductTableUtils {
 
   private static final Color BLUE_COLOR = new DeviceCmyk(0.445f, 0.0546f, 0, 0.0667f);
 
+  /**
+   *  Add Products Data to Proof Of delivery PDF.
+   */
   public ProductTableUtils(Document document, ProofOfDelivery proofOfDelivery)
       throws IOException {
     Paragraph products = new Paragraph(

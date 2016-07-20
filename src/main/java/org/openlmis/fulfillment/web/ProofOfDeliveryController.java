@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 @RepositoryRestController
 public class ProofOfDeliveryController {
@@ -27,7 +29,13 @@ public class ProofOfDeliveryController {
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-
+  /**
+   * Print to PDF Proof of Delivery.
+   *
+   * @param proofOfDeliveryId The UUID of the ProofOfDelivery to print
+   * @return ResponseEntity with the "#200 OK" HTTP response status on success
+   or ResponseEntity containing the error description and "#400 Bad Request" status.
+   */
   @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
   @ResponseBody
   public ModelAndView print(HttpServletRequest request, HttpServletResponse response,
