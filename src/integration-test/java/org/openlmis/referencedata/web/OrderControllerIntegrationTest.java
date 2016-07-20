@@ -102,13 +102,16 @@ public class OrderControllerIntegrationTest {
     GeographicLevel geographicLevel = new GeographicLevel();
     geographicLevel.setCode("geographicLevelCode");
     geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
 
     FacilityType facilityType = new FacilityType();
     facilityType.setCode("facilityTypeCode");
+    facilityTypeRepository.save(facilityType);
 
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode("geographicZoneCode");
     geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);

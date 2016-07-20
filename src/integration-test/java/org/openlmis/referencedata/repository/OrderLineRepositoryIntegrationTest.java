@@ -31,42 +31,63 @@ import java.math.BigDecimal;
 @Transactional
 public class OrderLineRepositoryIntegrationTest {
 
-  @Autowired
-  ProductRepository productRepository;
+  private static final String orderLine = "OrderLineRepositoryIntegrationTest";
 
   @Autowired
-  OrderRepository orderRepository;
+  private ProductRepository productRepository;
 
   @Autowired
-  OrderLineRepository orderLineRepository;
+  private OrderRepository orderRepository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private OrderLineRepository orderLineRepository;
 
   @Autowired
-  UserRepository userRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private UserRepository userRepository;
 
-  private String orderLine = "OrderLineRepositoryIntegrationTest";
+  @Autowired
+  private FacilityRepository facilityRepository;
+
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
 
   private Order order = new Order();
   private Product product = new Product();
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
+    orderLineRepository.deleteAll();
+    productRepository.deleteAll();
+    orderRepository.deleteAll();
+    userRepository.deleteAll();
+    programRepository.deleteAll();
+    facilityRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(orderLine);
+    facilityTypeRepository.save(facilityType);
 
     GeographicLevel level = new GeographicLevel();
     level.setCode(orderLine);
     level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
 
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(orderLine);
     geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);

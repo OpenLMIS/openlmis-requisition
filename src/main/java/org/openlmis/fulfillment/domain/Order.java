@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -88,7 +89,7 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
-  @OneToMany(mappedBy = "order")
+  @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE)
   @Getter
   private Set<OrderLine> orderLines;
 

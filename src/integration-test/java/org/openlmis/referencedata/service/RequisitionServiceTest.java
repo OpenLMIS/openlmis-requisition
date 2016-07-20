@@ -13,6 +13,9 @@ import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
+import org.openlmis.referencedata.repository.FacilityTypeRepository;
+import org.openlmis.referencedata.repository.GeographicLevelRepository;
+import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -30,36 +33,47 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringApplicationConfiguration(Application.class)
 @Transactional
 public class RequisitionServiceTest {
-
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
 
   @Autowired
-  RequisitionService requisitionService;
+  private RequisitionService requisitionService;
 
   @Autowired
-  ProgramRepository programRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
 
   @Autowired
-  ScheduleRepository scheduleRepository;
+  private ScheduleRepository scheduleRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
-  RequisitionRepository requisitionRepository;
+  private FacilityTypeRepository facilityTypeRepository;
 
-  private Requisition requisition = new Requisition();
+  @Autowired
+  private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  private Requisition requisition;
 
   @Before
   public void setUp() {
     requisitionRepository.deleteAll();
-    programRepository.deleteAll();
     periodRepository.deleteAll();
-    facilityRepository.deleteAll();
     scheduleRepository.deleteAll();
+    facilityRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    programRepository.deleteAll();
 
     createTestRequisition();
   }
@@ -131,7 +145,6 @@ public class RequisitionServiceTest {
   }
 
   private void createTestRequisition() {
-
     Program program = new Program();
     program.setCode(requisitionRepositoryName);
     program.setPeriodsSkippable(true);
@@ -139,12 +152,17 @@ public class RequisitionServiceTest {
 
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
+    facilityTypeRepository.save(facilityType);
+
     GeographicLevel level = new GeographicLevel();
     level.setCode(requisitionRepositoryName);
     level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
+
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(requisitionRepositoryName);
     geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);
@@ -161,11 +179,11 @@ public class RequisitionServiceTest {
     period.setProcessingSchedule(schedule);
     periodRepository.save(period);
 
+    requisition = new Requisition();
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
     requisition.setStatus(RequisitionStatus.INITIATED);
-
     requisitionRepository.save(requisition);
   }
 }
