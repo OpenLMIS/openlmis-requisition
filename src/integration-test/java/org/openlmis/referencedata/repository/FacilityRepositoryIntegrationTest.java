@@ -28,6 +28,7 @@ public class FacilityRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
   private FacilityType facilityType = new FacilityType();
   private GeographicZone geographicZone = new GeographicZone();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityTypeRepository.deleteAll();

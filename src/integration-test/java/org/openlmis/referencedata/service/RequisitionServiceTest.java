@@ -64,6 +64,7 @@ public class RequisitionServiceTest {
 
   private Requisition requisition;
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     requisitionRepository.deleteAll();

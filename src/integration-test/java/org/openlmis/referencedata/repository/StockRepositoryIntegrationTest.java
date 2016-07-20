@@ -32,6 +32,7 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     return this.stockRepository;
   }
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     stockInventoryRepository.deleteAll();

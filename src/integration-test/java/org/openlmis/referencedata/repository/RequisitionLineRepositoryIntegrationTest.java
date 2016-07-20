@@ -63,6 +63,7 @@ public class RequisitionLineRepositoryIntegrationTest
   private Requisition requisition = new Requisition();
   private Product product = new Product();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     productRepository.deleteAll();

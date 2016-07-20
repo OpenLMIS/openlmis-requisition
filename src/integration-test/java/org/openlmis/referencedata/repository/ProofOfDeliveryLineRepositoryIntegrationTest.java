@@ -8,13 +8,13 @@ import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLine;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
@@ -39,156 +39,160 @@ import java.util.Date;
 @Transactional
 public class ProofOfDeliveryLineRepositoryIntegrationTest {
 
-    @Autowired
-    private OrderLineRepository orderLineRepository;
+  @Autowired
+  private OrderLineRepository orderLineRepository;
 
-    @Autowired
-    private ProofOfDeliveryRepository proofOfDeliveryRepository;
+  @Autowired
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-    @Autowired
-    private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
+  @Autowired
+  private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+  @Autowired
+  private ProductRepository productRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
+  @Autowired
+  private OrderRepository orderRepository;
 
-    @Autowired
-    private ProgramRepository programRepository;
+  @Autowired
+  private ProgramRepository programRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private FacilityRepository facilityRepository;
+  @Autowired
+  private FacilityRepository facilityRepository;
 
-    @Autowired
-    private ProductCategoryRepository productCategoryRepository;
+  @Autowired
+  private ProductCategoryRepository productCategoryRepository;
 
-    @Autowired
-    private GeographicLevelRepository geographicLevelRepository;
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
 
-    @Autowired
-    private GeographicZoneRepository geographicZoneRepository;
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
 
-    @Autowired
-    private FacilityTypeRepository facilityTypeRepository;
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
 
-    private static final String proofOfDeliveryLineCode =
-            "OrderProofOfDeliveryLineRepositoryIntegrationTest";
+  private static final String proofOfDeliveryLineCode =
+      "OrderProofOfDeliveryLineRepositoryIntegrationTest";
 
-    private OrderLine orderLine = new OrderLine();
+  private OrderLine orderLine = new OrderLine();
 
-    private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+  private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
 
-    @Before
-    public void setUp() {
-        cleanUp();
-        FacilityType facilityType = new FacilityType();
-        facilityType.setCode(proofOfDeliveryLineCode);
-        facilityTypeRepository.save(facilityType);
+  /** Prepare the test environment. */
+  @Before
+  public void setUp() {
+    cleanUp();
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode(proofOfDeliveryLineCode);
+    facilityTypeRepository.save(facilityType);
 
-        GeographicLevel level = new GeographicLevel();
-        level.setCode(proofOfDeliveryLineCode);
-        level.setLevelNumber(1);
-        geographicLevelRepository.save(level);
+    GeographicLevel level = new GeographicLevel();
+    level.setCode(proofOfDeliveryLineCode);
+    level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
 
-        GeographicZone geographicZone = new GeographicZone();
-        geographicZone.setCode(proofOfDeliveryLineCode);
-        geographicZone.setLevel(level);
-        geographicZoneRepository.save(geographicZone);
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode(proofOfDeliveryLineCode);
+    geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
 
-        Facility facility = new Facility();
-        facility.setType(facilityType);
-        facility.setGeographicZone(geographicZone);
-        facility.setCode(proofOfDeliveryLineCode);
-        facility.setName(proofOfDeliveryLineCode);
-        facility.setDescription("Test facility");
-        facility.setActive(true);
-        facility.setEnabled(true);
-        facilityRepository.save(facility);
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode(proofOfDeliveryLineCode);
+    facility.setName(proofOfDeliveryLineCode);
+    facility.setDescription("Test facility");
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
 
-        Program program = new Program();
-        program.setCode(proofOfDeliveryLineCode);
-        programRepository.save(program);
+    Program program = new Program();
+    program.setCode(proofOfDeliveryLineCode);
+    programRepository.save(program);
 
-        User user = new User();
-        user.setUsername(proofOfDeliveryLineCode);
-        user.setPassword(proofOfDeliveryLineCode);
-        user.setFirstName("Test");
-        user.setLastName("User");
-        userRepository.save(user);
+    User user = new User();
+    user.setUsername(proofOfDeliveryLineCode);
+    user.setPassword(proofOfDeliveryLineCode);
+    user.setFirstName("Test");
+    user.setLastName("User");
+    userRepository.save(user);
 
-        Order order = new Order();
-        order.setOrderCode(proofOfDeliveryLineCode);
-        order.setQuotedCost(new BigDecimal("1.29"));
-        order.setStatus(OrderStatus.PICKING);
-        order.setProgram(program);
-        order.setCreatedBy(user);
-        order.setRequestingFacility(facility);
-        order.setReceivingFacility(facility);
-        order.setSupplyingFacility(facility);
-        orderRepository.save(order);
+    Order order = new Order();
+    order.setOrderCode(proofOfDeliveryLineCode);
+    order.setQuotedCost(new BigDecimal("1.29"));
+    order.setStatus(OrderStatus.PICKING);
+    order.setProgram(program);
+    order.setCreatedBy(user);
+    order.setRequestingFacility(facility);
+    order.setReceivingFacility(facility);
+    order.setSupplyingFacility(facility);
+    orderRepository.save(order);
 
-        ProductCategory productCategory1 = new ProductCategory();
-        productCategory1.setCode("PC1");
-        productCategory1.setName("PC1 name");
-        productCategory1.setDisplayOrder(1);
-        productCategoryRepository.save(productCategory1);
+    ProductCategory productCategory1 = new ProductCategory();
+    productCategory1.setCode("PC1");
+    productCategory1.setName("PC1 name");
+    productCategory1.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory1);
 
-        Product product = new Product();
-        product.setCode(proofOfDeliveryLineCode);
-        product.setPrimaryName("Product");
-        product.setDispensingUnit("unit");
-        product.setDosesPerDispensingUnit(10);
-        product.setPackSize(1);
-        product.setPackRoundingThreshold(0);
-        product.setRoundToZero(false);
-        product.setActive(true);
-        product.setFullSupply(true);
-        product.setTracer(false);
-        product.setProductCategory(productCategory1);
-        productRepository.save(product);
+    Product product = new Product();
+    product.setCode(proofOfDeliveryLineCode);
+    product.setPrimaryName("Product");
+    product.setDispensingUnit("unit");
+    product.setDosesPerDispensingUnit(10);
+    product.setPackSize(1);
+    product.setPackRoundingThreshold(0);
+    product.setRoundToZero(false);
+    product.setActive(true);
+    product.setFullSupply(true);
+    product.setTracer(false);
+    product.setProductCategory(productCategory1);
+    productRepository.save(product);
 
-        orderLine.setOrder(order);
-        orderLine.setProduct(product);
-        orderLine.setOrderedQuantity(5L);
-        orderLineRepository.save(orderLine);
+    orderLine.setOrder(order);
+    orderLine.setProduct(product);
+    orderLine.setOrderedQuantity(5L);
+    orderLineRepository.save(orderLine);
 
-        proofOfDelivery.setOrder(order);
-        proofOfDelivery.setDeliveredBy(proofOfDeliveryLineCode);
-        proofOfDelivery.setReceivedBy(proofOfDeliveryLineCode);
-        proofOfDelivery.setReceivedDate(new Date());
-        proofOfDeliveryRepository.save(proofOfDelivery);
-    }
+    proofOfDelivery.setOrder(order);
+    proofOfDelivery.setDeliveredBy(proofOfDeliveryLineCode);
+    proofOfDelivery.setReceivedBy(proofOfDeliveryLineCode);
+    proofOfDelivery.setReceivedDate(new Date());
+    proofOfDeliveryRepository.save(proofOfDelivery);
+  }
 
-    @After
-    public void cleanUp() {
-        proofOfDeliveryLineRepository.deleteAll();
-        proofOfDeliveryRepository.deleteAll();
-        orderLineRepository.deleteAll();
-        orderRepository.deleteAll();
-        productRepository.deleteAll();
-        productCategoryRepository.deleteAll();
-        userRepository.deleteAll();
-        facilityRepository.deleteAll();
-        programRepository.deleteAll();
-        facilityTypeRepository.deleteAll();
-        geographicZoneRepository.deleteAll();
-        geographicLevelRepository.deleteAll();
-    }
+  /**
+   * Cleanup the test environment.
+   */
+  @After
+  public void cleanUp() {
+    proofOfDeliveryLineRepository.deleteAll();
+    proofOfDeliveryRepository.deleteAll();
+    orderLineRepository.deleteAll();
+    orderRepository.deleteAll();
+    productRepository.deleteAll();
+    productCategoryRepository.deleteAll();
+    userRepository.deleteAll();
+    facilityRepository.deleteAll();
+    programRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+  }
 
-    @Test
-    public void testCreate() {
-        ProofOfDeliveryLine proofOfDeliveryLine = new ProofOfDeliveryLine();
-        proofOfDeliveryLine.setOrderLine(orderLine);
-        proofOfDeliveryLine.setProofOfDelivery(proofOfDelivery);
+  @Test
+  public void testCreate() {
+    ProofOfDeliveryLine proofOfDeliveryLine = new ProofOfDeliveryLine();
+    proofOfDeliveryLine.setOrderLine(orderLine);
+    proofOfDeliveryLine.setProofOfDelivery(proofOfDelivery);
 
-        Assert.assertNull(proofOfDeliveryLine.getId());
+    Assert.assertNull(proofOfDeliveryLine.getId());
 
-        proofOfDeliveryLine =
-                proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
-        Assert.assertNotNull(proofOfDeliveryLine.getId());
-    }
+    proofOfDeliveryLine =
+        proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+    Assert.assertNotNull(proofOfDeliveryLine.getId());
+  }
 }

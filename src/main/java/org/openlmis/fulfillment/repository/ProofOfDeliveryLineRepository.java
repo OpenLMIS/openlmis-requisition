@@ -7,12 +7,12 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import java.util.UUID;
 
 public interface ProofOfDeliveryLineRepository extends
-        Repository<ProofOfDeliveryLine, UUID> {
+    Repository<ProofOfDeliveryLine, UUID> {
 
-    @RestResource(exported = false)
-    void deleteAll();
+  @RestResource(exported = false)
+  void deleteAll();
 
-    ProofOfDeliveryLine save(ProofOfDeliveryLine entity);
+  ProofOfDeliveryLine save(ProofOfDeliveryLine entity);
 
-    Iterable<ProofOfDeliveryLine> save(Iterable<ProofOfDeliveryLine> entities);
+  Iterable<ProofOfDeliveryLine> save(Iterable<ProofOfDeliveryLine> entities);
 }

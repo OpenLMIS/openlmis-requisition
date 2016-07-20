@@ -37,6 +37,7 @@ public class SupervisoryNodeRepositoryIntegrationTest extends
     return supervisoryNodeRepository;
   }
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityRepository.deleteAll();

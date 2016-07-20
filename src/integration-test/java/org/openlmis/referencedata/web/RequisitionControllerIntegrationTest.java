@@ -120,6 +120,7 @@ public class RequisitionControllerIntegrationTest {
   private Facility facility2 = new Facility();
   private User user = new User();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
     cleanUp();
@@ -256,6 +257,9 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition4);
   }
 
+  /**
+   * Cleanup the test environment.
+   */
   @After
   public void cleanUp() {
     requisitionLineRepository.deleteAll();

@@ -89,13 +89,15 @@ public class OrderControllerIntegrationTest {
   @Autowired
   ProductCategoryRepository productCategoryRepository;
 
-  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders/finalizeOrder";
+  private static final String RESOURCE_URL = System.getenv("BASE_URL")
+      + "/api/orders/finalizeOrder";
 
   private Order order = new Order();
   private Product firstProduct = new Product();
   private Product secondProduct = new Product();
   private StockInventory stockInventory = new StockInventory();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();
@@ -187,6 +189,9 @@ public class OrderControllerIntegrationTest {
     productRepository.save(secondProduct);
   }
 
+  /**
+   * Cleanup the test environment.
+   */
   @After
   public void cleanUp() {
     stockRepository.deleteAll();

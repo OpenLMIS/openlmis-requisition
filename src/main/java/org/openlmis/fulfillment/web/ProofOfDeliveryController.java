@@ -21,39 +21,39 @@ import java.util.UUID;
 @RepositoryRestController
 public class ProofOfDeliveryController {
 
-    @Autowired
-    private ProofOfDeliveryRepository proofOfDeliveryRepository;
+  @Autowired
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-    @Autowired
-    private RequisitionRepository requisitionRepository;
+  @Autowired
+  private RequisitionRepository requisitionRepository;
 
 
-    @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
-    @ResponseBody
-    public ModelAndView print(HttpServletRequest request, HttpServletResponse response,
-                              @PathVariable("id") UUID proofOfDeliveryId) throws Exception {
+  @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
+  @ResponseBody
+  public ModelAndView print(HttpServletRequest request, HttpServletResponse response,
+                            @PathVariable("id") UUID proofOfDeliveryId) throws Exception {
 
-        ProofOfDelivery proofOfDelivery =
-                proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+    ProofOfDelivery proofOfDelivery =
+        proofOfDeliveryRepository.findOne(proofOfDeliveryId);
 
-        Requisition requisition = findRequisition(proofOfDelivery);
+    Requisition requisition = findRequisition(proofOfDelivery);
 
-        Map<Requisition, ProofOfDelivery> proofOfDeliveries = new HashMap<>();
-        proofOfDeliveries.put(requisition, proofOfDelivery);
+    Map<Requisition, ProofOfDelivery> proofOfDeliveries = new HashMap<>();
+    proofOfDeliveries.put(requisition, proofOfDelivery);
 
-        ModelAndView modelAndView = new ModelAndView("pdfView", "orderProofOfDeliveries",
-                proofOfDeliveries);
+    ModelAndView modelAndView = new ModelAndView("pdfView", "orderProofOfDeliveries",
+        proofOfDeliveries);
 
-        return modelAndView;
+    return modelAndView;
+  }
+
+  private Requisition findRequisition(ProofOfDelivery proofOfDelivery) {
+    if (proofOfDelivery.getOrder().getRequisitionCode() != null) {
+      String requisitionCode = proofOfDelivery.getOrder().getRequisitionCode();
+      UUID requisitionId = UUID.fromString(requisitionCode);
+      Requisition requisition = requisitionRepository.findOne(requisitionId);
+      return requisition;
     }
-
-    private Requisition findRequisition(ProofOfDelivery proofOfDelivery) {
-        if (proofOfDelivery.getOrder().getRequisitionCode() != null) {
-            String requisitionCode = proofOfDelivery.getOrder().getRequisitionCode();
-            UUID requisitionId = UUID.fromString(requisitionCode);
-            Requisition requisition = requisitionRepository.findOne(requisitionId);
-            return requisition;
-        }
-        return null;
-    }
+    return null;
+  }
 }

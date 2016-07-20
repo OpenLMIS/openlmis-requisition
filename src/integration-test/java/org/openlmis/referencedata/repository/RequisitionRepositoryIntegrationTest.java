@@ -49,6 +49,7 @@ public class RequisitionRepositoryIntegrationTest
   private Period period = new Period();
   private Schedule schedule = new Schedule();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     programRepository.deleteAll();

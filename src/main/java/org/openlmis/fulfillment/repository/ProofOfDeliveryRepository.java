@@ -7,9 +7,9 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import java.util.UUID;
 
 public interface ProofOfDeliveryRepository extends
-        PagingAndSortingRepository<ProofOfDelivery, UUID> {
+    PagingAndSortingRepository<ProofOfDelivery, UUID> {
 
-    @RestResource(exported = false)
-    void deleteAll();
+  @RestResource(exported = false)
+  void deleteAll();
 }
 

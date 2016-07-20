@@ -17,43 +17,43 @@ import java.util.List;
 @Table(name = "proof_of_deliveries")
 public class ProofOfDelivery extends BaseEntity {
 
-    @OneToOne
-    @JoinColumn(name = "orderId", nullable = false)
-    @Getter
-    @Setter
-    private Order order;
+  @OneToOne
+  @JoinColumn(name = "orderId", nullable = false)
+  @Getter
+  @Setter
+  private Order order;
 
-    @OneToMany(mappedBy = "proofOfDelivery")
-    @Getter
-    private List<ProofOfDeliveryLine> profOfDeliveryLineItems;
+  @OneToMany(mappedBy = "proofOfDelivery")
+  @Getter
+  private List<ProofOfDeliveryLine> profOfDeliveryLineItems;
 
-    @Column
-    @Getter
-    @Setter
-    private Integer totalShippedPacks;
+  @Column
+  @Getter
+  @Setter
+  private Integer totalShippedPacks;
 
-    @Column
-    @Getter
-    @Setter
-    private Integer totalReceivedPacks;
+  @Column
+  @Getter
+  @Setter
+  private Integer totalReceivedPacks;
 
-    @Column
-    @Getter
-    @Setter
-    private Integer totalReturnedPacks;
+  @Column
+  @Getter
+  @Setter
+  private Integer totalReturnedPacks;
 
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String deliveredBy;
+  @Column(columnDefinition = "text")
+  @Getter
+  @Setter
+  private String deliveredBy;
 
-    @Column(columnDefinition = "text")
-    @Getter
-    @Setter
-    private String receivedBy;
+  @Column(columnDefinition = "text")
+  @Getter
+  @Setter
+  private String receivedBy;
 
-    @Column
-    @Getter
-    @Setter
-    private Date receivedDate;
+  @Column
+  @Getter
+  @Setter
+  private Date receivedDate;
 }

@@ -63,6 +63,7 @@ public class OrderLineRepositoryIntegrationTest {
   private Order order = new Order();
   private Product product = new Product();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     orderLineRepository.deleteAll();
