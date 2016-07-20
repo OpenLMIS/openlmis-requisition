@@ -23,8 +23,41 @@ public class RequisitionLine extends BaseEntity {
   @Setter
   private Product product;
 
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Integer beginningBalance;
+
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Integer totalReceivedQuantity;
+
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Integer totalLossesAndAdjustments;
+
+  //Calculated before sending:
+  //beginningBalance + totalReceivedQuantity + totalLossesAdjustments - totalConsumedQuantity
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Integer stockOnHand;
+
   @Column
   @Getter
   @Setter
-  private Integer quantityRequested;
+  private Integer requestedQuantity;
+
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Integer totalConsumedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private String requestedQuantityExplanation;
+
 }

@@ -1,6 +1,8 @@
 package org.openlmis.referencedata.repository;
 
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
@@ -13,6 +15,7 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionType;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +112,7 @@ public class RequisitionLineRepositoryIntegrationTest
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
+    requisition.setType(RequisitionType.REGULAR);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
   }
@@ -121,7 +125,12 @@ public class RequisitionLineRepositoryIntegrationTest
     repository.deleteAll();
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
-    requisitionLine.setQuantityRequested(1);
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
     return requisitionLine;
   }
 }

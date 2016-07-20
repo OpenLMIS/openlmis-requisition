@@ -5,14 +5,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "facilities", schema = "referencedata")
@@ -86,4 +81,10 @@ public class Facility extends BaseEntity {
   @Getter
   @Setter
   private StockInventory stockInventory;
+
+  @OneToMany
+  @JoinColumn(name = "programsId")
+  @Getter
+  @Setter
+  private List<Program> supportedPrograms;
 }

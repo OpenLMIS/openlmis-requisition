@@ -21,7 +21,7 @@ public class RequisitionValidator implements Validator {
 
     if (requisition.getRequisitionLines() != null) {
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
-        if (requisitionLine.getQuantityRequested() == null) {
+        if (requisitionLine.getRequestedQuantity() == null) {
           errors.rejectValue("requisitionLines",
               "A quantity must be entered prior to submission of a requisition.");
         }
