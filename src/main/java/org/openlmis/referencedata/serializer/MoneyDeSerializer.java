@@ -17,7 +17,8 @@ import java.io.IOException;
 public class MoneyDeSerializer extends JsonDeserializer<Money> {
 
   @Override
-  public Money deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+  public Money deserialize(JsonParser jsonParser, DeserializationContext ctxt) 
+      throws IOException, JsonProcessingException {
     ObjectCodec oc = jsonParser.getCodec();
     JsonNode node = oc.readTree(jsonParser);
     return new Money(node.asText());

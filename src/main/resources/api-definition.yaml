@@ -367,6 +367,26 @@ resourceTypes:
             responses:
                 200:
 
+/orders:
+    displayName: Order
+    /csv/{id}:
+        uriParameters:
+            id:
+                displayName: Order id
+                type: string
+        get:
+            description: Get CSV from Order
+            responses:
+              200:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+              400:
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
 
 /programs:
     displayName: ProgramsResource
@@ -414,3 +434,6 @@ resourceTypes:
                 headers:
                   X-Content-Type-Options:
                   X-XSS-Protection:
+
+
+

@@ -11,8 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 /*
- * ProductCategory represents the category for product. Also defines the contract for creation/upload of ProductCategory like
- * code, name and displayOrder are mandatory.
+ * ProductCategory represents the category for product. Also defines the contract for 
+ * creation/upload of ProductCategory like code, name and displayOrder are mandatory.
  */
 
 @Entity

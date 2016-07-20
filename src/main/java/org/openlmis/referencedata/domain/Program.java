@@ -44,7 +44,7 @@ public class Program extends BaseEntity {
 
   @PrePersist
   private void prePersist() {
-    if(this.periodsSkippable == null) {
+    if (this.periodsSkippable == null) {
       this.periodsSkippable = false;
     }
   }

@@ -1,4 +1,4 @@
-package org.openlmis.csv;
+package org.openlmis.csv.generator;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;

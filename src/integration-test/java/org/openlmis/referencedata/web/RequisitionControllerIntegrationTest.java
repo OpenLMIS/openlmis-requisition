@@ -64,7 +64,8 @@ public class RequisitionControllerIntegrationTest {
   private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
-  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL + "/api/requisitions/creator/{creatorId}";
+  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
+      + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
 
   @Autowired
@@ -349,9 +350,9 @@ public class RequisitionControllerIntegrationTest {
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<Requisition>>() {
-        }, user.getId());
+        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null, 
+            new ParameterizedTypeReference<List<Requisition>>() {
+            }, user.getId());
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 

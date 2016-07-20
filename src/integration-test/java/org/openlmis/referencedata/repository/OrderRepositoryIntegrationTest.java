@@ -40,8 +40,14 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   OrderRepository getRepository() {
     return this.repository;
   }
-
-  private String[] orderRepository = {"OrderRepositoryIntegrationTest1", "OrderRepositoryIntegrationTest2", "OrderRepositoryIntegrationTest3", "OrderRepositoryIntegrationTest4", "OrderRepositoryIntegrationTest5"};
+  
+  private String[] orderRepository = {
+      "OrderRepositoryIntegrationTest1", 
+      "OrderRepositoryIntegrationTest2", 
+      "OrderRepositoryIntegrationTest3", 
+      "OrderRepositoryIntegrationTest4", 
+      "OrderRepositoryIntegrationTest5"
+  };
   private List<Facility> testFacilities;
   private List<Program> testPrograms;
   private int testSetSize = 51;
@@ -130,7 +136,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void testFindBySupplyingFacilityAndRequestingFacility() {
     generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(testFacilities.get(i), testFacilities.get(i));
+      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(
+          testFacilities.get(i), testFacilities.get(i));
 
       Iterator iterator = result.iterator();
       while (iterator.hasNext()) {
@@ -145,7 +152,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void testFindBySupplyingFacilityAndProgram() {
     generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(testFacilities.get(i), testPrograms.get(i));
+      Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(
+          testFacilities.get(i), testPrograms.get(i));
 
       Iterator iterator = result.iterator();
       while (iterator.hasNext()) {
@@ -160,7 +168,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     generateTestSet();
     for ( int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
+      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(
+          testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
 
       Iterator iterator = result.iterator();
       while (iterator.hasNext()) {

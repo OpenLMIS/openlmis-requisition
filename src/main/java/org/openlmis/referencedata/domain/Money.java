@@ -1,15 +1,17 @@
 package org.openlmis.referencedata.domain;
 
 
+import static java.math.BigDecimal.ROUND_HALF_UP;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import org.openlmis.referencedata.serializer.MoneyDeSerializer;
 
 import java.math.BigDecimal;
-
-import static java.math.BigDecimal.ROUND_HALF_UP;
 
 @Data
 @JsonSerialize(as = BigDecimal.class)

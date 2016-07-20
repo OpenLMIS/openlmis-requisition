@@ -5,6 +5,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;
 
-public interface SupervisoryNodeRepository extends PagingAndSortingRepository<SupervisoryNode, UUID> {
-
+public interface SupervisoryNodeRepository 
+    extends PagingAndSortingRepository<SupervisoryNode, UUID> {
 }

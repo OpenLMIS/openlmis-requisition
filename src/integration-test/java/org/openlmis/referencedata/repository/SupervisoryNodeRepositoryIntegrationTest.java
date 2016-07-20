@@ -11,7 +11,8 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.UUID;
 
-public class SupervisoryNodeRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<SupervisoryNode> {
+public class SupervisoryNodeRepositoryIntegrationTest extends 
+    BaseCrudRepositoryIntegrationTest<SupervisoryNode> {
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
@@ -38,11 +39,11 @@ public class SupervisoryNodeRepositoryIntegrationTest extends BaseCrudRepository
 
   @Before
   public void setUp() {
-    String code = "code";
-
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
+
+    String code = "code";
 
     geographicLevel.setCode(code);
     geographicLevel.setLevelNumber(1);
