@@ -102,6 +102,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     user.setLastName("User");
     userRepository.save(user);
 
+    generateTestSet();
   }
 
   Order generateInstance() {
@@ -120,7 +121,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacility() {
-    generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacility(testFacilities.get(i));
 
@@ -134,7 +134,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacilityAndRequestingFacility() {
-    generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(
           testFacilities.get(i), testFacilities.get(i));
@@ -150,7 +149,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacilityAndProgram() {
-    generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(
           testFacilities.get(i), testPrograms.get(i));
@@ -166,7 +164,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
-    generateTestSet();
     for ( int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(
           testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
