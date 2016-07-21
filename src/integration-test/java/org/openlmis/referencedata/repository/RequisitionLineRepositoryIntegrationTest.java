@@ -13,7 +13,6 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionType;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +109,6 @@ public class RequisitionLineRepositoryIntegrationTest
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
-    requisition.setType(RequisitionType.REGULAR);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
   }

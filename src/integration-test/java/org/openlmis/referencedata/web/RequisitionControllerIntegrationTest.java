@@ -27,7 +27,6 @@ import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionType;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,7 +182,6 @@ public class RequisitionControllerIntegrationTest {
     periodRepository.save(period);
 
     requisition.setCreator(user);
-    requisition.setType(RequisitionType.REGULAR);
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
@@ -208,7 +206,6 @@ public class RequisitionControllerIntegrationTest {
     requisition = requisitionRepository.save(requisition);
 
     requisition2.setFacility(facility2);
-    requisition2.setType(RequisitionType.REGULAR);
     requisition2.setProcessingPeriod(period);
     requisition2.setProgram(program);
     requisition2.setStatus(RequisitionStatus.INITIATED);
@@ -217,7 +214,6 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition2);
 
     requisition3.setFacility(facility);
-    requisition3.setType(RequisitionType.REGULAR);
     requisition3.setProcessingPeriod(period);
     requisition3.setProgram(program2);
     requisition3.setStatus(RequisitionStatus.INITIATED);
@@ -226,7 +222,6 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition3);
 
     requisition4.setFacility(facility2);
-    requisition4.setType(RequisitionType.REGULAR);
     requisition4.setProcessingPeriod(period);
     requisition4.setProgram(program2);
     requisition4.setStatus(RequisitionStatus.INITIATED);

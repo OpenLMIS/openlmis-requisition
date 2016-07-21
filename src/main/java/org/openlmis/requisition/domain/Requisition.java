@@ -71,12 +71,6 @@ public class Requisition extends BaseEntity {
   @Setter
   private RequisitionStatus status;
 
-  @Column
-  @Enumerated(EnumType.STRING)
-  @Getter
-  @Setter
-  private RequisitionType type;
-
   @ManyToOne
   @JoinColumn(name = "creatorId")
   @Getter
