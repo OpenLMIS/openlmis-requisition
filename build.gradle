@@ -159,7 +159,8 @@ def ramlToCopy = copySpec {
     rename { 'api-definition-raml.yaml' }
     expand([
             baseUrl: "$System.env.BASE_URL",
-            schema: "\$schema"
+            schema: "\$schema",
+            ref: "\$ref"
     ])
 }
 

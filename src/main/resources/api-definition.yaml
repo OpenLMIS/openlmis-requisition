@@ -19,9 +19,9 @@ schemas:
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "geographicZone": { "type": "string", "required": true, "title": "geographicZone" },
-              "type": { "type": "string", "required": true, "title": "type" },
-              "operator": { "type": "string", "required": false, "title": "operator" },
+              "geographicZone": { "$ref": "geographicZone", "required": true },
+              "type": { "$ref": "facilityType", "required": true },
+              "operator": { "$ref": "facilityOperator", "required": false },
               "active": { "type": "boolean", "required": true, "title": "active" },
               "goLiveDate": { "type": "string", "required": false, "title": "goLiveDate" },
               "goDownDate": { "type": "string", "required": false, "title": "goDownDate" },
@@ -91,7 +91,7 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
-              "level": { "type": "string", "required": true, "title": "level" },
+              "level": { "$ref": "geographicLevel", "required": true },
               "catchmentPopulation": { "type": "integer", "required": false, "title": "catchmentPopulation" },
               "latitude": { "type": "number", "required": false, "title": "latitude" },
               "longitude": { "type": "number", "required": false, "title": "longitude" }
@@ -314,6 +314,35 @@ schemas:
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
               "roles": { "type": "array", "required": false, "title": "roles", "items": { "type": "object" }, "uniqueItems": false}
+          }
+      }
+
+  - supervisoryNode: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "SupervisoryNode",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": false, "title": "name" },
+              "description": { "type": "string", "required": false, "title": "description" },
+              "supervisorCount": { "type": "integer", "required": true, "title": "supervisorCount" },
+              "facility": { "$ref": "facility", "required": true },
+              "parentNode": { "$ref": "supervisoryNode", "required": false },
+              "childNodes": { "type": "array", "required": false, "title": "childNodes", "items": { "$ref": "supervisoryNode" }, "uniqueItems": false}
+          }
+      }
+
+  - supplyLine: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "SupplyLine",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "supervisoryNode": { "$ref": "supervisoryNode", "required": true },
+              "description": { "type": "string", "required": false, "title": "description" },
+              "program": { "$ref": "program", "required": true },
+              "supplyingFacility": { "$ref": "facility", "required": true }
           }
       }
 
@@ -879,3 +908,20 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
+
+/supplyLines:
+    displayName: SupplyLines
+    post:
+      description: Save a supplyLine
+      body:
+        application/json:
+          schema: supplyLine
+      responses:
+        200:
+          description: SupplyLine sucessfully saved.
+          headers:
+            X-Content-Type-Options:
+            X-XSS-Protection:
+          body:
+            application/json:
+              schema: supplyLine
