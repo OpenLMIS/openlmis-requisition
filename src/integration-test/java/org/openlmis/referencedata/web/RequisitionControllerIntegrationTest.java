@@ -279,6 +279,25 @@ public class RequisitionControllerIntegrationTest {
     testSubmit();
   }
 
+  @Test(expected = HttpClientErrorException.class)
+  public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(null);
+    requisitionLine.setTotalConsumedQuantity(null);
+    requisitionLine.setBeginningBalance(null);
+    requisitionLine.setTotalReceivedQuantity(null);
+    requisitionLine.setTotalLossesAndAdjustments(null);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    testSubmit();
+  }
+
   @Test
   public void testSkip() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
@@ -347,14 +366,12 @@ public class RequisitionControllerIntegrationTest {
 
     ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Hibernate4Module());
-
     String json = mapper.writeValueAsString(requisition);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
     ResponseEntity<Requisition> result = restTemplate.postForEntity(
         SUBMIT_URL, entity, Requisition.class);
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-
     Requisition savedRequisition = result.getBody();
     Assert.assertNotNull(savedRequisition.getId());
     Assert.assertEquals(requisition.getId(), savedRequisition.getId());

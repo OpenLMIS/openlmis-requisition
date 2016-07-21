@@ -90,7 +90,7 @@ public class Facility extends BaseEntity {
   private StockInventory stockInventory;
 
   @OneToMany
-  @JoinColumn(name = "programsId")
+  @JoinColumn(name = "programId")
   @Getter
   @Setter
   private List<Program> supportedPrograms;
