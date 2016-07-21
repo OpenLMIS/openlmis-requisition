@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.hierarchyandsupervision.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +10,10 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.domain.Schedule;
 
 /**
  * RequisitionGroupProgramSchedule represents the schedule to be mapped for
