@@ -43,6 +43,7 @@ public class PeriodControllerIntegrationTest {
   private Period secondPeriod = new Period();
   private Schedule schedule = new Schedule();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanup();
@@ -61,6 +62,9 @@ public class PeriodControllerIntegrationTest {
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
   }
 
+  /**
+   * Cleanup the test environment.
+   */
   @After
   public void cleanup() {
     periodRepository.deleteAll();

@@ -26,16 +26,25 @@ import java.util.List;
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
 
   @Autowired
-  OrderRepository repository;
+  private OrderRepository repository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  UserRepository userRepository;
+  private UserRepository userRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private FacilityRepository facilityRepository;
+
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
 
   OrderRepository getRepository() {
     return this.repository;
@@ -59,28 +68,37 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   /** Prepare the test environment. */
   @Before
   public void setUp() {
+    facilityRepository.deleteAll();
+    programRepository.deleteAll();
+    userRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
 
     testFacilities = new ArrayList<>();
     testPrograms = new ArrayList<>();
 
-    facilityRepository.deleteAll();
-    FacilityType facilityType = new FacilityType();
-    for ( int i = 0; i < orderRepository.length; i++) {
+    for (String order : orderRepository) {
       facility = new Facility();
-      facilityType.setCode(orderRepository[i]);
+
+      FacilityType facilityType = new FacilityType();
+      facilityType.setCode(order);
+      facilityTypeRepository.save(facilityType);
 
       GeographicLevel level = new GeographicLevel();
-      level.setCode(orderRepository[i]);
+      level.setCode(order);
       level.setLevelNumber(1);
+      geographicLevelRepository.save(level);
 
       GeographicZone geographicZone = new GeographicZone();
-      geographicZone.setCode(orderRepository[i]);
+      geographicZone.setCode(order);
       geographicZone.setLevel(level);
+      geographicZoneRepository.save(geographicZone);
 
       facility.setType(facilityType);
       facility.setGeographicZone(geographicZone);
-      facility.setCode(orderRepository[i]);
-      facility.setName(orderRepository[i]);
+      facility.setCode(order);
+      facility.setName(order);
       facility.setDescription("Test facility");
       facility.setActive(true);
       facility.setEnabled(true);
@@ -88,20 +106,18 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
       testFacilities.add(facility);
     }
 
-    programRepository.deleteAll();
-    for ( int i = 0; i < orderRepository.length;i++) {
-      program.setCode(orderRepository[i]);
+    for (String order : orderRepository) {
+      program.setCode(order);
       programRepository.save(program);
       testPrograms.add(program);
     }
 
-    userRepository.deleteAll();
     user.setUsername(orderRepository[0]);
     user.setPassword(orderRepository[0]);
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);
-
+    generateTestSet();
   }
 
   Order generateInstance() {
@@ -120,7 +136,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacility() {
-    generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacility(testFacilities.get(i));
 
@@ -134,7 +149,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacilityAndRequestingFacility() {
-    generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(
           testFacilities.get(i), testFacilities.get(i));
@@ -150,7 +164,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacilityAndProgram() {
-    generateTestSet();
     for (int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(
           testFacilities.get(i), testPrograms.get(i));
@@ -166,7 +179,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
-    generateTestSet();
     for ( int i = 0; i < orderRepository.length; i++) {
       Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(
           testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));

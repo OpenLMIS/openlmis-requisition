@@ -36,13 +36,13 @@ public class Facility extends BaseEntity {
   @Setter
   private String description;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne(cascade = CascadeType.MERGE)
   @JoinColumn(name = "geographiczoneid", nullable = false)
   @Getter
   @Setter
   private GeographicZone geographicZone;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne(cascade = CascadeType.MERGE)
   @JoinColumn(name = "typeid", nullable = false)
   @Getter
   @Setter

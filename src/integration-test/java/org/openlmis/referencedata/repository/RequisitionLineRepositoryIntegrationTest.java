@@ -2,6 +2,8 @@ package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
 import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
@@ -26,35 +28,53 @@ public class RequisitionLineRepositoryIntegrationTest
       "RequisitionLineRepositoryIntegrationTest";
 
   @Autowired
-  RequisitionLineRepository repository;
+  private RequisitionLineRepository repository;
 
   @Autowired
-  RequisitionRepository requisitionRepository;
+  private RequisitionRepository requisitionRepository;
 
   @Autowired
-  ProductRepository productRepository;
+  private ProductRepository productRepository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
-  ScheduleRepository scheduleRepository;
+  private ScheduleRepository scheduleRepository;
 
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
+
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  ProductCategoryRepository productCategoryRepository;
 
   private Requisition requisition = new Requisition();
   private Product product = new Product();
 
-  /**
-   * Prepare the test environment.
-   */
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     productRepository.deleteAll();
+    productCategoryRepository.deleteAll();
+
+    ProductCategory productCategory1 = new ProductCategory();
+    productCategory1.setCode("PC1");
+    productCategory1.setName("PC1 name");
+    productCategory1.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory1);
+
     product.setCode(requisitionLineRepository);
     product.setPrimaryName(requisitionLineRepository);
     product.setDispensingUnit(requisitionLineRepository);
@@ -65,24 +85,33 @@ public class RequisitionLineRepositoryIntegrationTest
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
+    product.setProductCategory(productCategory1);
     productRepository.save(product);
 
-    Program program = new Program();
     programRepository.deleteAll();
+    Program program = new Program();
     program.setCode(requisitionLineRepository);
     programRepository.save(program);
 
+    facilityTypeRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionLineRepository);
+    facilityTypeRepository.save(facilityType);
+
+    geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
     level.setCode(requisitionLineRepository);
     level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
+
+    geographicZoneRepository.deleteAll();
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(requisitionLineRepository);
     geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
 
-    Facility facility = new Facility();
     facilityRepository.deleteAll();
+    Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode(requisitionLineRepository);
@@ -90,14 +119,14 @@ public class RequisitionLineRepositoryIntegrationTest
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    Schedule schedule = new Schedule();
     scheduleRepository.deleteAll();
+    Schedule schedule = new Schedule();
     schedule.setCode(requisitionLineRepository);
     schedule.setName(requisitionLineRepository);
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
     periodRepository.deleteAll();
+    Period period = new Period();
     period.setName(requisitionLineRepository);
     period.setProcessingSchedule(schedule);
     period.setDescription(requisitionLineRepository);

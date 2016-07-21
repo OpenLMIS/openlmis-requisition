@@ -77,6 +77,11 @@ public class Requisition extends BaseEntity {
   @Setter
   private User creator;
 
+  @Column
+  @Getter
+  @Setter
+  private Boolean emergency;
+
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();

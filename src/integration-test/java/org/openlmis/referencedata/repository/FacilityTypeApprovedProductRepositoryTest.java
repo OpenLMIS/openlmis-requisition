@@ -48,6 +48,7 @@ public class FacilityTypeApprovedProductRepositoryTest extends
 
   private static final double maxMonthsOfStockDelta = 1e-15;
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityTypeRepository.deleteAll();
@@ -73,13 +74,14 @@ public class FacilityTypeApprovedProductRepositoryTest extends
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
-    productRepository.save(product);
     productCategoryRepository.deleteAll();
     productCategory = new ProductCategory();
     productCategory.setCode("productCategoryCode");
     productCategory.setName("productCategoryName");
     productCategory.setDisplayOrder(1);
     productCategoryRepository.save(productCategory);
+    product.setProductCategory(productCategory);
+    productRepository.save(product);
     programProductRepository.deleteAll();
     programProduct = new ProgramProduct();
     programProduct.setProgram(program);

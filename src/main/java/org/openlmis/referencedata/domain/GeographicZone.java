@@ -26,7 +26,7 @@ public class GeographicZone extends BaseEntity {
   @Setter
   private String name;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne(cascade = CascadeType.MERGE)
   @JoinColumn(name = "levelid", nullable = false)
   @Getter
   @Setter

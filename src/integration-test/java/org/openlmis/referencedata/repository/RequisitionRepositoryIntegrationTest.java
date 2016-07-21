@@ -21,42 +21,57 @@ public class RequisitionRepositoryIntegrationTest
   private static final String requisitionRepository = "RequisitionRepositoryIntegrationTest";
 
   @Autowired
-  RequisitionRepository repository;
+  private RequisitionRepository repository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
 
   @Autowired
-  ScheduleRepository scheduleRepository;
+  private ScheduleRepository scheduleRepository;
+
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
 
   private Program program = new Program();
   private Facility facility = new Facility();
   private Period period = new Period();
   private Schedule schedule = new Schedule();
 
-  /**
-   * Prepare the test environment.
-   */
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     programRepository.deleteAll();
     program.setCode(requisitionRepository);
     programRepository.save(program);
 
+    facilityTypeRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepository);
+    facilityTypeRepository.save(facilityType);
+
+    geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
     level.setCode(requisitionRepository);
     level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
+
+    geographicZoneRepository.deleteAll();
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(requisitionRepository);
     geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
 
     facilityRepository.deleteAll();
     facility.setType(facilityType);

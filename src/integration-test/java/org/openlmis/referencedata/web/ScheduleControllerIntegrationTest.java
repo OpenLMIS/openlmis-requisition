@@ -1,15 +1,10 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import com.jayway.restassured.RestAssured;
-
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +20,9 @@ import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
+
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -46,6 +44,7 @@ public class ScheduleControllerIntegrationTest {
   private Schedule schedule;
   private Period period;
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     RestAssured.baseURI = BASE_URL;
@@ -69,6 +68,9 @@ public class ScheduleControllerIntegrationTest {
     periodRepository.save(period);
   }
 
+  /**
+   * Cleanup the test environment.
+   */
   @After
   public void cleanup() {
     periodRepository.deleteAll();

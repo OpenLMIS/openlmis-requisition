@@ -10,8 +10,9 @@ documentation:
 
 schemas:
   - facility: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+      {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Facility",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -31,7 +32,7 @@ schemas:
 
   - facilityOperator: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "FacilityOperator",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -44,7 +45,7 @@ schemas:
 
   - facilityType: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "FacilityType",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -58,7 +59,7 @@ schemas:
 
   - facilityTypeApprovedProduct: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "FacilityTypeApprovedProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -72,7 +73,7 @@ schemas:
 
   - geographicLevel: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "GeographicLevel",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -84,7 +85,7 @@ schemas:
 
   - geographicZone: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "GeographicZone",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -99,7 +100,7 @@ schemas:
 
   - order: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Order",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -118,7 +119,7 @@ schemas:
 
   - orderLine: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "OrderLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -130,7 +131,7 @@ schemas:
 
   - period: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Period",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -144,7 +145,7 @@ schemas:
 
   - product: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Product",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -163,7 +164,7 @@ schemas:
 
   - productCategory: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "ProductCategory",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -175,7 +176,7 @@ schemas:
 
   - program: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Program",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -190,7 +191,7 @@ schemas:
 
   - programProduct: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "ProgramProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -208,7 +209,7 @@ schemas:
 
   - requisition: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Requisition",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -224,7 +225,7 @@ schemas:
 
   - requisitionLine: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "RequisitionLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -236,7 +237,7 @@ schemas:
 
   - requisitionTemplate: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "RequisitionTemplate",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -247,7 +248,7 @@ schemas:
 
   - requisitionTemplateColumn: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "RequisitionTemplateColumn",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -263,7 +264,7 @@ schemas:
 
   - right: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Right",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -275,7 +276,7 @@ schemas:
 
   - role: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Role",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -288,7 +289,7 @@ schemas:
 
   - schedule: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Schedule",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
@@ -301,7 +302,7 @@ schemas:
 
   - user: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema#",
+          "$schema": "http://json-schema.org/draft-03/schema",
           "title": "User",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
