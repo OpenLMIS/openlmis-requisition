@@ -20,7 +20,8 @@ import javax.persistence.Table;
 @Table(name = "users", schema = "referencedata")
 @NoArgsConstructor
 public class User extends BaseEntity {
-  @Column(nullable = false, columnDefinition = "text")
+
+  @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
   private String username;
