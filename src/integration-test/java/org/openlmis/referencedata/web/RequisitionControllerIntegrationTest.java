@@ -12,6 +12,8 @@ import org.openlmis.Application;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
@@ -21,6 +23,9 @@ import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
+import org.openlmis.referencedata.repository.FacilityTypeRepository;
+import org.openlmis.referencedata.repository.GeographicLevelRepository;
+import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -69,28 +74,40 @@ public class RequisitionControllerIntegrationTest {
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
 
   @Autowired
-  ProductRepository productRepository;
+  private ProductRepository productRepository;
 
   @Autowired
-  RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineRepository requisitionLineRepository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  PeriodRepository periodRepository;
+  private PeriodRepository periodRepository;
 
   @Autowired
-  ScheduleRepository scheduleRepository;
+  private ScheduleRepository scheduleRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
-  RequisitionRepository requisitionRepository;
+  private RequisitionRepository requisitionRepository;
 
   @Autowired
-  UserRepository userRepository;
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  ProductCategoryRepository productCategoryRepository;
 
   private Requisition requisition = new Requisition();
   private Requisition requisition2 = new Requisition();
@@ -103,18 +120,22 @@ public class RequisitionControllerIntegrationTest {
   private Facility facility2 = new Facility();
   private User user = new User();
 
-  /**
-   * Prepare the test environment.
-   */
+  /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
-    cleanup();
+    cleanUp();
 
     user.setUsername("testUser");
     user.setPassword("password");
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);
+
+    ProductCategory productCategory1 = new ProductCategory();
+    productCategory1.setCode("PC1");
+    productCategory1.setName("PC1 name");
+    productCategory1.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory1);
 
     product.setCode(requisitionRepositoryName);
     product.setPrimaryName(requisitionRepositoryName);
@@ -126,6 +147,7 @@ public class RequisitionControllerIntegrationTest {
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
+    product.setProductCategory(productCategory1);
     productRepository.save(product);
 
     program.setCode(requisitionRepositoryName);
@@ -138,12 +160,17 @@ public class RequisitionControllerIntegrationTest {
 
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
+    facilityTypeRepository.save(facilityType);
+
     GeographicLevel level = new GeographicLevel();
     level.setCode(requisitionRepositoryName);
     level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
+
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(requisitionRepositoryName);
     geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
@@ -154,12 +181,17 @@ public class RequisitionControllerIntegrationTest {
 
     FacilityType facilityType2 = new FacilityType();
     facilityType2.setCode(requisitionRepositoryName + "2");
+    facilityTypeRepository.save(facilityType2);
+
     GeographicLevel level2 = new GeographicLevel();
     level2.setCode(requisitionRepositoryName + "2");
     level2.setLevelNumber(1);
+    geographicLevelRepository.save(level2);
+
     GeographicZone geographicZone2 = new GeographicZone();
     geographicZone2.setCode(requisitionRepositoryName + "2");
     geographicZone2.setLevel(level2);
+    geographicZoneRepository.save(geographicZone2);
 
     facility2.setType(facilityType2);
     facility2.setGeographicZone(geographicZone2);
@@ -225,17 +257,24 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.save(requisition4);
   }
 
+  /**
+   * Cleanup the test environment.
+   */
   @After
-  public void cleanup() {
+  public void cleanUp() {
     requisitionLineRepository.deleteAll();
     productRepository.deleteAll();
     requisitionRepository.deleteAll();
     programRepository.deleteAll();
     periodRepository.deleteAll();
     facilityRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
     userRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+    productCategoryRepository.deleteAll();
   }
 
   @Test

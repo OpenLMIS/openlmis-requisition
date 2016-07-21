@@ -10,7 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FacilityRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Facility> {
 
   @Autowired
-  FacilityRepository repository;
+  private FacilityRepository repository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
 
   FacilityRepository getRepository() {
     return this.repository;
@@ -22,12 +31,20 @@ public class FacilityRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
   /** Prepare the test environment. */
   @Before
   public void setUp() {
+    facilityTypeRepository.deleteAll();
     this.facilityType.setCode("FacilityRepositoryIntegrationTest");
+    facilityTypeRepository.save(this.facilityType);
+
+    geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
     level.setCode("FacilityRepositoryIntegrationTest");
     level.setLevelNumber(1);
+    geographicLevelRepository.save(level);
+
+    geographicZoneRepository.deleteAll();
     this.geographicZone.setCode("FacilityRepositoryIntegrationTest");
     this.geographicZone.setLevel(level);
+    geographicZoneRepository.save(geographicZone);
   }
 
   Facility generateInstance() {

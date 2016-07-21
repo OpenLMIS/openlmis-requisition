@@ -19,4 +19,9 @@
           class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
         <property name="defaultLocale" value="${defaultLocale}"/>
     </bean>
+
+    <bean id="viewResolver1" class="org.springframework.web.servlet.view.ResourceBundleViewResolver">
+        <property name="order" value="1"/>
+        <property name="basename" value="views"/>
+    </bean>
 </beans>

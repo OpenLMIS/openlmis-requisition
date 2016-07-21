@@ -16,6 +16,8 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
+import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
@@ -83,7 +85,10 @@ public class OrderControllerIntegrationTest {
 
   @Autowired
   private StockInventoryRepository stockInventoryRepository;
-  
+
+  @Autowired
+  ProductCategoryRepository productCategoryRepository;
+
   private static final String RESOURCE_URL = System.getenv("BASE_URL")
       + "/api/orders/finalizeOrder";
 
@@ -92,6 +97,7 @@ public class OrderControllerIntegrationTest {
   private Product secondProduct = new Product();
   private StockInventory stockInventory = new StockInventory();
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();
@@ -102,13 +108,16 @@ public class OrderControllerIntegrationTest {
     GeographicLevel geographicLevel = new GeographicLevel();
     geographicLevel.setCode("geographicLevelCode");
     geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
 
     FacilityType facilityType = new FacilityType();
     facilityType.setCode("facilityTypeCode");
+    facilityTypeRepository.save(facilityType);
 
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode("geographicZoneCode");
     geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);
@@ -142,6 +151,17 @@ public class OrderControllerIntegrationTest {
     order.setSupplyingFacility(facility);
     orderRepository.save(order);
 
+    ProductCategory productCategory1 = new ProductCategory();
+    ProductCategory productCategory2 = new ProductCategory();
+    productCategory1.setCode("PC1");
+    productCategory2.setCode("PC2");
+    productCategory1.setName("PC1 name");
+    productCategory2.setName("PC2 name");
+    productCategory1.setDisplayOrder(1);
+    productCategory2.setDisplayOrder(2);
+    productCategoryRepository.save(productCategory1);
+    productCategoryRepository.save(productCategory2);
+
     firstProduct.setPrimaryName("firstProductName");
     firstProduct.setCode("firstProductCode");
     firstProduct.setDispensingUnit("unit");
@@ -152,6 +172,7 @@ public class OrderControllerIntegrationTest {
     firstProduct.setActive(true);
     firstProduct.setFullSupply(true);
     firstProduct.setTracer(false);
+    firstProduct.setProductCategory(productCategory1);
     productRepository.save(firstProduct);
 
     secondProduct.setPrimaryName("secondProductName");
@@ -164,9 +185,13 @@ public class OrderControllerIntegrationTest {
     secondProduct.setActive(true);
     secondProduct.setFullSupply(true);
     secondProduct.setTracer(false);
+    secondProduct.setProductCategory(productCategory2);
     productRepository.save(secondProduct);
   }
 
+  /**
+   * Cleanup the test environment.
+   */
   @After
   public void cleanUp() {
     stockRepository.deleteAll();
@@ -180,6 +205,7 @@ public class OrderControllerIntegrationTest {
     facilityTypeRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     stockInventoryRepository.deleteAll();
+    productCategoryRepository.deleteAll();
   }
 
   private void addOrderLine(Product product, Long quantity) {

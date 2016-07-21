@@ -1,55 +1,42 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.Assert;
+
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.product.domain.Product;
-import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@Transactional
-public class OrderLineRepositoryIntegrationTest {
-
-  private static final String orderLine = "OrderLineRepositoryIntegrationTest";
+public class ProofOfDeliveryRepositoryIntegrationTest extends
+    BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {
 
   @Autowired
-  private ProductRepository productRepository;
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Autowired
   private OrderRepository orderRepository;
 
   @Autowired
-  private OrderLineRepository orderLineRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
   private ProgramRepository programRepository;
 
   @Autowired
   private UserRepository userRepository;
-
-  @Autowired
-  private FacilityRepository facilityRepository;
 
   @Autowired
   private GeographicLevelRepository geographicLevelRepository;
@@ -60,58 +47,54 @@ public class OrderLineRepositoryIntegrationTest {
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
+  private String orderProofOfDeliveryString = "OrderProofOfDeliveryRepositoryIntegrationTest";
+
   private Order order = new Order();
-  private Product product = new Product();
+
+  ProofOfDeliveryRepository getRepository() {
+    return this.proofOfDeliveryRepository;
+  }
 
   /** Prepare the test environment. */
   @Before
   public void setUp() {
-    orderLineRepository.deleteAll();
-    productRepository.deleteAll();
-    orderRepository.deleteAll();
-    userRepository.deleteAll();
-    programRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-
+    cleanUp();
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(orderLine);
+    facilityType.setCode(orderProofOfDeliveryString);
     facilityTypeRepository.save(facilityType);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode(orderLine);
+    level.setCode(orderProofOfDeliveryString);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(orderLine);
+    geographicZone.setCode(orderProofOfDeliveryString);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(orderLine);
-    facility.setName(orderLine);
+    facility.setCode(orderProofOfDeliveryString);
+    facility.setName(orderProofOfDeliveryString);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Program program = new Program();
-    program.setCode(orderLine);
+    program.setCode(orderProofOfDeliveryString);
     programRepository.save(program);
 
     User user = new User();
-    user.setUsername(orderLine);
-    user.setPassword(orderLine);
+    user.setUsername(orderProofOfDeliveryString);
+    user.setPassword(orderProofOfDeliveryString);
     user.setFirstName("Test");
     user.setLastName("User");
     userRepository.save(user);
 
-    order.setOrderCode(orderLine);
+    order.setOrderCode(orderProofOfDeliveryString);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
@@ -120,30 +103,26 @@ public class OrderLineRepositoryIntegrationTest {
     order.setReceivingFacility(facility);
     order.setSupplyingFacility(facility);
     orderRepository.save(order);
-
-    product.setCode(orderLine);
-    product.setPrimaryName("Product");
-    product.setDispensingUnit("unit");
-    product.setDosesPerDispensingUnit(10);
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setRoundToZero(false);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
-    productRepository.save(product);
   }
 
-  @Test
-  public void testCreate() {
-    OrderLine orderLine = new OrderLine();
-    orderLine.setOrder(order);
-    orderLine.setProduct(product);
-    orderLine.setOrderedQuantity(5L);
+  /**
+   * Cleanup the test environment.
+   */
+  @After
+  public void cleanUp() {
+    proofOfDeliveryRepository.deleteAll();
+    orderRepository.deleteAll();
+    userRepository.deleteAll();
+    facilityRepository.deleteAll();
+    programRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+  }
 
-    Assert.assertNull(orderLine.getId());
-
-    orderLine = orderLineRepository.save(orderLine);
-    Assert.assertNotNull(orderLine.getId());
+  ProofOfDelivery generateInstance() {
+    ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+    proofOfDelivery.setOrder(order);
+    return proofOfDelivery;
   }
 }

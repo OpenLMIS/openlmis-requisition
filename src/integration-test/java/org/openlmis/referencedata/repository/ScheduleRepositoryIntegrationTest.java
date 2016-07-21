@@ -15,6 +15,7 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
   @Autowired
   ScheduleRepository repository;
 
+  /** Prepare the test environment. */
   @Before
   public void setUp() {
     repository.deleteAll();

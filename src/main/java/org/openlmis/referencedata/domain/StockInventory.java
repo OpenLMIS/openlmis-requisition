@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -20,7 +21,7 @@ public class StockInventory extends BaseEntity {
   @Setter
   private String name;
 
-  @OneToMany(mappedBy = "stockInventory")
+  @OneToMany(mappedBy = "stockInventory", cascade = CascadeType.REMOVE)
   @Getter
   private Set<Stock> stocks;
 }

@@ -51,6 +51,10 @@ dependencies {
 
     testCompile "org.springframework.boot:spring-boot-starter-test"
     testCompile "guru.nidi.raml:raml-tester:0.8.9"
+    compile "org.apache.commons:commons-csv:1.4"
+    compile 'com.itextpdf:kernel:7.0.0'
+    compile 'com.itextpdf:layout:7.0.0'
+    compile 'com.itextpdf:forms:7.0.0'
 
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
