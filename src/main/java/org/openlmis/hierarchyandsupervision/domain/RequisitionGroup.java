@@ -14,7 +14,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.SupervisoryNode;
 
 /**
  * RequisitionGroup represents a group of facilities which follow a particular schedule for

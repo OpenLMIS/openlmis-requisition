@@ -1,6 +1,6 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.hierarchyandsupervision.repository;
 
-import org.openlmis.referencedata.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;
