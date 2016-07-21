@@ -53,7 +53,9 @@ public class RequisitionLineService {
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findByProgram(requisition.getProgram());
 
-    initiateBeginningBalance(requisition, requisitionTemplate);
+    if (requisitionTemplate != null) {
+      initiateBeginningBalance(requisition, requisitionTemplate);
+    }
 
     return requisition;
   }
@@ -65,7 +67,7 @@ public class RequisitionLineService {
         requisition.getProcessingPeriod().getStartDate());
 
     if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
-        && previousPeriods.iterator().hasNext()) {
+        && previousPeriods != null) {
 
       Requisition previousRequisition;
       RequisitionLine previousRequisitionLine;

@@ -72,6 +72,8 @@ public class RequisitionControllerIntegrationTest {
   private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
+
 
   @Autowired
   private ProductRepository productRepository;
@@ -113,6 +115,7 @@ public class RequisitionControllerIntegrationTest {
   private Requisition requisition2 = new Requisition();
   private Requisition requisition3 = new Requisition();
   private Requisition requisition4 = new Requisition();
+  private Period period = new Period();
   private Product product = new Product();
   private Program program = new Program();
   private Program program2 = new Program();
@@ -205,7 +208,6 @@ public class RequisitionControllerIntegrationTest {
     schedule.setName(requisitionRepositoryName);
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
     period.setName(requisitionRepositoryName);
     period.setProcessingSchedule(schedule);
     period.setDescription(requisitionRepositoryName);
@@ -561,5 +563,17 @@ public class RequisitionControllerIntegrationTest {
 
     List<Requisition> requisitions = result.getBody();
     Assert.assertEquals(0, requisitions.size());
+  }
+
+  @Test
+  public void testInitializeRequisition() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<Requisition> result = restTemplate.exchange(
+        INITIATE_URL + "?facilityId={facilityId}&programId={programId}&periodId={periodId}&emergency=true", HttpMethod.POST, null,
+        Requisition.class, facility2.getId(), program.getId(), period.getId());
+
+    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+    Requisition initiatedRequisitions= result.getBody();
+    Assert.assertNotNull(initiatedRequisitions);
   }
 }

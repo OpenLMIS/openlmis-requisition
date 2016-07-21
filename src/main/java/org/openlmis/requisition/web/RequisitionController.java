@@ -48,7 +48,7 @@ public class RequisitionController {
   @Autowired
   RequisitionService requisitionService;
 
-  @RequestMapping(value = "/requisitions", method = POST)
+  @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiateRnr(@RequestParam("facilityId") UUID facilityId,
                                        @RequestParam("programId") UUID programId,
                                        @RequestParam("periodId") UUID periodId,
