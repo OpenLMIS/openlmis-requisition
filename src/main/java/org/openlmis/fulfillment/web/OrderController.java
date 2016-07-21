@@ -25,7 +25,6 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -78,12 +77,12 @@ public class OrderController {
   or ResponseEntity containing the error description and "#400 Bad Request" status
    */
 
-  @RequestMapping(value = "/orders/finalizeOrder", method = RequestMethod.POST)
-  public ResponseEntity<?> finalizeOrder(@RequestBody UUID orderId) {
+  @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
+  public ResponseEntity<?> finalize(@PathVariable("id") UUID orderId) {
 
     Order order = orderRepository.findOne(orderId);
 
-    if (order == null) {
+    if (order == null || order.getStatus() != OrderStatus.ORDERED) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } else {
       for (OrderLine orderLine : order.getOrderLines()) {

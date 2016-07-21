@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,11 +47,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
@@ -112,7 +111,7 @@ public class OrderControllerIntegrationTest {
   private ProductCategoryRepository productCategoryRepository;
 
   private static final String RESOURCE_FINALIZE_URL = System.getenv("BASE_URL")
-      + "/api/orders/finalizeOrder";
+      + "/api/orders/{id}/finalize";
 
   private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders";
 
@@ -152,7 +151,7 @@ public class OrderControllerIntegrationTest {
     User user = addUser("userName", "userPassword", "userFirstName", "userLastName", facility);
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
-                          OrderStatus.PICKING, new BigDecimal("1.29"));
+                          OrderStatus.ORDERED, new BigDecimal("1.29"));
 
     ProductCategory productCategory1 = addProductCategory("PC1", "PC1 name", 1);
 
@@ -410,17 +409,24 @@ public class OrderControllerIntegrationTest {
     addStock(secondProduct, 123456L);
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     RestTemplate restTemplate = new RestTemplate();
 
-    ObjectMapper mapper = new ObjectMapper();
-    String orderJson = mapper.writeValueAsString(firstOrder.getId());
-    HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
-
-    ResponseEntity<?> result = restTemplate.postForEntity(RESOURCE_FINALIZE_URL, entity,
-                                                          String.class);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
+        .build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+    ResponseEntity<?> result =  restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
 
     Assert.assertEquals(result.getStatusCode(), HttpStatus.OK);
+
+    Order resultOrder = orderRepository.findOne(firstOrder.getId());
+    Assert.assertEquals(resultOrder.getStatus(), OrderStatus.SHIPPED);
+
+    Stock stock1 = stockRepository.findByStockInventoryAndProduct(firstStockInventory, firstProduct);
+    Assert.assertEquals(stock1.getStoredQuantity().longValue(), 1111L);
+
+    Stock stock2 = stockRepository.findByStockInventoryAndProduct(firstStockInventory, secondProduct);
+    Assert.assertEquals(stock2.getStoredQuantity().longValue(), 111111L);
   }
 
   @Test(expected = HttpClientErrorException.class)
@@ -432,14 +438,14 @@ public class OrderControllerIntegrationTest {
             LocalDate.of(2016, 1, 1), "orderLineVvm2", "orderLineManufacturer2");
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     RestTemplate restTemplate = new RestTemplate();
 
-    ObjectMapper mapper = new ObjectMapper();
-    String orderJson = mapper.writeValueAsString(firstOrder.getId());
-    HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
+        .build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    restTemplate.postForEntity(RESOURCE_FINALIZE_URL, entity, String.class);
+    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
 
   @Test(expected = HttpClientErrorException.class)
@@ -452,14 +458,30 @@ public class OrderControllerIntegrationTest {
     addStock(secondProduct, 12L);
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     RestTemplate restTemplate = new RestTemplate();
 
-    ObjectMapper mapper = new ObjectMapper();
-    String orderJson = mapper.writeValueAsString(firstOrder.getId());
-    HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
+        .build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    restTemplate.postForEntity(RESOURCE_FINALIZE_URL, entity, String.class);
+    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+  }
+
+  @Test(expected = HttpClientErrorException.class)
+  public void testWrongOrderStatus() throws JsonProcessingException {
+    firstOrder.setStatus(OrderStatus.SHIPPED);
+    orderRepository.save(firstOrder);
+
+    HttpHeaders headers = new HttpHeaders();
+    RestTemplate restTemplate = new RestTemplate();
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
+        .build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
 
   @Test
