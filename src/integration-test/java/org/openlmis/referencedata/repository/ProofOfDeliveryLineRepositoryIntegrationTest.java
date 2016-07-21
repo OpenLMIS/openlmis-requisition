@@ -155,6 +155,7 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     orderLine.setOrder(order);
     orderLine.setProduct(product);
     orderLine.setOrderedQuantity(5L);
+    orderLine.setFilledQuantity(5L);
     orderLineRepository.save(orderLine);
 
     proofOfDelivery.setOrder(order);

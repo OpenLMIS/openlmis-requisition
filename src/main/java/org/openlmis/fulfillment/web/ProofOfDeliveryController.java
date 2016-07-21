@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,9 +25,6 @@ public class ProofOfDeliveryController {
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-  @Autowired
-  private RequisitionRepository requisitionRepository;
-
   /**
    * Print to PDF Proof of Delivery.
    *
@@ -44,7 +40,7 @@ public class ProofOfDeliveryController {
     ProofOfDelivery proofOfDelivery =
         proofOfDeliveryRepository.findOne(proofOfDeliveryId);
 
-    Requisition requisition = findRequisition(proofOfDelivery);
+    Requisition requisition = proofOfDelivery.getOrder().getRequisition();
 
     Map<Requisition, ProofOfDelivery> proofOfDeliveries = new HashMap<>();
     proofOfDeliveries.put(requisition, proofOfDelivery);
@@ -53,15 +49,5 @@ public class ProofOfDeliveryController {
         proofOfDeliveries);
 
     return modelAndView;
-  }
-
-  private Requisition findRequisition(ProofOfDelivery proofOfDelivery) {
-    if (proofOfDelivery.getOrder().getRequisitionCode() != null) {
-      String requisitionCode = proofOfDelivery.getOrder().getRequisitionCode();
-      UUID requisitionId = UUID.fromString(requisitionCode);
-      Requisition requisition = requisitionRepository.findOne(requisitionId);
-      return requisition;
-    }
-    return null;
   }
 }

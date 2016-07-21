@@ -5,10 +5,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.mockito.Mockito;
-import org.openlmis.csv.generator.CsvOrderGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.Facility;
@@ -86,13 +86,13 @@ public class CsvGeneratorTest {
     Mockito.doReturn(orderLines).when(testOrder).getOrderLines();
 
     List<String> header = new ArrayList<>();
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[0]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[1]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[3]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[4]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[5]);
+    header.add(OrderService.DEFAULT_COLUMNS[0]);
+    header.add(OrderService.DEFAULT_COLUMNS[1]);
+    header.add(OrderService.DEFAULT_COLUMNS[3]);
+    header.add(OrderService.DEFAULT_COLUMNS[4]);
+    header.add(OrderService.DEFAULT_COLUMNS[5]);
 
-    CsvOrderGenerator generator = new CsvOrderGenerator();
+    OrderService generator = new OrderService();
     String csv = generator.orderToCsv(testOrder, header.toArray(new String[0]));
 
     String exp = "facilityCode,createdDate,productName,productCode,orderedQuantity\r\n"

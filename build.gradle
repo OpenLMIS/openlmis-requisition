@@ -42,6 +42,7 @@ dependencies {
     compile "org.springframework:spring-test"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:2.4.0"
+    compile "com.itextpdf:itextpdf:5.5.9"
     compile "net.sf.supercsv:super-csv-dozer:2.4.0"
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
