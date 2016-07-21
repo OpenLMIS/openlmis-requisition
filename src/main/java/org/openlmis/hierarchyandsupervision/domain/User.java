@@ -40,6 +40,8 @@ public class User extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "facilityid")
+  @Getter
+  @Setter
   private Facility homeFacility;
 
   @Column(nullable = false, columnDefinition = "boolean DEFAULT false")
