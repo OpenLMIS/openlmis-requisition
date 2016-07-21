@@ -37,11 +37,39 @@ public class RequisitionLine extends BaseEntity {
   @Column
   @Getter
   @Setter
-  private Integer quantityRequested;
+  private Integer beginningBalance;
 
   @Column
   @Getter
   @Setter
-  private Integer beginningBalance;
-  
+  private Integer totalReceivedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer totalLossesAndAdjustments;
+
+  /**
+   * Calculated before sending.
+   * beginningBalance + totalReceivedQuantity (+/-) totalLossesAdjustments - totalConsumedQuantity.
+   */
+  @Column
+  @Getter
+  @Setter
+  private Integer stockOnHand;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer requestedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer totalConsumedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private String requestedQuantityExplanation;
 }

@@ -271,7 +271,7 @@ public class RequisitionLineServiceTest {
       Product product, Integer quantityRequested, Integer stockInHand, Requisition requisition) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
-    requisitionLine.setQuantityRequested(quantityRequested);
+    requisitionLine.setRequestedQuantity(quantityRequested);
     requisitionLine.setStockInHand(stockInHand);
     requisitionLine.setRequisition(requisition);
     return requisitionLine;
