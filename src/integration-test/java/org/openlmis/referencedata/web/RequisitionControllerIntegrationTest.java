@@ -3,6 +3,11 @@ package org.openlmis.referencedata.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,6 +62,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.junit.Assert.assertThat;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
@@ -66,14 +73,15 @@ public class RequisitionControllerIntegrationTest {
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String BASE_URL = System.getenv("BASE_URL");
   private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/{id}/submit";
-  private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
+  private static final String SKIP_URL = "/api/requisitions/{id}/skip";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
   private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
   private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
-
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
 
   @Autowired
   private ProductRepository productRepository;
@@ -111,6 +119,9 @@ public class RequisitionControllerIntegrationTest {
   @Autowired
   ProductCategoryRepository productCategoryRepository;
 
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
+
   private Requisition requisition = new Requisition();
   private Requisition requisition2 = new Requisition();
   private Requisition requisition3 = new Requisition();
@@ -126,6 +137,10 @@ public class RequisitionControllerIntegrationTest {
   /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
+
     cleanUp();
 
     user.setUsername("testUser");
@@ -336,18 +351,15 @@ public class RequisitionControllerIntegrationTest {
 
   @Test
   public void testSkip() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
+    restAssured.given()
+            .contentType("application/json")
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(SKIP_URL)
+            .then()
+            .statusCode(200);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SKIP_URL)
-        .build().expand(requisition.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    ResponseEntity<Object> result =
-        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
