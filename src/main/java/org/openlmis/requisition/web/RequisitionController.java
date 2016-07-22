@@ -49,6 +49,15 @@ public class RequisitionController {
   @Autowired
   RequisitionService requisitionService;
 
+  /**
+   * Initiates requisition.
+   * 
+   * @param facilityId The UUID of the requisition's facility
+   * @param programId The UUID of the requisition's program
+   * @param periodId The UUID of the requisition's period
+   * @param emergency Boolean indicating emergency status of requisition
+   * @return result
+   */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiateRnr(@RequestParam("facilityId") UUID facilityId,
                                        @RequestParam("programId") UUID programId,
