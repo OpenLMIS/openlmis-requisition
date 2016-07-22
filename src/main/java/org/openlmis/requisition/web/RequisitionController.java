@@ -50,7 +50,7 @@ public class RequisitionController {
   RequisitionService requisitionService;
 
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRnr(@RequestParam("facilityId") UUID facilityId,
+  public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
                                        @RequestParam("programId") UUID programId,
                                        @RequestParam("periodId") UUID periodId,
                                        @RequestParam("emergency") Boolean emergency) {
