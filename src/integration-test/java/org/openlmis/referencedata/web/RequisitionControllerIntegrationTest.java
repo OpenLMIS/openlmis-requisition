@@ -576,11 +576,11 @@ public class RequisitionControllerIntegrationTest {
   public void testInitializeRequisition() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<Requisition> result = restTemplate.exchange(
-        INITIATE_URL + "?facilityId={facilityId}&programId={programId}&periodId={periodId}&emergency=true", HttpMethod.POST, null,
-        Requisition.class, facility2.getId(), program.getId(), period.getId());
+        INITIATE_URL + "?facilityId={facilityId}&programId={programId}&periodId={periodId}&emergency=true",
+        HttpMethod.POST, null, Requisition.class, facility2.getId(), program.getId(), period.getId());
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-    Requisition initiatedRequisitions= result.getBody();
+    Requisition initiatedRequisitions = result.getBody();
     Assert.assertNotNull(initiatedRequisitions);
   }
 }

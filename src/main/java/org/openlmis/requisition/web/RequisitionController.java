@@ -70,16 +70,17 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.PUT)
   public ResponseEntity<?> submitRequisition(@RequestBody Requisition requisition,
-                                             BindingResult bindingResult, @PathVariable("id") UUID requisitionId) {
+                                             BindingResult bindingResult,
+                                             @PathVariable("id") UUID requisitionId) {
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
       validator.validate(requisition, bindingResult);
       if (bindingResult.getErrorCount() == 0) {
-        logger.debug("Submitting a requisition with id "+ requisitionId);
+        logger.debug("Submitting a requisition with id " + requisitionId);
         requisition.setStatus(RequisitionStatus.SUBMITTED);
         requisitionRepository.save(requisition);
-        logger.debug("Requisition with id "+ requisitionId +" submitted");
+        logger.debug("Requisition with id " + requisitionId + " submitted");
         requisition = requisitionRepository.findOne(requisitionId);
         return new ResponseEntity<Object>(requisition, HttpStatus.OK);
       } else {
@@ -88,6 +89,9 @@ public class RequisitionController {
     }
   }
 
+  /**
+   * Deletes requisition with the given id.
+   */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
