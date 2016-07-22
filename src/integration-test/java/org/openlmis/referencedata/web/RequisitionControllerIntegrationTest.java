@@ -1,5 +1,7 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
@@ -61,8 +63,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -584,8 +584,10 @@ public class RequisitionControllerIntegrationTest {
   public void testInitializeRequisition() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<Requisition> result = restTemplate.exchange(
-        INITIATE_URL + "?facilityId={facilityId}&programId={programId}&periodId={periodId}&emergency=true",
-        HttpMethod.POST, null, Requisition.class, facility2.getId(), program.getId(), period.getId());
+        INITIATE_URL + "?facilityId={facilityId}&" +
+                "programId={programId}&periodId={periodId}&emergency=true",
+        HttpMethod.POST, null, Requisition.class, facility2.getId(),
+            program.getId(), period.getId());
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Requisition initiatedRequisitions = result.getBody();
