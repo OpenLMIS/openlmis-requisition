@@ -200,7 +200,7 @@ public class RequisitionController {
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
   public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId) {
 
-    if(requisitionId == null) {
+    if (requisitionId == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 

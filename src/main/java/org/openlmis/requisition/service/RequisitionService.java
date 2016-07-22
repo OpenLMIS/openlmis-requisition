@@ -111,8 +111,8 @@ public class RequisitionService {
       logger.debug("Skip failed - "
           + requisitionBadStatusMessage);
     } else if (!requisition.getProgram().getPeriodsSkippable()) {
-      logger.debug("Skip failed " +
-          "- requisition program does not allow skipping");
+      logger.debug("Skip failed - "
+              + "requisition program does not allow skipping");
     } else {
       logger.debug("Requisition skipped");
       requisition.setStatus(RequisitionStatus.SKIPPED);
