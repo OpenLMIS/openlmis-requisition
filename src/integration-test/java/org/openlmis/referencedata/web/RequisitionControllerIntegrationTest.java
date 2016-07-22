@@ -65,7 +65,7 @@ public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String BASE_URL = System.getenv("BASE_URL");
-  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/submit";
+  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/{id}/submit";
   private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
@@ -405,9 +405,16 @@ public class RequisitionControllerIntegrationTest {
     String json = mapper.writeValueAsString(requisition);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    ResponseEntity<Requisition> result = restTemplate.postForEntity(
-        SUBMIT_URL, entity, Requisition.class);
-    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SUBMIT_URL)
+        .build()
+        .expand(requisition.getId().toString())
+        .encode();
+    String uri = uriComponents.toUriString();
+
+    ResponseEntity<Requisition> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     Requisition savedRequisition = result.getBody();
     Assert.assertNotNull(savedRequisition.getId());
     Assert.assertEquals(requisition.getId(), savedRequisition.getId());

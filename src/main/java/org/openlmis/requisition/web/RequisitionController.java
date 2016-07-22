@@ -68,21 +68,22 @@ public class RequisitionController {
   /**
    * Submits earlier initiated requisition.
    */
-  @RequestMapping(value = "/requisitions/submit", method = RequestMethod.POST)
+  @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.PUT)
   public ResponseEntity<?> submitRequisition(@RequestBody Requisition requisition,
-                                             BindingResult bindingResult) {
+                                             BindingResult bindingResult, @PathVariable("id") UUID requisitionId) {
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
       validator.validate(requisition, bindingResult);
-
       if (bindingResult.getErrorCount() == 0) {
-        logger.debug("Submitting a requisition");
+        logger.debug("Submitting a requisition with id "+ requisitionId);
         requisition.setStatus(RequisitionStatus.SUBMITTED);
-        Requisition newRequisition = requisitionRepository.save(requisition);
-        return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
+        requisitionRepository.save(requisition);
+        logger.debug("Requisition with id "+ requisitionId +" submitted");
+        requisition = requisitionRepository.findOne(requisitionId);
+        return new ResponseEntity<Object>(requisition, HttpStatus.OK);
       } else {
-        return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
       }
     }
   }
