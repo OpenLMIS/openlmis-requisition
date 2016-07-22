@@ -1,5 +1,7 @@
 package org.openlmis.requisition.service;
 
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
@@ -81,6 +83,20 @@ public class RequisitionService {
       requisition.setStatus(RequisitionStatus.INITIATED);
       requisitionRepository.save(requisition);
     }
+  }
+
+  public List<Comment> getCommentsByReqId(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    List<Comment> comments = requisition.getComments();
+    for (Comment comment : comments) {
+      User user = comment.getAuthor();
+      comment.setAuthor(user.basicInformation());
+
+      Requisition req = comment.getRequisition();
+      comment.setRequisition(req.basicInformation());
+    }
+
+    return comments;
   }
 
   /**

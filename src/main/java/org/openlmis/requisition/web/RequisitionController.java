@@ -1,7 +1,11 @@
 package org.openlmis.requisition.web;
 
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.repository.CommentRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -38,11 +42,17 @@ public class RequisitionController {
   RequisitionRepository requisitionRepository;
 
   @Autowired
+  CommentRepository commentRepository;
+
+  @Autowired
   @Qualifier("beforeSaveRequisitionValidator")
   RequisitionValidator validator;
 
   @Autowired
   RequisitionService requisitionService;
+
+  @Autowired
+  UserRepository userRepository;
 
   /**
    * Submits earlier initiated requisition.
@@ -136,6 +146,70 @@ public class RequisitionController {
     Requisition rejectedRequisition = requisitionRepository.findOne(id);
     return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
   }
+
+  /**
+   * Add comment do requisition
+   * @param comment
+   * @param id
+   * @return
+   */
+  @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
+  public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
+                                         @PathVariable("id") UUID id) {
+    int i = 5;
+    Requisition requisition = requisitionRepository.findOne(id);
+    comment.setRequisition(requisition);
+    /*User author = new User();
+    author.setId(loggedInUserId(request));
+    comment.setAuthor(author);*/ //TODO - logInUserID
+
+    User author = new User();
+    author.setUsername("maciejku");
+    author.setFirstName("maciek");
+    author.setLastName("dudzik");
+    author = userRepository.save(author);
+    comment.setAuthor(author);
+
+    commentRepository.save(comment);
+    List<Comment> comments = requisitionService.getCommentsByReqId(id);
+    return new ResponseEntity<>(comments, HttpStatus.OK);
+  }
+
+  /**
+   * Get all comments for specified requisition
+   * @param id
+   * @return
+   */
+  @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
+  public ResponseEntity<Object> getCommentsForARnr(@PathVariable("id") UUID id) {
+    List<Comment> comments = requisitionService.getCommentsByReqId(id);
+    return new ResponseEntity<Object>(comments, HttpStatus.OK);
+  }
+
+  /**
+   * Get requisition waiting to approve
+   *
+   * @param id
+   * @param request
+   * @return
+   */
+ /* @RequestMapping(value = "/requisitions/toapprove/{id}", method = RequestMethod.GET)
+  public ResponseEntity<OpenLmisResponse> getById(@PathVariable("id") UUID id, HttpServletRequest request) {
+    try {
+      Rnr rnr = requisitionService.getFullRequisitionById(id);
+      ResponseEntity<OpenLmisResponse> response = response(RNR, rnr);
+      response.getBody().addData(NUMBER_OF_MONTHS, requisitionService.findM(rnr.getPeriod()));
+
+      boolean canApproveRnr = (rnr.isApprovable() &&
+          requisitionPermissionService.hasPermission(loggedInUserId(request), rnr, APPROVE_REQUISITION));
+
+      response.getBody().addData(CAN_APPROVE_RNR, canApproveRnr);
+
+      return response;
+    } catch (DataException dataException) {
+      return error(dataException, NOT_FOUND);
+    }
+  }*/
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
     return new HashMap<String, String>() {

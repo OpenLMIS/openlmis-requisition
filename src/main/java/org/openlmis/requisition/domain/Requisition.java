@@ -11,12 +11,15 @@ import lombok.Setter;
 
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -46,6 +49,10 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   private Set<RequisitionLine> requisitionLines;
+
+  @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
+  @Getter
+  private List<Comment> comments;
 
   @OneToOne
   @JoinColumn(name = "facilityId", nullable = false)
@@ -82,8 +89,16 @@ public class Requisition extends BaseEntity {
   @Setter
   private Boolean emergency;
 
+  Requisition(UUID id) {
+    this.setId(id);
+  }
+
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
+  }
+
+  public Requisition basicInformation() {
+    return new Requisition(getId());
   }
 }

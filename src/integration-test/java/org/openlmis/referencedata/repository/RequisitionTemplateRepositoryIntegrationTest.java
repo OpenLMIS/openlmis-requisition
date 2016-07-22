@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,7 +25,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   private static final String requisitionTemplateRepository =
           "RequisitionTemplateRepositoryIntegrationTest";
   private static final String columnKey = "columnKey";
-  private static final String source = "source";
+  private static final SourceType source = SourceType.REFERENCE;
 
   @Autowired
   RequisitionTemplateRepository repository;
@@ -133,10 +134,10 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
     assertEquals(column.getSource(), source);
-    requisitionTemplate.changeColumnSource(columnKey, "newSource");
+    requisitionTemplate.changeColumnSource(columnKey, SourceType.REFERENCE);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
-    assertEquals(column.getSource(), "newSource");
+    assertEquals(column.getSource(), SourceType.REFERENCE);
   }
 
   @Test
