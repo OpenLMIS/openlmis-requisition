@@ -907,20 +907,3 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
-
-/supplyLines:
-    displayName: SupplyLines
-    post:
-      description: Save a supplyLine
-      body:
-        application/json:
-          schema: supplyLine
-      responses:
-        200:
-          description: SupplyLine sucessfully saved.
-          headers:
-            X-Content-Type-Options:
-            X-XSS-Protection:
-          body:
-            application/json:
-              schema: supplyLine
