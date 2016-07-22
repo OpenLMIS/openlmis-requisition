@@ -99,6 +99,22 @@ public class RequisitionController {
     }
   }
 
+  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
+  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
+    if (requisition.getStatus() == RequisitionStatus.SUBMITTED) {
+      requisition.setStatus(RequisitionStatus.APPROVED);
+      requisitionRepository.save(requisition);
+      logger.debug("Requisition with id " + requisitionId + " approved");
+      return new ResponseEntity<>(requisition, HttpStatus.OK);
+    } else {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
   /**
    * Deletes requisition with the given id.
    */
