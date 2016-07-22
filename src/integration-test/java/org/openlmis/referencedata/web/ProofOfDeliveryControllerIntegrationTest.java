@@ -221,11 +221,13 @@ public class ProofOfDeliveryControllerIntegrationTest {
     orderLine1.setOrder(order1);
     orderLine1.setProduct(product1);
     orderLine1.setOrderedQuantity(new Long(50));
+    orderLine1.setFilledQuantity(50L);
     orderLineRepository.save(orderLine1);
 
     orderLine2.setOrder(order1);
     orderLine2.setProduct(product2);
     orderLine2.setOrderedQuantity(new Long(20));
+    orderLine2.setFilledQuantity(15L);
     orderLineRepository.save(orderLine2);
 
     Set<OrderLine> orderLines = new HashSet<>();

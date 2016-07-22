@@ -21,7 +21,8 @@ import javax.persistence.Table;
 @Table(name = "users", schema = "referencedata")
 @NoArgsConstructor
 public class User extends BaseEntity {
-  @Column(nullable = false, columnDefinition = "text")
+
+  @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
   private String username;
@@ -41,6 +42,8 @@ public class User extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "facilityid")
+  @Getter
+  @Setter
   private Facility homeFacility;
 
   @Column(nullable = false, columnDefinition = "boolean DEFAULT false")

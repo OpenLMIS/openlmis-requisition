@@ -34,6 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RepositoryRestController
 public class RequisitionController {
   Logger logger = LoggerFactory.getLogger(RequisitionController.class);
@@ -54,28 +58,50 @@ public class RequisitionController {
   @Autowired
   UserRepository userRepository;
 
+  @RequestMapping(value = "/requisitions/initiate", method = POST)
+  public ResponseEntity<?> initiateRnr(@RequestParam("facilityId") UUID facilityId,
+                                       @RequestParam("programId") UUID programId,
+                                       @RequestParam("periodId") UUID periodId,
+                                       @RequestParam("emergency") Boolean emergency) {
+    try {
+
+      Requisition requisition = requisitionService.initiateRequisition(
+          facilityId, programId, periodId, emergency);
+      ResponseEntity response = new ResponseEntity<>(requisition, CREATED);
+      return response;
+
+    } catch (RequisitionException ex) {
+      return new ResponseEntity(BAD_REQUEST);
+    }
+  }
+
   /**
    * Submits earlier initiated requisition.
    */
-  @RequestMapping(value = "/requisitions/submit", method = RequestMethod.POST)
+  @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.PUT)
   public ResponseEntity<?> submitRequisition(@RequestBody Requisition requisition,
-                                             BindingResult bindingResult) {
+                                             BindingResult bindingResult,
+                                             @PathVariable("id") UUID requisitionId) {
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
       validator.validate(requisition, bindingResult);
-
       if (bindingResult.getErrorCount() == 0) {
-        logger.debug("Submitting a requisition");
+        logger.debug("Submitting a requisition with id " + requisitionId);
         requisition.setStatus(RequisitionStatus.SUBMITTED);
-        Requisition newRequisition = requisitionRepository.save(requisition);
-        return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
+        requisitionRepository.save(requisition);
+        logger.debug("Requisition with id " + requisitionId + " submitted");
+        requisition = requisitionRepository.findOne(requisitionId);
+        return new ResponseEntity<Object>(requisition, HttpStatus.OK);
       } else {
-        return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
       }
     }
   }
 
+  /**
+   * Deletes requisition with the given id.
+   */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);

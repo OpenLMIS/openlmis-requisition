@@ -150,7 +150,12 @@ public class RequisitionLineRepositoryIntegrationTest
     repository.deleteAll();
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
-    requisitionLine.setQuantityRequested(1);
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
     return requisitionLine;
   }
 }

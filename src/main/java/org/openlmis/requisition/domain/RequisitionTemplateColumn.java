@@ -28,6 +28,8 @@ public class RequisitionTemplateColumn {
 
   private SourceType source;
 
+  private Boolean canBeChangedByUser;
+
   /**
    * Allows changing visibility of specific column.
    * Modifies display order if column represents product code.

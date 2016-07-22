@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -24,6 +25,7 @@ public class OrderLine extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "orderId", nullable = false)
+  @JsonIgnore
   @Getter
   @Setter
   private Order order;
@@ -38,6 +40,11 @@ public class OrderLine extends BaseEntity {
   @Getter
   @Setter
   private Long orderedQuantity;
+
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Long filledQuantity;
 
   @Getter
   @Setter

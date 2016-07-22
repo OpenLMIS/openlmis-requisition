@@ -65,13 +65,15 @@ public class RequisitionControllerIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
   private static final String BASE_URL = System.getenv("BASE_URL");
-  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/submit";
+  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/{id}/submit";
   private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
   private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
+
 
   @Autowired
   private ProductRepository productRepository;
@@ -113,6 +115,7 @@ public class RequisitionControllerIntegrationTest {
   private Requisition requisition2 = new Requisition();
   private Requisition requisition3 = new Requisition();
   private Requisition requisition4 = new Requisition();
+  private Period period = new Period();
   private Product product = new Product();
   private Program program = new Program();
   private Program program2 = new Program();
@@ -205,7 +208,6 @@ public class RequisitionControllerIntegrationTest {
     schedule.setName(requisitionRepositoryName);
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
     period.setName(requisitionRepositoryName);
     period.setProcessingSchedule(schedule);
     period.setDescription(requisitionRepositoryName);
@@ -223,7 +225,12 @@ public class RequisitionControllerIntegrationTest {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
-    requisitionLine.setQuantityRequested(1);
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
     Set<RequisitionLine> requisitionLines = new HashSet<>();
@@ -293,6 +300,30 @@ public class RequisitionControllerIntegrationTest {
   public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    testSubmit();
+  }
+
+  @Test(expected = HttpClientErrorException.class)
+  public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(null);
+    requisitionLine.setTotalConsumedQuantity(null);
+    requisitionLine.setBeginningBalance(null);
+    requisitionLine.setTotalReceivedQuantity(null);
+    requisitionLine.setTotalLossesAndAdjustments(null);
     requisitionLineRepository.save(requisitionLine);
 
     Set<RequisitionLine> requisitionLines = new HashSet<>();
@@ -371,14 +402,19 @@ public class RequisitionControllerIntegrationTest {
 
     ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Hibernate4Module());
-
     String json = mapper.writeValueAsString(requisition);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    ResponseEntity<Requisition> result = restTemplate.postForEntity(
-        SUBMIT_URL, entity, Requisition.class);
-    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SUBMIT_URL)
+        .build()
+        .expand(requisition.getId().toString())
+        .encode();
+    String uri = uriComponents.toUriString();
 
+    ResponseEntity<Requisition> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     Requisition savedRequisition = result.getBody();
     Assert.assertNotNull(savedRequisition.getId());
     Assert.assertEquals(requisition.getId(), savedRequisition.getId());
@@ -534,5 +570,17 @@ public class RequisitionControllerIntegrationTest {
 
     List<Requisition> requisitions = result.getBody();
     Assert.assertEquals(0, requisitions.size());
+  }
+
+  @Test
+  public void testInitializeRequisition() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<Requisition> result = restTemplate.exchange(
+        INITIATE_URL + "?facilityId={facilityId}&programId={programId}&periodId={periodId}&emergency=true",
+        HttpMethod.POST, null, Requisition.class, facility2.getId(), program.getId(), period.getId());
+
+    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+    Requisition initiatedRequisitions = result.getBody();
+    Assert.assertNotNull(initiatedRequisitions);
   }
 }

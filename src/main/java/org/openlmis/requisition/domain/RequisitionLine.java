@@ -23,8 +23,53 @@ public class RequisitionLine extends BaseEntity {
   @Setter
   private Product product;
 
+  @ManyToOne
+  @JoinColumn(name = "requisitionId")
+  @Getter
+  @Setter
+  private Requisition requisition;
+
   @Column
   @Getter
   @Setter
-  private Integer quantityRequested;
+  private Integer stockInHand;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer beginningBalance;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer totalReceivedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer totalLossesAndAdjustments;
+
+  /**
+   * Calculated before sending.
+   * beginningBalance + totalReceivedQuantity (+/-) totalLossesAdjustments - totalConsumedQuantity.
+   */
+  @Column
+  @Getter
+  @Setter
+  private Integer stockOnHand;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer requestedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer totalConsumedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private String requestedQuantityExplanation;
 }

@@ -1,8 +1,8 @@
 package org.openlmis.csv.web;
 
-import org.openlmis.csv.generator.CsvOrderGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +37,14 @@ public class CsvController {
     }
 
     List<String> header = new ArrayList<>();
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[0]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[1]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[2]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[3]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[4]);
-    header.add(CsvOrderGenerator.DEFAULT_COLUMNS[5]);
+    header.add(OrderService.DEFAULT_COLUMNS[0]);
+    header.add(OrderService.DEFAULT_COLUMNS[1]);
+    header.add(OrderService.DEFAULT_COLUMNS[2]);
+    header.add(OrderService.DEFAULT_COLUMNS[3]);
+    header.add(OrderService.DEFAULT_COLUMNS[4]);
+    header.add(OrderService.DEFAULT_COLUMNS[5]);
 
-    CsvOrderGenerator generator = new CsvOrderGenerator();
+    OrderService generator = new OrderService();
     String csv = generator.orderToCsv(order, header.toArray(new String[0]));
     return new ResponseEntity<Object>(csv, HttpStatus.OK);
   }
