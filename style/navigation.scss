@@ -4,11 +4,69 @@ Navigation
 Naviagation bar
 
 markup:
-<div class="navigation">
-<ul>
-<li>
-<a href="">Home</a></li></ul>
-</div>
+<form style="height: 240px;">
+  <div class="navigation toggleFullScreen">
+    <ul class="clearfix">
+      <li>
+        <a href="">Home</a>
+      </li>
+      <li>
+        <a href="">Requisition</a>
+        <div class="submenu">
+          <ul>
+            <li>
+              <a href="">Create / Authorize</a>
+            </li>
+            <li>
+              <a href="">Approve</a>
+            </li>          
+            <li>
+              <a href="">Convert to Order</a>
+            </li>
+            <li>
+              <a href="">View</a>
+            </li>
+            <li class="beak"></li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <a href="">Administration</a>
+        <div class="submenu">
+          <ul>
+            <li>
+              <a href="">Upload</a>
+            </li>
+            <li>
+              <a href="">Configure</a>
+	        <div class="submenu">
+	          <ul>
+		    <li>
+		      <a href="">R & R Template</a>
+		    </li>
+                    <li>
+		      <a href="">Regimen Template</a>
+		    </li>       
+                    <li>
+		      <a href="">Program Product ISA</a>
+		    </li>
+		    <li>
+		      <a href="">System Setings</a>
+		    </li>
+		    <li>
+		      <a href="">Other Setings</a>
+		    </li>
+		    <li class="beak"></li>
+		  </ul>
+	      </div>
+            </li>
+            <li class="beak"></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+</form>
 
 Styleguide 2.0
 */
