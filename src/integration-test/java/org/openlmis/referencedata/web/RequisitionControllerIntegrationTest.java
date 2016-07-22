@@ -74,7 +74,7 @@ public class RequisitionControllerIntegrationTest {
   private static final String BASE_URL = System.getenv("BASE_URL");
   private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/{id}/submit";
   private static final String SKIP_URL = "/api/requisitions/{id}/skip";
-  private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
+  private static final String REJECT_URL = "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
   private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
       + "/api/requisitions/creator/{creatorId}";
@@ -369,19 +369,15 @@ public class RequisitionControllerIntegrationTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
+    restAssured.given()
+            .contentType("application/json")
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(REJECT_URL)
+            .then()
+            .statusCode(200);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(REJECT_URL)
-        .build()
-        .expand(requisition.getId().toString())
-        .encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<Object> response =
-        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
-
-    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
