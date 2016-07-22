@@ -90,7 +90,7 @@ public class RequisitionService {
   public boolean tryDelete(Requisition requisition) {
     if (requisition == null) {
       logger.debug("Delete failed - " + requisitionNullMessage);
-    } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
+    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Delete failed - " + requisitionBadStatusMessage);
     } else {
       logger.debug("Requisition deleted");
@@ -107,7 +107,7 @@ public class RequisitionService {
     if (requisition == null) {
       logger.debug("Skip failed - "
           + requisitionNullMessage);
-    } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
+    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Skip failed - "
           + requisitionBadStatusMessage);
     } else if (!requisition.getProgram().getPeriodsSkippable()) {
@@ -127,7 +127,7 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
-    } else if (!requisition.getStatus().equals(RequisitionStatus.AUTHORIZED)) {
+    } else if (requisition.getStatus() != RequisitionStatus.AUTHORIZED) {
       throw new RequisitionException("Cannot reject requisition: " + requisitionId 
           + " .Requisition must be waiting for approval to be rejected");
     } else {
