@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -181,5 +182,38 @@ public class RequisitionController {
         }
       }
     };
+  }
+
+  @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getSubmittedRequisitions() {
+
+    Iterable<Requisition> submittedRequisitions =
+        requisitionRepository.findByStatus(RequisitionStatus.SUBMITTED);
+    if (submittedRequisitions == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(submittedRequisitions, HttpStatus.OK);
+    }
+  }
+
+  @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
+  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId) {
+
+    if(requisitionId == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    Requisition requisition;
+    try {
+      requisitionService.authorize(requisitionId);
+      logger.info("Requisition: " +  requisitionId + " authorize.");
+      requisition = requisitionRepository.findOne(requisitionId);
+
+    } catch (RequisitionException ex) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    return new ResponseEntity<>(requisition, HttpStatus.OK);
+
   }
 }

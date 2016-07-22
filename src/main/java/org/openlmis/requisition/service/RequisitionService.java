@@ -167,4 +167,17 @@ public class RequisitionService {
     return entityManager.createQuery(query).getResultList();
   }
 
+  public void authorize(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
+    } else if (requisition.getStatus() != RequisitionStatus.SUBMITTED) {
+      throw new RequisitionException("Cannot authorize requisition: " + requisitionId
+        + " . Requisition must have submitted status to be authorized");
+    } else {
+      requisition.setStatus(RequisitionStatus.AUTHORIZED);
+      requisitionRepository.save(requisition);
+    }
+  }
+
 }

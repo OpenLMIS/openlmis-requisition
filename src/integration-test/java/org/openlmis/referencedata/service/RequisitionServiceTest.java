@@ -145,6 +145,29 @@ public class RequisitionServiceTest {
     requisitionService.reject(requisition.getId());
   }
 
+
+  @Test
+  public void shouldAuthorizeRequisition() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    
+    requisitionService.authorize(requisition.getId());
+
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void shouldNotAllowAuthotizationIfRequisitionStatusIsWrong() {
+
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
+
+    requisitionService.authorize(requisition.getId());
+  }
+
   private void createTestRequisition() {
     Program program = new Program();
     program.setCode(requisitionRepositoryName);
