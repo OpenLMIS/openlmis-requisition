@@ -63,8 +63,8 @@ schemas:
           "title": "FacilityTypeApprovedProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "facilityType": { "type": "string", "required": true, "title": "facilityType" },
-              "programProduct": { "type": "string", "required": true, "title": "programProduct" },
+              "facilityType": { "$ref":"facilityType", "required": true, "title": "facilityType" },
+              "programProduct": { "$ref":"programProduct", "required": true, "title": "programProduct" },
               "maxMonthsOfStock": { "type": "number", "required": true, "title": "maxMonthsOfStock" },
               "minMonthsOfStock": { "type": "number", "required": false, "title": "minMonthsOfStock" },
               "emergencyOrderPoint": { "type": "number", "required": false, "title": "emergencyOrderPoint" }
@@ -104,16 +104,17 @@ schemas:
           "title": "Order",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisitionCode": { "type": "string", "required": false, "title": "requisitionCode" },
+              "requisition": { "$ref":"requisition", "required": false, "title": "requisitionCode" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "createdBy": { "type": "string", "required": true, "title": "createdBy" }, "program": { "type": "string", "required": true, "title":"program" },
-              "requestingFacility": { "type": "string", "required": true, "title": "requestingFacility" },
-              "receivingFacilityId": { "type": "string", "required": true, "title": "receivingFacilityId" },
-              "supplyingFacilityId": { "type": "string", "required": true, "title": "supplyingFacilityId" },
+              "createdBy": { "$ref":"user", "required": true, "title": "createdBy" },
+              "program": { "$ref":"program", "required": true, "title":"program" },
+              "requestingFacility": { "$ref":"facility", "required": true, "title": "requestingFacility" },
+              "receivingFacilityId": { "$ref":"facility", "required": true, "title": "receivingFacilityId" },
+              "supplyingFacilityId": { "$ref":"facility", "required": true, "title": "supplyingFacilityId" },
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
-              "status": { "type": "string", "required": true, "title": "status" },
+              "status": { "$ref":"orderStatus", "required": true, "title": "status" },
               "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
-              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "type": "string" }, "uniqueItems": false }
+              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "$ref":"orderLine" }, "uniqueItems": false }
           }
       }
 
@@ -123,9 +124,9 @@ schemas:
           "title": "OrderLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "product": { "type": "string", "required": true, "title": "product" },
+              "product": { "$ref":"product", "required": true, "title": "product" },
               "orderedQuantity": { "type": "integer", "required": true, "title": "orderedQuantity" },
-              "order": { "type": "string", "required": false, "title": "order" }
+              "order": { "$ref":"order", "required": false, "title": "order" }
           }
       }
 
@@ -135,7 +136,7 @@ schemas:
           "title": "Period",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "processingSchedule": { "type": "string", "required": true, "title": "processingSchedule" },
+              "processingSchedule": { "$ref":"schedule", "required": true, "title": "processingSchedule" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
               "startDate": { "type": "string", "required": true, "title": "startDate" },
@@ -195,11 +196,11 @@ schemas:
           "title": "ProgramProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "type": "string", "required": true, "title": "program" },
-              "product": { "type": "string", "required": true, "title": "product" },
+              "program": { "$ref":"program", "required": true, "title": "program" },
+              "product": { "$ref":"product", "required": true, "title": "product" },
               "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" },
               "active": { "type": "boolean", "required": true, "title": "active" },
-              "productCategory": { "type": "string", "required": true, "title": "productCategory" },
+              "productCategory": { "$ref":"productCategory", "required": true, "title": "productCategory" },
               "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "maxMonthsStock": { "type": "integer", "required": false, "title": "maxMonthsStock" },
@@ -214,12 +215,12 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "facility": { "type": "string", "required": true, "title": "facility" },
-              "program": { "type": "string", "required": true, "title": "program" },
-              "processingPeriod": { "type": "string", "required": true, "title": "processingPeriod" },
+              "facility": { "$ref":"facility", "required": true, "title": "facility" },
+              "program": { "$ref":"program", "required": true, "title": "program" },
+              "processingPeriod": { "$ref":"period", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
-              "creator": { "type": "string", "required": false, "title": "creator" },
-              "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "string" }, "uniqueItems": false }
+              "creator": { "$ref":"user", "required": false, "title": "creator" },
+              "requisitionLines": { "$ref":"requisitionLine", "type": "array", "required": false, "title": "requisitionLines", "items": { "ref":"requisitionLine" }, "uniqueItems": false }
           }
       }
 
@@ -229,8 +230,8 @@ schemas:
           "title": "RequisitionLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "type": "string", "required": true, "title": "requisition" },
-              "product": { "type": "string", "required": true, "title": "product" },
+              "requisition": { "$ref":"requisition", "required": true, "title": "requisition" },
+              "product": { "$ref":"product", "required": true, "title": "product" },
               "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" }
           }
       }
@@ -241,7 +242,7 @@ schemas:
           "title": "RequisitionTemplate",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "type": "string", "required": true, "title": "program" },
+              "program": { "$ref":"program", "required": true, "title": "program" },
               "columnsMap": { "type": "array", "required": false, "title": "columnsMap", "items": { "type": "string", "title": "columnsMap" }, "uniqueItems": false }
           }
       }
@@ -282,8 +283,7 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "rights": { "type": "array", "required": false, "title": "rights",
-              "items": { "type": "string" }, "uniqueItems": false }
+              "rights": { "type": "array", "required": false, "title": "rights", "items": { "$ref":"right" }, "uniqueItems": false }
           }
       }
 
@@ -310,10 +310,10 @@ schemas:
               "password": { "type": "string", "required": true, "title": "password" },
               "firstName": { "type": "string", "required": true, "title": "firstName" },
               "lastName": { "type": "string", "required": true, "title": "lastName" },
-              "homeFacility": { "type": "string", "required": false, "title": "homeFacility" },
+              "homeFacility": { "$ref":"facility", "required": false, "title": "homeFacility" },
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
-              "roles": { "type": "array", "required": false, "title": "roles", "items": { "type": "object" }, "uniqueItems": false}
+              "roles": { "type": "array", "required": false, "title": "roles", "items": { "$ref":"role" }, "uniqueItems": false}
           }
       }
 
