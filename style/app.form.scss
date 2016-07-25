@@ -6,26 +6,26 @@ Base form elements which are used in OpenLMIS are presented below.
 markup:
 <form>
 	<legend>Example form elements</legend>
-		<label for="exampleTextInput" style="font-size:18px">Example text inputs</label>
+		<label for="exampleTextInput" style="font-size:18px">Example text input elements</label>
 		<div>		
 			<p>Text input 1:
 			<input type="text"></p>
 			<p>Text input 2:
 			<input type="text" rnr-validator="positiveInteger" maxlength="8" required></p>
 		</div>
-		<label for="exampleCombobox" style="font-size:18px">Example combo box</label>
+		<label for="exampleCombobox" style="font-size:18px">Example combo box element</label>
 		<div id="exampleCombobox">
 			<select>
 				<option value="option1">Option1</option>
 				<option value="option2">Option2</option>
 			</select>
 		</div>
-		<label for="exampleCheckBox" style="font-size:18px">Example checkBox controlls</label>
+		<label for="exampleCheckBox" style="font-size:18px">Example check box elements</label>
 		<div id="exampleCheckBox">
 			<input type="checkbox" value="0">
 			<input type="checkbox" value="1">
 		</div>
-		<label for="radioInput" style="margin-top:10px;font-size:18px">Example radio controlls</label>
+		<label for="radioInput" style="margin-top:10px;font-size:18px">Example radio elements</label>
 		<div id="radioInput" >
 			<input type="radio" ng-model="selectedType" value="0">
 			<input type="radio" ng-model="selectedType" value="1">
