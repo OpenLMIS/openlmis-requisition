@@ -1,7 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.referencedata.domain.Facility;
@@ -67,7 +65,7 @@ public class RequisitionController {
    * @param emergency Boolean indicating emergency status of requisition
    * @return result
    */
-  @RequestMapping(value = "/requisitions/initiate", method = POST)
+  @RequestMapping(value = "/requisitions", method = POST)
   public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
                                        @RequestParam("programId") UUID programId,
                                        @RequestParam("periodId") UUID periodId,
@@ -76,11 +74,11 @@ public class RequisitionController {
 
       Requisition requisition = requisitionService.initiateRequisition(
           facilityId, programId, periodId, emergency);
-      ResponseEntity response = new ResponseEntity<>(requisition, CREATED);
+      ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
       return response;
 
     } catch (RequisitionException ex) {
-      return new ResponseEntity(BAD_REQUEST);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

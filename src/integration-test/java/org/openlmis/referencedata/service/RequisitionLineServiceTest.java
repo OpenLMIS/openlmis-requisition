@@ -162,7 +162,7 @@ public class RequisitionLineServiceTest {
 
     RequisitionLine requisitionLine = secondRequisition.getRequisitionLines().iterator().next();
     requisitionLine.setBeginningBalance(222);
-    requisitionLineService.save(requisitionLine);
+    requisitionLineService.save(requisition, requisitionLine);
 
     Assert.assertEquals(20, requisitionLine.getBeginningBalance().intValue());
   }
@@ -202,7 +202,8 @@ public class RequisitionLineServiceTest {
     requisitionLineService.initiateRequisitionLineFields(secondRequisition);
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
-            = requisitionTemplateRepository.findByProgram(secondRequisition.getProgram()).getColumnsMap();
+            = requisitionTemplateRepository.findByProgram(
+        secondRequisition.getProgram()).getColumnsMap();
 
     Assert.assertEquals(1, testRequisitionTemplateColumnHashMap.get(totalQuantityReceivedField)
             .getDisplayOrder());

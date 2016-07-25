@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import java.time.LocalDate;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -68,6 +70,10 @@ public class RequisitionServiceTest {
   private GeographicZoneRepository geographicZoneRepository;
 
   private Requisition requisition;
+  private Facility facility;
+  private Period period;
+  private Program program;
+
 
   /** Prepare the test environment. */
   @Before
@@ -170,6 +176,12 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
+  public void shouldNotInitiateRequisitionWhenItAlreadyExists() {
+    requisitionService.initiateRequisition(
+        facility.getId(), program.getId(), period.getId(), false);
+  }
+
+  @Test(expected = RequisitionException.class)
   public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
@@ -189,7 +201,7 @@ public class RequisitionServiceTest {
   }
 
   private void createTestRequisition() {
-    Program program = new Program();
+    program = new Program();
     program.setCode(requisitionRepositoryName);
     program.setPeriodsSkippable(true);
     programRepository.save(program);
@@ -208,7 +220,7 @@ public class RequisitionServiceTest {
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
-    Facility facility = new Facility();
+    facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode(requisitionRepositoryName);
@@ -217,10 +229,16 @@ public class RequisitionServiceTest {
     facilityRepository.save(facility);
 
     Schedule schedule = new Schedule();
+    schedule.setName("scheduleName");
+    schedule.setCode(requisitionRepositoryName);
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
+    period = new Period();
     period.setProcessingSchedule(schedule);
+    period.setStartDate(LocalDate.of(2016, 1, 1));
+    period.setEndDate(LocalDate.of(2016, 1, 2));
+    period.setName("periodName");
+    period.setDescription("description");
     periodRepository.save(period);
 
     requisition = new Requisition();

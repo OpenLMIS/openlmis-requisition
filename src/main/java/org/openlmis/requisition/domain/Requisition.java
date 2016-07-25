@@ -60,7 +60,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private Program program;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "processingPeriodId", nullable = false)
   @Getter
   @Setter

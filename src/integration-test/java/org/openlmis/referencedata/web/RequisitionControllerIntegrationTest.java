@@ -80,10 +80,10 @@ public class RequisitionControllerIntegrationTest {
   private static final String AUTHORIZATION_URL = BASE_URL + "/api/requisitions/{id}/authorize";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
-  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
+  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
-  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
@@ -633,7 +633,7 @@ public class RequisitionControllerIntegrationTest {
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null, 
+        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
             new ParameterizedTypeReference<List<Requisition>>() {
             }, user.getId());
 
@@ -783,10 +783,11 @@ public class RequisitionControllerIntegrationTest {
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
+    requisitionRepository.delete(requisition);
     ResponseEntity<Requisition> result = restTemplate.exchange(
         INITIATE_URL + "?facilityId={facilityId}&"
-                + "programId={programId}&periodId={periodId}&emergency=true",
-        HttpMethod.POST, null, Requisition.class, facility2.getId(),
+                + "programId={programId}&periodId={periodId}&emergency=false",
+        HttpMethod.POST, null, Requisition.class, facility.getId(),
             program.getId(), period.getId());
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
