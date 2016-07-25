@@ -1,0 +1,84 @@
+/*
+Manage menu
+
+Manage menu in OpenLMIS is meant to be persistent link items that display the current state od the UI.
+
+markup:
+<div class="manage-nav">
+  <ul class="clearfix">
+    <li>
+      <a href="">Facilities</a>
+    </li>
+    <li>
+      <a href="">Roles</a>
+    </li>
+    <li class="selected">
+      <a href="">Schedules</a>
+    </li>
+    <li>
+      <a href="">Users</a>
+    </li>
+  </ul>
+</div>
+
+Styleguide 2.1
+*/
+
+.manage-nav {
+  font-size: 0.9em;
+  margin: -5px 0 10px;
+  font-weight: bold;
+}
+.manage-nav ul {
+  margin: 0;
+  padding-left: 5px;
+  list-style: none;
+  border-bottom: 1px solid #d6d6d6;
+}
+.manage-nav li {
+  float: left;
+  margin: 10px 2px -1px;
+  border: 1px solid #d6d6d6;
+  border-radius: 3px 3px 0 0;
+  background: #DDD;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #ffffff 0%, #d9d9d9 100%);
+  /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #ffffff 0%, #d9d9d9 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -ms-linear-gradient(top, #ffffff 0%, #d9d9d9 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #ffffff 0%, #d9d9d9 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#d9d9d9', GradientType=0);
+  /* IE6-9 */
+}
+.manage-nav li:hover,
+.manage-nav li.selected {
+  border-bottom: 1px solid #ffffff;
+}
+.manage-nav li:hover a,
+.manage-nav li.selected a {
+  padding: 8px 14px 6px;
+  background: #FFF;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #d9d9d9 0%, #ffffff 100%);
+  /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #d9d9d9 0%, #ffffff 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -ms-linear-gradient(top, #d9d9d9 0%, #ffffff 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #d9d9d9 0%, #ffffff 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d9d9d9', endColorstr='#ffffff', GradientType=0);
+  /* IE6-9 */
+}
+.manage-nav a {
+  display: block;
+  color: #2c2c2c;
+  padding: 8px 14px 6px;
+  text-shadow: 0 1px 0 #FFF;
+}
+.manage-nav a:hover {
+  text-decoration: none;
+}

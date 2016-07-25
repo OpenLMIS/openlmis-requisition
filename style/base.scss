@@ -4,7 +4,9 @@ Base
 This is a collection of the basic styles that are used through the OpenLMIS Platform.
 
 markup:
-<h1 class="logo">OpenLMIS</h1>
+<div class="logo clearfix">
+  <h1>OpenLMIS</h1>
+</div>
 <h2>Block style title</h2>
 <p>This is a sample paragraph</p>
 <ul>

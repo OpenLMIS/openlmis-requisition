@@ -1,13 +1,15 @@
 /*
 Buttons
 
-Buttons represent taking an action in OpenLMIS - juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be the default color, with the exception of: a primary action button (which submits a form of changes a state), an add button which is creating new data in MOTECH (and should launch a modal window), or a delete button (which much launch a modal window to confirm the action).
+Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be the default color presented at 1.1 section, with the exception of: an edit action button, a cancel button, or a disabled buttons (which are a little bit faded in comparison with primary or cancel button). There are two sizes of buttons. Most of OpenLMIS buttons are default size, but edit action button is smaller.
 
 markup:
-<input type="submit" class="btn btn-primary" value="Save"/>
-<input type="button" class="btn btn-cancel" value="Cancel"/>
-<input type="submit" class="btn btn-primary btn-small" value="Save"/>
-<input type="button" class="btn btn-mini" value="Edit"/>
+<input type="submit" class="btn btn-primary" value="Primary Button"/>
+<input type="button" class="btn btn-cancel" value="Cancel Button"/>
+<input type="submit" class="btn btn-primary disabled" value="Disabled Primary Button"/>
+<input type="button" class="btn btn-cancel disabled" value="Disabled Cancel Button"/>
+<input type="submit" class="btn btn-primary btn-small" value="Small Primary Button"/>
+<input type="button" class="btn btn-mini" value="Edit Button"/>
 
 Styleguide 1.2
 */
@@ -26,6 +28,10 @@ input.btn-primary {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff42a7ad', endColorstr='#ff004484', GradientType=0);
   filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
+input.btn-primary.disabled {
+  color: #ffffff;
+  background-color: #356b6f;
+}
 input.btn-cancel {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
   color: #FFFFFF;
@@ -40,4 +46,9 @@ input.btn-cancel {
   border-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffc5c5c5', endColorstr='#ff777777', GradientType=0);
   filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+input.btn-cancel.disabled {
+  color: #ffffff;
+  background-color: #777777;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }

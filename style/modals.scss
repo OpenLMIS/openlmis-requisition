@@ -1,0 +1,147 @@
+/*
+Modals
+
+Modals are used to enter information into the OpenLMIS system. These types of data can include database entry or logging into the system.
+
+markup:
+<form style="height: 420px;">
+<div class="login-page">
+<div class="login-container">
+  <div class="modal-login-header">
+    <h1>Logistics Management Information Systems</h1>
+  </div>
+  <div>
+    <div class="locale-container">
+      <ul>
+        <li>
+          <a href=""> português</a>
+          <span> | </span>
+          <a href=""> Français</a>
+          <span> | </span>
+          <a href=""> English</a>
+          <span> | </span>
+          <a href=""> español</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="login-form">
+    <h2 id="signInLabel">Sign In</h2>
+    <form>
+      <fieldset>
+        <div class="login-form-row">
+          <input type="text" id="username"/>
+        </div>
+        <div class="login-form-row">
+          <input type="password" id="password"/>
+        </div>
+        <div class="login-form-row">
+          <input class="btn btn-primary" type="submit" value="Sign in"/>
+        </div>
+        <div class="login-form-row forgot-link">
+          <a id="forgotPasswordLink" href="">Forgor password?</a>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+  <div class="powered-by">
+    Powered by <a href="http://openlmis.org" target="_blank">OpenLMIS</a> v2.0.1 build 120-dev
+  </div>
+</div>
+</div>
+</form>
+
+Styleguide 3.0
+*/
+
+.login-page {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 700px;
+  margin-left: -330px;
+  margin-top: -220px;
+  box-shadow: 0 0 15px #222;
+  border: 1px solid white;
+  border-radius: 6px;
+}
+.login-container {
+  background: #FFF;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #ffffff 0%, #ffffff 48%, #e1e1e1 100%);
+  /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #ffffff 0%, #ffffff 48%, #e1e1e1 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -ms-linear-gradient(top, #ffffff 0%, #ffffff 48%, #e1e1e1 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 48%, #e1e1e1 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e1e1e1', GradientType=0);
+  /* IE6-9 */
+  border-radius: 4px;
+}
+.login-container h1 {
+  font-size: 1.3em;
+  color: #747474;
+  margin: 0;
+  margin-right: 118px;
+  line-height: 24px;
+  padding: 14px;
+  text-shadow: 0 1px 0 #FFF;
+  font-weight: normal;
+  font-family: 'HelveticaNeue-CondensedBold', Arial, sans-serif;
+}
+.login-container h2 {
+  font-size: 1.4em;
+  color: #414141;
+  margin: 0;
+  padding: 15px 0;
+  line-height: 30px;
+}
+.modal-login-header {
+  border-bottom: 1px solid #CCC;
+  border-radius: 3px 3px 0 0;
+  background: #DDD;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #ffffff 0%, #ffffff 24%, #c5c5c5 100%);
+  /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #ffffff 0%, #ffffff 24%, #c5c5c5 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -ms-linear-gradient(top, #ffffff 0%, #ffffff 24%, #c5c5c5 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 24%, #c5c5c5 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#c5c5c5', GradientType=0);
+  /* IE6-9 */
+}
+.login-form {
+  background: url(../images/login-bg.png) no-repeat 20px top;
+  padding: 0 55px 0 330px;
+  min-height: 310px;
+}
+.login-form-row {
+  width: 55%;
+}
+.locale-container {
+  position: relative;
+}
+.locale-container ul {
+  margin: 0;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 10px 10px 12px;
+  float: right;
+  list-style-type: none;
+}
+.locale-container ul li {
+  display: inline;
+  color: #727070;
+  font-size: 11px;
+}
+.powered-by {
+  text-align: right;
+  padding: 0px 10px;
+  font-size: 0.7em;
+  color: #a2a2a2;
+}

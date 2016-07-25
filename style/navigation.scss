@@ -1,7 +1,7 @@
 /*
 Navigation
 
-Naviagation bar
+Navigation bar in OpenLMIS can include lists of links, called as submenu, headings for description of those lists or just link items.
 
 markup:
 <form style="height: 240px;">
@@ -108,4 +108,20 @@ Styleguide 2.0
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
   padding: 3px 14px;
   border-radius: 3px;
+}
+.navigation .submenu {
+  display: none;
+  padding-top: 10px;
+  position: absolute;
+  min-width: 150px;
+  left: 0;
+  top: 22px;
+}
+.navigation ul ul .submenu {
+  padding: 0 0 0 10px;
+  left: 97%;
+  top: 1px;
+}
+.navigation ul li:hover > .submenu {
+  display: block !important;
 }
