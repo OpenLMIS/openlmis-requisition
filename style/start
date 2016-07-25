@@ -1,7 +1,0 @@
-styleguide --kss-source "openlmis-requisition/style/*.scss" --style-source "Openlmis2/open-lmis/modules/openlmis-web/src/main/webapp/public/css/*.css" --style-source "Openlmis2/open-lmis/modules/openlmis-web/src/main/webapp/public/lib/bootstrap/css/*.css" --overviewPath "openlmis-requisition/style/overview.md" --output styleguide --watch --server
-
-Przydatne:
-
-grep -rnw ./style/Openlmis2/open-lmis/modules/openlmis-web/src/main/webapp/public/css -e "radio"
-
-

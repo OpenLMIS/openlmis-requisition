@@ -8,9 +8,11 @@ markup:
 <input type="text" rnr-validator="positiveInteger" maxlength="8" required>
 <select>
 	<option value="option1">Option1</option>
+	<option value="option2">Option2</option>
 </select>
 <input type="checkbox">
-<input type="radio">
+<input type="radio" ng-model="selectedType" value="0">
+<input type="radio" ng-model="selectedType" value="1">
 
 Styleguide 4.0
 */
