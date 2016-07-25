@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.hierarchyandsupervision.domain.RequisitionGroup;
 import org.openlmis.hierarchyandsupervision.domain.Right;
 import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -32,10 +31,8 @@ import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -196,7 +193,7 @@ public class RequisitionService {
     return entityManager.createQuery(query).getResultList();
   }
 
-  public List<Requisition> listForApprovalDto(UUID userId) {
+  public List<Requisition> getRequisitionsForApproval(UUID userId) {
     User user = userRepository.findOne(userId);
     List<Role> roles = user.getRoles();
     List<Requisition> requisitionsForApproval = new ArrayList<>();
@@ -211,7 +208,7 @@ public class RequisitionService {
     return requisitionsForApproval;
   }
 
-  private List<Requisition> getAuthorizedRequisitions(SupervisoryNode supervisoryNode) {
+  public List<Requisition> getAuthorizedRequisitions(SupervisoryNode supervisoryNode) {
     List<Requisition> requisitions = new ArrayList<>();
     Set<SupervisoryNode> supervisoryNodes = supervisoryNode.getChildNodes();
     if(supervisoryNodes == null) {
@@ -220,9 +217,9 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for(SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> requisitionList = getRequisitionsForSupervisoryNode(supNode);
-      if (requisitionList != null) {
-        for(Requisition req : requisitionList) {
+      List<Requisition> reqList = (List<Requisition>) requisitionRepository.findBySupervisoryNodeId(supNode.getId());
+      if (reqList != null) {
+        for(Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
             requisitions.add(req);
           }
@@ -232,45 +229,4 @@ public class RequisitionService {
 
     return requisitions;
   }
-
-  private List<Requisition> getRequisitionsForSupervisoryNode(SupervisoryNode supervisoryNode) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    Root<Requisition> requisitionRoot = query.from(Requisition.class);
-    Join<Requisition, Facility> facilitiesJoin = requisitionRoot.join("facilityId");
-    Join<Facility, RequisitionGroup> requisitionGroupJoin = facilitiesJoin.join("facilityId");
-    Join<RequisitionGroup, SupervisoryNode> supervisoryNodeJoin = requisitionGroupJoin.join("supervisoryNodeId");
-
-    List<Predicate> conditions = new ArrayList();
-    conditions.add(builder.equal(supervisoryNodeJoin.get("supervisoryNodeId"), supervisoryNode.getId()));
-
-    TypedQuery<Requisition> typedQuery = entityManager.createQuery(query
-        .select(requisitionRoot)
-        .where(conditions.toArray(new Predicate[] {}))
-        .orderBy(builder.asc(requisitionRoot.get("facilityId")))
-        .distinct(true)
-    );
-
-    return typedQuery.getResultList();
-  }
-
-
-  private List<Requisition> getRequisitionsForSupervisoryNodeWersjaGrzegorz(SupervisoryNode supervisoryNode) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-
-    Root<Requisition> root = query.from(Requisition.class);
-
-    Root<RequisitionGroup> reqGroupRoot = query.from(RequisitionGroup.class);
-    Join<Requisition, Facility> groupFacilities = reqGroupRoot.join("memberFacilites");
-
-    query.select(root);
-    query.where(builder.and(
-        builder.equal(root.get("facility"), groupFacilities.get("id")),
-        builder.equal(root.get("supervisoryNode"), supervisoryNode)
-    ));
-
-    return entityManager.createQuery(query).getResultList();
-  }
-
 }

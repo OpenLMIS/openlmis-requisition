@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Comment;
@@ -58,6 +59,11 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   private Facility facility;
+
+  @Column
+  @Getter
+  @Setter
+  private UUID supervisoryNodeId;
 
   @OneToOne
   @JoinColumn(name = "programId", nullable = false)

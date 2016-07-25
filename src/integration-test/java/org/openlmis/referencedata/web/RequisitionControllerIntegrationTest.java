@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
@@ -34,6 +36,7 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.RequisitionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
@@ -45,6 +48,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -74,6 +78,11 @@ public class RequisitionControllerIntegrationTest {
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
   private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
 
+  @Autowired
+  private RequisitionService requisitionService;
+
+  @Autowired
+  private SupervisoryNodeRepository supervisoryNodeRepository;
 
   @Autowired
   private ProductRepository productRepository;
@@ -274,6 +283,7 @@ public class RequisitionControllerIntegrationTest {
     requisitionRepository.deleteAll();
     programRepository.deleteAll();
     periodRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
     facilityRepository.deleteAll();
     facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
@@ -582,5 +592,26 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Requisition initiatedRequisitions = result.getBody();
     Assert.assertNotNull(initiatedRequisitions);
+  }
+
+  @Test
+  @Transactional
+  public void getAthorizedRequisitionsForSupervisorNode() {
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    SupervisoryNode supervisoryNode = new SupervisoryNode();
+    supervisoryNode.setCode("Test");
+    supervisoryNode.setSupervisorCount(0);
+    supervisoryNode.setFacility(facility);
+    supervisoryNodeRepository.save(supervisoryNode);
+
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisitionRepository.save(requisition);
+
+    requisition2.setSupervisoryNodeId(supervisoryNode.getId());
+    requisitionRepository.save(requisition2);
+
+    List<Requisition> requisitionList = requisitionService.getAuthorizedRequisitions(supervisoryNode);
+
+    Assert.assertEquals(requisitionList.get(0), requisition);
   }
 }

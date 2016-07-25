@@ -14,4 +14,5 @@ public interface RequisitionRepository
 
   Requisition findByProcessingPeriod(@Param("processingPeriod") Period processingPeriod);
 
+  Iterable<Requisition> findBySupervisoryNodeId(@Param("supervisoryNodeId") UUID id);
 }

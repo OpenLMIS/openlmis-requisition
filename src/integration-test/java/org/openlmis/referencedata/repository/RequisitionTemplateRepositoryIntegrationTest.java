@@ -133,7 +133,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
-    assertEquals(column.getSource(), source);
+    assertEquals(column.getSource(), SourceType.CALCULATED);
     requisitionTemplate.changeColumnSource(columnKey, SourceType.REFERENCE);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
