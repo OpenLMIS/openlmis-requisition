@@ -26,9 +26,9 @@ public class RequisitionTemplateColumn {
 
   private Boolean canChangeOrder;
 
-  private SourceType source;
-
   private Boolean canBeChangedByUser;
+
+  private SourceType source;
 
   /**
    * Allows changing visibility of specific column.

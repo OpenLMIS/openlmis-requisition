@@ -29,6 +29,7 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -132,7 +133,7 @@ public class RequisitionLineServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            true, false, true, true, "source"));
+            true, false, true, true, SourceType.CALCULATED));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -150,7 +151,7 @@ public class RequisitionLineServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            true, true, true, false, "source"));
+            true, true, true, false, SourceType.CALCULATED));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -168,7 +169,7 @@ public class RequisitionLineServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            false, false, true, true, "source"));
+            false, false, true, true, SourceType.CALCULATED));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
