@@ -95,7 +95,7 @@ public class RequisitionController {
         requisition = requisitionRepository.findOne(requisitionId);
         return new ResponseEntity<Object>(requisition, HttpStatus.OK);
       } else {
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
       }
     }
   }
