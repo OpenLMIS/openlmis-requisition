@@ -127,8 +127,6 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
-
     requisitionService.reject(requisition.getId());
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
@@ -158,12 +156,10 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotAllowAuthotizationIfRequisitionStatusIsWrong() {
+  public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
-
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
 
     requisitionService.authorize(requisition.getId());
   }

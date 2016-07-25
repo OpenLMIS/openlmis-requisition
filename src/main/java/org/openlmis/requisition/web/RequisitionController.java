@@ -206,9 +206,8 @@ public class RequisitionController {
 
     Requisition requisition;
     try {
-      requisitionService.authorize(requisitionId);
+      requisition = requisitionService.authorize(requisitionId);
       logger.info("Requisition: " +  requisitionId + " authorize.");
-      requisition = requisitionRepository.findOne(requisitionId);
 
     } catch (RequisitionException ex) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
