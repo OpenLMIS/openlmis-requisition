@@ -12,3 +12,4 @@ gradlew*
 node_modules/
 api-definition.json
 api-definition-raml.yaml
+api-definition.html
