@@ -27,8 +27,8 @@ markup:
 		</div>
 		<label for="radioInput" style="margin-top:10px;font-size:18px">Example radio elements</label>
 		<div id="radioInput" >
-			<input type="radio" ng-model="selectedType" value="0">
-			<input type="radio" ng-model="selectedType" value="1">
+			<input type="radio" name="radioExample" value="0">
+			<input type="radio" name="radioExample" value="1">
 		</div>
 </form>
 
