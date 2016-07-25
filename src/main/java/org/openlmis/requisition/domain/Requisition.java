@@ -49,7 +49,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private Set<RequisitionLine> requisitionLines;
 
-  @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
+  @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
   @Getter
   private List<Comment> comments;
 

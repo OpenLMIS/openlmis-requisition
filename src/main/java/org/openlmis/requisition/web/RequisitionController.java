@@ -99,6 +99,22 @@ public class RequisitionController {
     }
   }
 
+  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
+  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
+    if (requisition.getStatus() == RequisitionStatus.SUBMITTED) {
+      requisition.setStatus(RequisitionStatus.APPROVED);
+      requisitionRepository.save(requisition);
+      logger.debug("Requisition with id " + requisitionId + " approved");
+      return new ResponseEntity<>(requisition, HttpStatus.OK);
+    } else {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
   /**
    * Deletes requisition with the given id.
    */
@@ -182,7 +198,6 @@ public class RequisitionController {
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
                                          @PathVariable("id") UUID id) {
-    int i = 5;
     Requisition requisition = requisitionRepository.findOne(id);
     comment.setRequisition(requisition);
     /*User author = new User();
@@ -203,8 +218,6 @@ public class RequisitionController {
 
   /**
    * Get all comments for specified requisition
-   * @param id
-   * @return
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
   public ResponseEntity<Object> getCommentsForARnr(@PathVariable("id") UUID id) {
@@ -212,30 +225,25 @@ public class RequisitionController {
     return new ResponseEntity<Object>(comments, HttpStatus.OK);
   }
 
-  /**
-   * Get requisition waiting to approve
-   *
-   * @param id
-   * @param request
-   * @return
-   */
- /* @RequestMapping(value = "/requisitions/toapprove/{id}", method = RequestMethod.GET)
-  public ResponseEntity<OpenLmisResponse> getById(@PathVariable("id") UUID id, HttpServletRequest request) {
-    try {
-      Rnr rnr = requisitionService.getFullRequisitionById(id);
-      ResponseEntity<OpenLmisResponse> response = response(RNR, rnr);
-      response.getBody().addData(NUMBER_OF_MONTHS, requisitionService.findM(rnr.getPeriod()));
+  @RequestMapping(value = "/requisitions-for-approval", method = RequestMethod.GET)
+  public ResponseEntity<Object> listForApproval() {
 
-      boolean canApproveRnr = (rnr.isApprovable() &&
-          requisitionPermissionService.hasPermission(loggedInUserId(request), rnr, APPROVE_REQUISITION));
+    User user = new User();
+    user.setUsername("maciejku");
+    user.setFirstName("maciek");
+    user.setLastName("dudzik");
+    user = userRepository.save(user); // TODO loggedInUserId(request)
 
-      response.getBody().addData(CAN_APPROVE_RNR, canApproveRnr);
+    List<Requisition> requisitions = requisitionService.listForApprovalDto(user.getId());
+    return new ResponseEntity<Object>(requisitions, HttpStatus.OK);
+  }
 
-      return response;
-    } catch (DataException dataException) {
-      return error(dataException, NOT_FOUND);
-    }
-  }*/
+  /*
+  @RequestMapping(value = "/rnr/{programId}/columns", method = GET)
+  public List<RnrColumn> fetchColumnsForRequisition(@PathVariable("programId") Long programId) {
+    return rnrTemplateService.fetchColumnsForRequisition(programId);
+  }
+*/
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
     return new HashMap<String, String>() {

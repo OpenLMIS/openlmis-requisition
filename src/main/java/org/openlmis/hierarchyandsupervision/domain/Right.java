@@ -1,5 +1,6 @@
 package org.openlmis.hierarchyandsupervision.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "rights", schema = "referencedata")
 @NoArgsConstructor
+@AllArgsConstructor
 public class Right extends BaseEntity {
   private final String text = "text";
 

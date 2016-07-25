@@ -1,6 +1,11 @@
 package org.openlmis.requisition.service;
 
+import org.openlmis.hierarchyandsupervision.domain.RequisitionGroup;
+import org.openlmis.hierarchyandsupervision.domain.Right;
+import org.openlmis.hierarchyandsupervision.domain.Role;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
@@ -19,13 +24,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -51,6 +61,9 @@ public class RequisitionService {
 
   @Autowired
   ProgramRepository programRepository;
+
+  @Autowired
+  UserRepository userRepository;
 
   @Autowired
   RequisitionLineService requisitionLineService;
@@ -180,6 +193,83 @@ public class RequisitionService {
     }
 
     query.where(predicate);
+    return entityManager.createQuery(query).getResultList();
+  }
+
+  public List<Requisition> listForApprovalDto(UUID userId) {
+    User user = userRepository.findOne(userId);
+    List<Role> roles = user.getRoles();
+    List<Requisition> requisitionsForApproval = new ArrayList<>();
+    for (Role role : roles) {
+      if (role.getSupervisedNode() != null) {
+        if (role.getRights().contains(new Right("approve", "approve", "approve"))) {
+          final List<Requisition> requisitions = getAuthorizedRequisitions(role.getSupervisedNode());
+          requisitionsForApproval.addAll(requisitions);
+        }
+      }
+    }
+    return requisitionsForApproval;
+  }
+
+  private List<Requisition> getAuthorizedRequisitions(SupervisoryNode supervisoryNode) {
+    List<Requisition> requisitions = new ArrayList<>();
+    Set<SupervisoryNode> supervisoryNodes = supervisoryNode.getChildNodes();
+    if(supervisoryNodes == null) {
+      supervisoryNodes = new HashSet<>();
+    }
+    supervisoryNodes.add(supervisoryNode);
+
+    for(SupervisoryNode supNode : supervisoryNodes) {
+      List<Requisition> requisitionList = getRequisitionsForSupervisoryNode(supNode);
+      if (requisitionList != null) {
+        for(Requisition req : requisitionList) {
+          if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
+            requisitions.add(req);
+          }
+        }
+      }
+    }
+
+    return requisitions;
+  }
+
+  private List<Requisition> getRequisitionsForSupervisoryNode(SupervisoryNode supervisoryNode) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    Root<Requisition> requisitionRoot = query.from(Requisition.class);
+    Join<Requisition, Facility> facilitiesJoin = requisitionRoot.join("facilityId");
+    Join<Facility, RequisitionGroup> requisitionGroupJoin = facilitiesJoin.join("facilityId");
+    Join<RequisitionGroup, SupervisoryNode> supervisoryNodeJoin = requisitionGroupJoin.join("supervisoryNodeId");
+
+    List<Predicate> conditions = new ArrayList();
+    conditions.add(builder.equal(supervisoryNodeJoin.get("supervisoryNodeId"), supervisoryNode.getId()));
+
+    TypedQuery<Requisition> typedQuery = entityManager.createQuery(query
+        .select(requisitionRoot)
+        .where(conditions.toArray(new Predicate[] {}))
+        .orderBy(builder.asc(requisitionRoot.get("facilityId")))
+        .distinct(true)
+    );
+
+    return typedQuery.getResultList();
+  }
+
+
+  private List<Requisition> getRequisitionsForSupervisoryNodeWersjaGrzegorz(SupervisoryNode supervisoryNode) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+
+    Root<Requisition> root = query.from(Requisition.class);
+
+    Root<RequisitionGroup> reqGroupRoot = query.from(RequisitionGroup.class);
+    Join<Requisition, Facility> groupFacilities = reqGroupRoot.join("memberFacilites");
+
+    query.select(root);
+    query.where(builder.and(
+        builder.equal(root.get("facility"), groupFacilities.get("id")),
+        builder.equal(root.get("supervisoryNode"), supervisoryNode)
+    ));
+
     return entityManager.createQuery(query).getResultList();
   }
 

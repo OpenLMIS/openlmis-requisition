@@ -34,4 +34,9 @@ public class Role extends BaseEntity {
   @Getter
   @Setter
   private List<Right> rights;
+
+  @Column(columnDefinition = text)
+  @Getter
+  @Setter
+  private SupervisoryNode supervisedNode;
 }
