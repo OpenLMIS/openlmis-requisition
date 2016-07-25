@@ -22,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +52,11 @@ public class RequisitionController {
 
   @Autowired
   RequisitionService requisitionService;
+
+  @InitBinder
+  protected void initBinder(final WebDataBinder binder) {
+    binder.addValidators(validator);
+  }
 
   /**
    * Initiates requisition.
@@ -80,23 +88,19 @@ public class RequisitionController {
    * Submits earlier initiated requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.PUT)
-  public ResponseEntity<?> submitRequisition(@RequestBody Requisition requisition,
+  public ResponseEntity<?> submitRequisition(@RequestBody @Valid Requisition requisition,
                                              BindingResult bindingResult,
                                              @PathVariable("id") UUID requisitionId) {
-    if (requisition == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
-      validator.validate(requisition, bindingResult);
-      if (bindingResult.getErrorCount() == 0) {
-        logger.debug("Submitting a requisition with id " + requisitionId);
-        requisition.setStatus(RequisitionStatus.SUBMITTED);
-        requisitionRepository.save(requisition);
-        logger.debug("Requisition with id " + requisitionId + " submitted");
-        requisition = requisitionRepository.findOne(requisitionId);
-        return new ResponseEntity<Object>(requisition, HttpStatus.OK);
-      } else {
-        return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    if (!bindingResult.hasErrors()) {
+      try {
+        requisition = requisitionService.submitRequisition(requisitionId);
+      } catch (RequisitionException ex) {
+        logger.debug(ex.getMessage(), ex);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
+      return new ResponseEntity<Object>(requisition, HttpStatus.OK);
+    } else {
+      return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
   }
 

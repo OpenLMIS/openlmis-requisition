@@ -87,6 +87,19 @@ public class RequisitionService {
     return requisition;
   }
 
+  public Requisition submitRequisition (UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
+    } else {
+      logger.debug("Submitting a requisition with id " + requisitionId);
+      requisition.setStatus(RequisitionStatus.SUBMITTED);
+      requisitionRepository.save(requisition);
+      logger.debug("Requisition with id " + requisitionId + " submitted");
+      return requisition;
+    }
+  }
+
   public boolean tryDelete(Requisition requisition) {
     if (requisition == null) {
       logger.debug("Delete failed - " + requisitionNullMessage);
