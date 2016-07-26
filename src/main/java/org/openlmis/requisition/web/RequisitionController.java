@@ -1,5 +1,9 @@
 package org.openlmis.requisition.web;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Comment;
@@ -34,9 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RepositoryRestController
 public class RequisitionController {
@@ -99,13 +100,16 @@ public class RequisitionController {
     }
   }
 
+  /**
+   * Approve specified by id requisition.
+   */
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     }
-    if (requisition.getStatus() == RequisitionStatus.SUBMITTED) {
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
       logger.debug("Requisition with id " + requisitionId + " approved");
@@ -190,14 +194,12 @@ public class RequisitionController {
   }
 
   /**
-   * Add comment do requisition
-   * @param comment
-   * @param id
-   * @return
+   * Add comment to the requisition.
    */
+  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
-                                         @PathVariable("id") UUID id) {
+                                         @PathVariable("id") UUID id, OAuth2Authentication auth) {
     Requisition requisition = requisitionRepository.findOne(id);
     comment.setRequisition(requisition);
     /*User author = new User();
@@ -217,7 +219,7 @@ public class RequisitionController {
   }
 
   /**
-   * Get all comments for specified requisition
+   * Get all comments for specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
   public ResponseEntity<Object> getCommentsForARnr(@PathVariable("id") UUID id) {
@@ -225,6 +227,9 @@ public class RequisitionController {
     return new ResponseEntity<Object>(comments, HttpStatus.OK);
   }
 
+  /**
+   * Get requisitions to approve for right supervisor.
+   */
   @RequestMapping(value = "/requisitions-for-approval", method = RequestMethod.GET)
   public ResponseEntity<Object> listForApproval() {
 
@@ -234,16 +239,9 @@ public class RequisitionController {
     user.setLastName("dudzik");
     user = userRepository.save(user); // TODO loggedInUserId(request)
 
-    List<Requisition> requisitions = requisitionService.listForApprovalDto(user.getId());
+    List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
     return new ResponseEntity<Object>(requisitions, HttpStatus.OK);
   }
-
-  /*
-  @RequestMapping(value = "/rnr/{programId}/columns", method = GET)
-  public List<RnrColumn> fetchColumnsForRequisition(@PathVariable("programId") Long programId) {
-    return rnrTemplateService.fetchColumnsForRequisition(programId);
-  }
-*/
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
     return new HashMap<String, String>() {

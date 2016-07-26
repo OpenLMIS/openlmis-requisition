@@ -27,6 +27,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -50,7 +51,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private Set<RequisitionLine> requisitionLines;
 
-  @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
+  @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
   @Getter
   private List<Comment> comments;
 
@@ -60,10 +61,11 @@ public class Requisition extends BaseEntity {
   @Setter
   private Facility facility;
 
-  @Column
+  @OneToOne
+  @JoinColumn(name = "supervisoryNodeId")
   @Getter
   @Setter
-  private UUID supervisoryNodeId;
+  private SupervisoryNode supervisoryNode;
 
   @OneToOne
   @JoinColumn(name = "programId", nullable = false)
@@ -93,6 +95,16 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   private Boolean emergency;
+
+  @Column(length = 250)
+  @Getter
+  @Setter
+  private String remarks;
+
+  @Column
+  @Getter
+  @Setter
+  private Long approvedQuantity;
 
   Requisition(UUID id) {
     this.setId(id);

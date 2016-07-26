@@ -3,9 +3,9 @@ package org.openlmis.requisition.domain;
 import lombok.Getter;
 
 public enum SourceType {
-  REFERENCE("R", "label.column.source.reference.data"),
-  USER_INPUT("U", "label.column.source.user.input"),
-  CALCULATED("C", "label.column.source.calculated");
+  REFERENCE("R", "Reference to object"),
+  USER_INPUT("U", "Column source added by user"),
+  CALCULATED("C", "Column source calculated by system");
 
   @Getter
   private final String code;
@@ -16,14 +16,5 @@ public enum SourceType {
   SourceType(String code, String description) {
     this.code = code;
     this.description = description;
-  }
-
-  public static SourceType getValueOf(String value) {
-    for (SourceType columnSource : SourceType.values()) {
-      if (columnSource.code.equalsIgnoreCase(value)) {
-        return columnSource;
-      }
-    }
-    return null;
   }
 }

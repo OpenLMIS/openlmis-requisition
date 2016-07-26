@@ -1,5 +1,6 @@
 package org.openlmis.requisition.repository;
 
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.requisition.domain.Requisition;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -14,5 +15,6 @@ public interface RequisitionRepository
 
   Requisition findByProcessingPeriod(@Param("processingPeriod") Period processingPeriod);
 
-  Iterable<Requisition> findBySupervisoryNodeId(@Param("supervisoryNodeId") UUID id);
+  Iterable<Requisition> findBySupervisoryNode(@Param("supervisoryNodeId")
+                                                  SupervisoryNode supervisoryNode);
 }

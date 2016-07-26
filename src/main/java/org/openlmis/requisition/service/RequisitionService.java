@@ -123,8 +123,8 @@ public class RequisitionService {
       logger.debug("Skip failed - "
           + requisitionBadStatusMessage);
     } else if (!requisition.getProgram().getPeriodsSkippable()) {
-      logger.debug("Skip failed " +
-          "- requisition program does not allow skipping");
+      logger.debug("Skip failed "
+          + "- requisition program does not allow skipping");
     } else {
       logger.debug("Requisition skipped");
       requisition.setStatus(RequisitionStatus.SKIPPED);
@@ -149,17 +149,21 @@ public class RequisitionService {
     }
   }
 
+  /**
+   * Get all comments for specified requisition.
+   */
   public List<Comment> getCommentsByReqId(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     List<Comment> comments = requisition.getComments();
-    for (Comment comment : comments) {
-      User user = comment.getAuthor();
-      comment.setAuthor(user.basicInformation());
+    if (comments != null) {
+      for (Comment comment : comments) {
+        User user = comment.getAuthor();
+        comment.setAuthor(user.basicInformation());
 
-      Requisition req = comment.getRequisition();
-      comment.setRequisition(req.basicInformation());
+        Requisition req = comment.getRequisition();
+        comment.setRequisition(req.basicInformation());
+      }
     }
-
     return comments;
   }
 
@@ -193,33 +197,46 @@ public class RequisitionService {
     return entityManager.createQuery(query).getResultList();
   }
 
+  /**
+   * Get requisitions to approve for specified user.
+   */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     User user = userRepository.findOne(userId);
     List<Role> roles = user.getRoles();
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     for (Role role : roles) {
-      if (role.getSupervisedNode() != null) {
-        if (role.getRights().contains(new Right("approve", "approve", "approve"))) {
-          final List<Requisition> requisitions = getAuthorizedRequisitions(role.getSupervisedNode());
-          requisitionsForApproval.addAll(requisitions);
-        }
+      if (role.getSupervisedNode() != null && findApproveRight(role.getRights())) {
+        requisitionsForApproval.addAll(getAuthorizedRequisitions(role.getSupervisedNode()));
       }
     }
     return requisitionsForApproval;
   }
 
+  private boolean findApproveRight(List<Right> rightList) {
+    for (Right right : rightList) {
+      if (right.getName().equals("APPROVE_REQUISITION")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Get authorized requisitions supervised by specified Node.
+   */
   public List<Requisition> getAuthorizedRequisitions(SupervisoryNode supervisoryNode) {
     List<Requisition> requisitions = new ArrayList<>();
     Set<SupervisoryNode> supervisoryNodes = supervisoryNode.getChildNodes();
-    if(supervisoryNodes == null) {
+    if (supervisoryNodes == null) {
       supervisoryNodes = new HashSet<>();
     }
     supervisoryNodes.add(supervisoryNode);
 
-    for(SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList = (List<Requisition>) requisitionRepository.findBySupervisoryNodeId(supNode.getId());
+    for (SupervisoryNode supNode : supervisoryNodes) {
+      List<Requisition> reqList =
+          (List<Requisition>) requisitionRepository.findBySupervisoryNode(supNode);
       if (reqList != null) {
-        for(Requisition req : reqList) {
+        for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
             requisitions.add(req);
           }
