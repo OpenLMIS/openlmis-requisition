@@ -74,7 +74,6 @@ public class SupervisoryNodeRepositoryIntegrationTest extends
     SupervisoryNode node = new SupervisoryNode();
     node.setCode("Code #" + instanceNumber);
     node.setName("SupervisoryNode #" + instanceNumber);
-    node.setSupervisorCount(0);
     node.setFacility(facility);
     return node;
   }

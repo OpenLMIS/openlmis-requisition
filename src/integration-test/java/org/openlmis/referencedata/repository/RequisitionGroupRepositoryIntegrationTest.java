@@ -84,7 +84,6 @@ public class RequisitionGroupRepositoryIntegrationTest
 
     supervisoryNode = new SupervisoryNode();
     supervisoryNode.setCode(code);
-    supervisoryNode.setSupervisorCount(0);
     supervisoryNode.setFacility(facility);
     supervisoryNodeRepository.save(supervisoryNode);
   }
