@@ -33,3 +33,6 @@ services:
     image: openlmis/rsyslog
     volumes:
       - '../logs/requisition:/var/log'
+  auth:
+    image: openlmis/auth
+    env_file: .env
