@@ -109,8 +109,7 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisitionId);
 
     if (deleted) {
       return new ResponseEntity(HttpStatus.NO_CONTENT);

@@ -84,7 +84,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
 
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisition.getId());
     Assert.assertTrue(deleted);
   }
 
@@ -93,7 +93,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisition.getId());
     Assert.assertFalse(deleted);
   }
 

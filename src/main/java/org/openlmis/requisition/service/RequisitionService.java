@@ -100,14 +100,16 @@ public class RequisitionService {
     }
   }
 
-  public boolean tryDelete(Requisition requisition) {
+  public boolean tryDelete(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+
     if (requisition == null) {
       logger.debug("Delete failed - " + requisitionNullMessage);
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Delete failed - " + requisitionBadStatusMessage);
     } else {
-      logger.debug("Requisition deleted");
       requisitionRepository.delete(requisition);
+      logger.debug("Requisition deleted");
       return true;
     }
 
