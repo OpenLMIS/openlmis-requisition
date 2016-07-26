@@ -10,15 +10,29 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.openlmis.csv.generator.CsvGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.SupplyLine;
+import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +41,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -38,6 +54,24 @@ public class OrderService {
 
   @PersistenceContext
   EntityManager entityManager;
+
+  @Autowired
+  private RequisitionService requisitionService;
+
+  @Autowired
+  private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private SupplyLineRepository supplyLineRepository;
+
+  @Autowired
+  private OrderLineRepository orderLineRepository;
+
+  @Autowired
+  private OrderRepository orderRepository;
 
   public static String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
                                             "productName", "productCode", "orderedQuantity",
@@ -178,5 +212,54 @@ public class OrderService {
       }
     }
     return rows;
+  }
+
+  /**
+   * Converting Requisition list to Orders.
+   */
+  @Transactional
+  public void convertToOrder(List<Requisition> requisitionList, UUID userId) {
+    User user = userRepository.findOne(userId);
+    requisitionService.releaseRequisitionsAsOrder(requisitionList);
+    Order order;
+
+    for (Requisition requisition : requisitionList) {
+      requisition = requisitionRepository.findOne(requisition.getId());
+
+      order = new Order();
+      order.setCreatedBy(user);
+      order.setRequisition(requisition);
+      order.setStatus(OrderStatus.ORDERED);
+
+      order.setReceivingFacility(requisition.getFacility());
+      order.setRequestingFacility(requisition.getFacility());
+
+      SupplyLine supplyLine = supplyLineRepository.findByProgramAndSupervisoryNode(
+          requisition.getProgram(), requisition.getSupervisoryNode());
+
+      order.setSupplyingFacility(supplyLine.getSupplyingFacility());
+      order.setProgram(supplyLine.getProgram());
+
+      order.setOrderCode(getOrderCodeFor(requisition, order.getProgram()));
+      order.setQuotedCost(BigDecimal.ZERO);
+
+      orderRepository.save(order);
+
+      for (RequisitionLine rl : requisition.getRequisitionLines()) {
+        OrderLine orderLine = new OrderLine();
+        orderLine.setOrder(order);
+        orderLine.setProduct(rl.getProduct());
+        orderLine.setFilledQuantity(0L);
+        orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
+        orderLineRepository.save(orderLine);
+      }
+    }
+  }
+
+  private String getOrderCodeFor(Requisition requisition, Program program) {
+    String code = program.getCode() + requisition.getId()
+        + (requisition.getEmergency() ? "E" : "R");
+
+    return code;
   }
 }

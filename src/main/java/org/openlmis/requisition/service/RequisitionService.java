@@ -195,4 +195,14 @@ public class RequisitionService {
     }
   }
 
+  /**
+   * Releasing the Requisitions.
+   */
+  public void releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+    for (Requisition requisition : requisitionList) {
+      Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
+      loadedRequisition.setStatus(RequisitionStatus.RELEASED);
+      requisitionRepository.save(loadedRequisition);
+    }
+  }
 }

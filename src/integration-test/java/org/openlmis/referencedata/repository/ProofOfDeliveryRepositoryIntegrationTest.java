@@ -2,6 +2,7 @@ package org.openlmis.referencedata.repository;
 
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -15,7 +16,6 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -87,12 +87,8 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     program.setCode(orderProofOfDeliveryString);
     programRepository.save(program);
 
-    User user = new User();
-    user.setUsername(orderProofOfDeliveryString);
-    user.setPassword(orderProofOfDeliveryString);
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    User user = userRepository.findAll().iterator().next();
 
     order.setOrderCode(orderProofOfDeliveryString);
     order.setQuotedCost(new BigDecimal("1.29"));
@@ -112,7 +108,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   public void cleanUp() {
     proofOfDeliveryRepository.deleteAll();
     orderRepository.deleteAll();
-    userRepository.deleteAll();
     facilityRepository.deleteAll();
     programRepository.deleteAll();
     facilityTypeRepository.deleteAll();

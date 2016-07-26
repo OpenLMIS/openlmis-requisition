@@ -13,7 +13,7 @@ public interface SupplyLineRepository extends PagingAndSortingRepository<SupplyL
   String PROGRAM = "program";
   String SUPERVISORY_NODE = "supervisoryNode";
 
-  Iterable<SupplyLine> findByProgramAndSupervisoryNode(
+  SupplyLine findByProgramAndSupervisoryNode(
       @Param(PROGRAM) Program program,
       @Param(SUPERVISORY_NODE) SupervisoryNode supervisoryNode);
 }
