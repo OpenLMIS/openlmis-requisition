@@ -1,5 +1,6 @@
 package org.openlmis.settings.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "settings")
 @NoArgsConstructor
+@AllArgsConstructor
 public class ConfigurationSetting {
 
   @Id
