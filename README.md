@@ -110,8 +110,8 @@ Response:
 
 When authentication succeeds, the user instance is stored as token principal.
 
-The components can be secured with `@PreAuthorize`, e.g.:
-`@PreAuthorize("isAuthenticated() && principal.username == 'admin'")`
+The API is available for authenticated users only, it can be additionally secured with `@PreAuthorize`, e.g.:
+`@PreAuthorize("principal.username == 'admin'")`
 
 Access the protected resource by appending access_token parameter to the request: 
 
