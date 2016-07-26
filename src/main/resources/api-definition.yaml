@@ -348,7 +348,6 @@ schemas:
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "supervisorCount": { "type": "integer", "required": true, "title": "supervisorCount" },
               "facility": { "$ref": "facility", "required": true },
               "parentNode": { "$ref": "supervisoryNode", "required": false },
               "childNodes": { "type": "array", "required": false, "title": "childNodes", "items": { "$ref": "supervisoryNode" }, "uniqueItems": false}
