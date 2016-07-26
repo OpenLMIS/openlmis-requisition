@@ -5,6 +5,7 @@ services:
     links:
       - db
       - log
+      - auth
     volumes:
       - '.:/app'
     command:
