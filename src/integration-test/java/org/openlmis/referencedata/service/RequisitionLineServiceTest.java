@@ -29,6 +29,7 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -41,6 +42,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -48,6 +50,8 @@ public class RequisitionLineServiceTest {
 
   private static final String requisitionRepositoryName = "RequisitionLineServiceIntegrationTest";
   private static final String beginningBalanceField = "beginningBalance";
+  private static final String totalQuantityReceivedField = "totalQuantityReceived";
+  private static final SourceType source = SourceType.CALCULATED;
 
   @Autowired
   private ProductRepository productRepository;
@@ -132,7 +136,7 @@ public class RequisitionLineServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            true, false, true, true, "source"));
+            true, false, true, true, source));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -150,7 +154,7 @@ public class RequisitionLineServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            true, true, true, false, "source"));
+            true, true, true, false, source));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -168,7 +172,7 @@ public class RequisitionLineServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            false, false, true, true, "source"));
+            false, false, true, true, source));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -179,6 +183,32 @@ public class RequisitionLineServiceTest {
     RequisitionLine requisitionLine = secondRequisition.getRequisitionLines().iterator().next();
 
     Assert.assertEquals(0, requisitionLine.getBeginningBalance().intValue());
+  }
+
+  @Test
+  public void shouldDisplayColumnsInCorrectOrder() {
+    HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
+    requisitionTemplateColumnHashMap.put(beginningBalanceField,
+            new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 2,
+                    false, false, true, true, SourceType.USER_INPUT));
+    requisitionTemplateColumnHashMap.put(totalQuantityReceivedField,
+            new RequisitionTemplateColumn(totalQuantityReceivedField, totalQuantityReceivedField,
+                    1, false, false, true, true, SourceType.USER_INPUT));
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate.setProgram(program);
+    requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
+    requisitionTemplateRepository.save(requisitionTemplate);
+
+    requisitionLineService.initiateRequisitionLineFields(secondRequisition);
+
+    Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
+            = requisitionTemplateRepository.findByProgram(secondRequisition.getProgram()).getColumnsMap();
+
+    Assert.assertEquals(1, testRequisitionTemplateColumnHashMap.get(totalQuantityReceivedField)
+            .getDisplayOrder());
+
+    Assert.assertEquals(2, testRequisitionTemplateColumnHashMap.get(beginningBalanceField)
+            .getDisplayOrder());
   }
 
   private void createTestRequisition() {

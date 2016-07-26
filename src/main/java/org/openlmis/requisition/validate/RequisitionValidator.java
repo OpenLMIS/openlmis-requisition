@@ -10,6 +10,8 @@ public class RequisitionValidator implements Validator {
 
   private static String VALUE_MUST_BE_ENTERED_NOTIFICATION =
           " must be entered prior to submission of a requisition.";
+  private static String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
+          " must be a non-negative value.";
   private static String REQUISITION_LINES = "requisitionLines";
 
   @Override
@@ -40,11 +42,19 @@ public class RequisitionValidator implements Validator {
       errors.rejectValue(
               REQUISITION_LINES,
               "A beginning balance" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+    } else if (requisitionLine.getBeginningBalance() < 0) {
+      errors.rejectValue(
+              REQUISITION_LINES,
+              "A beginning balance" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
     if (requisitionLine.getTotalReceivedQuantity() == null) {
       errors.rejectValue(
               REQUISITION_LINES,
               "A total received quantity" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+    } else if (requisitionLine.getTotalReceivedQuantity() < 0) {
+      errors.rejectValue(
+              REQUISITION_LINES,
+              "A total received quantity" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
     if (requisitionLine.getStockOnHand() == null) {
       errors.rejectValue(
