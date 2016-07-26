@@ -9,9 +9,9 @@ markup:
 		<label for="exampleTextInput" style="font-size:18px">Example text input elements</label>
 		<div id="exampleTextInput">		
 			<p>Text input 1:
-			<input type="text"></p>
+			<input type="text" /></p>
 			<p>Text input 2:
-			<input type="text" rnr-validator="positiveInteger" maxlength="8" required></p>
+			<input type="text" rnr-validator="positiveInteger" maxlength="8" required /></p>
 		</div>
 		<label for="exampleCombobox" style="font-size:18px">Example combo box element</label>
 		<div id="exampleCombobox">
@@ -22,13 +22,13 @@ markup:
 		</div>
 		<label for="exampleCheckBox" style="font-size:18px">Example check box elements</label>
 		<div id="exampleCheckBox">
-			<p><input type="checkbox" value="0">Option 1</p>
-			<p><input type="checkbox" value="1">Option 2</p>
+			<p><input type="checkbox" value="0" />Option 1</p>
+			<p><input type="checkbox" value="1" />Option 2</p>
 		</div>
 		<label for="radioInput" style="margin-top:10px;font-size:18px">Example radio elements</label>
 		<div id="radioInput" >
-			<p><input type="radio" name="radioExample" value="0">Option 1</p>
-			<p><input type="radio" name="radioExample" value="1">Option 2</p>
+			<p><input type="radio" name="radioExample" value="0" />Option 1</p>
+			<p><input type="radio" name="radioExample" value="1" />Option 2</p>
 		</div>
 </form>
 
