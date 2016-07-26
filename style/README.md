@@ -20,4 +20,4 @@
 3. Run grunt task
    `> grunt less`
 4. Generate styleguide
-   `> styleguide --kss-source "style/*.scss" --style-source "path/to/openlmis-v2/all/css/files" --style-source "path/to/openlmis-v2/bootstrap/all/css/files" --overviewPath "style/overview.md" --title "OpenLMIS Styleguide" --output styleguide --watch --server`
+   `> styleguide --kss-source "style/*.scss" --style-source "path/to/openlmis-v2/bootstrap.min.css" --style-source "path/to/openlmis-v2/app.css" --overviewPath "style/overview.md" --title "OpenLMIS Styleguide" --output styleguide --watch --server`
