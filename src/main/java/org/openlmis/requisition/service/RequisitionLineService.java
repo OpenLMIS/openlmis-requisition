@@ -43,6 +43,7 @@ public class RequisitionLineService {
       if (!requisitionTemplateColumn.getCanBeChangedByUser()) {
         resetBeginningBalance(requisitionLine);
       }
+
       requisitionLineRepository.save(requisitionLine);
       return requisitionLine;
     }
@@ -55,6 +56,7 @@ public class RequisitionLineService {
 
     if (requisitionTemplate != null) {
       initiateBeginningBalance(requisition, requisitionTemplate);
+      initiateTotalQuantityReceived(requisition, requisitionTemplate);
     }
 
     return requisition;
@@ -130,4 +132,10 @@ public class RequisitionLineService {
 
   }
 
+  private void initiateTotalQuantityReceived(Requisition requisition,
+                                             RequisitionTemplate requisitionTemplate) {
+    for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
+      requisitionLine.setTotalReceivedQuantity(0);
+    }
+  }
 }
