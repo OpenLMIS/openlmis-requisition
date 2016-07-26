@@ -747,8 +747,86 @@ resourceTypes:
                      X-Content-Type-Options:
                      X-XSS-Protection:
 
+/programProducts:
+    displayName: Program Products
+    /search:
+        /findByProgram:
+            get:
+                description: Find ProgramProducts with matched Program.
+                queryParameters:
+                    program:
+                        displayName: program
+                        description: Program ID
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                   "200":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                       body:
+                         application/json:
+                   "404":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                   "500":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+        /findByProgramAndFullSupply:
+            get:
+                description: Find ProgramProducts with matched Program.
+                queryParameters:
+                    program:
+                        displayName: program
+                        description: Program ID
+                        type: string
+                        required: true
+                        repeat: false
+                    fullSupply:
+                        displayName: fullSupply
+                        description: Full supply
+                        type: boolean
+                        required: true
+                        repeat: false
+                responses:
+                   "200":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                       body:
+                         application/json:
+                   "404":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                   "500":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+
 /requisitions:
     displayName: Requisition
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            description: Delete chosen requisition.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /{id}/skip:
         uriParameters:
             id:
@@ -902,6 +980,38 @@ resourceTypes:
                   headers:
                     X-Content-Type-Options:
                     X-XSS-Protection:
+
+/supplyLines:
+    displayName: Supply Lines
+    /search/findByProgramAndSupervisoryNode:
+        get:
+                    description: Find SupplyLines with matched Program and SupervisoryNode.
+                    queryParameters:
+                        program:
+                            displayName: program
+                            type: string
+                            required: true
+                            repeat: false
+                        supervisoryNode:
+                            displayName: supervisoryNode
+                            type: string
+                            required: true
+                            repeat: false
+                    responses:
+                        "200":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
+                            body:
+                              application/json:
+                        "400":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
+                        "500":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
 
 /users:
     displayName: User
