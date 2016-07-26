@@ -86,6 +86,7 @@ public class RequisitionControllerIntegrationTest {
   private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
+  private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
 
   @Autowired
   private ProductRepository productRepository;
@@ -310,7 +311,7 @@ public class RequisitionControllerIntegrationTest {
 
   @Test
   public void testSubmitWithNullRequisitionLines() throws JsonProcessingException {
-    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
     requisition.setRequisitionLines(null);
     requisition = requisitionRepository.save(requisition);
@@ -325,8 +326,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
-    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+  public void testSubmitWithNullQuantityRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
@@ -349,12 +350,177 @@ public class RequisitionControllerIntegrationTest {
       String response = excp.getResponseBodyAsString();
       assertEquals(expectedExceptionMessage, response);
     }
+  }
 
+  @Test
+  public void testSubmitWithNullBeginningBalanceRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNegativeBeginningBalanceRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A beginning balance must be a non-negative value.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(-1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNullTotalReceivedQuantityRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total received quantity must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNegativeTotalReceivedQuantityRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total received quantity must be a non-negative value.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(-1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNullStockOnHandRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNullConsumedQuantityRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total consumed quantity must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLine.setStockOnHand(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
   @Test
   public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
-    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total losses and adjustments must be entered prior "
         + "to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
