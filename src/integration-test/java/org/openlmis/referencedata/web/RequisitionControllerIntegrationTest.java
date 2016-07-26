@@ -137,7 +137,7 @@ public class RequisitionControllerIntegrationTest {
   private Program program2 = new Program();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
-  private User user = new User();
+  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -148,11 +148,8 @@ public class RequisitionControllerIntegrationTest {
 
     cleanUp();
 
-    user.setUsername("testUser");
-    user.setPassword("password");
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    user = userRepository.findAll().iterator().next();
 
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -298,7 +295,6 @@ public class RequisitionControllerIntegrationTest {
     facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
-    userRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     productCategoryRepository.deleteAll();

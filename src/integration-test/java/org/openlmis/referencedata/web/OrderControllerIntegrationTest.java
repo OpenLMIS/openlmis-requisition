@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +13,9 @@ import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
@@ -27,6 +30,7 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.domain.StockInventory;
+import org.openlmis.referencedata.domain.SupplyLine;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -36,6 +40,7 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.StockInventoryRepository;
 import org.openlmis.referencedata.repository.StockRepository;
+import org.openlmis.referencedata.repository.SupplyLineRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -57,7 +62,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -110,10 +117,18 @@ public class OrderControllerIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
+  @Autowired
+  private SupervisoryNodeRepository supervisoryNodeRepository;
+
+  @Autowired
+  private SupplyLineRepository supplyLineRepository;
+
   private static final String RESOURCE_FINALIZE_URL = System.getenv("BASE_URL")
       + "/api/orders/{id}/finalize";
 
   private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders";
+
+  private static final String USERNAME = "testUser";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -128,6 +143,9 @@ public class OrderControllerIntegrationTest {
   private Period secondPeriod = new Period();
   private Schedule firstSchedule = new Schedule();
   private Schedule secondSchedule = new Schedule();
+  private Requisition requisition;
+  private SupplyLine supplyLine;
+  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -148,7 +166,8 @@ public class OrderControllerIntegrationTest {
 
     Program program = addProgram("programCode");
 
-    User user = addUser("userName", "userPassword", "userFirstName", "userLastName", facility);
+    Assert.assertEquals(1, userRepository.count());
+    user = userRepository.findAll().iterator().next();
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
                           OrderStatus.ORDERED, new BigDecimal("1.29"));
@@ -196,12 +215,12 @@ public class OrderControllerIntegrationTest {
                                      geographicZone2, null, true, false);
 
     Requisition requisition1 = addRequisition(firstProgram, facility1, firstPeriod,
-                                              RequisitionStatus.RELEASED);
+                                              RequisitionStatus.RELEASED, null);
 
     Requisition requisition2 = addRequisition(secondProgram, facility1, secondPeriod,
-                                              RequisitionStatus.RELEASED);
+                                              RequisitionStatus.RELEASED, null);
 
-    firstUser = addUser("user", "pass", "Alice", "Cat", facility1);
+    firstUser = addUser(USERNAME, "pass", "Alice", "Cat", facility1);
 
     secondOrder = addOrder(requisition1, "O2", firstProgram, firstUser, facility2, facility2,
                            facility1, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -230,6 +249,29 @@ public class OrderControllerIntegrationTest {
 
     addOrderLine(thirdOrder, product2, 5L, 10L,
             null, null, null, null);
+
+    geographicLevel = addGeographicLevel("levelCode", 1);
+
+    facilityType = addFacilityType("typeCode");
+
+    geographicZone = addGeographicZone("zoneCode", geographicLevel);
+
+    Facility supplyingFacility = addFacility("supplyingFacilityName", "supplyingFacilityCode",
+        "description", facilityType, geographicZone, null, true, true);
+
+    SupervisoryNode supervisoryNode = addSupervisoryNode(supplyingFacility);
+
+    program = addProgram("progCode");
+
+    Schedule schedule = addSchedule("Schedule3", "S3");
+
+    Period period = addPeriod("P3", schedule, LocalDate.of(2015, Month.JANUARY, 1),
+        LocalDate.of(2015, Month.DECEMBER, 31));
+
+    requisition = addRequisition(program, supplyingFacility, period,
+        RequisitionStatus.APPROVED, supervisoryNode);
+
+    supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
   }
 
   /**
@@ -237,16 +279,21 @@ public class OrderControllerIntegrationTest {
    */
   @After
   public void cleanUp() {
+    supplyLineRepository.deleteAll();
     orderLineRepository.deleteAll();
     orderRepository.deleteAll();
     stockRepository.deleteAll();
     requisitionRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
     programRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    userRepository.deleteAll();
+    Iterable<User> users = userRepository.findByUsername(USERNAME);
+    if (users != null && users.iterator().hasNext()) {
+      userRepository.delete(users);
+    }
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -339,12 +386,15 @@ public class OrderControllerIntegrationTest {
   }
 
   private Requisition addRequisition(Program program, Facility facility, Period processingPeriod,
-                                     RequisitionStatus requisitionStatus) {
+                                     RequisitionStatus requisitionStatus,
+                                     SupervisoryNode supervisoryNode) {
     Requisition requisition = new Requisition();
     requisition.setProgram(program);
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(processingPeriod);
     requisition.setStatus(requisitionStatus);
+    requisition.setEmergency(false);
+    requisition.setSupervisoryNode(supervisoryNode);
     return requisitionRepository.save(requisition);
   }
 
@@ -361,6 +411,23 @@ public class OrderControllerIntegrationTest {
     orderLine.setVvm(vvm);
     orderLine.setManufacturer(manufacturer);
     return orderLineRepository.save(orderLine);
+  }
+
+  private SupervisoryNode addSupervisoryNode(Facility supplyingFacility) {
+    SupervisoryNode supervisoryNode = new SupervisoryNode();
+    supervisoryNode.setCode("NodeCode");
+    supervisoryNode.setName("NodeName");
+    supervisoryNode.setFacility(supplyingFacility);
+    return supervisoryNodeRepository.save(supervisoryNode);
+  }
+
+  private SupplyLine addSupplyLine(SupervisoryNode supervisoryNode, Program program,
+                                   Facility supplyingFacility) {
+    SupplyLine supplyLine = new SupplyLine();
+    supplyLine.setSupervisoryNode(supervisoryNode);
+    supplyLine.setProgram(program);
+    supplyLine.setSupplyingFacility(supplyingFacility);
+    return supplyLineRepository.save(supplyLine);
   }
 
   private Stock addStock(Product product, Long quantity) {
@@ -552,5 +619,49 @@ public class OrderControllerIntegrationTest {
 
     String pdfContent = printOrderResponse.getBody().toString();
     Assert.assertTrue(pdfContent != null);
+  }
+
+  @Test
+  public void testConvertToOrder() {
+    RestTemplate restTemplate = new RestTemplate();
+    String url = addTokenToUrl(RESOURCE_URL);
+
+    orderRepository.deleteAll();
+
+    restTemplate.exchange(url, HttpMethod.POST,
+        new HttpEntity<Object>(Collections.singletonList(requisition)), String.class);
+
+    Assert.assertEquals(1, orderRepository.count());
+    Order order = orderRepository.findAll().iterator().next();
+
+    Assert.assertEquals(user.getId(), order.getCreatedBy().getId());
+
+    Assert.assertEquals(OrderStatus.ORDERED, order.getStatus());
+    Assert.assertEquals(order.getRequisition().getId(), requisition.getId());
+    Assert.assertEquals(order.getReceivingFacility().getId(), requisition.getFacility().getId());
+    Assert.assertEquals(order.getRequestingFacility().getId(), requisition.getFacility().getId());
+
+    Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
+    Assert.assertEquals(order.getSupplyingFacility().getId(),
+        supplyLine.getSupplyingFacility().getId());
+  }
+
+  private String addTokenToUrl(String url) {
+    RestTemplate restTemplate = new RestTemplate();
+
+    String plainCreds = "trusted-client:secret";
+    byte[] plainCredsBytes = plainCreds.getBytes();
+    byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+    String base64Creds = new String(base64CredsBytes);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", "Basic " + base64Creds);
+
+    HttpEntity<String> request = new HttpEntity<>(headers);
+    ResponseEntity<?> response = restTemplate.exchange(
+        "http://auth:8080/oauth/token?grant_type=password&username=admin&password=password",
+        HttpMethod.POST, request, Object.class);
+
+    return url + "?access_token=" + ((Map<String, String>) response.getBody()).get("access_token");
   }
 }

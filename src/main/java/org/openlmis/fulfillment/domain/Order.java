@@ -98,6 +98,7 @@ public class Order extends BaseEntity {
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
   @Getter
+  @Setter
   private Set<OrderLine> orderLines;
 
   @PrePersist

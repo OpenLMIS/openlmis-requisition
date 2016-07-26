@@ -18,13 +18,16 @@ import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.StockRepository;
+import org.openlmis.requisition.domain.Requisition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +38,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -225,5 +230,22 @@ public class OrderController {
         logger.debug("Error writing csv file to output stream.", ex);
       }
     }
+  }
+
+  /**
+   * Converting Requisition list to orders.
+   *
+   * @param requisitionList List of Requisitions that will be converted to Orders
+   * @return ResponseEntity with the "#200 OK" HTTP response status on success
+   */
+  @RequestMapping(value = "/orders", method = RequestMethod.POST)
+  public ResponseEntity<?> convertToOrder(@RequestBody List<Requisition> requisitionList,
+                                          OAuth2Authentication auth) {
+    UUID userId = null;
+    if (auth != null && auth.getPrincipal() != null) {
+      userId = ((User) auth.getPrincipal()).getId();
+    }
+    orderService.convertToOrder(requisitionList, userId);
+    return new ResponseEntity<>(HttpStatus.CREATED);
   }
 }

@@ -114,12 +114,8 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     program.setCode(proofOfDeliveryLineCode);
     programRepository.save(program);
 
-    User user = new User();
-    user.setUsername(proofOfDeliveryLineCode);
-    user.setPassword(proofOfDeliveryLineCode);
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    User user = userRepository.findAll().iterator().next();
 
     Order order = new Order();
     order.setOrderCode(proofOfDeliveryLineCode);
@@ -176,7 +172,6 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     orderRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    userRepository.deleteAll();
     facilityRepository.deleteAll();
     programRepository.deleteAll();
     facilityTypeRepository.deleteAll();

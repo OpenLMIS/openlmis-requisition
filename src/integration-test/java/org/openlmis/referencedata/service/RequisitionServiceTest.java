@@ -29,6 +29,9 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @Transactional
@@ -162,6 +165,16 @@ public class RequisitionServiceTest {
     requisitionRepository.save(requisition);
 
     requisitionService.authorize(requisition.getId());
+  }
+
+  @Test
+  public void shouldReleaseRequisitionsAsOrder() {
+    Assert.assertNotEquals(RequisitionStatus.RELEASED, requisition.getStatus());
+    List<Requisition> requisitions = Collections.singletonList(requisition);
+    requisitionService.releaseRequisitionsAsOrder(requisitions);
+
+    requisition = requisitionRepository.findOne(requisition.getId());
+    Assert.assertEquals(RequisitionStatus.RELEASED, requisition.getStatus());
   }
 
   private void createTestRequisition() {

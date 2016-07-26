@@ -148,12 +148,8 @@ public class ProofOfDeliveryControllerIntegrationTest {
     requisition1.setStatus(RequisitionStatus.RELEASED);
     requisitionRepository.save(requisition1);
 
-    User user = new User();
-    user.setUsername("user");
-    user.setPassword("pass");
-    user.setFirstName("Alice");
-    user.setLastName("Cat");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    User user = userRepository.findAll().iterator().next();
 
     OrderLine orderLine1 = new OrderLine();
     OrderLine orderLine2 = new OrderLine();
@@ -340,7 +336,6 @@ public class ProofOfDeliveryControllerIntegrationTest {
     orderRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    userRepository.deleteAll();
     requisitionRepository.deleteAll();
     facilityRepository.deleteAll();
     programRepository.deleteAll();
