@@ -324,8 +324,10 @@ public class RequisitionControllerIntegrationTest {
     }
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+        + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setStockOnHand(1);
@@ -340,12 +342,21 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
 
-    testSubmit();
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
+    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+        + "\"A total losses and adjustments must be entered prior "
+        + "to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setStockOnHand(null);
@@ -361,7 +372,13 @@ public class RequisitionControllerIntegrationTest {
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
 
-    testSubmit();
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
   @Test
