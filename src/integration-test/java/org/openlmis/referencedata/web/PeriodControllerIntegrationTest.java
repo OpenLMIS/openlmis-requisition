@@ -14,30 +14,22 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
-public class PeriodControllerIntegrationTest {
+public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private ScheduleRepository scheduleRepository;
@@ -45,8 +37,7 @@ public class PeriodControllerIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private static final String BASE_URL = System.getenv("BASE_URL");
-  private static final String RESOURCE_URL = BASE_URL + "/api/periods";
+  private final String RESOURCE_URL = addTokenToUrl(BASE_URL + "/api/periods");
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
 
@@ -156,6 +147,7 @@ public class PeriodControllerIntegrationTest {
 
     String response = restAssured.given()
             .pathParam("id", firstPeriod.getId())
+            .queryParam("access_token", getToken())
             .when()
             .get("/api/periods/{id}/difference")
             .then()

@@ -4,8 +4,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -39,9 +37,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -55,13 +50,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
-public class ProofOfDeliveryControllerIntegrationTest {
+public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = System.getenv("BASE_URL")
-      + "/api/proofOfDeliveries";
+  private static final String RESOURCE_URL = BASE_URL + "/api/proofOfDeliveries";
 
   @Autowired
   private OrderRepository orderRepository;
@@ -347,8 +338,8 @@ public class ProofOfDeliveryControllerIntegrationTest {
   @Test
   public void testPrintProofOfDeliveryToPdf() {
     RestTemplate restTemplate = new RestTemplate();
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
-        + proofOfDelivery.getId() + "/print");
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_URL + "/" + proofOfDelivery.getId() + "/print"));
 
     Object printProofOfDeliver = restTemplate.getForObject(
         builder.toUriString(), String.class);

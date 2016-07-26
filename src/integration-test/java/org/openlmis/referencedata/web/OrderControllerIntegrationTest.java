@@ -1,13 +1,10 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -45,15 +42,12 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -64,13 +58,9 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
 @SuppressWarnings("PMD.TooManyMethods")
-public class OrderControllerIntegrationTest {
+public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -123,10 +113,9 @@ public class OrderControllerIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
-  private static final String RESOURCE_FINALIZE_URL = System.getenv("BASE_URL")
-      + "/api/orders/{id}/finalize";
+  private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
 
-  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders";
+  private static final String RESOURCE_URL = BASE_URL + "/api/orders";
 
   private static final String USERNAME = "testUser";
 
@@ -478,8 +467,8 @@ public class OrderControllerIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
-        .build().expand(firstOrder.getId().toString()).encode();
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(
+        addTokenToUrl(RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
     ResponseEntity<?> result =  restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
@@ -509,8 +498,8 @@ public class OrderControllerIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
-        .build().expand(firstOrder.getId().toString()).encode();
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -530,8 +519,8 @@ public class OrderControllerIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
-        .build().expand(firstOrder.getId().toString()).encode();
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -546,8 +535,8 @@ public class OrderControllerIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(RESOURCE_FINALIZE_URL)
-        .build().expand(firstOrder.getId().toString()).encode();
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -558,7 +547,7 @@ public class OrderControllerIntegrationTest {
   public void testOrderList() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL)
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(RESOURCE_URL))
             .queryParam("user", firstUser.getId())
             .queryParam("program", firstProgram.getId())
             .queryParam("period", firstPeriod.getId())
@@ -588,7 +577,8 @@ public class OrderControllerIntegrationTest {
 
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
             + secondOrder.getId() + "/print")
-            .queryParam("format", "csv");
+            .queryParam("format", "csv")
+            .queryParam("access_token", getToken());
 
     ResponseEntity<?> printOrderResponse = restTemplate.exchange(builder.toUriString(),
             HttpMethod.GET,
@@ -610,7 +600,8 @@ public class OrderControllerIntegrationTest {
 
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
             + thirdOrder.getId() + "/print")
-            .queryParam("format", "pdf");
+            .queryParam("format", "pdf")
+            .queryParam("access_token", getToken());
 
     ResponseEntity<?> printOrderResponse = restTemplate.exchange(builder.toUriString(),
             HttpMethod.GET,
@@ -644,24 +635,5 @@ public class OrderControllerIntegrationTest {
     Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
     Assert.assertEquals(order.getSupplyingFacility().getId(),
         supplyLine.getSupplyingFacility().getId());
-  }
-
-  private String addTokenToUrl(String url) {
-    RestTemplate restTemplate = new RestTemplate();
-
-    String plainCreds = "trusted-client:secret";
-    byte[] plainCredsBytes = plainCreds.getBytes();
-    byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-    String base64Creds = new String(base64CredsBytes);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + base64Creds);
-
-    HttpEntity<String> request = new HttpEntity<>(headers);
-    ResponseEntity<?> response = restTemplate.exchange(
-        "http://auth:8080/oauth/token?grant_type=password&username=admin&password=password",
-        HttpMethod.POST, request, Object.class);
-
-    return url + "?access_token=" + ((Map<String, String>) response.getBody()).get("access_token");
   }
 }
