@@ -1,6 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -305,11 +308,20 @@ public class RequisitionControllerIntegrationTest {
     testSubmit();
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testSubmitWithNullRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+        + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
     requisition.setRequisitionLines(null);
     requisition = requisitionRepository.save(requisition);
-    testSubmit();
+
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
   @Test(expected = HttpClientErrorException.class)
@@ -328,6 +340,7 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
+
     testSubmit();
   }
 
@@ -347,6 +360,7 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
+
     testSubmit();
   }
 
@@ -515,8 +529,8 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(2, requisitions.size());
 
     for (Requisition r : requisitions) {
-      Assert.assertTrue(r.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-04T12:00:00")));
-      Assert.assertTrue(r.getCreatedDate().isBefore(LocalDateTime.parse("2016-01-04T12:00:00")));
+      assertTrue(r.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-04T12:00:00")));
+      assertTrue(r.getCreatedDate().isBefore(LocalDateTime.parse("2016-01-04T12:00:00")));
     }
   }
 
@@ -532,7 +546,7 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(1, requisitions.size());
     Requisition req = requisitions.get(0);
     Assert.assertEquals(program.getId(), req.getProgram().getId());
-    Assert.assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-06-20T12:00:00")));
+    assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-06-20T12:00:00")));
   }
 
   @Test
@@ -547,7 +561,7 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(1, requisitions.size());
     Requisition req = requisitions.get(0);
     Assert.assertEquals(facility.getId(), req.getFacility().getId());
-    Assert.assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2016-02-20T12:00:00")));
+    assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2016-02-20T12:00:00")));
   }
 
   @Test
@@ -564,8 +578,8 @@ public class RequisitionControllerIntegrationTest {
     Requisition req = requisitions.get(0);
     Assert.assertEquals(program.getId(), req.getProgram().getId());
     Assert.assertEquals(facility2.getId(), req.getFacility().getId());
-    Assert.assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-20T12:00:00")));
-    Assert.assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2015-05-01T12:00:00")));
+    assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-20T12:00:00")));
+    assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2015-05-01T12:00:00")));
   }
 
   @Test

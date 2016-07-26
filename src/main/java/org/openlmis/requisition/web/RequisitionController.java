@@ -31,12 +31,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.validation.Valid;
 
 
 @RepositoryRestController
@@ -182,7 +182,7 @@ public class RequisitionController {
     return new HashMap<String, String>() {
       {
         for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getDefaultMessage());
+          put(error.getField(), error.getCode());
         }
       }
     };

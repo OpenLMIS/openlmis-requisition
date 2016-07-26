@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.repository;
 
 import com.google.common.collect.Lists;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

@@ -87,7 +87,7 @@ public class RequisitionService {
     return requisition;
   }
 
-  public Requisition submitRequisition (UUID requisitionId) {
+  public Requisition submitRequisition(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
