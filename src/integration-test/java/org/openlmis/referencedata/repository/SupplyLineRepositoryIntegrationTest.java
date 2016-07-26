@@ -77,7 +77,6 @@ public class SupplyLineRepositoryIntegrationTest
 
     supervisoryNode.setCode("nodeCode");
     supervisoryNode.setName("name");
-    supervisoryNode.setSupervisorCount(2);
     supervisoryNode.setFacility(facility);
     supervisoryNodeRepository.save(supervisoryNode);
 

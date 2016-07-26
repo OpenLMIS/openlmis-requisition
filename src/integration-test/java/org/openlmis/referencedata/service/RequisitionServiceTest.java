@@ -13,7 +13,6 @@ import org.openlmis.hierarchyandsupervision.repository.RightRepository;
 import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -21,7 +20,6 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.repository.CommentRepository;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -48,9 +46,6 @@ import java.util.List;
 @Transactional
 public class RequisitionServiceTest {
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-
-  @Autowired
-  private CommentRepository commentRepository;
 
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
@@ -118,7 +113,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
 
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisition.getId());
     Assert.assertTrue(deleted);
   }
 
@@ -127,7 +122,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisition.getId());
     Assert.assertFalse(deleted);
   }
 
@@ -161,8 +156,6 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
-
     requisitionService.reject(requisition.getId());
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
@@ -193,7 +186,8 @@ public class RequisitionServiceTest {
     requisition3.setSupervisoryNode(supervisoryNode);
     requisitionRepository.save(requisition3);
 
-    List<Requisition> requisitionList = requisitionService.getAuthorizedRequisitions(supervisoryNode);
+    List<Requisition> requisitionList =
+        requisitionService.getAuthorizedRequisitions(supervisoryNode);
     List<Requisition> expected = new ArrayList<>();
     expected.add(requisition);
     expected.add(requisition2);
@@ -261,6 +255,26 @@ public class RequisitionServiceTest {
     Assert.assertEquals(expected, comments);
   }*/
 
+  @Test
+  public void shouldAuthorizeRequisition() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    
+    requisitionService.authorize(requisition.getId());
+
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() {
+
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+
+    requisitionService.authorize(requisition.getId());
+  }
+
   private void createTestRequisition() {
     user = new User();
     user.setUsername("Username");
@@ -309,7 +323,6 @@ public class RequisitionServiceTest {
 
     supervisoryNode = new SupervisoryNode();
     supervisoryNode.setCode("Test");
-    supervisoryNode.setSupervisorCount(0);
     supervisoryNode.setFacility(facility);
     supervisoryNodeRepository.save(supervisoryNode);
 

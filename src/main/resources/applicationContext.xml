@@ -15,6 +15,13 @@
 
     <context:component-scan base-package="org.openlmis"/>
 
+    <bean id="openlmisDataSource" class="org.postgresql.ds.PGPoolingDataSource" destroy-method="close">
+        <property name="serverName" value="db"/>
+        <property name="databaseName" value="open_lmis"/>
+        <property name="user" value="${spring.datasource.username}"/>
+        <property name="password" value="${spring.datasource.password}"/>
+    </bean>
+
     <bean id="localeResolver"
           class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
         <property name="defaultLocale" value="${defaultLocale}"/>

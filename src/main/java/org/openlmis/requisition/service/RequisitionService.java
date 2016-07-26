@@ -99,14 +99,29 @@ public class RequisitionService {
     return requisition;
   }
 
-  public boolean tryDelete(Requisition requisition) {
+  public Requisition submitRequisition(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
+    } else {
+      logger.debug("Submitting a requisition with id " + requisitionId);
+      requisition.setStatus(RequisitionStatus.SUBMITTED);
+      requisitionRepository.save(requisition);
+      logger.debug("Requisition with id " + requisitionId + " submitted");
+      return requisition;
+    }
+  }
+
+  public boolean tryDelete(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+
     if (requisition == null) {
       logger.debug("Delete failed - " + requisitionNullMessage);
-    } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
+    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Delete failed - " + requisitionBadStatusMessage);
     } else {
-      logger.debug("Requisition deleted");
       requisitionRepository.delete(requisition);
+      logger.debug("Requisition deleted");
       return true;
     }
 
@@ -119,12 +134,12 @@ public class RequisitionService {
     if (requisition == null) {
       logger.debug("Skip failed - "
           + requisitionNullMessage);
-    } else if (!requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
+    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Skip failed - "
           + requisitionBadStatusMessage);
     } else if (!requisition.getProgram().getPeriodsSkippable()) {
-      logger.debug("Skip failed "
-          + "- requisition program does not allow skipping");
+      logger.debug("Skip failed - "
+              + "requisition program does not allow skipping");
     } else {
       logger.debug("Requisition skipped");
       requisition.setStatus(RequisitionStatus.SKIPPED);
@@ -139,7 +154,7 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
-    } else if (!requisition.getStatus().equals(RequisitionStatus.AUTHORIZED)) {
+    } else if (requisition.getStatus() != RequisitionStatus.AUTHORIZED) {
       throw new RequisitionException("Cannot reject requisition: " + requisitionId 
           + " .Requisition must be waiting for approval to be rejected");
     } else {
@@ -245,5 +260,18 @@ public class RequisitionService {
     }
 
     return requisitions;
+  }
+
+  public Requisition authorize(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
+    } else if (requisition.getStatus() != RequisitionStatus.SUBMITTED) {
+      throw new RequisitionException("Cannot authorize requisition: " + requisitionId
+        + " . Requisition must have submitted status to be authorized");
+    } else {
+      requisition.setStatus(RequisitionStatus.AUTHORIZED);
+      return requisitionRepository.save(requisition);
+    }
   }
 }

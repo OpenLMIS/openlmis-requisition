@@ -34,11 +34,6 @@ public class SupervisoryNode extends BaseEntity {
   @Setter
   private String description;
 
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  private Integer supervisorCount;
-
   @ManyToOne
   @JoinColumn(nullable = false, name = "facilityid")
   @Getter

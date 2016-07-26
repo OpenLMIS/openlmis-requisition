@@ -25,7 +25,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   private static final String requisitionTemplateRepository =
           "RequisitionTemplateRepositoryIntegrationTest";
   private static final String columnKey = "columnKey";
-  private static final SourceType source = SourceType.REFERENCE;
+  private static final SourceType source = SourceType.CALCULATED;
 
   @Autowired
   RequisitionTemplateRepository repository;
@@ -133,11 +133,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
-    assertEquals(column.getSource(), SourceType.CALCULATED);
-    requisitionTemplate.changeColumnSource(columnKey, SourceType.REFERENCE);
+    assertEquals(column.getSource(), source);
+    requisitionTemplate.changeColumnSource(columnKey, SourceType.USER_INPUT);
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(columnKey);
-    assertEquals(column.getSource(), SourceType.REFERENCE);
+    assertEquals(column.getSource(), SourceType.USER_INPUT);
   }
 
   @Test

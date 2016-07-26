@@ -1,5 +1,7 @@
 package org.openlmis.referencedata.repository;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.Product;
@@ -12,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
 
 public class ProgramProductRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<ProgramProduct> {

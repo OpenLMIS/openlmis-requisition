@@ -33,6 +33,7 @@ public interface UserRepository extends ReferenceDataRepository<User, UUID> {
   //Accessible via http://127.0.0.1:8080/api/users/search/findByVerified?verified={verified}
   Iterable<User> findByVerified(@Param("verified") boolean verified);
 
+
   @Override
   @RestResource
   <S extends User> S save(S entity);

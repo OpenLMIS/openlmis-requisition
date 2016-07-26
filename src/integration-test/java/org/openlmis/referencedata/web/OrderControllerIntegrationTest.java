@@ -422,10 +422,12 @@ public class OrderControllerIntegrationTest {
     Order resultOrder = orderRepository.findOne(firstOrder.getId());
     Assert.assertEquals(resultOrder.getStatus(), OrderStatus.SHIPPED);
 
-    Stock stock1 = stockRepository.findByStockInventoryAndProduct(firstStockInventory, firstProduct);
+    Stock stock1 = stockRepository
+        .findByStockInventoryAndProduct(firstStockInventory, firstProduct);
     Assert.assertEquals(stock1.getStoredQuantity().longValue(), 1111L);
 
-    Stock stock2 = stockRepository.findByStockInventoryAndProduct(firstStockInventory, secondProduct);
+    Stock stock2 = stockRepository
+        .findByStockInventoryAndProduct(firstStockInventory, secondProduct);
     Assert.assertEquals(stock2.getStoredQuantity().longValue(), 111111L);
   }
 
@@ -444,6 +446,7 @@ public class OrderControllerIntegrationTest {
         .build().expand(firstOrder.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
+
 
     restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
