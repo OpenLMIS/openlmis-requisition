@@ -795,7 +795,7 @@ resourceTypes:
                 description: Submit earlier initiated requisition.
                 body:
                     application/json:
-                        schema: requsition
+                        schema: requisition
                 responses:
                     "200":
                         headers:
