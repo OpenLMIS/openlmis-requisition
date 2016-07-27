@@ -69,15 +69,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
       + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
-  private final String SKIP_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/skip");
-  private final String REJECT_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/reject");
-  private final String SUBMIT_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/submit");
-  private final String AUTHORIZATION_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/authorize");
-  private final String DELETE_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
-  private final String CREATED_BY_LOGGED_USER_URL = addTokenToUrl(
+  private final String skipUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/skip");
+  private final String rejectUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/reject");
+  private final String submitUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/submit");
+  private final String authorizationUrl = addTokenToUrl(
+      BASE_URL + "/api/requisitions/{id}/authorize");
+  private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
+  private final String createdByLoggedUserUrl = addTokenToUrl(
       BASE_URL + "/api/requisitions/creator/{creatorId}");
-  private final String SEARCH_URL = addTokenToUrl(BASE_URL + "/api/requisitions/search");
-  private final String INITIATE_URL = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
+  private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
+  private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
 
   @Autowired
   private ProductRepository productRepository;
@@ -546,7 +547,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType("application/json")
             .pathParam("id", requisition.getId())
             .when()
-            .put(SKIP_URL)
+            .put(skipUrl)
             .then()
             .statusCode(200);
 
@@ -564,7 +565,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType("application/json")
             .pathParam("id", requisition.getId())
             .when()
-            .put(REJECT_URL)
+            .put(rejectUrl)
             .then()
             .statusCode(200);
 
@@ -578,7 +579,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
-    restTemplate.delete(DELETE_URL, id);
+    restTemplate.delete(deleteUrl, id);
 
     boolean exists = requisitionRepository.exists(id);
     Assert.assertFalse(exists);
@@ -591,7 +592,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
-    restTemplate.delete(DELETE_URL, id);
+    restTemplate.delete(deleteUrl, id);
   }
 
   private void testSubmit() throws JsonProcessingException {
@@ -604,7 +605,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String json = mapper.writeValueAsString(requisition);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SUBMIT_URL)
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(submitUrl)
         .build()
         .expand(requisition.getId().toString())
         .encode();
@@ -624,7 +625,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
+        restTemplate.exchange(createdByLoggedUserUrl, HttpMethod.GET, null,
             new ParameterizedTypeReference<List<Requisition>>() {
             }, user.getId());
 
@@ -638,7 +639,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByNoParameter() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL, HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
+        searchUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
     List<Requisition> requisitions = result.getBody();
@@ -649,7 +650,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByProgram() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&program={program}", HttpMethod.GET, null,
+        searchUrl + "&program={program}", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {}, program.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
@@ -665,7 +666,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByFacility() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&facility={facility}", HttpMethod.GET, null,
+        searchUrl + "&facility={facility}", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {}, facility2.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
@@ -681,7 +682,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByProgramAndFacility() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&program={program}&facility={facility}", HttpMethod.GET, null,
+        searchUrl + "&program={program}&facility={facility}", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {},
         program2.getId(), facility2.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
@@ -697,7 +698,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByCreatedDateRange() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&createdDateFrom=2015-03-04T12:00:00&createdDateTo=2016-01-04T12:00:00",
+        searchUrl + "&createdDateFrom=2015-03-04T12:00:00&createdDateTo=2016-01-04T12:00:00",
         HttpMethod.GET, null, new ParameterizedTypeReference<List<Requisition>>() {});
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
@@ -714,7 +715,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByProgramAndCreatedDate() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&program={program}&createdDateFrom=2015-06-20T12:00:00", HttpMethod.GET, null,
+        searchUrl + "&program={program}&createdDateFrom=2015-06-20T12:00:00", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {}, program.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
@@ -729,7 +730,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByFacilityAndCreatedDate() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&facility={facility}&createdDateTo=2016-02-20T12:00:00", HttpMethod.GET, null,
+        searchUrl + "&facility={facility}&createdDateTo=2016-02-20T12:00:00", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {}, facility.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
@@ -744,7 +745,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindByAllParameters() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&program={program}&facility={facility}&createdDateFrom=2015-03-20T12:00:00"
+        searchUrl + "&program={program}&facility={facility}&createdDateFrom=2015-03-20T12:00:00"
             + "&createdDateTo=2015-05-01T12:00:00", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {}, program.getId(), facility2.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
@@ -762,7 +763,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testFindEmptyResult() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
-        SEARCH_URL + "&facility={facility}&createdDateFrom=2015-06-20T12:00:00"
+        searchUrl + "&facility={facility}&createdDateFrom=2015-06-20T12:00:00"
             + "&createdDateTo=2016-05-01T12:00:00", HttpMethod.GET, null,
         new ParameterizedTypeReference<List<Requisition>>() {}, facility2.getId());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
@@ -776,7 +777,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RestTemplate restTemplate = new RestTemplate();
     requisitionRepository.delete(requisition);
     ResponseEntity<Requisition> result = restTemplate.exchange(
-        INITIATE_URL + "&facilityId={facilityId}&"
+        initiateUrl + "&facilityId={facilityId}&"
                 + "programId={programId}&periodId={periodId}&emergency=false",
         HttpMethod.POST, null, Requisition.class, facility.getId(),
             program.getId(), period.getId());
@@ -793,7 +794,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(AUTHORIZATION_URL)
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(authorizationUrl)
         .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);

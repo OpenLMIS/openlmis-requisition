@@ -19,6 +19,10 @@ public class MessageController {
   @Autowired
   private ExposedMessageSource messageSource;
 
+  /**
+   * Example usage of ExposedMessageSource.
+   * @return hello world message
+   */
   @PreAuthorize("principal.username == 'admin'")
   @RequestMapping("/hello")
   public String hello() {
