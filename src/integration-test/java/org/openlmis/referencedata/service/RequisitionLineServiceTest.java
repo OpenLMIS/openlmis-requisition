@@ -202,8 +202,8 @@ public class RequisitionLineServiceTest {
     requisitionLineService.initiateRequisitionLineFields(secondRequisition);
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
-            = requisitionTemplateRepository.findByProgram(
-        secondRequisition.getProgram()).getColumnsMap();
+        = requisitionTemplateRepository.findByProgram(secondRequisition.getProgram()
+    ).getColumnsMap();
 
     Assert.assertEquals(1, testRequisitionTemplateColumnHashMap.get(totalQuantityReceivedField)
             .getDisplayOrder());

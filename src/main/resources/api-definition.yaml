@@ -476,10 +476,19 @@ schemas:
           }
       }
 
-
+traits:
+    - secured:
+          queryParameters:
+              access_token:
+                  displayName: access_token
+                  description: OAuth2 access token
+                  type: string
+                  required: true
+                  repeat: false
 resourceTypes:
     - collection:
         get:
+            is: [ secured ]
             responses:
                 200:
                   description: Collection retrieved successfully
@@ -495,6 +504,7 @@ resourceTypes:
                     X-Content-Type-Options:
                     X-XSS-Protection:
         post:
+            is: [ secured ]
             body:
                 application/json:
                     schema: <<schema>>
@@ -509,12 +519,14 @@ resourceTypes:
                           schema: <<schema>>
     - member:
         get:
+            is: [ secured ]
             responses:
                 200:
                     body:
                         application/json:
                             schema: <<schema>>
         post:
+            is: [ secured ]
             body:
                 application/json:
                     schema: <<schema>>
@@ -524,6 +536,7 @@ resourceTypes:
                         application/json:
                             schema: <<schema>>
         delete:
+            is: [ secured ]
             responses:
                 200:
 
@@ -535,6 +548,7 @@ resourceTypes:
                 displayName: Order id
                 type: string
         get:
+            is: [ secured ]
             description: Get CSV from Order.
             responses:
               200:
@@ -551,6 +565,7 @@ resourceTypes:
     /search:
         /findBySupplyingFacility:
             get:
+                is: [ secured ]
                 description: Find Orders with matched SupplyingFacility.
                 queryParameters:
                     supplyingFacility:
@@ -577,6 +592,7 @@ resourceTypes:
 
         /findBySupplyingFacilityAndRequestingFacility:
             get:
+                is: [ secured ]
                 description: Find Orders with matched SupplyingFacility and RequestingFacility.
                 queryParameters:
                     supplyingFacility:
@@ -609,6 +625,7 @@ resourceTypes:
 
         /findBySupplyingFacilityAndProgram:
                     get:
+                        is: [ secured ]
                         description: Find Orders with matched SupplyingFacility and Program.
                         queryParameters:
                             supplyingFacility:
@@ -641,6 +658,7 @@ resourceTypes:
 
         /findBySupplyingFacilityAndRequestingFacilityAndProgram:
             get:
+                is: [ secured ]
                 description: Find Orders with matched SupplyingFacility, RequestingFacility and Program.
                 queryParameters:
                     supplyingFacility:
@@ -687,6 +705,7 @@ resourceTypes:
                 required: true
                 repeat: false
         get:
+            is: [ secured ]
             description: Display total days of period.
             responses:
                 "200":
@@ -706,6 +725,7 @@ resourceTypes:
     /search:
         /findByProcessingSchedule:
             get:
+                is: [ secured ]
                 description: Find Periods with matched ProcessingSchedule.
                 queryParameters:
                     processingSchedule:
@@ -727,6 +747,7 @@ resourceTypes:
 
         /findPreviousPeriods:
             get:
+                is: [ secured ]
                 description: Find previous Periods in given Schedule.
                 queryParameters:
                     processingSchedule:
@@ -752,6 +773,7 @@ resourceTypes:
                           X-XSS-Protection:
         /findFirst1ByOrderByEndDateDesc:
             get:
+                is: [ secured ]
                 description: Get last Period.
                 responses:
                     "200":
@@ -769,6 +791,7 @@ resourceTypes:
     displayName: ProductCategories
     /search/findByCode:
         get:
+            is: [ secured ]
             description: Find ProductCategories with matched Code.
             queryParameters:
                 code:
@@ -794,6 +817,7 @@ resourceTypes:
     /search:
         /findByProgram:
             get:
+                is: [ secured ]
                 description: Find ProgramProducts with matched Program.
                 queryParameters:
                     program:
@@ -819,6 +843,7 @@ resourceTypes:
                          X-XSS-Protection:
         /findByProgramAndFullSupply:
             get:
+                is: [ secured ]
                 description: Find ProgramProducts with matched Program.
                 queryParameters:
                     program:
@@ -859,6 +884,7 @@ resourceTypes:
                 required: true
                 repeat: false
         delete:
+            is: [ secured ]
             description: Delete chosen requisition.
             responses:
                 "204":
@@ -877,6 +903,7 @@ resourceTypes:
                 required: true
                 repeat: false
         put:
+            is: [ secured ]
             description: Skip chosen requisition period.
             responses:
                 "200":
@@ -897,6 +924,7 @@ resourceTypes:
                 required: true
                 repeat: false
         put:
+            is: [ secured ]
             description: Reject requisition which is waiting for approval.
             responses:
                 "200":
@@ -911,6 +939,7 @@ resourceTypes:
                       X-XSS-Protection:
     /{id}/submit:
             put:
+                is: [ secured ]
                 description: Submit earlier initiated requisition.
                 body:
                     application/json:
@@ -934,6 +963,7 @@ resourceTypes:
                 required: true
                 repeat: false
         get:
+            is: [ secured ]
             description: Search requisitions created by logged user.
             responses:
                 "200":
@@ -953,6 +983,7 @@ resourceTypes:
 
     /search:
         get:
+            is: [ secured ]
             description: Find requisitions matching all of provided parameters.
             queryParameters:
                 facility:
@@ -1066,6 +1097,7 @@ resourceTypes:
 
         /findByProcessingPeriodAndFacilityAndProgram:
             get:
+                is: [ secured ]
                 description: Find Requsition with matched Processing Period, Facility and Program.
                 queryParameters:
                     period:
@@ -1106,6 +1138,7 @@ resourceTypes:
     /search:
         /findByProgram:
             get:
+                is: [ secured ]
                 description: Find Requsition Template with matched and Program.
                 queryParameters:
                     program:
@@ -1140,6 +1173,7 @@ resourceTypes:
                 required: true
                 repeat: false
         get:
+            is: [ secured ]
             description: Display total days and months of schedule periods.
             responses:
               200:
@@ -1165,6 +1199,7 @@ resourceTypes:
     displayName: Supply Lines
     /search/findByProgramAndSupervisoryNode:
         get:
+                    is: [ secured ]
                     description: Find SupplyLines with matched Program and SupervisoryNode.
                     queryParameters:
                         program:
@@ -1198,6 +1233,7 @@ resourceTypes:
     /search:
         /findByFirstName:
             get:
+                is: [ secured ]
                 description: Search Users with matched FirstName
                 queryParameters:
                     firstName:
@@ -1217,6 +1253,7 @@ resourceTypes:
 
         /findByLastName:
             get:
+                is: [ secured ]
                 description: Search Users with matched LastName.
                 queryParameters:
                     lastName:
@@ -1236,6 +1273,7 @@ resourceTypes:
 
         /findByVerified:
             get:
+                is: [ secured ]
                 description: Search Users with matched Verified.
                 queryParameters:
                     verified:
@@ -1255,6 +1293,7 @@ resourceTypes:
 
         /findByActive:
             get:
+                is: [ secured ]
                 description: Search Users with matched Active.
                 queryParameters:
                     active:
@@ -1274,6 +1313,7 @@ resourceTypes:
 
         /findByHomeFacility:
             get:
+                is: [ secured ]
                 description: Search Users with matched HomeFacility.
                 queryParameters:
                     homeFacility:
@@ -1296,6 +1336,7 @@ resourceTypes:
 
         /findByUsername:
             get:
+                is: [ secured ]
                 description: Search Users with matched Username.
                 queryParameters:
                     username:
@@ -1315,6 +1356,7 @@ resourceTypes:
 
         /findByFirstNameAndLastName:
             get:
+                is: [ secured ]
                 description: Search Users with matched FirstName and LastName.
                 queryParameters:
                     firstName:

@@ -1,0 +1,81 @@
+/*
+Buttons
+
+Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be in the default color presented in section 1.1, with the exception of an edit action, cancel and disabled button. Disabled buttons are a little bit faded in comparison with their enabled equivalents. They usually contain text, but may also consist of the image itself. Buttons come in three sizes: default (typical for most of OpenLMIS buttons), small, and mini.
+
+markup:
+<form style="height: 180px;">
+  <input type="submit" class="btn btn-primary" value="Primary Button"/>
+  <input type="button" class="btn btn-cancel" value="Cancel Button"/>
+  <input type="button" class="btn btn-warning save-button" value="Warning Button"/>
+  <a class="btn btn-primary" href="">
+    <i class="icon-cog"></i>
+    <span>Configure Button</span>
+  </a>
+  </br>
+  </br>
+  <input type="submit" class="btn btn-primary disabled" value="Disabled Primary Button"/>
+  <input type="button" class="btn btn-cancel disabled" value="Disabled Cancel Button"/>
+  </br>
+  </br>
+  <input type="submit" class="btn btn-primary btn-small" value="Small Primary Button"/>
+  <input type="button" class="btn btn-danger btn-small" value="Small Danger Button"/>
+  </br>
+  </br>
+  <input type="button" class="btn btn-mini" value="Mini Button"/>
+  <div class="search-list" style="border: 0px;">
+    <a class="close-btn" style="left: 0px;" href=""></a>
+  </div>
+</form>
+
+Styleguide 1.3
+*/
+
+input.btn-primary {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+  background-color: #356b6f;
+  background-image: -moz-linear-gradient(top, #42a7ad, #356b6f);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#42a7ad), to(#356b6f));
+  background-image: -webkit-linear-gradient(top, #42a7ad, #356b6f);
+  background-image: -o-linear-gradient(top, #42a7ad, #356b6f);
+  background-image: linear-gradient(to bottom, #42a7ad, #356b6f);
+  background-repeat: repeat-x;
+  border-color: #42a7ad #42a7ad #356b6f;
+  border-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff42a7ad', endColorstr='#ff004484', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+input.btn-primary.disabled {
+  color: #ffffff;
+  background-color: #356b6f;
+}
+input.btn-cancel {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+  color: #FFFFFF;
+  background-color: #666666;
+  background-image: -moz-linear-gradient(top, #c5c5c5, #777777);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#c5c5c5), to(#777777));
+  background-image: -webkit-linear-gradient(top, #c5c5c5, #777777);
+  background-image: -o-linear-gradient(top, #c5c5c5, #777777);
+  background-image: linear-gradient(to bottom, #c5c5c5, #777777);
+  background-repeat: repeat-x;
+  border-color: #777777 #777777 #444444;
+  border-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffc5c5c5', endColorstr='#ff777777', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+input.btn-cancel.disabled {
+  color: #ffffff;
+  background-color: #777777;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+.search-list .close-btn {
+  height: 16px;
+  width: 16px;
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  opacity: 0.8;
+  background: url(../images/close-icon.png) no-repeat left top;
+  text-indent: -999em;
+}

@@ -1,0 +1,28 @@
+/*
+Icons
+
+This is collection of icons used in OpenLMIS.
+
+markup:
+<ul>
+  <li><i class="icon-ok"></i> - Ok</li>
+  <li><i class="icon-search"> - Search</i></li>
+  <li><i class="icon-cog"> - Configuration</i></li>
+  <li><i class="icon-resize-full"> - Full screen</i></li>
+</ul>
+
+Styleguide 1.5
+*/
+
+.icon-ok:before {
+  content: "\f00c";
+}
+.icon-search:before {
+  content: "\f002";
+}
+.icon-cog:before {
+  content: "\f013";
+}
+.icon-resize-full:before {
+  content: "\f065";
+}

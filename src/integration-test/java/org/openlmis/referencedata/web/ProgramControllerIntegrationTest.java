@@ -4,28 +4,20 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
-public class ProgramControllerIntegrationTest {
+public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String UPDATE_URL = System.getenv("BASE_URL") + "/api/programs/update";
+  private static final String UPDATE_URL = BASE_URL + "/api/programs/update";
 
   @Autowired
   private ProgramRepository programRepository;
@@ -77,6 +69,6 @@ public class ProgramControllerIntegrationTest {
 
   private ResponseEntity<Program> updateProgram(ProgramDto programDto) {
     RestTemplate restTemplate = new RestTemplate();
-    return restTemplate.postForEntity(UPDATE_URL, programDto, Program.class);
+    return restTemplate.postForEntity(addTokenToUrl(UPDATE_URL), programDto, Program.class);
   }
 }

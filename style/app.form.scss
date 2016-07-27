@@ -1,0 +1,69 @@
+/*
+Forms
+
+Base form elements which are used in OpenLMIS are presented below.
+
+markup:
+<form>
+	<legend>Example form elements</legend>
+		<label for="exampleTextInput" style="font-size:18px">Example text input elements</label>
+		<div id="exampleTextInput">		
+			<p>Text input 1:
+			<input type="text" /></p>
+			<p>Text input 2:
+			<input type="text" rnr-validator="positiveInteger" maxlength="8" required /></p>
+		</div>
+		<label for="exampleCombobox" style="font-size:18px">Example combo box element</label>
+		<div id="exampleCombobox">
+			<select>
+				<option value="option1">Option1</option>
+				<option value="option2">Option2</option>
+			</select>
+		</div>
+		<label for="exampleCheckBox" style="font-size:18px">Example check box elements</label>
+		<div id="exampleCheckBox">
+			<p><input type="checkbox" value="0" />Option 1</p>
+			<p><input type="checkbox" value="1" />Option 2</p>
+		</div>
+		<label for="radioInput" style="margin-top:10px;font-size:18px">Example radio elements</label>
+		<div id="radioInput" >
+			<p><input type="radio" name="radioExample" value="0" />Option 1</p>
+			<p><input type="radio" name="radioExample" value="1" />Option 2</p>
+		</div>
+</form>
+
+Styleguide 3.0
+*/
+
+input[rnr-validator="positiveInteger"] {
+  text-align: right;
+}
+
+input[type="radio"] {
+    margin: 0;
+}
+
+input[type="checkbox"] {
+    margin: 4px 0 0;
+    margin-top: 1px \9;
+    line-height: normal;
+    cursor: pointer;
+}
+
+select, input[type="text"] {
+    display: inline-block;
+    height: 20px;
+    padding: 4px 6px;
+    margin-bottom: 9px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #555;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+
+
+
+
