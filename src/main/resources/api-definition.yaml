@@ -261,7 +261,9 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "$ref":"requisition", "required": true, "title": "requisition" },
               "product": { "$ref":"product", "required": true, "title": "product" },
-              "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" }
+              "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" },
+              "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
+              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" }
           }
       }
 
@@ -289,6 +291,7 @@ schemas:
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "isDisplayed": { "type": "boolean", "required": false, "title": "isDisplayed" },
               "isDisplayRequired": { "type": "boolean", "required": false, "title": "isDisplayRequired" },
+              "canBeChangedByUser": { "type": "boolean", "required": false, "title": "canByChangedByUser" },
               "canChangeOrder": { "type": "boolean", "required": false, "title": "canChangeOrder" },
               "source": { "type": "string", "required": false, "title": "source" }
           }
@@ -722,6 +725,31 @@ resourceTypes:
                           X-Content-Type-Options:
                           X-XSS-Protection:
 
+        /findPreviousPeriods:
+            get:
+                description: Find previous Periods in given Schedule.
+                queryParameters:
+                    processingSchedule:
+                        displayName: processingSchedule
+                        type: string
+                        required: true
+                        repeat: false
+                    startDate:
+                        displayName: startDate
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
         /findFirst1ByOrderByEndDateDesc:
             get:
                 description: Get last Period.
@@ -1036,6 +1064,71 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
+        /findByProcessingPeriodAndFacilityAndProgram:
+            get:
+                description: Find Requsition with matched Processing Period, Facility and Program.
+                queryParameters:
+                    period:
+                        displayName: processingPeriod
+                        description: processingPeriod
+                        type: string
+                        required: true
+                        repeat: false
+                    facility:
+                        displayName: facility
+                        description: facility
+                        type: string
+                        required: true
+                        repeat: false
+                    program:
+                        displayName: program
+                        description: program
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+/requisitionTemplates:
+    displayName: Requisition Template
+    /search:
+        /findByProgram:
+            get:
+                description: Find Requsition Template with matched and Program.
+                queryParameters:
+                    program:
+                        displayName: program
+                        description: program
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 /schedules:
     displayName: Schedule
     /{id}/difference:

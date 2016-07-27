@@ -13,6 +13,7 @@ import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -86,15 +87,23 @@ public class RequisitionService {
       throw new RequisitionException("Period with period Id: " + periodId + ", does not exists");
     }
 
-    Requisition requisition = new Requisition();
+    Requisition requisition = requisitionRepository.
+        findByProcessingPeriodAndFacilityAndProgram(period, facility, program);
 
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setProgram(program);
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
+    if (emergency || requisition == null) {
+      requisition = new Requisition();
 
-    requisitionLineService.initiateRequisitionLineFields(requisition);
-    requisitionRepository.save(requisition);
+      requisition.setStatus(RequisitionStatus.INITIATED);
+      requisition.setProgram(program);
+      requisition.setFacility(facility);
+      requisition.setProcessingPeriod(period);
+
+      requisitionLineService.initiateRequisitionLineFields(requisition);
+      requisitionRepository.save(requisition);
+    } else {
+      throw new RequisitionException("Cannot initiate requisition."
+          + " Non emergency requisition with such parameters already exists");
+    }
 
     return requisition;
   }
@@ -116,7 +125,7 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      logger.debug("Delete failed - " + requisitionNullMessage);
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Delete failed - " + requisitionBadStatusMessage);
     } else {
@@ -285,4 +294,18 @@ public class RequisitionService {
       requisitionRepository.save(loadedRequisition);
     }
   }
+
+  private Requisition save(Requisition requisition) {
+    if (requisition != null) {
+      if (requisition.getRequisitionLines() != null) {
+        for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
+          requisitionLineService.save(requisition,requisitionLine);
+        }
+      }
+      return requisitionRepository.save(requisition);
+    } else {
+      return null;
+    }
+  }
+
 }

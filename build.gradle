@@ -155,39 +155,9 @@ sonarqube {
     }
 }
 
-def ramlToCopy = copySpec {
-    from 'src/main/resources'
-    include 'api-definition.yaml'
-    rename { 'api-definition-raml.yaml' }
-    expand([
-            baseUrl: "$System.env.BASE_URL",
-            schema: "\$schema",
-            ref: "\$ref"
-    ])
-}
-
-task copyRaml(type:Copy) {
-    with ramlToCopy
-    into 'src/main/resources'
-}
-
-task copyRamlForTest(type:Copy) {
-    with ramlToCopy
-    into 'build/resources/main'
-}
-
-task ramlToSwagger(type: Exec) {
-    description = 'Convert RAML to Swagger'
-    commandLine 'npm', 'run', 'runApiSpecConverter'
-}
-ramlToSwagger.dependsOn(npm_install, copyRaml)
-test.dependsOn(copyRamlForTest)
-integrationTest.dependsOn(copyRamlForTest)
-
 build.dependsOn jacocoTestReport
 // Makes sure checkstyle is run before build completes
 build.dependsOn check
-build.dependsOn ramlToSwagger
 
 pmd {
     toolVersion = '5.4.0'
@@ -203,3 +173,9 @@ tasks.withType(Pmd){
         html.enabled true
     }
 }
+
+apply from: "documentation.gradle"
+test.dependsOn(copyRamlToBuild)
+build.dependsOn ramlToSwagger
+build.dependsOn ramlToHtml
+build.dependsOn copyRamlHtmlToBuild

@@ -41,9 +41,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@SuppressWarnings("PMD.TooManyMethods")
 @Transactional
 public class RequisitionServiceTest {
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
@@ -92,6 +94,9 @@ public class RequisitionServiceTest {
   private Requisition requisition3;
   private SupervisoryNode supervisoryNode;
   private User user;
+  private Facility facility;
+  private Period period;
+  private Program program;
 
   /** Prepare the test environment. */
   @Before
@@ -124,6 +129,15 @@ public class RequisitionServiceTest {
     requisitionRepository.save(requisition);
 
     boolean deleted = requisitionService.tryDelete(requisition.getId());
+    Assert.assertFalse(deleted);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void testTryDeleteRequisitionDoesNotExist() {
+    UUID id = requisition.getId();
+    requisitionRepository.delete(id);
+
+    boolean deleted = requisitionService.tryDelete(id);
     Assert.assertFalse(deleted);
   }
 
@@ -243,6 +257,12 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
+  public void shouldNotInitiateRequisitionWhenItAlreadyExists() {
+    requisitionService.initiateRequisition(
+        facility.getId(), program.getId(), period.getId(), false);
+  }
+
+  @Test(expected = RequisitionException.class)
   public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
@@ -268,10 +288,15 @@ public class RequisitionServiceTest {
     user.setLastName("Lastname");
     user = userRepository.save(user);
 
-    Program program = new Program();
+    program = new Program();
     program.setCode(requisitionRepositoryName);
     program.setPeriodsSkippable(true);
     programRepository.save(program);
+
+    Program program2 = new Program();
+    program2.setCode("test code");
+    program2.setPeriodsSkippable(true);
+    programRepository.save(program2);
 
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
@@ -287,7 +312,7 @@ public class RequisitionServiceTest {
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
-    Facility facility = new Facility();
+    facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode(requisitionRepositoryName);
@@ -296,15 +321,16 @@ public class RequisitionServiceTest {
     facilityRepository.save(facility);
 
     Schedule schedule = new Schedule();
+    schedule.setName("scheduleName");
     schedule.setCode(requisitionRepositoryName);
-    schedule.setName("Test");
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
+    period = new Period();
     period.setProcessingSchedule(schedule);
-    period.setEndDate(LocalDate.of(2016, 2, 2));
-    period.setStartDate(LocalDate.of(2016, 2, 1));
-    period.setName("Test name");
+    period.setStartDate(LocalDate.of(2016, 1, 1));
+    period.setEndDate(LocalDate.of(2016, 1, 2));
+    period.setName("periodName");
+    period.setDescription("description");
     periodRepository.save(period);
 
     supervisoryNode = new SupervisoryNode();
@@ -322,14 +348,14 @@ public class RequisitionServiceTest {
     requisition2 = new Requisition();
     requisition2.setFacility(facility);
     requisition2.setProcessingPeriod(period);
-    requisition2.setProgram(program);
+    requisition2.setProgram(program2);
     requisition2.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition2);
 
     requisition3 = new Requisition();
     requisition3.setFacility(facility);
     requisition3.setProcessingPeriod(period);
-    requisition3.setProgram(program);
+    requisition3.setProgram(program2);
     requisition3.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition3);
   }

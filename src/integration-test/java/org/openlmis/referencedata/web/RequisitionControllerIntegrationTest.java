@@ -84,10 +84,10 @@ public class RequisitionControllerIntegrationTest {
   private static final String AUTHORIZATION_URL = BASE_URL + "/api/requisitions/{id}/authorize";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
-  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
+  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
-  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
@@ -311,12 +311,13 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testCorrectSubmit() throws JsonProcessingException {
+  public void testShouldSubmitCorrectRequisition() throws JsonProcessingException {
     testSubmit();
   }
 
   @Test
-  public void testSubmitWithNullRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullRequisitionLines()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
     requisition.setRequisitionLines(null);
@@ -332,7 +333,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullQuantityRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullQuantityInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -359,7 +361,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullBeginningBalanceRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -386,7 +389,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNegativeBeginningBalanceRequisitionLines()
+  public void testShouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine()
       throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A beginning balance must be a non-negative value.\"\n}";
@@ -415,7 +418,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullTotalReceivedQuantityRequisitionLines()
+  public void testShouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine()
       throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total received quantity must be entered prior to submission of a requisition.\"\n}";
@@ -442,7 +445,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNegativeTotalReceivedQuantityRequisitionLines()
+  public void testShouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine()
       throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total received quantity must be a non-negative value.\"\n}";
@@ -471,7 +474,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullStockOnHandRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullStockHandInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -498,7 +502,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullConsumedQuantityRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLinetest()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total consumed quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -525,7 +530,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullAttributesInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total losses and adjustments must be entered prior "
         + "to submission of a requisition.\"\n}";
@@ -637,7 +643,7 @@ public class RequisitionControllerIntegrationTest {
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null, 
+        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
             new ParameterizedTypeReference<List<Requisition>>() {
             }, user.getId());
 
@@ -876,10 +882,11 @@ public class RequisitionControllerIntegrationTest {
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
+    requisitionRepository.delete(requisition);
     ResponseEntity<Requisition> result = restTemplate.exchange(
         INITIATE_URL + "?facilityId={facilityId}&"
-                + "programId={programId}&periodId={periodId}&emergency=true",
-        HttpMethod.POST, null, Requisition.class, facility2.getId(),
+                + "programId={programId}&periodId={periodId}&emergency=false",
+        HttpMethod.POST, null, Requisition.class, facility.getId(),
             program.getId(), period.getId());
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
