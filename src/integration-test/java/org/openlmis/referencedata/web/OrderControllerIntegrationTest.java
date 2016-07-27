@@ -467,8 +467,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     HttpHeaders headers = new HttpHeaders();
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(
-        addTokenToUrl(RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
     ResponseEntity<?> result =  restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);

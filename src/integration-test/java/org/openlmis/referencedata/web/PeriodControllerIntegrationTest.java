@@ -37,9 +37,9 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private final String RESOURCE_URL = addTokenToUrl(BASE_URL + "/api/periods");
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
+  private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
@@ -94,7 +94,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
     HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
 
-    restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
+    restTemplate.postForEntity(resourceUrl, periodEntity, Period.class);
 
     secondPeriod.setProcessingSchedule(schedule);
 
@@ -103,7 +103,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
 
     ResponseEntity<Period> result = restTemplate.postForEntity(
-            RESOURCE_URL, secondPeriodEntity, Period.class);
+            resourceUrl, secondPeriodEntity, Period.class);
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Period savedPeriod = result.getBody();
@@ -127,7 +127,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
 
     RestTemplate restTemplate = new RestTemplate();
-    restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
+    restTemplate.postForEntity(resourceUrl, periodEntity, Period.class);
 
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 3));
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
@@ -137,7 +137,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
     HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
 
-    restTemplate.postForEntity(RESOURCE_URL, secondPeriodEntity, Period.class);
+    restTemplate.postForEntity(resourceUrl, secondPeriodEntity, Period.class);
   }
 
   @Test
