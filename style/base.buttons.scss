@@ -1,7 +1,7 @@
 /*
 Buttons
 
-Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be the default color presented at 1.1 section, with the exception of: an edit action button, a cancel button, or a disabled buttons (which are a little bit faded in comparison with primary or cancel button). There are two sizes of buttons. Most of OpenLMIS buttons are default size, but edit action button is smaller.
+Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be in the default color presented in section 1.1, with the exception of an edit action, cancel and disabled button. Disabled buttons are a little bit faded in comparison with their enabled equivalents. They usually contain text, but may also consist of the image itself. Buttons come in three sizes: default (typical for most of OpenLMIS buttons), small, and mini.
 
 markup:
 <form style="height: 180px;">
