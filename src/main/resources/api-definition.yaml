@@ -9,6 +9,20 @@ documentation:
       content: Welcome to the OpenLMIS requisition-service documentation.
 
 schemas:
+  - comment: |
+      {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "Comment",
+          "description": "A single comment",
+          "properties": {
+              "requisition": { "$ref":"requisition", "required": false, "title": "requisition" },
+              "author": { "$ref":"user", "required": false, "title": "author" },
+              "commentText": { "type": "string", "required": true, "title": "commentText" },
+              "createdDate": { "type": "string", "required": false, "title": "createdDate" }
+          }
+      }
+
   - facility: |
       {
           "type": "object",
@@ -944,6 +958,79 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+    /requisitions/{id}/approve:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        put:
+            description: Approve specified by id requisition.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+    /requisitions-for-approval:
+        get:
+            description: Get requisitions to approve for right supervisor.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+    /requisitions/{id}/comments:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        get:
+            description: Find Get all comments for specified requisition.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            description: Add comment to the requisition.
+            body:
+                application/json:
+                    schema: comment
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
                 "500":
                     headers:
                       X-Content-Type-Options:

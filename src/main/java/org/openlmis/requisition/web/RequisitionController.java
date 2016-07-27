@@ -5,7 +5,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
@@ -24,6 +23,8 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
@@ -42,7 +43,6 @@ import java.util.Map;
 import java.util.UUID;
 import javax.validation.Valid;
 
-
 @RepositoryRestController
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionController {
@@ -52,9 +52,6 @@ public class RequisitionController {
   RequisitionRepository requisitionRepository;
 
   @Autowired
-  CommentRepository commentRepository;
-
-  @Autowired
   @Qualifier("beforeSaveRequisitionValidator")
   RequisitionValidator validator;
 
@@ -62,9 +59,9 @@ public class RequisitionController {
   RequisitionService requisitionService;
 
   @Autowired
-  UserRepository userRepository;
+  private CommentRepository commentRepository;
 
-  @InitBinder
+  @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
   }
@@ -112,25 +109,6 @@ public class RequisitionController {
       return new ResponseEntity<Object>(requisition, HttpStatus.OK);
     } else {
       return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  /**
-   * Approve specified by id requisition.
-   */
-  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
-  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
-    }
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
-      requisition.setStatus(RequisitionStatus.APPROVED);
-      requisitionRepository.save(requisition);
-      logger.debug("Requisition with id " + requisitionId + " approved");
-      return new ResponseEntity<>(requisition, HttpStatus.OK);
-    } else {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -210,24 +188,17 @@ public class RequisitionController {
   /**
    * Add comment to the requisition.
    */
-  //@PreAuthorize("isAuthenticated()")
+  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
-                                         @PathVariable("id") UUID id) {
+                                         @PathVariable("id") UUID id, OAuth2Authentication auth) {
     Requisition requisition = requisitionRepository.findOne(id);
     comment.setRequisition(requisition);
-    /*User author = new User();
-    author.setId(loggedInUserId(request));
-    comment.setAuthor(author);*/ //TODO - logInUserID
 
-    User author = new User();
-    author.setUsername("maciejku");
-    author.setFirstName("maciek");
-    author.setLastName("dudzik");
-    author = userRepository.save(author);
-    comment.setAuthor(author);
-
+    User user = (User) auth.getPrincipal();
+    comment.setAuthor(user);
     commentRepository.save(comment);
+
     List<Comment> comments = requisitionService.getCommentsByReqId(id);
     return new ResponseEntity<>(comments, HttpStatus.OK);
   }
@@ -236,23 +207,37 @@ public class RequisitionController {
    * Get all comments for specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
-  public ResponseEntity<Object> getCommentsForARnr(@PathVariable("id") UUID id) {
+  public ResponseEntity<Object> getCommentsForRequisition(@PathVariable("id") UUID id) {
     List<Comment> comments = requisitionService.getCommentsByReqId(id);
     return new ResponseEntity<Object>(comments, HttpStatus.OK);
   }
 
   /**
+   * Approve specified by id requisition.
+   */
+  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
+  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+      requisition.setStatus(RequisitionStatus.APPROVED);
+      requisitionRepository.save(requisition);
+      logger.debug("Requisition with id " + requisitionId + " approved");
+      return new ResponseEntity<>(requisition, HttpStatus.OK);
+    } else {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
    * Get requisitions to approve for right supervisor.
    */
+  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions-for-approval", method = RequestMethod.GET)
-  public ResponseEntity<Object> listForApproval() {
-
-    User user = new User();
-    user.setUsername("maciejku");
-    user.setFirstName("maciek");
-    user.setLastName("dudzik");
-    user = userRepository.save(user); // TODO loggedInUserId(request)
-
+  public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
+    User user = (User) auth.getPrincipal();
     List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
     return new ResponseEntity<Object>(requisitions, HttpStatus.OK);
   }
