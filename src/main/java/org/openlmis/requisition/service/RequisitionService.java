@@ -104,7 +104,7 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      logger.debug("Delete failed - " + requisitionNullMessage);
+      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       logger.debug("Delete failed - " + requisitionBadStatusMessage);
     } else {

@@ -31,9 +31,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@SuppressWarnings("PMD.TooManyMethods")
 @Transactional
 public class RequisitionServiceTest {
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
@@ -97,6 +99,15 @@ public class RequisitionServiceTest {
     requisitionRepository.save(requisition);
 
     boolean deleted = requisitionService.tryDelete(requisition.getId());
+    Assert.assertFalse(deleted);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void testTryDeleteRequisitionDoesNotExist() {
+    UUID id = requisition.getId();
+    requisitionRepository.delete(id);
+
+    boolean deleted = requisitionService.tryDelete(id);
     Assert.assertFalse(deleted);
   }
 
