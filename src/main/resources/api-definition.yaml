@@ -184,7 +184,8 @@ schemas:
               "roundToZero": { "type": "boolean", "required": true, "title": "roundToZero" },
               "active": { "type": "boolean", "required": true, "title": "active" },
               "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
-              "tracer": { "type": "boolean", "required": true, "title": "tracer" }
+              "tracer": { "type": "boolean", "required": true, "title": "tracer" },
+              "productCategory": { "type": "object", "$ref": "#/schemas/productCategory", "required": true, "title": "productCategory" }
           }
       }
 
@@ -248,6 +249,7 @@ schemas:
               "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
               "processingPeriod": { "type": "object", "$ref": "#/schemas/period", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
+              "emergency": { "type": "boolean", "required": true, "title": "emergency" },
               "creator": { "type": "object", "$ref": "#/schemas/user", "required": false, "title": "creator" },
               "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "object", "$ref":"#/schemas/requisitionLine" }, "uniqueItems": false }
           }
@@ -471,6 +473,38 @@ schemas:
           "description": "A list of requisitions",
           "items": {
               "type": "object", "$ref": "#/schemas/requisition"
+          }
+      }
+
+  - template: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "Template",
+          "description": "A single template",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "name": { "type": "string", "required": true, "unique": true, "title": "name" },
+              "data": { "type": "array", "required": false, "title": "data", "items": { "type": "byte"}, "uniqueItems": false },
+              "templateParameters": { "type": "array", "required": false, "title": "templateParameters", "items": { "type": "object", "$ref": "#/schemas/templateParameter" }, "uniqueItems": false },
+              "type": { "type": "string", "required": false, "title": "type" },
+              "description": { "type": "string", "required": false, "title": "description" }
+          }
+      }
+
+  - templateParameter: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "TemplateParameter",
+          "description": "A single templateParameter",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "template": { "type": "object", "$ref": "#/schemas/template", "required": true },
+              "name": { "type": "string", "required": false, "title": "name" },
+              "displayName": { "type": "string", "required": false, "title": "displayName" },
+              "defaultValue": { "type": "string", "required": false, "title": "defaultValue" },
+              "dataType": { "type": "string", "required": false, "title": "dataType" },
+              "selectSql": { "type": "string", "required": false, "title": "selectSql" },
+              "description": { "type": "string", "required": false, "title": "description" }
           }
       }
 
@@ -1417,3 +1451,64 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+
+/proofOfDeliveries:
+    displayName: Proof Of Delivery
+    /{id}/print:
+        uriParameters:
+              id:
+                  displayName: proofOfDeliveryId
+                  type: string
+                  required: true
+                  repeat: false
+        get:
+            is: [ secured ]
+            description: Print proof of delivery to a pdf file.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+/templates:
+    displayName: Report Template
+    post:
+          is: [ secured ]
+          description: Add report template to database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    file:
+                         displayName: Template with ".jrxml" format
+                         type: file
+                         required: false
+                         repeat: false
+                    name:
+                         displayName: Name of Template in database
+                         type: string
+                         required: false
+                         repeat: false
+                    description:
+                         displayName: Descryption of Template
+                         type: string
+                         required: false
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
