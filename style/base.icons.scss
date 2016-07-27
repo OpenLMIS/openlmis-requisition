@@ -4,8 +4,9 @@ Icons
 This is collection of icons used in OpenLMIS.
 
 markup:
-<p class="icon-ok"/>
-<p class="icon-search"/>
+<i class="icon-ok"/>
+<i class="icon-search"/>
+<i class="icon-cog"/>
 
 Styleguide 1.5
 */
@@ -15,4 +16,7 @@ Styleguide 1.5
 }
 .icon-search:before {
   content: "\f002";
+}
+.icon-cog:before {
+  content: "\f013";
 }

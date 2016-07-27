@@ -4,9 +4,16 @@ Buttons
 Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be the default color presented at 1.1 section, with the exception of: an edit action button, a cancel button, or a disabled buttons (which are a little bit faded in comparison with primary or cancel button). There are two sizes of buttons. Most of OpenLMIS buttons are default size, but edit action button is smaller.
 
 markup:
-<form style="height: 140px;">
+<form style="height: 180px;">
   <input type="submit" class="btn btn-primary" value="Primary Button"/>
   <input type="button" class="btn btn-cancel" value="Cancel Button"/>
+  <input type="button" class="btn btn-warning save-button" value="Warning Button"/>
+  <a class="btn btn-primary" href="">
+    <i class="icon-cog"></i>
+    <span>Configure Button</span>
+  </a>
+  </br>
+  </br>
   <input type="submit" class="btn btn-primary disabled" value="Disabled Primary Button"/>
   <input type="button" class="btn btn-cancel disabled" value="Disabled Cancel Button"/>
   </br>
