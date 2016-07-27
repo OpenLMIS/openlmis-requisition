@@ -117,15 +117,6 @@ public class RequisitionController {
   }
 
   /**
-   * Searching requisitions created by logged user.
-   */
-  @RequestMapping(value = "/requisitions/creator/{creatorId}", method = RequestMethod.GET)
-  public ResponseEntity<?> createdByLoggedUser(@PathVariable("creatorId") UUID id) {
-    Iterable<Requisition> result = requisitionRepository.findByCreatorId(id);
-    return new ResponseEntity<>(result, HttpStatus.OK);
-  }
-
-  /**
    * Finds requisitions matching all of provided parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)

@@ -13,8 +13,6 @@ import java.util.UUID;
 public interface RequisitionRepository
     extends PagingAndSortingRepository<Requisition, UUID> {
 
-  Iterable<Requisition> findByCreatorId(@Param("id") UUID id);
-
   Requisition findByProcessingPeriodAndFacilityAndProgram(
       @Param("processingPeriod") Period processingPeriod,
       @Param("facility")Facility facility,

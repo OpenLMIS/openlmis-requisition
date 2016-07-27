@@ -983,31 +983,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-    /creator/{creatorId}:
-        uriParameters:
-            creatorId:
-                displayName: creatorId
-                type: string
-                required: true
-                repeat: false
-        get:
-            is: [ secured ]
-            description: Search requisitions created by logged user.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
 
     /search:
         get:

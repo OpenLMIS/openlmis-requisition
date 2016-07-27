@@ -17,8 +17,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -77,8 +75,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String authorizationUrl = addTokenToUrl(
       BASE_URL + "/api/requisitions/{id}/authorize");
   private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
-  private final String createdByLoggedUserUrl = addTokenToUrl(
-      BASE_URL + "/api/requisitions/creator/{creatorId}");
   private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
 
@@ -113,9 +109,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private FacilityTypeRepository facilityTypeRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   ProductCategoryRepository productCategoryRepository;
 
   private RamlDefinition ramlDefinition;
@@ -131,7 +124,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Program program2 = new Program();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
-  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -141,9 +133,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     restAssured = ramlDefinition.createRestAssured();
 
     cleanUp();
-
-    Assert.assertEquals(1, userRepository.count());
-    user = userRepository.findAll().iterator().next();
 
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -226,7 +215,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
-    requisition.setCreator(user);
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
@@ -621,20 +609,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertNotNull(savedRequisition.getId());
     Assert.assertEquals(requisition.getId(), savedRequisition.getId());
     Assert.assertEquals(RequisitionStatus.SUBMITTED, savedRequisition.getStatus());
-  }
-
-  @Test
-  public void testSearchByCreatorId() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(createdByLoggedUserUrl, HttpMethod.GET, null,
-            new ParameterizedTypeReference<List<Requisition>>() {
-            }, user.getId());
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-
-    List<Requisition> requisitions = result.getBody();
-    Assert.assertEquals(1, requisitions.size());
   }
 
   @Test
