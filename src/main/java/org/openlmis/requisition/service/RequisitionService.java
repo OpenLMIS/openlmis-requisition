@@ -274,4 +274,15 @@ public class RequisitionService {
       return requisitionRepository.save(requisition);
     }
   }
+
+  /**
+   * Releasing the Requisitions.
+   */
+  public void releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+    for (Requisition requisition : requisitionList) {
+      Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
+      loadedRequisition.setStatus(RequisitionStatus.RELEASED);
+      requisitionRepository.save(loadedRequisition);
+    }
+  }
 }

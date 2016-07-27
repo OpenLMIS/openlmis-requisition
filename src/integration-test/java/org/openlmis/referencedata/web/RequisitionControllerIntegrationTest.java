@@ -25,6 +25,7 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
+import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -32,6 +33,7 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.repository.CommentRepository;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -62,7 +64,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -86,6 +90,9 @@ public class RequisitionControllerIntegrationTest {
   private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
+  private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
+  private static final String INSERT_COMMENT = BASE_URL + "/api/requisitions/{id}/comments";
+  private static final String APPROVE_REQUISITION = BASE_URL + "/api/requisitions/{id}/approve";
 
   @Autowired
   private ProductRepository productRepository;
@@ -123,6 +130,9 @@ public class RequisitionControllerIntegrationTest {
   @Autowired
   ProductCategoryRepository productCategoryRepository;
 
+  @Autowired
+  private CommentRepository commentRepository;
+
   private RamlDefinition ramlDefinition;
   private RestAssuredClient restAssured;
 
@@ -136,7 +146,7 @@ public class RequisitionControllerIntegrationTest {
   private Program program2 = new Program();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
-  private User user = new User();
+  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -147,11 +157,8 @@ public class RequisitionControllerIntegrationTest {
 
     cleanUp();
 
-    user.setUsername("testUser");
-    user.setPassword("password");
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    user = userRepository.findAll().iterator().next();
 
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -288,6 +295,7 @@ public class RequisitionControllerIntegrationTest {
    */
   @After
   public void cleanUp() {
+    commentRepository.deleteAll();
     requisitionLineRepository.deleteAll();
     productRepository.deleteAll();
     requisitionRepository.deleteAll();
@@ -297,7 +305,6 @@ public class RequisitionControllerIntegrationTest {
     facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
-    userRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     productCategoryRepository.deleteAll();
@@ -310,7 +317,7 @@ public class RequisitionControllerIntegrationTest {
 
   @Test
   public void testSubmitWithNullRequisitionLines() throws JsonProcessingException {
-    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
     requisition.setRequisitionLines(null);
     requisition = requisitionRepository.save(requisition);
@@ -325,8 +332,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
-    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+  public void testSubmitWithNullQuantityRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
@@ -349,12 +356,177 @@ public class RequisitionControllerIntegrationTest {
       String response = excp.getResponseBodyAsString();
       assertEquals(expectedExceptionMessage, response);
     }
+  }
 
+  @Test
+  public void testSubmitWithNullBeginningBalanceRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNegativeBeginningBalanceRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A beginning balance must be a non-negative value.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(-1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNullTotalReceivedQuantityRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total received quantity must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNegativeTotalReceivedQuantityRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total received quantity must be a non-negative value.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(-1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNullStockOnHandRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testSubmitWithNullConsumedQuantityRequisitionLines() throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total consumed quantity must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLine.setStockOnHand(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
   @Test
   public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
-    String expectedExceptionMessage = "{\n  \"requisitionLines\" : "
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total losses and adjustments must be entered prior "
         + "to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -484,6 +656,95 @@ public class RequisitionControllerIntegrationTest {
 
     List<Requisition> requisitions = result.getBody();
     Assert.assertEquals(4, requisitions.size());
+  }
+
+  private void createComment(User author, Requisition req, String commentText) {
+    Comment comment = new Comment();
+    comment.setAuthor(author);
+    comment.setRequisition(req);
+    comment.setCommentText(commentText);
+    commentRepository.save(comment);
+  }
+
+  @Test
+  public void getCommentsForRequisitionTest() {
+    createComment(user, requisition, "First comment");
+    createComment(user, requisition, "Second comment");
+
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(INSERT_COMMENT)
+        .build().expand(requisition.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+    ResponseEntity<Object> result =
+        restTemplate.exchange(uri, HttpMethod.GET, entity, Object.class);
+
+    List<LinkedHashMap<Object,Object>> comments =
+        (List<LinkedHashMap<Object,Object>>) result.getBody();
+
+    Assert.assertEquals("First comment", comments.get(0).get("commentText"));
+    Assert.assertEquals("Second comment", comments.get(1).get("commentText"));
+  }
+
+  //TODO autorycazja
+  @Test
+  public void insertCommentTest() throws JsonProcessingException {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    createComment(user, requisition, "First comment");
+    Comment userPostComment = new Comment();
+    userPostComment.setCommentText("User comment");
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+    String json = mapper.writeValueAsString(userPostComment);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(INSERT_COMMENT)
+        .build()
+        .expand(requisition.getId().toString())
+        .encode();
+    String uri = uriComponents.toUriString();
+
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<Object> result =
+        restTemplate.exchange(uri, HttpMethod.POST, entity, Object.class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    List<LinkedHashMap<Object,Object>> comments =
+        (List<LinkedHashMap<Object,Object>>) result.getBody();
+
+    Assert.assertEquals("First comment", comments.get(0).get("commentText"));
+    Assert.assertEquals("User comment", comments.get(1).get("commentText"));
+  }
+
+  //TODO autorycazja
+  @Test
+  public void approveRequisitionTest() {
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(APPROVE_REQUISITION)
+        .build().expand(requisition.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+    ResponseEntity<Requisition> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Requisition approvedRequisition = result.getBody();
+    Assert.assertNotNull(approvedRequisition.getId());
+    Assert.assertEquals(requisition.getId(), approvedRequisition.getId());
+    Assert.assertEquals(RequisitionStatus.APPROVED, approvedRequisition.getStatus());
   }
 
   @Test

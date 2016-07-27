@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -230,31 +231,6 @@ public class RequisitionServiceTest {
     Assert.assertEquals(expected, requisitionList);
   }
 
- /* @Test
-  @Transactional
-  public void getCommentsByReqIdTest() {
-    Comment comment = new Comment();
-    comment.setAuthor(user);
-    comment.setRequisition(requisition);
-    comment.setCommentText("First comment");
-    commentRepository.save(comment);
-
-    Comment comment1 = new Comment();
-    comment1.setAuthor(user);
-    comment1.setRequisition(requisition);
-    comment1.setCommentText("Second comment");
-    commentRepository.save(comment1);
-
-    requisitionRepository.save(requisition);
-
-    List<Comment> comments = requisitionService.getCommentsByReqId(requisition.getId());
-    List<Comment> expected = new ArrayList<>();
-    expected.add(comment);
-    expected.add(comment1);
-
-    Assert.assertEquals(expected, comments);
-  }*/
-
   @Test
   public void shouldAuthorizeRequisition() {
 
@@ -273,6 +249,16 @@ public class RequisitionServiceTest {
     requisitionRepository.save(requisition);
 
     requisitionService.authorize(requisition.getId());
+  }
+
+  @Test
+  public void shouldReleaseRequisitionsAsOrder() {
+    Assert.assertNotEquals(RequisitionStatus.RELEASED, requisition.getStatus());
+    List<Requisition> requisitions = Collections.singletonList(requisition);
+    requisitionService.releaseRequisitionsAsOrder(requisitions);
+
+    requisition = requisitionRepository.findOne(requisition.getId());
+    Assert.assertEquals(RequisitionStatus.RELEASED, requisition.getStatus());
   }
 
   private void createTestRequisition() {

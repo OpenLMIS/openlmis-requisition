@@ -27,6 +27,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -45,7 +46,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE})
+  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE}, fetch = FetchType.EAGER)
   @Getter
   @Setter
   private Set<RequisitionLine> requisitionLines;
@@ -59,12 +60,6 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   private Facility facility;
-
-  @OneToOne
-  @JoinColumn(name = "supervisoryNodeId")
-  @Getter
-  @Setter
-  private SupervisoryNode supervisoryNode;
 
   @OneToOne
   @JoinColumn(name = "programId", nullable = false)
@@ -100,14 +95,15 @@ public class Requisition extends BaseEntity {
   @Setter
   private String remarks;
 
-  @Column
-  @Getter
-  @Setter
-  private Long approvedQuantity;
-
   Requisition(UUID id) {
     this.setId(id);
   }
+
+  @ManyToOne
+  @JoinColumn(name = "supervisoryNodeId")
+  @Getter
+  @Setter
+  private SupervisoryNode supervisoryNode;
 
   @PrePersist
   private void prePersist() {

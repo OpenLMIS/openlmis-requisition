@@ -92,8 +92,8 @@ public class SupplyLineRepositoryIntegrationTest
   @Test
   public void findByProgramAndSupervisoryNode() {
     repository.save(generateInstance());
-    Iterable<SupplyLine> iterable =
+    SupplyLine supplyLine =
         repository.findByProgramAndSupervisoryNode(program, supervisoryNode);
-    Assert.assertTrue(iterable.iterator().hasNext());
+    Assert.assertNotNull(supplyLine);
   }
 }

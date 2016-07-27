@@ -196,6 +196,7 @@ public class RequisitionController {
     comment.setRequisition(requisition);
 
     User user = (User) auth.getPrincipal();
+
     comment.setAuthor(user);
     commentRepository.save(comment);
 
@@ -215,6 +216,7 @@ public class RequisitionController {
   /**
    * Approve specified by id requisition.
    */
+  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
