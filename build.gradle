@@ -182,6 +182,7 @@ task ramlToSwagger(type: Exec) {
 }
 ramlToSwagger.dependsOn(npm_install, copyRaml)
 test.dependsOn(copyRamlForTest)
+integrationTest.dependsOn(copyRamlForTest)
 
 build.dependsOn jacocoTestReport
 // Makes sure checkstyle is run before build completes
