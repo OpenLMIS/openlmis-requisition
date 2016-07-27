@@ -862,6 +862,21 @@ resourceTypes:
 
 /requisitions:
     displayName: Requisition
+    /submitted:
+        get:
+            is: [ secured ]
+            description: Get all requisitions with submitted status.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /{id}:
         uriParameters:
             id:
@@ -941,6 +956,33 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+    /{id}/authorize:
+            uriParameters:
+                id:
+                    displayName: requisition Id
+                    type: string
+                    required: true
+                    repeat: false
+            put:
+                is: [ secured ]
+                description: Authorize submitted requisition.
+                body:
+                    application/json:
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
     /creator/{creatorId}:
         uriParameters:
             creatorId:
@@ -1007,6 +1049,32 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+        /findByStatus:
+            get:
+                is: [ secured ]
+                description: Find Requsitions with matched status.
+                queryParameters:
+                    status:
+                        displayName: status
+                        description: status
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
         /findByProcessingPeriodAndFacilityAndProgram:
             get:
                 is: [ secured ]

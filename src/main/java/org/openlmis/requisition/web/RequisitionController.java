@@ -199,21 +199,23 @@ public class RequisitionController {
   }
 
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
-  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId) {
+  public ResponseEntity<?> authorizeRequisition(@RequestBody Requisition requisitionDto,
+                                                BindingResult bindingResult,
+                                                @PathVariable("id") UUID requisitionId) {
 
     if (requisitionId == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
-    Requisition requisition;
     try {
-      requisition = requisitionService.authorize(requisitionId);
+      requisitionDto = requisitionService.authorize(requisitionId, requisitionDto,
+          bindingResult.hasErrors());
+
       logger.info("Requisition: " +  requisitionId + " authorize.");
 
     } catch (RequisitionException ex) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<>(requisition, HttpStatus.OK);
+    return new ResponseEntity<>(requisitionDto, HttpStatus.OK);
 
   }
 }

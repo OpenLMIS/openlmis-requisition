@@ -169,7 +169,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
     
-    requisitionService.authorize(requisition.getId());
+    requisitionService.authorize(requisition.getId(), requisition, false);
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -186,7 +186,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
 
-    requisitionService.authorize(requisition.getId());
+    requisitionService.authorize(requisition.getId(), requisition, false);
   }
 
   @Test

@@ -191,16 +191,20 @@ public class RequisitionService {
     return entityManager.createQuery(query).getResultList();
   }
 
-  public Requisition authorize(UUID requisitionId) {
+  public Requisition authorize(UUID requisitionId, Requisition requisitionDto,
+                               boolean validationErrors) {
+
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
     } else if (requisition.getStatus() != RequisitionStatus.SUBMITTED) {
       throw new RequisitionException("Cannot authorize requisition: " + requisitionId
         + " . Requisition must have submitted status to be authorized");
+    } else if (requisitionDto == null || validationErrors) {
+      throw new RequisitionException("Requisition object is not valid.");
     } else {
-      requisition.setStatus(RequisitionStatus.AUTHORIZED);
-      return requisitionRepository.save(requisition);
+      requisitionDto.setStatus(RequisitionStatus.AUTHORIZED);
+      return requisitionRepository.save(requisitionDto);
     }
   }
 

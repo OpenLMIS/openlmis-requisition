@@ -57,6 +57,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +73,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String skipUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/skip");
   private final String rejectUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/reject");
   private final String submitUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/submit");
+  private final String submittedUrl = addTokenToUrl(BASE_URL + "/api/requisitions/submitted");
   private final String authorizationUrl = addTokenToUrl(
       BASE_URL + "/api/requisitions/{id}/authorize");
   private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
@@ -788,19 +790,41 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testAuthorize() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
+  public void testGetSubmittedRequisitions() throws JsonProcessingException {
+
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    ResponseEntity<Requisition[]> result = restTemplate.getForEntity(
+        submittedUrl, Requisition[].class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Iterable<Requisition> requisitions = Arrays.asList(result.getBody());
+    Assert.assertTrue(requisitions.iterator().hasNext());
+  }
+
+  @Test
+  public void testAuthorize() throws JsonProcessingException {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    String json = mapper.writeValueAsString(requisition);
 
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(authorizationUrl)
         .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    ResponseEntity<Object> result =
-        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<Requisition> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
