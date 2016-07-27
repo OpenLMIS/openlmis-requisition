@@ -83,7 +83,7 @@ public class RequisitionControllerIntegrationTest {
   private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
-  private static final String INITIATE_URL = BASE_URL + "/api/requisitions";
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";

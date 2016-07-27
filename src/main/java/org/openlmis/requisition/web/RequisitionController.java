@@ -65,11 +65,11 @@ public class RequisitionController {
    * @param emergency Boolean indicating emergency status of requisition
    * @return result
    */
-  @RequestMapping(value = "/requisitions", method = POST)
+  @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
                                        @RequestParam("programId") UUID programId,
                                        @RequestParam("periodId") UUID periodId,
-                                       @RequestParam("emergency") Boolean emergency) {
+                                       @RequestParam(value = "emergency", required = false) Boolean emergency) {
     try {
 
       Requisition requisition = requisitionService.initiateRequisition(
