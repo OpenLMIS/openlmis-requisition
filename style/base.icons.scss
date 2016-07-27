@@ -1,0 +1,18 @@
+/*
+Icons
+
+This is collection of icons used in OpenLMIS.
+
+markup:
+<p class="icon-ok"/>
+<p class="icon-search"/>
+
+Styleguide 1.5
+*/
+
+.icon-ok:before {
+  content: "\f00c";
+}
+.icon-search:before {
+  content: "\f002";
+}
