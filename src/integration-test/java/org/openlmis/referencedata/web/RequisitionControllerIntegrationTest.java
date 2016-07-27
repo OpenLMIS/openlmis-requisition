@@ -301,12 +301,13 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testCorrectSubmit() throws JsonProcessingException {
+  public void testShouldSubmitCorrectRequisition() throws JsonProcessingException {
     testSubmit();
   }
 
   @Test
-  public void testSubmitWithNullRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullRequisitionLines()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
     requisition.setRequisitionLines(null);
@@ -322,7 +323,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullQuantityRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullQuantityInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -349,7 +351,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullBeginningBalanceRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -376,7 +379,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNegativeBeginningBalanceRequisitionLines()
+  public void testShouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine()
       throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A beginning balance must be a non-negative value.\"\n}";
@@ -405,7 +408,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullTotalReceivedQuantityRequisitionLines()
+  public void testShouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine()
       throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total received quantity must be entered prior to submission of a requisition.\"\n}";
@@ -432,7 +435,7 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNegativeTotalReceivedQuantityRequisitionLines()
+  public void testShouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine()
       throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total received quantity must be a non-negative value.\"\n}";
@@ -461,7 +464,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullStockOnHandRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullStockHandInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -488,7 +492,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithNullConsumedQuantityRequisitionLines() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLinetest()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total consumed quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
@@ -515,7 +520,8 @@ public class RequisitionControllerIntegrationTest {
   }
 
   @Test
-  public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullAttributesInRequisitionLine()
+      throws JsonProcessingException {
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
         + "\"A total losses and adjustments must be entered prior "
         + "to submission of a requisition.\"\n}";
