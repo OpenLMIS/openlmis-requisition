@@ -59,7 +59,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -73,8 +72,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
       + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
-  private final String INSERT_COMMENT = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/comments");
-  private final String APPROVE_REQUISITION = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/approve");
+  private final String insertComment = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/comments");
+  private final String approveRequisition =
+      addTokenToUrl(BASE_URL + "/api/requisitions/{id}/approve");
   private final String SKIP_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/skip");
   private final String REJECT_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/reject");
   private final String SUBMIT_URL = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/submit");
@@ -84,6 +84,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       BASE_URL + "/api/requisitions/creator/{creatorId}");
   private final String SEARCH_URL = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String INITIATE_URL = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
+  private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
 
   @Autowired
   private ProductRepository productRepository;
@@ -673,7 +674,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(INSERT_COMMENT)
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(insertComment)
         .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -683,11 +684,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<LinkedHashMap<Object,Object>> comments =
         (List<LinkedHashMap<Object,Object>>) result.getBody();
 
-    Assert.assertEquals("First comment", comments.get(0).get("commentText"));
-    Assert.assertEquals("Second comment", comments.get(1).get("commentText"));
+    Assert.assertEquals("First comment", comments.get(0).get(COMMENT_TEXT_FIELD_NAME));
+    Assert.assertEquals("Second comment", comments.get(1).get(COMMENT_TEXT_FIELD_NAME));
   }
 
-  //TODO autorycazja
   @Test
   public void insertCommentTest() throws JsonProcessingException {
     HttpHeaders headers = new HttpHeaders();
@@ -695,7 +695,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    createComment(user, requisition, "First comment");
+    createComment(user, requisition, "Previous comment");
     Comment userPostComment = new Comment();
     userPostComment.setCommentText("User comment");
 
@@ -704,7 +704,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String json = mapper.writeValueAsString(userPostComment);
     HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(INSERT_COMMENT)
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(insertComment)
         .build()
         .expand(requisition.getId().toString())
         .encode();
@@ -718,11 +718,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<LinkedHashMap<Object,Object>> comments =
         (List<LinkedHashMap<Object,Object>>) result.getBody();
 
-    Assert.assertEquals("First comment", comments.get(0).get("commentText"));
-    Assert.assertEquals("User comment", comments.get(1).get("commentText"));
+    Assert.assertEquals("Previous comment", comments.get(0).get(COMMENT_TEXT_FIELD_NAME));
+    Assert.assertEquals("User comment", comments.get(1).get(COMMENT_TEXT_FIELD_NAME));
   }
 
-  //TODO autorycazja
+
   @Test
   public void approveRequisitionTest() {
     RestTemplate restTemplate = new RestTemplate();
@@ -730,7 +730,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(APPROVE_REQUISITION)
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(approveRequisition)
         .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
     HttpEntity<String> entity = new HttpEntity<>(headers);
