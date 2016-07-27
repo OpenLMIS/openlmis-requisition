@@ -133,7 +133,7 @@ public class RequisitionTemplate extends BaseEntity {
    * @param key Key to column which needs a new name.
    * @param source New source for column.
    */
-  public void changeColumnSource(String key, String source) {
+  public void changeColumnSource(String key, SourceType source) {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setSource(source);
     columnsMap.put(key, column);

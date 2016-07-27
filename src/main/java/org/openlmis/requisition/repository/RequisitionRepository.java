@@ -1,7 +1,10 @@
 package org.openlmis.requisition.repository;
 
+import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
@@ -12,6 +15,10 @@ public interface RequisitionRepository
 
   Iterable<Requisition> findByCreatorId(@Param("id") UUID id);
 
-  Requisition findByProcessingPeriod(@Param("processingPeriod") Period processingPeriod);
+  Requisition findByProcessingPeriodAndFacilityAndProgram(
+      @Param("processingPeriod") Period processingPeriod,
+      @Param("facility")Facility facility,
+      @Param("program")Program program);
 
+  Iterable<Requisition> findByStatus(@Param("status") RequisitionStatus status);
 }

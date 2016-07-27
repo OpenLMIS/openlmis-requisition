@@ -1,9 +1,9 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
+import org.openlmis.hierarchyandsupervision.domain.RequisitionGroupProgramSchedule;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.hierarchyandsupervision.domain.RequisitionGroupProgramSchedule;
 import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -29,7 +29,7 @@ public class RequisitionLineService {
   @Autowired
   private PeriodRepository periodRepository;
 
-  public RequisitionLine save(RequisitionLine requisitionLine) {
+  public RequisitionLine save(Requisition requisition, RequisitionLine requisitionLine) {
     if (requisitionLine == null) {
       throw new RequisitionException("Requisition line does not exist");
     } else {
@@ -41,8 +41,9 @@ public class RequisitionLineService {
           requisitionTemplate.getColumnsMap().get("beginningBalance");
 
       if (!requisitionTemplateColumn.getCanBeChangedByUser()) {
-        resetBeginningBalance(requisitionLine);
+        resetBeginningBalance(requisition, requisitionLine);
       }
+
       requisitionLineRepository.save(requisitionLine);
       return requisitionLine;
     }
@@ -55,6 +56,7 @@ public class RequisitionLineService {
 
     if (requisitionTemplate != null) {
       initiateBeginningBalance(requisition, requisitionTemplate);
+      initiateTotalQuantityReceived(requisition, requisitionTemplate);
     }
 
     return requisition;
@@ -71,8 +73,8 @@ public class RequisitionLineService {
 
       Requisition previousRequisition;
       RequisitionLine previousRequisitionLine;
-      previousRequisition = requisitionRepository.findByProcessingPeriod(
-          previousPeriods.iterator().next());
+      previousRequisition = requisitionRepository.findByProcessingPeriodAndFacilityAndProgram(
+          previousPeriods.iterator().next(), requisition.getFacility(), requisition.getProgram());
 
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
         previousRequisitionLine = requisitionLineRepository.findByRequisitionAndProduct(
@@ -83,7 +85,7 @@ public class RequisitionLineService {
               && previousRequisitionLine.getStockInHand() != null) {
 
             requisitionLine.setBeginningBalance(previousRequisitionLine.getStockInHand());
-          } else if (requisitionLine.getStockInHand() == null) {
+          } else {
             requisitionLine.setBeginningBalance(0);
           }
         }
@@ -96,7 +98,7 @@ public class RequisitionLineService {
     }
   }
 
-  private void resetBeginningBalance(RequisitionLine requisitionLine) {
+  private void resetBeginningBalance(Requisition requisition, RequisitionLine requisitionLine) {
     Iterable<Period> previousPeriods = periodRepository.findPreviousPeriods(
         requisitionLine.getRequisition().getProcessingPeriod().getProcessingSchedule(),
         requisitionLine.getRequisition().getProcessingPeriod().getStartDate());
@@ -105,10 +107,10 @@ public class RequisitionLineService {
       requisitionLine.setBeginningBalance(0);
       return;
     }
-
-    Requisition previousRequisition;
-    previousRequisition = requisitionRepository.findByProcessingPeriod(
-        previousPeriods.iterator().next());
+    Requisition previousRequisition =
+        requisitionRepository.findByProcessingPeriodAndFacilityAndProgram(
+        previousPeriods.iterator().next(), requisition.getFacility(), requisition.getProgram()
+        );
 
     if (previousRequisition == null) {
       requisitionLine.setBeginningBalance(0);
@@ -130,4 +132,10 @@ public class RequisitionLineService {
 
   }
 
+  private void initiateTotalQuantityReceived(Requisition requisition,
+                                             RequisitionTemplate requisitionTemplate) {
+    for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
+      requisitionLine.setTotalReceivedQuantity(0);
+    }
+  }
 }

@@ -77,7 +77,6 @@ public class SupplyLineRepositoryIntegrationTest
 
     supervisoryNode.setCode("nodeCode");
     supervisoryNode.setName("name");
-    supervisoryNode.setSupervisorCount(2);
     supervisoryNode.setFacility(facility);
     supervisoryNodeRepository.save(supervisoryNode);
 
@@ -93,8 +92,8 @@ public class SupplyLineRepositoryIntegrationTest
   @Test
   public void findByProgramAndSupervisoryNode() {
     repository.save(generateInstance());
-    Iterable<SupplyLine> iterable =
+    SupplyLine supplyLine =
         repository.findByProgramAndSupervisoryNode(program, supervisoryNode);
-    Assert.assertTrue(iterable.iterator().hasNext());
+    Assert.assertNotNull(supplyLine);
   }
 }

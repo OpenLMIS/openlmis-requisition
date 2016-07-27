@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
@@ -23,6 +24,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -41,7 +43,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE})
+  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE}, fetch = FetchType.EAGER)
   @Getter
   @Setter
   private Set<RequisitionLine> requisitionLines;
@@ -58,7 +60,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private Program program;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "processingPeriodId", nullable = false)
   @Getter
   @Setter
@@ -80,6 +82,12 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   private Boolean emergency;
+
+  @ManyToOne
+  @JoinColumn(name = "supervisoryNodeId")
+  @Getter
+  @Setter
+  private SupervisoryNode supervisoryNode;
 
   @PrePersist
   private void prePersist() {

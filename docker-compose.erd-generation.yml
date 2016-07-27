@@ -5,7 +5,6 @@ services:
     links:
       - db
       - log
-      - auth
       - nginx-proxy
     env_file: .env
     environment:
@@ -14,15 +13,12 @@ services:
   db:
     image: openlmis/postgres
     env_file: .env
+    ports:
+      - "5432:5432"
   log:
     image: openlmis/rsyslog
     volumes:
       - '../logs/requisition:/var/log'
-  auth:
-    image: openlmis/auth
-    ports:
-    - "8081:8080"
-    env_file: .env
   nginx-proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy

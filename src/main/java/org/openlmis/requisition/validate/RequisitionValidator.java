@@ -3,13 +3,14 @@ package org.openlmis.requisition.validate;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 public class RequisitionValidator implements Validator {
 
   private static String VALUE_MUST_BE_ENTERED_NOTIFICATION =
           " must be entered prior to submission of a requisition.";
+  private static String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
+          " must be a non-negative value.";
   private static String REQUISITION_LINES = "requisitionLines";
 
   @Override
@@ -19,14 +20,17 @@ public class RequisitionValidator implements Validator {
 
   @Override
   public void validate(Object target, Errors errors) {
-    ValidationUtils.rejectIfEmpty(errors, "requisitionLines", "RequisitionLines list is empty");
 
     Requisition requisition = (Requisition) target;
 
-    if (requisition.getRequisitionLines() != null) {
-      for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
-        validateRequisitionLine(errors,requisitionLine);
-      }
+    if (requisition.getRequisitionLines() == null || requisition.getRequisitionLines().isEmpty()) {
+      errors.rejectValue(REQUISITION_LINES,
+          "A requisitionLines" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+      return;
+    }
+
+    for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
+      validateRequisitionLine(errors,requisitionLine);
     }
   }
 
@@ -40,11 +44,19 @@ public class RequisitionValidator implements Validator {
       errors.rejectValue(
               REQUISITION_LINES,
               "A beginning balance" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+    } else if (requisitionLine.getBeginningBalance() < 0) {
+      errors.rejectValue(
+              REQUISITION_LINES,
+              "A beginning balance" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
     if (requisitionLine.getTotalReceivedQuantity() == null) {
       errors.rejectValue(
               REQUISITION_LINES,
               "A total received quantity" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+    } else if (requisitionLine.getTotalReceivedQuantity() < 0) {
+      errors.rejectValue(
+              REQUISITION_LINES,
+              "A total received quantity" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
     if (requisitionLine.getStockOnHand() == null) {
       errors.rejectValue(

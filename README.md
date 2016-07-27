@@ -81,6 +81,42 @@ instructions to:
 - build a lean image of itself suitable for deployment
 - publish its deployment image to a Docker Repository
 
+## Security
+By default, the authorization server runs on port `8081`. To obtain a token, make a request to the endpoint at `/oauth/token`.
+The client credentials must be included in Authorization header.
+
+An example with `password` grant type:
+
+    POST http://localhost:8081/oauth/token?grant_type=password&username=admin&password=password
+    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+     
+    Basic Authentication
+        Username
+            trusted-client 
+        Password
+            secret
+
+    Parameters
+        grant_type
+            Authorization grant type.
+        username 
+            The resource owner username.
+        password 
+            The resource owner password.
+    
+Response:
+ 
+    {"access_token":"151a02ed-b6b4-4233-9566-cac2b7a1aec9","token_type":"bearer","expires_in":42509,"scope":"read write"}
+
+When authentication succeeds, the user instance is stored as token principal.
+
+The components can be secured with `@PreAuthorize`, e.g.:
+`@PreAuthorize("isAuthenticated() && principal.username == 'admin'")`
+
+Access the protected resource by appending access_token parameter to the request: 
+
+    http://localhost:8080/api/foos/count?access_token=151a02ed-b6b4-4233-9566-cac2b7a1aec9
+
 ### Development Environment
 Launches into shell with Gradle & JDK available suitable for building
 Service.  PostgreSQL connected suitable for testing. If you run the

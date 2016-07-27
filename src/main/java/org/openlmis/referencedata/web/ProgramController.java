@@ -25,7 +25,7 @@ public class ProgramController {
    * Updating Program code and name.
    */
   @RequestMapping(value = "/programs/update", method = RequestMethod.POST)
-  public ResponseEntity<?> updateProgram(@RequestBody ProgramDto programDto) {
+  public ResponseEntity<?> updateProgramCodeAndName(@RequestBody ProgramDto programDto) {
     if (programDto == null || programDto.getId() == null) {
       logger.debug("Update failed - program id not specified");
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

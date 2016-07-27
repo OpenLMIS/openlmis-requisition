@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.repository;
 
 import com.google.common.collect.Lists;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -102,13 +103,13 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     scheduleRepository.save(secondSchedule);
 
     Period firstPeriod = generatePeriodInstance(
-        "first", secondSchedule, "", LocalDate.of(2016, 2, 1), LocalDate.of(2016,3,1));
+        "first", secondSchedule, "", LocalDate.of(2016, 2, 1), LocalDate.of(2016, 3, 1));
     Period secondPeriod = generatePeriodInstance(
-        "second", testSchedule, "", LocalDate.of(2016, 3, 1), LocalDate.of(2016,4,1));
+        "second", testSchedule, "", LocalDate.of(2016, 3, 1), LocalDate.of(2016, 4, 1));
     Period thirdPeriod = generatePeriodInstance(
-        "third", testSchedule, "", LocalDate.of(2016, 4, 1), LocalDate.of(2016,5,1));
+        "third", testSchedule, "", LocalDate.of(2016, 4, 1), LocalDate.of(2016, 5, 1));
     Period fourthPeriod = generatePeriodInstance(
-        "fourth", secondSchedule, "", LocalDate.of(2016, 5, 1), LocalDate.of(2016,6,1));
+        "fourth", secondSchedule, "", LocalDate.of(2016, 5, 1), LocalDate.of(2016, 6, 1));
 
     periodRepository.save(firstPeriod);
     periodRepository.save(secondPeriod);

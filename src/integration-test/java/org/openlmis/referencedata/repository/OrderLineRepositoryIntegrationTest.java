@@ -69,7 +69,6 @@ public class OrderLineRepositoryIntegrationTest {
     orderLineRepository.deleteAll();
     productRepository.deleteAll();
     orderRepository.deleteAll();
-    userRepository.deleteAll();
     programRepository.deleteAll();
     facilityRepository.deleteAll();
     facilityTypeRepository.deleteAll();
@@ -104,12 +103,8 @@ public class OrderLineRepositoryIntegrationTest {
     program.setCode(orderLine);
     programRepository.save(program);
 
-    User user = new User();
-    user.setUsername(orderLine);
-    user.setPassword(orderLine);
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    User user = userRepository.findAll().iterator().next();
 
     order.setOrderCode(orderLine);
     order.setQuotedCost(new BigDecimal("1.29"));

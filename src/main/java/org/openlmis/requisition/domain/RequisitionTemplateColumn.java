@@ -28,7 +28,7 @@ public class RequisitionTemplateColumn {
 
   private Boolean canBeChangedByUser;
 
-  private String source; //todo change String to SourceType {User Input, Reference Data, Calculated}
+  private SourceType source;
 
   /**
    * Allows changing visibility of specific column.

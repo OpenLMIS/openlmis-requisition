@@ -1,7 +1,15 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,15 +45,25 @@ public class PeriodControllerIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/periods";
+  private static final String BASE_URL = System.getenv("BASE_URL");
+  private static final String RESOURCE_URL = BASE_URL + "/api/periods";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
   private Schedule schedule = new Schedule();
 
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
+
   /** Prepare the test environment. */
   @Before
   public void setUp() {
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
+
     cleanup();
 
     schedule.setCode("code");
@@ -129,5 +147,22 @@ public class PeriodControllerIntegrationTest {
     HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
 
     restTemplate.postForEntity(RESOURCE_URL, secondPeriodEntity, Period.class);
+  }
+
+  @Test
+  public void testGetTotalDifference() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+
+    String response = restAssured.given()
+            .pathParam("id", firstPeriod.getId())
+            .when()
+            .get("/api/periods/{id}/difference")
+            .then()
+            .statusCode(200)
+            .extract().asString();
+
+    assertTrue(response.contains("Period lasts 1 months and 1 days"));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

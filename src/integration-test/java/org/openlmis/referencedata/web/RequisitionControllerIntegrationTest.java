@@ -1,8 +1,18 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,13 +77,16 @@ public class RequisitionControllerIntegrationTest {
   private static final String BASE_URL = System.getenv("BASE_URL");
   private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/{id}/submit";
   private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
+  private static final String AUTHORIZATION_URL = BASE_URL + "/api/requisitions/{id}/authorize";
   private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
-  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL 
+  private static final String CREATED_BY_LOGGED_USER_URL = BASE_URL
       + "/api/requisitions/creator/{creatorId}";
   private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
-  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
-
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
+  private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
 
   @Autowired
   private ProductRepository productRepository;
@@ -111,6 +124,9 @@ public class RequisitionControllerIntegrationTest {
   @Autowired
   ProductCategoryRepository productCategoryRepository;
 
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
+
   private Requisition requisition = new Requisition();
   private Requisition requisition2 = new Requisition();
   private Requisition requisition3 = new Requisition();
@@ -121,18 +137,19 @@ public class RequisitionControllerIntegrationTest {
   private Program program2 = new Program();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
-  private User user = new User();
+  private User user;
 
   /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
+
     cleanUp();
 
-    user.setUsername("testUser");
-    user.setPassword("password");
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    user = userRepository.findAll().iterator().next();
 
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -278,26 +295,38 @@ public class RequisitionControllerIntegrationTest {
     facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
-    userRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     productCategoryRepository.deleteAll();
   }
 
   @Test
-  public void testCorrectSubmit() throws JsonProcessingException {
+  public void testShouldSubmitCorrectRequisition() throws JsonProcessingException {
     testSubmit();
   }
 
-  @Test(expected = HttpClientErrorException.class)
-  public void testSubmitWithNullRequisitionLines() throws JsonProcessingException {
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullRequisitionLines()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
     requisition.setRequisitionLines(null);
     requisition = requisitionRepository.save(requisition);
-    testSubmit();
+
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
-  @Test(expected = HttpClientErrorException.class)
-  public void testSubmitWithIncorrectRequisitionLines() throws JsonProcessingException {
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullQuantityInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setStockOnHand(1);
@@ -312,11 +341,190 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
-    testSubmit();
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
-  @Test(expected = HttpClientErrorException.class)
-  public void testSubmitWithRequisitionLinesNullAttributes() throws JsonProcessingException {
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testShouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A beginning balance must be a non-negative value.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(-1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total received quantity must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testShouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total received quantity must be a non-negative value.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setStockOnHand(1);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(-1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullStockHandInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setTotalConsumedQuantity(1);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLinetest()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total consumed quantity must be entered prior to submission of a requisition.\"\n}";
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequestedQuantity(1);
+    requisitionLine.setBeginningBalance(1);
+    requisitionLine.setProduct(product);
+    requisitionLine.setTotalReceivedQuantity(1);
+    requisitionLine.setTotalLossesAndAdjustments(1);
+    requisitionLine.setStockOnHand(1);
+    requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    requisition.setRequisitionLines(requisitionLines);
+    requisition = requisitionRepository.save(requisition);
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
+  }
+
+  @Test
+  public void testShouldNotSubmitRequisitionWithNullAttributesInRequisitionLine()
+      throws JsonProcessingException {
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"A total losses and adjustments must be entered prior "
+        + "to submission of a requisition.\"\n}";
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setStockOnHand(null);
@@ -331,23 +539,27 @@ public class RequisitionControllerIntegrationTest {
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
-    testSubmit();
+
+    try {
+      testSubmit();
+      fail();
+    } catch (HttpClientErrorException excp) {
+      String response = excp.getResponseBodyAsString();
+      assertEquals(expectedExceptionMessage, response);
+    }
   }
 
   @Test
   public void testSkip() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
+    restAssured.given()
+            .contentType("application/json")
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(SKIP_URL)
+            .then()
+            .statusCode(200);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(SKIP_URL)
-        .build().expand(requisition.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    ResponseEntity<Object> result =
-        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -357,19 +569,15 @@ public class RequisitionControllerIntegrationTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
+    restAssured.given()
+            .contentType("application/json")
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(REJECT_URL)
+            .then()
+            .statusCode(200);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(REJECT_URL)
-        .build()
-        .expand(requisition.getId().toString())
-        .encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<Object> response =
-        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
-
-    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -425,7 +633,7 @@ public class RequisitionControllerIntegrationTest {
   public void testSearchByCreatorId() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null, 
+        restTemplate.exchange(CREATED_BY_LOGGED_USER_URL, HttpMethod.GET, null,
             new ParameterizedTypeReference<List<Requisition>>() {
             }, user.getId());
 
@@ -506,8 +714,8 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(2, requisitions.size());
 
     for (Requisition r : requisitions) {
-      Assert.assertTrue(r.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-04T12:00:00")));
-      Assert.assertTrue(r.getCreatedDate().isBefore(LocalDateTime.parse("2016-01-04T12:00:00")));
+      assertTrue(r.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-04T12:00:00")));
+      assertTrue(r.getCreatedDate().isBefore(LocalDateTime.parse("2016-01-04T12:00:00")));
     }
   }
 
@@ -523,7 +731,7 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(1, requisitions.size());
     Requisition req = requisitions.get(0);
     Assert.assertEquals(program.getId(), req.getProgram().getId());
-    Assert.assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-06-20T12:00:00")));
+    assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-06-20T12:00:00")));
   }
 
   @Test
@@ -538,7 +746,7 @@ public class RequisitionControllerIntegrationTest {
     Assert.assertEquals(1, requisitions.size());
     Requisition req = requisitions.get(0);
     Assert.assertEquals(facility.getId(), req.getFacility().getId());
-    Assert.assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2016-02-20T12:00:00")));
+    assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2016-02-20T12:00:00")));
   }
 
   @Test
@@ -555,8 +763,8 @@ public class RequisitionControllerIntegrationTest {
     Requisition req = requisitions.get(0);
     Assert.assertEquals(program.getId(), req.getProgram().getId());
     Assert.assertEquals(facility2.getId(), req.getFacility().getId());
-    Assert.assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-20T12:00:00")));
-    Assert.assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2015-05-01T12:00:00")));
+    assertTrue(req.getCreatedDate().isAfter(LocalDateTime.parse("2015-03-20T12:00:00")));
+    assertTrue(req.getCreatedDate().isBefore(LocalDateTime.parse("2015-05-01T12:00:00")));
   }
 
   @Test
@@ -575,12 +783,33 @@ public class RequisitionControllerIntegrationTest {
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
+    requisitionRepository.delete(requisition);
     ResponseEntity<Requisition> result = restTemplate.exchange(
-        INITIATE_URL + "?facilityId={facilityId}&programId={programId}&periodId={periodId}&emergency=true",
-        HttpMethod.POST, null, Requisition.class, facility2.getId(), program.getId(), period.getId());
+        INITIATE_URL + "?facilityId={facilityId}&"
+                + "programId={programId}&periodId={periodId}&emergency=false",
+        HttpMethod.POST, null, Requisition.class, facility.getId(),
+            program.getId(), period.getId());
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Requisition initiatedRequisitions = result.getBody();
     Assert.assertNotNull(initiatedRequisitions);
+  }
+
+  @Test
+  public void testAuthorize() throws JsonProcessingException {
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(AUTHORIZATION_URL)
+        .build().expand(requisition.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    ResponseEntity<Object> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 }

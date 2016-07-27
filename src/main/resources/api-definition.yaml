@@ -6,7 +6,7 @@ baseUri: "${baseUrl}/api"
 
 documentation:
     - title: Getting Started
-      content: Welcome to the OpenLMIS requisition-service documentation. This minimal API is intended for illustrative purposes.
+      content: Welcome to the OpenLMIS requisition-service documentation.
 
 schemas:
   - facility: |
@@ -14,6 +14,7 @@ schemas:
           "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Facility",
+          "description": "A single facility",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -34,6 +35,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "FacilityOperator",
+          "description": "A single facilityOperator",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -47,6 +49,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "FacilityType",
+          "description": "A single facilityType",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -61,10 +64,11 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "FacilityTypeApprovedProduct",
+          "description": "A single facilityTypeApprovedProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "facilityType": { "type": "string", "required": true, "title": "facilityType" },
-              "programProduct": { "type": "string", "required": true, "title": "programProduct" },
+              "facilityType": { "$ref":"facilityType", "required": true, "title": "facilityType" },
+              "programProduct": { "$ref":"programProduct", "required": true, "title": "programProduct" },
               "maxMonthsOfStock": { "type": "number", "required": true, "title": "maxMonthsOfStock" },
               "minMonthsOfStock": { "type": "number", "required": false, "title": "minMonthsOfStock" },
               "emergencyOrderPoint": { "type": "number", "required": false, "title": "emergencyOrderPoint" }
@@ -75,6 +79,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "GeographicLevel",
+          "description": "A single geographicLevel",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -87,6 +92,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "GeographicZone",
+          "description": "A single geographicZone",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -102,18 +108,20 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Order",
+          "description": "A single order",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisitionCode": { "type": "string", "required": false, "title": "requisitionCode" },
+              "requisition": { "$ref":"requisition", "required": false, "title": "requisitionCode" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "createdBy": { "type": "string", "required": true, "title": "createdBy" }, "program": { "type": "string", "required": true, "title":"program" },
-              "requestingFacility": { "type": "string", "required": true, "title": "requestingFacility" },
-              "receivingFacilityId": { "type": "string", "required": true, "title": "receivingFacilityId" },
-              "supplyingFacilityId": { "type": "string", "required": true, "title": "supplyingFacilityId" },
+              "createdBy": { "$ref":"user", "required": true, "title": "createdBy" },
+              "program": { "$ref":"program", "required": true, "title":"program" },
+              "requestingFacility": { "$ref":"facility", "required": true, "title": "requestingFacility" },
+              "receivingFacilityId": { "$ref":"facility", "required": true, "title": "receivingFacilityId" },
+              "supplyingFacilityId": { "$ref":"facility", "required": true, "title": "supplyingFacilityId" },
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
-              "status": { "type": "string", "required": true, "title": "status" },
+              "status": { "$ref":"orderStatus", "required": true, "title": "status" },
               "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
-              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "type": "string" }, "uniqueItems": false }
+              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "$ref":"orderLine" }, "uniqueItems": false }
           }
       }
 
@@ -121,11 +129,12 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "OrderLine",
+          "description": "A single orderLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "product": { "type": "string", "required": true, "title": "product" },
+              "product": { "$ref":"product", "required": true, "title": "product" },
               "orderedQuantity": { "type": "integer", "required": true, "title": "orderedQuantity" },
-              "order": { "type": "string", "required": false, "title": "order" }
+              "order": { "$ref":"order", "required": false, "title": "order" }
           }
       }
 
@@ -133,9 +142,10 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Period",
+          "description": "A single period",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "processingSchedule": { "type": "string", "required": true, "title": "processingSchedule" },
+              "processingSchedule": { "$ref":"schedule", "required": true, "title": "processingSchedule" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
               "startDate": { "type": "string", "required": true, "title": "startDate" },
@@ -147,6 +157,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Product",
+          "description": "A single product",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -166,6 +177,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "ProductCategory",
+          "description": "A single productCategory",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -178,6 +190,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Program",
+          "description": "A single program",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -193,13 +206,14 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "ProgramProduct",
+          "description": "A single programProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "type": "string", "required": true, "title": "program" },
-              "product": { "type": "string", "required": true, "title": "product" },
+              "program": { "$ref":"program", "required": true, "title": "program" },
+              "product": { "$ref":"product", "required": true, "title": "product" },
               "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" },
               "active": { "type": "boolean", "required": true, "title": "active" },
-              "productCategory": { "type": "string", "required": true, "title": "productCategory" },
+              "productCategory": { "$ref":"productCategory", "required": true, "title": "productCategory" },
               "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "maxMonthsStock": { "type": "integer", "required": false, "title": "maxMonthsStock" },
@@ -211,15 +225,16 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Requisition",
+          "description": "A single requisition",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "facility": { "type": "string", "required": true, "title": "facility" },
-              "program": { "type": "string", "required": true, "title": "program" },
-              "processingPeriod": { "type": "string", "required": true, "title": "processingPeriod" },
+              "facility": { "$ref":"facility", "required": true, "title": "facility" },
+              "program": { "$ref":"program", "required": true, "title": "program" },
+              "processingPeriod": { "$ref":"period", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
-              "creator": { "type": "string", "required": false, "title": "creator" },
-              "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "string" }, "uniqueItems": false }
+              "creator": { "$ref":"user", "required": false, "title": "creator" },
+              "requisitionLines": { "$ref":"requisitionLine", "type": "array", "required": false, "title": "requisitionLines", "items": { "ref":"requisitionLine" }, "uniqueItems": false }
           }
       }
 
@@ -227,11 +242,14 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "RequisitionLine",
+          "description": "A single requisitionLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "type": "string", "required": true, "title": "requisition" },
-              "product": { "type": "string", "required": true, "title": "product" },
-              "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" }
+              "requisition": { "$ref":"requisition", "required": true, "title": "requisition" },
+              "product": { "$ref":"product", "required": true, "title": "product" },
+              "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" },
+              "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
+              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" }
           }
       }
 
@@ -239,9 +257,10 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "RequisitionTemplate",
+          "description": "A single requisitionTemplate",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "type": "string", "required": true, "title": "program" },
+              "program": { "$ref":"program", "required": true, "title": "program" },
               "columnsMap": { "type": "array", "required": false, "title": "columnsMap", "items": { "type": "string", "title": "columnsMap" }, "uniqueItems": false }
           }
       }
@@ -250,6 +269,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "RequisitionTemplateColumn",
+          "description": "A single requisitionTemplateColumn",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": false, "title": "name" },
@@ -257,6 +277,7 @@ schemas:
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "isDisplayed": { "type": "boolean", "required": false, "title": "isDisplayed" },
               "isDisplayRequired": { "type": "boolean", "required": false, "title": "isDisplayRequired" },
+              "canBeChangedByUser": { "type": "boolean", "required": false, "title": "canByChangedByUser" },
               "canChangeOrder": { "type": "boolean", "required": false, "title": "canChangeOrder" },
               "source": { "type": "string", "required": false, "title": "source" }
           }
@@ -266,6 +287,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Right",
+          "description": "A single right",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": true, "title": "name" },
@@ -278,12 +300,12 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Role",
+          "description": "A single role",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "rights": { "type": "array", "required": false, "title": "rights",
-              "items": { "type": "string" }, "uniqueItems": false }
+              "rights": { "type": "array", "required": false, "title": "rights", "items": { "$ref":"right" }, "uniqueItems": false }
           }
       }
 
@@ -291,6 +313,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Schedule",
+          "description": "A single schedule",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -304,16 +327,17 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "User",
+          "description": "A single user",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "username": { "type": "string", "required": true, "title": "username" },
               "password": { "type": "string", "required": true, "title": "password" },
               "firstName": { "type": "string", "required": true, "title": "firstName" },
               "lastName": { "type": "string", "required": true, "title": "lastName" },
-              "homeFacility": { "type": "string", "required": false, "title": "homeFacility" },
+              "homeFacility": { "$ref":"facility", "required": false, "title": "homeFacility" },
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
-              "roles": { "type": "array", "required": false, "title": "roles", "items": { "type": "object" }, "uniqueItems": false}
+              "roles": { "type": "array", "required": false, "title": "roles", "items": { "$ref":"role" }, "uniqueItems": false}
           }
       }
 
@@ -321,12 +345,12 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "SupervisoryNode",
+          "description": "A single supervisoryNode",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "supervisorCount": { "type": "integer", "required": true, "title": "supervisorCount" },
               "facility": { "$ref": "facility", "required": true },
               "parentNode": { "$ref": "supervisoryNode", "required": false },
               "childNodes": { "type": "array", "required": false, "title": "childNodes", "items": { "$ref": "supervisoryNode" }, "uniqueItems": false}
@@ -337,6 +361,7 @@ schemas:
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "SupplyLine",
+          "description": "A single supplyLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "supervisoryNode": { "$ref": "supervisoryNode", "required": true },
@@ -345,6 +370,98 @@ schemas:
               "supplyingFacility": { "$ref": "facility", "required": true }
           }
       }
+
+  - stockInventory: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "StockInventory",
+          "description": "A single stockInventory",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "stocks": { "type": "array", "required": false, "title": "stocks", "items": { "$ref": "stock" }, "uniqueItems": false }
+          }
+      }
+
+  - stock: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "Stock",
+          "description": "A single stock",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "stockInventory": { "$ref": "stockInventory", "required": true },
+              "product": { "$ref": "product", "required": true },
+              "storedQuantity": { "type": "integer", "required": false, "title": "storedQuantity" }
+          }
+      }
+
+  - requisitionGroup: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "RequisitionGroup",
+          "description": "A single requisitionGroup",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "unique": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "description": { "type": "string", "required": false, "title": "description" },
+              "supervisoryNode": { "$ref":"supervisoryNode", "required": true },
+              "requisitionGroupProgramScheules": { "type": "array", "required": false, "title": "requisitionGroupProgramSchedules", "items": { "$ref": "requisitionGroupProgramSchedule" }, "uniqueItems": false },
+              "memberFacilities": { "type": "array", "required": false, "title": "memberFacilities", "items": { "$ref": "facility" }, "uniqueItems": false }
+          }
+      }
+
+  - requisitionGroupProgramSchedule: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "RequisitionGroupProgramSchedule",
+          "description": "A single requisitionGroupProgramSchedule",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "program": { "$ref": "program", "required": true },
+              "processingSchedule": { "$ref": "schedule", "required": true },
+              "directDelivery": { "type": "boolean", "required": true, "title": "directDelivery" },
+              "dropOffFacility": { "$ref": "facility", "required": false }
+          }
+      }
+
+  - proofOfDelivery: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ProofOfDelivery",
+          "description": "A single proofOfDelivery",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "order": { "$ref": "order", "required": true },
+              "profOfDeliveryLineItems": { "type": "array", "required": false, "title": "profOfDeliveryLineItems", "items": { "$ref": "proofOfDeliveryLine" }, "uniqueItems": false },
+              "totalShippedPacks": { "type": "integer", "required": false, "title": "totalShippedPacks" },
+              "totalReceivedPacks": { "type": "integer", "required": false, "title": "totalReceivedPacks" },
+              "totalReturnedPacks": { "type": "integer", "required": false, "title": "totalReturnedPacks" },
+              "deliveredBy": { "type": "string", "required": false, "title": "deliveredBy" },
+              "receivedBy": { "type": "string", "required": false, "title": "receivedBy" },
+              "receivedDate": { "type": "string", "required": false, "title": "receivedDate" }
+          }
+      }
+
+  - proofOfDeliveryLine: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ProofOfDeliveryLine",
+          "description": "A single proofOfDeliveryLine",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "orderLine": { "$ref": "orderLine", "required": true },
+              "proofOfDelivery": { "$ref": "proofOfDelivery", "required": true },
+              "packToShip": { "type": "integer", "required": false, "title": "packToShip" },
+              "quantityShipped": { "type": "integer", "required": false, "title": "quantityShipped" },
+              "quantityReceived": { "type": "integer", "required": false, "title": "quantityReceived" },
+              "quantityReturned": { "type": "integer", "required": false, "title": "quantityReturned" },
+              "replacedProductCode": { "type": "string", "required": false, "title": "replacedProductCode" },
+              "notes": { "type": "string", "required": false, "title": "notes" }
+          }
+      }
+
 
 resourceTypes:
     - collection:
@@ -417,118 +534,134 @@ resourceTypes:
                   X-Content-Type-Options:
                   X-XSS-Protection:
 
-        /search:
-            /findBySupplyingFacility:
-                get:
-                    description: Find Orders with matched SupplyingFacility.
-                    queryParameters:
-                        supplyingFacility:
-                            displayName: supplyingFacility
-                            description: SupplyingFacility ID
-                            type: string
-                            required: true
-                            repeat: false
-                    responses:
-                        "200":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
-                            body:
-                              application/json:
-                        "500":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
+    /search:
+        /findBySupplyingFacility:
+            get:
+                description: Find Orders with matched SupplyingFacility.
+                queryParameters:
+                    supplyingFacility:
+                        displayName: supplyingFacility
+                        description: SupplyingFacility ID
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 
-            /findBySupplyingFacilityAndRequestingFacility:
-                get:
-                    description: Find Orders with matched SupplyingFacility and RequestingFacility.
-                    queryParameters:
-                        supplyingFacility:
-                            displayName: supplyingFacility
-                            description: SupplyingFacility ID
-                            type: string
-                            required: true
-                            repeat: false
-                        requestingFacility:
-                            displayName: requestingFacility
-                            description: RequestingFacility ID
-                            type: string
-                            required: true
-                            repeat: false
-                    responses:
-                        "200":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
-                            body:
-                              application/json:
-                        "500":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
+        /findBySupplyingFacilityAndRequestingFacility:
+            get:
+                description: Find Orders with matched SupplyingFacility and RequestingFacility.
+                queryParameters:
+                    supplyingFacility:
+                        displayName: supplyingFacility
+                        description: SupplyingFacility ID
+                        type: string
+                        required: true
+                        repeat: false
+                    requestingFacility:
+                        displayName: requestingFacility
+                        description: RequestingFacility ID
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 
-            /findBySupplyingFacilityAndProgram:
-                        get:
-                            description: Find Orders with matched SupplyingFacility and Program.
-                            queryParameters:
-                                supplyingFacility:
-                                    displayName: supplyingFacility
-                                    description: SupplyingFacility ID
-                                    type: string
-                                    required: true
-                                    repeat: false
-                                program:
-                                    displayName: program
-                                    description: Program ID
-                                    type: string
-                                    required: true
-                                    repeat: false
-                            responses:
-                                "200":
-                                    headers:
-                                      X-Content-Type-Options:
-                                      X-XSS-Protection:
-                                    body:
-                                      application/json:
-                                "500":
-                                    headers:
-                                      X-Content-Type-Options:
-                                      X-XSS-Protection:
+        /findBySupplyingFacilityAndProgram:
+                    get:
+                        description: Find Orders with matched SupplyingFacility and Program.
+                        queryParameters:
+                            supplyingFacility:
+                                displayName: supplyingFacility
+                                description: SupplyingFacility ID
+                                type: string
+                                required: true
+                                repeat: false
+                            program:
+                                displayName: program
+                                description: Program ID
+                                type: string
+                                required: true
+                                repeat: false
+                        responses:
+                            "200":
+                                headers:
+                                  X-Content-Type-Options:
+                                  X-XSS-Protection:
+                                body:
+                                  application/json:
+                            "404":
+                                headers:
+                                  X-Content-Type-Options:
+                                  X-XSS-Protection:
+                            "500":
+                                headers:
+                                  X-Content-Type-Options:
+                                  X-XSS-Protection:
 
-            /findBySupplyingFacilityAndRequestingFacilityAndProgram:
-                get:
-                    description: Find Orders with matched SupplyingFacility, RequestingFacility and Program.
-                    queryParameters:
-                        supplyingFacility:
-                            displayName: supplyingFacility
-                            description: SupplyingFacility ID
-                            type: string
-                            required: true
-                            repeat: false
-                        requestingFacility:
-                            displayName: requestingFacility
-                            description: RequestingFacility ID
-                            type: string
-                            required: true
-                            repeat: false
-                        program:
-                            displayName: program
-                            description: Program ID
-                            type: string
-                            required: true
-                            repeat: false
-                    responses:
-                        "200":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
-                            body:
-                              application/json:
-                        "500":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
+        /findBySupplyingFacilityAndRequestingFacilityAndProgram:
+            get:
+                description: Find Orders with matched SupplyingFacility, RequestingFacility and Program.
+                queryParameters:
+                    supplyingFacility:
+                        displayName: supplyingFacility
+                        description: SupplyingFacility ID
+                        type: string
+                        required: true
+                        repeat: false
+                    requestingFacility:
+                        displayName: requestingFacility
+                        description: RequestingFacility ID
+                        type: string
+                        required: true
+                        repeat: false
+                    program:
+                        displayName: program
+                        description: Program ID
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 
 /periods:
     displayName: Period
@@ -578,6 +711,31 @@ resourceTypes:
                           X-Content-Type-Options:
                           X-XSS-Protection:
 
+        /findPreviousPeriods:
+            get:
+                description: Find previous Periods in given Schedule.
+                queryParameters:
+                    processingSchedule:
+                        displayName: processingSchedule
+                        type: string
+                        required: true
+                        repeat: false
+                    startDate:
+                        displayName: startDate
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
         /findFirst1ByOrderByEndDateDesc:
             get:
                 description: Get last Period.
@@ -617,8 +775,86 @@ resourceTypes:
                      X-Content-Type-Options:
                      X-XSS-Protection:
 
+/programProducts:
+    displayName: Program Products
+    /search:
+        /findByProgram:
+            get:
+                description: Find ProgramProducts with matched Program.
+                queryParameters:
+                    program:
+                        displayName: program
+                        description: Program ID
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                   "200":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                       body:
+                         application/json:
+                   "404":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                   "500":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+        /findByProgramAndFullSupply:
+            get:
+                description: Find ProgramProducts with matched Program.
+                queryParameters:
+                    program:
+                        displayName: program
+                        description: Program ID
+                        type: string
+                        required: true
+                        repeat: false
+                    fullSupply:
+                        displayName: fullSupply
+                        description: Full supply
+                        type: boolean
+                        required: true
+                        repeat: false
+                responses:
+                   "200":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                       body:
+                         application/json:
+                   "404":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                   "500":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+
 /requisitions:
     displayName: Requisition
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            description: Delete chosen requisition.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /{id}/skip:
         uriParameters:
             id:
@@ -659,6 +895,23 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+    /{id}/submit:
+            put:
+                description: Submit earlier initiated requisition.
+                body:
+                    application/json:
+                        schema: requisition
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
     /creator/{creatorId}:
         uriParameters:
             creatorId:
@@ -715,30 +968,79 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-    /submit:
-        post:
-            description: Submit earlier initiated requisition.
-            body:
-                application/json:
-                    schema: requsition
-            responses:
-                "201":
-                    description: Requisition submitted successfully
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: requisition
                 "400":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        /findByProcessingPeriodAndFacilityAndProgram:
+            get:
+                description: Find Requsition with matched Processing Period, Facility and Program.
+                queryParameters:
+                    period:
+                        displayName: processingPeriod
+                        description: processingPeriod
+                        type: string
+                        required: true
+                        repeat: false
+                    facility:
+                        displayName: facility
+                        description: facility
+                        type: string
+                        required: true
+                        repeat: false
+                    program:
+                        displayName: program
+                        description: program
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+/requisitionTemplates:
+    displayName: Requisition Template
+    /search:
+        /findByProgram:
+            get:
+                description: Find Requsition Template with matched and Program.
+                queryParameters:
+                    program:
+                        displayName: program
+                        description: program
+                        type: string
+                        required: true
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 /schedules:
     displayName: Schedule
     /{id}/difference:
@@ -758,10 +1060,50 @@ resourceTypes:
                     X-XSS-Protection:
                   body:
                     application/json:
+              400:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
               404:
                   headers:
                     X-Content-Type-Options:
                     X-XSS-Protection:
+              500:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+
+/supplyLines:
+    displayName: Supply Lines
+    /search/findByProgramAndSupervisoryNode:
+        get:
+                    description: Find SupplyLines with matched Program and SupervisoryNode.
+                    queryParameters:
+                        program:
+                            displayName: program
+                            type: string
+                            required: true
+                            repeat: false
+                        supervisoryNode:
+                            displayName: supervisoryNode
+                            type: string
+                            required: true
+                            repeat: false
+                    responses:
+                        "200":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
+                            body:
+                              application/json:
+                        "400":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
+                        "500":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
 
 /users:
     displayName: User
@@ -908,20 +1250,3 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
-
-/supplyLines:
-    displayName: SupplyLines
-    post:
-      description: Save a supplyLine
-      body:
-        application/json:
-          schema: supplyLine
-      responses:
-        200:
-          description: SupplyLine sucessfully saved.
-          headers:
-            X-Content-Type-Options:
-            X-XSS-Protection:
-          body:
-            application/json:
-              schema: supplyLine

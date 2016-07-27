@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -21,11 +22,11 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "order_lines")
 @NoArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class OrderLine extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "orderId", nullable = false)
-  @JsonIgnore
   @Getter
   @Setter
   private Order order;
