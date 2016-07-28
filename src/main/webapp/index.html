@@ -39,12 +39,21 @@
       window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
     }
 
+    $.urlParam = function(name){
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        return (results) ? results[1] || 0 : null;
+    }
+
     $(function () {
       var url = window.location.search.match(/url=([^&]+)/);
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
+        var token = $.urlParam('access_token');
         url = window.location.origin + '/api-definition.json';
+        if (token) {
+          url += '?access_token=' + token;
+        }
       }
 
       hljs.configure({
