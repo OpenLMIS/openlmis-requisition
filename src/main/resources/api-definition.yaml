@@ -16,8 +16,8 @@ schemas:
           "title": "Comment",
           "description": "A single comment",
           "properties": {
-              "requisition": { "$ref":"requisition", "required": false, "title": "requisition" },
-              "author": { "$ref":"user", "required": false, "title": "author" },
+              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
+              "author": { "type": "object", "$ref": "#/schemas/user", "required": false, "title": "author" },
               "commentText": { "type": "string", "required": true, "title": "commentText" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" }
           }
@@ -34,9 +34,9 @@ schemas:
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "geographicZone": { "$ref": "geographicZone", "required": true },
-              "type": { "$ref": "facilityType", "required": true },
-              "operator": { "$ref": "facilityOperator", "required": false },
+              "geographicZone": { "type": "object", "$ref": "#/schemas/geographicZone", "required": true },
+              "type": { "type": "object", "$ref": "#/schemas/facilityType", "required": true },
+              "operator": { "type": "object", "$ref": "#/schemas/facilityOperator", "required": false },
               "active": { "type": "boolean", "required": true, "title": "active" },
               "goLiveDate": { "type": "string", "required": false, "title": "goLiveDate" },
               "goDownDate": { "type": "string", "required": false, "title": "goDownDate" },
@@ -81,8 +81,8 @@ schemas:
           "description": "A single facilityTypeApprovedProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "facilityType": { "$ref":"facilityType", "required": true, "title": "facilityType" },
-              "programProduct": { "$ref":"programProduct", "required": true, "title": "programProduct" },
+              "facilityType": { "type": "object", "$ref": "#/schemas/facilityType", "required": true, "title": "facilityType" },
+              "programProduct": { "type": "object", "$ref": "#/schemas/programProduct", "required": true, "title": "programProduct" },
               "maxMonthsOfStock": { "type": "number", "required": true, "title": "maxMonthsOfStock" },
               "minMonthsOfStock": { "type": "number", "required": false, "title": "minMonthsOfStock" },
               "emergencyOrderPoint": { "type": "number", "required": false, "title": "emergencyOrderPoint" }
@@ -111,7 +111,7 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
-              "level": { "$ref": "geographicLevel", "required": true },
+              "level": { "type": "object", "$ref": "#/schemas/geographicLevel", "required": true },
               "catchmentPopulation": { "type": "integer", "required": false, "title": "catchmentPopulation" },
               "latitude": { "type": "number", "required": false, "title": "latitude" },
               "longitude": { "type": "number", "required": false, "title": "longitude" }
@@ -125,17 +125,17 @@ schemas:
           "description": "A single order",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "$ref":"requisition", "required": false, "title": "requisitionCode" },
+              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisitionCode" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "createdBy": { "$ref":"user", "required": true, "title": "createdBy" },
-              "program": { "$ref":"program", "required": true, "title":"program" },
-              "requestingFacility": { "$ref":"facility", "required": true, "title": "requestingFacility" },
-              "receivingFacilityId": { "$ref":"facility", "required": true, "title": "receivingFacilityId" },
-              "supplyingFacilityId": { "$ref":"facility", "required": true, "title": "supplyingFacilityId" },
+              "createdBy": { "type": "object", "$ref": "#/schemas/user", "required": true, "title": "createdBy" },
+              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title":"program" },
+              "requestingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "requestingFacility" },
+              "receivingFacilityId": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "receivingFacilityId" },
+              "supplyingFacilityId": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "supplyingFacilityId" },
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
-              "status": { "$ref":"orderStatus", "required": true, "title": "status" },
+              "status": { "type": "object", "$ref": "#/schemas/orderStatus", "required": true, "title": "status" },
               "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
-              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "$ref":"orderLine" }, "uniqueItems": false }
+              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "type": "object", "$ref": "#/schemas/orderLine" }, "uniqueItems": false }
           }
       }
 
@@ -146,9 +146,9 @@ schemas:
           "description": "A single orderLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "product": { "$ref":"product", "required": true, "title": "product" },
+              "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
               "orderedQuantity": { "type": "integer", "required": true, "title": "orderedQuantity" },
-              "order": { "$ref":"order", "required": false, "title": "order" },
+              "order": { "type": "object", "$ref": "#/schemas/order", "required": false, "title": "order" },
               "filledQuantity": { "type": "integer", "required": true, "title": "filledQuantity" }
           }
       }
@@ -160,7 +160,7 @@ schemas:
           "description": "A single period",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "processingSchedule": { "$ref":"schedule", "required": true, "title": "processingSchedule" },
+              "processingSchedule": { "type": "object", "$ref": "#/schemas/schedule", "required": true, "title": "processingSchedule" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
               "startDate": { "type": "string", "required": true, "title": "startDate" },
@@ -224,11 +224,11 @@ schemas:
           "description": "A single programProduct",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "$ref":"program", "required": true, "title": "program" },
-              "product": { "$ref":"product", "required": true, "title": "product" },
+              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
+              "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
               "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" },
               "active": { "type": "boolean", "required": true, "title": "active" },
-              "productCategory": { "$ref":"productCategory", "required": true, "title": "productCategory" },
+              "productCategory": { "type": "object", "$ref": "#/schemas/productCategory", "required": true, "title": "productCategory" },
               "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "maxMonthsStock": { "type": "integer", "required": false, "title": "maxMonthsStock" },
@@ -244,12 +244,12 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "facility": { "$ref":"facility", "required": true, "title": "facility" },
-              "program": { "$ref":"program", "required": true, "title": "program" },
-              "processingPeriod": { "$ref":"period", "required": true, "title": "processingPeriod" },
+              "facility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "facility" },
+              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
+              "processingPeriod": { "type": "object", "$ref": "#/schemas/period", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
-              "creator": { "$ref":"user", "required": false, "title": "creator" },
-              "requisitionLines": { "$ref":"requisitionLine", "type": "array", "required": false, "title": "requisitionLines", "items": { "ref":"requisitionLine" }, "uniqueItems": false }
+              "creator": { "type": "object", "$ref": "#/schemas/user", "required": false, "title": "creator" },
+              "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "object", "$ref":"#/schemas/requisitionLine" }, "uniqueItems": false }
           }
       }
 
@@ -260,8 +260,8 @@ schemas:
           "description": "A single requisitionLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "$ref":"requisition", "required": true, "title": "requisition" },
-              "product": { "$ref":"product", "required": true, "title": "product" },
+              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": true, "title": "requisition" },
+              "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
               "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" },
               "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
               "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" }
@@ -275,7 +275,7 @@ schemas:
           "description": "A single requisitionTemplate",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "$ref":"program", "required": true, "title": "program" },
+              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
               "columnsMap": { "type": "array", "required": false, "title": "columnsMap", "items": { "type": "string", "title": "columnsMap" }, "uniqueItems": false }
           }
       }
@@ -320,7 +320,7 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "rights": { "type": "array", "required": false, "title": "rights", "items": { "$ref":"right" }, "uniqueItems": false }
+              "rights": { "type": "array", "required": false, "title": "rights", "items": { "type": "object", "$ref": "#/schemas/right" }, "uniqueItems": false }
           }
       }
 
@@ -349,10 +349,10 @@ schemas:
               "password": { "type": "string", "required": true, "title": "password" },
               "firstName": { "type": "string", "required": true, "title": "firstName" },
               "lastName": { "type": "string", "required": true, "title": "lastName" },
-              "homeFacility": { "$ref":"facility", "required": false, "title": "homeFacility" },
+              "homeFacility": { "type": "object", "$ref": "#/schemas/facility", "required": false, "title": "homeFacility" },
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
-              "roles": { "type": "array", "required": false, "title": "roles", "items": { "$ref":"role" }, "uniqueItems": false}
+              "roles": { "type": "array", "required": false, "title": "roles", "items": { "type": "object", "$ref": "#/schemas/role" }, "uniqueItems": false}
           }
       }
 
@@ -366,9 +366,9 @@ schemas:
               "code": { "type": "string", "required": true, "title": "code" },
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "facility": { "$ref": "facility", "required": true },
-              "parentNode": { "$ref": "supervisoryNode", "required": false },
-              "childNodes": { "type": "array", "required": false, "title": "childNodes", "items": { "$ref": "supervisoryNode" }, "uniqueItems": false}
+              "facility": { "type": "object", "$ref": "#/schemas/facility", "required": true },
+              "parentNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": false },
+              "childNodes": { "type": "array", "required": false, "title": "childNodes", "items": { "type": "object", "$ref": "#/schemas/supervisoryNode" }, "uniqueItems": false}
           }
       }
 
@@ -379,10 +379,10 @@ schemas:
           "description": "A single supplyLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "supervisoryNode": { "$ref": "supervisoryNode", "required": true },
+              "supervisoryNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": true },
               "description": { "type": "string", "required": false, "title": "description" },
-              "program": { "$ref": "program", "required": true },
-              "supplyingFacility": { "$ref": "facility", "required": true }
+              "program": { "type": "object", "$ref": "#/schemas/program", "required": true },
+              "supplyingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true }
           }
       }
 
@@ -394,7 +394,7 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": true, "title": "name" },
-              "stocks": { "type": "array", "required": false, "title": "stocks", "items": { "$ref": "stock" }, "uniqueItems": false }
+              "stocks": { "type": "array", "required": false, "title": "stocks", "items": { "type": "object", "$ref": "#/schemas/stock" }, "uniqueItems": false }
           }
       }
 
@@ -405,8 +405,8 @@ schemas:
           "description": "A single stock",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "stockInventory": { "$ref": "stockInventory", "required": true },
-              "product": { "$ref": "product", "required": true },
+              "stockInventory": { "type": "object", "$ref": "#/schemas/stockInventory", "required": true },
+              "product": { "type": "object", "$ref": "#/schemas/product", "required": true },
               "storedQuantity": { "type": "integer", "required": false, "title": "storedQuantity" }
           }
       }
@@ -421,9 +421,9 @@ schemas:
               "code": { "type": "string", "required": true, "unique": true, "title": "code" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
-              "supervisoryNode": { "$ref":"supervisoryNode", "required": true },
-              "requisitionGroupProgramScheules": { "type": "array", "required": false, "title": "requisitionGroupProgramSchedules", "items": { "$ref": "requisitionGroupProgramSchedule" }, "uniqueItems": false },
-              "memberFacilities": { "type": "array", "required": false, "title": "memberFacilities", "items": { "$ref": "facility" }, "uniqueItems": false }
+              "supervisoryNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": true },
+              "requisitionGroupProgramScheules": { "type": "array", "required": false, "title": "requisitionGroupProgramSchedules", "items": { "type": "object", "$ref": "#/schemas/requisitionGroupProgramSchedule" }, "uniqueItems": false },
+              "memberFacilities": { "type": "array", "required": false, "title": "memberFacilities", "items": { "type": "object", "$ref": "#/schemas/facility" }, "uniqueItems": false }
           }
       }
 
@@ -434,10 +434,10 @@ schemas:
           "description": "A single requisitionGroupProgramSchedule",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "$ref": "program", "required": true },
-              "processingSchedule": { "$ref": "schedule", "required": true },
+              "program": { "type": "object", "$ref": "#/schemas/program", "required": true },
+              "processingSchedule": { "type": "object", "$ref": "#/schemas/schedule", "required": true },
               "directDelivery": { "type": "boolean", "required": true, "title": "directDelivery" },
-              "dropOffFacility": { "$ref": "facility", "required": false }
+              "dropOffFacility": { "type": "object", "$ref": "#/schemas/facility", "required": false }
           }
       }
 
@@ -448,8 +448,8 @@ schemas:
           "description": "A single proofOfDelivery",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "order": { "$ref": "order", "required": true },
-              "profOfDeliveryLineItems": { "type": "array", "required": false, "title": "profOfDeliveryLineItems", "items": { "$ref": "proofOfDeliveryLine" }, "uniqueItems": false },
+              "order": { "type": "object", "$ref": "#/schemas/order", "required": true },
+              "profOfDeliveryLineItems": { "type": "array", "required": false, "title": "profOfDeliveryLineItems", "items": { "type": "object", "$ref": "#/schemas/proofOfDeliveryLine" }, "uniqueItems": false },
               "totalShippedPacks": { "type": "integer", "required": false, "title": "totalShippedPacks" },
               "totalReceivedPacks": { "type": "integer", "required": false, "title": "totalReceivedPacks" },
               "totalReturnedPacks": { "type": "integer", "required": false, "title": "totalReturnedPacks" },
@@ -466,8 +466,8 @@ schemas:
           "description": "A single proofOfDeliveryLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "orderLine": { "$ref": "orderLine", "required": true },
-              "proofOfDelivery": { "$ref": "proofOfDelivery", "required": true },
+              "orderLine": { "type": "object", "$ref": "#/schemas/orderLine", "required": true },
+              "proofOfDelivery": { "type": "object", "$ref": "#/schemas/proofOfDelivery", "required": true },
               "packToShip": { "type": "integer", "required": false, "title": "packToShip" },
               "quantityShipped": { "type": "integer", "required": false, "title": "quantityShipped" },
               "quantityReceived": { "type": "integer", "required": false, "title": "quantityReceived" },
