@@ -42,10 +42,12 @@ dependencies {
     compile "org.springframework:spring-test"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:2.4.0"
-    compile "com.itextpdf:itextpdf:5.5.9"
     compile "net.sf.supercsv:super-csv-dozer:2.4.0"
     compile "org.springframework.boot:spring-boot-starter-security"
     compile "org.springframework.security.oauth:spring-security-oauth2"
+    compile "net.sf.jasperreports:jasperreports:6.3.0"
+    compile "com.lowagie:itext:2.1.7"
+    compile "org.olap4j:olap4j:1.2.0"
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'

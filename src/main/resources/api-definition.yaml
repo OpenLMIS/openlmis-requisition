@@ -134,7 +134,8 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "product": { "$ref":"product", "required": true, "title": "product" },
               "orderedQuantity": { "type": "integer", "required": true, "title": "orderedQuantity" },
-              "order": { "$ref":"order", "required": false, "title": "order" }
+              "order": { "$ref":"order", "required": false, "title": "order" },
+              "filledQuantity": { "type": "integer", "required": true, "title": "filledQuantity" }
           }
       }
 
@@ -680,6 +681,40 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+                          
+    /{id}/print:
+        uriParameters:
+            id:
+                displayName: orderId
+                type: string
+                required: true
+                repeat: false
+        get:
+            is: [ secured ]
+            description: Print all order lines from an order to a csv or pdf file.
+            queryParameters:
+                format:
+                    displayName: format
+                    type: string
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                      Content-Disposition:
+                    body:
+                      application/pdf:
+                      text/csv:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /periods:
     displayName: Period
@@ -1335,3 +1370,66 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
+
+/facilities:
+    displayName: Facility
+    /{id}/orders:
+        uriParameters:
+            id:
+                displayName: homeFacilityId
+                type: string
+                required: true
+                repeat: false
+        get:
+            is: [ secured ]
+            description: Returns a list of filtered orders supplied by a home facility.
+            queryParameters:
+                programId:
+                    displayName: programId
+                    type: string
+                    required: false
+                    repeat: false
+                requestingFacilityId:
+                    displayName: requestingFacilityId
+                    type: string
+                    required: false
+                    repeat: false
+                periodId:
+                    displayName: periodId
+                    type: string
+                    required: false
+                    repeat: false
+                scheduleId:
+                    displayName: scheduleId
+                    type: string
+                    required: false
+                    repeat: false
+                startDate:
+                    displayName: startDate
+                    type: string
+                    required: false
+                    repeat: false
+                endDate:
+                    displayName: endDate
+                    type: string
+                    required: false
+                    repeat: false
+            responses:
+              200:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+              400:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              404:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              500:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
