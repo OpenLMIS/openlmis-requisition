@@ -7,11 +7,11 @@ import org.springframework.validation.Validator;
 
 public class RequisitionValidator implements Validator {
 
-  private static String VALUE_MUST_BE_ENTERED_NOTIFICATION =
+  private final static String VALUE_MUST_BE_ENTERED_NOTIFICATION =
           " must be entered prior to submission of a requisition.";
-  private static String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
+  private final static String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
           " must be a non-negative value.";
-  private static String REQUISITION_LINES = "requisitionLines";
+  private final static String REQUISITION_LINES = "requisitionLines";
 
   @Override
   public boolean supports(Class<?> clazz) {

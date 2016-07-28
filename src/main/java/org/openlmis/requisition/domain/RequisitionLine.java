@@ -48,11 +48,7 @@ public class RequisitionLine extends BaseEntity {
   @Getter
   @Setter
   private Integer totalLossesAndAdjustments;
-
-  /**
-   * Calculated before sending.
-   * beginningBalance + totalReceivedQuantity (+/-) totalLossesAdjustments - totalConsumedQuantity.
-   */
+  
   @Column
   @Getter
   @Setter
