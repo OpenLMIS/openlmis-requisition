@@ -1082,6 +1082,7 @@ resourceTypes:
                 required: true
                 repeat: false
         put:
+            is: [ secured ]
             description: Approve specified by id requisition.
             responses:
                 "200":
@@ -1097,6 +1098,7 @@ resourceTypes:
 
     /requisitions-for-approval:
         get:
+            is: [ secured ]
             description: Get requisitions to approve for right supervisor.
             responses:
                 "200":
@@ -1114,11 +1116,12 @@ resourceTypes:
         uriParameters:
             id:
                 displayName: id
+                description: requisition id
                 type: string
                 required: true
                 repeat: false
         get:
-            description: Find Get all comments for specified requisition.
+            description: Get all comments for specified requisition.
             responses:
                 "200":
                     headers:
@@ -1130,7 +1133,8 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-        put:
+        post:
+            is: [ secured ]
             description: Add comment to the requisition.
             body:
                 application/json:
