@@ -1,0 +1,44 @@
+/*
+Content style
+
+This is content style used in OpenLMIS.
+
+markup:
+<div class="logo clearfix">
+  <h1>OpenLMIS</h1>
+</div>
+<div class="content">
+  <h2>Content style title</h2>
+  <p>This is a sample paragraph</p>
+  <ul>
+    <li>List item</li>
+    <li>Another list item</li>
+  </ul>
+</div>
+
+Styleguide 1.1
+*/
+
+body {
+  background-color: #808080;
+  font-family: Arial, sans-serif;
+}
+
+.logo h1 {
+  float: left;
+  font-size: 2em;
+  font-weight: normal;
+  font-family: 'HelveticaNeue-CondensedBold', Arial, sans-serif;
+  line-height: 29px;
+  margin: 10px 0 0 10px;
+  color: #747474;
+  text-shadow: 0 1px 0 #FFF;
+}
+
+.content h2 {
+  margin-top: 0;
+  border-bottom: 1px solid #d6d6d6;
+  font-size: 1.4em;
+  font-weight: normal;
+  color: #17888f;
+}

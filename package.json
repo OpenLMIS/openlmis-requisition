@@ -4,11 +4,13 @@
 
   "devDependencies":
   {
-    "api-spec-converter" :  "~1.9.0"
+    "api-spec-converter":  "~1.9.0",
+    "raml2html": "~2.4.0"
   },
 
   "scripts":
   {
-    "runApiSpecConverter": "api-spec-converter --from raml --to swagger_2 /app/src/main/resources/api-definition-raml.yaml > /app/src/main/webapp/api-definition.json"
+    "runApiSpecConverter": "api-spec-converter --from raml --to swagger_2 /app/src/main/resources/api-definition-raml.yaml > /app/src/main/webapp/api-definition.json",
+    "runApiHtmlConverter": "raml2html --input /app/src/main/resources/api-definition-raml.yaml --output /app/src/main/resources/api-definition.html"
   }
 }

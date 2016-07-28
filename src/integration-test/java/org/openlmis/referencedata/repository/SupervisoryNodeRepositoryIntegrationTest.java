@@ -1,11 +1,12 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.SupervisoryNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
@@ -73,7 +74,6 @@ public class SupervisoryNodeRepositoryIntegrationTest extends
     SupervisoryNode node = new SupervisoryNode();
     node.setCode("Code #" + instanceNumber);
     node.setName("SupervisoryNode #" + instanceNumber);
-    node.setSupervisorCount(0);
     node.setFacility(facility);
     return node;
   }

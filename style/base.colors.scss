@@ -1,0 +1,29 @@
+/*
+Colors
+
+Primary color used in OpenLMIS is presented below.
+
+markup:
+<div class="navigation"/>
+
+Styleguide 1.2
+*/
+
+.navigation {
+  background: #42a7ad;
+  background: -moz-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #0d8d98), color-stop(100%, #0d6369));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #0d8d98 0%, #0d6369 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0d8d98', endColorstr='#0d6369', GradientType=0);
+  /* IE6-9 */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4);
+}

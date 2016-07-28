@@ -1,0 +1,30 @@
+/*
+Rnr navigation tabs
+
+This is example of error visible at navigation tab after incorrect submit requisition.
+
+markup:
+<div class="rnr-tabs clearfix">
+  <ul class="clearfix" set-focus="">
+    <li class="selected has-error">
+      <a id=fullSupplyTab" href="">Full Supply Product(s)</a>
+    </li>
+    <li>
+      <a id="nonFullSupplyTab" href="">Non Full Supply Product(s)</a>
+    </li>
+  </ul>
+</div>
+
+Styleguide 2.3
+*/
+
+.rnr-tabs li.selected {
+  background: #307579;
+}
+.rnr-tabs li.has-error a {
+  padding-left: 33px;
+  background-image: url("../images/tab-error.png");
+  background-position: 9px center;
+  background-repeat: no-repeat;
+}
+

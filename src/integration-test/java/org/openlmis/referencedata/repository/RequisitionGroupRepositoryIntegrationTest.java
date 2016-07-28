@@ -1,12 +1,14 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.Before;
+import org.openlmis.hierarchyandsupervision.domain.RequisitionGroup;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupRepository;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.RequisitionGroup;
-import org.openlmis.referencedata.domain.SupervisoryNode;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -82,7 +84,6 @@ public class RequisitionGroupRepositoryIntegrationTest
 
     supervisoryNode = new SupervisoryNode();
     supervisoryNode.setCode(code);
-    supervisoryNode.setSupervisorCount(0);
     supervisoryNode.setFacility(facility);
     supervisoryNodeRepository.save(supervisoryNode);
   }

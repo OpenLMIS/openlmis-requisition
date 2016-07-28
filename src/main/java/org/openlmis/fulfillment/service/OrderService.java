@@ -1,24 +1,43 @@
 package org.openlmis.fulfillment.service;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.csv.generator.CsvGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.SupplyLine;
+import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +46,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -39,7 +60,25 @@ public class OrderService {
   @PersistenceContext
   EntityManager entityManager;
 
-  public static String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
+  @Autowired
+  private RequisitionService requisitionService;
+
+  @Autowired
+  private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private SupplyLineRepository supplyLineRepository;
+
+  @Autowired
+  private OrderLineRepository orderLineRepository;
+
+  @Autowired
+  private OrderRepository orderRepository;
+
+  public final static String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
                                             "productName", "productCode", "orderedQuantity",
                                             "filledQuantity"};
 
@@ -95,8 +134,7 @@ public class OrderService {
    */
   public String orderToCsv(Order order, String[] chosenColumns) {
     if (order != null) {
-      OrderService orderService = new OrderService();
-      List<Map<String, Object>> rows = orderService.orderToRows(order);
+      List<Map<String, Object>> rows = orderToRows(order);
       CsvGenerator generator = new CsvGenerator();
 
       return generator.toCsv(rows, chosenColumns);
@@ -114,43 +152,40 @@ public class OrderService {
   public void orderToPdf(Order order, String[] chosenColumns, OutputStream out) {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
-      writePdf(order.getOrderCode(), rows, chosenColumns, out);
+      writePdf(rows, chosenColumns, out);
     }
   }
 
-  private void writePdf(String orderCode, List<Map<String, Object>> rows, String[] chosenColumns,
+  //TODO: fix this temporary method after JasperTemplate class is finished
+  private void writePdf(List<Map<String, Object>> data, String[] chosenColumns,
                         OutputStream out) {
-    if (!rows.isEmpty()) {
-      Document document = new Document();
-      try {
-        PdfWriter.getInstance(document, out);
-        document.open();
-        PdfPTable headerTable = new PdfPTable(1);
-        headerTable.setWidthPercentage(100);
-        PdfPCell cell = new PdfPCell(new Phrase("Order - " + orderCode));
-        cell.setPadding(0);
-        cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER);
-        cell.setBorder(PdfPCell.NO_BORDER);
-        headerTable.addCell(cell);
-        headerTable.setSpacingAfter(10f);
-        document.add(headerTable);
-        PdfPTable table = new PdfPTable(chosenColumns.length);
-        for (String column : chosenColumns) {
-          cell = new PdfPCell(new Phrase(column));
-          cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-          table.addCell(cell);
-        }
-        for (Map<String, Object> row : rows) {
-          for (String column : chosenColumns) {
-            table.addCell(row.get(column).toString());
-          }
-        }
-        document.add(table);
-      } catch (DocumentException ex) {
-        logger.debug("Error writing pdf file to output stream.", ex);
-      } finally {
-        document.close();
+    try {
+      ClassLoader classLoader = getClass().getClassLoader();
+      File template = new File(classLoader.getResource("jasperTemplates/ordersJasperTemplate.jrxml").getFile());
+      FileInputStream fis = new FileInputStream(template);
+      JasperReport pdfTemplate = JasperCompileManager.compileReport(fis);
+      HashMap<String, Object>[] params = new HashMap[data.size()];
+      int i = 0;
+      for (Map<String, Object> dataRow : data) {
+        params[i] = new HashMap<>();
+        params[i].put(DEFAULT_COLUMNS[3], dataRow.get(DEFAULT_COLUMNS[3]));
+        params[i].put(DEFAULT_COLUMNS[6], dataRow.get(DEFAULT_COLUMNS[6]));
+        params[i].put(DEFAULT_COLUMNS[5], dataRow.get(DEFAULT_COLUMNS[5]));
+        i++;
       }
+      JRMapArrayDataSource dataSource = new JRMapArrayDataSource(params);
+      JasperPrint jasperPrint = JasperFillManager.fillReport(pdfTemplate, new HashMap<>(),
+              dataSource);
+      JRPdfExporter exporter = new JRPdfExporter();
+      exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+      exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+      exporter.exportReport();
+    } catch (JRException ex) {
+      logger.debug("Error compiling jasper template.", ex);
+    } catch (FileNotFoundException ex) {
+      logger.debug("Error reading from file.", ex);
+    } catch (NullPointerException ex) {
+      logger.debug("File does not exist." , ex);
     }
   }
 
@@ -178,5 +213,51 @@ public class OrderService {
       }
     }
     return rows;
+  }
+
+  /**
+   * Converting Requisition list to Orders.
+   */
+  @Transactional
+  public void convertToOrder(List<Requisition> requisitionList, UUID userId) {
+    User user = userRepository.findOne(userId);
+    requisitionService.releaseRequisitionsAsOrder(requisitionList);
+    Order order;
+
+    for (Requisition requisition : requisitionList) {
+      requisition = requisitionRepository.findOne(requisition.getId());
+
+      order = new Order();
+      order.setCreatedBy(user);
+      order.setRequisition(requisition);
+      order.setStatus(OrderStatus.ORDERED);
+
+      order.setReceivingFacility(requisition.getFacility());
+      order.setRequestingFacility(requisition.getFacility());
+
+      SupplyLine supplyLine = supplyLineRepository.findByProgramAndSupervisoryNode(
+          requisition.getProgram(), requisition.getSupervisoryNode());
+
+      order.setSupplyingFacility(supplyLine.getSupplyingFacility());
+      order.setProgram(supplyLine.getProgram());
+
+      order.setOrderCode(getOrderCodeFor(requisition, order.getProgram()));
+      order.setQuotedCost(BigDecimal.ZERO);
+
+      orderRepository.save(order);
+
+      for (RequisitionLine rl : requisition.getRequisitionLines()) {
+        OrderLine orderLine = new OrderLine();
+        orderLine.setOrder(order);
+        orderLine.setProduct(rl.getProduct());
+        orderLine.setFilledQuantity(0L);
+        orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
+        orderLineRepository.save(orderLine);
+      }
+    }
+  }
+
+  private String getOrderCodeFor(Requisition requisition, Program program) {
+    return program.getCode() + requisition.getId() + (requisition.getEmergency() ? "E" : "R");
   }
 }

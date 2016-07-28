@@ -1,19 +1,18 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
@@ -28,6 +27,7 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.domain.StockInventory;
+import org.openlmis.referencedata.domain.SupplyLine;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -37,34 +37,29 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.StockInventoryRepository;
 import org.openlmis.referencedata.repository.StockRepository;
+import org.openlmis.referencedata.repository.SupplyLineRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Iterator;
+import java.util.Collections;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
 @SuppressWarnings("PMD.TooManyMethods")
-public class OrderControllerIntegrationTest {
+public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -111,10 +106,17 @@ public class OrderControllerIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
-  private static final String RESOURCE_FINALIZE_URL = System.getenv("BASE_URL")
-      + "/api/orders/finalizeOrder";
+  @Autowired
+  private SupervisoryNodeRepository supervisoryNodeRepository;
 
-  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/orders";
+  @Autowired
+  private SupplyLineRepository supplyLineRepository;
+
+  private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
+
+  private static final String RESOURCE_URL = BASE_URL + "/api/orders";
+
+  private static final String USERNAME = "testUser";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -123,12 +125,9 @@ public class OrderControllerIntegrationTest {
   private Product secondProduct = new Product();
   private StockInventory firstStockInventory = new StockInventory();
   private User firstUser = new User();
-  private Program firstProgram = new Program();
-  private Program secondProgram = new Program();
-  private Period firstPeriod = new Period();
-  private Period secondPeriod = new Period();
-  private Schedule firstSchedule = new Schedule();
-  private Schedule secondSchedule = new Schedule();
+  private Requisition requisition;
+  private SupplyLine supplyLine;
+  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -149,10 +148,11 @@ public class OrderControllerIntegrationTest {
 
     Program program = addProgram("programCode");
 
-    User user = addUser("userName", "userPassword", "userFirstName", "userLastName", facility);
+    Assert.assertEquals(1, userRepository.count());
+    user = userRepository.findAll().iterator().next();
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
-                          OrderStatus.PICKING, new BigDecimal("1.29"));
+                          OrderStatus.ORDERED, new BigDecimal("1.29"));
 
     ProductCategory productCategory1 = addProductCategory("PC1", "PC1 name", 1);
 
@@ -164,13 +164,13 @@ public class OrderControllerIntegrationTest {
     secondProduct = addProduct("secondProductName", "secondProductCode", "unit",
                                10, 1, 0, false, true, true, false, productCategory2);
 
-    firstSchedule = addSchedule("Schedule1", "S1");
+    Schedule schedule1 = addSchedule("Schedule1", "S1");
 
-    secondSchedule = addSchedule("Schedule2", "S2");
+    Schedule schedule2 = addSchedule("Schedule2", "S2");
 
-    firstProgram = addProgram("P1");
+    Program program1 = addProgram("P1");
 
-    secondProgram = addProgram("P2");
+    Program program2 = addProgram("P2");
 
     GeographicLevel geographicLevel1 = addGeographicLevel("GL1", 1);
 
@@ -184,10 +184,10 @@ public class OrderControllerIntegrationTest {
 
     FacilityType facilityType2 = addFacilityType("FT2");
 
-    firstPeriod = addPeriod("P1", firstSchedule, LocalDate.of(2015, Month.JANUARY, 1),
+    Period period1 = addPeriod("P1", schedule1, LocalDate.of(2015, Month.JANUARY, 1),
             LocalDate.of(2015, Month.DECEMBER, 31));
 
-    secondPeriod = addPeriod("P2", secondSchedule, LocalDate.of(2016, Month.JANUARY, 1),
+    Period period2 = addPeriod("P2", schedule2, LocalDate.of(2016, Month.JANUARY, 1),
             LocalDate.of(2016, Month.DECEMBER, 31));
 
     Facility facility1 = addFacility("facility1", "F1", null, facilityType1,
@@ -196,18 +196,18 @@ public class OrderControllerIntegrationTest {
     Facility facility2 = addFacility("facility2", "F2", null, facilityType2,
                                      geographicZone2, null, true, false);
 
-    Requisition requisition1 = addRequisition(firstProgram, facility1, firstPeriod,
-                                              RequisitionStatus.RELEASED);
+    Requisition requisition1 = addRequisition(program1, facility1, period1,
+                                              RequisitionStatus.RELEASED, null);
 
-    Requisition requisition2 = addRequisition(secondProgram, facility1, secondPeriod,
-                                              RequisitionStatus.RELEASED);
+    Requisition requisition2 = addRequisition(program2, facility1, period2,
+                                              RequisitionStatus.RELEASED, null);
 
-    firstUser = addUser("user", "pass", "Alice", "Cat", facility1);
+    firstUser = addUser(USERNAME, "pass", "Alice", "Cat", facility1);
 
-    secondOrder = addOrder(requisition1, "O2", firstProgram, firstUser, facility2, facility2,
+    secondOrder = addOrder(requisition1, "O2", program1, firstUser, facility2, facility2,
                            facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
-    thirdOrder = addOrder(requisition2, "O3", secondProgram, firstUser, facility2, facility2,
+    thirdOrder = addOrder(requisition2, "O3", program2, firstUser, facility2, facility2,
                           facility1, OrderStatus.RECEIVED, new BigDecimal(200));
 
     ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
@@ -231,6 +231,29 @@ public class OrderControllerIntegrationTest {
 
     addOrderLine(thirdOrder, product2, 5L, 10L,
             null, null, null, null);
+
+    geographicLevel = addGeographicLevel("levelCode", 1);
+
+    facilityType = addFacilityType("typeCode");
+
+    geographicZone = addGeographicZone("zoneCode", geographicLevel);
+
+    Facility supplyingFacility = addFacility("supplyingFacilityName", "supplyingFacilityCode",
+        "description", facilityType, geographicZone, null, true, true);
+
+    SupervisoryNode supervisoryNode = addSupervisoryNode(supplyingFacility);
+
+    program = addProgram("progCode");
+
+    Schedule schedule = addSchedule("Schedule3", "S3");
+
+    Period period = addPeriod("P3", schedule, LocalDate.of(2015, Month.JANUARY, 1),
+        LocalDate.of(2015, Month.DECEMBER, 31));
+
+    requisition = addRequisition(program, supplyingFacility, period,
+        RequisitionStatus.APPROVED, supervisoryNode);
+
+    supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
   }
 
   /**
@@ -238,16 +261,21 @@ public class OrderControllerIntegrationTest {
    */
   @After
   public void cleanUp() {
+    supplyLineRepository.deleteAll();
     orderLineRepository.deleteAll();
     orderRepository.deleteAll();
     stockRepository.deleteAll();
     requisitionRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
     programRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    userRepository.deleteAll();
+    Iterable<User> users = userRepository.findByUsername(USERNAME);
+    if (users != null && users.iterator().hasNext()) {
+      userRepository.delete(users);
+    }
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -340,12 +368,15 @@ public class OrderControllerIntegrationTest {
   }
 
   private Requisition addRequisition(Program program, Facility facility, Period processingPeriod,
-                                     RequisitionStatus requisitionStatus) {
+                                     RequisitionStatus requisitionStatus,
+                                     SupervisoryNode supervisoryNode) {
     Requisition requisition = new Requisition();
     requisition.setProgram(program);
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(processingPeriod);
     requisition.setStatus(requisitionStatus);
+    requisition.setEmergency(false);
+    requisition.setSupervisoryNode(supervisoryNode);
     return requisitionRepository.save(requisition);
   }
 
@@ -362,6 +393,23 @@ public class OrderControllerIntegrationTest {
     orderLine.setVvm(vvm);
     orderLine.setManufacturer(manufacturer);
     return orderLineRepository.save(orderLine);
+  }
+
+  private SupervisoryNode addSupervisoryNode(Facility supplyingFacility) {
+    SupervisoryNode supervisoryNode = new SupervisoryNode();
+    supervisoryNode.setCode("NodeCode");
+    supervisoryNode.setName("NodeName");
+    supervisoryNode.setFacility(supplyingFacility);
+    return supervisoryNodeRepository.save(supervisoryNode);
+  }
+
+  private SupplyLine addSupplyLine(SupervisoryNode supervisoryNode, Program program,
+                                   Facility supplyingFacility) {
+    SupplyLine supplyLine = new SupplyLine();
+    supplyLine.setSupervisoryNode(supervisoryNode);
+    supplyLine.setProgram(program);
+    supplyLine.setSupplyingFacility(supplyingFacility);
+    return supplyLineRepository.save(supplyLine);
   }
 
   private Stock addStock(Product product, Long quantity) {
@@ -410,17 +458,26 @@ public class OrderControllerIntegrationTest {
     addStock(secondProduct, 123456L);
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     RestTemplate restTemplate = new RestTemplate();
 
-    ObjectMapper mapper = new ObjectMapper();
-    String orderJson = mapper.writeValueAsString(firstOrder.getId());
-    HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
-
-    ResponseEntity<?> result = restTemplate.postForEntity(RESOURCE_FINALIZE_URL, entity,
-                                                          String.class);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+    ResponseEntity<?> result =  restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
 
     Assert.assertEquals(result.getStatusCode(), HttpStatus.OK);
+
+    Order resultOrder = orderRepository.findOne(firstOrder.getId());
+    Assert.assertEquals(resultOrder.getStatus(), OrderStatus.SHIPPED);
+
+    Stock stock1 = stockRepository
+        .findByStockInventoryAndProduct(firstStockInventory, firstProduct);
+    Assert.assertEquals(stock1.getStoredQuantity().longValue(), 1111L);
+
+    Stock stock2 = stockRepository
+        .findByStockInventoryAndProduct(firstStockInventory, secondProduct);
+    Assert.assertEquals(stock2.getStoredQuantity().longValue(), 111111L);
   }
 
   @Test(expected = HttpClientErrorException.class)
@@ -432,14 +489,15 @@ public class OrderControllerIntegrationTest {
             LocalDate.of(2016, 1, 1), "orderLineVvm2", "orderLineManufacturer2");
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     RestTemplate restTemplate = new RestTemplate();
 
-    ObjectMapper mapper = new ObjectMapper();
-    String orderJson = mapper.writeValueAsString(firstOrder.getId());
-    HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    restTemplate.postForEntity(RESOURCE_FINALIZE_URL, entity, String.class);
+
+    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
 
   @Test(expected = HttpClientErrorException.class)
@@ -452,42 +510,30 @@ public class OrderControllerIntegrationTest {
     addStock(secondProduct, 12L);
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     RestTemplate restTemplate = new RestTemplate();
 
-    ObjectMapper mapper = new ObjectMapper();
-    String orderJson = mapper.writeValueAsString(firstOrder.getId());
-    HttpEntity<String> entity = new HttpEntity<>(orderJson, headers);
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    restTemplate.postForEntity(RESOURCE_FINALIZE_URL, entity, String.class);
+    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
 
-  @Test
-  public void testOrderList() throws JsonProcessingException {
+  @Test(expected = HttpClientErrorException.class)
+  public void testWrongOrderStatus() throws JsonProcessingException {
+    firstOrder.setStatus(OrderStatus.SHIPPED);
+    orderRepository.save(firstOrder);
+
+    HttpHeaders headers = new HttpHeaders();
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL)
-            .queryParam("user", firstUser.getId())
-            .queryParam("program", firstProgram.getId())
-            .queryParam("period", firstPeriod.getId())
-            .queryParam("schedule", firstSchedule.getId());
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
+        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
+    String uri = uriComponents.toUriString();
+    HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    ResponseEntity<Iterable<Order>> orderListResponse = restTemplate.exchange(builder.toUriString(),
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<Iterable<Order>>() { });
-
-    Iterable<Order> orderList = orderListResponse.getBody();
-    Iterator<Order> orderIterator = orderList.iterator();
-    Assert.assertTrue(orderIterator.hasNext());
-    Order testOrder = orderIterator.next();
-    Assert.assertFalse(orderIterator.hasNext());
-    Assert.assertEquals(testOrder.getId(), secondOrder.getId());
-    Assert.assertEquals(testOrder.getRequisition().getId(), secondOrder.getRequisition().getId());
-    Assert.assertEquals(testOrder.getCreatedBy().getId(), secondOrder.getCreatedBy().getId());
-    Assert.assertEquals(testOrder.getOrderCode(), secondOrder.getOrderCode());
-    Assert.assertEquals(testOrder.getOrderLines().size(), 2);
-    Assert.assertEquals(testOrder.getCreatedDate(), secondOrder.getCreatedDate());
+    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
 
   @Test
@@ -496,7 +542,8 @@ public class OrderControllerIntegrationTest {
 
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
             + secondOrder.getId() + "/print")
-            .queryParam("format", "csv");
+            .queryParam("format", "csv")
+            .queryParam("access_token", getToken());
 
     ResponseEntity<?> printOrderResponse = restTemplate.exchange(builder.toUriString(),
             HttpMethod.GET,
@@ -518,7 +565,8 @@ public class OrderControllerIntegrationTest {
 
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
             + thirdOrder.getId() + "/print")
-            .queryParam("format", "pdf");
+            .queryParam("format", "pdf")
+            .queryParam("access_token", getToken());
 
     ResponseEntity<?> printOrderResponse = restTemplate.exchange(builder.toUriString(),
             HttpMethod.GET,
@@ -526,6 +574,31 @@ public class OrderControllerIntegrationTest {
             new ParameterizedTypeReference<String>() { });
 
     String pdfContent = printOrderResponse.getBody().toString();
-    Assert.assertTrue(pdfContent != null);
+    Assert.assertNotNull(pdfContent);
+  }
+
+  @Test
+  public void testConvertToOrder() {
+    RestTemplate restTemplate = new RestTemplate();
+    String url = addTokenToUrl(RESOURCE_URL);
+
+    orderRepository.deleteAll();
+
+    restTemplate.exchange(url, HttpMethod.POST,
+            new HttpEntity<Object>(Collections.singletonList(requisition)), String.class);
+
+    Assert.assertEquals(1, orderRepository.count());
+    Order order = orderRepository.findAll().iterator().next();
+
+    Assert.assertEquals(user.getId(), order.getCreatedBy().getId());
+
+    Assert.assertEquals(OrderStatus.ORDERED, order.getStatus());
+    Assert.assertEquals(order.getRequisition().getId(), requisition.getId());
+    Assert.assertEquals(order.getReceivingFacility().getId(), requisition.getFacility().getId());
+    Assert.assertEquals(order.getRequestingFacility().getId(), requisition.getFacility().getId());
+
+    Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
+    Assert.assertEquals(order.getSupplyingFacility().getId(),
+            supplyLine.getSupplyingFacility().getId());
   }
 }

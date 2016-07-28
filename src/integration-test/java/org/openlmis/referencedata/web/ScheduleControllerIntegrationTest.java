@@ -1,5 +1,8 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import com.jayway.restassured.RestAssured;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
@@ -8,27 +11,15 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
-public class ScheduleControllerIntegrationTest {
-  private static final String BASE_URL = System.getenv("BASE_URL");
+public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML " 
       + "definition.";
 
@@ -81,6 +72,7 @@ public class ScheduleControllerIntegrationTest {
   public void testGetTotalDifference() {
     String response = restAssured.given()
         .pathParam("id", schedule.getId())
+        .queryParam("access_token", getToken())
         .when()
         .get("/api/schedules/{id}/difference")
         .then()

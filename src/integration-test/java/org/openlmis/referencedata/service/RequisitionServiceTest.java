@@ -5,6 +5,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
+import org.openlmis.hierarchyandsupervision.domain.Right;
+import org.openlmis.hierarchyandsupervision.domain.Role;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.RightRepository;
+import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -29,11 +37,21 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@SuppressWarnings("PMD.TooManyMethods")
 @Transactional
 public class RequisitionServiceTest {
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
+
+  @Autowired
+  private SupervisoryNodeRepository supervisoryNodeRepository;
 
   @Autowired
   private RequisitionService requisitionService;
@@ -62,7 +80,23 @@ public class RequisitionServiceTest {
   @Autowired
   private GeographicZoneRepository geographicZoneRepository;
 
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private RoleRepository roleRepository;
+
+  @Autowired
+  private RightRepository rightRepository;
+
   private Requisition requisition;
+  private Requisition requisition2;
+  private Requisition requisition3;
+  private SupervisoryNode supervisoryNode;
+  private User user;
+  private Facility facility;
+  private Period period;
+  private Program program;
 
   /** Prepare the test environment. */
   @Before
@@ -70,6 +104,7 @@ public class RequisitionServiceTest {
     requisitionRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -80,20 +115,29 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testTryDelete() {
+  public void testTryDelete() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
 
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisition.getId());
     Assert.assertTrue(deleted);
   }
 
   @Test
-  public void testTryDeleteBadStatus() {
+  public void testTryDeleteBadStatus() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    boolean deleted = requisitionService.tryDelete(requisition);
+    boolean deleted = requisitionService.tryDelete(requisition.getId());
+    Assert.assertFalse(deleted);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void testTryDeleteRequisitionDoesNotExist() throws RequisitionException {
+    UUID id = requisition.getId();
+    requisitionRepository.delete(id);
+
+    boolean deleted = requisitionService.tryDelete(id);
     Assert.assertFalse(deleted);
   }
 
@@ -122,12 +166,10 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldRejectRequisition() {
+  public void shouldRejectRequisition() throws RequisitionException {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
-
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
 
     requisitionService.reject(requisition.getId());
 
@@ -135,7 +177,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotAllowRejectionIfRequisitionStatusIsWrong() {
+  public void shouldNotAllowRejectionIfRequisitionStatusIsWrong() throws RequisitionException {
 
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisitionRepository.save(requisition);
@@ -145,11 +187,116 @@ public class RequisitionServiceTest {
     requisitionService.reject(requisition.getId());
   }
 
+  @Test
+  @Transactional
+  public void getAuthorizedRequisitionsForSupervisorNode() {
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisitionRepository.save(requisition);
+
+    requisition2.setStatus(RequisitionStatus.AUTHORIZED);
+    requisition2.setSupervisoryNode(supervisoryNode);
+    requisitionRepository.save(requisition2);
+
+    requisition3.setSupervisoryNode(supervisoryNode);
+    requisitionRepository.save(requisition3);
+
+    List<Requisition> requisitionList =
+        requisitionService.getAuthorizedRequisitions(supervisoryNode);
+    List<Requisition> expected = new ArrayList<>();
+    expected.add(requisition);
+    expected.add(requisition2);
+
+    Assert.assertEquals(expected, requisitionList);
+  }
+
+  @Test
+  @Transactional
+  public void getRequisitionsForApprove() {
+    Right approveRight = new Right();
+    approveRight.setName("APPROVE_REQUISITION");
+    approveRight.setRightType("APPROVE_REQUISITION");
+    rightRepository.save(approveRight);
+    List<Right> rightList = new ArrayList<>();
+    rightList.add(approveRight);
+
+    Role approveRole = new Role();
+    approveRole.setRights(rightList);
+    approveRole.setSupervisedNode(supervisoryNode);
+    approveRole.setName("Approve Role");
+    roleRepository.save(approveRole);
+    List<Role> roleList = new ArrayList<>();
+    roleList.add(approveRole);
+
+    user.setRoles(roleList);
+    user = userRepository.save(user);
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisitionRepository.save(requisition);
+
+    requisition2.setSupervisoryNode(supervisoryNode);
+    requisitionRepository.save(requisition2);
+
+    List<Requisition> requisitionList = requisitionService.getRequisitionsForApproval(user.getId());
+    List<Requisition> expected = new ArrayList<>();
+    expected.add(requisition);
+
+    Assert.assertEquals(expected, requisitionList);
+  }
+
+  @Test
+  public void shouldAuthorizeRequisition() throws RequisitionException {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    
+    requisitionService.authorize(requisition.getId(), requisition, false);
+
+    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void shouldNotInitiateRequisitionWhenItAlreadyExists() throws RequisitionException {
+    requisitionService.initiateRequisition(
+        facility.getId(), program.getId(), period.getId(), false);
+  }
+
+  @Test(expected = RequisitionException.class)
+  public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() throws RequisitionException {
+
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+
+    requisitionService.authorize(requisition.getId(), requisition, false);
+  }
+
+  @Test
+  public void shouldReleaseRequisitionsAsOrder() {
+    Assert.assertNotEquals(RequisitionStatus.RELEASED, requisition.getStatus());
+    List<Requisition> requisitions = Collections.singletonList(requisition);
+    requisitionService.releaseRequisitionsAsOrder(requisitions);
+
+    requisition = requisitionRepository.findOne(requisition.getId());
+    Assert.assertEquals(RequisitionStatus.RELEASED, requisition.getStatus());
+  }
+
   private void createTestRequisition() {
-    Program program = new Program();
+    user = new User();
+    user.setUsername("Username");
+    user.setFirstName("Firstname");
+    user.setLastName("Lastname");
+    user = userRepository.save(user);
+
+    program = new Program();
     program.setCode(requisitionRepositoryName);
     program.setPeriodsSkippable(true);
     programRepository.save(program);
+
+    Program program2 = new Program();
+    program2.setCode("test code");
+    program2.setPeriodsSkippable(true);
+    programRepository.save(program2);
 
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
@@ -165,7 +312,7 @@ public class RequisitionServiceTest {
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
-    Facility facility = new Facility();
+    facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode(requisitionRepositoryName);
@@ -174,11 +321,22 @@ public class RequisitionServiceTest {
     facilityRepository.save(facility);
 
     Schedule schedule = new Schedule();
+    schedule.setName("scheduleName");
+    schedule.setCode(requisitionRepositoryName);
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
+    period = new Period();
     period.setProcessingSchedule(schedule);
+    period.setStartDate(LocalDate.of(2016, 1, 1));
+    period.setEndDate(LocalDate.of(2016, 1, 2));
+    period.setName("periodName");
+    period.setDescription("description");
     periodRepository.save(period);
+
+    supervisoryNode = new SupervisoryNode();
+    supervisoryNode.setCode("Test");
+    supervisoryNode.setFacility(facility);
+    supervisoryNodeRepository.save(supervisoryNode);
 
     requisition = new Requisition();
     requisition.setFacility(facility);
@@ -186,5 +344,19 @@ public class RequisitionServiceTest {
     requisition.setProgram(program);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
+
+    requisition2 = new Requisition();
+    requisition2.setFacility(facility);
+    requisition2.setProcessingPeriod(period);
+    requisition2.setProgram(program2);
+    requisition2.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition2);
+
+    requisition3 = new Requisition();
+    requisition3.setFacility(facility);
+    requisition3.setProcessingPeriod(period);
+    requisition3.setProgram(program2);
+    requisition3.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition3);
   }
 }

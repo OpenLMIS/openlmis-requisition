@@ -7,6 +7,7 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 
 import java.util.List;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -20,7 +21,8 @@ import javax.persistence.Table;
 @Table(name = "users", schema = "referencedata")
 @NoArgsConstructor
 public class User extends BaseEntity {
-  @Column(nullable = false, columnDefinition = "text")
+
+  @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
   private String username;
@@ -60,6 +62,11 @@ public class User extends BaseEntity {
   @Setter
   private List<Role> roles;
 
+  public User(UUID id, String userName) {
+    this.setId(id);
+    this.setUsername(userName);
+  }
+
   @PrePersist
   private void prePersist() {
     if (this.verified == null) {
@@ -69,5 +76,9 @@ public class User extends BaseEntity {
     if (this.active == null) {
       this.active = false;
     }
+  }
+
+  public User basicInformation() {
+    return new User(getId(), getUsername());
   }
 }

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,6 +19,11 @@ public class MessageController {
   @Autowired
   private ExposedMessageSource messageSource;
 
+  /**
+   * Example usage of ExposedMessageSource.
+   * @return hello world message
+   */
+  @PreAuthorize("principal.username == 'admin'")
   @RequestMapping("/hello")
   public String hello() {
     String[] msgArgs = {"world"};

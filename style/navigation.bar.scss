@@ -1,0 +1,127 @@
+/*
+Navigation bar
+
+Navigation bar in OpenLMIS can include links, lists of links called submenu and headings providing description for these items.
+
+markup:
+<form style="height: 240px;">
+  <div class="navigation toggleFullScreen">
+    <ul class="clearfix">
+      <li>
+        <a href="">Home</a>
+      </li>
+      <li>
+        <a href="">Requisition</a>
+        <div class="submenu">
+          <ul>
+            <li>
+              <a href="">Create / Authorize</a>
+            </li>
+            <li>
+              <a href="">Approve</a>
+            </li>          
+            <li>
+              <a href="">Convert to Order</a>
+            </li>
+            <li>
+              <a href="">View</a>
+            </li>
+            <li class="beak"></li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <a href="">Administration</a>
+        <div class="submenu">
+          <ul>
+            <li>
+              <a href="">Upload</a>
+            </li>
+            <li>
+              <a href="">Configure</a>
+	        <div class="submenu">
+	          <ul>
+		    <li>
+		      <a href="">R & R Template</a>
+		    </li>
+                    <li>
+		      <a href="">Regimen Template</a>
+		    </li>       
+                    <li>
+		      <a href="">Program Product ISA</a>
+		    </li>
+		    <li>
+		      <a href="">System Setings</a>
+		    </li>
+		    <li>
+		      <a href="">Other Setings</a>
+		    </li>
+		    <li class="beak"></li>
+		  </ul>
+	      </div>
+            </li>
+            <li class="beak"></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+</form>
+
+Styleguide 2.1
+*/
+
+.navigation {
+  background: #42a7ad;
+  background: -moz-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #0d8d98), color-stop(100%, #0d6369));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #0d8d98 0%, #0d6369 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #0d8d98 0%, #0d6369 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0d8d98', endColorstr='#0d6369', GradientType=0);
+  /* IE6-9 */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4);
+  height: 40px;
+  font-size: 0.9em;
+  border-bottom: 1px solid #a2cdc5;
+  position: relative;
+  font-weight: bold;
+  z-index: 2;
+}
+.navigation a {
+  display: block;
+  text-decoration: none;
+  color: #FFF;
+}
+.navigation ul {
+  list-style: none;
+  margin: 0;
+}
+.navigation > ul > li > a {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+  padding: 3px 14px;
+  border-radius: 3px;
+}
+.navigation .submenu {
+  display: none;
+  padding-top: 10px;
+  position: absolute;
+  min-width: 150px;
+  left: 0;
+  top: 22px;
+}
+.navigation ul ul .submenu {
+  padding: 0 0 0 10px;
+  left: 97%;
+  top: 1px;
+}
+.navigation ul li:hover > .submenu {
+  display: block !important;
+}

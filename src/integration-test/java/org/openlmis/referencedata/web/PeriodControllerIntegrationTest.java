@@ -1,35 +1,35 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
-public class PeriodControllerIntegrationTest {
+public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private ScheduleRepository scheduleRepository;
@@ -37,15 +37,24 @@ public class PeriodControllerIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private static final String RESOURCE_URL = System.getenv("BASE_URL") + "/api/periods";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
+  private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
   private Schedule schedule = new Schedule();
 
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
+
   /** Prepare the test environment. */
   @Before
   public void setUp() {
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
+
     cleanup();
 
     schedule.setCode("code");
@@ -85,7 +94,7 @@ public class PeriodControllerIntegrationTest {
 
     HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
 
-    restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
+    restTemplate.postForEntity(resourceUrl, periodEntity, Period.class);
 
     secondPeriod.setProcessingSchedule(schedule);
 
@@ -94,7 +103,7 @@ public class PeriodControllerIntegrationTest {
     HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
 
     ResponseEntity<Period> result = restTemplate.postForEntity(
-            RESOURCE_URL, secondPeriodEntity, Period.class);
+            resourceUrl, secondPeriodEntity, Period.class);
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Period savedPeriod = result.getBody();
@@ -118,7 +127,7 @@ public class PeriodControllerIntegrationTest {
     HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
 
     RestTemplate restTemplate = new RestTemplate();
-    restTemplate.postForEntity(RESOURCE_URL, periodEntity, Period.class);
+    restTemplate.postForEntity(resourceUrl, periodEntity, Period.class);
 
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 3));
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
@@ -128,6 +137,24 @@ public class PeriodControllerIntegrationTest {
 
     HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
 
-    restTemplate.postForEntity(RESOURCE_URL, secondPeriodEntity, Period.class);
+    restTemplate.postForEntity(resourceUrl, secondPeriodEntity, Period.class);
+  }
+
+  @Test
+  public void testGetTotalDifference() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+
+    String response = restAssured.given()
+            .pathParam("id", firstPeriod.getId())
+            .queryParam("access_token", getToken())
+            .when()
+            .get("/api/periods/{id}/difference")
+            .then()
+            .statusCode(200)
+            .extract().asString();
+
+    assertTrue(response.contains("Period lasts 1 months and 1 days"));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

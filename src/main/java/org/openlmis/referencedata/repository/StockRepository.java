@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface StockRepository extends PagingAndSortingRepository<Stock, UUID> {
   Stock findByStockInventoryAndProduct(
-      @Param("facilityId") StockInventory facility,
+      @Param("stockInventoryId") StockInventory stockInventory,
       @Param("productId") Product product
   );
 }

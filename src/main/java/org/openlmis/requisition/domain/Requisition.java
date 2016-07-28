@@ -4,25 +4,27 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -41,10 +43,14 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE})
+  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE}, fetch = FetchType.EAGER)
   @Getter
   @Setter
   private Set<RequisitionLine> requisitionLines;
+
+  @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
+  @Getter
+  private List<Comment> comments;
 
   @OneToOne
   @JoinColumn(name = "facilityId", nullable = false)
@@ -58,7 +64,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private Program program;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "processingPeriodId", nullable = false)
   @Getter
   @Setter
@@ -70,19 +76,32 @@ public class Requisition extends BaseEntity {
   @Setter
   private RequisitionStatus status;
 
-  @ManyToOne
-  @JoinColumn(name = "creatorId")
-  @Getter
-  @Setter
-  private User creator;
-
   @Column
   @Getter
   @Setter
   private Boolean emergency;
 
+  @Column(length = 250)
+  @Getter
+  @Setter
+  private String remarks;
+
+  Requisition(UUID id) {
+    this.setId(id);
+  }
+
+  @ManyToOne
+  @JoinColumn(name = "supervisoryNodeId")
+  @Getter
+  @Setter
+  private SupervisoryNode supervisoryNode;
+
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
+  }
+
+  public Requisition basicInformation() {
+    return new Requisition(getId());
   }
 }

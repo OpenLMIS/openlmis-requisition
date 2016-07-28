@@ -3,7 +3,6 @@ package org.openlmis.referencedata.repository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -14,11 +13,9 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,14 +60,13 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   private Facility facility = new Facility();
   private Program program = new Program();
-  private User user = new User();
+  private User user;
 
   /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityRepository.deleteAll();
     programRepository.deleteAll();
-    userRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     facilityTypeRepository.deleteAll();
@@ -112,11 +108,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
       testPrograms.add(program);
     }
 
-    user.setUsername(orderRepository[0]);
-    user.setPassword(orderRepository[0]);
-    user.setFirstName("Test");
-    user.setLastName("User");
-    userRepository.save(user);
+    Assert.assertEquals(1, userRepository.count());
+    user = userRepository.findAll().iterator().next();
     generateTestSet();
   }
 

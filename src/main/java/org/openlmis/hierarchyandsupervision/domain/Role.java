@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -34,4 +35,10 @@ public class Role extends BaseEntity {
   @Getter
   @Setter
   private List<Right> rights;
+
+  @OneToOne
+  @JoinColumn(name = "supervisoryNodeId")
+  @Getter
+  @Setter
+  private SupervisoryNode supervisedNode;
 }

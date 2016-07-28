@@ -1,8 +1,10 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.hierarchyandsupervision.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.referencedata.domain.Facility;
 
 import java.util.Set;
 
@@ -31,11 +33,6 @@ public class SupervisoryNode extends BaseEntity {
   @Getter
   @Setter
   private String description;
-
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  private Integer supervisorCount;
 
   @ManyToOne
   @JoinColumn(nullable = false, name = "facilityid")
