@@ -258,8 +258,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = RequisitionException.class)
   public void shouldNotInitiateRequisitionWhenItAlreadyExists() throws RequisitionException {
-    requisitionService.initiateRequisition(
-        facility.getId(), program.getId(), period.getId(), false);
+    requisitionService.initiateRequisition(requisition);
   }
 
   @Test(expected = RequisitionException.class)

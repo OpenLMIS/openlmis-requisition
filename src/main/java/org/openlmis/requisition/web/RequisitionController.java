@@ -70,22 +70,15 @@ public class RequisitionController {
 
   /**
    * Initiates requisition.
-   * 
-   * @param facilityId The UUID of the requisition's facility
-   * @param programId The UUID of the requisition's program
-   * @param periodId The UUID of the requisition's period
-   * @param emergency Boolean indicating emergency status of requisition
    * @return result
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
-                                               @RequestParam("programId") UUID programId,
-                                               @RequestParam("periodId") UUID periodId,
-                                               @RequestParam(value = "emergency",
-                                                   required = false) Boolean emergency) {
+  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisitionDto,
+                                               BindingResult bindingResult) {
     try {
+
       Requisition requisition = requisitionService.initiateRequisition(
-          facilityId, programId, periodId, emergency);
+          requisitionDto);
       ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
       return response;
 

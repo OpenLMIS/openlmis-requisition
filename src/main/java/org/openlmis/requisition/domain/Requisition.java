@@ -43,7 +43,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE}, fetch = FetchType.EAGER)
+  @OneToMany(mappedBy = "requisition", cascade = {CascadeType.REMOVE, CascadeType.MERGE}, fetch = FetchType.EAGER)
   @Getter
   @Setter
   private Set<RequisitionLine> requisitionLines;

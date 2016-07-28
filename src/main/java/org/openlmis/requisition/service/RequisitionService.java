@@ -7,15 +7,12 @@ import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.repository.FacilityRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
@@ -49,15 +46,6 @@ public class RequisitionService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
-
-  @Autowired
-  private FacilityRepository facilityRepository;
-
-  @Autowired
-  private ProgramRepository programRepository;
-
-  @Autowired
   private UserRepository userRepository;
 
   @Autowired
@@ -66,46 +54,28 @@ public class RequisitionService {
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
+  @Autowired
+  RequisitionLineRepository requisitionLineRepository;
+
   @PersistenceContext
   EntityManager entityManager;
 
-  public Requisition initiateRequisition(UUID facilityId, UUID programId, UUID periodId,
-                                         boolean emergency) throws RequisitionException {
+  public Requisition initiateRequisition(Requisition requisitionDto)
+                                          throws RequisitionException{
 
-    Program program = programRepository.findOne(programId);
-    Facility facility = facilityRepository.findOne(facilityId);
-    Period period = periodRepository.findOne(periodId);
+    if (requisitionDto == null) {
+      throw new RequisitionException("Requisition cannot be initiated with null object");
+    } else if (requisitionRepository.findOne(requisitionDto.getId()) == null) {
 
-    if (facility == null) {
-      throw new RequisitionException("Facility with facility Id: "
-          + facilityId + ", does not exists");
-    }
-    if (program == null) {
-      throw new RequisitionException("Program with program Id: " + programId + ", does not exists");
-    }
-    if (period == null) {
-      throw new RequisitionException("Period with period Id: " + periodId + ", does not exists");
-    }
-
-    Requisition requisition = requisitionRepository
-        .findByProcessingPeriodAndFacilityAndProgram(period, facility, program);
-
-    if (emergency || requisition == null) {
-      requisition = new Requisition();
-
-      requisition.setStatus(RequisitionStatus.INITIATED);
-      requisition.setProgram(program);
-      requisition.setFacility(facility);
-      requisition.setProcessingPeriod(period);
-
-      requisitionLineService.initiateRequisitionLineFields(requisition);
-      requisitionRepository.save(requisition);
+      requisitionDto.setStatus(RequisitionStatus.INITIATED);
+      requisitionLineService.initiateRequisitionLineFields(requisitionDto);
+      requisitionRepository.save(requisitionDto);
     } else {
       throw new RequisitionException("Cannot initiate requisition."
-          + " Non emergency requisition with such parameters already exists");
+          + " Requisition with such parameters already exists");
     }
 
-    return requisition;
+    return requisitionDto;
   }
 
   /**

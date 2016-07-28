@@ -886,13 +886,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
     requisitionRepository.delete(requisition);
-    ResponseEntity<Requisition> result = restTemplate.exchange(
-        initiateUrl + "&facilityId={facilityId}&"
-                + "programId={programId}&periodId={periodId}&emergency=false",
-        HttpMethod.POST, null, Requisition.class, facility.getId(),
-            program.getId(), period.getId());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+
+    String json = mapper.writeValueAsString(requisition);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    ResponseEntity<Requisition> result = restTemplate.exchange(initiateUrl,
+        HttpMethod.POST, entity, Requisition.class);
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Requisition initiatedRequisitions = result.getBody();
