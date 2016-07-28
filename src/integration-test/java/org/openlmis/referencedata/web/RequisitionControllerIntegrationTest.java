@@ -17,6 +17,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -85,6 +87,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
 
   private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
+  private static final String USERNAME = "testUser";
 
   @Autowired
   private ProductRepository productRepository;
@@ -122,6 +125,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Autowired
   private CommentRepository commentRepository;
 
+  @Autowired
+  private UserRepository userRepository;
+
   private RamlDefinition ramlDefinition;
   private RestAssuredClient restAssured;
 
@@ -135,6 +141,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Program program2 = new Program();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
+  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -246,6 +253,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Set<RequisitionLine> requisitionLines = new HashSet<>();
     requisitionLines.add(requisitionLine);
 
+    user = new User();
+    user.setUsername(USERNAME);
+    user.setLastName("LastnameTest");
+    user.setFirstName("FirstnameTest");
+    user.setActive(true);
+    user.setVerified(true);
+    userRepository.save(user);
+
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
 
@@ -280,6 +295,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @After
   public void cleanUp() {
     commentRepository.deleteAll();
+    Iterable<User> users = userRepository.findByUsername(USERNAME);
+    if (users != null && users.iterator().hasNext()) {
+      userRepository.delete(users);
+    }
     requisitionLineRepository.deleteAll();
     productRepository.deleteAll();
     requisitionRepository.deleteAll();
