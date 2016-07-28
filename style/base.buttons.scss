@@ -1,10 +1,11 @@
 /*
 Buttons
 
-Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most buttons should be in the default color presented in section 1.1, with the exception of an edit action, cancel and disabled button. Disabled buttons are a little bit faded in comparison with their enabled equivalents. They usually contain text, but may also consist of the image itself. Buttons come in three sizes: default (typical for most of OpenLMIS buttons), small, and mini.
+Buttons represent taking an action in OpenLMIS, juxoposed to a link which represents navigating through OpenLMIS. Most of the buttons should be in the default color presented in section 1.1, with the exception of an edit action, cancel, warning and disabled buttons. Disabled buttons are a little bit faded in comparison with their enabled equivalents. They usually contain text, but may also consist of the image and text. Buttons come in three sizes: default (typical for most of OpenLMIS buttons), small, and mini.
 
 markup:
-<form style="height: 180px;">
+<form style="height: 150px;">
+  <button type="button" class="btn btn-default">Default Button</button>
   <input type="submit" class="btn btn-primary" value="Primary Button"/>
   <input type="button" class="btn btn-cancel" value="Cancel Button"/>
   <input type="button" class="btn btn-warning save-button" value="Warning Button"/>
@@ -14,6 +15,7 @@ markup:
   </a>
   </br>
   </br>
+  <button type="button" class="btn btn-default" disabled="disabled">Disabled Default Button</button>
   <input type="submit" class="btn btn-primary disabled" value="Disabled Primary Button"/>
   <input type="button" class="btn btn-cancel disabled" value="Disabled Cancel Button"/>
   </br>
@@ -23,9 +25,6 @@ markup:
   </br>
   </br>
   <input type="button" class="btn btn-mini" value="Mini Button"/>
-  <div class="search-list" style="border: 0px;">
-    <a class="close-btn" style="left: 0px;" href=""></a>
-  </div>
 </form>
 
 Styleguide 1.3
@@ -68,14 +67,4 @@ input.btn-cancel.disabled {
   color: #ffffff;
   background-color: #777777;
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-}
-.search-list .close-btn {
-  height: 16px;
-  width: 16px;
-  position: absolute;
-  top: 10px;
-  right: 11px;
-  opacity: 0.8;
-  background: url(../images/close-icon.png) no-repeat left top;
-  text-indent: -999em;
 }
