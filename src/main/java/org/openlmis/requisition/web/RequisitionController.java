@@ -67,11 +67,11 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
-                                       @RequestParam("programId") UUID programId,
-                                       @RequestParam("periodId") UUID periodId,
-                                       @RequestParam(value = "emergency", required = false) Boolean emergency) {
+                                               @RequestParam("programId") UUID programId,
+                                               @RequestParam("periodId") UUID periodId,
+                                               @RequestParam(value = "emergency",
+                                                   required = false) Boolean emergency) {
     try {
-
       Requisition requisition = requisitionService.initiateRequisition(
           facilityId, programId, periodId, emergency);
       ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
@@ -91,7 +91,7 @@ public class RequisitionController {
                                              @PathVariable("id") UUID requisitionId) {
     if (!bindingResult.hasErrors()) {
       try {
-        requisition = requisitionService.submitRequisition(requisitionId);
+        requisition = requisitionService.submitRequisition(requisition);
       } catch (RequisitionException ex) {
         logger.debug(ex.getMessage(), ex);
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -107,12 +107,16 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    boolean deleted = requisitionService.tryDelete(requisitionId);
-
-    if (deleted) {
-      return new ResponseEntity(HttpStatus.NO_CONTENT);
-    } else {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    try {
+      boolean deleted = requisitionService.tryDelete(requisitionId);
+      if (deleted) {
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+      } else {
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      }
+    } catch (RequisitionException ex) {
+      logger.debug(ex.getMessage(), ex);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -176,6 +180,7 @@ public class RequisitionController {
     };
   }
 
+
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
@@ -200,13 +205,11 @@ public class RequisitionController {
     try {
       requisitionDto = requisitionService.authorize(requisitionId, requisitionDto,
           bindingResult.hasErrors());
-
-      logger.info("Requisition: " +  requisitionId + " authorize.");
-
+      logger.info("Requisition: " +  requisitionId + " authorized.");
     } catch (RequisitionException ex) {
+      logger.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(requisitionDto, HttpStatus.OK);
-
   }
 }

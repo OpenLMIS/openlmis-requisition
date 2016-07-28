@@ -29,7 +29,8 @@ public class RequisitionLineService {
   @Autowired
   private PeriodRepository periodRepository;
 
-  public RequisitionLine save(Requisition requisition, RequisitionLine requisitionLine) {
+  public RequisitionLine save(Requisition requisition,
+                              RequisitionLine requisitionLine) throws RequisitionException {
     if (requisitionLine == null) {
       throw new RequisitionException("Requisition line does not exist");
     } else {
@@ -56,7 +57,7 @@ public class RequisitionLineService {
 
     if (requisitionTemplate != null) {
       initiateBeginningBalance(requisition, requisitionTemplate);
-      initiateTotalQuantityReceived(requisition, requisitionTemplate);
+      initiateTotalQuantityReceived(requisition);
     }
 
     return requisition;
@@ -132,8 +133,7 @@ public class RequisitionLineService {
 
   }
 
-  private void initiateTotalQuantityReceived(Requisition requisition,
-                                             RequisitionTemplate requisitionTemplate) {
+  private void initiateTotalQuantityReceived(Requisition requisition) {
     for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
       requisitionLine.setTotalReceivedQuantity(0);
     }

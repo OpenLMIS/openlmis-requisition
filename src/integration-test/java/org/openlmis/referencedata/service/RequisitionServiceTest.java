@@ -90,7 +90,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testTryDelete() {
+  public void testTryDelete() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
 
@@ -99,7 +99,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testTryDeleteBadStatus() {
+  public void testTryDeleteBadStatus() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
@@ -108,7 +108,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void testTryDeleteRequisitionDoesNotExist() {
+  public void testTryDeleteRequisitionDoesNotExist() throws RequisitionException {
     UUID id = requisition.getId();
     requisitionRepository.delete(id);
 
@@ -141,7 +141,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldRejectRequisition() {
+  public void shouldRejectRequisition() throws RequisitionException {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -152,7 +152,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotAllowRejectionIfRequisitionStatusIsWrong() {
+  public void shouldNotAllowRejectionIfRequisitionStatusIsWrong() throws RequisitionException {
 
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisitionRepository.save(requisition);
@@ -164,7 +164,7 @@ public class RequisitionServiceTest {
 
 
   @Test
-  public void shouldAuthorizeRequisition() {
+  public void shouldAuthorizeRequisition() throws RequisitionException {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -175,13 +175,13 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotInitiateRequisitionWhenItAlreadyExists() {
+  public void shouldNotInitiateRequisitionWhenItAlreadyExists() throws RequisitionException {
     requisitionService.initiateRequisition(
         facility.getId(), program.getId(), period.getId(), false);
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() {
+  public void shouldNotAllowAuthorizationIfRequisitionStatusIsWrong() throws RequisitionException {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
