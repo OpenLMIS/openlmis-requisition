@@ -69,8 +69,8 @@ public class RequisitionService {
   @PersistenceContext
   EntityManager entityManager;
 
-  public Requisition initiateRequisition(UUID facilityId,
-                                         UUID programId, UUID periodId, boolean emergency) {
+  public Requisition initiateRequisition(UUID facilityId, UUID programId, UUID periodId,
+                                         boolean emergency) throws RequisitionException {
 
     Program program = programRepository.findOne(programId);
     Facility facility = facilityRepository.findOne(facilityId);
@@ -87,8 +87,8 @@ public class RequisitionService {
       throw new RequisitionException("Period with period Id: " + periodId + ", does not exists");
     }
 
-    Requisition requisition = requisitionRepository.
-        findByProcessingPeriodAndFacilityAndProgram(period, facility, program);
+    Requisition requisition = requisitionRepository
+        .findByProcessingPeriodAndFacilityAndProgram(period, facility, program);
 
     if (emergency || requisition == null) {
       requisition = new Requisition();
@@ -108,20 +108,31 @@ public class RequisitionService {
     return requisition;
   }
 
-  public Requisition submitRequisition(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
+  /**
+   * Submits given requisition if it exists and has status INITIATED.
+   * @param requisition Requisition to be submitted.
+   * @return Submitted requisition.
+   * @throws RequisitionException Exception thrown when it is not possible to submit a requisition.
+   */
+  public Requisition submitRequisition(Requisition requisition) throws RequisitionException {
+
+    Requisition initiatedRequisition = requisitionRepository.findOne(requisition.getId());
+
+    if (initiatedRequisition == null) {
+      throw new RequisitionException(requisitionNotExistsMessage + requisition.getId());
+    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
+      throw new RequisitionException("Cannot submit requisition: "
+          + requisition.getId() + ". Requisition must have status 'INITIATED' to be submitted.");
     } else {
-      logger.debug("Submitting a requisition with id " + requisitionId);
+      logger.debug("Submitting a requisition with id " + requisition.getId());
       requisition.setStatus(RequisitionStatus.SUBMITTED);
       requisitionRepository.save(requisition);
-      logger.debug("Requisition with id " + requisitionId + " submitted");
+      logger.debug("Requisition with id " + requisition.getId() + " submitted");
       return requisition;
     }
   }
 
-  public boolean tryDelete(UUID requisitionId) {
+  public boolean tryDelete(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
@@ -158,7 +169,7 @@ public class RequisitionService {
     return false;
   }
 
-  public void reject(UUID requisitionId) {
+  public void reject(UUID requisitionId) throws RequisitionException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -271,16 +282,19 @@ public class RequisitionService {
     return requisitions;
   }
 
-  public Requisition authorize(UUID requisitionId) {
+  public Requisition authorize(UUID requisitionId, Requisition requisitionDto,
+                               boolean validationErrors) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
     } else if (requisition.getStatus() != RequisitionStatus.SUBMITTED) {
       throw new RequisitionException("Cannot authorize requisition: " + requisitionId
         + " . Requisition must have submitted status to be authorized");
+    } else if (requisitionDto == null || validationErrors) {
+      throw new RequisitionException("Requisition object is not valid.");
     } else {
-      requisition.setStatus(RequisitionStatus.AUTHORIZED);
-      return requisitionRepository.save(requisition);
+      requisitionDto.setStatus(RequisitionStatus.AUTHORIZED);
+      return requisitionRepository.save(requisitionDto);
     }
   }
 
@@ -295,7 +309,7 @@ public class RequisitionService {
     }
   }
 
-  private Requisition save(Requisition requisition) {
+  private Requisition save(Requisition requisition) throws RequisitionException {
     if (requisition != null) {
       if (requisition.getRequisitionLines() != null) {
         for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {

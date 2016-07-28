@@ -17,8 +17,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -59,6 +57,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,11 +77,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String skipUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/skip");
   private final String rejectUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/reject");
   private final String submitUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/submit");
+  private final String submittedUrl = addTokenToUrl(BASE_URL + "/api/requisitions/submitted");
   private final String authorizationUrl = addTokenToUrl(
       BASE_URL + "/api/requisitions/{id}/authorize");
   private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
-  private final String createdByLoggedUserUrl = addTokenToUrl(
-      BASE_URL + "/api/requisitions/creator/{creatorId}");
   private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
 
@@ -119,9 +117,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private FacilityTypeRepository facilityTypeRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   ProductCategoryRepository productCategoryRepository;
 
   @Autowired
@@ -140,7 +135,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Program program2 = new Program();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
-  private User user;
 
   /** Prepare the test environment. */
   @Before
@@ -150,9 +144,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     restAssured = ramlDefinition.createRestAssured();
 
     cleanUp();
-
-    Assert.assertEquals(1, userRepository.count());
-    user = userRepository.findAll().iterator().next();
 
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -235,7 +226,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
-    requisition.setCreator(user);
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
@@ -634,20 +624,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testSearchByCreatorId() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<List<Requisition>> result =
-        restTemplate.exchange(createdByLoggedUserUrl, HttpMethod.GET, null,
-            new ParameterizedTypeReference<List<Requisition>>() {
-            }, user.getId());
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-
-    List<Requisition> requisitions = result.getBody();
-    Assert.assertEquals(1, requisitions.size());
-  }
-
-  @Test
   public void testFindByNoParameter() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<List<Requisition>> result = restTemplate.exchange(
@@ -888,19 +864,41 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testAuthorize() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
+  public void testGetSubmittedRequisitions() throws JsonProcessingException {
+
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    ResponseEntity<Requisition[]> result = restTemplate.getForEntity(
+        submittedUrl, Requisition[].class);
+
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Iterable<Requisition> requisitions = Arrays.asList(result.getBody());
+    Assert.assertTrue(requisitions.iterator().hasNext());
+  }
+
+  @Test
+  public void testAuthorize() throws JsonProcessingException {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    String json = mapper.writeValueAsString(requisition);
 
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(authorizationUrl)
         .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-    ResponseEntity<Object> result =
-        restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<Requisition> result =
+        restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }

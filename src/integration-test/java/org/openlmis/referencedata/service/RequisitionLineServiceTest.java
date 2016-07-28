@@ -30,6 +30,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -150,7 +151,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void shouldResetBeginningBalance() {
+  public void shouldResetBeginningBalance() throws RequisitionException {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
     requisitionTemplateColumnHashMap.put(beginningBalanceField,
         new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
