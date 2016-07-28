@@ -13,6 +13,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,20 +45,23 @@ import javax.validation.Valid;
 @RepositoryRestController
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionController {
-  Logger logger = LoggerFactory.getLogger(RequisitionController.class);
+  private Logger logger = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
-  RequisitionRepository requisitionRepository;
+  private RequisitionRepository requisitionRepository;
 
   @Autowired
   @Qualifier("beforeSaveRequisitionValidator")
-  RequisitionValidator validator;
+  private RequisitionValidator validator;
 
   @Autowired
-  RequisitionService requisitionService;
+  private RequisitionService requisitionService;
 
   @Autowired
   private CommentRepository commentRepository;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -216,7 +220,9 @@ public class RequisitionController {
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     }
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+        || (configurationSettingService.getBoolValue("skipAuthorization")
+        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
       logger.debug("Requisition with id " + requisitionId + " approved");

@@ -17,7 +17,7 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,25 +46,25 @@ public class RequisitionService {
   private Logger logger = LoggerFactory.getLogger(RequisitionService.class);
 
   @Autowired
-  RequisitionRepository requisitionRepository;
+  private RequisitionRepository requisitionRepository;
 
   @Autowired
-  RequisitionTemplateRepository requisitionTemplateRepository;
+  private PeriodRepository periodRepository;
 
   @Autowired
-  PeriodRepository periodRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
-  FacilityRepository facilityRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private UserRepository userRepository;
 
   @Autowired
-  UserRepository userRepository;
+  private RequisitionLineService requisitionLineService;
 
   @Autowired
-  RequisitionLineService requisitionLineService;
+  private ConfigurationSettingService configurationSettingService;
 
   @PersistenceContext
   EntityManager entityManager;
@@ -284,6 +284,9 @@ public class RequisitionService {
 
   public Requisition authorize(UUID requisitionId, Requisition requisitionDto,
                                boolean validationErrors) throws RequisitionException {
+    if (configurationSettingService.getBoolValue("skipAuthorization")) {
+      throw new RequisitionException("Requisition authorization is configured to be skipped");
+    }
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(requisitionNotExistsMessage + requisitionId);
