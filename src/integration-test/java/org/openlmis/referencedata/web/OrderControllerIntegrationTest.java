@@ -57,7 +57,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
-import java.util.Iterator;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -126,12 +125,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Product secondProduct = new Product();
   private StockInventory firstStockInventory = new StockInventory();
   private User firstUser = new User();
-  private Program firstProgram = new Program();
-  private Program secondProgram = new Program();
-  private Period firstPeriod = new Period();
-  private Period secondPeriod = new Period();
-  private Schedule firstSchedule = new Schedule();
-  private Schedule secondSchedule = new Schedule();
   private Requisition requisition;
   private SupplyLine supplyLine;
   private User user;
@@ -171,13 +164,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     secondProduct = addProduct("secondProductName", "secondProductCode", "unit",
                                10, 1, 0, false, true, true, false, productCategory2);
 
-    firstSchedule = addSchedule("Schedule1", "S1");
+    Schedule schedule1 = addSchedule("Schedule1", "S1");
 
-    secondSchedule = addSchedule("Schedule2", "S2");
+    Schedule schedule2 = addSchedule("Schedule2", "S2");
 
-    firstProgram = addProgram("P1");
+    Program program1 = addProgram("P1");
 
-    secondProgram = addProgram("P2");
+    Program program2 = addProgram("P2");
 
     GeographicLevel geographicLevel1 = addGeographicLevel("GL1", 1);
 
@@ -191,10 +184,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     FacilityType facilityType2 = addFacilityType("FT2");
 
-    firstPeriod = addPeriod("P1", firstSchedule, LocalDate.of(2015, Month.JANUARY, 1),
+    Period period1 = addPeriod("P1", schedule1, LocalDate.of(2015, Month.JANUARY, 1),
             LocalDate.of(2015, Month.DECEMBER, 31));
 
-    secondPeriod = addPeriod("P2", secondSchedule, LocalDate.of(2016, Month.JANUARY, 1),
+    Period period2 = addPeriod("P2", schedule2, LocalDate.of(2016, Month.JANUARY, 1),
             LocalDate.of(2016, Month.DECEMBER, 31));
 
     Facility facility1 = addFacility("facility1", "F1", null, facilityType1,
@@ -203,18 +196,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Facility facility2 = addFacility("facility2", "F2", null, facilityType2,
                                      geographicZone2, null, true, false);
 
-    Requisition requisition1 = addRequisition(firstProgram, facility1, firstPeriod,
+    Requisition requisition1 = addRequisition(program1, facility1, period1,
                                               RequisitionStatus.RELEASED, null);
 
-    Requisition requisition2 = addRequisition(secondProgram, facility1, secondPeriod,
+    Requisition requisition2 = addRequisition(program2, facility1, period2,
                                               RequisitionStatus.RELEASED, null);
 
     firstUser = addUser(USERNAME, "pass", "Alice", "Cat", facility1);
 
-    secondOrder = addOrder(requisition1, "O2", firstProgram, firstUser, facility2, facility2,
+    secondOrder = addOrder(requisition1, "O2", program1, firstUser, facility2, facility2,
                            facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
-    thirdOrder = addOrder(requisition2, "O3", secondProgram, firstUser, facility2, facility2,
+    thirdOrder = addOrder(requisition2, "O3", program2, firstUser, facility2, facility2,
                           facility1, OrderStatus.RECEIVED, new BigDecimal(200));
 
     ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
@@ -544,34 +537,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testOrderList() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(RESOURCE_URL))
-            .queryParam("user", firstUser.getId())
-            .queryParam("program", firstProgram.getId())
-            .queryParam("period", firstPeriod.getId())
-            .queryParam("schedule", firstSchedule.getId());
-
-    ResponseEntity<Iterable<Order>> orderListResponse = restTemplate.exchange(builder.toUriString(),
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<Iterable<Order>>() { });
-
-    Iterable<Order> orderList = orderListResponse.getBody();
-    Iterator<Order> orderIterator = orderList.iterator();
-    Assert.assertTrue(orderIterator.hasNext());
-    Order testOrder = orderIterator.next();
-    Assert.assertFalse(orderIterator.hasNext());
-    Assert.assertEquals(testOrder.getId(), secondOrder.getId());
-    Assert.assertEquals(testOrder.getRequisition().getId(), secondOrder.getRequisition().getId());
-    Assert.assertEquals(testOrder.getCreatedBy().getId(), secondOrder.getCreatedBy().getId());
-    Assert.assertEquals(testOrder.getOrderCode(), secondOrder.getOrderCode());
-    Assert.assertEquals(testOrder.getOrderLines().size(), 2);
-    Assert.assertEquals(testOrder.getCreatedDate(), secondOrder.getCreatedDate());
-  }
-
-  @Test
   public void testPrintOrderAsCsv() {
     RestTemplate restTemplate = new RestTemplate();
 
@@ -609,7 +574,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             new ParameterizedTypeReference<String>() { });
 
     String pdfContent = printOrderResponse.getBody().toString();
-    Assert.assertTrue(pdfContent != null);
+    Assert.assertNotNull(pdfContent);
   }
 
   @Test
@@ -620,7 +585,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderRepository.deleteAll();
 
     restTemplate.exchange(url, HttpMethod.POST,
-        new HttpEntity<Object>(Collections.singletonList(requisition)), String.class);
+            new HttpEntity<Object>(Collections.singletonList(requisition)), String.class);
 
     Assert.assertEquals(1, orderRepository.count());
     Order order = orderRepository.findAll().iterator().next();
@@ -634,6 +599,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
     Assert.assertEquals(order.getSupplyingFacility().getId(),
-        supplyLine.getSupplyingFacility().getId());
+            supplyLine.getSupplyingFacility().getId());
   }
 }
