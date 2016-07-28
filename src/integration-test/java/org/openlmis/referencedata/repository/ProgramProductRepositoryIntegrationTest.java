@@ -39,9 +39,6 @@ public class ProgramProductRepositoryIntegrationTest
     return this.programProductRepository;
   }
 
-  /**
-   * Prepare the test environment.
-   */
   @Before
   public void setUp() {
     this.program.setCode("code");

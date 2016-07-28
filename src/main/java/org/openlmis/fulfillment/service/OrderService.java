@@ -78,9 +78,8 @@ public class OrderService {
   @Autowired
   private OrderRepository orderRepository;
 
-  public final static String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
-                                            "productName", "productCode", "orderedQuantity",
-                                            "filledQuantity"};
+  public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
+    "productName", "productCode", "orderedQuantity", "filledQuantity"};
 
   /**
    * Finds orders matching all of provided parameters.
@@ -161,17 +160,20 @@ public class OrderService {
                         OutputStream out) {
     try {
       ClassLoader classLoader = getClass().getClassLoader();
-      File template = new File(classLoader.getResource("jasperTemplates/ordersJasperTemplate.jrxml").getFile());
+      File template = new File(
+          classLoader.getResource(
+              "jasperTemplates/ordersJasperTemplate.jrxml").getFile());
+
       FileInputStream fis = new FileInputStream(template);
       JasperReport pdfTemplate = JasperCompileManager.compileReport(fis);
       HashMap<String, Object>[] params = new HashMap[data.size()];
-      int i = 0;
+      int index = 0;
       for (Map<String, Object> dataRow : data) {
-        params[i] = new HashMap<>();
-        params[i].put(DEFAULT_COLUMNS[3], dataRow.get(DEFAULT_COLUMNS[3]));
-        params[i].put(DEFAULT_COLUMNS[6], dataRow.get(DEFAULT_COLUMNS[6]));
-        params[i].put(DEFAULT_COLUMNS[5], dataRow.get(DEFAULT_COLUMNS[5]));
-        i++;
+        params[index] = new HashMap<>();
+        params[index].put(DEFAULT_COLUMNS[3], dataRow.get(DEFAULT_COLUMNS[3]));
+        params[index].put(DEFAULT_COLUMNS[6], dataRow.get(DEFAULT_COLUMNS[6]));
+        params[index].put(DEFAULT_COLUMNS[5], dataRow.get(DEFAULT_COLUMNS[5]));
+        index++;
       }
       JRMapArrayDataSource dataSource = new JRMapArrayDataSource(params);
       JasperPrint jasperPrint = JasperFillManager.fillReport(pdfTemplate, new HashMap<>(),

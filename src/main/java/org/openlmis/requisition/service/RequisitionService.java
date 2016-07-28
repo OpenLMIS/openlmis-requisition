@@ -60,8 +60,16 @@ public class RequisitionService {
   @PersistenceContext
   EntityManager entityManager;
 
+  /**
+   * Initiated given requisition if possible.
+   *
+   * @param requisitionDto Requisition object to initiate.
+   * @return Initiated requisition.
+   * @throws RequisitionException Exception thrown when
+   *      it is not possible to initialize a requisition.
+   */
   public Requisition initiateRequisition(Requisition requisitionDto)
-                                          throws RequisitionException{
+                                          throws RequisitionException {
 
     if (requisitionDto == null) {
       throw new RequisitionException("Requisition cannot be initiated with null object");
@@ -80,6 +88,7 @@ public class RequisitionService {
 
   /**
    * Submits given requisition if it exists and has status INITIATED.
+   *
    * @param requisition Requisition to be submitted.
    * @return Submitted requisition.
    * @throws RequisitionException Exception thrown when it is not possible to submit a requisition.
@@ -102,6 +111,13 @@ public class RequisitionService {
     }
   }
 
+  /**
+   * Delete given Requisition if possible.
+   *
+   * @param requisitionId UUID of Requisition to be deleted.
+   * @return True if deletion successful, false otherwise.
+   * @throws RequisitionException Exception thrown when it is not possible to delete a requisition.
+   */
   public boolean tryDelete(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
@@ -118,6 +134,12 @@ public class RequisitionService {
     return false;
   }
 
+  /**
+   * Skip given requisition if possible.
+   *
+   * @param requisitionId UUID of Requisition to be skipped.
+   * @return True if skip operation was successful, false otherwise.
+   */
   public boolean skip(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
@@ -139,6 +161,12 @@ public class RequisitionService {
     return false;
   }
 
+  /**
+   * Reject given requisition if possible.
+   *
+   * @param requisitionId UUID of Requisition to be rejected.
+   * @throws RequisitionException Exception thrown when it is not possible to reject a requisition.
+   */
   public void reject(UUID requisitionId) throws RequisitionException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -252,6 +280,16 @@ public class RequisitionService {
     return requisitions;
   }
 
+  /**
+   * Authorize given Requisition if possible.
+   *
+   * @param requisitionId UUID of Requisition to be authorized.
+   * @param requisitionDto Requisition object to be authorized.
+   * @param validationErrors Boolean which contains information if given object is valid.
+   * @return Authorized requisition.
+   * @throws RequisitionException Exception thrown when
+   *      it is not possible to authorize a requisition.
+   */
   public Requisition authorize(UUID requisitionId, Requisition requisitionDto,
                                boolean validationErrors) throws RequisitionException {
     if (configurationSettingService.getBoolValue("skipAuthorization")) {

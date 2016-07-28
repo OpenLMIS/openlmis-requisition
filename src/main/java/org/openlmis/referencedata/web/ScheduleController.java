@@ -30,6 +30,14 @@ public class ScheduleController {
   @Autowired
   private ExposedMessageSource messageSource;
 
+  /**
+   * Calculates total difference in days and months
+   *      between schedule beginning and end.
+   *
+   * @param scheduleId UUID of given Schedule.
+   * @return String which contains information about total difference
+   *      between schedule beginning and end.
+   */
   @RequestMapping(value = "/schedules/{id}/difference", method = RequestMethod.GET)
   @ResponseBody
   public String getTotalDifference(@PathVariable("id") UUID scheduleId) {

@@ -48,7 +48,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   private RamlDefinition ramlDefinition;
   private RestAssuredClient restAssured;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     RestAssured.baseURI = BASE_URL;
@@ -71,9 +70,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanup() {
     periodRepository.deleteAll();

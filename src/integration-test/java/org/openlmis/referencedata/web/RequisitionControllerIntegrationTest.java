@@ -148,7 +148,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Facility facility2 = new Facility();
   private User user;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
     RestAssured.baseURI = BASE_URL;
@@ -294,9 +293,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition4);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanUp() {
     commentRepository.deleteAll();

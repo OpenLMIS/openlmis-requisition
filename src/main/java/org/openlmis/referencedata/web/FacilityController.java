@@ -22,9 +22,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RepositoryRestController
 public class FacilityController {
@@ -75,7 +76,8 @@ public class FacilityController {
     Schedule schedule = null;
     Facility homeFacility = facilityRepository.findOne(homeFacilityId);
     if (homeFacility == null) {
-      return new ResponseEntity("Facility with provided id does not exist.", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity("Facility with provided id does not exist.",
+          HttpStatus.BAD_REQUEST);
     }
     if (programId != null) {
       program = programRepository.findOne(programId);

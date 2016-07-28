@@ -55,7 +55,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     return this.proofOfDeliveryRepository;
   }
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();
@@ -101,9 +100,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     orderRepository.save(order);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanUp() {
     proofOfDeliveryRepository.deleteAll();

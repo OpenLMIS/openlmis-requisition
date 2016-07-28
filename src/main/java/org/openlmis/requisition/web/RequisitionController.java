@@ -246,7 +246,11 @@ public class RequisitionController {
     };
   }
 
-
+  /**
+   * Get all submitted Requisitions.
+   *
+   * @return Submitted requisitions.
+   */
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
@@ -260,6 +264,14 @@ public class RequisitionController {
     }
   }
 
+  /**
+   * Authorize given requisition.
+   *
+   * @param requisitionDto Requisition object to be authorized.
+   * @param bindingResult Object used for validation.
+   * @param requisitionId UUID of Requisition to authorize.
+   * @return ResponseEntity with authorized Requisition if authorization was successful.
+   */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
   public ResponseEntity<?> authorizeRequisition(@RequestBody Requisition requisitionDto,
                                                 BindingResult bindingResult,

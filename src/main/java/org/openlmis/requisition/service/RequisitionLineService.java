@@ -29,6 +29,15 @@ public class RequisitionLineService {
   @Autowired
   private PeriodRepository periodRepository;
 
+  /**
+   * Saves given RequisitionLine if possible
+   *
+   * @param requisition Requisition which contains given RequisitionLine.
+   * @param requisitionLine Requisition Line to be saved.
+   * @return Saved RequisitionLine.
+   * @throws RequisitionException Exception thrown when
+   *      it is not possible to save given RequisitionLine.
+   */
   public RequisitionLine save(Requisition requisition,
                               RequisitionLine requisitionLine) throws RequisitionException {
     if (requisitionLine == null) {
@@ -51,6 +60,12 @@ public class RequisitionLineService {
   }
 
 
+  /**
+   * Initiate all RequisitionLine fields from given Requisition to default value.
+   *
+   * @param requisition Requisition with RequisitionLines to be initiated.
+   * @return Returns Requisition with initiated RequisitionLines.
+   */
   public Requisition initiateRequisitionLineFields(Requisition requisition) {
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findByProgram(requisition.getProgram());

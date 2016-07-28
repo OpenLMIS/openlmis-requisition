@@ -108,7 +108,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private List<ProofOfDeliveryLine> proofOfDeliveryLineList =
       new ArrayList<ProofOfDeliveryLine>();
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();

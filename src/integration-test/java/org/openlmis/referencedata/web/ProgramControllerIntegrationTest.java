@@ -24,9 +24,6 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private Program program = new Program();
 
-  /**
-   * Prepare the test environment.
-   */
   @Before
   public void setUp() {
     programRepository.deleteAll();
@@ -35,9 +32,6 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
     programRepository.save(program);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanup() {
     programRepository.deleteAll();

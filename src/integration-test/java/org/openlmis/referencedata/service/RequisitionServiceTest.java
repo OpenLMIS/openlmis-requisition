@@ -98,7 +98,7 @@ public class RequisitionServiceTest {
   private Period period;
   private Program program;
 
-  /** Prepare the test environment. */
+
   @Before
   public void setUp() {
     requisitionRepository.deleteAll();
