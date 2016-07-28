@@ -220,9 +220,9 @@ public class RequisitionController {
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     }
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED ||
-        (configurationSettingService.getBoolValue("skipAuthorization") &&
-            requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+        || (configurationSettingService.getBoolValue("skipAuthorization")
+        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
       logger.debug("Requisition with id " + requisitionId + " approved");

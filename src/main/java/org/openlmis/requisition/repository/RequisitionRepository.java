@@ -21,5 +21,6 @@ public interface RequisitionRepository
 
   Iterable<Requisition> findBySupervisoryNode(@Param("supervisoryNodeId")
                                                   SupervisoryNode supervisoryNode);
+
   Iterable<Requisition> findByStatus(@Param("status") RequisitionStatus status);
 }
