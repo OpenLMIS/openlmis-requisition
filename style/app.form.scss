@@ -15,19 +15,13 @@ markup:
 		</div>
 		<label for="exampleCombobox" style="font-size:18px">Example combo box element</label>
 		<div id="exampleCombobox">
-			<p>Combobox input 1:
-			<select>
-				<option value="option1">Option1</option>
-				<option value="option2">Option2</option>
-			</select></p>
-			<p>Combobox input 2:
 			<select style="border-radius: 3px !important;">
-				<option value="1">--Select Program--</option>
+				<option value="1">--Select Option-</option>
 				<option value="0">EPI</option><option value="1">ART</option>
 				<option value="2">Essential Medicines</option>
 				<option value="3">Family Planning</option>
 				<option value="4">Malaria</option>
-			</select></p>
+			</select>
 		<label for="exampleCheckBox" style="font-size:18px">Example check box elements</label>
 		<div id="exampleCheckBox">
 			<p><input type="checkbox" value="0" />Option 1</p>
@@ -38,7 +32,7 @@ markup:
 			<p><input type="radio" name="radioExample" value="0" />Option 1</p>
 			<p><input type="radio" name="radioExample" value="1" />Option 2</p>
 		</div>	
-		<label for="multiInputControl" style="margin-top:10px;font-size:18px">Example multi Input controls</label>
+		<label for="multiInputControl" style="margin-top:10px;font-size:18px">Example button group element</label>
 		<div id="multiInputControl" >
 			<div id="searchControl" class="row-fluid" >
 				<div class="span5 search-in-category">
@@ -70,6 +64,10 @@ markup:
 				</div>
 			</div>	
 		</div>
+		<label for="dataField" style="margin-top:10px;font-size:18px">Example data field element</label>
+		<div id="dataField" class="form-field">
+                            <input value="11/11/11" type="text" ui-date="{dateFormat: 'dd/mm/yy', changeYear: true}" ui-date-format="yy-mm-dd" class="ng-pristine ng-invalid ng-invalid-required hasDatepicker">
+                 </div>
 </form>
 
 Styleguide 3.0
@@ -116,6 +114,11 @@ input[rnr-validator="positiveInteger"] {
 
 input[type="radio"] {
     margin: 0;
+}
+
+input[ui-date] {
+    background: #ffffff url(../images/calendar-icon.png) no-repeat 98% center;
+    cursor: pointer;
 }
 
 input[type="checkbox"] {
