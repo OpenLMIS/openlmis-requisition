@@ -25,6 +25,7 @@
 
   body {
     background-color: #fff;
+    font-family: Arial, sans-serif;
   }
   .content h2 {
     color: #17888F;
