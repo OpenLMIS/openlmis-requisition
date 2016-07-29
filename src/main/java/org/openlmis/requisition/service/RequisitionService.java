@@ -36,7 +36,7 @@ import javax.persistence.criteria.Root;
 @Service
 public class RequisitionService {
   private static final String REQUISITION_NULL_MESSAGE = "requisition cannot be null";
-  private static final String REQUISITION_DOES_NOT_EXISTS_MESSAGE = "Requisition does not exists: ";
+  private static final String REQUISITION_DOES_NOT_EXISTS_MESSAGE = "Requisition does not exist: ";
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
