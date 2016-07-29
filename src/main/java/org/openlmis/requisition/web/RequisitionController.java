@@ -148,13 +148,13 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId) {
-    boolean skipped = requisitionService.skip(requisitionId);
     ResponseEntity<Object> responseEntity;
-    if (skipped) {
-      Requisition requisition = requisitionRepository.findOne(requisitionId);
-      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.OK);
-    } else {
-      responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+    try {
+      Requisition requisition = requisitionService.skip(requisitionId);
+      responseEntity = new ResponseEntity<>(requisition, HttpStatus.OK);
+    } catch (RequisitionException ex) {
+      logger.debug(ex.getMessage(), ex);
+      responseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return responseEntity;
   }
