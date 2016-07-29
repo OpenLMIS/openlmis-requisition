@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.Embeddable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.persistence.Embeddable;
+
 
 @Embeddable
 @NoArgsConstructor

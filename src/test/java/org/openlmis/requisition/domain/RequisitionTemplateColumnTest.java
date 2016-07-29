@@ -15,7 +15,7 @@ public class RequisitionTemplateColumnTest {
   }
 
   @Test
-  public void changeLabelTest() {
+  public void testShouldChangeLabelOnlyIfValid() {
     boolean result = requisitionTemplateColumn.changeLabel("ValidName");
     Assert.assertTrue(result);
     result =
