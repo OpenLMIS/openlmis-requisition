@@ -49,10 +49,10 @@ import java.util.Map;
 @SpringApplicationConfiguration(Application.class)
 public class RequisitionLineServiceTest {
 
-  private static final String requisitionRepositoryName = "RequisitionLineServiceIntegrationTest";
-  private static final String beginningBalanceField = "beginningBalance";
-  private static final String totalQuantityReceivedField = "totalQuantityReceived";
-  private static final SourceType source = SourceType.CALCULATED;
+  private static final String REQUISITION_REPOSITORY_NAME = "RequisitionLineServiceIntegrationTest";
+  private static final String BEGINNING_BALANCE_FIELD = "beginningBalance";
+  private static final String TOTAL_QUANTITY_RECEIVED_FIELD = "totalQuantityReceived";
+  private static final SourceType SOURCE = SourceType.CALCULATED;
 
   @Autowired
   private ProductRepository productRepository;
@@ -135,9 +135,9 @@ public class RequisitionLineServiceTest {
   @Test
   public void shouldInitiateBeginningBalance() {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
-    requisitionTemplateColumnHashMap.put(beginningBalanceField,
-        new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            true, false, true, true, source));
+    requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
+        new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1,
+            true, false, true, true, SOURCE));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -153,9 +153,9 @@ public class RequisitionLineServiceTest {
   @Test
   public void shouldResetBeginningBalance() throws RequisitionException {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
-    requisitionTemplateColumnHashMap.put(beginningBalanceField,
-        new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            true, true, true, false, source));
+    requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
+        new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1,
+            true, true, true, false, SOURCE));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -171,9 +171,9 @@ public class RequisitionLineServiceTest {
   @Test
   public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
-    requisitionTemplateColumnHashMap.put(beginningBalanceField,
-        new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 1,
-            false, false, true, true, source));
+    requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
+        new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1,
+            false, false, true, true, SOURCE));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -189,12 +189,13 @@ public class RequisitionLineServiceTest {
   @Test
   public void shouldDisplayColumnsInCorrectOrder() {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
-    requisitionTemplateColumnHashMap.put(beginningBalanceField,
-            new RequisitionTemplateColumn(beginningBalanceField, beginningBalanceField, 2,
+    requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
+            new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 2,
                     false, false, true, true, SourceType.USER_INPUT));
-    requisitionTemplateColumnHashMap.put(totalQuantityReceivedField,
-            new RequisitionTemplateColumn(totalQuantityReceivedField, totalQuantityReceivedField,
-                    1, false, false, true, true, SourceType.USER_INPUT));
+    requisitionTemplateColumnHashMap.put(TOTAL_QUANTITY_RECEIVED_FIELD,
+            new RequisitionTemplateColumn(TOTAL_QUANTITY_RECEIVED_FIELD,
+                    TOTAL_QUANTITY_RECEIVED_FIELD, 1, false, false, true, true,
+                    SourceType.USER_INPUT));
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
@@ -206,10 +207,10 @@ public class RequisitionLineServiceTest {
         = requisitionTemplateRepository.findByProgram(secondRequisition.getProgram()
     ).getColumnsMap();
 
-    Assert.assertEquals(1, testRequisitionTemplateColumnHashMap.get(totalQuantityReceivedField)
+    Assert.assertEquals(1, testRequisitionTemplateColumnHashMap.get(TOTAL_QUANTITY_RECEIVED_FIELD)
             .getDisplayOrder());
 
-    Assert.assertEquals(2, testRequisitionTemplateColumnHashMap.get(beginningBalanceField)
+    Assert.assertEquals(2, testRequisitionTemplateColumnHashMap.get(BEGINNING_BALANCE_FIELD)
             .getDisplayOrder());
   }
 
@@ -218,9 +219,9 @@ public class RequisitionLineServiceTest {
     productCategoryRepository.save(productCategory);
 
     Product product = new Product();
-    product.setCode(requisitionRepositoryName);
-    product.setPrimaryName(requisitionRepositoryName);
-    product.setDispensingUnit(requisitionRepositoryName);
+    product.setCode(REQUISITION_REPOSITORY_NAME);
+    product.setPrimaryName(REQUISITION_REPOSITORY_NAME);
+    product.setDispensingUnit(REQUISITION_REPOSITORY_NAME);
     product.setDosesPerDispensingUnit(10);
     product.setPackSize(1);
     product.setPackRoundingThreshold(0);
@@ -232,19 +233,19 @@ public class RequisitionLineServiceTest {
     productRepository.save(product);
 
     program = new Program();
-    program.setCode(requisitionRepositoryName);
+    program.setCode(REQUISITION_REPOSITORY_NAME);
     program.setPeriodsSkippable(true);
     programRepository.save(program);
 
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(requisitionRepositoryName);
+    facilityType.setCode(REQUISITION_REPOSITORY_NAME);
     facilityTypeRepository.save(facilityType);
     GeographicLevel level = new GeographicLevel();
-    level.setCode(requisitionRepositoryName);
+    level.setCode(REQUISITION_REPOSITORY_NAME);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(requisitionRepositoryName);
+    geographicZone.setCode(REQUISITION_REPOSITORY_NAME);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
@@ -252,7 +253,7 @@ public class RequisitionLineServiceTest {
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(requisitionRepositoryName);
+    facility.setCode(REQUISITION_REPOSITORY_NAME);
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);

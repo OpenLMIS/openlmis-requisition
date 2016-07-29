@@ -24,7 +24,7 @@ import java.time.LocalDate;
 public class RequisitionLineRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<RequisitionLine> {
 
-  private static final String requisitionLineRepository =
+  private static final String REQUISITION_LINE_REPOSITORY =
       "RequisitionLineRepositoryIntegrationTest";
 
   @Autowired
@@ -74,9 +74,9 @@ public class RequisitionLineRepositoryIntegrationTest
     productCategory1.setDisplayOrder(1);
     productCategoryRepository.save(productCategory1);
 
-    product.setCode(requisitionLineRepository);
-    product.setPrimaryName(requisitionLineRepository);
-    product.setDispensingUnit(requisitionLineRepository);
+    product.setCode(REQUISITION_LINE_REPOSITORY);
+    product.setPrimaryName(REQUISITION_LINE_REPOSITORY);
+    product.setDispensingUnit(REQUISITION_LINE_REPOSITORY);
     product.setDosesPerDispensingUnit(10);
     product.setPackSize(1);
     product.setPackRoundingThreshold(0);
@@ -89,23 +89,23 @@ public class RequisitionLineRepositoryIntegrationTest
 
     programRepository.deleteAll();
     Program program = new Program();
-    program.setCode(requisitionLineRepository);
+    program.setCode(REQUISITION_LINE_REPOSITORY);
     programRepository.save(program);
 
     facilityTypeRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(requisitionLineRepository);
+    facilityType.setCode(REQUISITION_LINE_REPOSITORY);
     facilityTypeRepository.save(facilityType);
 
     geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
-    level.setCode(requisitionLineRepository);
+    level.setCode(REQUISITION_LINE_REPOSITORY);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
     geographicZoneRepository.deleteAll();
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(requisitionLineRepository);
+    geographicZone.setCode(REQUISITION_LINE_REPOSITORY);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
@@ -113,22 +113,22 @@ public class RequisitionLineRepositoryIntegrationTest
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(requisitionLineRepository);
+    facility.setCode(REQUISITION_LINE_REPOSITORY);
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     scheduleRepository.deleteAll();
     Schedule schedule = new Schedule();
-    schedule.setCode(requisitionLineRepository);
-    schedule.setName(requisitionLineRepository);
+    schedule.setCode(REQUISITION_LINE_REPOSITORY);
+    schedule.setName(REQUISITION_LINE_REPOSITORY);
     scheduleRepository.save(schedule);
 
     periodRepository.deleteAll();
     Period period = new Period();
-    period.setName(requisitionLineRepository);
+    period.setName(REQUISITION_LINE_REPOSITORY);
     period.setProcessingSchedule(schedule);
-    period.setDescription(requisitionLineRepository);
+    period.setDescription(REQUISITION_LINE_REPOSITORY);
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
