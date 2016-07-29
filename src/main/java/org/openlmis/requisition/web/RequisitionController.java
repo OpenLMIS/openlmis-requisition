@@ -45,7 +45,7 @@ import javax.validation.Valid;
 @RepositoryRestController
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionController {
-  private Logger logger = LoggerFactory.getLogger(RequisitionController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -98,7 +98,7 @@ public class RequisitionController {
       try {
         requisition = requisitionService.submitRequisition(requisition);
       } catch (RequisitionException ex) {
-        logger.debug(ex.getMessage(), ex);
+        LOGGER.debug(ex.getMessage(), ex);
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
       return new ResponseEntity<Object>(requisition, HttpStatus.OK);
@@ -120,7 +120,7 @@ public class RequisitionController {
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
       }
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
@@ -153,7 +153,7 @@ public class RequisitionController {
       Requisition requisition = requisitionService.skip(requisitionId);
       responseEntity = new ResponseEntity<>(requisition, HttpStatus.OK);
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       responseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return responseEntity;
@@ -168,7 +168,7 @@ public class RequisitionController {
     try {
       requisitionService.reject(id);
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     Requisition rejectedRequisition = requisitionRepository.findOne(id);
@@ -218,7 +218,7 @@ public class RequisitionController {
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
-      logger.debug("Requisition with id " + requisitionId + " approved");
+      LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return new ResponseEntity<>(requisition, HttpStatus.OK);
     } else {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -283,9 +283,9 @@ public class RequisitionController {
     try {
       requisitionDto = requisitionService.authorize(requisitionId, requisitionDto,
           bindingResult.hasErrors());
-      logger.info("Requisition: " +  requisitionId + " authorized.");
+      LOGGER.info("Requisition: " +  requisitionId + " authorized.");
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(requisitionDto, HttpStatus.OK);
