@@ -18,5 +18,6 @@
   }
 
 7. Generate styleguide
-   `> styleguide --kss-source "style/*.scss" --style-source "path/to/openlmis-v2/bootstrap.min.css" --style-source "path/to/openlmis-v2/app.css" --style-source "path/to/openlmis-v2/select2.css" --overviewPath "style/overview.md" --extraHead '<link rel="stylesheet" type="text/css" href="/body.css"/>' --title "OpenLMIS Styleguide" --output styleguide --watch --server`
+   `> styleguide --kss-source "style/*.scss" --style-source "style/css/bootstrap.min.css" --style-source "style/css/app.css" --style-source "style/css/select2.css" --style-source "style/select2.png" --overviewPath "style/overview.md" --title "OpenLMIS Styleguide" --extraHead '<link rel="stylesheet" type="text/css" href="/body.css"/>' --output styleguide --watch --server --disableHtml5Mode`
+
 
