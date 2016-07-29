@@ -62,7 +62,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   private Program program = new Program();
   private User user;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityRepository.deleteAll();

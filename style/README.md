@@ -25,11 +25,12 @@
 
   body {
     background-color: #fff;
+    font-family: Arial, sans-serif;
   }
   .content h2 {
     color: #17888F;
   }
 
 7. Generate styleguide
-   `> styleguide --kss-source "style/*.scss" --style-source "path/to/openlmis-v2/bootstrap.min.css" --style-source "path/to/openlmis-v2/app.css" --overviewPath "style/overview.md" --extraHead '<link rel="stylesheet" type="text/css" href="/body.css"/>' --title "OpenLMIS Styleguide" --output styleguide --watch --server`
+   `> styleguide --kss-source "style/*.scss" --style-source "path/to/openlmis-v2/bootstrap.min.css" --style-source "path/to/openlmis-v2/app.css" --style-source "path/to/openlmis-v2/select2.css" --overviewPath "style/overview.md" --extraHead '<link rel="stylesheet" type="text/css" href="/body.css"/>' --title "OpenLMIS Styleguide" --output styleguide --watch --server`
 

@@ -48,7 +48,6 @@ public class FacilityTypeApprovedProductRepositoryTest extends
 
   private static final double maxMonthsOfStockDelta = 1e-15;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     facilityTypeRepository.deleteAll();

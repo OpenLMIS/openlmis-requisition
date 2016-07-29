@@ -13,6 +13,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,20 +45,23 @@ import javax.validation.Valid;
 @RepositoryRestController
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionController {
-  Logger logger = LoggerFactory.getLogger(RequisitionController.class);
+  private Logger logger = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
-  RequisitionRepository requisitionRepository;
+  private RequisitionRepository requisitionRepository;
 
   @Autowired
   @Qualifier("beforeSaveRequisitionValidator")
-  RequisitionValidator validator;
+  private RequisitionValidator validator;
 
   @Autowired
-  RequisitionService requisitionService;
+  private RequisitionService requisitionService;
 
   @Autowired
   private CommentRepository commentRepository;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -66,22 +70,15 @@ public class RequisitionController {
 
   /**
    * Initiates requisition.
-   * 
-   * @param facilityId The UUID of the requisition's facility
-   * @param programId The UUID of the requisition's program
-   * @param periodId The UUID of the requisition's period
-   * @param emergency Boolean indicating emergency status of requisition
    * @return result
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
-                                               @RequestParam("programId") UUID programId,
-                                               @RequestParam("periodId") UUID periodId,
-                                               @RequestParam(value = "emergency",
-                                                   required = false) Boolean emergency) {
+  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisitionDto,
+                                               BindingResult bindingResult) {
     try {
+
       Requisition requisition = requisitionService.initiateRequisition(
-          facilityId, programId, periodId, emergency);
+          requisitionDto);
       ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
       return response;
 
@@ -151,13 +148,13 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId) {
-    boolean skipped = requisitionService.skip(requisitionId);
     ResponseEntity<Object> responseEntity;
-    if (skipped) {
-      Requisition requisition = requisitionRepository.findOne(requisitionId);
-      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.OK);
-    } else {
-      responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+    try {
+      Requisition requisition = requisitionService.skip(requisitionId);
+      responseEntity = new ResponseEntity<>(requisition, HttpStatus.OK);
+    } catch (RequisitionException ex) {
+      logger.debug(ex.getMessage(), ex);
+      responseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return responseEntity;
   }
@@ -216,7 +213,9 @@ public class RequisitionController {
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     }
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+        || (configurationSettingService.getBoolValue("skipAuthorization")
+        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
       logger.debug("Requisition with id " + requisitionId + " approved");
@@ -247,7 +246,11 @@ public class RequisitionController {
     };
   }
 
-
+  /**
+   * Get all submitted Requisitions.
+   *
+   * @return Submitted requisitions.
+   */
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
@@ -261,6 +264,14 @@ public class RequisitionController {
     }
   }
 
+  /**
+   * Authorize given requisition.
+   *
+   * @param requisitionDto Requisition object to be authorized.
+   * @param bindingResult Object used for validation.
+   * @param requisitionId UUID of Requisition to authorize.
+   * @return ResponseEntity with authorized Requisition if authorization was successful.
+   */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
   public ResponseEntity<?> authorizeRequisition(@RequestBody Requisition requisitionDto,
                                                 BindingResult bindingResult,

@@ -27,7 +27,6 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
   private Schedule testSchedule;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     scheduleRepository.deleteAll();

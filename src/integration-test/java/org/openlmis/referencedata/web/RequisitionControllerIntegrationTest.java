@@ -44,6 +44,8 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.settings.domain.ConfigurationSetting;
+import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -120,13 +122,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private FacilityTypeRepository facilityTypeRepository;
 
   @Autowired
-  ProductCategoryRepository productCategoryRepository;
+  private ProductCategoryRepository productCategoryRepository;
 
   @Autowired
   private CommentRepository commentRepository;
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private ConfigurationSettingRepository configurationSettingRepository;
 
   private RamlDefinition ramlDefinition;
   private RestAssuredClient restAssured;
@@ -143,7 +148,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Facility facility2 = new Facility();
   private User user;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
     RestAssured.baseURI = BASE_URL;
@@ -289,9 +293,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition4);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanUp() {
     commentRepository.deleteAll();
@@ -311,6 +312,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     productCategoryRepository.deleteAll();
+    configurationSettingRepository.deleteAll();
   }
 
   @Test
@@ -719,13 +721,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertEquals("User comment", comments.get(1).get(COMMENT_TEXT_FIELD_NAME));
   }
 
-
-  @Test
-  public void approveRequisitionTest() {
+  private void approveRequisitionTest(Requisition requisition) {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
 
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(approveRequisition)
         .build().expand(requisition.getId().toString()).encode();
@@ -739,6 +737,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertNotNull(approvedRequisition.getId());
     Assert.assertEquals(requisition.getId(), approvedRequisition.getId());
     Assert.assertEquals(RequisitionStatus.APPROVED, approvedRequisition.getStatus());
+  }
+
+  @Test
+  public void testApproveRequisition() {
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+    approveRequisitionTest(requisition);
+  }
+
+  @Test
+  public void testApproveRequisitionSkippedAuthorization() {
+    configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    approveRequisitionTest(requisition);
   }
 
   @Test
@@ -869,13 +882,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
     requisitionRepository.delete(requisition);
-    ResponseEntity<Requisition> result = restTemplate.exchange(
-        initiateUrl + "&facilityId={facilityId}&"
-                + "programId={programId}&periodId={periodId}&emergency=false",
-        HttpMethod.POST, null, Requisition.class, facility.getId(),
-            program.getId(), period.getId());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+
+    String json = mapper.writeValueAsString(requisition);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    ResponseEntity<Requisition> result = restTemplate.exchange(initiateUrl,
+        HttpMethod.POST, entity, Requisition.class);
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Requisition initiatedRequisitions = result.getBody();
@@ -920,5 +941,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+  }
+
+  @Test(expected = HttpClientErrorException.class)
+  public void testSkippedAuthorize() throws JsonProcessingException {
+    configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
+    testAuthorize();
   }
 }

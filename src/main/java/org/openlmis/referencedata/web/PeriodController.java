@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.support.SessionStatus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +37,16 @@ public class PeriodController {
   @Autowired
   private ExposedMessageSource messageSource;
 
+  /**
+   * Creates given period if possible.
+   *
+   * @param period Period object to be created.
+   * @param bindingResult Object used for validation.
+   * @return ResponseEntity with created Period, BAD_REQUEST otherwise.
+   */
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
-                                        BindingResult bindingResult, SessionStatus status) {
+                                        BindingResult bindingResult) {
     logger.debug("Creating new period");
     validator.validate(period, bindingResult);
     if (bindingResult.getErrorCount() == 0) {
@@ -61,6 +67,12 @@ public class PeriodController {
     };
   }
 
+  /**
+   * Returns total difference between start date and end date from given Period.
+   *
+   * @param periodId UUID of given period.
+   * @return String which contains information about this difference.
+   */
   @RequestMapping(value = "/periods/{id}/difference", method = RequestMethod.GET)
   @ResponseBody
   public String getTotalDifference(@PathVariable("id") UUID periodId) {

@@ -1,10 +1,14 @@
 package org.openlmis.referencedata.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProgramDto {
 
   @Getter
@@ -19,12 +23,4 @@ public class ProgramDto {
   @Setter
   private String name;
 
-  public ProgramDto() {
-  }
-
-  public ProgramDto(UUID id, String code, String name) {
-    this.id = id;
-    this.code = code;
-    this.name = name;
-  }
 }

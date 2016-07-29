@@ -129,7 +129,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private SupplyLine supplyLine;
   private User user;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();
@@ -256,9 +255,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanUp() {
     supplyLineRepository.deleteAll();

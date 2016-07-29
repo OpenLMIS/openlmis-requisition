@@ -50,7 +50,6 @@ public class RequisitionGroupRepositoryIntegrationTest
     return requisitionGroup;
   }
 
-  /** Allow setup environment before each test. */
   @Before
   public void setUp() {
     final String code = "code";

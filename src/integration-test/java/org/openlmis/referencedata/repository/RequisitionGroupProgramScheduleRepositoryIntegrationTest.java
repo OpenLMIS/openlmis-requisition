@@ -38,7 +38,6 @@ public class RequisitionGroupProgramScheduleRepositoryIntegrationTest
     return requisitionGroupProgramSchedule;
   }
 
-  /** Allow setup environment before each test. */
   @Before
   public void setUp() {
     final String code = "RequisitionGroup";

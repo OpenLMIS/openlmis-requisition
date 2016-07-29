@@ -35,7 +35,6 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   private Schedule schedule;
   private Period period;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     RestAssured.baseURI = BASE_URL;
@@ -59,9 +58,6 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
     periodRepository.save(period);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanup() {
     periodRepository.deleteAll();

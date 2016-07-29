@@ -82,7 +82,6 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();
@@ -161,9 +160,6 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     proofOfDeliveryRepository.save(proofOfDelivery);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanUp() {
     proofOfDeliveryLineRepository.deleteAll();
