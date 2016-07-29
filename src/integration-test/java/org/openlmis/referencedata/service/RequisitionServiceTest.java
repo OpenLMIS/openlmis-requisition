@@ -48,7 +48,7 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 @Transactional
 public class RequisitionServiceTest {
-  private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
+  private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
 
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
@@ -98,7 +98,7 @@ public class RequisitionServiceTest {
   private Period period;
   private Program program;
 
-  /** Prepare the test environment. */
+
   @Before
   public void setUp() {
     requisitionRepository.deleteAll();
@@ -142,27 +142,23 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSkipRequisition() {
+  public void shouldSkipRequisition() throws RequisitionException {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
 
-    boolean skipResult = requisitionService.skip(requisition.getId());
+    Requisition skipResult = requisitionService.skip(requisition.getId());
 
-    Assert.assertTrue(skipResult);
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.SKIPPED);
+    Assert.assertNotNull(skipResult);
+    Assert.assertEquals(skipResult.getStatus(), RequisitionStatus.SKIPPED);
   }
 
-  @Test
-  public void shouldNotSkipRequisitionIfProgramIsNotSkippable() {
+  @Test(expected = RequisitionException.class)
+  public void shouldNotSkipRequisitionIfProgramIsNotSkippable() throws RequisitionException {
 
     Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
 
     requisition.getProgram().setPeriodsSkippable(false);
-    boolean skipResult = requisitionService.skip(requisition.getId());
-
-    Assert.assertFalse(skipResult);
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
-
+    requisitionService.skip(requisition.getId());
   }
 
   @Test
@@ -258,8 +254,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = RequisitionException.class)
   public void shouldNotInitiateRequisitionWhenItAlreadyExists() throws RequisitionException {
-    requisitionService.initiateRequisition(
-        facility.getId(), program.getId(), period.getId(), false);
+    requisitionService.initiateRequisition(requisition);
   }
 
   @Test(expected = RequisitionException.class)
@@ -289,7 +284,7 @@ public class RequisitionServiceTest {
     user = userRepository.save(user);
 
     program = new Program();
-    program.setCode(requisitionRepositoryName);
+    program.setCode(REQUISITION_REPOSITORY_NAME);
     program.setPeriodsSkippable(true);
     programRepository.save(program);
 
@@ -299,30 +294,30 @@ public class RequisitionServiceTest {
     programRepository.save(program2);
 
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(requisitionRepositoryName);
+    facilityType.setCode(REQUISITION_REPOSITORY_NAME);
     facilityTypeRepository.save(facilityType);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode(requisitionRepositoryName);
+    level.setCode(REQUISITION_REPOSITORY_NAME);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(requisitionRepositoryName);
+    geographicZone.setCode(REQUISITION_REPOSITORY_NAME);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
     facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(requisitionRepositoryName);
+    facility.setCode(REQUISITION_REPOSITORY_NAME);
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Schedule schedule = new Schedule();
     schedule.setName("scheduleName");
-    schedule.setCode(requisitionRepositoryName);
+    schedule.setCode(REQUISITION_REPOSITORY_NAME);
     scheduleRepository.save(schedule);
 
     period = new Period();

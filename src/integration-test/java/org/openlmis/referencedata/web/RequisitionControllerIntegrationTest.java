@@ -148,7 +148,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Facility facility2 = new Facility();
   private User user;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() throws JsonProcessingException {
     RestAssured.baseURI = BASE_URL;
@@ -294,9 +293,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition4);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanUp() {
     commentRepository.deleteAll();
@@ -584,7 +580,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void testReject() throws JsonProcessingException {
 
-    requisition.setRequisitionLines(null);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
@@ -595,6 +590,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .put(rejectUrl)
             .then()
             .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testRejectWithBadStatus() throws JsonProcessingException {
+
+    restAssured.given()
+        .contentType("application/json")
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(rejectUrl)
+        .then()
+        .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -886,13 +895,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
     requisitionRepository.delete(requisition);
-    ResponseEntity<Requisition> result = restTemplate.exchange(
-        initiateUrl + "&facilityId={facilityId}&"
-                + "programId={programId}&periodId={periodId}&emergency=false",
-        HttpMethod.POST, null, Requisition.class, facility.getId(),
-            program.getId(), period.getId());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Hibernate4Module());
+
+    String json = mapper.writeValueAsString(requisition);
+    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    ResponseEntity<Requisition> result = restTemplate.exchange(initiateUrl,
+        HttpMethod.POST, entity, Requisition.class);
 
     Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
     Requisition initiatedRequisitions = result.getBody();

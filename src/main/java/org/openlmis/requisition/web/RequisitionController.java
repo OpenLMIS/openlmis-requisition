@@ -45,7 +45,7 @@ import javax.validation.Valid;
 @RepositoryRestController
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionController {
-  private Logger logger = LoggerFactory.getLogger(RequisitionController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -70,22 +70,15 @@ public class RequisitionController {
 
   /**
    * Initiates requisition.
-   * 
-   * @param facilityId The UUID of the requisition's facility
-   * @param programId The UUID of the requisition's program
-   * @param periodId The UUID of the requisition's period
-   * @param emergency Boolean indicating emergency status of requisition
    * @return result
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestParam("facilityId") UUID facilityId,
-                                               @RequestParam("programId") UUID programId,
-                                               @RequestParam("periodId") UUID periodId,
-                                               @RequestParam(value = "emergency",
-                                                   required = false) Boolean emergency) {
+  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisitionDto,
+                                               BindingResult bindingResult) {
     try {
+
       Requisition requisition = requisitionService.initiateRequisition(
-          facilityId, programId, periodId, emergency);
+          requisitionDto);
       ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
       return response;
 
@@ -105,7 +98,7 @@ public class RequisitionController {
       try {
         requisition = requisitionService.submitRequisition(requisition);
       } catch (RequisitionException ex) {
-        logger.debug(ex.getMessage(), ex);
+        LOGGER.debug(ex.getMessage(), ex);
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
       return new ResponseEntity<Object>(requisition, HttpStatus.OK);
@@ -127,7 +120,7 @@ public class RequisitionController {
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
       }
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
@@ -155,13 +148,13 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId) {
-    boolean skipped = requisitionService.skip(requisitionId);
     ResponseEntity<Object> responseEntity;
-    if (skipped) {
-      Requisition requisition = requisitionRepository.findOne(requisitionId);
-      responseEntity = new ResponseEntity<Object>(requisition, HttpStatus.OK);
-    } else {
-      responseEntity = new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+    try {
+      Requisition requisition = requisitionService.skip(requisitionId);
+      responseEntity = new ResponseEntity<>(requisition, HttpStatus.OK);
+    } catch (RequisitionException ex) {
+      LOGGER.debug(ex.getMessage(), ex);
+      responseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return responseEntity;
   }
@@ -175,7 +168,7 @@ public class RequisitionController {
     try {
       requisitionService.reject(id);
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     Requisition rejectedRequisition = requisitionRepository.findOne(id);
@@ -225,7 +218,7 @@ public class RequisitionController {
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
-      logger.debug("Requisition with id " + requisitionId + " approved");
+      LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return new ResponseEntity<>(requisition, HttpStatus.OK);
     } else {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -253,7 +246,11 @@ public class RequisitionController {
     };
   }
 
-
+  /**
+   * Get all submitted Requisitions.
+   *
+   * @return Submitted requisitions.
+   */
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
@@ -267,6 +264,14 @@ public class RequisitionController {
     }
   }
 
+  /**
+   * Authorize given requisition.
+   *
+   * @param requisitionDto Requisition object to be authorized.
+   * @param bindingResult Object used for validation.
+   * @param requisitionId UUID of Requisition to authorize.
+   * @return ResponseEntity with authorized Requisition if authorization was successful.
+   */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
   public ResponseEntity<?> authorizeRequisition(@RequestBody Requisition requisitionDto,
                                                 BindingResult bindingResult,
@@ -278,9 +283,9 @@ public class RequisitionController {
     try {
       requisitionDto = requisitionService.authorize(requisitionId, requisitionDto,
           bindingResult.hasErrors());
-      logger.info("Requisition: " +  requisitionId + " authorized.");
+      LOGGER.info("Requisition: " +  requisitionId + " authorized.");
     } catch (RequisitionException ex) {
-      logger.debug(ex.getMessage(), ex);
+      LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(requisitionDto, HttpStatus.OK);

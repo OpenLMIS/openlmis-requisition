@@ -8,6 +8,8 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -24,9 +26,6 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private Program program = new Program();
 
-  /**
-   * Prepare the test environment.
-   */
   @Before
   public void setUp() {
     programRepository.deleteAll();
@@ -35,9 +34,6 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
     programRepository.save(program);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanup() {
     programRepository.deleteAll();
@@ -69,6 +65,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private ResponseEntity<Program> updateProgram(ProgramDto programDto) {
     RestTemplate restTemplate = new RestTemplate();
-    return restTemplate.postForEntity(addTokenToUrl(UPDATE_URL), programDto, Program.class);
+    return restTemplate.exchange(addTokenToUrl(UPDATE_URL), HttpMethod.PUT,
+        new HttpEntity<>(programDto), Program.class);
   }
 }

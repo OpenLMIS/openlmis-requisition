@@ -110,7 +110,6 @@ public class OrderServiceTest {
   private SupplyLine supplyLine = new SupplyLine();
   private User user;
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanup();
@@ -160,9 +159,6 @@ public class OrderServiceTest {
     requisitionList.add(createTestRequisition("code2", program, supervisoryNode));
   }
 
-  /**
-   * Cleanup the test environment.
-   */
   @After
   public void cleanup() {
     supplyLineRepository.deleteAll();

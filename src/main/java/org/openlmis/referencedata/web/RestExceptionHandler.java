@@ -14,6 +14,13 @@ import javax.servlet.http.HttpServletRequest;
 @ControllerAdvice
 public class RestExceptionHandler {
 
+  /**
+   * Handle given exception and returns proper response.
+   *
+   * @param ex Exception to handle.
+   * @param request Request to handle.
+   * @return ResponseEntity with exception details
+   */
   @ExceptionHandler(CsvInputNotValidException.class)
   public ResponseEntity<ExceptionDetail> csvInputNotValidExceptionHandler(
       RuntimeException ex, 

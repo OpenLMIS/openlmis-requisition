@@ -103,18 +103,18 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   public void setUp() {
     cleanUp();
 
-    GeographicLevel geographicLevel = addGeographicLevel("GL1", 1);
-
-    GeographicZone geographicZone = addGeographicZone("GZ1", geographicLevel);
-
-    FacilityType facilityType = addFacilityType("FT1");
-
     schedule = addSchedule("Schedule1", "S1");
 
     program = addProgram("P1");
 
     period = addPeriod("P1", schedule, LocalDate.of(2015, Month.JANUARY, 1),
             LocalDate.of(2015, Month.DECEMBER, 31));
+
+    GeographicLevel geographicLevel = addGeographicLevel("GL1", 1);
+
+    GeographicZone geographicZone = addGeographicZone("GZ1", geographicLevel);
+
+    FacilityType facilityType = addFacilityType("FT1");
 
     Facility facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, null, true, false);

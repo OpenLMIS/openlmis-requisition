@@ -27,6 +27,7 @@ public class User extends BaseEntity {
   @Setter
   private String username;
 
+  @Column(nullable = false, columnDefinition = "text DEFAULT 'not-in-use'::text")
   @Setter
   private String password;
 
@@ -75,6 +76,10 @@ public class User extends BaseEntity {
 
     if (this.active == null) {
       this.active = false;
+    }
+
+    if (this.password == null) {
+      this.password = "not-in-use";
     }
   }
 

@@ -20,7 +20,6 @@ public class GeographicZoneRepositoryIntegrationTest
 
   private GeographicLevel level = new GeographicLevel();
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     level.setCode("GeographicZoneRepositoryIntegrationTest");
