@@ -576,7 +576,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void testConvertToOrder() {
     RestTemplate restTemplate = new RestTemplate();
-    String url = addTokenToUrl(RESOURCE_URL);
+    String url = addTokenToUrl(RESOURCE_URL + "/requisitions");
 
     orderRepository.deleteAll();
 
