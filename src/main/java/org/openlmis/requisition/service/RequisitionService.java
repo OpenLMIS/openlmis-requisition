@@ -12,6 +12,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
@@ -51,6 +52,10 @@ public class RequisitionService {
   private RequisitionLineService requisitionLineService;
 
   @Autowired
+  private RequisitionLineRepository requisitionLineRepository;
+
+
+  @Autowired
   private ConfigurationSettingService configurationSettingService;
 
   @PersistenceContext
@@ -73,7 +78,11 @@ public class RequisitionService {
 
       requisitionDto.setStatus(RequisitionStatus.INITIATED);
       requisitionLineService.initiateRequisitionLineFields(requisitionDto);
+
+      requisitionDto.getRequisitionLines().forEach(
+          requisitionLine -> requisitionLineRepository.save(requisitionLine));
       requisitionRepository.save(requisitionDto);
+
     } else {
       throw new RequisitionException("Cannot initiate requisition."
           + " Requisition with such parameters already exists");
