@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +110,7 @@ public class OrderServiceTest {
   private List<Requisition> requisitionList = new ArrayList<>();
   private SupplyLine supplyLine = new SupplyLine();
   private User user;
+  private List<Order> orders;
 
   /** Prepare the test environment. */
   @Before
@@ -145,6 +147,14 @@ public class OrderServiceTest {
     supplyingFacility.setEnabled(true);
     facilityRepository.save(supplyingFacility);
 
+    Facility supplyingFacility2 = new Facility();
+    supplyingFacility2.setType(facilityType);
+    supplyingFacility2.setGeographicZone(geographicZone);
+    supplyingFacility2.setCode("FacilityCode2");
+    supplyingFacility2.setActive(true);
+    supplyingFacility2.setEnabled(true);
+    facilityRepository.save(supplyingFacility2);
+
     SupervisoryNode supervisoryNode = new SupervisoryNode();
     supervisoryNode.setCode("NodeCode");
     supervisoryNode.setName("NodeName");
@@ -158,6 +168,31 @@ public class OrderServiceTest {
 
     requisitionList.add(createTestRequisition("code1", program, supervisoryNode));
     requisitionList.add(createTestRequisition("code2", program, supervisoryNode));
+
+    orders = new ArrayList<>();
+    Order order = new Order();
+    order.setOrderCode("O");
+    order.setQuotedCost(new BigDecimal("1.29"));
+    order.setStatus(OrderStatus.PICKING);
+    order.setProgram(program);
+    order.setCreatedBy(user);
+    order.setRequestingFacility(supplyingFacility);
+    order.setReceivingFacility(supplyingFacility);
+    order.setSupplyingFacility(supplyingFacility);
+    orderRepository.save(order);
+    orders.add(order);
+
+    Order order2 = new Order();
+    order2.setOrderCode("O2");
+    order2.setQuotedCost(new BigDecimal("1.29"));
+    order2.setStatus(OrderStatus.PICKING);
+    order2.setProgram(program);
+    order2.setCreatedBy(user);
+    order2.setRequestingFacility(supplyingFacility2);
+    order2.setReceivingFacility(supplyingFacility2);
+    order2.setSupplyingFacility(supplyingFacility2);
+    orderRepository.save(order2);
+    orders.add(order2);
   }
 
   /**
@@ -184,6 +219,7 @@ public class OrderServiceTest {
 
   @Test
   public void shouldConvertToOrder() {
+    orderRepository.deleteAll();
     Assert.assertEquals(0, orderRepository.count());
     orderService.convertToOrder(requisitionList, user.getId());
 
@@ -215,6 +251,27 @@ public class OrderServiceTest {
     Assert.assertEquals(requisitionLine.getRequestedQuantity().longValue(),
         orderLine.getOrderedQuantity().longValue());
     Assert.assertEquals(requisitionLine.getProduct().getId(), orderLine.getProduct().getId());
+  }
+
+  @Test
+  public void searchOrders() {
+    List<Order> receivedOrders = orderService.searchOrders(
+            orders.get(0).getSupplyingFacility(),
+            orders.get(0).getRequestingFacility(),
+            orders.get(0).getProgram());
+
+    Assert.assertEquals(1,receivedOrders.size());
+    for ( Order receivedOrder : receivedOrders ) {
+      Assert.assertEquals(
+              receivedOrder.getSupplyingFacility().getId(),
+              orders.get(0).getSupplyingFacility().getId());
+      Assert.assertEquals(
+              receivedOrder.getRequestingFacility().getId(),
+              orders.get(0).getRequestingFacility().getId());
+      Assert.assertEquals(
+              receivedOrder.getProgram().getId(),
+              orders.get(0).getProgram().getId());
+    }
   }
 
   private Requisition createTestRequisition(String code, Program program,

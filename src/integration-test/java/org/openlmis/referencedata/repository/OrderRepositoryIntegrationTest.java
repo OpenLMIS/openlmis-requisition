@@ -2,7 +2,6 @@ package org.openlmis.referencedata.repository;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
@@ -126,66 +124,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setSupplyingFacility(facility);
     return order;
   }
-
-  @Test
-  public void testFindBySupplyingFacility() {
-    for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacility(testFacilities.get(i));
-
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-      }
-    }
-  }
-
-  @Test
-  public void testFindBySupplyingFacilityAndRequestingFacility() {
-    for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(
-          testFacilities.get(i), testFacilities.get(i));
-
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getRequestingFacility(), testFacilities.get(i));
-      }
-    }
-  }
-
-  @Test
-  public void testFindBySupplyingFacilityAndProgram() {
-    for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(
-          testFacilities.get(i), testPrograms.get(i));
-
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getProgram(), testPrograms.get(i));
-      }
-    }
-  }
-
-  @Test
-  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
-    for ( int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(
-          testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
-
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getRequestingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getProgram(), testPrograms.get(i));
-      }
-    }
-  }
-
 
   private void generateTestSet() {
     for (int i = 0; i < testSetSize; i++) {

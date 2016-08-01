@@ -7,7 +7,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.Stock;
+import org.openlmis.referencedata.domain.*;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.slf4j.Logger;
@@ -47,6 +47,21 @@ public class OrderController {
   @Autowired
   private OrderService orderService;
 
+
+  /**
+   * Finds requisitions matching all of provided parameters.
+   */
+  @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
+  public ResponseEntity<Iterable<Order>> searchOrders(
+          @RequestParam(value = "supplyingFacility", required = true) Facility supplyingFacility,
+          @RequestParam(value = "requestingFacility", required = false) Facility requestingFacility,
+          @RequestParam(value = "program", required = false) Program program) {
+
+    List<Order> result = orderService.searchOrders(supplyingFacility,requestingFacility,program);
+
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
   /**
    * Allows finalizing orders.
    *
@@ -54,7 +69,6 @@ public class OrderController {
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
   or ResponseEntity containing the error description and "#400 Bad Request" status
    */
-
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
   public ResponseEntity<?> finalize(@PathVariable("id") UUID orderId) {
 

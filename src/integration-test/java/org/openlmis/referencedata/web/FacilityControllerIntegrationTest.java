@@ -103,10 +103,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   public void setUp() {
     cleanUp();
 
-    GeographicLevel geographicLevel = addGeographicLevel("GL1", 1);
-
-    GeographicZone geographicZone = addGeographicZone("GZ1", geographicLevel);
-
     FacilityType facilityType = addFacilityType("FT1");
 
     schedule = addSchedule("Schedule1", "S1");
@@ -115,6 +111,10 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
     period = addPeriod("P1", schedule, LocalDate.of(2015, Month.JANUARY, 1),
             LocalDate.of(2015, Month.DECEMBER, 31));
+
+    GeographicLevel geographicLevel = addGeographicLevel("GL1", 1);
+
+    GeographicZone geographicZone = addGeographicZone("GZ1", geographicLevel);
 
     Facility facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, null, true, false);
@@ -175,11 +175,10 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   public void testOrderList() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(RESOURCE_URL
-            + "/" + user.getHomeFacility().getId() + "/orders"))
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL
+            + "/" + user.getHomeFacility().getId() + "/orders")
             .queryParam("program", program.getId())
-            .queryParam("period", period.getId())
-            .queryParam("schedule", schedule.getId());
+            .queryParam("access_token",getToken());
 
     ResponseEntity<Iterable<Order>> orderListResponse = restTemplate.exchange(builder.toUriString(),
             HttpMethod.GET,
