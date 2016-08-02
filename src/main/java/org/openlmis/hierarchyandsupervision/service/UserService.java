@@ -1,19 +1,19 @@
 package org.openlmis.hierarchyandsupervision.service;
 
-import java.util.List;
-
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+
 
 @Service
 public class UserService {
@@ -25,14 +25,14 @@ public class UserService {
   UserRepository userRepository;
 
   /**
-   *
+   * Method returns all users with matched parameters.
    * @param username username of user.
    * @param firstName firstName of user.
    * @param lastName lastName of user.
    * @param homeFacility homeFacility of user.
    * @param active is the account activated.
    * @param verified is the account verified.
-   * @return
+   * @return List of users
    */
   public List<User> searchUsers(
           String username, String firstName, String lastName,

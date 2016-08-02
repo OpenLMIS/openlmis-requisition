@@ -19,6 +19,16 @@ public class UserController {
   @Autowired
   UserService userService;
 
+  /**
+   * Returns all users with matched parameters
+   * @param username username of user we want search.
+   * @param firstName firstName of user we want search.
+   * @param lastName lastName of user we want search.
+   * @param homeFacility homeFacility of user we want search.
+   * @param active is the user account active.
+   * @param verified is the user account verified.
+   * @return returns all users with matched parameters
+   */
   @RequestMapping(value = "/users/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchUsers(
           @RequestParam(value = "username", required = false) String username,

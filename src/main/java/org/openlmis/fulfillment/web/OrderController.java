@@ -7,9 +7,12 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.*;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.requisition.domain.Requisition;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +33,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletResponse;
+
 
 
 @RepositoryRestController

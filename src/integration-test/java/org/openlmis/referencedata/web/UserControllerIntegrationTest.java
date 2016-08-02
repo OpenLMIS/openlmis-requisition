@@ -50,7 +50,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @After
   public void cleanUp() {
-      userRepository.delete(users);
+    userRepository.delete(users);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     return user;
   }
 
-  private Integer generateInstanceNumber(){
+  private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
   }

@@ -5,10 +5,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.openlmis.Application;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -72,7 +74,7 @@ public class UserServiceTest {
     return user;
   }
 
-  private Integer generateInstanceNumber(){
+  private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
   }
