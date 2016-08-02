@@ -5,6 +5,7 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.service.PeriodService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class ScheduleController {
   @Autowired
   private ExposedMessageSource messageSource;
 
+  @Autowired
+  private PeriodService periodService;
+
   /**
    * Calculates total difference in days and months
    *      between schedule beginning and end.
@@ -43,7 +47,7 @@ public class ScheduleController {
   public String getTotalDifference(@PathVariable("id") UUID scheduleId) {
     Schedule schedule = scheduleRepository.findOne(scheduleId);
 
-    Iterable<Period> allPeriods = periodRepository.findByProcessingSchedule(schedule);
+    Iterable<Period> allPeriods = periodService.searchPeriods(schedule,null);
     if (!allPeriods.equals(null)) {
       Period firstPeriod = allPeriods.iterator().next();
       Period lastPeriod = periodRepository.findFirst1ByOrderByEndDateDesc();

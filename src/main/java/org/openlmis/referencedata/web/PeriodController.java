@@ -1,8 +1,10 @@
 package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.service.PeriodService;
 import org.openlmis.referencedata.validate.PeriodValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +20,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,6 +41,26 @@ public class PeriodController {
 
   @Autowired
   private ExposedMessageSource messageSource;
+
+  @Autowired
+  private PeriodService periodService;
+
+
+  /**
+   * Finds periods matching all of provided parameters.
+   * @param processingSchedule processingSchedule of searched Periods.
+   * @param startDate maximal start date of Periods
+   * @return list of all Periods matching all of provided parameters.
+   */
+  @RequestMapping(value = "/periods/search", method = RequestMethod.GET)
+  public ResponseEntity<?> searchPeriods(
+          @RequestParam(value = "processingSchedule", required = true) Schedule processingSchedule,
+          @RequestParam(value = "startDate", required = false) String startDate) {
+    LocalDate limitDate = LocalDate.parse(startDate);
+    List<Period> result = periodService.searchPeriods(processingSchedule, limitDate);
+
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
 
   /**
    * Creates given period if possible.

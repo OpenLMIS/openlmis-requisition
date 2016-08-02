@@ -39,7 +39,12 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
+  private static final String RESOURCE_URL = BASE_URL + "/api/periods";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
+  private static final String PROCESSING_SCHEDULE = "processingSchedule";
+  private static final String START_DATE = "startDate";
+  private static final String ACCESS_TOKEN = "access_token";
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();
@@ -152,5 +157,32 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertTrue(response.contains("Period lasts 1 months and 1 days"));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testSearchPeriods() {
+    firstPeriod.setProcessingSchedule(schedule);
+    firstPeriod.setStartDate(LocalDate.now().plusDays(1));
+    periodRepository.save(firstPeriod);
+    secondPeriod.setProcessingSchedule(schedule);
+    secondPeriod.setStartDate(LocalDate.now());
+    periodRepository.save(secondPeriod);
+
+    Period[] response = restAssured.given()
+            .queryParam(PROCESSING_SCHEDULE, firstPeriod.getProcessingSchedule().getId())
+            .queryParam(START_DATE, firstPeriod.getStartDate().toString())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Period[].class);
+
+    Assert.assertEquals(1,response.length);
+    for ( Period period : response ) {
+      Assert.assertEquals(
+              period.getProcessingSchedule().getId(),
+              firstPeriod.getProcessingSchedule().getId());
+      Assert.assertEquals(
+              true,
+              period.getStartDate().isBefore(firstPeriod.getStartDate()));
+    }
   }
 }
