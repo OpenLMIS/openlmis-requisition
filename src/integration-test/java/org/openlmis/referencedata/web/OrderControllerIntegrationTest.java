@@ -1,6 +1,10 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -116,7 +120,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = BASE_URL + "/api/orders";
 
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+
   private static final String USERNAME = "testUser";
+
+  private static final String ACCESS_TOKEN = "access_token";
+
+  private static final String REQUESTING_FACILITY = "requestingFacility";
+
+  private static final String SUPPLYING_FACILITY = "supplyingFacility";
+
+  private static final String PROGRAM = "program";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -128,6 +142,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Requisition requisition;
   private SupplyLine supplyLine;
   private User user;
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
 
   @Before
   public void setUp() {
@@ -253,6 +269,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         RequisitionStatus.APPROVED, supervisoryNode);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
+
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
   }
 
   @After
@@ -596,5 +616,65 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
     Assert.assertEquals(order.getSupplyingFacility().getId(),
             supplyLine.getSupplyingFacility().getId());
+  }
+
+  @Test
+  public void testFindBySupplyingFacility() {
+    Order[] response = restAssured.given()
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Order[].class);
+
+    Assert.assertEquals(1,response.length);
+    for ( Order order : response ) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              firstOrder.getSupplyingFacility().getId());
+    }
+  }
+
+  @Test
+  public void testSearchBySupplyingFacilityAndRequestingFacility() {
+    Order[] response = restAssured.given()
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
+            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Order[].class);
+
+    Assert.assertEquals(1,response.length);
+    for ( Order order : response ) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              firstOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getRequestingFacility().getId(),
+              firstOrder.getRequestingFacility().getId());
+    }
+  }
+
+  @Test
+  public void testSearchBySupplyingFacilityAndRequestingFacilityAndProgram() {
+    Order[] response = restAssured.given()
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
+            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())
+            .queryParam(PROGRAM, firstOrder.getProgram().getId())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Order[].class);
+
+    Assert.assertEquals(1,response.length);
+    for ( Order order : response ) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              firstOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getRequestingFacility().getId(),
+              firstOrder.getRequestingFacility().getId());
+      Assert.assertEquals(
+              order.getProgram().getId(),
+              firstOrder.getProgram().getId());
+    }
   }
 }

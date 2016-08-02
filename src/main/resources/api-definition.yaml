@@ -576,37 +576,9 @@ resourceTypes:
                   X-XSS-Protection:
 
     /search:
-        /findBySupplyingFacility:
             get:
                 is: [ secured ]
-                description: Find Orders with matched SupplyingFacility.
-                queryParameters:
-                    supplyingFacility:
-                        displayName: supplyingFacility
-                        description: SupplyingFacility ID
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findBySupplyingFacilityAndRequestingFacility:
-            get:
-                is: [ secured ]
-                description: Find Orders with matched SupplyingFacility and RequestingFacility.
+                description: Find Orders with matched parameters.
                 queryParameters:
                     supplyingFacility:
                         displayName: supplyingFacility
@@ -616,79 +588,13 @@ resourceTypes:
                         repeat: false
                     requestingFacility:
                         displayName: requestingFacility
-                        description: RequestingFacility ID
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findBySupplyingFacilityAndProgram:
-                    get:
-                        is: [ secured ]
-                        description: Find Orders with matched SupplyingFacility and Program.
-                        queryParameters:
-                            supplyingFacility:
-                                displayName: supplyingFacility
-                                description: SupplyingFacility ID
-                                type: string
-                                required: true
-                                repeat: false
-                            program:
-                                displayName: program
-                                description: Program ID
-                                type: string
-                                required: true
-                                repeat: false
-                        responses:
-                            "200":
-                                headers:
-                                  X-Content-Type-Options:
-                                  X-XSS-Protection:
-                                body:
-                                  application/json:
-                            "404":
-                                headers:
-                                  X-Content-Type-Options:
-                                  X-XSS-Protection:
-                            "500":
-                                headers:
-                                  X-Content-Type-Options:
-                                  X-XSS-Protection:
-
-        /findBySupplyingFacilityAndRequestingFacilityAndProgram:
-            get:
-                is: [ secured ]
-                description: Find Orders with matched SupplyingFacility, RequestingFacility and Program.
-                queryParameters:
-                    supplyingFacility:
-                        displayName: supplyingFacility
-                        description: SupplyingFacility ID
-                        type: string
-                        required: true
-                        repeat: false
-                    requestingFacility:
-                        displayName: requestingFacility
-                        description: RequestingFacility ID
+                        description: requestingFacility ID
                         type: string
                         required: true
                         repeat: false
                     program:
                         displayName: program
-                        description: Program ID
+                        description: program ID
                         type: string
                         required: true
                         repeat: false
@@ -707,7 +613,7 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-                          
+
     /{id}/print:
         uriParameters:
             id:
@@ -1496,26 +1402,6 @@ resourceTypes:
                     repeat: false
                 requestingFacilityId:
                     displayName: requestingFacilityId
-                    type: string
-                    required: false
-                    repeat: false
-                periodId:
-                    displayName: periodId
-                    type: string
-                    required: false
-                    repeat: false
-                scheduleId:
-                    displayName: scheduleId
-                    type: string
-                    required: false
-                    repeat: false
-                startDate:
-                    displayName: startDate
-                    type: string
-                    required: false
-                    repeat: false
-                endDate:
-                    displayName: endDate
                     type: string
                     required: false
                     repeat: false

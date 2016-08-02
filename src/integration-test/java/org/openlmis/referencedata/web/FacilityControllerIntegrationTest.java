@@ -175,11 +175,10 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   public void testOrderList() throws JsonProcessingException {
     RestTemplate restTemplate = new RestTemplate();
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(RESOURCE_URL
-            + "/" + user.getHomeFacility().getId() + "/orders"))
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL
+            + "/" + user.getHomeFacility().getId() + "/orders")
             .queryParam("program", program.getId())
-            .queryParam("period", period.getId())
-            .queryParam("schedule", schedule.getId());
+            .queryParam("access_token",getToken());
 
     ResponseEntity<Iterable<Order>> orderListResponse = restTemplate.exchange(builder.toUriString(),
             HttpMethod.GET,
