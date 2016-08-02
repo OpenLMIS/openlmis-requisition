@@ -10,6 +10,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.FacilityType;
+import org.openlmis.referencedata.domain.GeographicLevel;
+import org.openlmis.referencedata.domain.GeographicZone;
+import org.openlmis.referencedata.repository.FacilityRepository;
+import org.openlmis.referencedata.repository.FacilityTypeRepository;
+import org.openlmis.referencedata.repository.GeographicLevelRepository;
+import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -20,15 +28,27 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private GeographicLevelRepository geographicLevelRepository;
+
+  @Autowired
+  private GeographicZoneRepository geographicZoneRepository;
+
+  @Autowired
+  private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private FacilityRepository facilityRepository;
+
   private static final String RESOURCE_URL = BASE_URL + "/api/users";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String USERNAME = "username";
-  private static final String FIRSTNAME = "firstname";
-  //private static final String LASTNAME = "lastName";
-  //private static final String HOMEFACILITY = "homeFacility";
-  //private static final String ACTIVE = "active";
-  //private static final String VERIFIED = "verified";
+  private static final String FIRST_NAME = "firstname";
+  private static final String LAST_NAME = "lastName";
+  private static final String HOME_FACILITY = "homeFacility";
+  private static final String ACTIVE = "active";
+  private static final String VERIFIED = "verified";
 
   private List<User> users;
 
@@ -57,7 +77,11 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   public void testSearchUsers() {
     User[] response = restAssured.given()
             .queryParam(USERNAME, users.get(0).getUsername())
-            .queryParam(FIRSTNAME, users.get(0).getFirstName())
+            .queryParam(FIRST_NAME, users.get(0).getFirstName())
+            .queryParam(LAST_NAME, users.get(0).getLastName())
+            .queryParam(HOME_FACILITY, users.get(0).getHomeFacility().getId())
+            .queryParam(ACTIVE, users.get(0).getActive())
+            .queryParam(VERIFIED, users.get(0).getVerified())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
             .get(SEARCH_URL).as(User[].class);
@@ -70,20 +94,74 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
       Assert.assertEquals(
               order.getFirstName(),
               users.get(0).getFirstName());
+      Assert.assertEquals(
+              order.getLastName(),
+              users.get(0).getLastName());
+      Assert.assertEquals(
+              order.getHomeFacility().getId(),
+              users.get(0).getHomeFacility().getId());
+      Assert.assertEquals(
+              order.getActive(),
+              users.get(0).getActive());
+      Assert.assertEquals(
+              order.getVerified(),
+              users.get(0).getVerified());
     }
   }
 
   private User generateUser() {
     User user = new User();
-    int instanceNumber = generateInstanceNumber();
+    Integer instanceNumber = generateInstanceNumber();
     user.setFirstName("Ala" + instanceNumber);
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
     user.setPassword("iDobrze" + instanceNumber);
+    user.setHomeFacility(generateFacility());
     user.setVerified(true);
     user.setActive(true);
     userRepository.save(user);
     return user;
+  }
+
+  private Facility generateFacility() {
+    Integer instanceNumber = + generateInstanceNumber();
+    GeographicLevel geographicLevel = generateGeographicLevel();
+    GeographicZone geographicZone = generateGeographicZone(geographicLevel);
+    FacilityType facilityType = generateFacilityType();
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("FacilityCode" + instanceNumber);
+    facility.setName("FacilityName" + instanceNumber);
+    facility.setDescription("FacilityDescription" + instanceNumber);
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facility.setStockInventory(null);
+    facilityRepository.save(facility);
+    return facility;
+  }
+
+  private GeographicLevel generateGeographicLevel() {
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GeographicLevel" + generateInstanceNumber());
+    geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
+    return geographicLevel;
+  }
+
+  private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("GeographicZone" + generateInstanceNumber());
+    geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
+    return geographicZone;
+  }
+
+  private FacilityType generateFacilityType() {
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("FacilityType" + generateInstanceNumber());
+    facilityTypeRepository.save(facilityType);
+    return facilityType;
   }
 
   private Integer generateInstanceNumber() {

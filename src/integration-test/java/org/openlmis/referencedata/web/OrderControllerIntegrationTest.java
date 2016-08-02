@@ -18,6 +18,7 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -115,6 +116,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private SupplyLineRepository supplyLineRepository;
+
+  @Autowired
+  private UserService userService;
 
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
 
@@ -288,7 +292,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userRepository.findByUsername(USERNAME);
+    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
     if (users != null && users.iterator().hasNext()) {
       userRepository.delete(users);
     }

@@ -12,6 +12,7 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -88,6 +89,9 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
+  @Autowired
+  private UserService userService;
+
   private static final String RESOURCE_URL = BASE_URL + "api/facilities";
 
   private static final String USERNAME = "testUser";
@@ -160,7 +164,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userRepository.findByUsername(USERNAME);
+    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
     if (users != null && users.iterator().hasNext()) {
       userRepository.delete(users);
     }
