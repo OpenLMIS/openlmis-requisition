@@ -17,7 +17,7 @@ import java.util.List;
 public class UserController {
 
   @Autowired
-  UserService userService;
+  private UserService userService;
 
   /**
    * Returns all users with matched parameters

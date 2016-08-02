@@ -44,7 +44,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String USERNAME = "username";
-  private static final String FIRST_NAME = "firstname";
+  private static final String FIRST_NAME = "firstName";
   private static final String LAST_NAME = "lastName";
   private static final String HOME_FACILITY = "homeFacility";
   private static final String ACTIVE = "active";
@@ -87,24 +87,24 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
             .get(SEARCH_URL).as(User[].class);
 
     Assert.assertEquals(1,response.length);
-    for ( User order : response ) {
+    for ( User user : response ) {
       Assert.assertEquals(
-              order.getUsername(),
+              user.getUsername(),
               users.get(0).getUsername());
       Assert.assertEquals(
-              order.getFirstName(),
+              user.getFirstName(),
               users.get(0).getFirstName());
       Assert.assertEquals(
-              order.getLastName(),
+              user.getLastName(),
               users.get(0).getLastName());
       Assert.assertEquals(
-              order.getHomeFacility().getId(),
+              user.getHomeFacility().getId(),
               users.get(0).getHomeFacility().getId());
       Assert.assertEquals(
-              order.getActive(),
+              user.getActive(),
               users.get(0).getActive());
       Assert.assertEquals(
-              order.getVerified(),
+              user.getVerified(),
               users.get(0).getVerified());
     }
   }

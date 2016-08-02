@@ -1,9 +1,7 @@
 package org.openlmis.hierarchyandsupervision.service;
 
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,10 +17,7 @@ import javax.persistence.criteria.Root;
 public class UserService {
 
   @PersistenceContext
-  EntityManager entityManager;
-
-  @Autowired
-  UserRepository userRepository;
+  private EntityManager entityManager;
 
   /**
    * Method returns all users with matched parameters.
