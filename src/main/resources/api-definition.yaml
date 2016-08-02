@@ -1393,26 +1393,6 @@ resourceTypes:
                     type: string
                     required: false
                     repeat: false
-                periodId:
-                    displayName: periodId
-                    type: string
-                    required: false
-                    repeat: false
-                scheduleId:
-                    displayName: scheduleId
-                    type: string
-                    required: false
-                    repeat: false
-                startDate:
-                    displayName: startDate
-                    type: string
-                    required: false
-                    repeat: false
-                endDate:
-                    displayName: endDate
-                    type: string
-                    required: false
-                    repeat: false
             responses:
               200:
                   headers:
