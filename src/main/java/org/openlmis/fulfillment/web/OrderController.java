@@ -160,7 +160,7 @@ public class OrderController {
    * @param requisitionList List of Requisitions that will be converted to Orders
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
-  @RequestMapping(value = "/orders", method = RequestMethod.POST)
+  @RequestMapping(value = "/orders/requisitions", method = RequestMethod.POST)
   public ResponseEntity<?> convertToOrder(@RequestBody List<Requisition> requisitionList,
                                           OAuth2Authentication auth) {
     UUID userId = null;

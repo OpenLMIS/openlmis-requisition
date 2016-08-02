@@ -224,12 +224,11 @@ public class OrderService {
   public void convertToOrder(List<Requisition> requisitionList, UUID userId) {
     User user = userRepository.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
-    Order order;
 
     for (Requisition requisition : requisitionList) {
       requisition = requisitionRepository.findOne(requisition.getId());
 
-      order = new Order();
+      Order order = new Order();
       order.setCreatedBy(user);
       order.setRequisition(requisition);
       order.setStatus(OrderStatus.ORDERED);

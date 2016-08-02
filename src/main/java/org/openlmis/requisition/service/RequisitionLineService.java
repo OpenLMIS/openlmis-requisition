@@ -85,7 +85,7 @@ public class RequisitionLineService {
         requisition.getProcessingPeriod().getStartDate());
 
     if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
-        && previousPeriods != null) {
+        && previousPeriods != null && previousPeriods.iterator().hasNext()) {
 
       Requisition previousRequisition;
       RequisitionLine previousRequisitionLine;

@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.openlmis.settings.domain.ConfigurationSetting;
+import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class ConfigurationSettingServiceTest {
   }
 
   @Test
-  public void testGetStringValue() {
+  public void testGetStringValue() throws ConfigurationSettingException {
     ConfigurationSetting setting = new ConfigurationSetting();
     setting.setKey("testString");
     setting.setValue("testValue");
@@ -44,9 +45,13 @@ public class ConfigurationSettingServiceTest {
     Assert.assertTrue(service.getStringValue("testString").equals("testValue"));
   }
 
+  @Test(expected = ConfigurationSettingException.class)
+  public void testGetEmptyStringValue() throws ConfigurationSettingException {
+    service.getStringValue("testEmpty");
+  }
+
   @Test
-  public void testGetEmptyValue() {
-    Assert.assertTrue(service.getStringValue("testEmpty").equals(""));
+  public void testGetEmptyBoolValue() throws ConfigurationSettingException {
     Assert.assertTrue(service.getBoolValue("testEmpty").equals(Boolean.FALSE));
   }
 

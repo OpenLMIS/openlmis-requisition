@@ -580,7 +580,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void testReject() throws JsonProcessingException {
 
-    requisition.setRequisitionLines(null);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
@@ -591,6 +590,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .put(rejectUrl)
             .then()
             .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testRejectWithBadStatus() throws JsonProcessingException {
+
+    restAssured.given()
+        .contentType("application/json")
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(rejectUrl)
+        .then()
+        .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

@@ -16,24 +16,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RepositoryRestController
 public class ProgramController {
 
-  private Logger logger = LoggerFactory.getLogger(ProgramController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProgramController.class);
 
   @Autowired
   private ProgramRepository programRepository;
 
   /**
    * Updating Program code and name.
+   * @param programDto DTO class used to update program's code and name
    */
-  @RequestMapping(value = "/programs/update", method = RequestMethod.POST)
+  @RequestMapping(value = "/programs/update", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProgramCodeAndName(@RequestBody ProgramDto programDto) {
     if (programDto == null || programDto.getId() == null) {
-      logger.debug("Update failed - program id not specified");
+      LOGGER.debug("Update failed - program id not specified");
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     Program program = programRepository.findOne(programDto.getId());
     if (program == null) {
-      logger.debug("Update failed - program with id: {} not found", programDto.getId());
+      LOGGER.debug("Update failed - program with id: {} not found", programDto.getId());
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
