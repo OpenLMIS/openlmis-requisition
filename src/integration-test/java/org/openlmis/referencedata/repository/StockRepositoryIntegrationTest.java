@@ -67,12 +67,4 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     stock.setStoredQuantity(1234L);
     return stock;
   }
-
-  @Test
-  public void testFindByStockInventoryAndProduct() {
-    stockRepository.save(this.generateInstance());
-    Stock stock = stockRepository.findByStockInventoryAndProduct(stockInventory, product);
-    long storedQuantity = stock.getStoredQuantity();
-    Assert.assertEquals(storedQuantity, 1234L);
-  }
 }
