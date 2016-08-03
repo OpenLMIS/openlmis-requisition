@@ -1,5 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +39,8 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   private List<Stock> stocks;
 
   private Integer currentInstanceNumber;
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
 
   @Before
   public void setUp() {
@@ -43,6 +49,9 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     for ( int stockNumber = 0; stockNumber < 5; stockNumber++ ) {
       stocks.add(generateStock());
     }
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
   }
 
   @After
@@ -55,23 +64,22 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void testSearchStocks() {
-    /*Stock[] response = restAssured.given()
-            .queryParam(STOCK_INVENTORY, stocks.get(0).getStockInventory().getId())
-            .queryParam(PRODUCT, stocks.get(0).getProduct().getId())
-            .queryParam(ACCESS_TOKEN, getToken())
+    Stock[] response = restAssured.given()
+            .queryParam("stockInventory", stocks.get(0).getStockInventory().getId())
+            .queryParam("product", stocks.get(0).getProduct().getId())
+            .queryParam("access_token", getToken())
             .when()
-            .get(SEARCH_URL).as(Stock[].class);*/
+            .get(BASE_URL + "/api/stocks/search").as(Stock[].class);
 
-    Stock[] response = {};
-    Assert.assertEquals(0,response.length);
-    /*for ( Stock stock : response ) {
+    Assert.assertEquals(1,response.length);
+    for ( Stock stock : response ) {
       Assert.assertEquals(
               stock.getStockInventory().getId(),
               stocks.get(0).getStockInventory().getId());
       Assert.assertEquals(
               stock.getProduct().getId(),
               stocks.get(0).getProduct().getId());
-    }*/
+    }
   }
 
   private Stock generateStock() {
@@ -116,6 +124,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   private StockInventory generateStockInventory() {
     StockInventory stockInventory = new StockInventory();
     stockInventory.setName("name" + generateInstanceNumber());
+    stockInventory.setStocks(null);
     stockInventoryRepository.save(stockInventory);
     return stockInventory;
   }
