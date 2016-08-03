@@ -1,9 +1,6 @@
 package org.openlmis.referencedata.repository;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
-import org.junit.Test;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -71,61 +68,6 @@ public class ProgramProductRepositoryIntegrationTest
     programProduct.setActive(true);
     programProduct.setDosesPerMonth(3);
     return programProduct;
-  }
-
-  @Test
-  public void testGetAllProgramProducts() {
-    for ( int i = 0; i < 10; i++ ) {
-      ProgramProduct testProgram = this.generateInstance();
-      testProgram.setFullSupply(true);
-      programProductRepository.save(testProgram);
-    }
-    for ( int i = 0; i < 5; i++ ) {
-      ProgramProduct testProgram2 = this.generateInstance();
-      testProgram2.setFullSupply(false);
-      programProductRepository.save(testProgram2);
-    }
-    assertEquals(15, getIterableSize(programProductRepository.findByProgram(program)));
-  }
-
-  @Test
-  public void testGetProductsWhenFullSupplyTrue() {
-    for ( int i = 0; i < 10 ; i++ ) {
-      ProgramProduct testProgram = this.generateInstance();
-      testProgram.setFullSupply(true);
-      programProductRepository.save(testProgram);
-    }
-    for ( int i = 0; i < 5; i ++ ) {
-      ProgramProduct testProgram2 = this.generateInstance();
-      testProgram2.setFullSupply(false);
-      programProductRepository.save(testProgram2);
-    }
-    Iterable<ProgramProduct> programProductIterable =
-            programProductRepository.findByProgramAndFullSupply(program,true);
-    assertEquals(10, getIterableSize(programProductIterable));
-    for (ProgramProduct programProduct : programProductIterable ) {
-      assertEquals(true, programProduct.isFullSupply());
-    }
-  }
-
-  @Test
-  public void testGetProductsWhenFullSupplyFalse() {
-    for ( int i = 0; i < 10; i++ ) {
-      ProgramProduct testProgram = this.generateInstance();
-      testProgram.setFullSupply(true);
-      programProductRepository.save(testProgram);
-    }
-    for ( int i = 0; i < 5; i ++ ) {
-      ProgramProduct testProgram2 = this.generateInstance();
-      testProgram2.setFullSupply(false);
-      programProductRepository.save(testProgram2);
-    }
-    Iterable<ProgramProduct> programProductIterable =
-            programProductRepository.findByProgramAndFullSupply(program,false);
-    assertEquals(5, getIterableSize(programProductIterable));
-    for (ProgramProduct programProduct : programProductIterable ) {
-      assertEquals(false, programProduct.isFullSupply());
-    }
   }
 
   private int getIterableSize(Iterable iterable) {

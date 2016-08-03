@@ -52,7 +52,7 @@ public class OrderController {
 
 
   /**
-   * Finds requisitions matching all of provided parameters.
+   * Finds Orders matching all of provided parameters.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   public ResponseEntity<Iterable<Order>> searchOrders(
