@@ -23,7 +23,6 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.domain.StockInventory;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -117,10 +116,10 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     FacilityType facilityType = addFacilityType("FT1");
 
     Facility facility = addFacility("facility1", "F1", null, facilityType,
-            geographicZone, null, true, false);
+            geographicZone, true, false);
 
     Facility facility2 = addFacility("facility2", "F2", null, facilityType,
-            geographicZone, null, true, false);
+            geographicZone, true, false);
 
     Requisition requisition1 = addRequisition(program, facility, period,
             RequisitionStatus.RELEASED);
@@ -140,11 +139,9 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Product product2 = addProduct("Product2", "P2", "pill", 2, 20, 20, true, true, false, false,
             productCategory2);
 
-    addOrderLine(order, product1, 35L, 50L,
-            null, null, null, null);
+    addOrderLine(order, product1, 35L, 50L);
 
-    addOrderLine(order, product2, 10L, 15L,
-            null, null, null, null);
+    addOrderLine(order, product2, 10L, 15L);
   }
 
   /**
@@ -201,7 +198,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private Facility addFacility(String facilityName, String facilityCode, String facilityDescription,
                                FacilityType facilityType, GeographicZone geographicZone,
-                               StockInventory stockInventory, boolean isActive, boolean isEnabled) {
+                               boolean isActive, boolean isEnabled) {
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
@@ -210,7 +207,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     facility.setDescription(facilityDescription);
     facility.setActive(isActive);
     facility.setEnabled(isEnabled);
-    facility.setStockInventory(stockInventory);
     return facilityRepository.save(facility);
   }
 
@@ -294,17 +290,12 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   private OrderLine addOrderLine(Order order, Product product, Long filledQuantity,
-                                 Long orderedQuantity, String batch, LocalDate expiryDate,
-                                 String vvm, String manufacturer) {
+                                 Long orderedQuantity) {
     OrderLine orderLine = new OrderLine();
     orderLine.setOrder(order);
     orderLine.setProduct(product);
     orderLine.setOrderedQuantity(orderedQuantity);
     orderLine.setFilledQuantity(filledQuantity);
-    orderLine.setBatch(batch);
-    orderLine.setExpiryDate(expiryDate);
-    orderLine.setVvm(vvm);
-    orderLine.setManufacturer(manufacturer);
     return orderLineRepository.save(orderLine);
   }
 

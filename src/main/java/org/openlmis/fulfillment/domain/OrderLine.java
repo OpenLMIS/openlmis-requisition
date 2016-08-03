@@ -2,17 +2,12 @@ package org.openlmis.fulfillment.domain;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.BaseEntity;
 
-import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -46,22 +41,4 @@ public class OrderLine extends BaseEntity {
   @Getter
   @Setter
   private Long filledQuantity;
-
-  @Getter
-  @Setter
-  private String batch;
-
-  @JsonSerialize(using = LocalDateSerializer.class)
-  @JsonDeserialize(using = LocalDateDeserializer.class)
-  @Getter
-  @Setter
-  private LocalDate expiryDate;
-
-  @Getter
-  @Setter
-  private String vvm;
-
-  @Getter
-  @Setter
-  private String manufacturer;
 }
