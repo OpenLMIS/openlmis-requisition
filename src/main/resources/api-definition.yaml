@@ -590,13 +590,13 @@ resourceTypes:
                         displayName: requestingFacility
                         description: requestingFacility ID
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                     program:
                         displayName: program
                         description: program ID
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                 responses:
                     "200":
@@ -671,59 +671,43 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
                 "500":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /search:
-        /findByProcessingSchedule:
-            get:
-                is: [ secured ]
-                description: Find Periods with matched ProcessingSchedule.
-                queryParameters:
-                    processingSchedule:
+        get:
+            is: [ secured ]
+            description: Find Periods with matched parametrs.
+            queryParameters:
+                processingSchedule:
                         displayName: processingSchedule
                         type: string
                         required: true
                         repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findPreviousPeriods:
-            get:
-                is: [ secured ]
-                description: Find previous Periods in given Schedule.
-                queryParameters:
-                    processingSchedule:
-                        displayName: processingSchedule
-                        type: string
-                        required: true
-                        repeat: false
-                    startDate:
+                startDate:
                         displayName: startDate
                         type: string
-                        required: true
+                        required: false
                         repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+
         /findFirst1ByOrderByEndDateDesc:
             get:
                 is: [ secured ]
@@ -742,7 +726,7 @@ resourceTypes:
 
 /productCategories:
     displayName: ProductCategories
-    /search/findByCode:
+    /search:
         get:
             is: [ secured ]
             description: Find ProductCategories with matched Code.
@@ -768,36 +752,9 @@ resourceTypes:
 /programProducts:
     displayName: Program Products
     /search:
-        /findByProgram:
             get:
                 is: [ secured ]
-                description: Find ProgramProducts with matched Program.
-                queryParameters:
-                    program:
-                        displayName: program
-                        description: Program ID
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                   "200":
-                       headers:
-                         X-Content-Type-Options:
-                         X-XSS-Protection:
-                       body:
-                         application/json:
-                   "404":
-                       headers:
-                         X-Content-Type-Options:
-                         X-XSS-Protection:
-                   "500":
-                       headers:
-                         X-Content-Type-Options:
-                         X-XSS-Protection:
-        /findByProgramAndFullSupply:
-            get:
-                is: [ secured ]
-                description: Find ProgramProducts with matched Program.
+                description: Find ProgramProducts with matched Parameters.
                 queryParameters:
                     program:
                         displayName: program
@@ -809,7 +766,7 @@ resourceTypes:
                         displayName: fullSupply
                         description: Full supply
                         type: boolean
-                        required: true
+                        required: false
                         repeat: false
                 responses:
                    "200":
@@ -822,10 +779,14 @@ resourceTypes:
                        headers:
                          X-Content-Type-Options:
                          X-XSS-Protection:
+                       body:
+                         application/json:
                    "500":
                        headers:
                          X-Content-Type-Options:
                          X-XSS-Protection:
+                       body:
+                         application/json:
 
 /requisitions:
     displayName: Requisition
@@ -973,6 +934,21 @@ resourceTypes:
                     repeat: false
                 createdDateTo:
                     displayName: createdDateTo
+                    type: string
+                    required: false
+                    repeat: false
+                processingPeriod:
+                    displayName: processingPeriod
+                    type: string
+                    required: false
+                    repeat: false
+                supervisoryNode:
+                    displayName: supervisoryNode
+                    type: string
+                    required: false
+                    repeat: false
+                requisitionStatus:
+                    displayName: supervisoryNode
                     type: string
                     required: false
                     repeat: false
@@ -1232,7 +1208,6 @@ resourceTypes:
 /users:
     displayName: User
     /search:
-        /findByFirstName:
             get:
                 is: [ secured ]
                 description: Search Users with matched FirstName
@@ -1241,88 +1216,43 @@ resourceTypes:
                         displayName: firstName
                         description: FirstName
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                         example: firstName
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByLastName:
-            get:
-                is: [ secured ]
-                description: Search Users with matched LastName.
-                queryParameters:
                     lastName:
                         displayName: lastName
                         description: LastName
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                         example: lastName
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByVerified:
-            get:
-                is: [ secured ]
-                description: Search Users with matched Verified.
-                queryParameters:
                     verified:
                         displayName: verified
                         description: Verified
                         type: boolean
-                        required: true
+                        required: false
                         repeat: false
                         example: "true"
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByActive:
-            get:
-                is: [ secured ]
-                description: Search Users with matched Active.
-                queryParameters:
                     active:
                         displayName: active
                         description: Active
                         type: boolean
-                        required: true
+                        required: false
                         repeat: false
                         example: "true"
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByHomeFacility:
-            get:
-                is: [ secured ]
-                description: Search Users with matched HomeFacility.
-                queryParameters:
                     homeFacility:
                         displayName: homeFacility
                         description: HomeFacilityId (href)
                         type: string
-                        required: true
+                        required: false
                         repeat: false
+                    username:
+                        displayName: username
+                        description: Username
+                        type: string
+                        required: false
+                        repeat: false
+                        example: username
                 responses:
                     200:
                         headers:
@@ -1334,53 +1264,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-
-        /findByUsername:
-            get:
-                is: [ secured ]
-                description: Search Users with matched Username.
-                queryParameters:
-                    username:
-                        displayName: username
-                        description: Username
-                        type: string
-                        required: true
-                        repeat: false
-                        example: username
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByFirstNameAndLastName:
-            get:
-                is: [ secured ]
-                description: Search Users with matched FirstName and LastName.
-                queryParameters:
-                    firstName:
-                        displayName: firstName
-                        description: FirstName
-                        type: string
-                        required: true
-                        repeat: false
-                        example: firstName
-                    lastName:
-                        displayName: lastName
-                        description: LastName
-                        type: string
-                        required: true
-                        repeat: false
-                        example: lastName
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
 
 /facilities:
     displayName: Facility
@@ -1445,3 +1328,34 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+
+/stocks:
+    displayName: Stock
+    /search:
+        get:
+            is: [ secured ]
+            description: Find Stocks with matched parametrs.
+            queryParameters:
+                processingSchedule:
+                        displayName: stockInventory
+                        type: string
+                        required: false
+                        repeat: false
+                startDate:
+                        displayName: product
+                        type: string
+                        required: false
+                        repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
