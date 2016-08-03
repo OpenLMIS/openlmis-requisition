@@ -386,31 +386,6 @@ schemas:
           }
       }
 
-  - stockInventory: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "StockInventory",
-          "description": "A single stockInventory",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "stocks": { "type": "array", "required": false, "title": "stocks", "items": { "type": "object", "$ref": "#/schemas/stock" }, "uniqueItems": false }
-          }
-      }
-
-  - stock: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "Stock",
-          "description": "A single stock",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "stockInventory": { "type": "object", "$ref": "#/schemas/stockInventory", "required": true },
-              "product": { "type": "object", "$ref": "#/schemas/product", "required": true },
-              "storedQuantity": { "type": "integer", "required": false, "title": "storedQuantity" }
-          }
-      }
-
   - requisitionGroup: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",

@@ -25,8 +25,6 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.domain.Stock;
-import org.openlmis.referencedata.domain.StockInventory;
 import org.openlmis.referencedata.domain.SupplyLine;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
@@ -35,8 +33,6 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
-import org.openlmis.referencedata.repository.StockInventoryRepository;
-import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -46,7 +42,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -89,12 +84,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UserRepository userRepository;
 
   @Autowired
-  private StockRepository stockRepository;
-
-  @Autowired
-  private StockInventoryRepository stockInventoryRepository;
-
-  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
@@ -121,9 +110,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
-  private Product firstProduct = new Product();
-  private Product secondProduct = new Product();
-  private StockInventory firstStockInventory = new StockInventory();
   private User firstUser = new User();
   private Requisition requisition;
   private SupplyLine supplyLine;
@@ -133,9 +119,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void setUp() {
     cleanUp();
 
-    firstStockInventory.setName("stockInventoryName");
-    stockInventoryRepository.save(firstStockInventory);
-
     GeographicLevel geographicLevel = addGeographicLevel("geographicLevelCode", 1);
 
     FacilityType facilityType = addFacilityType("facilityTypeCode");
@@ -143,7 +126,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     GeographicZone geographicZone = addGeographicZone("geographicZoneCode", geographicLevel);
 
     Facility facility = addFacility("facilityName", "facilityCode", "facilityDescription",
-                                    facilityType, geographicZone, firstStockInventory, true, true);
+                                    facilityType, geographicZone, true, true);
 
     Program program = addProgram("programCode");
 
@@ -152,16 +135,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
                           OrderStatus.ORDERED, new BigDecimal("1.29"));
-
-    ProductCategory productCategory1 = addProductCategory("PC1", "PC1 name", 1);
-
-    ProductCategory productCategory2 = addProductCategory("PC2", "PC2 name", 2);
-
-    firstProduct = addProduct("firstProductName", "firstProductCode", "unit",
-                              10, 1, 0, false, true, true, false, productCategory1);
-
-    secondProduct = addProduct("secondProductName", "secondProductCode", "unit",
-                               10, 1, 0, false, true, true, false, productCategory2);
 
     Schedule schedule1 = addSchedule("Schedule1", "S1");
 
@@ -190,10 +163,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             LocalDate.of(2016, Month.DECEMBER, 31));
 
     Facility facility1 = addFacility("facility1", "F1", null, facilityType1,
-                                     geographicZone1, null, true, false);
+                                     geographicZone1, true, false);
 
     Facility facility2 = addFacility("facility2", "F2", null, facilityType2,
-                                     geographicZone2, null, true, false);
+                                     geographicZone2, true, false);
 
     Requisition requisition1 = addRequisition(program1, facility1, period1,
                                               RequisitionStatus.RELEASED, null);
@@ -219,17 +192,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Product product2 = addProduct("Product2", "P2", "pill", 2, 20, 20, true, true, false, false,
             productCategory4);
 
-    addOrderLine(secondOrder, product1, 35L, 50L,
-                                        null, null, null, null);
+    addOrderLine(secondOrder, product1, 35L, 50L);
 
-    addOrderLine(secondOrder, product2, 10L, 15L,
-            null, null, null, null);
+    addOrderLine(secondOrder, product2, 10L, 15L);
 
-    addOrderLine(thirdOrder, product1, 50L, 50L,
-            null, null, null, null);
+    addOrderLine(thirdOrder, product1, 50L, 50L);
 
-    addOrderLine(thirdOrder, product2, 5L, 10L,
-            null, null, null, null);
+    addOrderLine(thirdOrder, product2, 5L, 10L);
 
     geographicLevel = addGeographicLevel("levelCode", 1);
 
@@ -238,7 +207,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     geographicZone = addGeographicZone("zoneCode", geographicLevel);
 
     Facility supplyingFacility = addFacility("supplyingFacilityName", "supplyingFacilityCode",
-        "description", facilityType, geographicZone, null, true, true);
+        "description", facilityType, geographicZone, true, true);
 
     SupervisoryNode supervisoryNode = addSupervisoryNode(supplyingFacility);
 
@@ -260,7 +229,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     supplyLineRepository.deleteAll();
     orderLineRepository.deleteAll();
     orderRepository.deleteAll();
-    stockRepository.deleteAll();
     requisitionRepository.deleteAll();
     supervisoryNodeRepository.deleteAll();
     programRepository.deleteAll();
@@ -276,12 +244,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     facilityTypeRepository.deleteAll();
-    stockInventoryRepository.deleteAll();
   }
 
   private Facility addFacility(String facilityName, String facilityCode, String facilityDescription,
                                FacilityType facilityType, GeographicZone geographicZone,
-                               StockInventory stockInventory, boolean isActive, boolean isEnabled) {
+                               boolean isActive, boolean isEnabled) {
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
@@ -290,7 +257,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     facility.setDescription(facilityDescription);
     facility.setActive(isActive);
     facility.setEnabled(isEnabled);
-    facility.setStockInventory(stockInventory);
     return facilityRepository.save(facility);
   }
 
@@ -377,17 +343,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   private OrderLine addOrderLine(Order order, Product product, Long filledQuantity,
-                                 Long orderedQuantity, String batch, LocalDate expiryDate,
-                                 String vvm, String manufacturer) {
+                                 Long orderedQuantity) {
     OrderLine orderLine = new OrderLine();
     orderLine.setOrder(order);
     orderLine.setProduct(product);
     orderLine.setOrderedQuantity(orderedQuantity);
     orderLine.setFilledQuantity(filledQuantity);
-    orderLine.setBatch(batch);
-    orderLine.setExpiryDate(expiryDate);
-    orderLine.setVvm(vvm);
-    orderLine.setManufacturer(manufacturer);
     return orderLineRepository.save(orderLine);
   }
 
@@ -406,14 +367,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     supplyLine.setProgram(program);
     supplyLine.setSupplyingFacility(supplyingFacility);
     return supplyLineRepository.save(supplyLine);
-  }
-
-  private Stock addStock(Product product, Long quantity) {
-    Stock stock = new Stock();
-    stock.setStockInventory(firstStockInventory);
-    stock.setProduct(product);
-    stock.setStoredQuantity(quantity);
-    return stockRepository.save(stock);
   }
 
   private ProductCategory addProductCategory(String code, String name, int displayOrder) {
@@ -442,78 +395,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(code);
     return facilityTypeRepository.save(facilityType);
-  }
-
-  @Test
-  public void testCorrectOrderToFinalize() throws JsonProcessingException {
-    addOrderLine(firstOrder, firstProduct, 100L, 123L, "orderLineBatchNumber1",
-                 LocalDate.of(2016, 1, 1), "orderLineVvm1", "orderLineManufacturer1");
-    addStock(firstProduct, 1234L);
-    addOrderLine(firstOrder, secondProduct, 12345L, 12345L, "orderLineBatchNumber2",
-                 LocalDate.of(2016, 1, 1), "orderLineVvm2", "orderLineManufacturer2");
-    addStock(secondProduct, 123456L);
-
-    HttpHeaders headers = new HttpHeaders();
-    RestTemplate restTemplate = new RestTemplate();
-
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
-        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<?> result =  restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
-
-    Assert.assertEquals(result.getStatusCode(), HttpStatus.OK);
-
-    Order resultOrder = orderRepository.findOne(firstOrder.getId());
-    Assert.assertEquals(resultOrder.getStatus(), OrderStatus.SHIPPED);
-
-    Stock stock1 = stockRepository
-        .findByStockInventoryAndProduct(firstStockInventory, firstProduct);
-    Assert.assertEquals(stock1.getStoredQuantity().longValue(), 1111L);
-
-    Stock stock2 = stockRepository
-        .findByStockInventoryAndProduct(firstStockInventory, secondProduct);
-    Assert.assertEquals(stock2.getStoredQuantity().longValue(), 111111L);
-  }
-
-  @Test(expected = HttpClientErrorException.class)
-  public void testWhenStockDoesNotExist() throws JsonProcessingException {
-    addOrderLine(firstOrder, firstProduct, 100L, 123L, "orderLineBatchNumber1",
-            LocalDate.of(2016, 1, 1), "orderLineVvm1", "orderLineManufacturer1");
-    addStock(firstProduct, 1234L);
-    addOrderLine(firstOrder, secondProduct, 12345L, 12345L, "orderLineBatchNumber2",
-            LocalDate.of(2016, 1, 1), "orderLineVvm2", "orderLineManufacturer2");
-
-    HttpHeaders headers = new HttpHeaders();
-    RestTemplate restTemplate = new RestTemplate();
-
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
-        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-
-    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
-  }
-
-  @Test(expected = HttpClientErrorException.class)
-  public void testStockWithInsufficientQuantity() throws JsonProcessingException {
-    addOrderLine(firstOrder, firstProduct, 100L, 123L, "orderLineBatchNumber1",
-            LocalDate.of(2016, 1, 1), "orderLineVvm1", "orderLineManufacturer1");
-    addStock(firstProduct, 1234L);
-    addOrderLine(firstOrder, secondProduct, 12345L, 12345L, "orderLineBatchNumber2",
-            LocalDate.of(2016, 1, 1), "orderLineVvm2", "orderLineManufacturer2");
-    addStock(secondProduct, 12L);
-
-    HttpHeaders headers = new HttpHeaders();
-    RestTemplate restTemplate = new RestTemplate();
-
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
-        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
   }
 
   @Test(expected = HttpClientErrorException.class)
@@ -576,7 +457,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void testConvertToOrder() {
     RestTemplate restTemplate = new RestTemplate();
-    String url = addTokenToUrl(RESOURCE_URL);
+    String url = addTokenToUrl(RESOURCE_URL + "/requisitions");
 
     orderRepository.deleteAll();
 

@@ -2,13 +2,10 @@ package org.openlmis.fulfillment.web;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.Stock;
-import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +39,6 @@ public class OrderController {
   private OrderRepository orderRepository;
 
   @Autowired
-  private StockRepository stockRepository;
-
-  @Autowired
   private OrderService orderService;
 
   /**
@@ -62,51 +56,14 @@ public class OrderController {
 
     if (order == null || order.getStatus() != OrderStatus.ORDERED) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    } else {
-      for (OrderLine orderLine : order.getOrderLines()) {
-        //Searching for a corresponding stock to the current orderline
-        Stock stock = stockRepository.findByStockInventoryAndProduct(
-                order.getSupplyingFacility().getStockInventory(),
-                orderLine.getProduct()
-        );
-        //Checking if the stock exists.
-        String productName = orderLine.getProduct().getPrimaryName();
-        if (stock == null) {
-          return new ResponseEntity<>(
-                  "Error: There is no " + productName + " in the stock inventory.",
-                  HttpStatus.BAD_REQUEST
-          );
-        }
-        //Checking if there is sufficient quanitity of the ordered products.
-        if (stock.getStoredQuantity() < orderLine.getOrderedQuantity()) {
-          return new ResponseEntity<>(
-                  "Error: There is insufficient quantity of " + productName
-                          + " in the stock inventory.",
-                  HttpStatus.BAD_REQUEST
-          );
-        }
-      }
-
-      logger.debug("Finalizing the order");
-
-      /*Once finalized has been selected all commodities are subtracted
-        from inventory at the warehouse*/
-      for (OrderLine orderLine : order.getOrderLines()) {
-        Stock stock = stockRepository.findByStockInventoryAndProduct(
-                order.getSupplyingFacility().getStockInventory(),
-                orderLine.getProduct()
-        );
-        stock.setStoredQuantity(
-                stock.getStoredQuantity() - orderLine.getOrderedQuantity()
-        );
-        stockRepository.save(stock);
-      }
-
-      order.setStatus(OrderStatus.SHIPPED);
-      orderRepository.save(order);
-
-      return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    logger.debug("Finalizing the order");
+
+    order.setStatus(OrderStatus.SHIPPED);
+    orderRepository.save(order);
+
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   /**
@@ -160,7 +117,7 @@ public class OrderController {
    * @param requisitionList List of Requisitions that will be converted to Orders
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
-  @RequestMapping(value = "/orders", method = RequestMethod.POST)
+  @RequestMapping(value = "/orders/requisitions", method = RequestMethod.POST)
   public ResponseEntity<?> convertToOrder(@RequestBody List<Requisition> requisitionList,
                                           OAuth2Authentication auth) {
     UUID userId = null;

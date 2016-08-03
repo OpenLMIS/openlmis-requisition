@@ -21,13 +21,14 @@ import javax.persistence.Table;
 @Table(name = "users", schema = "referencedata")
 @NoArgsConstructor
 public class User extends BaseEntity {
+  private static final String DEFAULT_PASSWORD = "not-in-use";
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
   private String username;
 
-  @Column(nullable = false, columnDefinition = "text DEFAULT 'not-in-use'::text")
+  @Column(nullable = false, columnDefinition = "text DEFAULT '" + DEFAULT_PASSWORD + "'::text")
   @Setter
   private String password;
 
@@ -79,7 +80,7 @@ public class User extends BaseEntity {
     }
 
     if (this.password == null) {
-      this.password = "not-in-use";
+      this.password = DEFAULT_PASSWORD;
     }
   }
 

@@ -129,7 +129,7 @@ jacocoTestReport {
     group = "reporting"
     description = "Generate Jacoco coverage reports after running tests."
     reports {
-        xml.enabled false
+        xml.enabled true
         html.enabled true
         csv.enabled false
     }
@@ -154,6 +154,7 @@ sonarqube {
         property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
         //Tells SonarQube where the integration tests code coverage report is
         property "sonar.jacoco.itReportPath", "build/jacoco/integrationTest.exec"
+	properties["sonar.tests"] += sourceSets.integrationTest.java
     }
 }
 

@@ -13,19 +13,19 @@ import javax.persistence.Table;
 @Table(name = "rights", schema = "referencedata")
 @NoArgsConstructor
 public class Right extends BaseEntity {
-  private final String text = "text";
+  private static final String TEXT = "text";
 
-  @Column(nullable = false, unique = true, columnDefinition = text)
+  @Column(nullable = false, unique = true, columnDefinition = TEXT)
   @Getter
   @Setter
   private String name;
 
-  @Column(nullable = false, columnDefinition = text)
+  @Column(nullable = false, columnDefinition = TEXT)
   @Getter
   @Setter
   private String rightType;
 
-  @Column(columnDefinition = text)
+  @Column(columnDefinition = TEXT)
   @Getter
   @Setter
   private String description;

@@ -18,14 +18,14 @@ import javax.persistence.Table;
 @Table(name = "roles", schema = "referencedata")
 @NoArgsConstructor
 public class Role extends BaseEntity {
-  private final String text = "text";
+  private static final String TEXT = "text";
 
-  @Column(nullable = false, unique = true, columnDefinition = text)
+  @Column(nullable = false, unique = true, columnDefinition = TEXT)
   @Getter
   @Setter
   private String name;
 
-  @Column(columnDefinition = text)
+  @Column(columnDefinition = TEXT)
   @Getter
   @Setter
   private String description;
