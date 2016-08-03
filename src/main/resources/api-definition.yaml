@@ -716,6 +716,25 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+    /{id}/finalizeOrder:
+            uriParameters:
+                id:
+                    displayName: orderId
+                    type: string
+                    required: true
+                    repeat: false
+            put:
+                is: [ secured ]
+                description: Finalize chosen order.
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 
 /periods:
     displayName: Period
