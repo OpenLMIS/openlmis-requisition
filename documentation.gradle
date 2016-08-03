@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 def ramlToCopy = copySpec {
     from 'src/main/resources'
     include 'api-definition.yaml'
@@ -43,3 +45,22 @@ task copyRamlHtmlToBuild(type:Copy) {
     into 'build/resources/main'
 }
 copyRamlHtmlToBuild.dependsOn ramlToHtml
+
+def time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+time.setTimeZone(TimeZone.getTimeZone("GMT"))
+
+def versionToCopy = copySpec {
+    from 'src/main/resources'
+    include 'version'
+}
+
+task generateBuildInfo(type:Copy) {
+    with versionToCopy
+    into 'build/resources/main'
+    expand([
+            build: "$System.env.BUILD_NUMBER",
+            branch: "$System.env.GIT_BRANCH",
+            time: time.format(new Date()) + " GMT"
+    ])
+}
+
