@@ -71,6 +71,10 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   @After
   public void cleanUp() {
     userRepository.delete(users);
+    facilityRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
   }
 
   @Test
