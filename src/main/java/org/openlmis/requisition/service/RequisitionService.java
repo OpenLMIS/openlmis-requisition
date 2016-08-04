@@ -55,7 +55,6 @@ public class RequisitionService {
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
 
-
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 

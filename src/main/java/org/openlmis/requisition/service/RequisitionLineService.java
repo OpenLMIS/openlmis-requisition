@@ -10,7 +10,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +31,13 @@ public class RequisitionLineService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
-  @Autowired
   private PeriodService periodService;
 
   @PersistenceContext
   private EntityManager entityManager;
+
+  @Autowired
+  private RequisitionTemplateService requisitionTemplateService;
 
   /**
    * Saves given RequisitionLine if possible
@@ -54,12 +53,11 @@ public class RequisitionLineService {
     if (requisitionLine == null) {
       throw new RequisitionException("Requisition line does not exist");
     } else {
-      RequisitionTemplate requisitionTemplate =
-          requisitionTemplateRepository.findByProgram(
-              requisitionLine.getRequisition().getProgram());
+      List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService
+          .searchRequisitionTemplates(requisitionLine.getRequisition().getProgram());
 
       RequisitionTemplateColumn requisitionTemplateColumn =
-          requisitionTemplate.getColumnsMap().get("beginningBalance");
+          requisitionTemplateList.get(0).getColumnsMap().get("beginningBalance");
 
       if (!requisitionTemplateColumn.getCanBeChangedByUser()) {
         resetBeginningBalance(requisition, requisitionLine);
@@ -103,11 +101,11 @@ public class RequisitionLineService {
    * @return Returns Requisition with initiated RequisitionLines.
    */
   public Requisition initiateRequisitionLineFields(Requisition requisition) {
-    RequisitionTemplate requisitionTemplate =
-        requisitionTemplateRepository.findByProgram(requisition.getProgram());
+    List<RequisitionTemplate> requisitionTemplateList
+        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
 
-    if (requisitionTemplate != null) {
-      initiateBeginningBalance(requisition, requisitionTemplate);
+    if (!requisitionTemplateList.isEmpty()) {
+      initiateBeginningBalance(requisition, requisitionTemplateList.get(0));
       initiateTotalQuantityReceived(requisition);
     }
 

@@ -1148,32 +1148,32 @@ resourceTypes:
 /requisitionTemplates:
     displayName: Requisition Template
     /search:
-        /findByProgram:
-            get:
-                is: [ secured ]
-                description: Find Requsition Template with matched and Program.
-                queryParameters:
-                    program:
-                        displayName: program
-                        description: program
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Find requisition templates with matched parameters.
+            queryParameters:
+                program:
+                    displayName: program
+                    description: program ID
+                    type: string
+                    required: false
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
 /schedules:
     displayName: Schedule
     /{id}/difference:
