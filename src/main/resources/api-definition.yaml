@@ -716,7 +716,7 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-    /{id}/finalizeOrder:
+    /{id}/finalize:
             uriParameters:
                 id:
                     displayName: orderId
