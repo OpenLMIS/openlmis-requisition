@@ -1209,38 +1209,36 @@ resourceTypes:
 
 /supplyLines:
     displayName: Supply Lines
-    /search:
+    /search/findByProgramAndSupervisoryNode:
         get:
-            is: [ secured ]
-            description: Find Supply Lines with matched parameters.
-            queryParameters:
-                program:
-                    displayName: program
-                    description: program ID
-                    type: string
-                    required: true
-                    repeat: false
-                supervisoryNode:
-                    displayName: supervisoryNode
-                    description: supervisoryNode ID
-                    type: string
-                    required: true
-                    repeat: false
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                    is: [ secured ]
+                    description: Find SupplyLines with matched Program and SupervisoryNode.
+                    queryParameters:
+                        program:
+                            displayName: program
+                            type: string
+                            required: true
+                            repeat: false
+                        supervisoryNode:
+                            displayName: supervisoryNode
+                            type: string
+                            required: true
+                            repeat: false
+                    responses:
+                        "200":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
+                            body:
+                              application/json:
+                        "400":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
+                        "500":
+                            headers:
+                              X-Content-Type-Options:
+                              X-XSS-Protection:
 
 /users:
     displayName: User
@@ -1373,12 +1371,12 @@ resourceTypes:
             is: [ secured ]
             description: Find Stocks with matched parametrs.
             queryParameters:
-                stockInventory:
+                processingSchedule:
                         displayName: stockInventory
                         type: string
                         required: false
                         repeat: false
-                product:
+                startDate:
                         displayName: product
                         type: string
                         required: false

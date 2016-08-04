@@ -1,9 +1,12 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.restassured.RestAssured;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
@@ -139,6 +142,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
 
   private static final String PROGRAM = "program";
+
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -634,6 +640,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             .when()
             .get(SEARCH_URL).as(Order[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( Order order : response ) {
       Assert.assertEquals(
@@ -651,6 +658,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             .when()
             .get(SEARCH_URL).as(Order[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( Order order : response ) {
       Assert.assertEquals(
@@ -672,6 +680,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             .when()
             .get(SEARCH_URL).as(Order[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( Order order : response ) {
       Assert.assertEquals(

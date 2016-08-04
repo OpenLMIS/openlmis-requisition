@@ -1,8 +1,11 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+
 import com.jayway.restassured.RestAssured;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,6 +27,8 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String CODE = "code";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
 
   private Integer currentInstanceNumber;
   private RamlDefinition ramlDefinition;
@@ -56,6 +61,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
             .when()
             .get(SEARCH_URL).as(ProductCategory[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( ProductCategory productCategory : response ) {
       Assert.assertEquals(productCategory.getCode(),productCategories.get(0).getCode());
