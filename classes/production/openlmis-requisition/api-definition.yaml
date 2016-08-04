@@ -1371,12 +1371,12 @@ resourceTypes:
             is: [ secured ]
             description: Find Stocks with matched parametrs.
             queryParameters:
-                stockInventory:
+                processingSchedule:
                         displayName: stockInventory
                         type: string
                         required: false
                         repeat: false
-                product:
+                startDate:
                         displayName: product
                         type: string
                         required: false

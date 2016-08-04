@@ -1,8 +1,11 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+
 import com.jayway.restassured.RestAssured;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,6 +52,8 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String HOME_FACILITY = "homeFacility";
   private static final String ACTIVE = "active";
   private static final String VERIFIED = "verified";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
 
   private List<User> users;
 
@@ -90,6 +95,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
             .when()
             .get(SEARCH_URL).as(User[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( User user : response ) {
       Assert.assertEquals(

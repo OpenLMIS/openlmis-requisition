@@ -168,6 +168,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setStartDate(LocalDate.now());
     periodRepository.save(secondPeriod);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Period[] response = restAssured.given()
             .queryParam(PROCESSING_SCHEDULE, firstPeriod.getProcessingSchedule().getId())
             .queryParam(START_DATE, firstPeriod.getStartDate().toString())
