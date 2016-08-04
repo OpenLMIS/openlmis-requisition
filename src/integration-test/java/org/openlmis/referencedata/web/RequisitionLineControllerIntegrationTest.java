@@ -1,8 +1,11 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+
 import com.jayway.restassured.RestAssured;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
@@ -73,6 +76,8 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private static final String RESOURCE_URL = BASE_URL + "/api/requisitionLines";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+      + "definition.";
   private static final String REQUISITION = "requisition";
   private static final String PRODUCT = "product";
   private static final String TEST_CODE = "123";
@@ -124,6 +129,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
         .get(SEARCH_URL)
         .as(RequisitionLine[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( RequisitionLine responseRequisitionLine : response ) {
       Assert.assertEquals(

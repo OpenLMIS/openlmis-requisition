@@ -20,7 +20,7 @@ import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.referencedata.service.SupplyLineService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -63,13 +63,13 @@ public class OrderService {
   private RequisitionService requisitionService;
 
   @Autowired
+  private SupplyLineService supplyLineService;
+
+  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
   private UserRepository userRepository;
-
-  @Autowired
-  private SupplyLineRepository supplyLineRepository;
 
   @Autowired
   private OrderLineRepository orderLineRepository;
@@ -221,8 +221,9 @@ public class OrderService {
       order.setReceivingFacility(requisition.getFacility());
       order.setRequestingFacility(requisition.getFacility());
 
-      SupplyLine supplyLine = supplyLineRepository.findByProgramAndSupervisoryNode(
-          requisition.getProgram(), requisition.getSupervisoryNode());
+      List<SupplyLine> supplyLines = supplyLineService
+          .searchSupplyLines(requisition.getProgram(), requisition.getSupervisoryNode());
+      SupplyLine supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
       order.setProgram(supplyLine.getProgram());

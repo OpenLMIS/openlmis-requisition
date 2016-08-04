@@ -10,9 +10,11 @@ import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.SupplyLine;
+import org.openlmis.referencedata.service.SupplyLineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public class SupplyLineRepositoryIntegrationTest
@@ -38,6 +40,9 @@ public class SupplyLineRepositoryIntegrationTest
 
   @Autowired
   private SupplyLineRepository repository;
+
+  @Autowired
+  private SupplyLineService supplyLineService;
 
   private Program program = new Program();
   private SupervisoryNode supervisoryNode = new SupervisoryNode();
@@ -92,8 +97,9 @@ public class SupplyLineRepositoryIntegrationTest
   @Test
   public void findByProgramAndSupervisoryNode() {
     repository.save(generateInstance());
-    SupplyLine supplyLine =
-        repository.findByProgramAndSupervisoryNode(program, supervisoryNode);
+
+    List<SupplyLine> supplyLines = supplyLineService.searchSupplyLines(program, supervisoryNode);
+    SupplyLine supplyLine = supplyLines.get(0);
     Assert.assertNotNull(supplyLine);
   }
 }
