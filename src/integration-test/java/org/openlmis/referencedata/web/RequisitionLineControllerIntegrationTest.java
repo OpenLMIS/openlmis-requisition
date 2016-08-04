@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 
-public class RequisitionLineIntegrationTest extends BaseWebIntegrationTest {
+public class RequisitionLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;

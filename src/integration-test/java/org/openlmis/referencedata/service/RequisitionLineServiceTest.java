@@ -35,6 +35,7 @@ import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionLineService;
+import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -63,6 +64,9 @@ public class RequisitionLineServiceTest {
 
   @Autowired
   private RequisitionLineService requisitionLineService;
+
+  @Autowired
+  private RequisitionTemplateService requisitionTemplateService;
 
   @Autowired
   private ProgramRepository programRepository;
@@ -206,9 +210,11 @@ public class RequisitionLineServiceTest {
 
     requisitionLineService.initiateRequisitionLineFields(secondRequisition);
 
+    List<RequisitionTemplate> requisitionTemplateList
+        = requisitionTemplateService.searchRequisitionTemplates(secondRequisition.getProgram());
+    Assert.assertEquals(1 ,requisitionTemplateList.size());
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
-        = requisitionTemplateRepository.findByProgram(secondRequisition.getProgram()
-    ).getColumnsMap();
+        = requisitionTemplateList.get(0).getColumnsMap();
 
     Assert.assertEquals(1, testRequisitionTemplateColumnHashMap.get(TOTAL_QUANTITY_RECEIVED_FIELD)
             .getDisplayOrder());
