@@ -43,6 +43,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -98,6 +99,8 @@ public class RequisitionLineServiceTest {
   private Requisition secondRequisition = new Requisition();
 
   private Program program;
+
+  private Product product;
 
   @Before
   public void setUp() {
@@ -214,11 +217,27 @@ public class RequisitionLineServiceTest {
             .getDisplayOrder());
   }
 
+  @Test
+  public void testSearchRequisitionLines() {
+    requisitionLineRepository.deleteAll();
+    RequisitionLine requisitionLine = createTestRequisitionLine(product, 10, 20, requisition);
+    requisitionLineRepository.save(requisitionLine);
+
+    List<RequisitionLine> receivedRequisitionLines = requisitionLineService.searchRequisitionLines(
+        requisitionLine.getRequisition(), null);
+    Assert.assertEquals(1, receivedRequisitionLines.size());
+
+    Requisition expectedRequisition = requisitionLine.getRequisition();
+    Requisition receivedRequisition = receivedRequisitionLines.get(0).getRequisition();
+
+    Assert.assertEquals(expectedRequisition.getId(), receivedRequisition.getId());
+  }
+
   private void createTestRequisition() {
     ProductCategory productCategory = new ProductCategory("code", "name", 1);
     productCategoryRepository.save(productCategory);
 
-    Product product = new Product();
+    product = new Product();
     product.setCode(REQUISITION_REPOSITORY_NAME);
     product.setPrimaryName(REQUISITION_REPOSITORY_NAME);
     product.setDispensingUnit(REQUISITION_REPOSITORY_NAME);

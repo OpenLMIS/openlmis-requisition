@@ -1134,6 +1134,41 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+
+/requisitionLines:
+    /search:
+        get:
+            is: [ secured ]
+            description: Find requisitionLines with matched parameters.
+            queryParameters:
+                requisition:
+                    displayName: requisition
+                    description: requisition ID
+                    type: string
+                    required: true
+                    repeat: false
+                product:
+                    displayName: product
+                    description: product ID
+                    type: string
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
 /requisitionTemplates:
     displayName: Requisition Template
     /search:

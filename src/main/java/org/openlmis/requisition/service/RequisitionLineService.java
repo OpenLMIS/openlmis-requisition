@@ -1,5 +1,6 @@
 package org.openlmis.requisition.service;
 
+import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.service.PeriodService;
 import org.openlmis.requisition.domain.Requisition;
@@ -13,6 +14,13 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 @Service
 public class RequisitionLineService {
@@ -28,6 +36,9 @@ public class RequisitionLineService {
 
   @Autowired
   private PeriodService periodService;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   /**
    * Saves given RequisitionLine if possible
@@ -59,6 +70,31 @@ public class RequisitionLineService {
     }
   }
 
+  /**
+   * Method returns all requisition lines with matched parameters.
+   */
+  public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<RequisitionLine> query = builder.createQuery(RequisitionLine.class);
+    Root<RequisitionLine> root = query.from(RequisitionLine.class);
+    Predicate predicate = builder.conjunction();
+
+    if (requisition != null) {
+      predicate = builder.and(
+          predicate,
+          builder.equal(
+              root.get("requisition"), requisition));
+    }
+    if (product != null) {
+      predicate = builder.and(
+          predicate,
+          builder.equal(
+              root.get("product"), product));
+    }
+
+    query.where(predicate);
+    return entityManager.createQuery(query).getResultList();
+  }
 
   /**
    * Initiate all RequisitionLine fields from given Requisition to default value.
@@ -88,19 +124,19 @@ public class RequisitionLineService {
         && previousPeriods != null && previousPeriods.iterator().hasNext()) {
 
       Requisition previousRequisition;
-      RequisitionLine previousRequisitionLine;
+      List<RequisitionLine> previousRequisitionLine;
       previousRequisition = requisitionRepository.findByProcessingPeriodAndFacilityAndProgram(
           previousPeriods.iterator().next(), requisition.getFacility(), requisition.getProgram());
 
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
-        previousRequisitionLine = requisitionLineRepository.findByRequisitionAndProduct(
+        previousRequisitionLine = searchRequisitionLines(
             previousRequisition, requisitionLine.getProduct());
 
         if (requisitionLine.getBeginningBalance() == null) {
           if (previousRequisitionLine != null
-              && previousRequisitionLine.getStockInHand() != null) {
+              && previousRequisitionLine.get(0).getStockInHand() != null) {
 
-            requisitionLine.setBeginningBalance(previousRequisitionLine.getStockInHand());
+            requisitionLine.setBeginningBalance(previousRequisitionLine.get(0).getStockInHand());
           } else {
             requisitionLine.setBeginningBalance(0);
           }
@@ -133,8 +169,8 @@ public class RequisitionLineService {
       return;
     }
 
-    RequisitionLine previousRequisitionLine;
-    previousRequisitionLine = requisitionLineRepository.findByRequisitionAndProduct(
+    List<RequisitionLine> previousRequisitionLine;
+    previousRequisitionLine = searchRequisitionLines(
         previousRequisition, requisitionLine.getProduct());
 
     if (previousRequisitionLine == null) {
@@ -142,8 +178,8 @@ public class RequisitionLineService {
       return;
     }
 
-    if (requisitionLine.getBeginningBalance() != previousRequisitionLine.getStockInHand()) {
-      requisitionLine.setBeginningBalance(previousRequisitionLine.getStockInHand());
+    if (requisitionLine.getBeginningBalance() != previousRequisitionLine.get(0).getStockInHand()) {
+      requisitionLine.setBeginningBalance(previousRequisitionLine.get(0).getStockInHand());
     }
 
   }

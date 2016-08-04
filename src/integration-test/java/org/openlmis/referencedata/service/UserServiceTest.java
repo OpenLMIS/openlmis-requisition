@@ -14,6 +14,7 @@ import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,16 +37,18 @@ public class UserServiceTest {
   public void setUp() {
     currentInstanceNumber = 0;
     users = new ArrayList<>();
-    for ( int userNumber = 0; userNumber < 5; userNumber++ ) {
-      users.add(generateUser());
-    }
+    users.add(generateUser());
   }
 
   @After
   public void cleanup() {
-    userRepository.deleteAll();
+    Iterable<User> users = userService.searchUsers("kota1", null, null, null, null, null);
+    if (users != null && users.iterator().hasNext()) {
+      userRepository.delete(users);
+    }
   }
 
+  @Transactional
   @Test
   public void testSearchUsers() {
     List<User> receivedUsers = userService.searchUsers(
