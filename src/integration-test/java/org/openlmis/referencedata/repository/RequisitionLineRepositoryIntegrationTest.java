@@ -65,9 +65,6 @@ public class RequisitionLineRepositoryIntegrationTest
 
   @Before
   public void setUp() {
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
     productCategory1.setName("PC1 name");
@@ -87,29 +84,24 @@ public class RequisitionLineRepositoryIntegrationTest
     product.setProductCategory(productCategory1);
     productRepository.save(product);
 
-    programRepository.deleteAll();
     Program program = new Program();
     program.setCode(REQUISITION_LINE_REPOSITORY);
     programRepository.save(program);
 
-    facilityTypeRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(REQUISITION_LINE_REPOSITORY);
     facilityTypeRepository.save(facilityType);
 
-    geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
     level.setCode(REQUISITION_LINE_REPOSITORY);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
-    geographicZoneRepository.deleteAll();
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(REQUISITION_LINE_REPOSITORY);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
-    facilityRepository.deleteAll();
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
@@ -118,13 +110,11 @@ public class RequisitionLineRepositoryIntegrationTest
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    scheduleRepository.deleteAll();
     Schedule schedule = new Schedule();
     schedule.setCode(REQUISITION_LINE_REPOSITORY);
     schedule.setName(REQUISITION_LINE_REPOSITORY);
     scheduleRepository.save(schedule);
 
-    periodRepository.deleteAll();
     Period period = new Period();
     period.setName(REQUISITION_LINE_REPOSITORY);
     period.setProcessingSchedule(schedule);
@@ -133,7 +123,6 @@ public class RequisitionLineRepositoryIntegrationTest
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
-    requisitionRepository.deleteAll();
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
@@ -146,7 +135,6 @@ public class RequisitionLineRepositoryIntegrationTest
   }
 
   RequisitionLine generateInstance() {
-    repository.deleteAll();
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setRequestedQuantity(1);

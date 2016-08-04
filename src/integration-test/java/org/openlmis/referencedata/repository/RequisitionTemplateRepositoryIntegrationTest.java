@@ -1,9 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-
-
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
@@ -16,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 
 /** Allow testing requisitionTemplateRepository. */
 
@@ -37,7 +34,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   @Before
   public void setUp() {
-    programRepository.deleteAll();
     program.setCode(REQUISITION_TEMPLATE_REPOSITORY);
     programRepository.save(program);
   }
@@ -48,7 +44,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   RequisitionTemplate generateInstance() {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
-            new HashMap<String, RequisitionTemplateColumn>());
+            new HashMap<>());
     requisitionTemplate.setProgram(program);
     return requisitionTemplate;
   }

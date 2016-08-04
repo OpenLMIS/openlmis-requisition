@@ -30,17 +30,14 @@ public class FacilityRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
 
   @Before
   public void setUp() {
-    facilityTypeRepository.deleteAll();
     this.facilityType.setCode("FacilityRepositoryIntegrationTest");
     facilityTypeRepository.save(this.facilityType);
 
-    geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
     level.setCode("FacilityRepositoryIntegrationTest");
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
-    geographicZoneRepository.deleteAll();
     this.geographicZone.setCode("FacilityRepositoryIntegrationTest");
     this.geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);

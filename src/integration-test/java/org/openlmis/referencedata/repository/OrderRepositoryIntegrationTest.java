@@ -64,12 +64,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Before
   public void setUp() {
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-
     testFacilities = new ArrayList<>();
     testPrograms = new ArrayList<>();
 

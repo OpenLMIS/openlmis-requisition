@@ -35,7 +35,7 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
     Role role = new Role();
     role.setName("Test1");
     user = repository.save(user);
-    List<Role> roles = new ArrayList<Role>();
+    List<Role> roles = new ArrayList<>();
     roles.add(role);
     role = new Role();
     role.setName("Test2");
@@ -51,7 +51,7 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
     User user1 = this.generateInstance();
     Role role = new Role();
     role.setName("Test");
-    List<Role> roles = new ArrayList<Role>();
+    List<Role> roles = new ArrayList<>();
     roles.add(role);
     user1.setRoles(roles);
     user1 = repository.save(user1);

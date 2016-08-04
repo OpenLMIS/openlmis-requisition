@@ -51,28 +51,23 @@ public class RequisitionRepositoryIntegrationTest
 
   @Before
   public void setUp() {
-    programRepository.deleteAll();
     program.setCode(requisitionRepository);
     programRepository.save(program);
 
-    facilityTypeRepository.deleteAll();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepository);
     facilityTypeRepository.save(facilityType);
 
-    geographicLevelRepository.deleteAll();
     GeographicLevel level = new GeographicLevel();
     level.setCode(requisitionRepository);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
-    geographicZoneRepository.deleteAll();
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode(requisitionRepository);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
-    facilityRepository.deleteAll();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode(requisitionRepository);
@@ -80,12 +75,10 @@ public class RequisitionRepositoryIntegrationTest
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    scheduleRepository.deleteAll();
     schedule.setCode(requisitionRepository);
     schedule.setName(requisitionRepository);
     scheduleRepository.save(schedule);
 
-    periodRepository.deleteAll();
     period.setName(requisitionRepository);
     period.setProcessingSchedule(schedule);
     period.setDescription(requisitionRepository);
@@ -99,7 +92,6 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   Requisition generateInstance() {
-    repository.deleteAll();
     Requisition requisition = new Requisition();
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
