@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -66,13 +64,5 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     stock.setProduct(product);
     stock.setStoredQuantity(1234L);
     return stock;
-  }
-
-  @Test
-  public void testFindByStockInventoryAndProduct() {
-    stockRepository.save(this.generateInstance());
-    Stock stock = stockRepository.findByStockInventoryAndProduct(stockInventory, product);
-    long storedQuantity = stock.getStoredQuantity();
-    Assert.assertEquals(storedQuantity, 1234L);
   }
 }

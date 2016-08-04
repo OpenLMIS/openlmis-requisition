@@ -25,6 +25,7 @@ public class StockInventory extends BaseEntity {
 
   @OneToMany(mappedBy = "stockInventory", cascade = CascadeType.REMOVE)
   @Getter
+  @Setter
   @JsonIdentityInfo(
       generator = ObjectIdGenerators.IntSequenceGenerator.class,
       property = "stocksId")

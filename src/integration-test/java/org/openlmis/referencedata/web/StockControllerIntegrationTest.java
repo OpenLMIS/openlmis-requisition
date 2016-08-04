@@ -12,22 +12,22 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.ProgramProduct;
-import org.openlmis.referencedata.repository.ProgramProductRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
+import org.openlmis.referencedata.domain.Stock;
+import org.openlmis.referencedata.domain.StockInventory;
+import org.openlmis.referencedata.repository.StockInventoryRepository;
+import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationTest {
+public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
-  private ProgramProductRepository programProductRepository;
+  private StockRepository stockRepository;
 
   @Autowired
-  private ProgramRepository programRepository;
+  private StockInventoryRepository stockInventoryRepository;
 
   @Autowired
   private ProductRepository productRepository;
@@ -35,13 +35,8 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/programProducts";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String PROGRAM = "program";
-  private static final String FULLSUPPLY = "fullSupply";
 
-  private List<ProgramProduct> programProducts;
+  private List<Stock> stocks;
 
   private Integer currentInstanceNumber;
   private RamlDefinition ramlDefinition;
@@ -50,9 +45,9 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   @Before
   public void setUp() {
     currentInstanceNumber = 0;
-    programProducts = new ArrayList<>();
-    for ( int programProductNumber = 0; programProductNumber < 5; programProductNumber++ ) {
-      programProducts.add(generateProgramProduct());
+    stocks = new ArrayList<>();
+    for ( int stockNumber = 0; stockNumber < 5; stockNumber++ ) {
+      stocks.add(generateStock());
     }
     RestAssured.baseURI = BASE_URL;
     ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
@@ -61,53 +56,41 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
 
   @After
   public void cleanup() {
-    programProductRepository.deleteAll();
-    programRepository.deleteAll();
+    stockRepository.deleteAll();
+    stockInventoryRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
   }
 
   @Test
-  public void testSearchProgramProducts() {
-    ProgramProduct[] response = restAssured.given()
-            .queryParam(PROGRAM, programProducts.get(0).getProgram().getId())
-            .queryParam(FULLSUPPLY, programProducts.get(0).isFullSupply())
-            .queryParam(ACCESS_TOKEN, getToken())
+  public void testSearchStocks() {
+    Stock[] response = restAssured.given()
+            .queryParam("stockInventory", stocks.get(0).getStockInventory().getId())
+            .queryParam("product", stocks.get(0).getProduct().getId())
+            .queryParam("access_token", getToken())
             .when()
-            .get(SEARCH_URL).as(ProgramProduct[].class);
+            .get(BASE_URL + "/api/stocks/search").as(Stock[].class);
 
     Assert.assertEquals(1,response.length);
-    for ( ProgramProduct programProduct : response ) {
+    for ( Stock stock : response ) {
       Assert.assertEquals(
-              programProduct.getProgram().getId(),
-              programProducts.get(0).getProgram().getId());
+              stock.getStockInventory().getId(),
+              stocks.get(0).getStockInventory().getId());
       Assert.assertEquals(
-              programProduct.isFullSupply(),
-              programProducts.get(0).isFullSupply());
+              stock.getProduct().getId(),
+              stocks.get(0).getProduct().getId());
     }
   }
 
-  private ProgramProduct generateProgramProduct() {
-    Program program = generateProgram();
+  private Stock generateStock() {
     ProductCategory productCategory = generateProductCategory();
     Product product = generateProduct(productCategory);
-    ProgramProduct programProduct = new ProgramProduct();
-    programProduct.setProduct(product);
-    programProduct.setProductCategory(productCategory);
-    programProduct.setProgram(program);
-    programProduct.setFullSupply(true);
-    programProduct.setActive(true);
-    programProduct.setDosesPerMonth(3);
-    programProductRepository.save(programProduct);
-    return programProduct;
-  }
-
-  private Program generateProgram() {
-    Program program = new Program();
-    program.setCode("code" + generateInstanceNumber());
-    program.setPeriodsSkippable(false);
-    programRepository.save(program);
-    return program;
+    StockInventory stockInventory = generateStockInventory();
+    Stock stock = new Stock();
+    stock.setStockInventory(stockInventory);
+    stock.setProduct(product);
+    stockRepository.save(stock);
+    return stock;
   }
 
   private ProductCategory generateProductCategory() {
@@ -136,6 +119,14 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
     product.setProductCategory(productCategory);
     productRepository.save(product);
     return product;
+  }
+
+  private StockInventory generateStockInventory() {
+    StockInventory stockInventory = new StockInventory();
+    stockInventory.setName("name" + generateInstanceNumber());
+    stockInventory.setStocks(null);
+    stockInventoryRepository.save(stockInventory);
+    return stockInventory;
   }
 
   private Integer generateInstanceNumber() {

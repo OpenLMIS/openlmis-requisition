@@ -7,6 +7,7 @@ import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -209,7 +210,10 @@ public class RequisitionService {
    */
   public List<Requisition> searchRequisitions(Facility facility, Program program,
                                               LocalDateTime createdDateFrom,
-                                              LocalDateTime createdDateTo) {
+                                              LocalDateTime createdDateTo,
+                                              Period processingPeriod,
+                                              SupervisoryNode supervisoryNode,
+                                              RequisitionStatus requisitionStatus) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
@@ -228,6 +232,18 @@ public class RequisitionService {
     if (createdDateTo != null) {
       predicate = builder.and(predicate,
           builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
+    }
+    if (processingPeriod != null) {
+      predicate = builder.and(predicate,
+              builder.equal(root.get("processingPeriod"), processingPeriod));
+    }
+    if (supervisoryNode != null) {
+      predicate = builder.and(predicate,
+              builder.equal(root.get("supervisoryNode"), supervisoryNode));
+    }
+    if (requisitionStatus != null) {
+      predicate = builder.and(predicate,
+              builder.equal(root.get("requisitionStatus"), requisitionStatus));
     }
 
     query.where(predicate);

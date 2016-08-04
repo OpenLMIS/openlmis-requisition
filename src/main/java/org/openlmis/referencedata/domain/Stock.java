@@ -1,5 +1,7 @@
 package org.openlmis.referencedata.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +21,9 @@ public class Stock extends BaseEntity {
   @JoinColumn(name = "stockInventoryId", nullable = false)
   @Getter
   @Setter
+  @JsonIdentityInfo(
+          generator = ObjectIdGenerators.IntSequenceGenerator.class,
+          property = "@stockInventoryId")
   private StockInventory stockInventory;
 
   @ManyToOne

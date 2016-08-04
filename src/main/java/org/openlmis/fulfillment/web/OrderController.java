@@ -11,6 +11,7 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
+import org.openlmis.referencedata.service.StockService;
 import org.openlmis.requisition.domain.Requisition;
 
 import org.slf4j.Logger;
@@ -48,6 +49,9 @@ public class OrderController {
   private StockRepository stockRepository;
 
   @Autowired
+  private StockService stockService;
+
+  @Autowired
   private OrderService orderService;
 
 
@@ -82,20 +86,20 @@ public class OrderController {
     } else {
       for (OrderLine orderLine : order.getOrderLines()) {
         //Searching for a corresponding stock to the current orderline
-        Stock stock = stockRepository.findByStockInventoryAndProduct(
+        List<Stock> stock = stockService.searchStocks(
                 order.getSupplyingFacility().getStockInventory(),
                 orderLine.getProduct()
         );
         //Checking if the stock exists.
         String productName = orderLine.getProduct().getPrimaryName();
-        if (stock == null) {
+        if (stock.size() == 0) {
           return new ResponseEntity<>(
                   "Error: There is no " + productName + " in the stock inventory.",
                   HttpStatus.BAD_REQUEST
           );
         }
         //Checking if there is sufficient quanitity of the ordered products.
-        if (stock.getStoredQuantity() < orderLine.getOrderedQuantity()) {
+        if (stock.get(0).getStoredQuantity() < orderLine.getOrderedQuantity()) {
           return new ResponseEntity<>(
                   "Error: There is insufficient quantity of " + productName
                           + " in the stock inventory.",
@@ -109,10 +113,10 @@ public class OrderController {
       /*Once finalized has been selected all commodities are subtracted
         from inventory at the warehouse*/
       for (OrderLine orderLine : order.getOrderLines()) {
-        Stock stock = stockRepository.findByStockInventoryAndProduct(
+        Stock stock = stockService.searchStocks(
                 order.getSupplyingFacility().getStockInventory(),
                 orderLine.getProduct()
-        );
+        ).get(0);
         stock.setStoredQuantity(
                 stock.getStoredQuantity() - orderLine.getOrderedQuantity()
         );

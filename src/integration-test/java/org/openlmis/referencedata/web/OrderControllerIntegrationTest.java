@@ -43,6 +43,7 @@ import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.StockInventoryRepository;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.referencedata.service.StockService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -119,6 +120,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private UserService userService;
+
+  @Autowired
+  private StockService stockService;
 
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
 
@@ -491,12 +495,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Order resultOrder = orderRepository.findOne(firstOrder.getId());
     Assert.assertEquals(resultOrder.getStatus(), OrderStatus.SHIPPED);
 
-    Stock stock1 = stockRepository
-        .findByStockInventoryAndProduct(firstStockInventory, firstProduct);
+    Stock stock1 = stockService
+        .searchStocks(firstStockInventory, firstProduct).get(0);
     Assert.assertEquals(stock1.getStoredQuantity().longValue(), 1111L);
 
-    Stock stock2 = stockRepository
-        .findByStockInventoryAndProduct(firstStockInventory, secondProduct);
+    Stock stock2 = stockService
+        .searchStocks(firstStockInventory, secondProduct).get(0);
     Assert.assertEquals(stock2.getStoredQuantity().longValue(), 111111L);
   }
 
