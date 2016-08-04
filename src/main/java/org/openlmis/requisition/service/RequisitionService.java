@@ -216,7 +216,6 @@ public class RequisitionService {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
-
     Predicate predicate = builder.conjunction();
     if (facility != null) {
       predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
@@ -242,7 +241,7 @@ public class RequisitionService {
     }
     if (requisitionStatus != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get("requisitionStatus"), requisitionStatus));
+              builder.equal(root.get("status"), requisitionStatus));
     }
 
     query.where(predicate);
