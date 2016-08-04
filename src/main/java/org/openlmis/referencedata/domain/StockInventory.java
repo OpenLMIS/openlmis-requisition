@@ -27,7 +27,7 @@ public class StockInventory extends BaseEntity {
   @Getter
   @Setter
   @JsonIdentityInfo(
-      generator = ObjectIdGenerators.IntSequenceGenerator.class,
-      property = "stocksId")
+          generator = ObjectIdGenerators.IntSequenceGenerator.class,
+          property = "@stocksId")
   private Set<Stock> stocks;
 }
