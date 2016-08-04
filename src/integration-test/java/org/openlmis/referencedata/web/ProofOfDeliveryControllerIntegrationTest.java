@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,8 +109,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Before
   public void setUp() {
-    cleanUp();
-
     Schedule schedule1 = new Schedule();
     schedule1.setCode("S1");
     schedule1.setName("Schedule1");
@@ -313,25 +310,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     product1.setProductCategory(productCategory1);
     productRepository.save(product1);
     return product1;
-  }
-
-  /**
-   * Cleanup the test environment.
-   */
-  @After
-  public void cleanUp() {
-    proofOfDeliveryLineRepository.deleteAll();
-    proofOfDeliveryRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
   }
 
   @Test

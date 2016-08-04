@@ -1,8 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.RestAssured;
@@ -10,7 +7,6 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +24,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -54,8 +53,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
     restAssured = ramlDefinition.createRestAssured();
 
-    cleanup();
-
     schedule.setCode("code");
     schedule.setName("schedule");
     schedule.setDescription("Test schedule");
@@ -68,12 +65,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setDescription("Test period");
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 2));
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
-  }
-
-  @After
-  public void cleanup() {
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
   }
 
   @Test

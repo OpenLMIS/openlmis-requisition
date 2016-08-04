@@ -1,10 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
@@ -13,7 +8,6 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +61,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -153,8 +152,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RestAssured.baseURI = BASE_URL;
     ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
     restAssured = ramlDefinition.createRestAssured();
-
-    cleanUp();
 
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -291,28 +288,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition4);
     requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
     requisitionRepository.save(requisition4);
-  }
-
-  @After
-  public void cleanUp() {
-    commentRepository.deleteAll();
-    Iterable<User> users = userRepository.findByUsername(USERNAME);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
-    requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    configurationSettingRepository.deleteAll();
   }
 
   @Test

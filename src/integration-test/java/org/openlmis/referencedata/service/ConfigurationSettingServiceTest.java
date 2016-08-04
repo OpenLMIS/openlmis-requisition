@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
@@ -25,16 +23,6 @@ public class ConfigurationSettingServiceTest {
 
   @Autowired
   private ConfigurationSettingService service;
-
-  @Before
-  public void setUp() {
-    repository.deleteAll();
-  }
-
-  @After
-  public void cleanUp() {
-    repository.deleteAll();
-  }
 
   @Test
   public void testGetStringValue() throws ConfigurationSettingException {

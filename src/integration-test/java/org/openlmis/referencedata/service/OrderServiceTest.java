@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,8 +111,6 @@ public class OrderServiceTest {
 
   @Before
   public void setUp() {
-    cleanup();
-
     Assert.assertEquals(1, userRepository.count());
     user = userRepository.findAll().iterator().next();
 
@@ -157,25 +154,6 @@ public class OrderServiceTest {
 
     requisitionList.add(createTestRequisition("code1", program, supervisoryNode));
     requisitionList.add(createTestRequisition("code2", program, supervisoryNode));
-  }
-
-  @After
-  public void cleanup() {
-    supplyLineRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   @Test

@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,15 +27,9 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Before
   public void setUp() {
-    programRepository.deleteAll();
     program.setCode("code");
     program.setName("name");
     programRepository.save(program);
-  }
-
-  @After
-  public void cleanup() {
-    programRepository.deleteAll();
   }
 
   @Test

@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,8 +116,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Before
   public void setUp() {
-    cleanUp();
-
     GeographicLevel geographicLevel = addGeographicLevel("geographicLevelCode", 1);
 
     FacilityType facilityType = addFacilityType("facilityTypeCode");
@@ -222,28 +219,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         RequisitionStatus.APPROVED, supervisoryNode);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
-  }
-
-  @After
-  public void cleanUp() {
-    supplyLineRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    Iterable<User> users = userRepository.findByUsername(USERNAME);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
   }
 
   private Facility addFacility(String facilityName, String facilityCode, String facilityDescription,
@@ -458,8 +433,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void testConvertToOrder() {
     RestTemplate restTemplate = new RestTemplate();
     String url = addTokenToUrl(RESOURCE_URL + "/requisitions");
-
-    orderRepository.deleteAll();
 
     restTemplate.exchange(url, HttpMethod.POST,
             new HttpEntity<Object>(Collections.singletonList(requisition)), String.class);

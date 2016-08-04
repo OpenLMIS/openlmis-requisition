@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,8 +99,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   /** Prepare the test environment. */
   @Before
   public void setUp() {
-    cleanUp();
-
     schedule = addSchedule("Schedule1", "S1");
 
     program = addProgram("P1");
@@ -142,30 +139,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     addOrderLine(order, product1, 35L, 50L);
 
     addOrderLine(order, product2, 10L, 15L);
-  }
-
-  /**
-   * Cleanup the test environment.
-   */
-  @After
-  public void cleanUp() {
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    Iterable<User> users = userRepository.findByUsername(USERNAME);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-
   }
 
   @Test

@@ -101,16 +101,6 @@ public class RequisitionServiceTest {
 
   @Before
   public void setUp() {
-    requisitionRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-
     createTestRequisition();
   }
 
