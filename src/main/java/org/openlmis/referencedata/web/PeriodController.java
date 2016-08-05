@@ -49,14 +49,14 @@ public class PeriodController {
   /**
    * Finds periods matching all of provided parameters.
    * @param processingSchedule processingSchedule of searched Periods.
-   * @param startDate maximal start date of Periods
+   * @param toDate to which day shall Period start.
    * @return list of all Periods matching all of provided parameters.
    */
   @RequestMapping(value = "/periods/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchPeriods(
           @RequestParam(value = "processingSchedule", required = true) Schedule processingSchedule,
-          @RequestParam(value = "startDate", required = false) String startDate) {
-    LocalDate limitDate = LocalDate.parse(startDate);
+          @RequestParam(value = "toDate", required = false) String toDate) {
+    LocalDate limitDate = LocalDate.parse(toDate);
     List<Period> result = periodService.searchPeriods(processingSchedule, limitDate);
 
     return new ResponseEntity<>(result, HttpStatus.OK);

@@ -128,21 +128,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private StockService stockService;
 
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
-
   private static final String RESOURCE_URL = BASE_URL + "/api/orders";
-
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-
   private static final String USERNAME = "testUser";
-
   private static final String ACCESS_TOKEN = "access_token";
-
   private static final String REQUESTING_FACILITY = "requestingFacility";
-
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
-
   private static final String PROGRAM = "program";
-
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
           + "definition.";
 

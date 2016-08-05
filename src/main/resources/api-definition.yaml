@@ -689,8 +689,8 @@ resourceTypes:
                         type: string
                         required: true
                         repeat: false
-                startDate:
-                        displayName: startDate
+                toDate:
+                        displayName: toDate
                         type: string
                         required: false
                         repeat: false

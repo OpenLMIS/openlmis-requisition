@@ -55,11 +55,18 @@ public class PeriodServiceTest {
 
   @Test
   public void testSearchPeriod() {
-    List<Period> receivedUsers =
+    List<Period> receivedPeriods =
             periodService.searchPeriods(
                     testSchedule,
                     periods.get(0).getStartDate());
-    Assert.assertEquals(4,receivedUsers.size());
+    Assert.assertEquals(4,receivedPeriods.size());
+    for ( Period period : receivedPeriods) {
+      Assert.assertEquals(
+              testSchedule.getId(),
+              period.getProcessingSchedule().getId());
+      Assert.assertTrue(
+              periods.get(0).getStartDate().isAfter(period.getStartDate()));
+    }
   }
 
   private Period generatePeriod() {

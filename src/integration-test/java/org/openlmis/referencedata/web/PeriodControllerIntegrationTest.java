@@ -43,7 +43,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
-  private static final String START_DATE = "startDate";
+  private static final String START_DATE = "toDate";
   private static final String ACCESS_TOKEN = "access_token";
 
   private Period firstPeriod = new Period();
@@ -168,7 +168,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setStartDate(LocalDate.now());
     periodRepository.save(secondPeriod);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Period[] response = restAssured.given()
             .queryParam(PROCESSING_SCHEDULE, firstPeriod.getProcessingSchedule().getId())
             .queryParam(START_DATE, firstPeriod.getStartDate().toString())
@@ -176,6 +175,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
             .when()
             .get(SEARCH_URL).as(Period[].class);
 
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( Period period : response ) {
       Assert.assertEquals(
