@@ -1,2 +1,0 @@
-CREATE SCHEMA IF NOT EXISTS requisition;
-CREATE SCHEMA IF NOT EXISTS referencedata;
