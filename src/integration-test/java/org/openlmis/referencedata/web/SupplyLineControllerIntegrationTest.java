@@ -143,7 +143,6 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
     facility.setDescription("FacilityDescription" + instanceNumber);
     facility.setActive(true);
     facility.setEnabled(true);
-    facility.setStockInventory(null);
     facilityRepository.save(facility);
     return facility;
   }

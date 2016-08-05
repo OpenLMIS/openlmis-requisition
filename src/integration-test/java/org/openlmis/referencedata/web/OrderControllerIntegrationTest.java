@@ -42,7 +42,6 @@ import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
-import org.openlmis.referencedata.service.StockService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -112,9 +111,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private UserService userService;
-
-  @Autowired
-  private StockService stockService;
 
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
   private static final String RESOURCE_URL = BASE_URL + "/api/orders";
@@ -422,7 +418,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     facilityType.setCode(code);
     return facilityTypeRepository.save(facilityType);
   }
-  
+
   @Test(expected = HttpClientErrorException.class)
   public void testWrongOrderStatus() throws JsonProcessingException {
     firstOrder.setStatus(OrderStatus.SHIPPED);
