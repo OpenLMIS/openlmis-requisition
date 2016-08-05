@@ -262,7 +262,9 @@ public class RequisitionController {
   public ResponseEntity<?> getSubmittedRequisitions() {
 
     Iterable<Requisition> submittedRequisitions =
-        requisitionRepository.findByStatus(RequisitionStatus.SUBMITTED);
+        requisitionService.searchRequisitions(
+                null,null,null,null,null,null,
+                RequisitionStatus.SUBMITTED);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

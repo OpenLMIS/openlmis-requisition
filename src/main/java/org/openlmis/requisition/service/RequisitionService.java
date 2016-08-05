@@ -284,8 +284,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList =
-          (List<Requisition>) requisitionRepository.findBySupervisoryNode(supNode);
+      List<Requisition> reqList = searchRequisitions(null,null,null,null,null,supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

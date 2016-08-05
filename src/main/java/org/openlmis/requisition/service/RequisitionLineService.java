@@ -9,7 +9,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +27,10 @@ public class RequisitionLineService {
   private RequisitionLineRepository requisitionLineRepository;
 
   @Autowired
-  private RequisitionRepository requisitionRepository;
+  private PeriodService periodService;
 
   @Autowired
-  private PeriodService periodService;
+  private RequisitionService requisitionService;
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -121,14 +120,21 @@ public class RequisitionLineService {
     if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
         && previousPeriods != null && previousPeriods.iterator().hasNext()) {
 
-      Requisition previousRequisition;
+      List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
-      previousRequisition = requisitionRepository.findByProcessingPeriodAndFacilityAndProgram(
-          previousPeriods.iterator().next(), requisition.getFacility(), requisition.getProgram());
-
+      previousRequisition = requisitionService.searchRequisitions(
+              requisition.getFacility(),
+              requisition.getProgram(),
+              null,null,
+              previousPeriods.iterator().next(),
+              null,
+              null);
+      if ( previousRequisition.size() == 0) {
+        return;
+      }
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
         previousRequisitionLine = searchRequisitionLines(
-            previousRequisition, requisitionLine.getProduct());
+            previousRequisition.get(0), requisitionLine.getProduct());
 
         if (requisitionLine.getBeginningBalance() == null) {
           if (previousRequisitionLine != null
@@ -140,7 +146,6 @@ public class RequisitionLineService {
           }
         }
       }
-
     } else {
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
         requisitionLine.setBeginningBalance(0);
@@ -157,19 +162,23 @@ public class RequisitionLineService {
       requisitionLine.setBeginningBalance(0);
       return;
     }
-    Requisition previousRequisition =
-        requisitionRepository.findByProcessingPeriodAndFacilityAndProgram(
-        previousPeriods.iterator().next(), requisition.getFacility(), requisition.getProgram()
-        );
+    List<Requisition> previousRequisition =
+            requisitionService.searchRequisitions(
+                    requisition.getFacility(),
+                    requisition.getProgram(),
+                    null,null,
+                    previousPeriods.iterator().next(),
+                    null,
+                    null);
 
-    if (previousRequisition == null) {
+    if (previousRequisition.size() == 0) {
       requisitionLine.setBeginningBalance(0);
       return;
     }
 
     List<RequisitionLine> previousRequisitionLine;
     previousRequisitionLine = searchRequisitionLines(
-        previousRequisition, requisitionLine.getProduct());
+        previousRequisition.get(0), requisitionLine.getProduct());
 
     if (previousRequisitionLine == null) {
       requisitionLine.setBeginningBalance(0);
