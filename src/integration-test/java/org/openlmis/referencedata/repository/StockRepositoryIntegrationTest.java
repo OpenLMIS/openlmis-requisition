@@ -7,7 +7,6 @@ import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
-import org.openlmis.referencedata.domain.StockInventory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Stock> {
@@ -16,15 +15,11 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   private StockRepository stockRepository;
 
   @Autowired
-  private StockInventoryRepository stockInventoryRepository;
-
-  @Autowired
   private ProductRepository productRepository;
 
   @Autowired
   ProductCategoryRepository productCategoryRepository;
 
-  private StockInventory stockInventory = new StockInventory();
   private Product product = new Product();
 
   StockRepository getRepository() {
@@ -33,10 +28,6 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Before
   public void setUp() {
-    stockInventoryRepository.deleteAll();
-    stockInventory.setName("stockInventoryName");
-    stockInventoryRepository.save(stockInventory);
-
     productCategoryRepository.deleteAll();
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
@@ -61,7 +52,6 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   Stock generateInstance() {
     Stock stock = new Stock();
-    stock.setStockInventory(stockInventory);
     stock.setProduct(product);
     stock.setStoredQuantity(1234L);
     return stock;
@@ -70,7 +60,6 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   @After
   public void cleanUp() {
     stockRepository.deleteAll();
-    stockInventoryRepository.deleteAll();
     productRepository.deleteAll();
   }
 
