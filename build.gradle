@@ -97,9 +97,8 @@ task integrationTest(type: Test) {
     testLogging {
         events "passed", "skipped", "failed"
     }
+    mustRunAfter test
 }
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
 
 tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
@@ -127,12 +126,6 @@ task checkApiIsRaml(type:Exec) {
 configure(checkApiIsRaml) {
     group = JavaBasePlugin.VERIFICATION_GROUP
     description = 'Verify that the api-specification is valid RAML'
-}
-
-test {
-    testLogging {
-        events 'started', 'passed'
-    }
 }
 
 jacocoTestReport {
@@ -168,9 +161,6 @@ sonarqube {
     }
 }
 
-build.dependsOn jacocoTestReport
-// Makes sure checkstyle is run before build completes
-
 pmd {
     toolVersion = '5.4.0'
     consoleOutput= true
@@ -189,14 +179,19 @@ tasks.withType(Pmd){
 apply from: "documentation.gradle"
 
 test {
+    testLogging {
+        events 'started', 'passed'
+    }
     dependsOn copyRamlToBuild
 }
 
 check {
     dependsOn checkApiIsRaml
+    dependsOn integrationTest
 }
 
 build {
+    jacocoTestReport
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
