@@ -2,6 +2,7 @@ package org.openlmis.referencedata.validate;
 
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.service.PeriodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -12,6 +13,9 @@ import java.time.LocalDate;
 public class PeriodValidator implements Validator {
   @Autowired
   private PeriodRepository periodRepository;
+
+  @Autowired
+  private PeriodService periodService;
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -24,8 +28,8 @@ public class PeriodValidator implements Validator {
     ValidationUtils.rejectIfEmpty(err, "endDate", "endDate.empty", "End date is null");
 
     Period period = (Period) obj;
-    Iterable<Period> iterable = periodRepository
-            .findByProcessingSchedule(period.getProcessingSchedule());
+    Iterable<Period> iterable = periodService
+            .searchPeriods(period.getProcessingSchedule(),null);
 
     LocalDate startDate = period.getStartDate();
     LocalDate endDate = period.getEndDate();

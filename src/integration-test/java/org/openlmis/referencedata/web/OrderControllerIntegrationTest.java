@@ -1,6 +1,13 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.junit.RamlMatchers;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,6 +21,7 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -34,6 +42,7 @@ import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.referencedata.service.StockService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -101,11 +110,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
+  @Autowired
+  private UserService userService;
+
+  @Autowired
+  private StockService stockService;
+
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
-
   private static final String RESOURCE_URL = BASE_URL + "/api/orders";
-
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String USERNAME = "testUser";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String REQUESTING_FACILITY = "requestingFacility";
+  private static final String SUPPLYING_FACILITY = "supplyingFacility";
+  private static final String PROGRAM = "program";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+          + "definition.";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -114,6 +134,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Requisition requisition;
   private SupplyLine supplyLine;
   private User user;
+  private RamlDefinition ramlDefinition;
+  private RestAssuredClient restAssured;
 
   @Before
   public void setUp() {
@@ -222,6 +244,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         RequisitionStatus.APPROVED, supervisoryNode);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
+
+    RestAssured.baseURI = BASE_URL;
+    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+    restAssured = ramlDefinition.createRestAssured();
   }
 
   @After
@@ -236,7 +262,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userRepository.findByUsername(USERNAME);
+    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
     if (users != null && users.iterator().hasNext()) {
       userRepository.delete(users);
     }
@@ -396,7 +422,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     facilityType.setCode(code);
     return facilityTypeRepository.save(facilityType);
   }
-
+  
   @Test(expected = HttpClientErrorException.class)
   public void testWrongOrderStatus() throws JsonProcessingException {
     firstOrder.setStatus(OrderStatus.SHIPPED);
@@ -477,5 +503,68 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
     Assert.assertEquals(order.getSupplyingFacility().getId(),
             supplyLine.getSupplyingFacility().getId());
+  }
+
+  @Test
+  public void testFindBySupplyingFacility() {
+    Order[] response = restAssured.given()
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Order[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1,response.length);
+    for ( Order order : response ) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              firstOrder.getSupplyingFacility().getId());
+    }
+  }
+
+  @Test
+  public void testSearchBySupplyingFacilityAndRequestingFacility() {
+    Order[] response = restAssured.given()
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
+            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Order[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1,response.length);
+    for ( Order order : response ) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              firstOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getRequestingFacility().getId(),
+              firstOrder.getRequestingFacility().getId());
+    }
+  }
+
+  @Test
+  public void testSearchBySupplyingFacilityAndRequestingFacilityAndProgram() {
+    Order[] response = restAssured.given()
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
+            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())
+            .queryParam(PROGRAM, firstOrder.getProgram().getId())
+            .queryParam(ACCESS_TOKEN, getToken())
+            .when()
+            .get(SEARCH_URL).as(Order[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1,response.length);
+    for ( Order order : response ) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              firstOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getRequestingFacility().getId(),
+              firstOrder.getRequestingFacility().getId());
+      Assert.assertEquals(
+              order.getProgram().getId(),
+              firstOrder.getProgram().getId());
+    }
   }
 }

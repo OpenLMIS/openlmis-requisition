@@ -7,6 +7,7 @@ import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -53,7 +54,6 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
-
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
@@ -209,11 +209,13 @@ public class RequisitionService {
    */
   public List<Requisition> searchRequisitions(Facility facility, Program program,
                                               LocalDateTime createdDateFrom,
-                                              LocalDateTime createdDateTo) {
+                                              LocalDateTime createdDateTo,
+                                              Period processingPeriod,
+                                              SupervisoryNode supervisoryNode,
+                                              RequisitionStatus requisitionStatus) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
-
     Predicate predicate = builder.conjunction();
     if (facility != null) {
       predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
@@ -228,6 +230,18 @@ public class RequisitionService {
     if (createdDateTo != null) {
       predicate = builder.and(predicate,
           builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
+    }
+    if (processingPeriod != null) {
+      predicate = builder.and(predicate,
+              builder.equal(root.get("processingPeriod"), processingPeriod));
+    }
+    if (supervisoryNode != null) {
+      predicate = builder.and(predicate,
+              builder.equal(root.get("supervisoryNode"), supervisoryNode));
+    }
+    if (requisitionStatus != null) {
+      predicate = builder.and(predicate,
+              builder.equal(root.get("status"), requisitionStatus));
     }
 
     query.where(predicate);
@@ -270,8 +284,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList =
-          (List<Requisition>) requisitionRepository.findBySupervisoryNode(supNode);
+      List<Requisition> reqList = searchRequisitions(null,null,null,null,null,supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

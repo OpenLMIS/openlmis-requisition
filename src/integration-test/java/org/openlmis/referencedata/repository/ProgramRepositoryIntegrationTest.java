@@ -34,5 +34,6 @@ public class ProgramRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
     testProgram = repository.save(testProgram);
     testProgram = repository.findOne(testProgram.getId());
     assertFalse(testProgram.getPeriodsSkippable());
+    repository.deleteAll();
   }
 }

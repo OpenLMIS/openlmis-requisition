@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -47,6 +49,9 @@ public class Requisition extends BaseEntity {
       cascade = {CascadeType.REMOVE, CascadeType.MERGE}, fetch = FetchType.EAGER)
   @Getter
   @Setter
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "requisitionLinesId")
   private Set<RequisitionLine> requisitionLines;
 
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)

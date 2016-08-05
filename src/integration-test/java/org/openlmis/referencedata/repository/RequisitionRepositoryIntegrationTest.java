@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.repository;
 
+import org.junit.After;
 import org.junit.Before;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
@@ -106,5 +107,17 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setProgram(program);
     requisition.setStatus(RequisitionStatus.INITIATED);
     return requisition;
+  }
+
+  @After
+  public void cleanUp() {
+    repository.deleteAll();
+    programRepository.deleteAll();
+    facilityRepository.deleteAll();
+    periodRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
   }
 }

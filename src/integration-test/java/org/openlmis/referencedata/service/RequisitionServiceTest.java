@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.service;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -112,6 +114,19 @@ public class RequisitionServiceTest {
     programRepository.deleteAll();
 
     createTestRequisition();
+  }
+
+  @After
+  public void cleanUp() {
+    requisitionRepository.deleteAll();
+    periodRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
+    facilityRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    programRepository.deleteAll();
   }
 
   @Test
@@ -276,6 +291,43 @@ public class RequisitionServiceTest {
     Assert.assertEquals(RequisitionStatus.RELEASED, requisition.getStatus());
   }
 
+  @Test
+  public void testSearchRequisitions() {
+    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
+            requisition.getFacility(),
+            requisition.getProgram(),
+            requisition.getCreatedDate().minusDays(2),
+            requisition.getCreatedDate().plusDays(2),
+            requisition.getProcessingPeriod(),
+            requisition.getSupervisoryNode(),
+            requisition.getStatus());
+
+    Assert.assertEquals(1,receivedRequisitions.size());
+    for ( Requisition receivedRequisition : receivedRequisitions ) {
+      Assert.assertEquals(
+              receivedRequisition.getFacility().getId(),
+              requisition.getFacility().getId());
+      Assert.assertEquals(
+              receivedRequisition.getProgram().getId(),
+              requisition.getProgram().getId());
+      Assert.assertTrue(
+              receivedRequisition.getCreatedDate().isAfter(
+                      requisition.getCreatedDate().minusDays(2)));
+      Assert.assertTrue(
+              receivedRequisition.getCreatedDate().isBefore(
+                      requisition.getCreatedDate().plusDays(2)));
+      Assert.assertEquals(
+              receivedRequisition.getProcessingPeriod().getId(),
+              requisition.getProcessingPeriod().getId());
+      Assert.assertEquals(
+              receivedRequisition.getSupervisoryNode().getId(),
+              requisition.getSupervisoryNode().getId());
+      Assert.assertEquals(
+              receivedRequisition.getStatus(),
+              requisition.getStatus());
+    }
+  }
+
   private void createTestRequisition() {
     user = new User();
     user.setUsername("Username");
@@ -337,21 +389,27 @@ public class RequisitionServiceTest {
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
+    requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNode(supervisoryNode);
     requisitionRepository.save(requisition);
 
     requisition2 = new Requisition();
     requisition2.setFacility(facility);
     requisition2.setProcessingPeriod(period);
     requisition2.setProgram(program2);
+    requisition2.setCreatedDate(LocalDateTime.now().minusDays(5));
     requisition2.setStatus(RequisitionStatus.INITIATED);
+    requisition2.setSupervisoryNode(supervisoryNode);
     requisitionRepository.save(requisition2);
 
     requisition3 = new Requisition();
     requisition3.setFacility(facility);
     requisition3.setProcessingPeriod(period);
     requisition3.setProgram(program2);
+    requisition.setCreatedDate(LocalDateTime.now().minusDays(9));
     requisition3.setStatus(RequisitionStatus.INITIATED);
+    requisition3.setSupervisoryNode(supervisoryNode);
     requisitionRepository.save(requisition3);
   }
 }

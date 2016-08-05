@@ -2,9 +2,11 @@ package org.openlmis.requisition.web;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.repository.CommentRepository;
 import org.openlmis.requisition.domain.Requisition;
@@ -135,10 +137,14 @@ public class RequisitionController {
       @RequestParam(value = "createdDateFrom", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo) {
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
+      @RequestParam(value = "processingPeriod", required = false) Period processingPeriod,
+      @RequestParam(value = "supervisoryNode", required = false) SupervisoryNode supervisoryNode,
+      @RequestParam(value = "requisitionStatus", required = false)
+              RequisitionStatus requisitionStatus) {
 
     List<Requisition> result = requisitionService.searchRequisitions(facility, program,
-        createdDateFrom, createdDateTo);
+        createdDateFrom, createdDateTo,processingPeriod,supervisoryNode,requisitionStatus);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
@@ -256,7 +262,9 @@ public class RequisitionController {
   public ResponseEntity<?> getSubmittedRequisitions() {
 
     Iterable<Requisition> submittedRequisitions =
-        requisitionRepository.findByStatus(RequisitionStatus.SUBMITTED);
+        requisitionService.searchRequisitions(
+                null,null,null,null,null,null,
+                RequisitionStatus.SUBMITTED);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
