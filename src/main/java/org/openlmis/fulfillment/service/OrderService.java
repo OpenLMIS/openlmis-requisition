@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,15 +44,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 @Service
 public class OrderService {
@@ -87,42 +84,8 @@ public class OrderService {
   public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
                                   Program program, Period period, Schedule schedule,
                                   LocalDate startDate, LocalDate endDate) {
-    String hqlQuery = "select o from Order as o, Requisition as r, Period as p "
-                      + "where o.supplyingFacility = :supplyingFacility";
-    Map<String, Object> params = new HashMap<>();
-    params.put("supplyingFacility", supplyingFacility);
-    if (requestingFacility != null) {
-      hqlQuery += " and o.requestingFacility = :requestingFacility";
-      params.put("requestingFacility", requestingFacility);
-    }
-    if (program != null) {
-      hqlQuery += " and o.program = :program";
-      params.put("program", program);
-    }
-    if (period != null) {
-      hqlQuery += " and r.processingPeriod = :period";
-      params.put("period", period);
-    }
-    if (schedule != null) {
-      hqlQuery += " and p.processingSchedule = :schedule";
-      params.put("schedule", schedule);
-    }
-    if (startDate != null) {
-      hqlQuery += " and p.startDate = :startDate";
-      params.put("startDate", startDate);
-    }
-    if (endDate != null) {
-      hqlQuery += " and p.endDate = :endDate";
-      params.put("endDate", endDate);
-    }
-    Query query = entityManager.createQuery(hqlQuery);
-    Iterator<String> iter = params.keySet().iterator();
-    while (iter.hasNext()) {
-      String name = iter.next();
-      Object value = params.get(name);
-      query.setParameter(name, value);
-    }
-    return query.getResultList();
+    return orderRepository.searchOrders(supplyingFacility, requestingFacility, program,
+            period, schedule, startDate, endDate);
   }
 
   /**
