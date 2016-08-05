@@ -16,8 +16,6 @@ import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
-import org.openlmis.referencedata.domain.StockInventory;
-import org.openlmis.referencedata.repository.StockInventoryRepository;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,9 +26,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private StockRepository stockRepository;
-
-  @Autowired
-  private StockInventoryRepository stockInventoryRepository;
 
   @Autowired
   private ProductRepository productRepository;
@@ -62,7 +57,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   @After
   public void cleanup() {
     stockRepository.deleteAll();
-    stockInventoryRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
   }
@@ -70,7 +64,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void testSearchStocks() {
     Stock[] response = restAssured.given()
-            .queryParam("stockInventory", stocks.get(0).getStockInventory().getId())
             .queryParam("product", stocks.get(0).getProduct().getId())
             .queryParam("access_token", getToken())
             .when()
@@ -80,9 +73,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     Assert.assertEquals(1,response.length);
     for ( Stock stock : response ) {
       Assert.assertEquals(
-              stock.getStockInventory().getId(),
-              stocks.get(0).getStockInventory().getId());
-      Assert.assertEquals(
               stock.getProduct().getId(),
               stocks.get(0).getProduct().getId());
     }
@@ -91,9 +81,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   private Stock generateStock() {
     ProductCategory productCategory = generateProductCategory();
     Product product = generateProduct(productCategory);
-    StockInventory stockInventory = generateStockInventory();
     Stock stock = new Stock();
-    stock.setStockInventory(stockInventory);
     stock.setProduct(product);
     stockRepository.save(stock);
     return stock;
@@ -125,14 +113,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     product.setProductCategory(productCategory);
     productRepository.save(product);
     return product;
-  }
-
-  private StockInventory generateStockInventory() {
-    StockInventory stockInventory = new StockInventory();
-    stockInventory.setName("name" + generateInstanceNumber());
-    stockInventory.setStocks(null);
-    stockInventoryRepository.save(stockInventory);
-    return stockInventory;
   }
 
   private Integer generateInstanceNumber() {
