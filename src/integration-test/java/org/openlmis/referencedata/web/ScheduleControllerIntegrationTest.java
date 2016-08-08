@@ -1,10 +1,6 @@
 package org.openlmis.referencedata.web;
 
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
@@ -19,8 +15,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML " 
-      + "definition.";
 
   @Autowired
   private ScheduleRepository scheduleRepository;
@@ -28,18 +22,11 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
-
   private Schedule schedule;
   private Period period;
 
   @Before
   public void setUp() {
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
-
     schedule = new Schedule();
     schedule.setCode("code");
     schedule.setName("schedule");
