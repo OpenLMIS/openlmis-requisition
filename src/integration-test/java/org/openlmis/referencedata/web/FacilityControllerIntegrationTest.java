@@ -101,7 +101,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private Period period = new Period();
   private Schedule schedule = new Schedule();
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
     cleanUp();
