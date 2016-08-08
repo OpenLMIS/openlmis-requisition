@@ -5,9 +5,12 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
+import org.openlmis.referencedata.utils.CleanRepositoryHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -15,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -23,7 +25,6 @@ import java.util.Map;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
-@Transactional
 public abstract class BaseWebIntegrationTest {
   static final String BASE_URL = System.getenv("BASE_URL");
 
@@ -34,6 +35,9 @@ public abstract class BaseWebIntegrationTest {
   RestAssuredClient restAssured;
 
   private String token = null;
+
+  @Autowired
+  private CleanRepositoryHelper cleanRepositoryHelper;
 
   @Before
   public void loadRaml() {
@@ -70,5 +74,10 @@ public abstract class BaseWebIntegrationTest {
 
   String addTokenToUrl(String url) {
     return url + "?access_token=" + this.getToken();
+  }
+
+  @After
+  public void cleanRepositories() {
+    cleanRepositoryHelper.cleanAll();
   }
 }

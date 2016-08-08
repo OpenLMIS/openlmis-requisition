@@ -37,6 +37,7 @@ import org.openlmis.requisition.service.RequisitionLineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class RequisitionLineServiceTest {
 
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionLineServiceIntegrationTest";
