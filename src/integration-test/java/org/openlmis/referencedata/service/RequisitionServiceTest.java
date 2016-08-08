@@ -6,12 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
-import org.openlmis.hierarchyandsupervision.domain.Right;
-import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.RightRepository;
-import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
@@ -84,12 +80,6 @@ public class RequisitionServiceTest {
 
   @Autowired
   private UserRepository userRepository;
-
-  @Autowired
-  private RoleRepository roleRepository;
-
-  @Autowired
-  private RightRepository rightRepository;
 
   private Requisition requisition;
   private Requisition requisition2;
@@ -224,22 +214,7 @@ public class RequisitionServiceTest {
   @Test
   @Transactional
   public void getRequisitionsForApprove() {
-    Right approveRight = new Right();
-    approveRight.setName("APPROVE_REQUISITION");
-    approveRight.setRightType("APPROVE_REQUISITION");
-    rightRepository.save(approveRight);
-    List<Right> rightList = new ArrayList<>();
-    rightList.add(approveRight);
-
-    Role approveRole = new Role();
-    approveRole.setRights(rightList);
-    approveRole.setSupervisedNode(supervisoryNode);
-    approveRole.setName("Approve Role");
-    roleRepository.save(approveRole);
-    List<Role> roleList = new ArrayList<>();
-    roleList.add(approveRole);
-
-    user.setRoles(roleList);
+    user.setSupervisedNode(supervisoryNode);
     user = userRepository.save(user);
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);

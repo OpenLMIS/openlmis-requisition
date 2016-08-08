@@ -1009,6 +1009,7 @@ resourceTypes:
                 required: true
                 repeat: false
         get:
+            is: [ secured ]
             description: Get all comments for specified requisition.
             responses:
                 "200":

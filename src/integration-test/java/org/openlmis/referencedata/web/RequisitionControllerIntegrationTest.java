@@ -89,7 +89,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
 
-  private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
+  private static final String COMMENT_TEXT_FIELD_NAME = "body";
   private static final String USERNAME = "testUser";
 
   @Autowired
@@ -729,7 +729,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Comment comment = new Comment();
     comment.setAuthor(author);
     comment.setRequisition(req);
-    comment.setCommentText(commentText);
+    comment.setBody(commentText);
     commentRepository.save(comment);
   }
 
@@ -766,7 +766,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     createComment(user, requisition, "Previous comment");
     Comment userPostComment = new Comment();
-    userPostComment.setCommentText("User comment");
+    userPostComment.setBody("User comment");
 
     ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Hibernate4Module());
@@ -784,6 +784,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             restTemplate.exchange(uri, HttpMethod.POST, entity, Object.class);
 
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+
     List<LinkedHashMap<Object,Object>> comments =
             (List<LinkedHashMap<Object,Object>>) result.getBody();
 

@@ -1,13 +1,14 @@
 package org.openlmis.hierarchyandsupervision.domain;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.view.View;
 
 import java.util.List;
-import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -23,6 +24,7 @@ import javax.persistence.Table;
 public class User extends BaseEntity {
   private static final String DEFAULT_PASSWORD = "not-in-use";
 
+  @JsonView(View.BasicInformation.class)
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
@@ -32,15 +34,23 @@ public class User extends BaseEntity {
   @Setter
   private String password;
 
+  @JsonView(View.BasicInformation.class)
   @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter
   private String firstName;
 
+  @JsonView(View.BasicInformation.class)
   @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter
   private String lastName;
+
+  @ManyToOne
+  @JoinColumn(name = "supervisoryNodeId")
+  @Getter
+  @Setter
+  private SupervisoryNode supervisedNode; //TODO Role based access control for Requisitions
 
   @ManyToOne
   @JoinColumn(name = "facilityid")
@@ -64,11 +74,6 @@ public class User extends BaseEntity {
   @Setter
   private List<Role> roles;
 
-  public User(UUID id, String userName) {
-    this.setId(id);
-    this.setUsername(userName);
-  }
-
   @PrePersist
   private void prePersist() {
     if (this.verified == null) {
@@ -82,9 +87,5 @@ public class User extends BaseEntity {
     if (this.password == null) {
       this.password = DEFAULT_PASSWORD;
     }
-  }
-
-  public User basicInformation() {
-    return new User(getId(), getUsername());
   }
 }

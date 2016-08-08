@@ -19,7 +19,6 @@ import org.openlmis.referencedata.domain.Program;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -92,10 +91,6 @@ public class Requisition extends BaseEntity {
   @Setter
   private String remarks;
 
-  Requisition(UUID id) {
-    this.setId(id);
-  }
-
   @ManyToOne
   @JoinColumn(name = "supervisoryNodeId")
   @Getter
@@ -105,9 +100,5 @@ public class Requisition extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
-  }
-
-  public Requisition basicInformation() {
-    return new Requisition(getId());
   }
 }
