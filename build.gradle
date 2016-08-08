@@ -119,9 +119,11 @@ task generateMigration << {
 }
 
 task checkApiIsRaml(type:Exec) {
-    executable "raml-cop"
+    executable "./node_modules/.bin/raml-cop"
     args "src/main/resources/api-definition.yaml"
 }
+
+checkApiIsRaml.dependsOn(npm_install)
 
 configure(checkApiIsRaml) {
     group = JavaBasePlugin.VERIFICATION_GROUP
