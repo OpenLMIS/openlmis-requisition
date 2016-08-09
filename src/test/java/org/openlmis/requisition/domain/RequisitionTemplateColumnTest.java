@@ -24,10 +24,26 @@ public class RequisitionTemplateColumnTest {
   }
 
   @Test(expected = RequisitionTemplateColumnException.class)
-  public void testShouldNotChangeLabelIfInvalid() throws RequisitionTemplateColumnException {
+  public void testShouldNotChangeLabelIfLabelNameIsInvalid()
+      throws RequisitionTemplateColumnException {
     requisitionTemplateColumn.setLabel("New not valid name with wrong signs: !@#$%^&*()");
-    requisitionTemplateColumn.setLabel("!@#$%^&*()");
+  }
+
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void testShouldNotChangeLabelIfLabelNameHasWrongSigns()
+      throws RequisitionTemplateColumnException {
+    requisitionTemplateColumn.setLabel(")(*&^%$#@!");
+  }
+
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void testShouldNotChangeLabelIfLabelNameIsEmpty()
+      throws RequisitionTemplateColumnException {
     requisitionTemplateColumn.setLabel("");
+  }
+
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void testShouldNotChangeLabelIfLabelNameHasOnlyWhiteSpace()
+      throws RequisitionTemplateColumnException {
     requisitionTemplateColumn.setLabel(" ");
   }
 }
