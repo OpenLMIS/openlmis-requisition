@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +28,7 @@ import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class SupplyLineServiceTest {
 
   private static final String CODE = "123";
@@ -66,18 +66,6 @@ public class SupplyLineServiceTest {
     supplyLine = generateSupplyLine();
   }
 
-  @After
-  public void cleanup() {
-    supplyLineRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-  }
-
-  @Transactional
   @Test
   public void testSearchSupplyLines() {
     List<SupplyLine> receivedSupplyLines = supplyLineService.searchSupplyLines(

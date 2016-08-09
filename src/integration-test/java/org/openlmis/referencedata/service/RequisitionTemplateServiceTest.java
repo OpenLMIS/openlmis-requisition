@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,11 +13,13 @@ import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class RequisitionTemplateServiceTest {
 
   @Autowired
@@ -37,12 +38,6 @@ public class RequisitionTemplateServiceTest {
   public void setUp() {
     currentInstanceNumber = 0;
     requisitionTemplate = generateRequisitionTemplate();
-  }
-
-  @After
-  public void cleanup() {
-    requisitionTemplateRepository.deleteAll();
-    programRepository.deleteAll();
   }
 
   @Test

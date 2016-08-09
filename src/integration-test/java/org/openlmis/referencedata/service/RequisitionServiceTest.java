@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,30 +102,7 @@ public class RequisitionServiceTest {
 
   @Before
   public void setUp() {
-    requisitionRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-
     createTestRequisition();
-  }
-
-  @After
-  public void cleanUp() {
-    requisitionRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
   }
 
   @Test
