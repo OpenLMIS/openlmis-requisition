@@ -104,8 +104,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   /** Prepare the test environment. */
   @Before
   public void setUp() {
-    cleanUp();
-
     schedule = addSchedule("Schedule1", "S1");
 
     program = addProgram("P1");
@@ -128,7 +126,9 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Requisition requisition1 = addRequisition(program, facility, period,
             RequisitionStatus.RELEASED);
 
-    user = addUser(USERNAME, "pass", "Alice", "Cat", facility);
+    user = userRepository.findOne(INITIAL_USER_ID);
+    user.setHomeFacility(facility);
+    userRepository.save(user);
 
     order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -153,6 +153,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
    */
   @After
   public void cleanUp() {
+    user.setHomeFacility(null);
+    userRepository.save(user);
     orderLineRepository.deleteAll();
     orderRepository.deleteAll();
     requisitionRepository.deleteAll();
@@ -161,10 +163,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -217,17 +215,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Program program = new Program();
     program.setCode(programCode);
     return programRepository.save(program);
-  }
-
-  private User addUser(String username, String password, String firstName, String lastName,
-                       Facility facility) {
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(password);
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setHomeFacility(facility);
-    return userRepository.save(user);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, Program program, User user,
