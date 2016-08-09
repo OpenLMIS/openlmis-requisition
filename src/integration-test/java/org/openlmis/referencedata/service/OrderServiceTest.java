@@ -8,7 +8,6 @@ import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -59,9 +58,6 @@ public class OrderServiceTest {
 
   @Autowired
   private OrderRepository orderRepository;
-
-  @Autowired
-  private OrderLineRepository orderLineRepository;
 
   @Autowired
   private ProgramRepository programRepository;

@@ -1,6 +1,10 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.restassured.response.ExtractableResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,16 +41,8 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
@@ -100,11 +96,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
-  private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
-
-  private static final String RESOURCE_URL = BASE_URL + "/api/orders";
-
   private static final String USERNAME = "testUser";
+
+  private static final String ACCESS_TOKEN = "access_token";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -372,37 +366,38 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return facilityTypeRepository.save(facilityType);
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testWrongOrderStatus() throws JsonProcessingException {
     firstOrder.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(firstOrder);
 
-    HttpHeaders headers = new HttpHeaders();
-    RestTemplate restTemplate = new RestTemplate();
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId().toString())
+        .contentType("application/json")
+        .when()
+        .put("/api/orders/{id}/finalize")
+        .then()
+        .statusCode(400);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
-        RESOURCE_FINALIZE_URL)).build().expand(firstOrder.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
   @Test
   public void testPrintOrderAsCsv() {
-    RestTemplate restTemplate = new RestTemplate();
+    ExtractableResponse printOrderResponse = restAssured.given()
+        .queryParam("format", "csv")
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", secondOrder.getId())
+        .when()
+        .get("/api/orders/{id}/print")
+        .then()
+        .statusCode(200)
+        .extract();
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
-            + secondOrder.getId() + "/print")
-            .queryParam("format", "csv")
-            .queryParam("access_token", getToken());
+    String csvContent = printOrderResponse.body().asString();
 
-    ResponseEntity<?> printOrderResponse = restTemplate.exchange(builder.toUriString(),
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<String>() { });
-
-    String csvContent = printOrderResponse.getBody().toString();
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
     for (OrderLine o : orderRepository.findOne(secondOrder.getId()).getOrderLines()) {
       Assert.assertTrue(csvContent.contains(o.getProduct().getPrimaryName()
@@ -413,30 +408,35 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void testPrintOrderAsPdf() {
-    RestTemplate restTemplate = new RestTemplate();
+    ExtractableResponse response = restAssured.given()
+        .queryParam("format", "pdf")
+        .queryParam(ACCESS_TOKEN,  getToken())
+        .pathParam("id", thirdOrder.getId().toString())
+        .when()
+        .get("/api/orders/{id}/print")
+        .then()
+        .statusCode(200)
+        .extract();
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
-            + thirdOrder.getId() + "/print")
-            .queryParam("format", "pdf")
-            .queryParam("access_token", getToken());
+    assertNotNull(response.body());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    ResponseEntity<?> printOrderResponse = restTemplate.exchange(builder.toUriString(),
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<String>() { });
-
-    String pdfContent = printOrderResponse.getBody().toString();
-    Assert.assertNotNull(pdfContent);
   }
 
   @Test
   public void testConvertToOrder() {
-    RestTemplate restTemplate = new RestTemplate();
-    String url = addTokenToUrl(RESOURCE_URL + "/requisitions");
 
-    restTemplate.exchange(url, HttpMethod.POST,
-            new HttpEntity<Object>(Collections.singletonList(requisition)), String.class);
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN,  getToken())
+        .contentType("application/json")
+        .body(Collections.singletonList(requisition))
+        .when()
+        .post("/api/orders/requisitions")
+        .then()
+        .statusCode(200);
 
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1, orderRepository.count());
     Order order = orderRepository.findAll().iterator().next();
 

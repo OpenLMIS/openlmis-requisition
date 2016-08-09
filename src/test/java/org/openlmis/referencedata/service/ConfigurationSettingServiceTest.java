@@ -22,11 +22,13 @@ public class ConfigurationSettingServiceTest {
   @InjectMocks
   private ConfigurationSettingService service = new ConfigurationSettingService();
 
+  private static final String TEST_STRING = "testString";
+
   @Test
   public void shouldGetSettingValue() throws ConfigurationSettingException {
-    when(repository.findOne("testString")).thenReturn(
-            new ConfigurationSetting("testString", "testValue"));
-    Assert.assertEquals("testValue", service.getStringValue("testString"));
+    when(repository.findOne(TEST_STRING)).thenReturn(
+            new ConfigurationSetting(TEST_STRING, "testValue"));
+    Assert.assertEquals("testValue", service.getStringValue(TEST_STRING));
   }
 
   @Test(expected = ConfigurationSettingException.class)
@@ -42,14 +44,14 @@ public class ConfigurationSettingServiceTest {
   @Test
   public void shouldReturnTrueBooleanValue() {
     when(repository.findOne("testTrue")).thenReturn(
-            new ConfigurationSetting("testString", "true"));
+            new ConfigurationSetting(TEST_STRING, "true"));
     Assert.assertTrue(service.getBoolValue("testTrue"));
   }
 
   @Test
   public void shouldReturnFalseBooleanValue() {
-    when(repository.findOne("testString")).thenReturn(
-            new ConfigurationSetting("testString", "false"));
+    when(repository.findOne(TEST_STRING)).thenReturn(
+            new ConfigurationSetting(TEST_STRING, "false"));
     Assert.assertFalse(service.getBoolValue("testTrue"));
   }
 }
