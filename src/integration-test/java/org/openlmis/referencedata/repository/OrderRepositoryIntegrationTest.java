@@ -117,7 +117,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     facilityTypeRepository.deleteAll();
-    userRepository.deleteAll();
     repository.deleteAll();
   }
 }

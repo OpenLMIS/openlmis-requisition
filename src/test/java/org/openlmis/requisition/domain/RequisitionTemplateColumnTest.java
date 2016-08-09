@@ -16,19 +16,23 @@ public class RequisitionTemplateColumnTest {
 
   @Test
   public void testShouldChangeLabelOnlyIfValid() {
-    boolean result = requisitionTemplateColumn.changeLabel("ValidName");
+    boolean result = requisitionTemplateColumn.setLabel("ValidName");
     Assert.assertTrue(result);
     result =
-        requisitionTemplateColumn.changeLabel("New valid name with numbers 123 and spaces ");
+        requisitionTemplateColumn.setLabel("New valid name with numbers 123 and spaces ");
     Assert.assertTrue(result);
-    result =
-        requisitionTemplateColumn.changeLabel("New not valid name with wrong signs: !@#$%^&*()");
+  }
+
+  @Test
+  public void testShouldNotChangeLabelIfInvalid() {
+    boolean result =
+        requisitionTemplateColumn.setLabel("New not valid name with wrong signs: !@#$%^&*()");
     Assert.assertFalse(result);
-    result = requisitionTemplateColumn.changeLabel("!@#$%^&*()");
+    result = requisitionTemplateColumn.setLabel("!@#$%^&*()");
     Assert.assertFalse(result);
-    result = requisitionTemplateColumn.changeLabel("");
+    result = requisitionTemplateColumn.setLabel("");
     Assert.assertFalse(result);
-    result = requisitionTemplateColumn.changeLabel(" ");
+    result = requisitionTemplateColumn.setLabel(" ");
     Assert.assertFalse(result);
   }
 }

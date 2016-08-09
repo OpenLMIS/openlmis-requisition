@@ -743,6 +743,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
+    Assert.assertEquals(2, userRepository.count());
+    User user = userRepository.findAll().iterator().next();
+    User user2 = userRepository.findAll().iterator().next();
+
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(insertComment)
             .build().expand(requisition.getId().toString()).encode();
     String uri = uriComponents.toUriString();
