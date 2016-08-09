@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -122,7 +123,8 @@ public class RequisitionTemplate extends BaseEntity {
    * @param key Key to column which needs a new name.
    * @param name New name for label.
    */
-  public void changeColumnLabel(String key, String name) {
+  public void changeColumnLabel(String key, String name)
+      throws RequisitionTemplateColumnException {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setLabel(name);
     columnsMap.put(key, column);
