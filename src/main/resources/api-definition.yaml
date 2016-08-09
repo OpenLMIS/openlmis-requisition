@@ -915,6 +915,24 @@ resourceTypes:
                          X-Content-Type-Options:
                          X-XSS-Protection:
 
+/proofOfDeliveries:
+    displayName: ProofOfDeliveries
+    /{id}/print:
+        get:
+            is: [ secured ]
+            description: Print proof of delivery.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/pdf:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
 /requisitions:
     displayName: Requisition
     /submitted:
