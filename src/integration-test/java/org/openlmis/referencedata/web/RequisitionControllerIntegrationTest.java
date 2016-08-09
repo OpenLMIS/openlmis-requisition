@@ -3,6 +3,7 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.equalTo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,6 +92,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
   private static final String USERNAME = "testUser";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private ProductRepository productRepository;
@@ -678,25 +680,40 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void testDelete() {
-    UUID id = requisition.getId();
-    RestTemplate restTemplate = new RestTemplate();
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
-    restTemplate.delete(deleteUrl, id);
 
-    boolean exists = requisitionRepository.exists(id);
+    restAssured.given()
+          .contentType("application/json")
+          .pathParam("id", requisition.getId())
+          .when()
+          .delete(deleteUrl)
+          .then()
+          .statusCode(204);
+
+    boolean exists = requisitionRepository.exists(requisition.getId());
     Assert.assertFalse(exists);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testDeleteWithBadStatus() {
-    UUID id = requisition.getId();
-    RestTemplate restTemplate = new RestTemplate();
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
-    restTemplate.delete(deleteUrl, id);
+
+    restAssured.given()
+          .contentType("application/json")
+          .pathParam("id", requisition.getId())
+          .when()
+          .delete(deleteUrl)
+          .then()
+          .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
   }
 
   private void testSubmit() throws JsonProcessingException {
@@ -792,21 +809,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private void approveRequisitionTest(Requisition requisition) {
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(approveRequisition)
-            .build().expand(requisition.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<Requisition> result =
-            restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
+    restAssured.given()
+          .contentType("application/json")
+          .pathParam("id", requisition.getId())
+          .when()
+          .put(approveRequisition)
+          .then()
+          .statusCode(200);
 
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-    Requisition approvedRequisition = result.getBody();
-    Assert.assertNotNull(approvedRequisition.getId());
-    Assert.assertEquals(requisition.getId(), approvedRequisition.getId());
-    Assert.assertEquals(RequisitionStatus.APPROVED, approvedRequisition.getStatus());
+    Assert.assertNotNull(requisition.getId());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -853,43 +866,48 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    RestTemplate restTemplate = new RestTemplate();
+    Requisition[] response = restAssured.given()
+          .contentType("application/json")
+          .when()
+          .get(submittedUrl).as(Requisition[].class);
 
-    ResponseEntity<Requisition[]> result = restTemplate.getForEntity(
-            submittedUrl, Requisition[].class);
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-    Iterable<Requisition> requisitions = Arrays.asList(result.getBody());
-    Assert.assertTrue(requisitions.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void testAuthorize() throws JsonProcessingException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Hibernate4Module());
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
-    String json = mapper.writeValueAsString(requisition);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(authorizationUrl)
-            .build().expand(requisition.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+    restAssured.given()
+          .contentType("application/json")
+          .body(requisition)
+          .pathParam("id", requisition.getId())
+          .when()
+          .put(authorizationUrl)
+          .then()
+          .statusCode(200);
 
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<Requisition> result =
-            restTemplate.exchange(uri, HttpMethod.PUT, entity, Requisition.class);
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testSkippedAuthorize() throws JsonProcessingException {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
-    testAuthorize();
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+          .contentType("application/json")
+          .body(requisition)
+          .pathParam("id", requisition.getId())
+          .when()
+          .put(authorizationUrl)
+          .then()
+          .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
