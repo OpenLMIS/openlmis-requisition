@@ -71,8 +71,6 @@ import static org.junit.Assert.fail;
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-      + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
   private final String insertComment = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/comments");
   private final String approveRequisition =

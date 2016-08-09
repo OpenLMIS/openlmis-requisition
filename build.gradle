@@ -178,7 +178,7 @@ tasks.withType(Pmd){
 }
 
 apply from: "documentation.gradle"
-test.dependsOn(copyRamlToBuild)
+integrationTest.dependsOn(copyRaml)
 build.dependsOn ramlToSwagger
 build.dependsOn ramlToHtml
 build.dependsOn copyRamlHtmlToBuild

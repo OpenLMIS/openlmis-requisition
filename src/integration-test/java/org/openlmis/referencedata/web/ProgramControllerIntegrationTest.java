@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,18 +8,12 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
-public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
+import static org.junit.Assert.assertThat;
 
-  private static final String UPDATE_URL = BASE_URL + "/api/programs/update";
+public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private ProgramRepository programRepository;
@@ -35,30 +30,47 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void testUpdate() {
     ProgramDto programDto = new ProgramDto(program.getId(), "newCode", "newName");
-    ResponseEntity<Program> response = updateProgram(programDto);
 
-    Program program = response.getBody();
+    Program response = restAssured.given()
+        .queryParam("access_token", getToken())
+        .contentType("application/json")
+        .body(programDto)
+        .when()
+        .put("/api/programs/update")
+        .then()
+        .statusCode(200)
+        .extract().as(Program.class);
 
-    Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
-    Assert.assertEquals(program.getCode(), "newCode");
-    Assert.assertEquals(program.getName(), "newName");
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(response.getCode(), "newCode");
+    Assert.assertEquals(response.getName(), "newName");
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testUpdateIfProgramWithGivenIdNotExist() {
     ProgramDto programDto = new ProgramDto(UUID.randomUUID(), "new code", "new name");
-    updateProgram(programDto);
+    restAssured.given()
+        .queryParam("access_token", getToken())
+        .contentType("application/json")
+        .body(programDto)
+        .when()
+        .put("/api/programs/update")
+        .then()
+        .statusCode(400);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testUpdateIfProgramIdIsNull() {
     ProgramDto programDto = new ProgramDto(null, "new code", "new name");
-    updateProgram(programDto);
-  }
-
-  private ResponseEntity<Program> updateProgram(ProgramDto programDto) {
-    RestTemplate restTemplate = new RestTemplate();
-    return restTemplate.exchange(addTokenToUrl(UPDATE_URL), HttpMethod.PUT,
-        new HttpEntity<>(programDto), Program.class);
+    restAssured.given()
+        .queryParam("access_token", getToken())
+        .contentType("application/json")
+        .body(programDto)
+        .when()
+        .put("/api/programs/update")
+        .then()
+        .statusCode(400);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 }

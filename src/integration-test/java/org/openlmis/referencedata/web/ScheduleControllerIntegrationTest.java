@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -44,16 +44,15 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void testGetTotalDifference() {
-    String response = restAssured.given()
+    restAssured.given()
         .pathParam("id", schedule.getId())
         .queryParam("access_token", getToken())
         .when()
         .get("/api/schedules/{id}/difference")
         .then()
         .statusCode(200)
-        .extract().asString();
+        .body(Matchers.containsString("Period lasts 1 months and 0 days"));
 
-    assertTrue(response.contains("Period lasts 1 months and 0 days"));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
