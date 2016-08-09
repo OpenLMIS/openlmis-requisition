@@ -28,8 +28,7 @@ import java.util.Map;
 public abstract class BaseWebIntegrationTest {
   static final String BASE_URL = System.getenv("BASE_URL");
 
-  static final String RAML_ASSERT_MESSAGE =
-      "HTTP request/response should match RAML definition.";
+  static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
   RamlDefinition ramlDefinition;
   RestAssuredClient restAssured;

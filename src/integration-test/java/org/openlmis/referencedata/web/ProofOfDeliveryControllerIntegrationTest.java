@@ -97,14 +97,10 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
 
-  private ProofOfDelivery proofOfDelivery =
-      new ProofOfDelivery();
-  private ProofOfDeliveryLine proofOfDeliveryLine1 =
-      new ProofOfDeliveryLine();
-  private ProofOfDeliveryLine proofOfDeliveryLine2 =
-      new ProofOfDeliveryLine();
-  private List<ProofOfDeliveryLine> proofOfDeliveryLineList =
-      new ArrayList<ProofOfDeliveryLine>();
+  private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+  private ProofOfDeliveryLine proofOfDeliveryLine1 = new ProofOfDeliveryLine();
+  private ProofOfDeliveryLine proofOfDeliveryLine2 = new ProofOfDeliveryLine();
+  private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<>();
 
   @Before
   public void setUp() {
