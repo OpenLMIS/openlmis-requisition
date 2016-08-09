@@ -1353,13 +1353,33 @@ resourceTypes:
             is: [ secured ]
             description: Returns a list of filtered orders supplied by a home facility.
             queryParameters:
-                programId:
-                    displayName: programId
+                program:
+                    displayName: program
                     type: string
                     required: false
                     repeat: false
-                requestingFacilityId:
-                    displayName: requestingFacilityId
+                requestingFacility:
+                    displayName: requestingFacility
+                    type: string
+                    required: false
+                    repeat: false
+                period:
+                    displayName: period
+                    type: string
+                    required: false
+                    repeat: false
+                schedule:
+                    displayName: schedule
+                    type: string
+                    required: false
+                    repeat: false
+                startDate:
+                    displayName: startDate
+                    type: string
+                    required: false
+                    repeat: false
+                endDate:
+                    displayName: endDate
                     type: string
                     required: false
                     repeat: false

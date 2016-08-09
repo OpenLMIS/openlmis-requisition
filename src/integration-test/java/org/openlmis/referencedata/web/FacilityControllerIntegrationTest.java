@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,16 +36,14 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Arrays;
 import java.util.Iterator;
+
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -90,8 +89,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private UserService userService;
-
-  private static final String RESOURCE_URL = BASE_URL + "api/facilities";
 
   private static final String USERNAME = "testUser";
 
@@ -173,19 +170,20 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void testOrderList() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
+    Order[] response = restAssured.given()
+        .queryParam("access_token", getToken())
+        .pathParam("id", user.getHomeFacility().getId())
+        .queryParam("program", program.getId())
+        .queryParam("period", period.getId())
+        .queryParam("schedule", schedule.getId())
+        .when()
+        .get("/api/facilities/{id}/orders")
+        .then()
+        .statusCode(200)
+        .extract().as(Order[].class);
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL
-            + "/" + user.getHomeFacility().getId() + "/orders")
-            .queryParam("program", program.getId())
-            .queryParam("access_token",getToken());
-
-    ResponseEntity<Iterable<Order>> orderListResponse = restTemplate.exchange(builder.toUriString(),
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<Iterable<Order>>() { });
-
-    Iterable<Order> orderList = orderListResponse.getBody();
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Iterable<Order> orderList = Arrays.asList(response);
     Iterator<Order> orderIterator = orderList.iterator();
     Assert.assertTrue(orderIterator.hasNext());
     Order testOrder = orderIterator.next();
