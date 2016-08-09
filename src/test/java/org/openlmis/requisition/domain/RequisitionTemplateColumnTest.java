@@ -30,7 +30,7 @@ public class RequisitionTemplateColumnTest {
   }
 
   @Test(expected = RequisitionTemplateColumnException.class)
-  public void testShouldNotChangeLabelIfLabelNameHasWrongSigns()
+  public void testShouldNotChangeLabelIfLabelNameHasSpecialCharacters()
       throws RequisitionTemplateColumnException {
     requisitionTemplateColumn.setLabel(")(*&^%$#@!");
   }
