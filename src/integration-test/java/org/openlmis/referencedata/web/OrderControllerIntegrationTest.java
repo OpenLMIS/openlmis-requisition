@@ -21,7 +21,6 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -109,13 +108,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
-  @Autowired
-  private UserService userService;
-
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
   private static final String RESOURCE_URL = BASE_URL + "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String USERNAME = "testUser";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";

@@ -12,7 +12,6 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -88,12 +87,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
-  @Autowired
-  private UserService userService;
-
   private static final String RESOURCE_URL = BASE_URL + "api/facilities";
-
-  private static final String USERNAME = "testUser";
 
   private Order order = new Order();
   private User user = new User();
@@ -120,15 +114,15 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Facility facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, true, false);
 
-    Facility facility2 = addFacility("facility2", "F2", null, facilityType,
-            geographicZone, true, false);
-
-    Requisition requisition1 = addRequisition(program, facility, period,
-            RequisitionStatus.RELEASED);
-
     user = userRepository.findOne(INITIAL_USER_ID);
     user.setHomeFacility(facility);
     userRepository.save(user);
+
+    Facility facility2 = addFacility("facility2", "F2", null, facilityType,
+        geographicZone, true, false);
+
+    Requisition requisition1 = addRequisition(program, facility, period,
+        RequisitionStatus.RELEASED);
 
     order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));

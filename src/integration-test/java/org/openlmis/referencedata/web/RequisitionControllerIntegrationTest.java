@@ -89,7 +89,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
 
   private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
-  private static final String USERNAME = "testUser";
 
   @Autowired
   private ProductRepository productRepository;
