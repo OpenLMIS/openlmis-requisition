@@ -39,12 +39,11 @@ public class RequisitionTemplateColumn {
    * @throws RequisitionTemplateColumnException Exception thrown when
    *      given label name is not alphanumeric.
    */
-  public boolean setLabel(String labelName) throws RequisitionTemplateColumnException {
+  public void setLabel(String labelName) throws RequisitionTemplateColumnException {
     if (!validateString(labelName)) {
       throw new RequisitionTemplateColumnException("Only alphanumeric label is accepted.");
     }
     this.label = labelName;
-    return true;
   }
 
   /**
