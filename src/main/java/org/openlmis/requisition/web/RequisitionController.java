@@ -170,13 +170,14 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id) {
-    Requisition rejectedRequisition = null;
+
     try {
-      rejectedRequisition = requisitionService.reject(id);
+      requisitionService.reject(id);
     } catch (RequisitionException ex) {
       LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+    Requisition rejectedRequisition = requisitionRepository.findOne(id);
     return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
   }
 

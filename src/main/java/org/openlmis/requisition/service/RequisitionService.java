@@ -161,7 +161,7 @@ public class RequisitionService {
    * @param requisitionId UUID of Requisition to be rejected.
    * @throws RequisitionException Exception thrown when it is not possible to reject a requisition.
    */
-  public Requisition reject(UUID requisitionId) throws RequisitionException {
+  public void reject(UUID requisitionId) throws RequisitionException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -172,7 +172,7 @@ public class RequisitionService {
     } else {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
-      return requisitionRepository.save(requisition);
+      requisitionRepository.save(requisition);
     }
   }
 
