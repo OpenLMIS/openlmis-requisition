@@ -1,20 +1,19 @@
-package org.openlmis.fulfillment.repository;
+package org.openlmis.reporting.repository;
 
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLine;
+import org.openlmis.reporting.model.TemplateParameter;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;
 
-public interface ProofOfDeliveryLineRepository extends
-    Repository<ProofOfDeliveryLine, UUID> {
+public interface TemplateParameterRepository extends Repository<TemplateParameter, UUID> {
 
   @RestResource(exported = false)
   void deleteAll();
 
-  ProofOfDeliveryLine save(ProofOfDeliveryLine entity);
+  TemplateParameter save(TemplateParameter entity);
 
-  Iterable<ProofOfDeliveryLine> save(Iterable<ProofOfDeliveryLine> entities);
+  Iterable<TemplateParameter> save(Iterable<TemplateParameter> entities);
 
   /**
    * Retrieves an entity by its id.
@@ -24,5 +23,5 @@ public interface ProofOfDeliveryLineRepository extends
    * @throws IllegalArgumentException if {@code id} is {@literal null}
    */
   @RestResource(exported = false)
-  ProofOfDeliveryLine findOne(UUID id);
+  TemplateParameter findOne(UUID id);
 }

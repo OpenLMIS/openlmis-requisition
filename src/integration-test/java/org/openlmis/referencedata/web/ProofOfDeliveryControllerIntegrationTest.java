@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,13 +34,21 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.reporting.exception.ReportingException;
+import org.openlmis.reporting.model.Template;
+import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,7 +61,15 @@ import java.util.Set;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/proofOfDeliveries";
+  private static final String RESOURCE_URL = System.getenv("BASE_URL")
+      + "/api/proofOfDeliveries";
+
+  private static final String PRINT_POD = "Print POD";
+
+  private static final String CONSISTENCY_REPORT = "Consistency Report";
+
+  @Autowired
+  private TemplateService templateService;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -108,6 +125,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private List<ProofOfDeliveryLine> proofOfDeliveryLineList =
       new ArrayList<ProofOfDeliveryLine>();
 
+  /**
+   * Prepare the test environment.
+   */
   @Before
   public void setUp() {
     cleanUp();
@@ -335,10 +355,18 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testPrintProofOfDeliveryToPdf() {
+  public void testPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
     RestTemplate restTemplate = new RestTemplate();
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
-        RESOURCE_URL + "/" + proofOfDelivery.getId() + "/print"));
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL + "/"
+        + proofOfDelivery.getId() + "/print").queryParam("access_token", getToken());
+
+    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+    FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
+    MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",
+        podReport.getFilename(), "multipart/form-data", IOUtils.toByteArray(fileInputStream));
+
+    Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, "");
+    templateService.validateFileAndInsertTemplate(template, templateOfProofOfDelivery);
 
     Object printProofOfDeliver = restTemplate.getForObject(
         builder.toUriString(), String.class);
