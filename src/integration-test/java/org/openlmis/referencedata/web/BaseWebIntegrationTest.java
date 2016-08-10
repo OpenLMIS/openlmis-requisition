@@ -1,6 +1,11 @@
 package org.openlmis.referencedata.web;
 
+import com.jayway.restassured.RestAssured;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -22,7 +27,20 @@ public abstract class BaseWebIntegrationTest {
   static final String BASE_URL = System.getenv("BASE_URL");
   static final UUID INITIAL_USER_ID = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
+  static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
+
+  static final RamlDefinition ramlDefinition =
+      RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+
+  RestAssuredClient restAssured;
+
   private String token = null;
+
+  @Before
+  public void loadRaml() {
+    RestAssured.baseURI = BASE_URL;
+    restAssured = ramlDefinition.createRestAssured();
+  }
 
   private String fetchToken() {
     RestTemplate restTemplate = new RestTemplate();

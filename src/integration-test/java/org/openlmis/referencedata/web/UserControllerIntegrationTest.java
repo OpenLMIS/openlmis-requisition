@@ -2,11 +2,7 @@ package org.openlmis.referencedata.web;
 
 import static org.junit.Assert.assertThat;
 
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,14 +48,10 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String HOME_FACILITY = "homeFacility";
   private static final String ACTIVE = "active";
   private static final String VERIFIED = "verified";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
 
   private List<User> users;
 
   private Integer currentInstanceNumber;
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
 
   @Before
   public void setUp() {
@@ -68,9 +60,6 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     for ( int userCount = 0; userCount < 5; userCount++ ) {
       users.add(generateUser());
     }
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
   }
 
   @After
@@ -93,10 +82,13 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
             .queryParam(VERIFIED, users.get(0).getVerified())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
-            .get(SEARCH_URL).as(User[].class);
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(User[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1, response.length);
     for ( User user : response ) {
       Assert.assertEquals(
               user.getUsername(),

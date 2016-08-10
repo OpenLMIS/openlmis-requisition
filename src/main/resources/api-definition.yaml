@@ -679,6 +679,24 @@ resourceTypes:
 
 /periods:
     displayName: Period
+    post:
+        is: [ secured ]
+        description: Creates given period if possible.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
     /{id}/difference:
         uriParameters:
             id:
@@ -816,6 +834,24 @@ resourceTypes:
                          X-XSS-Protection:
                        body:
                          application/json:
+
+/proofOfDeliveries:
+    displayName: ProofOfDeliveries
+    /{id}/print:
+        get:
+            is: [ secured ]
+            description: Print proof of delivery.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/pdf:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /requisitions:
     displayName: Requisition
@@ -1347,13 +1383,33 @@ resourceTypes:
             is: [ secured ]
             description: Returns a list of filtered orders supplied by a home facility.
             queryParameters:
-                programId:
-                    displayName: programId
+                program:
+                    displayName: program
                     type: string
                     required: false
                     repeat: false
-                requestingFacilityId:
-                    displayName: requestingFacilityId
+                requestingFacility:
+                    displayName: requestingFacility
+                    type: string
+                    required: false
+                    repeat: false
+                period:
+                    displayName: period
+                    type: string
+                    required: false
+                    repeat: false
+                schedule:
+                    displayName: schedule
+                    type: string
+                    required: false
+                    repeat: false
+                startDate:
+                    displayName: startDate
+                    type: string
+                    required: false
+                    repeat: false
+                endDate:
+                    displayName: endDate
                     type: string
                     required: false
                     repeat: false

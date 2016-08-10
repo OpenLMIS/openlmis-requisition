@@ -185,6 +185,8 @@ test {
     dependsOn copyRamlToBuild
 }
 
+integrationTest.dependsOn copyRaml
+
 check {
     dependsOn checkApiIsRaml
     dependsOn integrationTest
@@ -196,4 +198,3 @@ build {
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
 }
-

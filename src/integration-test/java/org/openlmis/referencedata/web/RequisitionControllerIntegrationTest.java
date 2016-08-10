@@ -3,11 +3,7 @@ package org.openlmis.referencedata.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.apache.commons.collections.IteratorUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -73,8 +69,6 @@ import static org.junit.Assert.fail;
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
   private final String insertComment = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/comments");
   private final String approveRequisition =
@@ -137,9 +131,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
-
   private Requisition requisition = new Requisition();
   private Period period = new Period();
   private Product product = new Product();
@@ -151,10 +142,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Before
   public void setUp() throws JsonProcessingException {
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
-
     cleanUp();
 
     ProductCategory productCategory1 = new ProductCategory();
