@@ -20,6 +20,8 @@ public class RequisitionTemplateService {
 
   /**
    * Method returns all requisition templates with matched parameters.
+   * @param program program of searched requisition templates.
+   * @return list of requisition templates with matched parameters.
    */
   public List<RequisitionTemplate> searchRequisitionTemplates(Program program) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();

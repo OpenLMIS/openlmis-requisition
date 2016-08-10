@@ -22,7 +22,7 @@ public class ProductCategoryService {
    * @param code code of productCategory.
    * @return list of all ProductCategories matching all of provided parameters.
    */
-  public List<ProductCategory> searchProductCategories( String code ) {
+  public List<ProductCategory> searchProductCategories(String code) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<ProductCategory> query = builder.createQuery(ProductCategory.class);
     Root<ProductCategory> root = query.from(ProductCategory.class);

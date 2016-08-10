@@ -49,7 +49,8 @@ public class PeriodController {
    * Finds periods matching all of provided parameters.
    * @param processingSchedule processingSchedule of searched Periods.
    * @param toDate to which day shall Period start.
-   * @return ResponseEntity with list of all Periods matching provided parameters and OK httpStatus.
+   * @return ResponseEntity with list of all Periods matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/periods/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchPeriods(

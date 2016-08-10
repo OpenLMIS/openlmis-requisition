@@ -47,6 +47,11 @@ public class OrderController {
 
   /**
    * Finds Orders matching all of provided parameters.
+   * @param supplyingFacility supplyingFacility of searched Orders.
+   * @param requestingFacility requestingFacility of searched Orders.
+   * @param program program of searched Orders.
+   * @return ResponseEntity with list of all Orders matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   public ResponseEntity<Iterable<Order>> searchOrders(
@@ -54,7 +59,7 @@ public class OrderController {
           @RequestParam(value = "requestingFacility", required = false) Facility requestingFacility,
           @RequestParam(value = "program", required = false) Program program) {
 
-    List<Order> result = orderService.searchOrders(supplyingFacility,requestingFacility,program);
+    List<Order> result = orderService.searchOrders(supplyingFacility, requestingFacility, program);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }

@@ -29,7 +29,7 @@ public class PeriodValidator implements Validator {
 
     Period period = (Period) obj;
     Iterable<Period> iterable = periodService
-            .searchPeriods(period.getProcessingSchedule(),null);
+            .searchPeriods(period.getProcessingSchedule(), null);
 
     LocalDate startDate = period.getStartDate();
     LocalDate endDate = period.getEndDate();

@@ -567,7 +567,7 @@ resourceTypes:
                 queryParameters:
                     supplyingFacility:
                         displayName: supplyingFacility
-                        description: SupplyingFacility ID
+                        description: supplyingFacility ID
                         type: string
                         required: true
                         repeat: false
@@ -702,7 +702,7 @@ resourceTypes:
     /search:
         get:
             is: [ secured ]
-            description: Find Periods with matched parametrs.
+            description: Find periods with matched parametrs.
             queryParameters:
                 processingSchedule:
                         displayName: processingSchedule
@@ -749,7 +749,7 @@ resourceTypes:
     /search:
         get:
             is: [ secured ]
-            description: Find ProductCategories with matched Code.
+            description: Find product categories with matched code.
             queryParameters:
                 code:
                     displayName: code
@@ -774,11 +774,11 @@ resourceTypes:
     /search:
             get:
                 is: [ secured ]
-                description: Find ProgramProducts with matched Parameters.
+                description: Find program products with matched parameters.
                 queryParameters:
                     program:
                         displayName: program
-                        description: Program ID
+                        description: program ID
                         type: string
                         required: true
                         repeat: false

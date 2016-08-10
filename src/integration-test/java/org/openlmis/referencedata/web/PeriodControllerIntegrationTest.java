@@ -181,9 +181,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
       Assert.assertEquals(
               period.getProcessingSchedule().getId(),
               firstPeriod.getProcessingSchedule().getId());
-      Assert.assertEquals(
-              true,
-              period.getStartDate().isBefore(firstPeriod.getStartDate()));
+      Assert.assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
     }
   }
 }

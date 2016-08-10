@@ -251,7 +251,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(null,null,null,null,null,supNode, null);
+      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
