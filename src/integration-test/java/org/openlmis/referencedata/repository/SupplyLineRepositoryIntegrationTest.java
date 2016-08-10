@@ -1,6 +1,8 @@
 package org.openlmis.referencedata.repository;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
@@ -10,10 +12,10 @@ import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.service.SupplyLineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,10 +23,10 @@ public class SupplyLineRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<SupplyLine> {
 
   @Autowired
-  private ProgramRepository programRepository;
+  private SupplyLineRepository repository;
 
   @Autowired
-  private FacilityRepository facilityRepository;
+  private SupervisoryNodeRepository supervisoryNodeRepository;
 
   @Autowired
   private GeographicLevelRepository geographicLevelRepository;
@@ -36,70 +38,116 @@ public class SupplyLineRepositoryIntegrationTest
   private FacilityTypeRepository facilityTypeRepository;
 
   @Autowired
-  private SupervisoryNodeRepository supervisoryNodeRepository;
+  private FacilityRepository facilityRepository;
 
   @Autowired
-  private SupplyLineRepository repository;
+  private ProgramRepository programRepository;
 
-  @Autowired
-  private SupplyLineService supplyLineService;
+  private List<SupplyLine> supplyLines;
 
-  private Program program = new Program();
-  private SupervisoryNode supervisoryNode = new SupervisoryNode();
-
-  @Override
   CrudRepository<SupplyLine, UUID> getRepository() {
     return repository;
   }
 
-  @Override
   SupplyLine generateInstance() {
-    program.setCode("programCode");
-    program.setPeriodsSkippable(true);
-    programRepository.save(program);
-
-    FacilityType facilityType = new FacilityType();
-    facilityType.setCode("facilityTypeCode");
-    facilityTypeRepository.save(facilityType);
-
-    GeographicLevel level = new GeographicLevel();
-    level.setCode("levelCode");
-    level.setLevelNumber(1);
-    geographicLevelRepository.save(level);
-
-    GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("zoneCode");
-    geographicZone.setLevel(level);
-    geographicZoneRepository.save(geographicZone);
-
-    Facility facility = new Facility();
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
-    facility.setCode("facilityCode");
-    facility.setActive(true);
-    facility.setEnabled(true);
-    facilityRepository.save(facility);
-
-    supervisoryNode.setCode("nodeCode");
-    supervisoryNode.setName("name");
-    supervisoryNode.setFacility(facility);
-    supervisoryNodeRepository.save(supervisoryNode);
-
     SupplyLine supplyLine = new SupplyLine();
-    supplyLine.setDescription("supplyLineDescription");
-    supplyLine.setProgram(program);
-    supplyLine.setSupervisoryNode(supervisoryNode);
-    supplyLine.setSupplyingFacility(facility);
-
+    supplyLine.setProgram(generateProgram());
+    supplyLine.setSupervisoryNode(generateSupervisoryNode());
+    supplyLine.setSupplyingFacility(generateFacility());
     return supplyLine;
   }
 
-  @Test
-  public void findByProgramAndSupervisoryNode() {
-    repository.save(generateInstance());
+  @Before
+  public void setUp() {
+    supplyLines = new ArrayList<>();
+    for (int stockNumber = 0; stockNumber < 5; stockNumber++) {
+      supplyLines.add(repository.save(generateInstance()));
+    }
+  }
 
-    List<SupplyLine> supplyLines = supplyLineService.searchSupplyLines(program, supervisoryNode);
-    SupplyLine supplyLine = supplyLines.get(0);
-    Assert.assertNotNull(supplyLine);
+  @After
+  public void cleanup() {
+    repository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
+    facilityRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    programRepository.deleteAll();
+  }
+
+  @Test
+  public void testSearchSupplyLines() {
+    List<SupplyLine> receivedSupplyLines = repository.searchSupplyLines(
+            supplyLines.get(0).getProgram(),
+            supplyLines.get(0).getSupervisoryNode());
+    Assert.assertEquals(1, receivedSupplyLines.size());
+    for (SupplyLine receivedSupplyLine : receivedSupplyLines) {
+      Assert.assertEquals(
+              supplyLines.get(0).getProgram().getId(),
+              receivedSupplyLine.getProgram().getId());
+      Assert.assertEquals(
+              supplyLines.get(0).getSupervisoryNode().getId(),
+              receivedSupplyLine.getSupervisoryNode().getId());
+      Assert.assertEquals(
+              supplyLines.get(0).getId(),
+              receivedSupplyLine.getId());
+    }
+  }
+
+  private SupervisoryNode generateSupervisoryNode() {
+    SupervisoryNode supervisoryNode = new SupervisoryNode();
+    supervisoryNode.setCode("code" + this.getNextInstanceNumber());
+    supervisoryNode.setFacility(generateFacility());
+    supervisoryNodeRepository.save(supervisoryNode);
+    return supervisoryNode;
+  }
+
+  private Program generateProgram() {
+    Program program = new Program();
+    program.setCode("code" + this.getNextInstanceNumber());
+    program.setPeriodsSkippable(false);
+    programRepository.save(program);
+    return program;
+  }
+
+  private Facility generateFacility() {
+    Integer instanceNumber = + this.getNextInstanceNumber();
+    GeographicLevel geographicLevel = generateGeographicLevel();
+    GeographicZone geographicZone = generateGeographicZone(geographicLevel);
+    FacilityType facilityType = generateFacilityType();
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("FacilityCode" + instanceNumber);
+    facility.setName("FacilityName" + instanceNumber);
+    facility.setDescription("FacilityDescription" + instanceNumber);
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
+    return facility;
+  }
+
+  private GeographicLevel generateGeographicLevel() {
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GeographicLevel" + this.getNextInstanceNumber());
+    geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
+    return geographicLevel;
+  }
+
+  private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("GeographicZone" + this.getNextInstanceNumber());
+    geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
+    return geographicZone;
+  }
+
+  private FacilityType generateFacilityType() {
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("FacilityType" + this.getNextInstanceNumber());
+    facilityTypeRepository.save(facilityType);
+    return facilityType;
   }
 }

@@ -9,6 +9,8 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period> {
@@ -84,5 +86,31 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     periodFromRepo.setEndDate(LocalDate.of(2016, 3, 2));
     periodRepository.save(periodFromRepo);
     Assert.assertEquals(description, periodFromRepo.getDescription());
+  }
+
+  @Test
+  public void testSearchPeriods() {
+    List<Period> periods = new ArrayList<>();
+    for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
+      periods.add(generatePeriodInstance(
+              "name" + periodsCount,
+              testSchedule,
+              "description" + periodsCount,
+              LocalDate.now().minusDays(periodsCount),
+              LocalDate.now().plusDays(periodsCount)));
+      periodRepository.save(periods.get(periodsCount));
+    }
+    List<Period> receivedPeriods =
+            periodRepository.searchPeriods(
+                    testSchedule,
+                    periods.get(0).getStartDate());
+    Assert.assertEquals(4, receivedPeriods.size());
+    for (Period period : receivedPeriods) {
+      Assert.assertEquals(
+              testSchedule.getId(),
+              period.getProcessingSchedule().getId());
+      Assert.assertTrue(
+              periods.get(0).getStartDate().isAfter(period.getStartDate()));
+    }
   }
 }

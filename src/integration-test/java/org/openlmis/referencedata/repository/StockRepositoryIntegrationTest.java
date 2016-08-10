@@ -1,13 +1,18 @@
 package org.openlmis.referencedata.repository;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Stock> {
 
@@ -18,43 +23,28 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   private ProductRepository productRepository;
 
   @Autowired
-  ProductCategoryRepository productCategoryRepository;
+  private ProductCategoryRepository productCategoryRepository;
 
-  private Product product = new Product();
+  private List<Stock> stocks;
 
   StockRepository getRepository() {
     return this.stockRepository;
   }
 
-  @Before
-  public void setUp() {
-    productCategoryRepository.deleteAll();
-    ProductCategory productCategory1 = new ProductCategory();
-    productCategory1.setCode("PC1");
-    productCategory1.setName("PC1 name");
-    productCategory1.setDisplayOrder(1);
-    productCategoryRepository.save(productCategory1);
-
-    productRepository.deleteAll();
-    product.setProductCategory(productCategory1);
-    product.setPrimaryName("productName");
-    product.setCode("productCode");
-    product.setDispensingUnit("unit");
-    product.setDosesPerDispensingUnit(10);
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setRoundToZero(false);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
-    productRepository.save(product);
-  }
-
   Stock generateInstance() {
+    ProductCategory productCategory = generateProductCategory();
+    Product product = generateProduct(productCategory);
     Stock stock = new Stock();
     stock.setProduct(product);
-    stock.setStoredQuantity(1234L);
     return stock;
+  }
+
+  @Before
+  public void setUp() {
+    stocks = new ArrayList<>();
+    for (int stockNumber = 0; stockNumber < 5; stockNumber++) {
+      stocks.add(stockRepository.save(generateInstance()));
+    }
   }
 
   @After
@@ -63,4 +53,44 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     productRepository.deleteAll();
   }
 
+  @Test
+  public void testSearchStocks() {
+    List<Stock> receivedStocks = stockRepository.searchStocks(
+            stocks.get(0).getProduct());
+
+    Assert.assertEquals(1,receivedStocks.size());
+    for (Stock programProduct : receivedStocks) {
+      Assert.assertEquals(
+              programProduct.getProduct().getId(),
+              stocks.get(0).getProduct().getId());
+    }
+  }
+
+  private ProductCategory generateProductCategory() {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    ProductCategory productCategory = new ProductCategory();
+    productCategory.setCode("code" + instanceNumber);
+    productCategory.setName("vaccine" + instanceNumber);
+    productCategory.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory);
+    return productCategory;
+  }
+
+  private Product generateProduct(ProductCategory productCategory) {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    Product product = new Product();
+    product.setCode("code" + instanceNumber);
+    product.setPrimaryName("product" + instanceNumber);
+    product.setDispensingUnit("unit" + instanceNumber);
+    product.setDosesPerDispensingUnit(10);
+    product.setPackSize(1);
+    product.setPackRoundingThreshold(0);
+    product.setRoundToZero(false);
+    product.setActive(true);
+    product.setFullSupply(true);
+    product.setTracer(false);
+    product.setProductCategory(productCategory);
+    productRepository.save(product);
+    return product;
+  }
 }

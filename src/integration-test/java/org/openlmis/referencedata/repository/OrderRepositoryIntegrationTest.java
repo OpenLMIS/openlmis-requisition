@@ -3,6 +3,7 @@ package org.openlmis.referencedata.repository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -16,6 +17,8 @@ import org.openlmis.referencedata.domain.Program;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
 
@@ -40,17 +43,25 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
+  private List<Order> orders;
+
   OrderRepository getRepository() {
     return this.repository;
   }
 
-  private String[] orderRepository = {
-      "OrderRepositoryIntegrationTest1",
-  };
-
-  private Facility facility = new Facility();
-  private Program program = new Program();
-  private User user;
+  Order generateInstance() {
+    int instanceNumber = this.getNextInstanceNumber();
+    Order order = new Order();
+    order.setOrderCode("O" + instanceNumber);
+    order.setQuotedCost(new BigDecimal("1.29"));
+    order.setStatus(OrderStatus.PICKING);
+    order.setProgram(generateProgram());
+    order.setCreatedBy(generateUser());
+    order.setRequestingFacility(generateFacility());
+    order.setReceivingFacility(generateFacility());
+    order.setSupplyingFacility(generateFacility());
+    return order;
+  }
 
   @Before
   public void setUp() {
@@ -60,54 +71,10 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     geographicLevelRepository.deleteAll();
     facilityTypeRepository.deleteAll();
 
-    for (String order : orderRepository) {
-      facility = new Facility();
-
-      FacilityType facilityType = new FacilityType();
-      facilityType.setCode(order);
-      facilityTypeRepository.save(facilityType);
-
-      GeographicLevel level = new GeographicLevel();
-      level.setCode(order);
-      level.setLevelNumber(1);
-      geographicLevelRepository.save(level);
-
-      GeographicZone geographicZone = new GeographicZone();
-      geographicZone.setCode(order);
-      geographicZone.setLevel(level);
-      geographicZoneRepository.save(geographicZone);
-
-      facility.setType(facilityType);
-      facility.setGeographicZone(geographicZone);
-      facility.setCode(order);
-      facility.setName(order);
-      facility.setDescription("Test facility");
-      facility.setActive(true);
-      facility.setEnabled(true);
-      facilityRepository.save(facility);
+    orders = new ArrayList<>();
+    for (int orderCount = 0; orderCount < 5; orderCount++) {
+      orders.add(repository.save(generateInstance()));
     }
-
-    for (String order : orderRepository) {
-      program.setCode(order);
-      programRepository.save(program);
-    }
-
-    Assert.assertEquals(1, userRepository.count());
-    user = userRepository.findAll().iterator().next();
-  }
-
-  Order generateInstance() {
-    int instanceNumber = this.getNextInstanceNumber();
-    Order order = new Order();
-    order.setOrderCode("O" + instanceNumber);
-    order.setQuotedCost(new BigDecimal("1.29"));
-    order.setStatus(OrderStatus.PICKING);
-    order.setProgram(program);
-    order.setCreatedBy(user);
-    order.setRequestingFacility(facility);
-    order.setReceivingFacility(facility);
-    order.setSupplyingFacility(facility);
-    return order;
   }
 
   @After
@@ -119,5 +86,88 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     facilityTypeRepository.deleteAll();
     userRepository.deleteAll();
     repository.deleteAll();
+  }
+
+  @Test
+  public void searchOrders() {
+    List<Order> receivedOrders = repository.searchOrders(
+            orders.get(0).getSupplyingFacility(),
+            orders.get(0).getRequestingFacility(),
+            orders.get(0).getProgram());
+
+    Assert.assertEquals(1, receivedOrders.size());
+    for (Order receivedOrder : receivedOrders) {
+      Assert.assertEquals(
+              receivedOrder.getSupplyingFacility().getId(),
+              orders.get(0).getSupplyingFacility().getId());
+      Assert.assertEquals(
+              receivedOrder.getRequestingFacility().getId(),
+              orders.get(0).getRequestingFacility().getId());
+      Assert.assertEquals(
+              receivedOrder.getProgram().getId(),
+              orders.get(0).getProgram().getId());
+    }
+  }
+
+  private Program generateProgram() {
+    Program program = new Program();
+    program.setCode("code" +  this.getNextInstanceNumber());
+    program.setPeriodsSkippable(false);
+    programRepository.save(program);
+    return program;
+  }
+
+  private Facility generateFacility() {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    GeographicLevel geographicLevel = generateGeographicLevel();
+    GeographicZone geographicZone = generateGeographicZone(geographicLevel);
+    FacilityType facilityType = generateFacilityType();
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("FacilityCode" + instanceNumber);
+    facility.setName("FacilityName" + instanceNumber);
+    facility.setDescription("FacilityDescription" + instanceNumber);
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
+    return facility;
+  }
+
+  private GeographicLevel generateGeographicLevel() {
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GeographicLevel" + this.getNextInstanceNumber());
+    geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
+    return geographicLevel;
+  }
+
+  private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("GeographicZone" + this.getNextInstanceNumber());
+    geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
+    return geographicZone;
+  }
+
+  private FacilityType generateFacilityType() {
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("FacilityType" + this.getNextInstanceNumber());
+    facilityTypeRepository.save(facilityType);
+    return facilityType;
+  }
+
+  private User generateUser() {
+    User user = new User();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    user.setFirstName("Ala" + instanceNumber);
+    user.setLastName("ma" + instanceNumber);
+    user.setUsername("kota" + instanceNumber);
+    user.setPassword("iDobrze" + instanceNumber);
+    user.setHomeFacility(generateFacility());
+    user.setVerified(true);
+    user.setActive(true);
+    userRepository.save(user);
+    return user;
   }
 }
