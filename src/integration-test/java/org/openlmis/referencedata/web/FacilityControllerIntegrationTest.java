@@ -48,6 +48,8 @@ import java.util.Iterator;
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "api/facilities";
+
   @Autowired
   private FacilityRepository facilityRepository;
 
@@ -86,8 +88,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
-
-  private static final String RESOURCE_URL = BASE_URL + "api/facilities";
 
   private Order order = new Order();
   private User user = new User();

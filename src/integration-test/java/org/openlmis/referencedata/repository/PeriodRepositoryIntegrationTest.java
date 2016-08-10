@@ -19,12 +19,11 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
   @Autowired
   private ScheduleRepository scheduleRepository;
 
+  private Schedule testSchedule;
 
   PeriodRepository getRepository() {
     return this.periodRepository;
   }
-
-  private Schedule testSchedule;
 
   @Before
   public void setUp() {
@@ -40,26 +39,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     periodRepository.deleteAll();
   }
 
-  private Schedule generateScheduleInstance(String name, String code, String description) {
-    Schedule schedule = new Schedule();
-    schedule.setName(name);
-    schedule.setDescription(description);
-    schedule.setCode(code);
-    return schedule;
-  }
-
-  private Period generatePeriodInstance(
-      String name, Schedule schedule, String description, LocalDate startDate, LocalDate endDate) {
-    Period period = new Period();
-    period.setName(name);
-    period.setProcessingSchedule(schedule);
-    period.setDescription(description);
-    period.setStartDate(startDate);
-    period.setEndDate(endDate);
-    return period;
-  }
-
-  Period generateInstance() {
+  public Period generateInstance() {
     int instanceNumber = this.getNextInstanceNumber();
     Period period = new Period();
     period.setName("period" + instanceNumber);
@@ -84,5 +64,24 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     periodFromRepo.setEndDate(LocalDate.of(2016, 3, 2));
     periodRepository.save(periodFromRepo);
     Assert.assertEquals(description, periodFromRepo.getDescription());
+  }
+
+  private Schedule generateScheduleInstance(String name, String code, String description) {
+    Schedule schedule = new Schedule();
+    schedule.setName(name);
+    schedule.setDescription(description);
+    schedule.setCode(code);
+    return schedule;
+  }
+
+  private Period generatePeriodInstance(
+      String name, Schedule schedule, String description, LocalDate startDate, LocalDate endDate) {
+    Period period = new Period();
+    period.setName(name);
+    period.setProcessingSchedule(schedule);
+    period.setDescription(description);
+    period.setStartDate(startDate);
+    period.setEndDate(endDate);
+    return period;
   }
 }

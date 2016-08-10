@@ -26,6 +26,14 @@ import java.util.List;
 
 public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "/api/programProducts";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String PROGRAM = "program";
+  private static final String FULLSUPPLY = "fullSupply";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+      + "definition.";
+
   @Autowired
   private ProgramProductRepository programProductRepository;
 
@@ -37,14 +45,6 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
-
-  private static final String RESOURCE_URL = BASE_URL + "/api/programProducts";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String PROGRAM = "program";
-  private static final String FULLSUPPLY = "fullSupply";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
 
   private List<ProgramProduct> programProducts;
 

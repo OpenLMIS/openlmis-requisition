@@ -31,20 +31,20 @@ import java.time.LocalDate;
 
 public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  @Autowired
-  private ScheduleRepository scheduleRepository;
-
-  @Autowired
-  private PeriodRepository periodRepository;
-
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
+      + "definition.";
   private static final String RESOURCE_URL = BASE_URL + "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
   private static final String ACCESS_TOKEN = "access_token";
+
+  @Autowired
+  private ScheduleRepository scheduleRepository;
+
+  @Autowired
+  private PeriodRepository periodRepository;
 
   private Period firstPeriod = new Period();
   private Period secondPeriod = new Period();

@@ -40,6 +40,19 @@ import java.time.LocalDate;
 
 public class RequisitionLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "/api/requisitionLines";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+      + "definition.";
+  private static final String REQUISITION = "requisition";
+  private static final String PRODUCT = "product";
+  private static final String TEST_CODE = "123";
+  private static final String TEST_NAME = "Name";
+  private static final Integer BEGINNING_BALANCE = 100;
+  private static final Integer TOTAL_RECEIVED_QUANTITY = 200;
+  private static final Integer TOTAL_LOSSES_AND_ADJUSTMENTS = 300;
+
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
 
@@ -72,19 +85,6 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
 
   @Autowired
   private RequisitionRepository requisitionRepository;
-
-  private static final String RESOURCE_URL = BASE_URL + "/api/requisitionLines";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-      + "definition.";
-  private static final String REQUISITION = "requisition";
-  private static final String PRODUCT = "product";
-  private static final String TEST_CODE = "123";
-  private static final String TEST_NAME = "Name";
-  private static final Integer BEGINNING_BALANCE = 100;
-  private static final Integer TOTAL_RECEIVED_QUANTITY = 200;
-  private static final Integer TOTAL_LOSSES_AND_ADJUSTMENTS = 300;
 
   private RamlDefinition ramlDefinition;
   private RestAssuredClient restAssured;

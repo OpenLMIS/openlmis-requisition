@@ -24,6 +24,9 @@ import java.util.List;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+      + "definition.";
+
   @Autowired
   private StockRepository stockRepository;
 
@@ -32,9 +35,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
-
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
 
   private List<Stock> stocks;
 

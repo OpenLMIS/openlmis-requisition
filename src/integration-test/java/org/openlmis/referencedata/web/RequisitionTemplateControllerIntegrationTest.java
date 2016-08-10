@@ -19,18 +19,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  @Autowired
-  private ProgramRepository programRepository;
-
-  @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
   private static final String RESOURCE_URL = BASE_URL + "/api/requisitionTemplates";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
       + "definition.";
   private static final String PROGRAM = "program";
+
+  @Autowired
+  private ProgramRepository programRepository;
+
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   private RamlDefinition ramlDefinition;
   private RestAssuredClient restAssured;

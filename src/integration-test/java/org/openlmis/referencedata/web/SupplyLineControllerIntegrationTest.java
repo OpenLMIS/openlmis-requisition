@@ -29,6 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "/api/supplyLines";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
+      + "definition.";
+
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
@@ -49,12 +55,6 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
 
   @Autowired
   private ProgramRepository programRepository;
-
-  private static final String RESOURCE_URL = BASE_URL + "/api/supplyLines";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-      + "definition.";
 
   private SupplyLine supplyLine;
   private Integer currentInstanceNumber;
