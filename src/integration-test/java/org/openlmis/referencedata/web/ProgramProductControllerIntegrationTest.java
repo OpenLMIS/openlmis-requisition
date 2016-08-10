@@ -2,11 +2,7 @@ package org.openlmis.referencedata.web;
 
 import static org.junit.Assert.assertThat;
 
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,14 +39,10 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
   private static final String FULLSUPPLY = "fullSupply";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
 
   private List<ProgramProduct> programProducts;
 
   private Integer currentInstanceNumber;
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
 
   @Before
   public void setUp() {
@@ -59,9 +51,6 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
     for ( int programProductNumber = 0; programProductNumber < 5; programProductNumber++ ) {
       programProducts.add(generateProgramProduct());
     }
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
   }
 
   @After
@@ -81,7 +70,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
             .when()
             .get(SEARCH_URL).as(ProgramProduct[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( ProgramProduct programProduct : response ) {
       Assert.assertEquals(

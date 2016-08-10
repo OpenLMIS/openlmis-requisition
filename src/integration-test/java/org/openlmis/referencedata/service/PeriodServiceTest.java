@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +12,7 @@ import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,6 +21,7 @@ import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class PeriodServiceTest {
 
   @Autowired
@@ -45,12 +46,6 @@ public class PeriodServiceTest {
     for ( int periodCount = 0; periodCount < 5; periodCount++ ) {
       periods.add(generatePeriod());
     }
-  }
-
-  @After
-  public void cleanup() {
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
   }
 
   @Test

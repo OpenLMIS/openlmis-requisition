@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +13,6 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -35,16 +35,14 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Arrays;
 import java.util.Iterator;
+
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -88,24 +86,14 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
-  @Autowired
-  private UserService userService;
-
-  private static final String RESOURCE_URL = BASE_URL + "api/facilities";
-
-  private static final String USERNAME = "testUser";
-
   private Order order = new Order();
   private User user = new User();
   private Program program = new Program();
   private Period period = new Period();
   private Schedule schedule = new Schedule();
 
-  /** Prepare the test environment. */
   @Before
   public void setUp() {
-    cleanUp();
-
     schedule = addSchedule("Schedule1", "S1");
 
     program = addProgram("P1");
@@ -122,13 +110,15 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Facility facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, true, false);
 
+    user = userRepository.findOne(INITIAL_USER_ID);
+    user.setHomeFacility(facility);
+    userRepository.save(user);
+
     Facility facility2 = addFacility("facility2", "F2", null, facilityType,
-            geographicZone, true, false);
+        geographicZone, true, false);
 
     Requisition requisition1 = addRequisition(program, facility, period,
-            RequisitionStatus.RELEASED);
-
-    user = addUser(USERNAME, "pass", "Alice", "Cat", facility);
+        RequisitionStatus.RELEASED);
 
     order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -153,6 +143,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
    */
   @After
   public void cleanUp() {
+    user.setHomeFacility(null);
+    userRepository.save(user);
     orderLineRepository.deleteAll();
     orderRepository.deleteAll();
     requisitionRepository.deleteAll();
@@ -161,10 +153,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -174,19 +162,20 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void testOrderList() throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
+    Order[] response = restAssured.given()
+        .queryParam("access_token", getToken())
+        .pathParam("id", user.getHomeFacility().getId())
+        .queryParam("program", program.getId())
+        .queryParam("period", period.getId())
+        .queryParam("schedule", schedule.getId())
+        .when()
+        .get("/api/facilities/{id}/orders")
+        .then()
+        .statusCode(200)
+        .extract().as(Order[].class);
 
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL
-            + "/" + user.getHomeFacility().getId() + "/orders")
-            .queryParam("program", program.getId())
-            .queryParam("access_token",getToken());
-
-    ResponseEntity<Iterable<Order>> orderListResponse = restTemplate.exchange(builder.toUriString(),
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<Iterable<Order>>() { });
-
-    Iterable<Order> orderList = orderListResponse.getBody();
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Iterable<Order> orderList = Arrays.asList(response);
     Iterator<Order> orderIterator = orderList.iterator();
     Assert.assertTrue(orderIterator.hasNext());
     Order testOrder = orderIterator.next();
@@ -217,17 +206,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Program program = new Program();
     program.setCode(programCode);
     return programRepository.save(program);
-  }
-
-  private User addUser(String username, String password, String firstName, String lastName,
-                       Facility facility) {
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(password);
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setHomeFacility(facility);
-    return userRepository.save(user);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, Program program, User user,

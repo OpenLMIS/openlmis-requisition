@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,12 +14,14 @@ import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class StockServiceTest {
 
   @Autowired
@@ -46,13 +47,6 @@ public class StockServiceTest {
     for ( int stockNumber = 0; stockNumber < 5; stockNumber++ ) {
       stocks.add(generateStock());
     }
-  }
-
-  @After
-  public void cleanup() {
-    stockRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   @Test

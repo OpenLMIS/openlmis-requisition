@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,8 +38,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -50,9 +49,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
+import static org.junit.Assert.assertThat;
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/proofOfDeliveries";
+public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private OrderRepository orderRepository;
@@ -336,13 +335,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void testPrintProofOfDeliveryToPdf() {
-    RestTemplate restTemplate = new RestTemplate();
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(addTokenToUrl(
-        RESOURCE_URL + "/" + proofOfDelivery.getId() + "/print"));
+    restAssured.given()
+        .pathParam("id", proofOfDelivery.getId())
+        .queryParam("access_token", getToken())
+        .when()
+        .get("/api/proofOfDeliveries/{id}/print")
+        .then()
+        .statusCode(200);
 
-    Object printProofOfDeliver = restTemplate.getForObject(
-        builder.toUriString(), String.class);
-
-    Assert.assertNotNull(printProofOfDeliver);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

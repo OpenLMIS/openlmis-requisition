@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +38,7 @@ import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -49,6 +49,7 @@ import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class RequisitionLineServiceTest {
 
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionLineServiceIntegrationTest";
@@ -108,35 +109,7 @@ public class RequisitionLineServiceTest {
 
   @Before
   public void setUp() {
-    requisitionRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    requisitionTemplateRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    productRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-
     createTestRequisition();
-  }
-
-  @After
-  public void cleanUp() {
-    requisitionRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    requisitionTemplateRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    productRepository.deleteAll();
-    programRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
   }
 
   @Test

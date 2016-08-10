@@ -1,18 +1,10 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.hamcrest.Matchers.equalTo;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
+import org.apache.commons.collections.IteratorUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +13,6 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -65,17 +56,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
   private final String insertComment = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/comments");
   private final String approveRequisition =
@@ -89,10 +81,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
   private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
-
-  private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
-  private static final String USERNAME = "testUser";
-  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private ProductRepository productRepository;
@@ -137,34 +125,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
-  private UserService userService;
-
-  @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
-
   private Requisition requisition = new Requisition();
-  private Requisition requisition2 = new Requisition();
-  private Requisition requisition3 = new Requisition();
-  private Requisition requisition4 = new Requisition();
   private Period period = new Period();
   private Product product = new Product();
   private Program program = new Program();
-  private Program program2 = new Program();
   private Facility facility = new Facility();
-  private Facility facility2 = new Facility();
   private SupervisoryNode supervisoryNode = new SupervisoryNode();
   private User user;
   private LocalDateTime localDateTime = LocalDateTime.now();
 
   @Before
   public void setUp() throws JsonProcessingException {
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
-
     cleanUp();
 
     ProductCategory productCategory1 = new ProductCategory();
@@ -190,10 +163,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     program.setPeriodsSkippable(true);
     programRepository.save(program);
 
-    program2.setCode(requisitionRepositoryName + "2");
-    program2.setPeriodsSkippable(true);
-    programRepository.save(program2);
-
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
     facilityTypeRepository.save(facilityType);
@@ -214,27 +183,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
-
-    FacilityType facilityType2 = new FacilityType();
-    facilityType2.setCode(requisitionRepositoryName + "2");
-    facilityTypeRepository.save(facilityType2);
-
-    GeographicLevel level2 = new GeographicLevel();
-    level2.setCode(requisitionRepositoryName + "2");
-    level2.setLevelNumber(1);
-    geographicLevelRepository.save(level2);
-
-    GeographicZone geographicZone2 = new GeographicZone();
-    geographicZone2.setCode(requisitionRepositoryName + "2");
-    geographicZone2.setLevel(level2);
-    geographicZoneRepository.save(geographicZone2);
-
-    facility2.setType(facilityType2);
-    facility2.setGeographicZone(geographicZone2);
-    facility2.setCode(requisitionRepositoryName + "2");
-    facility2.setActive(true);
-    facility2.setEnabled(true);
-    facilityRepository.save(facility2);
 
     Schedule schedule = new Schedule();
     schedule.setCode(requisitionRepositoryName);
@@ -268,40 +216,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Set<RequisitionLine> requisitionLines = new HashSet<>();
     requisitionLines.add(requisitionLine);
 
-    user = new User();
-    user.setUsername(USERNAME);
-    user.setLastName("LastnameTest");
-    user.setFirstName("FirstnameTest");
-    user.setActive(true);
-    user.setVerified(true);
-    userRepository.save(user);
+    user = userRepository.findOne(INITIAL_USER_ID);
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
-
-    requisition2.setFacility(facility2);
-    requisition2.setProcessingPeriod(period);
-    requisition2.setProgram(program);
-    requisition2.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition2);
-    requisition2.setCreatedDate(LocalDateTime.parse("2015-04-01T12:00:00"));
-    requisitionRepository.save(requisition2);
-
-    requisition3.setFacility(facility);
-    requisition3.setProcessingPeriod(period);
-    requisition3.setProgram(program2);
-    requisition3.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition3);
-    requisition3.setCreatedDate(LocalDateTime.parse("2015-12-01T12:00:00"));
-    requisitionRepository.save(requisition3);
-
-    requisition4.setFacility(facility2);
-    requisition4.setProcessingPeriod(period);
-    requisition4.setProgram(program2);
-    requisition4.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition4);
-    requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
-    requisitionRepository.save(requisition4);
 
     supervisoryNode.setName("name");
     supervisoryNode.setCode("code");
@@ -310,25 +228,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNodeRepository.save(supervisoryNode);
     requisition.setSupervisoryNode(supervisoryNode);
     requisition.setCreatedDate(localDateTime);
-    requisition2.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
-    requisition3.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
-    requisition4.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
     requisitionRepository.save(requisition);
-    requisitionRepository.save(requisition2);
-    requisitionRepository.save(requisition3);
-    requisitionRepository.save(requisition4);
   }
 
   @After
   public void cleanUp() {
     commentRepository.deleteAll();
-    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
     requisitionLineRepository.deleteAll();
     productRepository.deleteAll();
     requisitionRepository.deleteAll();
@@ -637,7 +542,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void testSkip() throws JsonProcessingException {
     restAssured.given()
-            .contentType("application/json")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
             .put(skipUrl)
@@ -654,7 +559,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-            .contentType("application/json")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
             .put(rejectUrl)
@@ -668,7 +573,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testRejectWithBadStatus() throws JsonProcessingException {
 
     restAssured.given()
-            .contentType("application/json")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
             .put(rejectUrl)
@@ -685,7 +590,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType("application/json")
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .delete(deleteUrl)
@@ -705,7 +610,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType("application/json")
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .delete(deleteUrl)
@@ -755,29 +660,29 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     createComment(user, requisition, "First comment");
     createComment(user, requisition, "Second comment");
 
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(insertComment)
-            .build().expand(requisition.getId().toString()).encode();
-    String uri = uriComponents.toUriString();
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-    ResponseEntity<Object> result =
-            restTemplate.exchange(uri, HttpMethod.GET, entity, Object.class);
+    Comment[] response = restAssured.given()
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .when()
+          .get(insertComment)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment[].class);
 
-    List<LinkedHashMap<Object,Object>> comments =
-            (List<LinkedHashMap<Object,Object>>) result.getBody();
+    Iterable<Comment> comments = Arrays.asList(response);
+    Iterator<Comment> commentIterator = comments.iterator();
+    List<Comment> commentList = IteratorUtils.toList(commentIterator);
 
-    Assert.assertEquals("First comment", comments.get(0).get(COMMENT_TEXT_FIELD_NAME));
-    Assert.assertEquals("Second comment", comments.get(1).get(COMMENT_TEXT_FIELD_NAME));
+    Assert.assertEquals("First comment", commentList.get(0).getCommentText());
+    Assert.assertEquals("Second comment", commentList.get(1).getCommentText());
   }
 
   @Test
   public void insertCommentTest() throws JsonProcessingException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
@@ -785,40 +690,39 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Comment userPostComment = new Comment();
     userPostComment.setCommentText("User comment");
 
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Hibernate4Module());
-    String json = mapper.writeValueAsString(userPostComment);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+    Comment[] response = restAssured.given()
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(userPostComment)
+          .pathParam("id", requisition.getId())
+          .when()
+          .post(insertComment)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment[].class);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(insertComment)
-            .build()
-            .expand(requisition.getId().toString())
-            .encode();
-    String uri = uriComponents.toUriString();
+    Iterable<Comment> comments = Arrays.asList(response);
+    Iterator<Comment> commentIterator = comments.iterator();
+    List<Comment> commentList = IteratorUtils.toList(commentIterator);
 
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<Object> result =
-            restTemplate.exchange(uri, HttpMethod.POST, entity, Object.class);
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-    List<LinkedHashMap<Object,Object>> comments =
-            (List<LinkedHashMap<Object,Object>>) result.getBody();
-
-    Assert.assertEquals("Previous comment", comments.get(0).get(COMMENT_TEXT_FIELD_NAME));
-    Assert.assertEquals("User comment", comments.get(1).get(COMMENT_TEXT_FIELD_NAME));
+    Assert.assertEquals("Previous comment", commentList.get(0).getCommentText());
+    Assert.assertEquals("User comment", commentList.get(1).getCommentText());
   }
 
   private void approveRequisitionTest(Requisition requisition) {
 
-    restAssured.given()
-          .contentType("application/json")
+    Requisition response = restAssured.given()
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .put(approveRequisition)
           .then()
-          .statusCode(200);
+          .statusCode(200)
+          .extract().as(Requisition.class);
 
-    Assert.assertNotNull(requisition.getId());
+    Assert.assertNotNull(response.getId());
+    Assert.assertEquals(requisition.getId(), response.getId());
+    Assert.assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+
     assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -839,25 +743,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
+
     requisitionRepository.delete(requisition);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+    restAssured.given()
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(requisition)
+          .when()
+          .post(initiateUrl)
+          .then()
+          .statusCode(201);
 
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Hibernate4Module());
-
-    String json = mapper.writeValueAsString(requisition);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
-
-    RestTemplate restTemplate = new RestTemplate();
-
-    ResponseEntity<Requisition> result = restTemplate.exchange(initiateUrl,
-            HttpMethod.POST, entity, Requisition.class);
-
-    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-    Requisition initiatedRequisitions = result.getBody();
-    Assert.assertNotNull(initiatedRequisitions);
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -867,9 +764,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Requisition[] response = restAssured.given()
-          .contentType("application/json")
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .when()
-          .get(submittedUrl).as(Requisition[].class);
+          .get(submittedUrl)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition[].class);
+
+    Iterable<Requisition> requisitions = Arrays.asList(response);
+    Assert.assertTrue(requisitions.iterator().hasNext());
 
     assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -881,7 +784,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType("application/json")
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .pathParam("id", requisition.getId())
           .when()
@@ -900,7 +803,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType("application/json")
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .pathParam("id", requisition.getId())
           .when()

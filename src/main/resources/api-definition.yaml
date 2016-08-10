@@ -41,7 +41,9 @@ schemas:
               "goLiveDate": { "type": "string", "required": false, "title": "goLiveDate" },
               "goDownDate": { "type": "string", "required": false, "title": "goDownDate" },
               "comment": { "type": "string", "required": false, "title": "comment" },
-              "enabled": { "type": "boolean", "required": true, "title": "enabled" }
+              "enabled": { "type": "boolean", "required": true, "title": "enabled" },
+              "openLmisAccessible": { "type": "boolean", "required": false, "title": "openLmisAccessible" },
+              "supportedPrograms": { "type": "array", "required": false, "title": "supportedPrograms", "items": { "type": "object", "$ref":"#/schemas/program" }, "uniqueItems": false }
           }
       }
 
@@ -248,7 +250,9 @@ schemas:
               "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
               "processingPeriod": { "type": "object", "$ref": "#/schemas/period", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
-              "creator": { "type": "object", "$ref": "#/schemas/user", "required": false, "title": "creator" },
+              "remarks": { "type": "string", "required": false, "title": "remarks" },
+              "emergency": { "type": "boolean", "required": false, "title": "emergency" },
+              "supervisoryNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": false, "title": "supervisoryNode" },
               "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "object", "$ref":"#/schemas/requisitionLine" }, "uniqueItems": false }
           }
       }
@@ -262,9 +266,14 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": true, "title": "requisition" },
               "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
-              "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" },
               "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
-              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" }
+              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
+              "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
+              "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },
+              "stockOnHand": { "type": "integer", "required": false, "title": "stockOnHand" },
+              "requestedQuantity": { "type": "integer", "required": false, "title": "requestedQuantity" },
+              "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
+              "requestedQuantityExplanation": { "type": "integer", "required": false, "title": "requestedQuantityExplanation" }
           }
       }
 
@@ -678,6 +687,24 @@ resourceTypes:
 
 /periods:
     displayName: Period
+    post:
+        is: [ secured ]
+        description: Creates given period if possible.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
     /{id}/difference:
         uriParameters:
             id:
@@ -816,6 +843,24 @@ resourceTypes:
                        body:
                          application/json:
 
+/proofOfDeliveries:
+    displayName: ProofOfDeliveries
+    /{id}/print:
+        get:
+            is: [ secured ]
+            description: Print proof of delivery.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/pdf:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
 /requisitions:
     displayName: Requisition
     /submitted:
@@ -912,6 +957,27 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+                        body:
+                          application/json:
+
+    /initiate:
+            post:
+                is: [ secured ]
+                description: Initiate requisition.
+                body:
+                    application/json:
+                responses:
+                    "201":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+
     /{id}/authorize:
             uriParameters:
                 id:
@@ -1343,13 +1409,33 @@ resourceTypes:
             is: [ secured ]
             description: Returns a list of filtered orders supplied by a home facility.
             queryParameters:
-                programId:
-                    displayName: programId
+                program:
+                    displayName: program
                     type: string
                     required: false
                     repeat: false
-                requestingFacilityId:
-                    displayName: requestingFacilityId
+                requestingFacility:
+                    displayName: requestingFacility
+                    type: string
+                    required: false
+                    repeat: false
+                period:
+                    displayName: period
+                    type: string
+                    required: false
+                    repeat: false
+                schedule:
+                    displayName: schedule
+                    type: string
+                    required: false
+                    repeat: false
+                startDate:
+                    displayName: startDate
+                    type: string
+                    required: false
+                    repeat: false
+                endDate:
+                    displayName: endDate
                     type: string
                     required: false
                     repeat: false
