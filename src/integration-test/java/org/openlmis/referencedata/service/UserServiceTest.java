@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +21,14 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class UserServiceTest {
 
   @Autowired
@@ -57,18 +58,6 @@ public class UserServiceTest {
     currentInstanceNumber = 0;
     users = new ArrayList<>();
     users.add(generateUser());
-  }
-
-  @After
-  public void cleanup() {
-    Iterable<User> users = userService.searchUsers("kota1", null, null, null, null, null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
   }
 
   @Test

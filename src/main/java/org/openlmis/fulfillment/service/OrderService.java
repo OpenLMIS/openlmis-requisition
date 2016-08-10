@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -231,6 +232,7 @@ public class OrderService {
       order.setOrderCode(getOrderCodeFor(requisition, order.getProgram()));
       order.setQuotedCost(BigDecimal.ZERO);
 
+      Set<OrderLine> orderLines = new HashSet<>();
       orderRepository.save(order);
 
       for (RequisitionLine rl : requisition.getRequisitionLines()) {
@@ -240,7 +242,11 @@ public class OrderService {
         orderLine.setFilledQuantity(0L);
         orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
         orderLineRepository.save(orderLine);
+        orderLines.add(orderLine);
       }
+
+      order.setOrderLines(orderLines);
+      orderRepository.save(order);
     }
   }
 

@@ -21,7 +21,6 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -109,13 +108,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
-  @Autowired
-  private UserService userService;
-
   private static final String RESOURCE_FINALIZE_URL = BASE_URL + "/api/orders/{id}/finalize";
   private static final String RESOURCE_URL = BASE_URL + "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String USERNAME = "testUser";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
@@ -126,7 +121,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
-  private User firstUser = new User();
   private Requisition requisition;
   private SupplyLine supplyLine;
   private User user;
@@ -149,7 +143,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Program program = addProgram("programCode");
 
     Assert.assertEquals(1, userRepository.count());
-    user = userRepository.findAll().iterator().next();
+    user = userRepository.findOne(INITIAL_USER_ID);
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
                           OrderStatus.ORDERED, new BigDecimal("1.29"));
@@ -192,12 +186,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Requisition requisition2 = addRequisition(program2, facility1, period2,
                                               RequisitionStatus.RELEASED, null);
 
-    firstUser = addUser(USERNAME, "pass", "Alice", "Cat", facility1);
-
-    secondOrder = addOrder(requisition1, "O2", program1, firstUser, facility2, facility2,
+    secondOrder = addOrder(requisition1, "O2", program1, user, facility2, facility2,
                            facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
-    thirdOrder = addOrder(requisition2, "O3", program2, firstUser, facility2, facility2,
+    thirdOrder = addOrder(requisition2, "O3", program2, user, facility2, facility2,
                           facility1, OrderStatus.RECEIVED, new BigDecimal(200));
 
     ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
@@ -258,10 +250,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -286,17 +274,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Program program = new Program();
     program.setCode(programCode);
     return programRepository.save(program);
-  }
-
-  private User addUser(String username, String password, String firstName, String lastName,
-                       Facility facility) {
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(password);
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setHomeFacility(facility);
-    return userRepository.save(user);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, Program program, User user,

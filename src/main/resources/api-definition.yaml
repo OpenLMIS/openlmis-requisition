@@ -464,6 +464,16 @@ schemas:
           }
       }
 
+  - requisitionList: |
+      {   "type": "array",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "RequisitionList",
+          "description": "A list of requisitions",
+          "items": {
+              "type": "object", "$ref": "#/schemas/requisition"
+          }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -641,6 +651,22 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+    /requisitions:
+        post:
+            is: [ secured ]
+            description: Convert Requisition list to orders.
+            body:
+                application/json:
+                    schema: requisitionList
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /periods:
     displayName: Period

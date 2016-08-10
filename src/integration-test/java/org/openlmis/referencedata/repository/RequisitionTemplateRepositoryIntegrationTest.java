@@ -10,6 +10,7 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -109,7 +110,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void testChangeRequisitionTemplateLabel() {
+  public void testChangeRequisitionTemplateLabel() throws RequisitionTemplateColumnException {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn testColumn1 =
             new RequisitionTemplateColumn(

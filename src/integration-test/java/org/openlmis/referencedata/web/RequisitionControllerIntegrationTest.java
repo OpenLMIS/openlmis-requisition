@@ -20,7 +20,6 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -88,7 +87,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
   private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
-
   private static final String COMMENT_TEXT_FIELD_NAME = "body";
   private static final String USERNAME = "testUser";
 
@@ -133,9 +131,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
-
-  @Autowired
-  private UserService userService;
 
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
@@ -266,13 +261,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Set<RequisitionLine> requisitionLines = new HashSet<>();
     requisitionLines.add(requisitionLine);
 
-    user = new User();
-    user.setUsername(USERNAME);
-    user.setLastName("LastnameTest");
-    user.setFirstName("FirstnameTest");
-    user.setActive(true);
-    user.setVerified(true);
-    userRepository.save(user);
+    user = userRepository.findOne(INITIAL_USER_ID);
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
@@ -323,10 +312,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @After
   public void cleanUp() {
     commentRepository.deleteAll();
-    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
     requisitionLineRepository.deleteAll();
     productRepository.deleteAll();
     requisitionRepository.deleteAll();

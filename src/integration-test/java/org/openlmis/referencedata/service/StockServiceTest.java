@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,18 +10,18 @@ import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
-import org.openlmis.referencedata.domain.StockInventory;
-import org.openlmis.referencedata.repository.StockInventoryRepository;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class StockServiceTest {
 
   @Autowired
@@ -30,9 +29,6 @@ public class StockServiceTest {
 
   @Autowired
   private StockRepository stockRepository;
-
-  @Autowired
-  private StockInventoryRepository stockInventoryRepository;
 
   @Autowired
   private ProductRepository productRepository;
@@ -53,18 +49,9 @@ public class StockServiceTest {
     }
   }
 
-  @After
-  public void cleanup() {
-    stockRepository.deleteAll();
-    stockInventoryRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-  }
-
   @Test
   public void testSearchStocks() {
     List<Stock> receivedStocks = stockService.searchStocks(
-            stocks.get(0).getStockInventory(),
             stocks.get(0).getProduct());
 
     Assert.assertEquals(1,receivedStocks.size());
@@ -72,18 +59,13 @@ public class StockServiceTest {
       Assert.assertEquals(
               programProduct.getProduct().getId(),
               stocks.get(0).getProduct().getId());
-      Assert.assertEquals(
-              programProduct.getStockInventory().getId(),
-              stocks.get(0).getStockInventory().getId());
     }
   }
 
   private Stock generateStock() {
     ProductCategory productCategory = generateProductCategory();
     Product product = generateProduct(productCategory);
-    StockInventory stockInventory = generateStockInventory();
     Stock stock = new Stock();
-    stock.setStockInventory(stockInventory);
     stock.setProduct(product);
     stockRepository.save(stock);
     return stock;
@@ -115,13 +97,6 @@ public class StockServiceTest {
     product.setProductCategory(productCategory);
     productRepository.save(product);
     return product;
-  }
-
-  private StockInventory generateStockInventory() {
-    StockInventory stockInventory = new StockInventory();
-    stockInventory.setName("name" + generateInstanceNumber());
-    stockInventoryRepository.save(stockInventory);
-    return stockInventory;
   }
 
   private Integer generateInstanceNumber() {
