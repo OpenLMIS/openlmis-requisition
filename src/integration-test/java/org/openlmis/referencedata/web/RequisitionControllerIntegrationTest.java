@@ -1,9 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
@@ -68,6 +64,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -141,15 +141,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private RestAssuredClient restAssured;
 
   private Requisition requisition = new Requisition();
-  private Requisition requisition2 = new Requisition();
-  private Requisition requisition3 = new Requisition();
-  private Requisition requisition4 = new Requisition();
   private Period period = new Period();
   private Product product = new Product();
   private Program program = new Program();
-  private Program program2 = new Program();
   private Facility facility = new Facility();
-  private Facility facility2 = new Facility();
   private SupervisoryNode supervisoryNode = new SupervisoryNode();
   private User user;
   private LocalDateTime localDateTime = LocalDateTime.now();
@@ -185,10 +180,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     program.setPeriodsSkippable(true);
     programRepository.save(program);
 
-    program2.setCode(requisitionRepositoryName + "2");
-    program2.setPeriodsSkippable(true);
-    programRepository.save(program2);
-
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(requisitionRepositoryName);
     facilityTypeRepository.save(facilityType);
@@ -209,27 +200,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
-
-    FacilityType facilityType2 = new FacilityType();
-    facilityType2.setCode(requisitionRepositoryName + "2");
-    facilityTypeRepository.save(facilityType2);
-
-    GeographicLevel level2 = new GeographicLevel();
-    level2.setCode(requisitionRepositoryName + "2");
-    level2.setLevelNumber(1);
-    geographicLevelRepository.save(level2);
-
-    GeographicZone geographicZone2 = new GeographicZone();
-    geographicZone2.setCode(requisitionRepositoryName + "2");
-    geographicZone2.setLevel(level2);
-    geographicZoneRepository.save(geographicZone2);
-
-    facility2.setType(facilityType2);
-    facility2.setGeographicZone(geographicZone2);
-    facility2.setCode(requisitionRepositoryName + "2");
-    facility2.setActive(true);
-    facility2.setEnabled(true);
-    facilityRepository.save(facility2);
 
     Schedule schedule = new Schedule();
     schedule.setCode(requisitionRepositoryName);
@@ -268,30 +238,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
 
-    requisition2.setFacility(facility2);
-    requisition2.setProcessingPeriod(period);
-    requisition2.setProgram(program);
-    requisition2.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition2);
-    requisition2.setCreatedDate(LocalDateTime.parse("2015-04-01T12:00:00"));
-    requisitionRepository.save(requisition2);
-
-    requisition3.setFacility(facility);
-    requisition3.setProcessingPeriod(period);
-    requisition3.setProgram(program2);
-    requisition3.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition3);
-    requisition3.setCreatedDate(LocalDateTime.parse("2015-12-01T12:00:00"));
-    requisitionRepository.save(requisition3);
-
-    requisition4.setFacility(facility2);
-    requisition4.setProcessingPeriod(period);
-    requisition4.setProgram(program2);
-    requisition4.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition4);
-    requisition4.setCreatedDate(LocalDateTime.parse("2015-02-01T12:00:00"));
-    requisitionRepository.save(requisition4);
-
     supervisoryNode.setName("name");
     supervisoryNode.setCode("code");
     supervisoryNode.setDescription("description");
@@ -299,16 +245,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNodeRepository.save(supervisoryNode);
     requisition.setSupervisoryNode(supervisoryNode);
     requisition.setCreatedDate(localDateTime);
-    requisition2.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
-    requisition3.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
-    requisition4.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
     requisitionRepository.save(requisition);
-    requisitionRepository.save(requisition2);
-    requisitionRepository.save(requisition3);
-    requisitionRepository.save(requisition4);
   }
 
   @After
