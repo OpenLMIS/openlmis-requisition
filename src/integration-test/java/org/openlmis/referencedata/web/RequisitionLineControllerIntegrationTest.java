@@ -118,7 +118,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
         .get(SEARCH_URL)
         .as(RequisitionLine[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( RequisitionLine responseRequisitionLine : response ) {
       Assert.assertEquals(

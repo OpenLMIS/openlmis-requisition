@@ -82,10 +82,13 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
             .queryParam(VERIFIED, users.get(0).getVerified())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
-            .get(SEARCH_URL).as(User[].class);
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(User[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    Assert.assertEquals(1, response.length);
     for ( User user : response ) {
       Assert.assertEquals(
               user.getUsername(),

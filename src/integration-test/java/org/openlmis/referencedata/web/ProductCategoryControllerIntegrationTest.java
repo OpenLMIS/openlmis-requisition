@@ -50,7 +50,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
             .when()
             .get(SEARCH_URL).as(ProductCategory[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( ProductCategory productCategory : response ) {
       Assert.assertEquals(productCategory.getCode(),productCategories.get(0).getCode());

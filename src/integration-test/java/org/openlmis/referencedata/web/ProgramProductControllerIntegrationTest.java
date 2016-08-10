@@ -70,7 +70,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
             .when()
             .get(SEARCH_URL).as(ProgramProduct[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
     for ( ProgramProduct programProduct : response ) {
       Assert.assertEquals(

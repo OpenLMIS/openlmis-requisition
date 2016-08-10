@@ -55,10 +55,13 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
             .queryParam("product", stocks.get(0).getProduct().getId())
             .queryParam("access_token", getToken())
             .when()
-            .get(BASE_URL + "/api/stocks/search").as(Stock[].class);
+            .get(BASE_URL + "/api/stocks/search")
+            .then()
+            .statusCode(200)
+            .extract().as(Stock[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    Assert.assertEquals(1, response.length);
     for ( Stock stock : response ) {
       Assert.assertEquals(
               stock.getProduct().getId(),

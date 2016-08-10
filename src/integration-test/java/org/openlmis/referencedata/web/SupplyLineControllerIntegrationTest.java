@@ -77,10 +77,13 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
         .queryParam("supervisoryNode", supplyLine.getSupervisoryNode().getId())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
-        .get(SEARCH_URL).as(SupplyLine[].class);
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(SupplyLine[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    Assert.assertEquals(1, response.length);
     for ( SupplyLine responseSupplyLine : response ) {
       Assert.assertEquals(
           supplyLine.getProgram().getId(),
