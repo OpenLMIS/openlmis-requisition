@@ -45,12 +45,11 @@ public class PeriodController {
   @Autowired
   private PeriodService periodService;
 
-
   /**
    * Finds periods matching all of provided parameters.
    * @param processingSchedule processingSchedule of searched Periods.
    * @param toDate to which day shall Period start.
-   * @return list of all Periods matching all of provided parameters.
+   * @return ResponseEntity with list of all Periods matching provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/periods/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchPeriods(

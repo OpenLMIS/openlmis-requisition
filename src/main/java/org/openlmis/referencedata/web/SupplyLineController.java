@@ -22,6 +22,10 @@ public class SupplyLineController {
 
   /**
    * Returns all Supply Lines with matched parameters.
+   * @param program program of searched Supply Lines.
+   * @param supervisoryNode supervisory node of searched Supply Lines.
+   * @return ResponseEntity with list of all Supply Lines matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/supplyLines/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchSupplyLines(

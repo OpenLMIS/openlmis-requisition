@@ -47,7 +47,7 @@ public class ScheduleController {
   public String getTotalDifference(@PathVariable("id") UUID scheduleId) {
     Schedule schedule = scheduleRepository.findOne(scheduleId);
 
-    Iterable<Period> allPeriods = periodService.searchPeriods(schedule,null);
+    Iterable<Period> allPeriods = periodService.searchPeriods(schedule, null);
     if (!allPeriods.equals(null)) {
       Period firstPeriod = allPeriods.iterator().next();
       Period lastPeriod = periodRepository.findFirst1ByOrderByEndDateDesc();

@@ -144,7 +144,7 @@ public class RequisitionController {
               RequisitionStatus requisitionStatus) {
 
     List<Requisition> result = requisitionService.searchRequisitions(facility, program,
-        createdDateFrom, createdDateTo,processingPeriod,supervisoryNode,requisitionStatus);
+        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
@@ -259,10 +259,8 @@ public class RequisitionController {
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
 
-    Iterable<Requisition> submittedRequisitions =
-        requisitionService.searchRequisitions(
-                null,null,null,null,null,null,
-                RequisitionStatus.SUBMITTED);
+    Iterable<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
+                null, null, null, null, null, null, RequisitionStatus.SUBMITTED);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
