@@ -39,7 +39,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     periodRepository.deleteAll();
   }
 
-  public Period generateInstance() {
+  Period generateInstance() {
     int instanceNumber = this.getNextInstanceNumber();
     Period period = new Period();
     period.setName("period" + instanceNumber);
