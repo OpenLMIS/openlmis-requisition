@@ -670,6 +670,24 @@ resourceTypes:
 
 /periods:
     displayName: Period
+    post:
+        is: [ secured ]
+        description: Creates given period if possible.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
     /{id}/difference:
         uriParameters:
             id:

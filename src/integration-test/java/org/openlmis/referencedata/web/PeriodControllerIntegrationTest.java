@@ -4,7 +4,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -15,13 +14,7 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 
@@ -35,7 +28,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = BASE_URL + "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
   private static final String ACCESS_TOKEN = "access_token";
@@ -70,62 +62,65 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void testCreatePeriodsWithoutGap() throws JsonProcessingException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    RestTemplate restTemplate = new RestTemplate();
-
-    ObjectMapper mapper = new ObjectMapper();
-
     firstPeriod.setProcessingSchedule(schedule);
 
-    String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(firstPeriod)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(201);
 
-    HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
-
-    restTemplate.postForEntity(resourceUrl, periodEntity, Period.class);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
     secondPeriod.setProcessingSchedule(schedule);
 
-    String secondPeriodJson = mapper.writeValueAsString(secondPeriod);
+    Period savedPeriod = restAssured.given()
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(secondPeriod)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(201)
+        .extract().as(Period.class);
 
-    HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
-
-    ResponseEntity<Period> result = restTemplate.postForEntity(
-            resourceUrl, secondPeriodEntity, Period.class);
-
-    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-    Period savedPeriod = result.getBody();
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertNotNull(savedPeriod.getId());
   }
 
-  @Test(expected = HttpClientErrorException.class)
+  @Test
   public void testCreatePeriodsWithAGap() throws JsonProcessingException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
     scheduleRepository.save(schedule);
 
     firstPeriod.setProcessingSchedule(schedule);
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(firstPeriod)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(201);
 
-    ObjectMapper mapper = new ObjectMapper();
-    String firstPeriodJson = mapper.writeValueAsString(firstPeriod);
-
-    HttpEntity<String> periodEntity = new HttpEntity<>(firstPeriodJson, headers);
-
-    RestTemplate restTemplate = new RestTemplate();
-    restTemplate.postForEntity(resourceUrl, periodEntity, Period.class);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 3));
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
     secondPeriod.setProcessingSchedule(schedule);
 
-    String secondPeriodJson = mapper.writeValueAsString(secondPeriod);
+    restAssured.given()
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(secondPeriod)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400);
 
-    HttpEntity<String> secondPeriodEntity = new HttpEntity<>(secondPeriodJson, headers);
-
-    restTemplate.postForEntity(resourceUrl, secondPeriodEntity, Period.class);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -134,13 +129,13 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     periodRepository.save(firstPeriod);
 
     String response = restAssured.given()
-            .pathParam("id", firstPeriod.getId())
-            .queryParam("access_token", getToken())
-            .when()
-            .get("/api/periods/{id}/difference")
-            .then()
-            .statusCode(200)
-            .extract().asString();
+        .pathParam("id", firstPeriod.getId())
+        .queryParam("access_token", getToken())
+        .when()
+        .get("/api/periods/{id}/difference")
+        .then()
+        .statusCode(200)
+        .extract().asString();
 
     assertTrue(response.contains("Period lasts 1 months and 1 days"));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -156,21 +151,22 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     periodRepository.save(secondPeriod);
 
     Period[] response = restAssured.given()
-            .queryParam(PROCESSING_SCHEDULE, firstPeriod.getProcessingSchedule().getId())
-            .queryParam(START_DATE, firstPeriod.getStartDate().toString())
-            .queryParam(ACCESS_TOKEN, getToken())
-            .when()
-            .get(SEARCH_URL).as(Period[].class);
+        .queryParam(PROCESSING_SCHEDULE, firstPeriod.getProcessingSchedule().getId())
+        .queryParam(START_DATE, firstPeriod.getStartDate().toString())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Period[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1, response.length);
     for ( Period period : response ) {
       Assert.assertEquals(
-              period.getProcessingSchedule().getId(),
-              firstPeriod.getProcessingSchedule().getId());
-      Assert.assertEquals(
-              true,
-              period.getStartDate().isBefore(firstPeriod.getStartDate()));
+          period.getProcessingSchedule().getId(),
+          firstPeriod.getProcessingSchedule().getId());
+      Assert.assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
     }
   }
 }
