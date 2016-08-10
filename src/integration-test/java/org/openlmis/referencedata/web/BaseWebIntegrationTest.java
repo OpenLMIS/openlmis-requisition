@@ -29,7 +29,9 @@ public abstract class BaseWebIntegrationTest {
 
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
-  RamlDefinition ramlDefinition;
+  static final RamlDefinition ramlDefinition =
+      RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+
   RestAssuredClient restAssured;
 
   private String token = null;
@@ -37,7 +39,6 @@ public abstract class BaseWebIntegrationTest {
   @Before
   public void loadRaml() {
     RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
     restAssured = ramlDefinition.createRestAssured();
   }
 
