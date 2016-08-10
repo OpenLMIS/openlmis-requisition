@@ -61,6 +61,6 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().asString();
 
     assertTrue(response.contains("Period lasts 1 months and 0 days"));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

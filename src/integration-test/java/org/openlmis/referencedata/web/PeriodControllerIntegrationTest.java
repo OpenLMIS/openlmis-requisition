@@ -37,8 +37,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private PeriodRepository periodRepository;
 
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
   private static final String RESOURCE_URL = BASE_URL + "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private final String resourceUrl = addTokenToUrl(BASE_URL + "/api/periods");
@@ -50,15 +48,8 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   private Period secondPeriod = new Period();
   private Schedule schedule = new Schedule();
 
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
-
   @Before
   public void setUp() {
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
-
     cleanup();
 
     schedule.setCode("code");

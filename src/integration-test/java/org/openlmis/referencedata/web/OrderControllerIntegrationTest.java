@@ -3,11 +3,7 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -120,8 +116,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String PROGRAM = "program";
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-          + "definition.";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -130,8 +124,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Requisition requisition;
   private SupplyLine supplyLine;
   private User user;
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
 
   @Before
   public void setUp() {
@@ -240,10 +232,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         RequisitionStatus.APPROVED, supervisoryNode);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
-
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
   }
 
   @After
