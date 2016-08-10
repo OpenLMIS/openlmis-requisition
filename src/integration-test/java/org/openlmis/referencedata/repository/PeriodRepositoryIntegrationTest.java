@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,16 +29,8 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
   @Before
   public void setUp() {
-    scheduleRepository.deleteAll();
-    periodRepository.deleteAll();
     testSchedule = generateScheduleInstance("name", "code", "Test schedule");
     scheduleRepository.save(testSchedule);
-  }
-
-  @After
-  public void cleanUp() {
-    scheduleRepository.deleteAll();
-    periodRepository.deleteAll();
   }
 
   private Schedule generateScheduleInstance(String name, String code, String description) {

@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,14 +55,6 @@ public class ProgramProductRepositoryIntegrationTest
     for (int programProductNumber = 0; programProductNumber < 5; programProductNumber++) {
       programProducts.add(programProductRepository.save(generateInstance()));
     }
-  }
-
-  @After
-  public void cleanUp() {
-    productRepository.deleteAll();
-    programProductRepository.deleteAll();
-    programRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   @Test

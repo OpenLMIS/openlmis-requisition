@@ -1,7 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,11 +39,6 @@ public class ProductCategoryRepositoryIntegrationTest extends
     for (int usersCount = 0; usersCount < 5; usersCount++) {
       productCategories.add(repository.save(generateInstance()));
     }
-  }
-
-  @After
-  public void cleanup() {
-    repository.deleteAll();
   }
 
   @Test

@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,13 +70,6 @@ public class RequisitionLineRepositoryIntegrationTest
     for (int requisitionLinesCount = 0; requisitionLinesCount < 5; requisitionLinesCount++) {
       requisitionLines.add(repository.save(generateInstance()));
     }
-  }
-
-  @After
-  public void cleanUp() {
-    repository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   RequisitionLineRepository getRepository() {

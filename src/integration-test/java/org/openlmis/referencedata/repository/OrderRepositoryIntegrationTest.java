@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,27 +64,10 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Before
   public void setUp() {
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-
     orders = new ArrayList<>();
     for (int orderCount = 0; orderCount < 5; orderCount++) {
       orders.add(repository.save(generateInstance()));
     }
-  }
-
-  @After
-  public void cleanUp() {
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    userRepository.deleteAll();
-    repository.deleteAll();
   }
 
   @Test

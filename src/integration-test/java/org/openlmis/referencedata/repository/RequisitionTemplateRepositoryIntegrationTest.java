@@ -41,7 +41,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   @Before
   public void setUp() {
-    programRepository.deleteAll();
     requisitionTemplates = new ArrayList<>();
     program.setCode(REQUISITION_TEMPLATE_REPOSITORY);
     programRepository.save(program);

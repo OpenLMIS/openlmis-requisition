@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,17 +62,6 @@ public class SupplyLineRepositoryIntegrationTest
     for (int stockNumber = 0; stockNumber < 5; stockNumber++) {
       supplyLines.add(repository.save(generateInstance()));
     }
-  }
-
-  @After
-  public void cleanup() {
-    repository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
   }
 
   @Test

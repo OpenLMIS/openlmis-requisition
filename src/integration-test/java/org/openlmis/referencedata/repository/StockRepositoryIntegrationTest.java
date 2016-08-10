@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,12 +44,6 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     for (int stockNumber = 0; stockNumber < 5; stockNumber++) {
       stocks.add(stockRepository.save(generateInstance()));
     }
-  }
-
-  @After
-  public void cleanUp() {
-    stockRepository.deleteAll();
-    productRepository.deleteAll();
   }
 
   @Test
