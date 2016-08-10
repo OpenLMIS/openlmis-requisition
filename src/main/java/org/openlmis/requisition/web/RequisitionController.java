@@ -212,7 +212,6 @@ public class RequisitionController {
   /**
    * Approve specified by id requisition.
    */
-  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -234,7 +233,6 @@ public class RequisitionController {
   /**
    * Get requisitions to approve for right supervisor.
    */
-  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions-for-approval", method = RequestMethod.GET)
   public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
     User user = (User) auth.getPrincipal();

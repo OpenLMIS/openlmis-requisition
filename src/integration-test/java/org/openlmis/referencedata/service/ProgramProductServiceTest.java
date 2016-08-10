@@ -1,7 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
-//import org.junit.Assert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,12 +16,14 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class ProgramProductServiceTest {
 
   @Autowired
@@ -51,14 +51,6 @@ public class ProgramProductServiceTest {
     for ( int programProductNumber = 0; programProductNumber < 5; programProductNumber++ ) {
       programProducts.add(generateProgramProduct());
     }
-  }
-
-  @After
-  public void cleanup() {
-    programProductRepository.deleteAll();
-    programRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   @Test

@@ -13,7 +13,6 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -87,11 +86,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
-  @Autowired
-  private UserService userService;
-
-  private static final String USERNAME = "testUser";
-
   private Order order = new Order();
   private User user = new User();
   private Program program = new Program();
@@ -100,8 +94,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Before
   public void setUp() {
-    cleanUp();
-
     schedule = addSchedule("Schedule1", "S1");
 
     program = addProgram("P1");
@@ -118,13 +110,15 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Facility facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, true, false);
 
+    user = userRepository.findOne(INITIAL_USER_ID);
+    user.setHomeFacility(facility);
+    userRepository.save(user);
+
     Facility facility2 = addFacility("facility2", "F2", null, facilityType,
-            geographicZone, true, false);
+        geographicZone, true, false);
 
     Requisition requisition1 = addRequisition(program, facility, period,
-            RequisitionStatus.RELEASED);
-
-    user = addUser(USERNAME, "pass", "Alice", "Cat", facility);
+        RequisitionStatus.RELEASED);
 
     order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -149,6 +143,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
    */
   @After
   public void cleanUp() {
+    user.setHomeFacility(null);
+    userRepository.save(user);
     orderLineRepository.deleteAll();
     orderRepository.deleteAll();
     requisitionRepository.deleteAll();
@@ -157,10 +153,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     scheduleRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
-    Iterable<User> users = userService.searchUsers(USERNAME,null,null,null,null,null);
-    if (users != null && users.iterator().hasNext()) {
-      userRepository.delete(users);
-    }
     facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
@@ -214,17 +206,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Program program = new Program();
     program.setCode(programCode);
     return programRepository.save(program);
-  }
-
-  private User addUser(String username, String password, String firstName, String lastName,
-                       Facility facility) {
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(password);
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setHomeFacility(facility);
-    return userRepository.save(user);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, Program program, User user,

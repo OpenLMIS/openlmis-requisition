@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +8,6 @@ import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -44,14 +42,19 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
+@Transactional
 public class OrderServiceTest {
 
   private static final Integer REQUESTED_QUANTITY = 10;
@@ -61,9 +64,6 @@ public class OrderServiceTest {
 
   @Autowired
   private OrderRepository orderRepository;
-
-  @Autowired
-  private OrderLineRepository orderLineRepository;
 
   @Autowired
   private ProgramRepository programRepository;
@@ -114,8 +114,6 @@ public class OrderServiceTest {
 
   @Before
   public void setUp() {
-    cleanup();
-
     Assert.assertEquals(1, userRepository.count());
     user = userRepository.findAll().iterator().next();
 
@@ -194,37 +192,22 @@ public class OrderServiceTest {
     orders.add(order2);
   }
 
-  @After
-  public void cleanup() {
-    supplyLineRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-  }
-
   @Test
   public void shouldConvertToOrder() {
     orderRepository.deleteAll();
     Assert.assertEquals(0, orderRepository.count());
-    orderService.convertToOrder(requisitionList, user.getId());
+
+    List<Requisition> requisitions = requisitionList.stream().map(requisition ->
+        requisitionRepository.findOne(requisition.getId())).collect(Collectors.toList());
+
+    orderService.convertToOrder(requisitions, user.getId());
 
     Assert.assertEquals(2, orderRepository.count());
     Order order = orderRepository.findAll().iterator().next();
 
-    Requisition requisition = requisitionList.get(0);
+    Requisition requisition = requisitions.get(0);
     if (!requisition.getId().equals(order.getRequisition().getId())) {
-      requisition = requisitionList.get(1);
+      requisition = requisitions.get(1);
     }
 
     requisition = requisitionRepository.findOne(requisition.getId());
@@ -306,15 +289,6 @@ public class OrderServiceTest {
     period.setEndDate(LocalDate.of(2016, 7, 15));
     periodRepository.save(period);
 
-    Requisition requisition = new Requisition();
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupervisoryNode(supervisoryNode);
-    requisition.setEmergency(false);
-    requisitionRepository.save(requisition);
-
     ProductCategory productCategory = new ProductCategory(code, code, 1);
     productCategoryRepository.save(productCategory);
 
@@ -323,10 +297,22 @@ public class OrderServiceTest {
     productRepository.save(product);
 
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
     requisitionLine.setRequestedQuantity(REQUESTED_QUANTITY);
     requisitionLine.setProduct(product);
-    requisitionLineRepository.save(requisitionLine);
+    requisitionLine = requisitionLineRepository.save(requisitionLine);
+
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(requisitionLine);
+
+    Requisition requisition = new Requisition();
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(period);
+    requisition.setProgram(program);
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setEmergency(false);
+    requisition.setRequisitionLines(requisitionLines);
+    requisitionRepository.save(requisition);
 
     return requisition;
   }
