@@ -16,6 +16,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -184,7 +185,6 @@ public class RequisitionController {
   /**
    * Add comment to the requisition.
    */
-  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
                                          @PathVariable("id") UUID id, OAuth2Authentication auth) {
@@ -192,12 +192,13 @@ public class RequisitionController {
     comment.setRequisition(requisition);
 
     User user = (User) auth.getPrincipal();
-
     comment.setAuthor(user);
     commentRepository.save(comment);
 
-    List<Comment> comments = requisitionService.getCommentsByReqId(id);
-    return new ResponseEntity<>(comments, HttpStatus.OK);
+    List<Comment> comments = requisition.getComments();
+    MappingJacksonValue value = new MappingJacksonValue(comments);
+    value.setSerializationView(View.BasicInformation.class);
+    return new ResponseEntity<>(value, HttpStatus.OK);
   }
 
   /**
@@ -205,8 +206,11 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
   public ResponseEntity<Object> getCommentsForRequisition(@PathVariable("id") UUID id) {
-    List<Comment> comments = requisitionService.getCommentsByReqId(id);
-    return new ResponseEntity<Object>(comments, HttpStatus.OK);
+    Requisition requisition = requisitionRepository.findOne(id);
+    List<Comment> comments = requisition.getComments();
+    MappingJacksonValue value = new MappingJacksonValue(comments);
+    value.setSerializationView(View.BasicInformation.class);
+    return new ResponseEntity<>(value, HttpStatus.OK);
   }
 
   /**
@@ -237,7 +241,7 @@ public class RequisitionController {
   public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
     User user = (User) auth.getPrincipal();
     List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
-    return new ResponseEntity<Object>(requisitions, HttpStatus.OK);
+    return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {

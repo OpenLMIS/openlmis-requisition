@@ -22,7 +22,8 @@ public class StockController {
   /**
    * Finds Stocks matching all of provided parameters.
    * @param product product of searched Stocks.
-   * @return ResponseEntity with list of all Stocks matching provided parameters and OK httpStatus.
+   * @return ResponseEntity with list of all Stocks matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/stocks/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchUsers(
