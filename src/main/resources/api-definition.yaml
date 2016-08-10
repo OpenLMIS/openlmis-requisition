@@ -952,6 +952,24 @@ resourceTypes:
                         body:
                           application/json:
 
+    /initiate:
+            post:
+                is: [ secured ]
+                description: Initiate requisition.
+                body:
+                    application/json:
+                responses:
+                    "201":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+
     /{id}/authorize:
             uriParameters:
                 id:

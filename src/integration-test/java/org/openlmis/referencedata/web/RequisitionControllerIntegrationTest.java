@@ -57,7 +57,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -82,9 +81,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
   private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
   private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
-
-  private static final String COMMENT_TEXT_FIELD_NAME = "commentText";
-  private static final String CONTENT_TYPE = "application/json";
 
   @Autowired
   private ProductRepository productRepository;
@@ -546,7 +542,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void testSkip() throws JsonProcessingException {
     restAssured.given()
-            .contentType("application/json")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
             .put(skipUrl)
@@ -563,7 +559,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-            .contentType(CONTENT_TYPE)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
             .put(rejectUrl)
@@ -577,7 +573,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testRejectWithBadStatus() throws JsonProcessingException {
 
     restAssured.given()
-            .contentType(CONTENT_TYPE)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
             .put(rejectUrl)
@@ -594,7 +590,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .delete(deleteUrl)
@@ -614,7 +610,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .delete(deleteUrl)
@@ -668,7 +664,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Comment[] response = restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .get(insertComment)
@@ -686,8 +682,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void insertCommentTest() throws JsonProcessingException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
@@ -695,33 +690,28 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Comment userPostComment = new Comment();
     userPostComment.setCommentText("User comment");
 
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Hibernate4Module());
-    String json = mapper.writeValueAsString(userPostComment);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
+    Comment[] response = restAssured.given()
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(userPostComment)
+          .pathParam("id", requisition.getId())
+          .when()
+          .post(insertComment)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment[].class);
 
-    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(insertComment)
-            .build()
-            .expand(requisition.getId().toString())
-            .encode();
-    String uri = uriComponents.toUriString();
+    Iterable<Comment> comments = Arrays.asList(response);
+    Iterator<Comment> commentIterator = comments.iterator();
+    List<Comment> commentList = IteratorUtils.toList(commentIterator);
 
-    RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<Object> result =
-            restTemplate.exchange(uri, HttpMethod.POST, entity, Object.class);
-
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-    List<LinkedHashMap<Object,Object>> comments =
-            (List<LinkedHashMap<Object,Object>>) result.getBody();
-
-    Assert.assertEquals("Previous comment", comments.get(0).get(COMMENT_TEXT_FIELD_NAME));
-    Assert.assertEquals("User comment", comments.get(1).get(COMMENT_TEXT_FIELD_NAME));
+    Assert.assertEquals("Previous comment", commentList.get(0).getCommentText());
+    Assert.assertEquals("User comment", commentList.get(1).getCommentText());
   }
 
   private void approveRequisitionTest(Requisition requisition) {
 
     Requisition response = restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
           .put(approveRequisition)
@@ -753,25 +743,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void testInitializeRequisition() throws JsonProcessingException {
+
     requisitionRepository.delete(requisition);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+    restAssured.given()
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(requisition)
+          .when()
+          .post(initiateUrl)
+          .then()
+          .statusCode(201);
 
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Hibernate4Module());
-
-    String json = mapper.writeValueAsString(requisition);
-    HttpEntity<String> entity = new HttpEntity<>(json, headers);
-
-    RestTemplate restTemplate = new RestTemplate();
-
-    ResponseEntity<Requisition> result = restTemplate.exchange(initiateUrl,
-            HttpMethod.POST, entity, Requisition.class);
-
-    Assert.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-    Requisition initiatedRequisitions = result.getBody();
-    Assert.assertNotNull(initiatedRequisitions);
+    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -781,7 +764,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Requisition[] response = restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .when()
           .get(submittedUrl)
           .then()
@@ -801,7 +784,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .pathParam("id", requisition.getId())
           .when()
@@ -820,7 +803,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .contentType(CONTENT_TYPE)
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .pathParam("id", requisition.getId())
           .when()
