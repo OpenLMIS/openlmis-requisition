@@ -23,7 +23,7 @@ public class PeriodService {
    */
   public List<Period> searchPeriods(
           Schedule processingSchedule, LocalDate toDate) {
-    return periodRepository.searchPeriods(processingSchedule,toDate);
+    return periodRepository.searchPeriods(processingSchedule, toDate);
   }
 
 }

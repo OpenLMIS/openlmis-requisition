@@ -42,13 +42,21 @@ public class ProductCategoryRepositoryIntegrationTest extends
   }
 
   @Test
-  public void testSearchProductCategories() {
+  public void testSearchProductCategoriesByAllParameters() {
     List<ProductCategory> receivedProductCategories =
             repository.searchProductCategories(productCategories.get(0).getCode());
 
     Assert.assertEquals(1, receivedProductCategories.size());
-    for ( ProductCategory productCategory : receivedProductCategories ) {
-      Assert.assertEquals(productCategory.getCode(), productCategories.get(0).getCode());
-    }
+    Assert.assertEquals(
+            productCategories.get(0).getCode(),
+            receivedProductCategories.get(0).getCode());
+  }
+
+  @Test
+  public void testSearchProductCategoriesByAllParametersNull() {
+    List<ProductCategory> receivedProductCategories =
+            repository.searchProductCategories(null);
+
+    Assert.assertEquals(productCategories.size(), receivedProductCategories.size());
   }
 }

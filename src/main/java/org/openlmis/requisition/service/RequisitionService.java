@@ -204,7 +204,7 @@ public class RequisitionService {
                                               RequisitionStatus requisitionStatus) {
     return requisitionRepository.searchRequisitions(
             facility, program, createdDateFrom,
-            createdDateTo, processingPeriod,supervisoryNode,requisitionStatus);
+            createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
   }
 
   /**

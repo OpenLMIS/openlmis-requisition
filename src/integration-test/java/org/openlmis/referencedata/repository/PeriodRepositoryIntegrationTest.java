@@ -20,16 +20,18 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
   @Autowired
   private ScheduleRepository scheduleRepository;
 
+  private static final String PERIOD_NAME = "name";
+  private static final String PERIOD_DESCRIPTION = "description";
+
+  private Schedule testSchedule;
 
   PeriodRepository getRepository() {
     return this.periodRepository;
   }
 
-  private Schedule testSchedule;
-
   @Before
   public void setUp() {
-    testSchedule = generateScheduleInstance("name", "code", "Test schedule");
+    testSchedule = generateScheduleInstance(PERIOD_NAME, "code", "Test schedule");
     scheduleRepository.save(testSchedule);
   }
 
@@ -80,21 +82,20 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
   }
 
   @Test
-  public void testSearchPeriods() {
+  public void testSearchPeriodsByAllParameters() {
     List<Period> periods = new ArrayList<>();
     for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
       periods.add(generatePeriodInstance(
-              "name" + periodsCount,
+              PERIOD_NAME + periodsCount,
               testSchedule,
-              "description" + periodsCount,
+              PERIOD_DESCRIPTION + periodsCount,
               LocalDate.now().minusDays(periodsCount),
               LocalDate.now().plusDays(periodsCount)));
       periodRepository.save(periods.get(periodsCount));
     }
     List<Period> receivedPeriods =
-            periodRepository.searchPeriods(
-                    testSchedule,
-                    periods.get(0).getStartDate());
+            periodRepository.searchPeriods(testSchedule, periods.get(0).getStartDate());
+
     Assert.assertEquals(4, receivedPeriods.size());
     for (Period period : receivedPeriods) {
       Assert.assertEquals(
@@ -103,5 +104,44 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
       Assert.assertTrue(
               periods.get(0).getStartDate().isAfter(period.getStartDate()));
     }
+  }
+
+  @Test
+  public void testSearchPeriodsByDateTo() {
+    List<Period> periods = new ArrayList<>();
+    for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
+      periods.add(generatePeriodInstance(
+              PERIOD_NAME + periodsCount,
+              testSchedule,
+              PERIOD_DESCRIPTION + periodsCount,
+              LocalDate.now().minusDays(periodsCount),
+              LocalDate.now().plusDays(periodsCount)));
+      periodRepository.save(periods.get(periodsCount));
+    }
+    List<Period> receivedPeriods =
+            periodRepository.searchPeriods(null, periods.get(1).getStartDate());
+
+    Assert.assertEquals(3, receivedPeriods.size());
+    for (Period period : receivedPeriods) {
+      Assert.assertTrue(periods.get(0).getStartDate().isAfter(period.getStartDate()));
+    }
+  }
+
+  @Test
+  public void testSearchPeriodsByAllParametersNull() {
+    List<Period> periods = new ArrayList<>();
+    for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
+      periods.add(generatePeriodInstance(
+              PERIOD_NAME + periodsCount,
+              testSchedule,
+              PERIOD_DESCRIPTION + periodsCount,
+              LocalDate.now().minusDays(periodsCount),
+              LocalDate.now().plusDays(periodsCount)));
+      periodRepository.save(periods.get(periodsCount));
+    }
+    List<Period> receivedPeriods =
+            periodRepository.searchPeriods(null, null);
+
+    Assert.assertEquals(periods.size(), receivedPeriods.size());
   }
 }

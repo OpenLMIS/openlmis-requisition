@@ -58,6 +58,7 @@ public class RequisitionServiceTest {
   private Facility facility;
   private Period period;
   private Program program;
+
   private Product product;
 
   @Mock

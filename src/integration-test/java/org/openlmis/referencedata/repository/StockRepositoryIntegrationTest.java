@@ -47,16 +47,31 @@ public class StockRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void testSearchStocks() {
+  public void testSearchStocksByAllParameters() {
+    Stock stock = cloneStock(stocks.get(0));
     List<Stock> receivedStocks = stockRepository.searchStocks(
-            stocks.get(0).getProduct());
+            stock.getProduct());
 
-    Assert.assertEquals(1,receivedStocks.size());
-    for (Stock programProduct : receivedStocks) {
+    Assert.assertEquals(2, receivedStocks.size());
+    for (Stock receivedStock : receivedStocks) {
       Assert.assertEquals(
-              programProduct.getProduct().getId(),
-              stocks.get(0).getProduct().getId());
+              stock.getProduct().getId(),
+              receivedStock.getProduct().getId());
     }
+  }
+
+  @Test
+  public void testSearchStocksByAllParametersNull() {
+    List<Stock> receivedStocks = stockRepository.searchStocks(null);
+
+    Assert.assertEquals(stocks.size(), receivedStocks.size());
+  }
+
+  private Stock cloneStock(Stock stock) {
+    Stock clonedStock = new Stock();
+    clonedStock.setProduct(stock.getProduct());
+    stockRepository.save(clonedStock);
+    return stock;
   }
 
   private ProductCategory generateProductCategory() {
