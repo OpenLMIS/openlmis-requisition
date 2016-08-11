@@ -23,7 +23,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private EntityManager entityManager;
 
   /**
-   *
+   * Method returns all Requisitions with matched parameters.
    * @param facility facility of searched Requisitions.
    * @param program program of searched Requisitions.
    * @param createdDateFrom After what date should searched Requisition be created.
