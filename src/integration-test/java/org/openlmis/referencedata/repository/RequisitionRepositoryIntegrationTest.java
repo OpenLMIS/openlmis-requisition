@@ -136,11 +136,7 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             requisitions.get(0).getFacility(),
             requisitions.get(0).getProgram(),
-            null,
-            null,
-            null,
-            null,
-            null);
+            null, null, null, null, null);
 
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {

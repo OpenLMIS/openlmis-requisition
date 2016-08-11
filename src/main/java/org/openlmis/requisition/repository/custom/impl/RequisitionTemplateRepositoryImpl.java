@@ -18,7 +18,7 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
   private EntityManager entityManager;
 
   /**
-   *
+   * Method returns all Requisition templates with matched parameters.
    * @param program program of searched requisition templates.
    * @return list of requisition templates with matched parameters.
    */

@@ -18,7 +18,7 @@ public class SupplyLineRepositoryImpl {
   private EntityManager entityManager;
 
   /**
-   *
+   * Method returns all Supply lines with matched parameters.
    * @param program program of searched Supply Lines.
    * @param supervisoryNode supervisoryNode of searched Supply Lines.
    * @return list of Supply Lines with matched parameters.

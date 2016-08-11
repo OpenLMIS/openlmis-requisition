@@ -19,7 +19,7 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
   private EntityManager entityManager;
 
   /**
-   *
+   * Method returns all Requisition lines with matched parameters.
    * @param requisition requisition of searched requisition lines.
    * @param product product of searched requisition lines.
    * @return list of requisition lines with matched parameters.
