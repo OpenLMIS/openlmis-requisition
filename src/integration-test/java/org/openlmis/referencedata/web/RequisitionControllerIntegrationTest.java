@@ -67,20 +67,21 @@ import static org.junit.Assert.fail;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String requisitionRepositoryName = "RequisitionRepositoryIntegrationTest";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
-  private final String insertComment = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/comments");
-  private final String approveRequisition =
-          addTokenToUrl(BASE_URL + "/api/requisitions/{id}/approve");
-  private final String skipUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/skip");
-  private final String rejectUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/reject");
+  private static final String INSERT_COMMENT = BASE_URL + "/api/requisitions/{id}/comments";
+  private static final String APPROVE_REQUISITION =
+          BASE_URL + "/api/requisitions/{id}/approve";
+  private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
+  private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
   private final String submitUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}/submit");
-  private final String submittedUrl = addTokenToUrl(BASE_URL + "/api/requisitions/submitted");
-  private final String authorizationUrl = addTokenToUrl(
-          BASE_URL + "/api/requisitions/{id}/authorize");
-  private final String deleteUrl = addTokenToUrl(BASE_URL + "/api/requisitions/{id}");
-  private final String searchUrl = addTokenToUrl(BASE_URL + "/api/requisitions/search");
-  private final String initiateUrl = addTokenToUrl(BASE_URL + "/api/requisitions/initiate");
+  private static final String SUBMITTED_URL = BASE_URL + "/api/requisitions/submitted";
+  private static final String AUTHORIZATION_URL =
+          BASE_URL + "/api/requisitions/{id}/authorize";
+  private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
+  private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
+  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
 
   @Autowired
   private ProductRepository productRepository;
@@ -146,9 +147,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     productCategory1.setDisplayOrder(1);
     productCategoryRepository.save(productCategory1);
 
-    product.setCode(requisitionRepositoryName);
-    product.setPrimaryName(requisitionRepositoryName);
-    product.setDispensingUnit(requisitionRepositoryName);
+    product.setCode(REQUISITION_REPOSITORY_NAME);
+    product.setPrimaryName(REQUISITION_REPOSITORY_NAME);
+    product.setDispensingUnit(REQUISITION_REPOSITORY_NAME);
     product.setDosesPerDispensingUnit(10);
     product.setPackSize(1);
     product.setPackRoundingThreshold(0);
@@ -159,39 +160,39 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     product.setProductCategory(productCategory1);
     productRepository.save(product);
 
-    program.setCode(requisitionRepositoryName);
+    program.setCode(REQUISITION_REPOSITORY_NAME);
     program.setPeriodsSkippable(true);
     programRepository.save(program);
 
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(requisitionRepositoryName);
+    facilityType.setCode(REQUISITION_REPOSITORY_NAME);
     facilityTypeRepository.save(facilityType);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode(requisitionRepositoryName);
+    level.setCode(REQUISITION_REPOSITORY_NAME);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(requisitionRepositoryName);
+    geographicZone.setCode(REQUISITION_REPOSITORY_NAME);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(requisitionRepositoryName);
+    facility.setCode(REQUISITION_REPOSITORY_NAME);
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Schedule schedule = new Schedule();
-    schedule.setCode(requisitionRepositoryName);
-    schedule.setName(requisitionRepositoryName);
+    schedule.setCode(REQUISITION_REPOSITORY_NAME);
+    schedule.setName(REQUISITION_REPOSITORY_NAME);
     scheduleRepository.save(schedule);
 
-    period.setName(requisitionRepositoryName);
+    period.setName(REQUISITION_REPOSITORY_NAME);
     period.setProcessingSchedule(schedule);
-    period.setDescription(requisitionRepositoryName);
+    period.setDescription(REQUISITION_REPOSITORY_NAME);
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
@@ -253,6 +254,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void testSearchRequisitions() {
     Requisition[] response = restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
             .queryParam("program", program.getId())
             .queryParam("processingPeriod", period.getId())
             .queryParam("facility", facility.getId())
@@ -261,7 +263,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
             .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
             .when()
-            .get(searchUrl).as(Requisition[].class);
+            .get(SEARCH_URL).as(Requisition[].class);
 
     assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1,response.length);
@@ -542,10 +544,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void testSkip() throws JsonProcessingException {
     restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .put(skipUrl)
+            .put(SKIP_URL)
             .then()
             .statusCode(200);
 
@@ -559,10 +562,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .put(rejectUrl)
+            .put(REJECT_URL)
             .then()
             .statusCode(200);
 
@@ -573,10 +577,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testRejectWithBadStatus() throws JsonProcessingException {
 
     restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .put(rejectUrl)
+            .put(REJECT_URL)
             .then()
             .statusCode(400);
 
@@ -590,10 +595,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
-          .delete(deleteUrl)
+          .delete(DELETE_URL)
           .then()
           .statusCode(204);
 
@@ -610,10 +616,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
-          .delete(deleteUrl)
+          .delete(DELETE_URL)
           .then()
           .statusCode(400);
 
@@ -664,10 +671,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Comment[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
-          .get(insertComment)
+          .get(INSERT_COMMENT)
           .then()
           .statusCode(200)
           .extract().as(Comment[].class);
@@ -691,11 +699,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     userPostComment.setCommentText("User comment");
 
     Comment[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(userPostComment)
           .pathParam("id", requisition.getId())
           .when()
-          .post(insertComment)
+          .post(INSERT_COMMENT)
           .then()
           .statusCode(200)
           .extract().as(Comment[].class);
@@ -711,10 +720,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private void approveRequisitionTest(Requisition requisition) {
 
     Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
-          .put(approveRequisition)
+          .put(APPROVE_REQUISITION)
           .then()
           .statusCode(200)
           .extract().as(Requisition.class);
@@ -747,10 +757,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.delete(requisition);
 
     restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .when()
-          .post(initiateUrl)
+          .post(INITIATE_URL)
           .then()
           .statusCode(201);
 
@@ -764,9 +775,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Requisition[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .when()
-          .get(submittedUrl)
+          .get(SUBMITTED_URL)
           .then()
           .statusCode(200)
           .extract().as(Requisition[].class);
@@ -784,11 +796,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .pathParam("id", requisition.getId())
           .when()
-          .put(authorizationUrl)
+          .put(AUTHORIZATION_URL)
           .then()
           .statusCode(200);
 
@@ -803,11 +816,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .body(requisition)
           .pathParam("id", requisition.getId())
           .when()
-          .put(authorizationUrl)
+          .put(AUTHORIZATION_URL)
           .then()
           .statusCode(400);
 

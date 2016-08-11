@@ -214,7 +214,7 @@ schemas:
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
               "active": { "type": "boolean", "required": false, "title": "active" },
-              "skippable": { "type": "boolean", "required": true, "title": "skippable" },
+              "periodsSkippable": { "type": "boolean", "required": true, "title": "periodsSkippable" },
               "showNonFullSupplyTab": { "type": "boolean", "required": false, "title": "showNonFullSupplyTab" }
           }
       }
@@ -264,7 +264,7 @@ schemas:
           "description": "A single requisitionLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": true, "title": "requisition" },
+              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
               "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
               "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
               "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
@@ -1130,72 +1130,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-
-        /findByStatus:
-            get:
-                is: [ secured ]
-                description: Find Requsitions with matched status.
-                queryParameters:
-                    status:
-                        displayName: status
-                        description: status
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findByProcessingPeriodAndFacilityAndProgram:
-            get:
-                is: [ secured ]
-                description: Find Requsition with matched Processing Period, Facility and Program.
-                queryParameters:
-                    period:
-                        displayName: processingPeriod
-                        description: processingPeriod
-                        type: string
-                        required: true
-                        repeat: false
-                    facility:
-                        displayName: facility
-                        description: facility
-                        type: string
-                        required: true
-                        repeat: false
-                    program:
-                        displayName: program
-                        description: program
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
 
 /requisitionLines:
     /search:
