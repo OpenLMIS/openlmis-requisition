@@ -182,10 +182,9 @@ test {
     testLogging {
         events 'started', 'passed'
     }
-    dependsOn copyRamlToBuild
 }
 
-integrationTest.dependsOn copyRaml
+integrationTest.dependsOn copyRamlToBuild
 
 check {
     dependsOn checkApiIsRaml
