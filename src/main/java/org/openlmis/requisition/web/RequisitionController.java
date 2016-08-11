@@ -237,7 +237,7 @@ public class RequisitionController {
   /**
    * Get requisitions to approve for right supervisor.
    */
-  @RequestMapping(value = "/requisitions-for-approval", method = RequestMethod.GET)
+  @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
   public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
     User user = (User) auth.getPrincipal();
     List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
