@@ -21,6 +21,6 @@ public class ProgramProductService {
    * @return list of all ProgramProducts matching all of provided parameters.
    */
   public List<ProgramProduct> searchProgramProducts(Program program, Boolean fullSupply) {
-    return programProductRepository.searchProgramProducts(program,fullSupply);
+    return programProductRepository.searchProgramProducts(program, fullSupply);
   }
 }

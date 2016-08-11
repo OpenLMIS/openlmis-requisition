@@ -166,7 +166,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchRequisitionTemplates() {
+  public void testSearchRequisitionTemplatesByAllParameters() {
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       RequisitionTemplate requisitionTemplate = generateInstance();
       requisitionTemplate.setProgram(generateProgram());
@@ -176,11 +176,22 @@ public class RequisitionTemplateRepositoryIntegrationTest
             = repository.searchRequisitionTemplates(requisitionTemplates.get(0).getProgram());
 
     Assert.assertEquals(1, receivedRequisitionTemplates.size());
-    for (RequisitionTemplate requisitionTemplate : receivedRequisitionTemplates) {
-      Assert.assertEquals(
-              requisitionTemplates.get(0).getProgram().getId(),
-              requisitionTemplate.getProgram().getId());
+    Assert.assertEquals(
+            requisitionTemplates.get(0).getProgram().getId(),
+            receivedRequisitionTemplates.get(0).getProgram().getId());
+  }
+
+  @Test
+  public void testSearchRequisitionTemplatesByAllParametersNull() {
+    for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
+      RequisitionTemplate requisitionTemplate = generateInstance();
+      requisitionTemplate.setProgram(generateProgram());
+      requisitionTemplates.add(repository.save(requisitionTemplate));
     }
+    List<RequisitionTemplate> receivedRequisitionTemplates
+            = repository.searchRequisitionTemplates(null);
+
+    Assert.assertEquals(requisitionTemplates.size(), receivedRequisitionTemplates.size());
   }
 
   private Program generateProgram() {

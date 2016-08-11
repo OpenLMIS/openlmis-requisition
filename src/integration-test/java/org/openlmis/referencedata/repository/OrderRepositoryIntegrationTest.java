@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
 
   @Autowired
@@ -71,24 +72,67 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void searchOrders() {
+  public void testSearchOrdersByAllParameters() {
+    Order order = cloneOrder(orders.get(0));
     List<Order> receivedOrders = repository.searchOrders(
-            orders.get(0).getSupplyingFacility(),
-            orders.get(0).getRequestingFacility(),
-            orders.get(0).getProgram());
+            order.getSupplyingFacility(),
+            order.getRequestingFacility(),
+            order.getProgram());
 
-    Assert.assertEquals(1, receivedOrders.size());
+    Assert.assertEquals(2, receivedOrders.size());
     for (Order receivedOrder : receivedOrders) {
       Assert.assertEquals(
-              receivedOrder.getSupplyingFacility().getId(),
-              orders.get(0).getSupplyingFacility().getId());
+              order.getSupplyingFacility().getId(),
+              receivedOrder.getSupplyingFacility().getId());
       Assert.assertEquals(
-              receivedOrder.getRequestingFacility().getId(),
-              orders.get(0).getRequestingFacility().getId());
+              order.getRequestingFacility().getId(),
+              receivedOrder.getRequestingFacility().getId());
       Assert.assertEquals(
-              receivedOrder.getProgram().getId(),
-              orders.get(0).getProgram().getId());
+              order.getProgram().getId(),
+              receivedOrder.getProgram().getId());
     }
+  }
+
+  @Test
+  public void testSearchOrdersByAllParametersNull() {
+    List<Order> receivedOrders = repository.searchOrders(null, null, null);
+
+    Assert.assertEquals(orders.size(), receivedOrders.size());
+  }
+
+  @Test
+  public void testSearchOrdersBySupplyingFacilityAndProgram() {
+    Order order = cloneOrder(orders.get(0));
+    List<Order> receivedOrders = repository.searchOrders(
+            order.getSupplyingFacility(),
+            null,
+            order.getProgram());
+
+    Assert.assertEquals(2, receivedOrders.size());
+    for (Order receivedOrder : receivedOrders) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              receivedOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getProgram().getId(),
+              receivedOrder.getProgram().getId());
+    }
+  }
+
+  private Order cloneOrder(Order order) {
+    Order clonedOrder = new Order();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    clonedOrder.setSupplyingFacility(order.getSupplyingFacility());
+    clonedOrder.setRequestingFacility(order.getRequestingFacility());
+    clonedOrder.setReceivingFacility(order.getReceivingFacility());
+    clonedOrder.setProgram(order.getProgram());
+    clonedOrder.setOrderCode(order.getOrderCode() + instanceNumber);
+    clonedOrder.setQuotedCost(order.getQuotedCost());
+    clonedOrder.setStatus(order.getStatus());
+    clonedOrder.setCreatedBy(order.getCreatedBy());
+    clonedOrder.setCreatedDate(order.getCreatedDate());
+    repository.save(clonedOrder);
+    return  clonedOrder;
   }
 
   private Program generateProgram() {

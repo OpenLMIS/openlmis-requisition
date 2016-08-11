@@ -29,7 +29,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
    */
   public List<User> searchUsers(
           String username, String firstName, String lastName,
-          Facility homeFacility, Boolean active, Boolean verified ) {
+          Facility homeFacility, Boolean active, Boolean verified) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<User> query = builder.createQuery(User.class);
     Root<User> root = query.from(User.class);

@@ -23,7 +23,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private EntityManager entityManager;
 
   /**
-   * Finds requisitions matching all of provided parameters.
+   *
+   * @param facility facility of searched Requisitions.
+   * @param program program of searched Requisitions.
+   * @param createdDateFrom After what date should searched Requisition be created.
+   * @param createdDateTo Before what date should searched Requisition be created.
+   * @param processingPeriod processingPeriod of searched Requisitions.
+   * @param supervisoryNode supervisoryNode of searched Requisitions.
+   * @param requisitionStatus status of searched Requisitions.
+   * @return list of Requisitions with matched parameters.
    */
   public List<Requisition> searchRequisitions(Facility facility, Program program,
                                               LocalDateTime createdDateFrom,

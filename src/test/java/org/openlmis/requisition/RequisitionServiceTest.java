@@ -7,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -18,11 +17,8 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.RequisitionLineService;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,10 +42,6 @@ public class RequisitionServiceTest {
   private Facility facility;
   private Period period;
   private Program program;
-  private UserRepository userRepository;
-  private RequisitionLineService requisitionLineService;
-  private RequisitionLineRepository requisitionLineRepository;
-  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private RequisitionRepository requisitionRepository;

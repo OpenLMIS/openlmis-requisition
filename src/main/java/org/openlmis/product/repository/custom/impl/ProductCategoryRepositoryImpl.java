@@ -14,14 +14,14 @@ import java.util.List;
 public class ProductCategoryRepositoryImpl implements ProductCategoryRepositoryCustom {
 
   @PersistenceContext
-  EntityManager entityManager;
+  private EntityManager entityManager;
 
   /**
    * Finds ProductCategories matching all of provided parameters.
    * @param code code of productCategory.
    * @return list of all ProductCategories matching all of provided parameters.
    */
-  public List<ProductCategory> searchProductCategories(String code ) {
+  public List<ProductCategory> searchProductCategories(String code) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<ProductCategory> query = builder.createQuery(ProductCategory.class);
     Root<ProductCategory> root = query.from(ProductCategory.class);

@@ -53,7 +53,7 @@ public class RequisitionRepositoryIntegrationTest
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
-  List<Requisition> requisitions;
+  private List<Requisition> requisitions;
 
   RequisitionRepository getRepository() {
     return this.repository;
@@ -79,7 +79,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchRequisitions() {
+  public void testSearchRequisitionsByAllParameters() {
     Requisition requisition = new Requisition();
     requisition.setFacility(requisitions.get(0).getFacility());
     requisition.setProgram(requisitions.get(0).getProgram());
@@ -97,7 +97,7 @@ public class RequisitionRepositoryIntegrationTest
             requisitions.get(0).getSupervisoryNode(),
             requisitions.get(0).getStatus());
 
-    Assert.assertEquals(2,receivedRequisitions.size());
+    Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       Assert.assertEquals(
               receivedRequisition.getProgram().getId(),
@@ -121,6 +121,44 @@ public class RequisitionRepositoryIntegrationTest
               receivedRequisition.getCreatedDate().isAfter(
                       requisitions.get(0).getCreatedDate().minusDays(1)));
     }
+  }
+
+  @Test
+  public void testSearchRequisitionsByFacilityAndProgram() {
+    Requisition requisition = new Requisition();
+    requisition.setFacility(requisitions.get(0).getFacility());
+    requisition.setProgram(requisitions.get(0).getProgram());
+    requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
+    requisition.setProcessingPeriod(requisitions.get(0).getProcessingPeriod());
+    requisition.setSupervisoryNode(requisitions.get(0).getSupervisoryNode());
+    requisition.setStatus(requisitions.get(0).getStatus());
+    repository.save(requisition);
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+            requisitions.get(0).getFacility(),
+            requisitions.get(0).getProgram(),
+            null,
+            null,
+            null,
+            null,
+            null);
+
+    Assert.assertEquals(2, receivedRequisitions.size());
+    for (Requisition receivedRequisition : receivedRequisitions) {
+      Assert.assertEquals(
+              receivedRequisition.getProgram().getId(),
+              requisitions.get(0).getProgram().getId());
+      Assert.assertEquals(
+              receivedRequisition.getFacility().getId(),
+              requisitions.get(0).getFacility().getId());
+    }
+  }
+
+  @Test
+  public void testSearchRequisitionsByAllParametersNull() {
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+            null, null, null, null, null, null, null);
+
+    Assert.assertEquals(5, receivedRequisitions.size());
   }
 
   private SupervisoryNode generateSupervisoryNode() {
