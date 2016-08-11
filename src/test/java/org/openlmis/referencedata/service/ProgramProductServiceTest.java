@@ -1,4 +1,4 @@
-package org.openlmis.referencedata;
+package org.openlmis.referencedata.service;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -1,4 +1,4 @@
-package org.openlmis.download;
+package org.openlmis.csv.generator;
 
 import org.junit.Assert;
 import org.junit.Before;

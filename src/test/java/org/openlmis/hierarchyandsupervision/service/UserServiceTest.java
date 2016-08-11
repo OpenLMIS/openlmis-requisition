@@ -1,4 +1,4 @@
-package org.openlmis.hierarchyandsupervision;
+package org.openlmis.hierarchyandsupervision.service;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -1,4 +1,4 @@
-package org.openlmis.product;
+package org.openlmis.product.service;
 
 import org.junit.Assert;
 import org.junit.Before;

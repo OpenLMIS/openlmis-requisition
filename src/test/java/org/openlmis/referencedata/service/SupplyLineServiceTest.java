@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.referencedata.service;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -6,6 +6,12 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.FacilityType;
+import org.openlmis.referencedata.domain.GeographicLevel;
+import org.openlmis.referencedata.domain.GeographicZone;
+import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.domain.SupplyLine;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
 import org.openlmis.referencedata.service.SupplyLineService;
 import org.springframework.beans.factory.annotation.Autowired;

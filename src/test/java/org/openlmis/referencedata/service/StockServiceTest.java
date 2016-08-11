@@ -1,4 +1,4 @@
-package org.openlmis.referencedata.domain;
+package org.openlmis.referencedata.service;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
+import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.referencedata.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
