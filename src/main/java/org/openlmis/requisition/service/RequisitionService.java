@@ -125,7 +125,6 @@ public class RequisitionService {
       LOGGER.debug("Requisition deleted");
       return true;
     }
-
     return false;
   }
 
@@ -244,7 +243,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(null,null,null,null,null,supNode, null);
+      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
@@ -286,15 +285,21 @@ public class RequisitionService {
     }
   }
 
+
   /**
-   * Releasing the Requisitions.
+   * Releases the list of given requisitions as order.
+   *
+   * @param requisitionList list of requisitions to be released as order
+   * @return list of released requisitions
    */
-  public void releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+    List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
       loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-      requisitionRepository.save(loadedRequisition);
+      releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
     }
+    return releasedRequisitions;
   }
 
   private Requisition save(Requisition requisition) throws RequisitionException {
