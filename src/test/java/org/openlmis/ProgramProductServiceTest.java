@@ -57,8 +57,8 @@ public class ProgramProductServiceTest {
     programProducts = new ArrayList<>();
     programProductService = new ProgramProductService();
     generateInstances();
-    mockRepositories();
     initMocks(this);
+    mockRepositories();
   }
 
   @Test
