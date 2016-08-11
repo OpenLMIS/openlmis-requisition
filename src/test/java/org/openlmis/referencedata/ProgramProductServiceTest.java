@@ -7,17 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
-import org.openlmis.product.repository.ProductCategoryRepository;
-import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProgramProduct;
 import org.openlmis.referencedata.repository.ProgramProductRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.service.ProgramProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,15 +27,6 @@ public class ProgramProductServiceTest {
   @Mock
   private ProgramProductRepository programProductRepository;
 
-  @Mock
-  private ProgramRepository programRepository;
-
-  @Mock
-  private ProductRepository productRepository;
-
-  @Mock
-  private ProductCategoryRepository productCategoryRepository;
-
   @InjectMocks
   @Autowired
   private ProgramProductService programProductService;
@@ -48,13 +36,11 @@ public class ProgramProductServiceTest {
   private Product product;
   private ProductCategory productCategory;
 
-  private List<ProgramProduct> programProducts;
   private Integer currentInstanceNumber;
 
   @Before
   public void setUp() {
     currentInstanceNumber = 0;
-    programProducts = new ArrayList<>();
     programProductService = new ProgramProductService();
     generateInstances();
     initMocks(this);
@@ -64,23 +50,25 @@ public class ProgramProductServiceTest {
   @Test
   public void testSearchProgramProducts() {
     List<ProgramProduct> receivedProgramProducts = programProductService.searchProgramProducts(
-            programProducts.get(0).getProgram(),
-            programProducts.get(0).isFullSupply());
+            programProduct.getProgram(),
+            programProduct.isFullSupply());
+
     Assert.assertEquals(1, receivedProgramProducts.size());
     for (ProgramProduct programProduct : receivedProgramProducts) {
       Assert.assertEquals(
               programProduct.getProgram().getId(),
-              programProducts.get(0).getProgram().getId());
+              this.programProduct.getProgram().getId());
       Assert.assertEquals(
               programProduct.isFullSupply(),
-              programProducts.get(0).isFullSupply());
+              this.programProduct.isFullSupply());
     }
   }
 
   private void generateInstances() {
-    for (int programProductNumber = 0; programProductNumber < 5; programProductNumber++) {
-      programProducts.add(generateProgramProduct());
-    }
+    programProduct = generateProgramProduct();
+    program = generateProgram();
+    productCategory = generateProductCategory();
+    product = generateProduct(productCategory);
   }
 
   private ProgramProduct generateProgramProduct() {
@@ -140,28 +128,15 @@ public class ProgramProductServiceTest {
   }
 
   private void mockRepositories() {
-    for (ProgramProduct programProduct : programProducts) {
-      when(programProductRepository.findOne(programProduct.getId())).thenReturn(programProduct);
-      when(programProductRepository.save(programProduct)).thenReturn(programProduct);
 
-      List<ProgramProduct> matchedProgramProducts = new ArrayList<>();
-      for (ProgramProduct programProductWithMatchedProgramAndFullSupply : programProducts) {
-        if (programProductWithMatchedProgramAndFullSupply.getProgram().equals(
-                programProduct.getProgram()) && programProductWithMatchedProgramAndFullSupply
-                .isFullSupply() == programProduct.isFullSupply()) {
-          matchedProgramProducts.add(programProductWithMatchedProgramAndFullSupply);
-        }
-      }
-      when(programProductRepository.searchProgramProducts(
-              programProduct.getProgram(), programProduct.isFullSupply()))
-              .thenReturn(matchedProgramProducts);
-    }
-    when(programRepository.findOne(program.getId())).thenReturn(program);
-    when(productRepository.findOne(product.getId())).thenReturn(product);
-    when(productCategoryRepository.findOne(productCategory.getId())).thenReturn(productCategory);
-
-    when(programRepository.save(program)).thenReturn(program);
-    when(productRepository.save(product)).thenReturn(product);
-    when(productCategoryRepository.save(productCategory)).thenReturn(productCategory);
+    when(programProductRepository
+            .findOne(programProduct.getId()))
+            .thenReturn(programProduct);
+    when(programProductRepository
+            .save(programProduct))
+            .thenReturn(programProduct);
+    when(programProductRepository
+            .searchProgramProducts(programProduct.getProgram(), programProduct.isFullSupply()))
+            .thenReturn(Arrays.asList(programProduct));
   }
 }

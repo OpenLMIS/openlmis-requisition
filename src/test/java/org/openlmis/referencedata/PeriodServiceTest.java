@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.service.PeriodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +26,6 @@ public class PeriodServiceTest {
 
   @Mock
   private PeriodRepository periodRepository;
-
-  @Mock
-  private ScheduleRepository scheduleRepository;
 
   @InjectMocks
   @Autowired
@@ -55,10 +51,8 @@ public class PeriodServiceTest {
 
   @Test
   public void testSearchPeriod() {
-    List<Period> receivedPeriods =
-            periodService.searchPeriods(
-                    testSchedule,
-                    periods.get(0).getStartDate());
+    List<Period> receivedPeriods = periodService
+            .searchPeriods(testSchedule, periods.get(0).getStartDate());
     Assert.assertEquals(4,receivedPeriods.size());
     for ( Period period : receivedPeriods) {
       Assert.assertEquals(
@@ -105,9 +99,6 @@ public class PeriodServiceTest {
 
   private void mockRepositories() {
     for (Period period : periods) {
-      when(periodRepository.findOne(period.getId())).thenReturn(period);
-      when(periodRepository.save(period)).thenReturn(period);
-
       List<Period> matchedPeriods = new ArrayList<>();
       for (Period periodWithMatchedProcessingScheduleAndToDate : periods) {
         if (periodWithMatchedProcessingScheduleAndToDate.getProcessingSchedule().equals(
@@ -116,10 +107,15 @@ public class PeriodServiceTest {
           matchedPeriods.add(periodWithMatchedProcessingScheduleAndToDate);
         }
       }
-      when(periodRepository.searchPeriods(period.getProcessingSchedule(), period.getStartDate()))
+      when(periodRepository
+              .searchPeriods(period.getProcessingSchedule(), period.getStartDate()))
               .thenReturn(matchedPeriods);
     }
-    when(scheduleRepository.findOne(schedule.getId())).thenReturn(schedule);
-    when(scheduleRepository.save(schedule)).thenReturn(schedule);
+    when(periodRepository
+            .findOne(period.getId()))
+            .thenReturn(period);
+    when(periodRepository
+            .save(period))
+            .thenReturn(period);
   }
 }
