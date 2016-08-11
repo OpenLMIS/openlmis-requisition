@@ -3,7 +3,6 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,15 +59,6 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     for ( int userCount = 0; userCount < 5; userCount++ ) {
       users.add(generateUser());
     }
-  }
-
-  @After
-  public void cleanUp() {
-    userRepository.delete(users);
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
   }
 
   @Test

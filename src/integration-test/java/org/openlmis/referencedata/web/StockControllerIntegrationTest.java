@@ -3,7 +3,6 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,13 +39,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     for ( int stockNumber = 0; stockNumber < 5; stockNumber++ ) {
       stocks.add(generateStock());
     }
-  }
-
-  @After
-  public void cleanup() {
-    stockRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   @Test

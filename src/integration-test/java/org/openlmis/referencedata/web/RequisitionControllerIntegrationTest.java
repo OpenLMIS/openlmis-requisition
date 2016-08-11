@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.collections.IteratorUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -139,8 +138,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Before
   public void setUp() throws JsonProcessingException {
-    cleanUp();
-
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
     productCategory1.setName("PC1 name");
@@ -230,25 +227,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNode(supervisoryNode);
     requisition.setCreatedDate(localDateTime);
     requisitionRepository.save(requisition);
-  }
-
-  @After
-  public void cleanUp() {
-    commentRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    configurationSettingRepository.deleteAll();
   }
 
   @Test

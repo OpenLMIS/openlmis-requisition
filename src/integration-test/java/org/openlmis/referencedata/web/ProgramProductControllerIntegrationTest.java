@@ -3,7 +3,6 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,14 +50,6 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
     for ( int programProductNumber = 0; programProductNumber < 5; programProductNumber++ ) {
       programProducts.add(generateProgramProduct());
     }
-  }
-
-  @After
-  public void cleanup() {
-    programProductRepository.deleteAll();
-    programRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
   }
 
   @Test

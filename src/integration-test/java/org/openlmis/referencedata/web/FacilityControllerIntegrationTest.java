@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,28 +135,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     addOrderLine(order, product1, 35L, 50L);
 
     addOrderLine(order, product2, 10L, 15L);
-  }
-
-  /**
-   * Cleanup the test environment.
-   */
-  @After
-  public void cleanUp() {
-    user.setHomeFacility(null);
-    userRepository.save(user);
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-
   }
 
   @Test
