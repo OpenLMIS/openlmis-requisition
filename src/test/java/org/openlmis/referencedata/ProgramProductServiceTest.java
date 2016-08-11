@@ -143,6 +143,7 @@ public class ProgramProductServiceTest {
     for (ProgramProduct programProduct : programProducts) {
       when(programProductRepository.findOne(programProduct.getId())).thenReturn(programProduct);
       when(programProductRepository.save(programProduct)).thenReturn(programProduct);
+
       List<ProgramProduct> matchedProgramProducts = new ArrayList<>();
       for (ProgramProduct programProductWithMatchedProgramAndFullSupply : programProducts) {
         if (programProductWithMatchedProgramAndFullSupply.getProgram().equals(
