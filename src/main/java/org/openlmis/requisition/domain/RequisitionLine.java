@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.BaseEntity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -23,7 +24,7 @@ public class RequisitionLine extends BaseEntity {
   @Setter
   private Product product;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "requisitionId")
   @Getter
   @Setter

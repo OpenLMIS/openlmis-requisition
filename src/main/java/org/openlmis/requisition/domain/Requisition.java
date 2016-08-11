@@ -25,6 +25,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -44,7 +45,9 @@ public class Requisition extends BaseEntity {
   private LocalDateTime createdDate;
 
   // TODO: determine why it has to be set explicitly
-  @OneToMany(mappedBy = "requisition")
+  @OneToMany(mappedBy = "requisition",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER)
   @Getter
   @Setter
   @JsonIdentityInfo(

@@ -100,7 +100,9 @@ public class Order extends BaseEntity {
   private BigDecimal quotedCost;
 
   // TODO: determine why it has to be set explicitly
-  @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+  @OneToMany(mappedBy = "order",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER)
   @Getter
   @Setter
   private Set<OrderLine> orderLines;

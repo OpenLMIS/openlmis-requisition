@@ -111,13 +111,13 @@ public class RequisitionRepositoryIntegrationTest
 
   @After
   public void cleanUp() {
-    repository.deleteAll();
-    programRepository.deleteAll();
-    facilityRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
+    facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
     facilityTypeRepository.deleteAll();
+    programRepository.deleteAll();
+    repository.deleteAll();
   }
 }

@@ -106,16 +106,15 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   @After
   public void cleanUp() {
     requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
     requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
+    facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    programRepository.deleteAll();
+    productRepository.deleteAll();
     productCategoryRepository.deleteAll();
   }
 

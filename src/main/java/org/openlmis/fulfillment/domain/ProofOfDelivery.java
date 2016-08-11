@@ -7,6 +7,7 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -25,7 +26,8 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private Order order;
 
-  @OneToMany(mappedBy = "proofOfDelivery")
+  @OneToMany(mappedBy = "proofOfDelivery",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
   @Getter
   private List<ProofOfDeliveryLine> profOfDeliveryLineItems;
 
