@@ -3,6 +3,8 @@ package org.openlmis;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -12,25 +14,34 @@ import org.openlmis.referencedata.domain.ProgramProduct;
 import org.openlmis.referencedata.repository.ProgramProductRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.service.ProgramProductService;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @Transactional
 public class ProgramProductServiceTest {
 
-  private ProgramProductService programProductService;
+  @Mock
   private ProgramProductRepository programProductRepository;
+
+  @Mock
   private ProgramRepository programRepository;
+
+  @Mock
   private ProductRepository productRepository;
+
+  @Mock
   private ProductCategoryRepository productCategoryRepository;
+
+  @InjectMocks
+  @Autowired
+  private ProgramProductService programProductService;
 
   private ProgramProduct programProduct;
   private Program program;
@@ -77,6 +88,7 @@ public class ProgramProductServiceTest {
     productCategory = generateProductCategory();
     product = generateProduct(productCategory);
     programProduct = new ProgramProduct();
+    programProduct.setId(UUID.randomUUID());
     programProduct.setProduct(product);
     programProduct.setProductCategory(productCategory);
     programProduct.setProgram(program);
@@ -128,11 +140,6 @@ public class ProgramProductServiceTest {
   }
 
   private void mockRepositories() {
-    programProductRepository = mock(ProgramProductRepository.class);
-    programRepository = mock(ProgramRepository.class);
-    productRepository = mock(ProductRepository.class);
-    productCategoryRepository = mock(ProductCategoryRepository.class);
-
     for (ProgramProduct programProduct : programProducts) {
       when(programProductRepository.findOne(programProduct.getId())).thenReturn(programProduct);
       when(programProductRepository.save(programProduct)).thenReturn(programProduct);
@@ -155,8 +162,5 @@ public class ProgramProductServiceTest {
     when(programRepository.save(program)).thenReturn(program);
     when(productRepository.save(product)).thenReturn(product);
     when(productCategoryRepository.save(productCategory)).thenReturn(productCategory);
-
-    ReflectionTestUtils.setField(programProductService, "programProductRepository",
-            programProductRepository, ProgramProductRepository.class);
   }
 }
