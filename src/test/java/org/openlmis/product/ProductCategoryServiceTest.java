@@ -1,4 +1,4 @@
-package org.openlmis.productcategory;
+package org.openlmis.product;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,10 +40,10 @@ public class ProductCategoryServiceTest {
     List<ProductCategory> receivedProductCategories =
             productCategoryService.searchProductCategories(productCategories.get(0).getCode());
 
-    Assert.assertEquals(1,receivedProductCategories.size());
-    for ( ProductCategory productCategory : receivedProductCategories ) {
-      Assert.assertEquals(productCategory.getCode(),productCategories.get(0).getCode());
-    }
+    Assert.assertEquals(1, receivedProductCategories.size());
+    Assert.assertEquals(
+            receivedProductCategories.get(0).getCode(),
+            productCategories.get(0).getCode());
   }
 
   private void generateInstances() {
@@ -89,7 +89,6 @@ public class ProductCategoryServiceTest {
               .searchProductCategories(productCategory.getCode()))
               .thenReturn(matchedProductCategories);
     }
-
     ReflectionTestUtils.setField(productCategoryService, "productCategoryRepository",
             productCategoryRepository, ProductCategoryRepository.class);
   }
