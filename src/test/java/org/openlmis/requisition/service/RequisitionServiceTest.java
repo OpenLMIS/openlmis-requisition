@@ -1,4 +1,4 @@
-package org.openlmis.requisition;
+package org.openlmis.requisition.service;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -30,7 +30,7 @@ public class RequisitionLineService {
   private RequisitionTemplateService requisitionTemplateService;
 
   /**
-   * Saves given RequisitionLine if possible
+   * Saves given RequisitionLine if possible.
    *
    * @param requisition Requisition which contains given RequisitionLine.
    * @param requisitionLine Requisition Line to be saved.
@@ -101,7 +101,7 @@ public class RequisitionLineService {
               previousPeriods.iterator().next(),
               null,
               null);
-      if ( previousRequisition.size() == 0) {
+      if (previousRequisition.size() == 0) {
         return;
       }
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
