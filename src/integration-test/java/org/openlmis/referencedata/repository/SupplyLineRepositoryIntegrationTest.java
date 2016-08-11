@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class SupplyLineRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<SupplyLine> {
 
@@ -70,7 +71,7 @@ public class SupplyLineRepositoryIntegrationTest
     List<SupplyLine> receivedSupplyLines = repository.searchSupplyLines(
             supplyLine.getProgram(), supplyLine.getSupervisoryNode());
 
-    Assert.assertEquals(1, receivedSupplyLines.size());
+    Assert.assertEquals(2, receivedSupplyLines.size());
     for (SupplyLine receivedSupplyLine : receivedSupplyLines) {
       Assert.assertEquals(
               supplyLine.getProgram().getId(),
@@ -95,7 +96,7 @@ public class SupplyLineRepositoryIntegrationTest
     List<SupplyLine> receivedSupplyLines = repository.searchSupplyLines(
             supplyLine.getProgram(), null);
 
-    Assert.assertEquals(1, receivedSupplyLines.size());
+    Assert.assertEquals(2, receivedSupplyLines.size());
     for (SupplyLine receivedSupplyLine : receivedSupplyLines) {
       Assert.assertEquals(
               supplyLine.getProgram().getId(),
