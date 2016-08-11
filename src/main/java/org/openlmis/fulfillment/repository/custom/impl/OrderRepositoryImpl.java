@@ -19,7 +19,11 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   private EntityManager entityManager;
 
   /**
-   * Finds Orders matching all of provided parameters.
+   *
+   * @param supplyingFacility supplyingFacility of searched Orders.
+   * @param requestingFacility requestingFacility of searched Orders.
+   * @param program program of searched Orders.
+   * @return List of Orders with matched parameters.
    */
   public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
                                   Program program) {

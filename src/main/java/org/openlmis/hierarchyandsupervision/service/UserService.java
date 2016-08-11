@@ -12,7 +12,7 @@ import java.util.List;
 public class UserService {
 
   @Autowired
-  UserRepository userRepository;
+  private UserRepository userRepository;
 
   /**
    * Method returns all users with matched parameters.
@@ -26,7 +26,7 @@ public class UserService {
    */
   public List<User> searchUsers(
           String username, String firstName, String lastName,
-          Facility homeFacility, Boolean active, Boolean verified ) {
+          Facility homeFacility, Boolean active, Boolean verified) {
     return userRepository.searchUsers(
             username, firstName,
             lastName, homeFacility,

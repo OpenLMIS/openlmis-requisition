@@ -90,20 +90,58 @@ public class RequisitionLineRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchUsers() {
+  public void testSearchRequisitionLinesByAllParameters() {
+    RequisitionLine requisitionLine = cloneRequisitionLine(requisitionLines.get(0));
     List<RequisitionLine> receivedRequisitionLines = repository.searchRequisitionLines(
-            requisitionLines.get(0).getRequisition(),
-            requisitionLines.get(0).getProduct());
+            requisitionLine.getRequisition(),
+            requisitionLine.getProduct());
 
-    Assert.assertEquals(1, receivedRequisitionLines.size());
-    for (RequisitionLine requisitionLine : receivedRequisitionLines) {
+    Assert.assertEquals(2, receivedRequisitionLines.size());
+    for (RequisitionLine receivedRequisitionLine : receivedRequisitionLines) {
       Assert.assertEquals(
               requisitionLine.getRequisition().getId(),
-              requisitionLines.get(0).getRequisition().getId());
+              receivedRequisitionLine.getRequisition().getId());
       Assert.assertEquals(
               requisitionLine.getProduct().getId(),
-              requisitionLines.get(0).getProduct().getId());
+              receivedRequisitionLine.getProduct().getId());
     }
+  }
+
+  @Test
+  public void testSearchRequisitionLinesByAllParametersNull() {
+    List<RequisitionLine> receivedRequisitionLines = repository.searchRequisitionLines(null, null);
+
+    Assert.assertEquals(requisitionLines.size(), receivedRequisitionLines.size());
+  }
+
+  @Test
+  public void testSearchRequisitionLinesByRequisition() {
+    RequisitionLine requisitionLine = cloneRequisitionLine(requisitionLines.get(0));
+    List<RequisitionLine> receivedRequisitionLines = repository.searchRequisitionLines(
+            requisitionLine.getRequisition(),
+            null);
+
+    Assert.assertEquals(2, receivedRequisitionLines.size());
+    for (RequisitionLine receivedRequisitionLine : receivedRequisitionLines) {
+      Assert.assertEquals(
+              requisitionLine.getRequisition().getId(),
+              receivedRequisitionLine.getRequisition().getId());
+    }
+  }
+
+  private RequisitionLine cloneRequisitionLine(RequisitionLine requisitionLine) {
+    RequisitionLine clonedRequisitionLine = new RequisitionLine();
+    clonedRequisitionLine.setProduct(requisitionLine.getProduct());
+    clonedRequisitionLine.setRequisition(requisitionLine.getRequisition());
+    clonedRequisitionLine.setRequestedQuantity(requisitionLine.getRequestedQuantity());
+    clonedRequisitionLine.setStockOnHand(requisitionLine.getStockOnHand());
+    clonedRequisitionLine.setTotalConsumedQuantity(requisitionLine.getTotalConsumedQuantity());
+    clonedRequisitionLine.setBeginningBalance(requisitionLine.getBeginningBalance());
+    clonedRequisitionLine.setTotalReceivedQuantity(requisitionLine.getTotalReceivedQuantity());
+    clonedRequisitionLine.setTotalLossesAndAdjustments(
+            requisitionLine.getTotalLossesAndAdjustments());
+    repository.save(clonedRequisitionLine);
+    return clonedRequisitionLine;
   }
 
   private Requisition generateRequisition() {

@@ -19,6 +19,6 @@ public class SupplyLineService {
    * Method returns all Supply Lines with matched parameters.
    */
   public List<SupplyLine> searchSupplyLines(Program program, SupervisoryNode supervisoryNode) {
-    return supplyLineRepository.searchSupplyLines(program,supervisoryNode);
+    return supplyLineRepository.searchSupplyLines(program, supervisoryNode);
   }
 }

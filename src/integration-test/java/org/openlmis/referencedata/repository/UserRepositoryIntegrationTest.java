@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<User> {
 
   @Autowired
@@ -111,36 +112,81 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
   }
 
   @Test
-  public void testSearchUsers() {
+  public void testSearchUsersByAllParameters() {
+    User user = cloneUser(users.get(0));
     List<User> receivedUsers = repository.searchUsers(
-            users.get(0).getUsername(),
-            users.get(0).getFirstName(),
-            users.get(0).getLastName(),
-            users.get(0).getHomeFacility(),
-            users.get(0).getActive(),
-            users.get(0).getVerified());
+            user.getUsername(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getHomeFacility(),
+            user.getActive(),
+            user.getVerified());
 
     Assert.assertEquals(1, receivedUsers.size());
-    for (User user : receivedUsers) {
-      Assert.assertEquals(
-              user.getUsername(),
-              users.get(0).getUsername());
+    Assert.assertEquals(
+            user.getUsername(),
+            receivedUsers.get(0).getUsername());
+    Assert.assertEquals(
+            user.getFirstName(),
+            receivedUsers.get(0).getFirstName());
+    Assert.assertEquals(
+            user.getLastName(),
+            receivedUsers.get(0).getLastName());
+    Assert.assertEquals(
+            user.getHomeFacility().getId(),
+            receivedUsers.get(0).getHomeFacility().getId());
+    Assert.assertEquals(
+            user.getHomeFacility().getActive(),
+            receivedUsers.get(0).getActive());
+    Assert.assertEquals(
+            user.getVerified(),
+            receivedUsers.get(0).getVerified());
+  }
+
+  @Test
+  public void testSearchUsersByAllParametersNull() {
+    List<User> receivedUsers = repository.searchUsers(null, null, null, null, null, null);
+
+    Assert.assertEquals(users.size() + 1, receivedUsers.size());
+  }
+
+  @Test
+  public void testSearchUsersByFirstNameAndLastNameAndHomeFacility() {
+    User user = cloneUser(users.get(0));
+    List<User> receivedUsers = repository.searchUsers(
+            null,
+            user.getFirstName(),
+            user.getLastName(),
+            user.getHomeFacility(),
+            null,
+            null);
+
+    Assert.assertEquals(2, receivedUsers.size());
+    for (User receivedUser : receivedUsers) {
       Assert.assertEquals(
               user.getFirstName(),
-              users.get(0).getFirstName());
+              receivedUser.getFirstName());
       Assert.assertEquals(
               user.getLastName(),
-              users.get(0).getLastName());
+              receivedUser.getLastName());
       Assert.assertEquals(
               user.getHomeFacility().getId(),
-              users.get(0).getHomeFacility().getId());
-      Assert.assertEquals(
-              user.getHomeFacility().getActive(),
-              users.get(0).getActive());
-      Assert.assertEquals(
-              user.getVerified(),
-              users.get(0).getVerified());
+              receivedUser.getHomeFacility().getId());
     }
+  }
+
+  private User cloneUser(User user) {
+    int instanceNumber = this.getNextInstanceNumber();
+    User clonedUser = new User();
+    clonedUser.setUsername(user.getUsername() + instanceNumber);
+    clonedUser.setPassword("test" + instanceNumber);
+    clonedUser.setFirstName(user.getFirstName());
+    clonedUser.setLastName(user.getLastName());
+    clonedUser.setHomeFacility(user.getHomeFacility());
+    clonedUser.setActive(user.getActive());
+    clonedUser.setVerified(user.getVerified());
+    repository.save(clonedUser);
+    return clonedUser;
   }
 
   private Facility generateFacility() {

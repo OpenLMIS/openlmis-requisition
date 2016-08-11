@@ -19,7 +19,10 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
   private EntityManager entityManager;
 
   /**
-   * Returns all requisition lines with matched parameters.
+   *
+   * @param requisition requisition of searched requisition lines.
+   * @param product product of searched requisition lines.
+   * @return list of requisition lines with matched parameters.
    */
   public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();

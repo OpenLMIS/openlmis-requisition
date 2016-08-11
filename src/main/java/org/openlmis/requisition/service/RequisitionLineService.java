@@ -62,7 +62,7 @@ public class RequisitionLineService {
    * Method returns all requisition lines with matched parameters.
    */
   public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
-    return requisitionLineRepository.searchRequisitionLines(requisition,product);
+    return requisitionLineRepository.searchRequisitionLines(requisition, product);
   }
 
   /**

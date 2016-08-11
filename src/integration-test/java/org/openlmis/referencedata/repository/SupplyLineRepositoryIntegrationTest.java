@@ -65,22 +65,52 @@ public class SupplyLineRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchSupplyLines() {
+  public void testSearchSupplyLinesByAllParameters() {
+    SupplyLine supplyLine = cloneSupplyLine(supplyLines.get(0));
     List<SupplyLine> receivedSupplyLines = repository.searchSupplyLines(
-            supplyLines.get(0).getProgram(),
-            supplyLines.get(0).getSupervisoryNode());
+            supplyLine.getProgram(), supplyLine.getSupervisoryNode());
+
     Assert.assertEquals(1, receivedSupplyLines.size());
     for (SupplyLine receivedSupplyLine : receivedSupplyLines) {
       Assert.assertEquals(
-              supplyLines.get(0).getProgram().getId(),
+              supplyLine.getProgram().getId(),
               receivedSupplyLine.getProgram().getId());
       Assert.assertEquals(
-              supplyLines.get(0).getSupervisoryNode().getId(),
+              supplyLine.getSupervisoryNode().getId(),
               receivedSupplyLine.getSupervisoryNode().getId());
-      Assert.assertEquals(
-              supplyLines.get(0).getId(),
-              receivedSupplyLine.getId());
     }
+  }
+
+  @Test
+  public void testSearchSupplyLinesByAllParametersNull() {
+    List<SupplyLine> receivedSupplyLines = repository.searchSupplyLines(
+            null, null);
+
+    Assert.assertEquals(5, receivedSupplyLines.size());
+  }
+
+  @Test
+  public void testSearchSupplyLinesByProgram() {
+    SupplyLine supplyLine = cloneSupplyLine(supplyLines.get(0));
+    List<SupplyLine> receivedSupplyLines = repository.searchSupplyLines(
+            supplyLine.getProgram(), null);
+
+    Assert.assertEquals(1, receivedSupplyLines.size());
+    for (SupplyLine receivedSupplyLine : receivedSupplyLines) {
+      Assert.assertEquals(
+              supplyLine.getProgram().getId(),
+              receivedSupplyLine.getProgram().getId());
+    }
+  }
+
+  private SupplyLine cloneSupplyLine(SupplyLine supplyLine) {
+    SupplyLine clonedSupplyLine = new SupplyLine();
+    clonedSupplyLine.setProgram(supplyLine.getProgram());
+    clonedSupplyLine.setSupervisoryNode(supplyLine.getSupervisoryNode());
+    clonedSupplyLine.setDescription(supplyLine.getDescription());
+    clonedSupplyLine.setSupplyingFacility(supplyLine.getSupplyingFacility());
+    repository.save(clonedSupplyLine);
+    return clonedSupplyLine;
   }
 
   private SupervisoryNode generateSupervisoryNode() {
