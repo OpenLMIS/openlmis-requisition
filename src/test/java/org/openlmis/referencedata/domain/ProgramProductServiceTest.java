@@ -1,4 +1,4 @@
-package org.openlmis;
+package org.openlmis.referencedata.domain;
 
 import org.junit.Assert;
 import org.junit.Before;
