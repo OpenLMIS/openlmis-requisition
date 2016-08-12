@@ -32,11 +32,14 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Component
 public class CleanRepositoryHelper {
+
+  static final UUID INITIAL_USER_ID = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
   @Autowired
   private ProductRepository productRepository;
@@ -132,35 +135,42 @@ public class CleanRepositoryHelper {
   public void cleanAll() {
     templateParameterRepository.deleteAll();
     templateRepository.deleteAll();
-    stockRepository.deleteAll();
-    requisitionGroupRepository.deleteAll();
-    requisitionGroupProgramScheduleRepository.deleteAll();
-    supplyLineRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
     proofOfDeliveryLineRepository.deleteAll();
     proofOfDeliveryRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    commentRepository.deleteAll();
-    requisitionTemplateRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    facilityTypeApprovedProductRepository.deleteAll();
-    programProductRepository.deleteAll();
-    productRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityOperatorRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    productCategoryRepository.deleteAll();
     configurationSettingRepository.deleteAll();
+    facilityTypeApprovedProductRepository.deleteAll();
+    commentRepository.deleteAll();
+    orderLineRepository.deleteAll();
+    requisitionLineRepository.deleteAll();
+    stockRepository.deleteAll();
+    programProductRepository.deleteAll();
+    requisitionRepository.deleteAll();
+    requisitionGroupProgramScheduleRepository.deleteAll();
+    requisitionTemplateRepository.deleteAll();
+    supplyLineRepository.deleteAll();
+    orderRepository.deleteAll();
+    productRepository.deleteAll();
+    periodRepository.deleteAll();
+    programRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
+    deleteAllUsersExceptAdmin();
+    productCategoryRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    facilityRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    requisitionGroupRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    facilityOperatorRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+  }
+
+  private void deleteAllUsersExceptAdmin() {
+    User initialUser = userRepository.findOne(INITIAL_USER_ID);
+    initialUser.setHomeFacility(null);
+    initialUser.setSupervisedNode(null);
+    userRepository.save(initialUser);
     for (User user : userRepository.findAll()) {
-      if (!user.getUsername().equals("admin")) {
+      if (!user.getId().equals(INITIAL_USER_ID)) {
         userRepository.delete(user);
       }
     }
