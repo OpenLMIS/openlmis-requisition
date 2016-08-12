@@ -1,6 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,12 +35,19 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.reporting.exception.ReportingException;
+import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -343,7 +351,15 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testPrintProofOfDeliveryToPdf() {
+  public void testPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
+    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+    FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
+    MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",
+        podReport.getFilename(), "multipart/form-data", IOUtils.toByteArray(fileInputStream));
+
+    Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, "");
+    templateService.validateFileAndInsertTemplate(template, templateOfProofOfDelivery);
+
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
         .queryParam("access_token", getToken())

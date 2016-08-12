@@ -1479,7 +1479,7 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                     body:
-                      application/json:
+                      application/pdf:
                 "400":
                     headers:
                       X-Content-Type-Options:
