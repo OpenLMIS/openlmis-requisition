@@ -24,6 +24,8 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.reporting.repository.TemplateParameterRepository;
+import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -117,11 +119,19 @@ public class CleanRepositoryHelper {
   @Autowired
   private StockRepository stockRepository;
 
+  @Autowired
+  private TemplateParameterRepository templateParameterRepository;
+
+  @Autowired
+  private TemplateRepository templateRepository;
+
   /**
    * Delete all entities from most of repositories.
    */
   @Transactional
   public void cleanAll() {
+    templateParameterRepository.deleteAll();
+    templateRepository.deleteAll();
     stockRepository.deleteAll();
     requisitionGroupRepository.deleteAll();
     requisitionGroupProgramScheduleRepository.deleteAll();

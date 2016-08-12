@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openlmis.reporting.repository.TemplateParameterRepository;
@@ -25,15 +24,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private TemplateParameterRepository templateParameterRepository;
-
-  /**
-   * Cleanup the test environment.
-   */
-  @After
-  public void cleanUp() {
-    templateParameterRepository.deleteAll();
-    templateRepository.deleteAll();
-  }
 
   @Test
   public void testAddReportTemplate() throws IOException {
