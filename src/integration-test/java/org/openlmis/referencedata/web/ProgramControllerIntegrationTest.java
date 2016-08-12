@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,11 +29,6 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
     program.setCode("code");
     program.setName("name");
     programRepository.save(program);
-  }
-
-  @After
-  public void cleanup() {
-    programRepository.deleteAll();
   }
 
   @Test

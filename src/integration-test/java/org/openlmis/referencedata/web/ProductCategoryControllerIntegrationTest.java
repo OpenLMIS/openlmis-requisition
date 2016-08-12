@@ -3,7 +3,6 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,11 +34,6 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
     for ( int productCategoriesCount = 0; productCategoriesCount < 5; productCategoriesCount++ ) {
       productCategories.add(generateProductCategory());
     }
-  }
-
-  @After
-  public void cleanUp() {
-    productCategoryRepository.deleteAll();
   }
 
   @Test

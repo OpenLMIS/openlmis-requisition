@@ -3,7 +3,6 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,12 +32,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void setUp() {
     currentInstanceNumber = 0;
     requisitionTemplate = generateRequisitionTemplate();
-  }
-
-  @After
-  public void cleanUp() {
-    requisitionTemplateRepository.deleteAll();
-    programRepository.deleteAll();
   }
 
   @Test
