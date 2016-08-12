@@ -157,7 +157,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
     facilityTypeRepository.deleteAll();
-
   }
 
   @Test

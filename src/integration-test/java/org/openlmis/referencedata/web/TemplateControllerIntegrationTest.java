@@ -9,13 +9,15 @@ import org.openlmis.reporting.repository.TemplateParameterRepository;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertThat;
 
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = BASE_URL + "/api/templates";
-
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
 
   @Autowired
@@ -39,7 +41,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam("access_token", getToken())
-        .contentType("multipart/form-data")
+        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
         .multiPart("file", podReport.getFilename(), podReport.getInputStream())
         .formParam("name", TEMPLATE_CONTROLLER_TEST)
         .formParam("description", TEMPLATE_CONTROLLER_TEST)
@@ -47,7 +49,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .then().statusCode(200);
 
     Assert.assertNotNull(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST));
-    Assert.assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(),
-        RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

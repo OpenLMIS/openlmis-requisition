@@ -48,12 +48,15 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
             .queryParam(CODE, productCategories.get(0).getCode())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
-            .get(SEARCH_URL).as(ProductCategory[].class);
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(ProductCategory[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    Assert.assertEquals(1, response.length);
     for ( ProductCategory productCategory : response ) {
-      Assert.assertEquals(productCategory.getCode(),productCategories.get(0).getCode());
+      Assert.assertEquals(productCategory.getCode(), productCategories.get(0).getCode());
     }
   }
 
@@ -71,5 +74,4 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
     currentInstanceNumber += 1;
     return currentInstanceNumber;
   }
-
 }

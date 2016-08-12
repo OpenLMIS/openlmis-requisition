@@ -63,10 +63,9 @@ import static org.junit.Assert.assertThat;
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = BASE_URL + "/api/proofOfDeliveries/{id}/print";
-
   private static final String PRINT_POD = "Print POD";
-
   private static final String CONSISTENCY_REPORT = "Consistency Report";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private TemplateService templateService;
@@ -119,15 +118,13 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryLine proofOfDeliveryLine1 = new ProofOfDeliveryLine();
   private ProofOfDeliveryLine proofOfDeliveryLine2 = new ProofOfDeliveryLine();
-  private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<ProofOfDeliveryLine>();
+  private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<>();
 
   /**
    * Prepare the test environment.
    */
   @Before
   public void setUp() {
-    cleanUp();
-
     Schedule schedule1 = new Schedule();
     schedule1.setCode("S1");
     schedule1.setName("Schedule1");
@@ -174,14 +171,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setReceivedDate(new Date());
     proofOfDeliveryRepository.save(proofOfDelivery);
 
-    initProofOfDeliverLine1(orderLine1);
-    initProofOfdeliverLine2(orderLine2);
+    initProofOfDeliveryLine1(orderLine1);
+    initProofOfDeliveryLine2(orderLine2);
     proofOfDeliveryLineList.add(proofOfDeliveryLine1);
     proofOfDeliveryLineList.add(proofOfDeliveryLine2);
     proofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
   }
 
-  private void initProofOfdeliverLine2(OrderLine orderLine2) {
+  private void initProofOfDeliveryLine2(OrderLine orderLine2) {
     proofOfDeliveryLine2.setOrderLine(orderLine2);
     proofOfDeliveryLine2.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLine2.setQuantityShipped(200L);
@@ -193,7 +190,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryLineRepository.save(proofOfDeliveryLine2);
   }
 
-  private void initProofOfDeliverLine1(OrderLine orderLine1) {
+  private void initProofOfDeliveryLine1(OrderLine orderLine1) {
     proofOfDeliveryLine1.setOrderLine(orderLine1);
     proofOfDeliveryLine1.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLine1.setQuantityShipped(100L);
@@ -362,7 +359,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
-        .queryParam("access_token", getToken())
+        .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(RESOURCE_URL)
         .then()

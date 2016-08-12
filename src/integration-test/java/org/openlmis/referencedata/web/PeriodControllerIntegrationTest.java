@@ -22,6 +22,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = BASE_URL + "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
   private static final String ACCESS_TOKEN = "access_token";
@@ -38,8 +39,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Before
   public void setUp() {
-    cleanup();
-
     schedule.setCode("code");
     schedule.setName("schedule");
     schedule.setDescription("Test schedule");
@@ -130,9 +129,9 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
     String response = restAssured.given()
         .pathParam("id", firstPeriod.getId())
-        .queryParam("access_token", getToken())
+        .queryParam(ACCESS_TOKEN, getToken())
         .when()
-        .get("/api/periods/{id}/difference")
+        .get(DIFFERENCE_URL)
         .then()
         .statusCode(200)
         .extract().asString();

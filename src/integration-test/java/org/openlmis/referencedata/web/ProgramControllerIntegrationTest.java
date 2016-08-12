@@ -9,12 +9,15 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
 import static org.junit.Assert.assertThat;
 
 public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private ProgramRepository programRepository;
@@ -23,7 +26,6 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Before
   public void setUp() {
-    programRepository.deleteAll();
     program.setCode("code");
     program.setName("name");
     programRepository.save(program);
@@ -39,8 +41,8 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
     ProgramDto programDto = new ProgramDto(program.getId(), "newCode", "newName");
 
     Program response = restAssured.given()
-        .queryParam("access_token", getToken())
-        .contentType("application/json")
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(programDto)
         .when()
         .put("/api/programs/update")
@@ -57,8 +59,8 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   public void testUpdateIfProgramWithGivenIdNotExist() {
     ProgramDto programDto = new ProgramDto(UUID.randomUUID(), "new code", "new name");
     restAssured.given()
-        .queryParam("access_token", getToken())
-        .contentType("application/json")
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(programDto)
         .when()
         .put("/api/programs/update")
@@ -71,8 +73,8 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   public void testUpdateIfProgramIdIsNull() {
     ProgramDto programDto = new ProgramDto(null, "new code", "new name");
     restAssured.given()
-        .queryParam("access_token", getToken())
-        .contentType("application/json")
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(programDto)
         .when()
         .put("/api/programs/update")

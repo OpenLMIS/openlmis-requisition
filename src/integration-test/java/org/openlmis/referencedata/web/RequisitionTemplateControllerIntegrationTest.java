@@ -48,10 +48,12 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(SEARCH_URL)
-        .as(RequisitionTemplate[].class);
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionTemplate[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1, response.length);
     for ( RequisitionTemplate responseRequisitionTemplate : response ) {
       Assert.assertEquals(
           requisitionTemplate.getProgram().getId(),

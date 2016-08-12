@@ -26,7 +26,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
-  private static final String FULLSUPPLY = "fullSupply";
+  private static final String FULL_SUPPLY = "fullSupply";
 
   @Autowired
   private ProgramProductRepository programProductRepository;
@@ -65,13 +65,15 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   public void testSearchProgramProducts() {
     ProgramProduct[] response = restAssured.given()
             .queryParam(PROGRAM, programProducts.get(0).getProgram().getId())
-            .queryParam(FULLSUPPLY, programProducts.get(0).isFullSupply())
+            .queryParam(FULL_SUPPLY, programProducts.get(0).isFullSupply())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
-            .get(SEARCH_URL).as(ProgramProduct[].class);
+            .get(SEARCH_URL)
+            .then()
+            .extract().as(ProgramProduct[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    Assert.assertEquals(1, response.length);
     for ( ProgramProduct programProduct : response ) {
       Assert.assertEquals(
               programProduct.getProgram().getId(),

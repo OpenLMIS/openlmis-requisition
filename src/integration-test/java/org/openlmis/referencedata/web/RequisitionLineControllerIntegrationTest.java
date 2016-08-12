@@ -115,10 +115,12 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(SEARCH_URL)
-        .as(RequisitionLine[].class);
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionLine[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    Assert.assertEquals(1, response.length);
     for ( RequisitionLine responseRequisitionLine : response ) {
       Assert.assertEquals(
           requisition.getId(),

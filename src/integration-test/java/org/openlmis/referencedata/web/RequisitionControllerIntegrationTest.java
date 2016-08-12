@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.apache.commons.collections.IteratorUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,7 +44,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -126,8 +124,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Before
   public void setUp() throws JsonProcessingException {
-    cleanUp();
-
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
     productCategory1.setName("PC1 name");
@@ -250,10 +246,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
             .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
             .when()
-            .get(SEARCH_URL).as(Requisition[].class);
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(Requisition[].class);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1,response.length);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertEquals(1, response.length);
     for ( Requisition receivedRequisition : response ) {
       Assert.assertEquals(
               receivedRequisition.getProgram().getId(),
@@ -294,7 +293,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertNotNull(response.getId());
     Assert.assertEquals(requisition.getId(), response.getId());
     Assert.assertEquals(RequisitionStatus.SUBMITTED, response.getStatus());
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -319,7 +318,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -356,7 +355,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -393,7 +392,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -431,7 +430,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "\"A beginning balance must be a non-negative value.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -468,7 +467,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + " must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -506,7 +505,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "\"A total received quantity must be a non-negative value.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -543,7 +542,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -581,7 +580,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + " must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -619,7 +618,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           + "to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -633,7 +632,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .then()
             .statusCode(200);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -651,7 +650,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .then()
             .statusCode(200);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -666,7 +665,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .then()
             .statusCode(400);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -684,10 +683,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .then()
           .statusCode(204);
 
-    boolean exists = requisitionRepository.exists(requisition.getId());
-    Assert.assertFalse(exists);
-
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    Assert.assertFalse(requisitionRepository.exists(requisition.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -705,8 +702,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .then()
           .statusCode(400);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private void createComment(User author, Requisition req, String commentText) {
@@ -735,10 +731,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .statusCode(200)
           .extract().as(Comment[].class);
 
-    Iterable<Comment> comments = Arrays.asList(response);
-    Iterator<Comment> commentIterator = comments.iterator();
-    List<Comment> commentList = IteratorUtils.toList(commentIterator);
-
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    List<Comment> commentList = Arrays.asList(response);
     Assert.assertEquals("First comment", commentList.get(0).getBody());
     Assert.assertEquals("Second comment", commentList.get(1).getBody());
   }
@@ -764,10 +758,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .statusCode(200)
           .extract().as(Comment[].class);
 
-    Iterable<Comment> comments = Arrays.asList(response);
-    Iterator<Comment> commentIterator = comments.iterator();
-    List<Comment> commentList = IteratorUtils.toList(commentIterator);
-
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    List<Comment> commentList = Arrays.asList(response);
     Assert.assertEquals("Previous comment", commentList.get(0).getBody());
     Assert.assertEquals("User comment", commentList.get(1).getBody());
   }
@@ -787,8 +779,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertNotNull(response.getId());
     Assert.assertEquals(requisition.getId(), response.getId());
     Assert.assertEquals(RequisitionStatus.APPROVED, response.getStatus());
-
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -820,7 +811,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .then()
           .statusCode(201);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -840,8 +831,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     Iterable<Requisition> requisitions = Arrays.asList(response);
     Assert.assertTrue(requisitions.iterator().hasNext());
-
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -860,7 +850,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .then()
           .statusCode(200);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -880,6 +870,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .then()
           .statusCode(400);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
