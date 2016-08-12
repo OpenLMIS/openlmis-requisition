@@ -4,7 +4,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
@@ -41,12 +40,6 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
-  }
-
-  @After
-  public void cleanup() {
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
   }
 
   @Test

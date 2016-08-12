@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,12 +50,6 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setDescription("Test period");
     secondPeriod.setStartDate(LocalDate.of(2016, 2, 2));
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
-  }
-
-  @After
-  public void cleanup() {
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
   }
 
   @Test
