@@ -128,7 +128,6 @@ public class ProgramProductServiceTest {
   }
 
   private void mockRepositories() {
-
     when(programProductRepository
             .findOne(programProduct.getId()))
             .thenReturn(programProduct);

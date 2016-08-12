@@ -302,17 +302,19 @@ public class RequisitionLineServiceTest {
   }
 
   private void mockRepositories() {
-    when(requisitionTemplateService.searchRequisitionTemplates(requisition2.getProgram()))
-        .thenReturn(Arrays.asList(requisitionTemplate));
-    when(periodService.searchPeriods(
-        requisition2.getProcessingPeriod().getProcessingSchedule(),
-        requisition2.getProcessingPeriod().getStartDate()))
-        .thenReturn(Arrays.asList(period));
-    when(requisitionService.searchRequisitions(
-        requisition.getFacility(), requisition.getProgram(),
-        null,null, period, null, null))
-        .thenReturn(Arrays.asList(requisition));
-    when(requisitionLineService.searchRequisitionLines(
-        requisition, product)).thenReturn(Arrays.asList(requisitionLine));
+    when(requisitionTemplateService
+            .searchRequisitionTemplates(requisition2.getProgram()))
+            .thenReturn(Arrays.asList(requisitionTemplate));
+    when(periodService
+            .searchPeriods(requisition2.getProcessingPeriod().getProcessingSchedule(),
+                    requisition2.getProcessingPeriod().getStartDate()))
+            .thenReturn(Arrays.asList(period));
+    when(requisitionService
+            .searchRequisitions(requisition.getFacility(), requisition.getProgram(),
+                    null,null, period, null, null))
+            .thenReturn(Arrays.asList(requisition));
+    when(requisitionLineService
+            .searchRequisitionLines(requisition, product))
+            .thenReturn(Arrays.asList(requisitionLine));
   }
 }
