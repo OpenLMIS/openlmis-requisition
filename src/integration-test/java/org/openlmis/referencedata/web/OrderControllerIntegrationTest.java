@@ -54,6 +54,13 @@ import java.util.Collections;
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "/api/orders";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String REQUESTING_FACILITY = "requestingFacility";
+  private static final String SUPPLYING_FACILITY = "supplyingFacility";
+  private static final String PROGRAM = "program";
+
   @Autowired
   private FacilityRepository facilityRepository;
 
@@ -98,13 +105,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private SupplyLineRepository supplyLineRepository;
-
-  private static final String RESOURCE_URL = BASE_URL + "/api/orders";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String REQUESTING_FACILITY = "requestingFacility";
-  private static final String SUPPLYING_FACILITY = "supplyingFacility";
-  private static final String PROGRAM = "program";
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();

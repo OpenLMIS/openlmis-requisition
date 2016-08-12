@@ -69,6 +69,9 @@ public class RequisitionLineService {
 
   /**
    * Method returns all requisition lines with matched parameters.
+   * @param requisition requisition of searched requisition lines.
+   * @param product product of searched requisition lines.
+   * @return list of requisition lines with matched parameters.
    */
   public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -123,13 +126,14 @@ public class RequisitionLineService {
       List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
       previousRequisition = requisitionService.searchRequisitions(
-              requisition.getFacility(),
-              requisition.getProgram(),
-              null,null,
-              previousPeriods.iterator().next(),
-              null,
-              null);
-      if ( previousRequisition.size() == 0) {
+          requisition.getFacility(),
+          requisition.getProgram(),
+          null,
+          null,
+          previousPeriods.iterator().next(),
+          null,
+          null);
+      if (previousRequisition.size() == 0) {
         return;
       }
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
@@ -139,7 +143,6 @@ public class RequisitionLineService {
         if (requisitionLine.getBeginningBalance() == null) {
           if (previousRequisitionLine != null
               && previousRequisitionLine.get(0).getStockInHand() != null) {
-
             requisitionLine.setBeginningBalance(previousRequisitionLine.get(0).getStockInHand());
           } else {
             requisitionLine.setBeginningBalance(0);
@@ -164,12 +167,13 @@ public class RequisitionLineService {
     }
     List<Requisition> previousRequisition =
             requisitionService.searchRequisitions(
-                    requisition.getFacility(),
-                    requisition.getProgram(),
-                    null,null,
-                    previousPeriods.iterator().next(),
-                    null,
-                    null);
+                requisition.getFacility(),
+                requisition.getProgram(),
+                null,
+                null,
+                previousPeriods.iterator().next(),
+                null,
+                null);
 
     if (previousRequisition.size() == 0) {
       requisitionLine.setBeginningBalance(0);

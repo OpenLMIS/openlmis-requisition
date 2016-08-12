@@ -51,16 +51,19 @@ time.setTimeZone(TimeZone.getTimeZone("GMT"))
 
 def versionToCopy = copySpec {
     from 'src/main/resources'
-    include 'version'
+    include 'version_template'
 }
 
 task generateBuildInfo(type:Copy) {
     with versionToCopy
     into 'build/resources/main'
+    rename { 'version.properties' }
     expand([
-            build: "$System.env.BUILD_NUMBER",
-            branch: "$System.env.GIT_BRANCH",
-            time: time.format(new Date()) + " GMT"
+            build: "$System.env.BUILD_NUMBER", // ${build}
+            branch: "$System.env.GIT_BRANCH", // ${branch}
+            time: time.format(new Date()) + " GMT" // ${time}
     ])
+    doLast{
+        delete 'src/main/resources/version_template'
+    }
 }
-

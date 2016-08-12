@@ -1,7 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertThat;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -17,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertThat;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 

@@ -658,12 +658,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Comment comment = new Comment();
     comment.setAuthor(author);
     comment.setRequisition(req);
-    comment.setCommentText(commentText);
+    comment.setBody(commentText);
     commentRepository.save(comment);
   }
 
   @Test
-  public void getCommentsForRequisitionTest() {
+  public void testGetCommentsForRequisition() {
     createComment(user, requisition, "First comment");
     createComment(user, requisition, "Second comment");
 
@@ -684,19 +684,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Iterator<Comment> commentIterator = comments.iterator();
     List<Comment> commentList = IteratorUtils.toList(commentIterator);
 
-    Assert.assertEquals("First comment", commentList.get(0).getCommentText());
-    Assert.assertEquals("Second comment", commentList.get(1).getCommentText());
+    Assert.assertEquals("First comment", commentList.get(0).getBody());
+    Assert.assertEquals("Second comment", commentList.get(1).getBody());
   }
 
   @Test
-  public void insertCommentTest() throws JsonProcessingException {
+  public void testInsertComment() throws JsonProcessingException {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
     createComment(user, requisition, "Previous comment");
     Comment userPostComment = new Comment();
-    userPostComment.setCommentText("User comment");
+    userPostComment.setBody("User comment");
 
     Comment[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -713,11 +713,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Iterator<Comment> commentIterator = comments.iterator();
     List<Comment> commentList = IteratorUtils.toList(commentIterator);
 
-    Assert.assertEquals("Previous comment", commentList.get(0).getCommentText());
-    Assert.assertEquals("User comment", commentList.get(1).getCommentText());
+    Assert.assertEquals("Previous comment", commentList.get(0).getBody());
+    Assert.assertEquals("User comment", commentList.get(1).getBody());
   }
 
-  private void approveRequisitionTest(Requisition requisition) {
+  private void testApproveRequisition(Requisition requisition) {
 
     Requisition response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -740,7 +740,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testApproveRequisition() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
-    approveRequisitionTest(requisition);
+    testApproveRequisition(requisition);
   }
 
   @Test
@@ -748,7 +748,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
-    approveRequisitionTest(requisition);
+    testApproveRequisition(requisition);
   }
 
   @Test

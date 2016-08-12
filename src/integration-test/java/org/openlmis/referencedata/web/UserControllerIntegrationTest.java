@@ -24,6 +24,16 @@ import java.util.List;
 
 public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "/api/users";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String USERNAME = "username";
+  private static final String FIRST_NAME = "firstName";
+  private static final String LAST_NAME = "lastName";
+  private static final String HOME_FACILITY = "homeFacility";
+  private static final String ACTIVE = "active";
+  private static final String VERIFIED = "verified";
+
   @Autowired
   private UserRepository userRepository;
 
@@ -38,16 +48,6 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private FacilityRepository facilityRepository;
-
-  private static final String RESOURCE_URL = BASE_URL + "/api/users";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String USERNAME = "username";
-  private static final String FIRST_NAME = "firstName";
-  private static final String LAST_NAME = "lastName";
-  private static final String HOME_FACILITY = "homeFacility";
-  private static final String ACTIVE = "active";
-  private static final String VERIFIED = "verified";
 
   private List<User> users;
 

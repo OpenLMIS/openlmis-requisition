@@ -36,6 +36,17 @@ import java.time.LocalDate;
 
 public class RequisitionLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String RESOURCE_URL = BASE_URL + "/api/requisitionLines";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String REQUISITION = "requisition";
+  private static final String PRODUCT = "product";
+  private static final String TEST_CODE = "123";
+  private static final String TEST_NAME = "Name";
+  private static final Integer BEGINNING_BALANCE = 100;
+  private static final Integer TOTAL_RECEIVED_QUANTITY = 200;
+  private static final Integer TOTAL_LOSSES_AND_ADJUSTMENTS = 300;
+
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
 
@@ -69,17 +80,6 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/requisitionLines";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String ACCESS_TOKEN = "access_token";
-  private static final String REQUISITION = "requisition";
-  private static final String PRODUCT = "product";
-  private static final String TEST_CODE = "123";
-  private static final String TEST_NAME = "Name";
-  private static final Integer BEGINNING_BALANCE = 100;
-  private static final Integer TOTAL_RECEIVED_QUANTITY = 200;
-  private static final Integer TOTAL_LOSSES_AND_ADJUSTMENTS = 300;
-
   private RequisitionLine requisitionLine;
   private Requisition requisition = new Requisition();
   private Period period = new Period();
@@ -95,16 +95,15 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   @After
   public void cleanUp() {
     requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
     requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
     periodRepository.deleteAll();
     scheduleRepository.deleteAll();
+    facilityRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     geographicLevelRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    programRepository.deleteAll();
+    productRepository.deleteAll();
     productCategoryRepository.deleteAll();
   }
 

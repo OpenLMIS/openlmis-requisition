@@ -1,11 +1,8 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.hierarchyandsupervision.domain.Right;
-import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
@@ -187,24 +184,6 @@ public class RequisitionService {
   }
 
   /**
-   * Get all comments for specified requisition.
-   */
-  public List<Comment> getCommentsByReqId(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    List<Comment> comments = requisition.getComments();
-    if (comments != null) {
-      for (Comment comment : comments) {
-        User user = comment.getAuthor();
-        comment.setAuthor(user.basicInformation());
-
-        Requisition req = comment.getRequisition();
-        comment.setRequisition(req.basicInformation());
-      }
-    }
-    return comments;
-  }
-
-  /**
    * Finds requisitions matching all of provided parameters.
    */
   public List<Requisition> searchRequisitions(Facility facility, Program program,
@@ -253,23 +232,11 @@ public class RequisitionService {
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     User user = userRepository.findOne(userId);
-    List<Role> roles = user.getRoles();
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    for (Role role : roles) {
-      if (role.getSupervisedNode() != null && findApproveRight(role.getRights())) {
-        requisitionsForApproval.addAll(getAuthorizedRequisitions(role.getSupervisedNode()));
-      }
+    if (user.getSupervisedNode() != null) {
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));
     }
     return requisitionsForApproval;
-  }
-
-  private boolean findApproveRight(List<Right> rightList) {
-    for (Right right : rightList) {
-      if (right.getName().equals("APPROVE_REQUISITION")) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -284,7 +251,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(null,null,null,null,null,supNode, null);
+      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

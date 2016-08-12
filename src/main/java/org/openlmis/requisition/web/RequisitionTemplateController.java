@@ -22,6 +22,9 @@ public class RequisitionTemplateController {
 
   /**
    * Returns all requisition templates with matched parameters.
+   * @param program program of searched requisition templates.
+   * @return ResponseEntity with list of all requisition templates matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitionTemplates(

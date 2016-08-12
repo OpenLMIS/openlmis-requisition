@@ -19,13 +19,13 @@ import org.openlmis.referencedata.domain.Program;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -45,7 +45,9 @@ public class Requisition extends BaseEntity {
   private LocalDateTime createdDate;
 
   // TODO: determine why it has to be set explicitly
-  @OneToMany(mappedBy = "requisition")
+  @OneToMany(mappedBy = "requisition",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER)
   @Getter
   @Setter
   @JsonIdentityInfo(
@@ -91,10 +93,6 @@ public class Requisition extends BaseEntity {
   @Setter
   private String remarks;
 
-  Requisition(UUID id) {
-    this.setId(id);
-  }
-
   @ManyToOne
   @JoinColumn(name = "supervisoryNodeId")
   @Getter
@@ -104,9 +102,5 @@ public class Requisition extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
-  }
-
-  public Requisition basicInformation() {
-    return new Requisition(getId());
   }
 }

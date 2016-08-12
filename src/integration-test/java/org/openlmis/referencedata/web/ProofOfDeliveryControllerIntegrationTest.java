@@ -34,6 +34,7 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -52,6 +53,15 @@ import java.util.Set;
 import static org.junit.Assert.assertThat;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = BASE_URL + "/api/proofOfDeliveries/{id}/print";
+
+  private static final String PRINT_POD = "Print POD";
+
+  private static final String CONSISTENCY_REPORT = "Consistency Report";
+
+  @Autowired
+  private TemplateService templateService;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -98,15 +108,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
 
-  private ProofOfDelivery proofOfDelivery =
-      new ProofOfDelivery();
-  private ProofOfDeliveryLine proofOfDeliveryLine1 =
-      new ProofOfDeliveryLine();
-  private ProofOfDeliveryLine proofOfDeliveryLine2 =
-      new ProofOfDeliveryLine();
-  private List<ProofOfDeliveryLine> proofOfDeliveryLineList =
-      new ArrayList<ProofOfDeliveryLine>();
+  private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+  private ProofOfDeliveryLine proofOfDeliveryLine1 = new ProofOfDeliveryLine();
+  private ProofOfDeliveryLine proofOfDeliveryLine2 = new ProofOfDeliveryLine();
+  private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<ProofOfDeliveryLine>();
 
+  /**
+   * Prepare the test environment.
+   */
   @Before
   public void setUp() {
     cleanUp();
@@ -339,7 +348,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .pathParam("id", proofOfDelivery.getId())
         .queryParam("access_token", getToken())
         .when()
-        .get("/api/proofOfDeliveries/{id}/print")
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200);
 

@@ -22,7 +22,8 @@ public class ProductCategoryController {
   /**
    * Finds ProductCategories matching all of provided parameters.
    * @param code code of productCategory.
-   * @return list of all ProductCategories matching all of provided parameters.
+   * @return ResponseEntity with list of all Product Categories matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/productCategories/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchProductCategories(

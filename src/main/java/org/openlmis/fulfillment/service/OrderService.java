@@ -83,6 +83,10 @@ public class OrderService {
 
   /**
    * Finds orders matching all of provided parameters.
+   * @param supplyingFacility supplyingFacility of searched Orders.
+   * @param requestingFacility requestingFacility of searched Orders.
+   * @param program program of searched Orders.
+   * @return ist of Orders with matched parameters.
    */
   public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
                                   Program program) {

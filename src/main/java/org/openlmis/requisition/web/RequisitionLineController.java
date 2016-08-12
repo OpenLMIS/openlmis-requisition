@@ -22,10 +22,14 @@ public class RequisitionLineController {
 
   /**
    * Returns all requisition lines with matched parameters.
+   * @param requisition requisition of searched requisition lines.
+   * @param product product of searched requisition lines.
+   * @return ResponseEntity with list of all requisition lines matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/requisitionLines/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitionLines(
-      @RequestParam(value = "requisition", required = false) Requisition requisition, //TODO true
+      @RequestParam(value = "requisition", required = true) Requisition requisition,
       @RequestParam(value = "product", required = true) Product product) {
     List<RequisitionLine> result = requisitionLineService
         .searchRequisitionLines(requisition, product);

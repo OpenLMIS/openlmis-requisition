@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -21,7 +22,7 @@ public class ProofOfDeliveryLine extends BaseEntity {
   @Setter
   private OrderLine orderLine;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "proofOfDeliveryId", nullable = false)
   @Getter
   @Setter

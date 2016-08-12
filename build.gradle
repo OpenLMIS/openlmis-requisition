@@ -28,6 +28,8 @@ jar {
 repositories {
     mavenCentral()
     jcenter()
+    maven { url "http://jaspersoft.artifactoryonline.com/jaspersoft/third-party-ce-artifacts/" }
+    maven { url "http://jasperreports.sourceforge.net/maven2/" }
 }
 
 sourceCompatibility = 1.8
@@ -48,6 +50,9 @@ dependencies {
     compile "net.sf.jasperreports:jasperreports:6.3.0"
     compile "com.lowagie:itext:2.1.7"
     compile "org.olap4j:olap4j:1.2.0"
+    compile 'net.sf.jasperreports:jasperreports:6.1.1'
+    compile 'commons-io:commons-io:2.4'
+    compile 'org.springframework:spring-context-support'
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'
@@ -56,11 +61,6 @@ dependencies {
 
     testCompile "org.springframework.boot:spring-boot-starter-test"
     testCompile "guru.nidi.raml:raml-tester:0.8.9"
-    compile "org.apache.commons:commons-csv:1.4"
-    compile 'com.itextpdf:kernel:7.0.0'
-    compile 'com.itextpdf:layout:7.0.0'
-    compile 'com.itextpdf:forms:7.0.0'
-
     testCompile "junit:junit"
     testCompile "org.mockito:mockito-core:1.+"
 }

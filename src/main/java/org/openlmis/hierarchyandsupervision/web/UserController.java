@@ -21,13 +21,14 @@ public class UserController {
 
   /**
    * Returns all users with matched parameters
-   * @param username username of user we want search.
-   * @param firstName firstName of user we want search.
-   * @param lastName lastName of user we want search.
-   * @param homeFacility homeFacility of user we want search.
+   * @param username username of user we want to search.
+   * @param firstName firstName of user we want to search.
+   * @param lastName lastName of user we want to search.
+   * @param homeFacility homeFacility of user we want to search.
    * @param active is the user account active.
    * @param verified is the user account verified.
-   * @return returns all users with matched parameters
+   * @return ResponseEntity with list of all Users matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/users/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchUsers(

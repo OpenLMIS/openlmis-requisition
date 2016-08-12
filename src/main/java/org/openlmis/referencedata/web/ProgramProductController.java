@@ -23,7 +23,8 @@ public class ProgramProductController {
    * Finds ProgramProducts matching all of provided parameters.
    * @param program program of ProgramProducts we want search.
    * @param fullSupply is the searched ProgramProducts fullSuplly.
-   * @return list of all ProgramProducts matching all of provided parameters.
+   * @return ResponseEntity with list of all ProgramProducts matching
+   *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/programProducts/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchProgramProducts(
