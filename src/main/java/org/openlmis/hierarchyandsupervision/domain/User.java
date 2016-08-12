@@ -34,13 +34,11 @@ public class User extends BaseEntity {
   @Setter
   private String password;
 
-  @JsonView(View.BasicInformation.class)
   @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter
   private String firstName;
-
-  @JsonView(View.BasicInformation.class)
+  
   @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter
