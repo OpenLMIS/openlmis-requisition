@@ -50,10 +50,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderServiceTest {
 
-  @InjectMocks
-  @Autowired
-  private OrderService orderService;
-
   @Mock
   private RequisitionService requisitionService;
 
@@ -74,6 +70,10 @@ public class OrderServiceTest {
 
   @Mock
   private SupplyLineRepository supplyLineRepository;
+
+  @InjectMocks
+  @Autowired
+  private OrderService orderService;
 
   private Integer currentInstanceNumber;
   private User user;
@@ -366,22 +366,55 @@ public class OrderServiceTest {
     return supplyLine;
   }
 
+  private Boolean checkIfSupplyLineMatchCriteria(SupplyLine supplyLine, Requisition requisition) {
+    if (supplyLine.getProgram().getId() != requisition.getProgram().getId()) {
+      return false;
+    }
+    if (supplyLine.getSupervisoryNode().getId() != requisition.getSupervisoryNode().getId()) {
+      return false;
+    }
+    return true;
+  }
+
+  private Boolean checkIfOrderMatchCriteria(Order orderModel, Order orderToCheck) {
+    if (orderModel.getSupplyingFacility().getId()
+            != orderToCheck.getSupplyingFacility().getId()) {
+      return false;
+    }
+    if (orderModel.getRequestingFacility().getId()
+            != orderToCheck.getRequestingFacility().getId()) {
+      return false;
+    }
+    if (orderModel.getProgram().getId()
+            != orderToCheck.getProgram().getId()) {
+      return false;
+    }
+    return true;
+  }
+
+  private String prepareExpectedCsvOutput(Order order, List<String> header) {
+    String expected = "";
+    for (int column = 0; column < header.size(); column++) {
+      expected = expected + header.get(column) + ",";
+    }
+    expected = expected.substring(0, expected.length() - 1);
+    expected = expected + "\r\n";
+    for (OrderLine orderLine : order.getOrderLines()) {
+      expected = expected
+              + order.getRequestingFacility().getCode() + ","
+              + order.getCreatedDate() + ","
+              + orderLine.getProduct().getPrimaryName() + ","
+              + orderLine.getProduct().getCode() + ","
+              + orderLine.getOrderedQuantity() + ",";
+      expected = expected.substring(0, expected.length() - 1);
+      expected = expected + "\r\n";
+    }
+    return expected;
+  }
+
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    mockOrderRepositoryFindOneOrder();
-    mockOrderRepositorySaveOrder();
-    mockOrderRepositorySearchOrders();
-    mockOrderRepositoryCountOrders();
-    mockUserRepositoryFindOneUser();
-    mockRequisitionRepositoryFindOneRequisition();
-  }
-
-  private void mockServices() {
-    mockSupplyLineServiceSearchSupplyLine();
   }
 
   private void mockRequisitionRepositoryFindOneRequisition() {
@@ -452,50 +485,17 @@ public class OrderServiceTest {
     }
   }
 
-  private Boolean checkIfSupplyLineMatchCriteria(SupplyLine supplyLine, Requisition requisition) {
-    if (supplyLine.getProgram().getId() != requisition.getProgram().getId()) {
-      return false;
-    }
-    if (supplyLine.getSupervisoryNode().getId() != requisition.getSupervisoryNode().getId()) {
-      return false;
-    }
-    return true;
+  private void mockRepositories() {
+    mockOrderRepositoryFindOneOrder();
+    mockOrderRepositorySaveOrder();
+    mockOrderRepositorySearchOrders();
+    mockOrderRepositoryCountOrders();
+    mockUserRepositoryFindOneUser();
+    mockRequisitionRepositoryFindOneRequisition();
   }
 
-  private Boolean checkIfOrderMatchCriteria(Order orderModel, Order orderToCheck) {
-    if (orderModel.getSupplyingFacility().getId()
-            != orderToCheck.getSupplyingFacility().getId()) {
-      return false;
-    }
-    if (orderModel.getRequestingFacility().getId()
-            != orderToCheck.getRequestingFacility().getId()) {
-      return false;
-    }
-    if (orderModel.getProgram().getId()
-            != orderToCheck.getProgram().getId()) {
-      return false;
-    }
-    return true;
-  }
-
-  private String prepareExpectedCsvOutput(Order order, List<String> header) {
-    String expected = "";
-    for (int column = 0; column < header.size(); column++) {
-      expected = expected + header.get(column) + ",";
-    }
-    expected = expected.substring(0, expected.length() - 1);
-    expected = expected + "\r\n";
-    for (OrderLine orderLine : order.getOrderLines()) {
-      expected = expected
-              + order.getRequestingFacility().getCode() + ","
-              + order.getCreatedDate() + ","
-              + orderLine.getProduct().getPrimaryName() + ","
-              + orderLine.getProduct().getCode() + ","
-              + orderLine.getOrderedQuantity() + ",";
-      expected = expected.substring(0, expected.length() - 1);
-      expected = expected + "\r\n";
-    }
-    return expected;
+  private void mockServices() {
+    mockSupplyLineServiceSearchSupplyLine();
   }
 }
 
