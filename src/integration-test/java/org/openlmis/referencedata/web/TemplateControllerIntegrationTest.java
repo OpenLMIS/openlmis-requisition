@@ -9,7 +9,6 @@ import org.openlmis.reporting.repository.TemplateParameterRepository;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -37,14 +36,15 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void testAddReportTemplate() throws IOException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
-    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(RESOURCE_URL)
-        .queryParam("access_token", getToken());
 
-    restAssured.given().contentType("multipart/form-data")
+    restAssured.given()
+        .queryParam("access_token", getToken())
+        .contentType("multipart/form-data")
         .multiPart("file", podReport.getFilename(), podReport.getInputStream())
         .formParam("name", TEMPLATE_CONTROLLER_TEST)
         .formParam("description", TEMPLATE_CONTROLLER_TEST)
-        .when().post(builder.toUriString()).then().statusCode(200);
+        .when().post(RESOURCE_URL)
+        .then().statusCode(200);
 
     Assert.assertNotNull(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST));
     Assert.assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(),
