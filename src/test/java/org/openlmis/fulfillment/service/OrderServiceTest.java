@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment;
+package org.openlmis.fulfillment.service;
 
 import org.junit.Assert;
 import org.junit.Before;
