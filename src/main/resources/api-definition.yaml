@@ -960,7 +960,6 @@ resourceTypes:
                 description: Submit earlier initiated requisition.
                 body:
                     application/json:
-                        schema: requisition
                 responses:
                     "200":
                         headers:
