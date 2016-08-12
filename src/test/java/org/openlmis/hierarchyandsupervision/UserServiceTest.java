@@ -50,26 +50,24 @@ public class UserServiceTest {
             users.get(0).getVerified());
 
     Assert.assertEquals(1,receivedUsers.size());
-    for ( User user : receivedUsers ) {
-      Assert.assertEquals(
-              user.getUsername(),
-              users.get(0).getUsername());
-      Assert.assertEquals(
-              user.getFirstName(),
-              users.get(0).getFirstName());
-      Assert.assertEquals(
-              user.getLastName(),
-              users.get(0).getLastName());
-      Assert.assertEquals(
-              user.getHomeFacility().getId(),
-              users.get(0).getHomeFacility().getId());
-      Assert.assertEquals(
-              user.getHomeFacility().getActive(),
-              users.get(0).getActive());
-      Assert.assertEquals(
-              user.getVerified(),
-              users.get(0).getVerified());
-    }
+    Assert.assertEquals(
+            receivedUsers.get(0).getUsername(),
+            users.get(0).getUsername());
+    Assert.assertEquals(
+            receivedUsers.get(0).getFirstName(),
+            users.get(0).getFirstName());
+    Assert.assertEquals(
+            receivedUsers.get(0).getLastName(),
+            users.get(0).getLastName());
+    Assert.assertEquals(
+            receivedUsers.get(0).getHomeFacility().getId(),
+            users.get(0).getHomeFacility().getId());
+    Assert.assertEquals(
+            receivedUsers.get(0).getHomeFacility().getActive(),
+            users.get(0).getActive());
+    Assert.assertEquals(
+            receivedUsers.get(0).getVerified(),
+            users.get(0).getVerified());
   }
 
   private void generateInstances() {
