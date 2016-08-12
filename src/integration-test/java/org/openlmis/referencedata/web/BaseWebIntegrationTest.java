@@ -24,15 +24,15 @@ import java.util.UUID;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public abstract class BaseWebIntegrationTest {
-  static final String BASE_URL = System.getenv("BASE_URL");
   static final UUID INITIAL_USER_ID = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
-
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
   static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
 
   RestAssuredClient restAssured;
+
+  private static final String BASE_URL = System.getenv("BASE_URL");
 
   private String token = null;
 
@@ -66,9 +66,5 @@ public abstract class BaseWebIntegrationTest {
       token = fetchToken();
     }
     return token;
-  }
-
-  String addTokenToUrl(String url) {
-    return url + "?access_token=" + this.getToken();
   }
 }

@@ -62,7 +62,7 @@ import static org.junit.Assert.assertThat;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/proofOfDeliveries/{id}/print";
+  private static final String RESOURCE_URL = "/api/proofOfDeliveries/{id}/print";
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";

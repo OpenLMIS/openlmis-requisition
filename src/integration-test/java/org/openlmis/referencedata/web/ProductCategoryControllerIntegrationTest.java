@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ProductCategoryControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/productCategories";
+  private static final String RESOURCE_URL = "/api/productCategories";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String CODE = "code";
   private static final String ACCESS_TOKEN = "access_token";

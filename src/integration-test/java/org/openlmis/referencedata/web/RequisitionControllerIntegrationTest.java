@@ -55,18 +55,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
-  private static final String INSERT_COMMENT = BASE_URL + "/api/requisitions/{id}/comments";
+  private static final String INSERT_COMMENT = "/api/requisitions/{id}/comments";
   private static final String APPROVE_REQUISITION =
-          BASE_URL + "/api/requisitions/{id}/approve";
-  private static final String SKIP_URL = BASE_URL + "/api/requisitions/{id}/skip";
-  private static final String REJECT_URL = BASE_URL + "/api/requisitions/{id}/reject";
-  private static final String SUBMIT_URL = BASE_URL + "/api/requisitions/{id}/submit";
-  private static final String SUBMITTED_URL = BASE_URL + "/api/requisitions/submitted";
+          "/api/requisitions/{id}/approve";
+  private static final String SKIP_URL = "/api/requisitions/{id}/skip";
+  private static final String REJECT_URL = "/api/requisitions/{id}/reject";
+  private static final String SUBMIT_URL = "/api/requisitions/{id}/submit";
+  private static final String SUBMITTED_URL = "/api/requisitions/submitted";
   private static final String AUTHORIZATION_URL =
-          BASE_URL + "/api/requisitions/{id}/authorize";
-  private static final String DELETE_URL = BASE_URL + "/api/requisitions/{id}";
-  private static final String SEARCH_URL = BASE_URL + "/api/requisitions/search";
-  private static final String INITIATE_URL = BASE_URL + "/api/requisitions/initiate";
+          "/api/requisitions/{id}/authorize";
+  private static final String DELETE_URL = "/api/requisitions/{id}";
+  private static final String SEARCH_URL = "/api/requisitions/search";
+  private static final String INITIATE_URL = "/api/requisitions/initiate";
 
   @Autowired
   private ProductRepository productRepository;

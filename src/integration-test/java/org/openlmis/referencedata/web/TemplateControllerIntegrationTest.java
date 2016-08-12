@@ -17,7 +17,7 @@ import static org.junit.Assert.assertThat;
 
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/templates";
+  private static final String RESOURCE_URL = "/api/templates";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
 
   @Autowired

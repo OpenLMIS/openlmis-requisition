@@ -20,7 +20,7 @@ import java.time.LocalDate;
 
 public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/periods";
+  private static final String RESOURCE_URL = "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String PROCESSING_SCHEDULE = "processingSchedule";

@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = BASE_URL + "/api/requisitionTemplates";
+  private static final String RESOURCE_URL = "/api/requisitionTemplates";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";

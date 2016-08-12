@@ -55,7 +55,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
             .queryParam("product", stocks.get(0).getProduct().getId())
             .queryParam("access_token", getToken())
             .when()
-            .get(BASE_URL + "/api/stocks/search")
+            .get("/api/stocks/search")
             .then()
             .statusCode(200)
             .extract().as(Stock[].class);
