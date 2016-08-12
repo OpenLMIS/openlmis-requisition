@@ -5,9 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -35,6 +32,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.embedded.OutputStreamFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -46,13 +44,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-//BASEUNITTEST KLASA
 @Transactional
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderServiceTest {
 
   @InjectMocks
@@ -82,58 +78,65 @@ public class OrderServiceTest {
 
   private Integer currentInstanceNumber;
   private User user;
+
   private List<Order> orders;
   private List<Requisition> requisitions;
-  private Integer repositoryCount = 0;
+  private List<SupplyLine> supplyLines;
 
   @Before
   public void setUp() {
     orders = new ArrayList<>();
     requisitions = new ArrayList<>();
+    supplyLines = new ArrayList<>();
     currentInstanceNumber = 0;
-    user = generateUser();
     generateInstances();
     initMocks(this);
     mockRepositories();
+    mockServices();
   }
 
   @Test
-  public void shouldConvertToOrder() {
-    orderService.convertToOrder(requisitions, user.getId());
+  public void testShouldConvertToOrder() {
+    orders = orderService.convertToOrder(requisitions, user.getId());
+    Assert.assertEquals(2, orders.size());
+    for (Order order : orders) {
+      Requisition requisition = requisitions.get(0);
+      if (!requisition.getId().equals(order.getRequisition().getId())) {
+        requisition = requisitions.get(1);
+      }
+      requisition = requisitionRepository.findOne(requisition.getId());
 
-    Assert.assertEquals(String.valueOf(2), repositoryCount);
+      Assert.assertEquals(
+              OrderStatus.ORDERED,
+              order.getStatus());
+      Assert.assertEquals(
+              order.getRequisition().getId(),
+              requisition.getId());
+      Assert.assertEquals(
+              order.getReceivingFacility().getId(),
+              requisition.getFacility().getId());
+      Assert.assertEquals(
+              order.getRequestingFacility().getId(),
+              requisition.getFacility().getId());
+      Assert.assertEquals(
+              order.getProgram().getId(),
+              requisition.getProgram().getId());
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              supplyLines.get(orders.indexOf(order)).getSupplyingFacility().getId());
+      Assert.assertEquals(1, order.getOrderLines().size());
+      Assert.assertEquals(1, requisition.getRequisitionLines().size());
 
-    /*Order order = orderRepository.findAll().iterator().next();
-
-    Requisition requisition = requisitionList.get(0);
-    if (!requisition.getId().equals(order.getRequisition().getId())) {
-      requisition = requisitionList.get(1);
+      OrderLine orderLine = order.getOrderLines().iterator().next();
+      RequisitionLine requisitionLine = requisition.getRequisitionLines().iterator().next();
+      Assert.assertEquals(requisitionLine.getRequestedQuantity().longValue(),
+              orderLine.getOrderedQuantity().longValue());
+      Assert.assertEquals(requisitionLine.getProduct().getId(), orderLine.getProduct().getId());
     }
-
-    requisition = requisitionRepository.findOne(requisition.getId());
-
-    Assert.assertEquals(OrderStatus.ORDERED, order.getStatus());
-    Assert.assertEquals(order.getRequisition().getId(), requisition.getId());
-    Assert.assertEquals(order.getReceivingFacility().getId(), requisition.getFacility().getId());
-    Assert.assertEquals(order.getRequestingFacility().getId(), requisition.getFacility().getId());
-
-    Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
-    Assert.assertEquals(order.getSupplyingFacility().getId(),
-            supplyLine.getSupplyingFacility().getId());
-
-    Assert.assertEquals(1, order.getOrderLines().size());
-    Assert.assertEquals(1, requisition.getRequisitionLines().size());
-
-    OrderLine orderLine = order.getOrderLines().iterator().next();
-    RequisitionLine requisitionLine = requisition.getRequisitionLines().iterator().next();
-
-    Assert.assertEquals(requisitionLine.getRequestedQuantity().longValue(),
-            orderLine.getOrderedQuantity().longValue());
-    Assert.assertEquals(requisitionLine.getProduct().getId(), orderLine.getProduct().getId());*/
   }
 
   @Test
-  public void searchOrders() {
+  public void testSearchOrders() {
     List<Order> receivedOrders = orderService.searchOrders(
             orders.get(0).getSupplyingFacility(),
             orders.get(0).getRequestingFacility(),
@@ -151,11 +154,47 @@ public class OrderServiceTest {
             orders.get(0).getProgram().getId());
   }
 
+  @Test
+  public void testOrderToCsv() {
+    List<String> header = new ArrayList<>();
+    header.add(OrderService.DEFAULT_COLUMNS[0]);
+    header.add(OrderService.DEFAULT_COLUMNS[1]);
+    header.add(OrderService.DEFAULT_COLUMNS[3]);
+    header.add(OrderService.DEFAULT_COLUMNS[4]);
+    header.add(OrderService.DEFAULT_COLUMNS[5]);
+
+    String received = orderService.orderToCsv(orders.get(0), header.toArray(new String[0]));
+    String expected = prepareExpectedCsvOutput(orders.get(0), header);
+    Assert.assertEquals(expected,received);
+  }
+  
   private void generateInstances() {
+    generateOrders();
+    generateRequisitions();
+    generateSupplyLines();
+    user = generateUser();
+  }
+
+  private void generateRequisitions() {
+    for (int requisitionCount = 0; requisitionCount < 2; requisitionCount++) {
+      requisitions.add(generateRequisition());
+    }
+  }
+
+  private void generateSupplyLines() {
+    for (Requisition requisition : requisitions) {
+      SupplyLine supplyLine = generateSupplyLine(
+              requisition.getProgram(),
+              requisition.getSupervisoryNode(),
+              requisition.getSupervisoryNode().getFacility());
+      supplyLines.add(supplyLine);
+    }
+  }
+
+  private void generateOrders() {
     for (int instancesCount = 0; instancesCount < 5; instancesCount++) {
       orders.add(generateOrder());
     }
-    generateRequisitions();
   }
 
   private Order generateOrder() {
@@ -168,7 +207,7 @@ public class OrderServiceTest {
     order.setSupplyingFacility(generateFacility());
     order.setRequestingFacility(generateFacility());
     order.setQuotedCost(BigDecimal.valueOf(1));
-    order.setOrderCode("OrderCode" + instanceNumber);;
+    order.setOrderCode("OrderCode" + instanceNumber);
     order.setStatus(OrderStatus.ORDERED);
     Set<OrderLine> orderLines = new HashSet<>();
     orderLines.add(generateOrderLine(order));
@@ -176,11 +215,28 @@ public class OrderServiceTest {
     return order;
   }
 
+  private Requisition generateRequisition() {
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    requisition.setFacility(generateFacility());
+    requisition.setProcessingPeriod(generatePeriod());
+    requisition.setProgram(generateProgram());
+    requisition.setCreatedDate(LocalDateTime.now().plusDays(generateInstanceNumber()));
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNode(generateSupervisoryNode());
+    requisition.setEmergency(true);
+    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    requisitionLines.add(generateRequisitionLines());
+    requisition.setRequisitionLines(requisitionLines);
+    return requisition;
+  }
+
   private OrderLine generateOrderLine(Order order) {
     OrderLine orderLine = new OrderLine();
     orderLine.setId(UUID.randomUUID());
     orderLine.setFilledQuantity(Long.valueOf(1000));
     orderLine.setOrder(order);
+    orderLine.setOrderedQuantity(Long.valueOf(1000));
     orderLine.setProduct(generateProduct());
     return orderLine;
   }
@@ -189,7 +245,7 @@ public class OrderServiceTest {
     Integer instanceNumber = generateInstanceNumber();
     Product product = new Product();
     product.setId(UUID.randomUUID());
-    product.setCode("code" + instanceNumber);
+    product.setCode("productCode" + instanceNumber);
     product.setPrimaryName("product" + instanceNumber);
     product.setDispensingUnit("unit" + instanceNumber);
     product.setDosesPerDispensingUnit(10);
@@ -207,29 +263,10 @@ public class OrderServiceTest {
     Integer instanceNumber = generateInstanceNumber();
     ProductCategory productCategory = new ProductCategory();
     productCategory.setId(UUID.randomUUID());
-    productCategory.setCode("code" + instanceNumber);
+    productCategory.setCode("ProductCode" + instanceNumber);
     productCategory.setName("vaccine" + instanceNumber);
     productCategory.setDisplayOrder(1);
     return productCategory;
-  }
-
-  private List<Requisition> generateRequisitions() {
-    for (int requisitionCount = 0; requisitionCount < 3; requisitionCount++) {
-      Requisition requisition = new Requisition();
-      requisition.setId(UUID.randomUUID());
-      requisition.setFacility(generateFacility());
-      requisition.setProcessingPeriod(generatePeriod());
-      requisition.setProgram(generateProgram());
-      requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitionCount));
-      requisition.setStatus(RequisitionStatus.INITIATED);
-      requisition.setSupervisoryNode(generateSupervisoryNode());
-      requisition.setEmergency(true);
-      Set<RequisitionLine> requisitionLines = new HashSet<>();
-      requisitionLines.add(generateRequisitionLines());
-      requisition.setRequisitionLines(requisitionLines);
-      requisitions.add(requisition);
-    }
-    return requisitions;
   }
 
   private RequisitionLine generateRequisitionLines() {
@@ -242,7 +279,7 @@ public class OrderServiceTest {
   private SupervisoryNode generateSupervisoryNode() {
     SupervisoryNode supervisoryNode = new SupervisoryNode();
     supervisoryNode.setId(UUID.randomUUID());
-    supervisoryNode.setCode("code" + this.generateInstanceNumber());
+    supervisoryNode.setCode("SupervisoryNodeCode" + this.generateInstanceNumber());
     supervisoryNode.setFacility(generateFacility());
     return supervisoryNode;
   }
@@ -266,7 +303,7 @@ public class OrderServiceTest {
   private Program generateProgram() {
     Program program = new Program();
     program.setId(UUID.randomUUID());
-    program.setCode("code" + generateInstanceNumber());
+    program.setCode("ProgramCode" + generateInstanceNumber());
     program.setPeriodsSkippable(false);
     return program;
   }
@@ -301,18 +338,18 @@ public class OrderServiceTest {
     return facility;
   }
 
-  private GeographicLevel generateGeographicLevel() {
-    GeographicLevel geographicLevel = new GeographicLevel();
-    geographicLevel.setCode("GeographicLevel" + generateInstanceNumber());
-    geographicLevel.setLevelNumber(1);
-    return geographicLevel;
-  }
-
   private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
     GeographicZone geographicZone = new GeographicZone();
     geographicZone.setCode("GeographicZone" + generateInstanceNumber());
     geographicZone.setLevel(geographicLevel);
     return geographicZone;
+  }
+
+  private GeographicLevel generateGeographicLevel() {
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GeographicLevel" + generateInstanceNumber());
+    geographicLevel.setLevelNumber(1);
+    return geographicLevel;
   }
 
   private FacilityType generateFacilityType() {
@@ -321,23 +358,34 @@ public class OrderServiceTest {
     return facilityType;
   }
 
+  private SupplyLine generateSupplyLine(
+          Program program, SupervisoryNode supervisoryNode, Facility facility) {
+    SupplyLine supplyLine = new SupplyLine();
+    supplyLine.setProgram(program);
+    supplyLine.setSupervisoryNode(supervisoryNode);
+    supplyLine.setSupplyingFacility(facility);
+    return supplyLine;
+  }
+
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
   }
 
   private void mockRepositories() {
-    mockFindOneOrder();
-    mockSaveOrder();
-    mockSearchOrders();
-    mockCountOrders();
-    mockFindOneUser();
-    mockFindOneRequisition();
-    mockSaveOrderLine();
-    mockSearchSupplyLine();
+    mockOrderRepositoryFindOneOrder();
+    mockOrderRepositorySaveOrder();
+    mockOrderRepositorySearchOrders();
+    mockOrderRepositoryCountOrders();
+    mockUserRepositoryFindOneUser();
+    mockRequisitionRepositoryFindOneRequisition();
   }
 
-  private void mockFindOneRequisition() {
+  private void mockServices() {
+    mockSupplyLineServiceSearchSupplyLine();
+  }
+
+  private void mockRequisitionRepositoryFindOneRequisition() {
     for (Requisition requisition : requisitions) {
       when(requisitionRepository
               .findOne(requisition.getId()))
@@ -345,13 +393,13 @@ public class OrderServiceTest {
     }
   }
 
-  private void mockFindOneUser() {
+  private void mockUserRepositoryFindOneUser() {
     when(userRepository
             .findOne(user.getId()))
             .thenReturn(user);
   }
 
-  private void mockFindOneOrder() {
+  private void mockOrderRepositoryFindOneOrder() {
     for (Order order : orders) {
       when(orderRepository
               .findOne(order.getId()))
@@ -359,7 +407,7 @@ public class OrderServiceTest {
     }
   }
 
-  private void mockSaveOrder() {
+  private void mockOrderRepositorySaveOrder() {
     for (Order order : orders) {
       when(orderRepository
               .save(order))
@@ -367,17 +415,13 @@ public class OrderServiceTest {
     }
   }
 
-  private void mockCountOrders() {
+  private void mockOrderRepositoryCountOrders() {
     when(orderRepository
             .count())
             .thenReturn(Long.valueOf(2));
   }
 
-  private void mockSaveOrderLine() {
-
-  }
-
-  private void mockSearchOrders() {
+  private void mockOrderRepositorySearchOrders() {
     List<Order> matchedOrders = new ArrayList<>();
     for (Order orderWithMatchedParameters : orders) {
       Boolean isOrderMatched = checkIfOrderMatchCriteria(orders.get(0), orderWithMatchedParameters);
@@ -393,19 +437,30 @@ public class OrderServiceTest {
             .thenReturn(matchedOrders);
   }
 
-  private void mockSearchSupplyLine() {
+  private void mockSupplyLineServiceSearchSupplyLine() {
     for (Requisition requisition : requisitions) {
-      SupplyLine supplyLine = new SupplyLine();
-      supplyLine.setProgram(requisition.getProgram());
-      supplyLine.setSupervisoryNode(requisition.getSupervisoryNode());
-      supplyLine.setSupplyingFacility(generateFacility());
-      List<SupplyLine> supplyLines = new ArrayList<>();
-      supplyLines.add(supplyLine);
+      List<SupplyLine> supplyLinesToReturn = new ArrayList<>();
+      for (SupplyLine supplyLine : supplyLines) {
+        Boolean isSupplyLineMatched = checkIfSupplyLineMatchCriteria(supplyLine,requisition);
+        if (isSupplyLineMatched) {
+          supplyLinesToReturn.add(supplyLine);
+        }
+      }
       when(supplyLineService.searchSupplyLines(
                       requisition.getProgram(),
                       requisition.getSupervisoryNode()))
-              .thenReturn(supplyLines);
+              .thenReturn(supplyLinesToReturn);
     }
+  }
+
+  private Boolean checkIfSupplyLineMatchCriteria(SupplyLine supplyLine, Requisition requisition) {
+    if (supplyLine.getProgram().getId() != requisition.getProgram().getId()) {
+      return false;
+    }
+    if (supplyLine.getSupervisoryNode().getId() != requisition.getSupervisoryNode().getId()) {
+      return false;
+    }
+    return true;
   }
 
   private Boolean checkIfOrderMatchCriteria(Order orderModel, Order orderToCheck) {
@@ -422,6 +477,26 @@ public class OrderServiceTest {
       return false;
     }
     return true;
+  }
+
+  private String prepareExpectedCsvOutput(Order order, List<String> header) {
+    String expected = "";
+    for (int column = 0; column < header.size(); column++) {
+      expected = expected + header.get(column) + ",";
+    }
+    expected = expected.substring(0, expected.length() - 1);
+    expected = expected + "\r\n";
+    for (OrderLine orderLine : order.getOrderLines()) {
+      expected = expected
+              + order.getRequestingFacility().getCode() + ","
+              + order.getCreatedDate() + ","
+              + orderLine.getProduct().getPrimaryName() + ","
+              + orderLine.getProduct().getCode() + ","
+              + orderLine.getOrderedQuantity() + ",";
+      expected = expected.substring(0, expected.length() - 1);
+      expected = expected + "\r\n";
+    }
+    return expected;
   }
 }
 

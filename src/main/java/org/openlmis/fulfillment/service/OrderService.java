@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -177,9 +178,10 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public void convertToOrder(List<Requisition> requisitionList, UUID userId) {
+  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
     User user = userRepository.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
+    List<Order> convertedOrders = new ArrayList<>();
 
     for (Requisition requisition : requisitionList) {
       requisition = requisitionRepository.findOne(requisition.getId());
@@ -204,15 +206,20 @@ public class OrderService {
 
       orderRepository.save(order);
 
+      Set<OrderLine> orderLines = new HashSet<>();
       for (RequisitionLine rl : requisition.getRequisitionLines()) {
         OrderLine orderLine = new OrderLine();
         orderLine.setOrder(order);
         orderLine.setProduct(rl.getProduct());
         orderLine.setFilledQuantity(0L);
         orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
+        orderLines.add(orderLine);
         orderLineRepository.save(orderLine);
       }
+      order.setOrderLines(orderLines);
+      convertedOrders.add(order);
     }
+    return convertedOrders;
   }
 
   private String getOrderCodeFor(Requisition requisition, Program program) {

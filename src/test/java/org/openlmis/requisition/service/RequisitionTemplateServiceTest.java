@@ -43,7 +43,8 @@ public class RequisitionTemplateServiceTest {
   @Test
   public void testSearchRequisitionTemplates() {
     List<RequisitionTemplate> receivedRequisitionTemplates
-            = requisitionTemplateService.searchRequisitionTemplates(requisitionTemplate.getProgram());
+            = requisitionTemplateService
+            .searchRequisitionTemplates(requisitionTemplate.getProgram());
     Assert.assertEquals(1,receivedRequisitionTemplates.size());
 
     Assert.assertEquals(
