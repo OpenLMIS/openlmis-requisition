@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -211,25 +210,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNode(supervisoryNode);
     requisition.setCreatedDate(localDateTime);
     requisitionRepository.save(requisition);
-  }
-
-  @After
-  public void cleanUp() {
-    commentRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
-    productRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    configurationSettingRepository.deleteAll();
   }
 
   @Test

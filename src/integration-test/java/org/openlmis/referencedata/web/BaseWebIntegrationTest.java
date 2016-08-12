@@ -5,9 +5,12 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
+import org.openlmis.referencedata.utils.CleanRepositoryHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -36,10 +39,18 @@ public abstract class BaseWebIntegrationTest {
 
   private String token = null;
 
+  @Autowired
+  private CleanRepositoryHelper cleanRepositoryHelper;
+
   @Before
   public void loadRaml() {
     RestAssured.baseURI = BASE_URL;
     restAssured = ramlDefinition.createRestAssured();
+  }
+
+  @After
+  public void cleanRepositories() {
+    cleanRepositoryHelper.cleanAll();
   }
 
   private String fetchToken() {

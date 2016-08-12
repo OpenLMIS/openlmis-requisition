@@ -29,7 +29,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
@@ -59,13 +58,13 @@ public class Requisition extends BaseEntity {
   @Getter
   private List<Comment> comments;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "facilityId", nullable = false)
   @Getter
   @Setter
   private Facility facility;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter

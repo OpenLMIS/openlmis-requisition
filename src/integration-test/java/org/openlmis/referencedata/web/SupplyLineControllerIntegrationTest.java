@@ -3,7 +3,6 @@ package org.openlmis.referencedata.web;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,17 +56,6 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   public void setUp() {
     currentInstanceNumber = 0;
     supplyLine = generateSupplyLine();
-  }
-
-  @After
-  public void cleanup() {
-    supplyLineRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
   }
 
   @Test
