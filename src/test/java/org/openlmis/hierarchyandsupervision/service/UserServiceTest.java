@@ -3,28 +3,32 @@ package org.openlmis.hierarchyandsupervision.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @Transactional
 public class UserServiceTest {
 
-  private UserService userService;
+  @Mock
   private UserRepository userRepository;
+
+  @InjectMocks
+  @Autowired
+  private UserService userService;
 
   private Integer currentInstanceNumber;
   private List<User> users;
@@ -35,8 +39,8 @@ public class UserServiceTest {
     currentInstanceNumber = 0;
     userService = new UserService();
     generateInstances();
-    mockRepositories();
     initMocks(this);
+    mockRepositories();
   }
 
   @Test
@@ -125,13 +129,34 @@ public class UserServiceTest {
     return facilityType;
   }
 
+  private Boolean checkIfUserMatchCriteria(User userModel, User userToCheck) {
+    if (!userModel.getUsername().equalsIgnoreCase(userToCheck.getUsername())) {
+      return false;
+    }
+    if (!userModel.getFirstName().equalsIgnoreCase(userToCheck.getFirstName())) {
+      return false;
+    }
+    if (!userModel.getLastName().equalsIgnoreCase(userToCheck.getLastName())) {
+      return false;
+    }
+    if (userModel.getHomeFacility().getId() != userToCheck.getHomeFacility().getId()) {
+      return false;
+    }
+    if (userModel.getActive() != userToCheck.getActive()) {
+      return false;
+    }
+    if (userModel.getVerified() != userToCheck.getVerified()) {
+      return false;
+    }
+    return true;
+  }
+
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
   }
 
   private void mockRepositories() {
-    userRepository = mock(UserRepository.class);
     for (User user : users) {
       when(userRepository
               .findOne(user.getId()))
@@ -160,29 +185,5 @@ public class UserServiceTest {
                       user.getActive()))
               .thenReturn(matchedUsers);
     }
-    ReflectionTestUtils.setField(userService, "userRepository",
-            userRepository, UserRepository.class);
-  }
-
-  private Boolean checkIfUserMatchCriteria(User userModel, User userToCheck) {
-    if (!userModel.getUsername().equalsIgnoreCase(userToCheck.getUsername())) {
-      return false;
-    }
-    if (!userModel.getFirstName().equalsIgnoreCase(userToCheck.getFirstName())) {
-      return false;
-    }
-    if (!userModel.getLastName().equalsIgnoreCase(userToCheck.getLastName())) {
-      return false;
-    }
-    if (userModel.getHomeFacility().getId() != userToCheck.getHomeFacility().getId()) {
-      return false;
-    }
-    if (userModel.getActive() != userToCheck.getActive()) {
-      return false;
-    }
-    if (userModel.getVerified() != userToCheck.getVerified()) {
-      return false;
-    }
-    return true;
   }
 }

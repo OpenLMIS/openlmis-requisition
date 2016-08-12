@@ -451,7 +451,11 @@ public class RequisitionServiceTest {
   }
 
   private void mockRepositories() {
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
-    when(requisitionRepository.save(requisition)).thenReturn(requisition);
+    when(requisitionRepository
+            .findOne(requisition.getId()))
+            .thenReturn(requisition);
+    when(requisitionRepository
+            .save(requisition))
+            .thenReturn(requisition);
   }
 }

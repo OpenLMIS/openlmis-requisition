@@ -32,7 +32,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.datasource.embedded.OutputStreamFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -167,7 +166,7 @@ public class OrderServiceTest {
     String expected = prepareExpectedCsvOutput(orders.get(0), header);
     Assert.assertEquals(expected,received);
   }
-  
+
   private void generateInstances() {
     generateOrders();
     generateRequisitions();

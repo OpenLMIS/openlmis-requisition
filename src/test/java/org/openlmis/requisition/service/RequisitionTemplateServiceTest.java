@@ -78,8 +78,5 @@ public class RequisitionTemplateServiceTest {
     when(requisitionTemplateRepository
             .findOne(requisitionTemplate.getId()))
             .thenReturn(requisitionTemplate);
-    when(requisitionTemplateRepository
-            .save(requisitionTemplate))
-            .thenReturn(requisitionTemplate);
   }
 }

@@ -3,23 +3,27 @@ package org.openlmis.product.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
-import org.openlmis.product.service.ProductCategoryService;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @Transactional
 public class ProductCategoryServiceTest {
 
+  @Mock
   ProductCategoryRepository productCategoryRepository;
+
+  @InjectMocks
+  @Autowired
   ProductCategoryService productCategoryService;
 
   private Integer currentInstanceNumber;
@@ -31,8 +35,8 @@ public class ProductCategoryServiceTest {
     currentInstanceNumber = 0;
     productCategoryService = new ProductCategoryService();
     generateInstances();
-    mockRepositories();
     initMocks(this);
+    mockRepositories();
   }
 
   @Test
@@ -44,6 +48,11 @@ public class ProductCategoryServiceTest {
     Assert.assertEquals(
             receivedProductCategories.get(0).getCode(),
             productCategories.get(0).getCode());
+  }
+
+  private Integer generateInstanceNumber() {
+    currentInstanceNumber += 1;
+    return currentInstanceNumber;
   }
 
   private void generateInstances() {
@@ -61,13 +70,7 @@ public class ProductCategoryServiceTest {
     return productCategory;
   }
 
-  private Integer generateInstanceNumber() {
-    currentInstanceNumber += 1;
-    return currentInstanceNumber;
-  }
-
   private void mockRepositories() {
-    productCategoryRepository = mock(ProductCategoryRepository.class);
     for (ProductCategory productCategory : productCategories) {
       when(productCategoryRepository
               .findOne(productCategory.getId()))
@@ -89,7 +92,5 @@ public class ProductCategoryServiceTest {
               .searchProductCategories(productCategory.getCode()))
               .thenReturn(matchedProductCategories);
     }
-    ReflectionTestUtils.setField(productCategoryService, "productCategoryRepository",
-            productCategoryRepository, ProductCategoryRepository.class);
   }
 }
