@@ -18,6 +18,7 @@ import static org.junit.Assert.assertThat;
 public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String ACCESS_TOKEN = "access_token";
+  private static final String UPDATE_URL = "/api/programs/update";
 
   @Autowired
   private ProgramRepository programRepository;
@@ -45,7 +46,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(programDto)
         .when()
-        .put("/api/programs/update")
+        .put(UPDATE_URL)
         .then()
         .statusCode(200)
         .extract().as(Program.class);
@@ -63,7 +64,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(programDto)
         .when()
-        .put("/api/programs/update")
+        .put(UPDATE_URL)
         .then()
         .statusCode(400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -77,7 +78,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(programDto)
         .when()
-        .put("/api/programs/update")
+        .put(UPDATE_URL)
         .then()
         .statusCode(400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
