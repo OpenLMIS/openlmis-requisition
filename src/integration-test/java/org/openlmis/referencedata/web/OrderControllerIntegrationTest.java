@@ -448,8 +448,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(201).extract();
 
-    //If you see this after 12.08.2016 please contact with lkukielka@soldevelo.com
-    //assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1, orderRepository.count());
     Order order = orderRepository.findAll().iterator().next();
 

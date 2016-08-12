@@ -697,22 +697,11 @@ resourceTypes:
             description: Convert Requisition list to orders.
             body:
               application/json:
-                schema: requisitionList
             responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
                 "201":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: requisitionList
-
                 "500":
                     headers:
                       X-Content-Type-Options:
@@ -1141,7 +1130,6 @@ resourceTypes:
             description: Add comment to the requisition.
             body:
                 application/json:
-                    schema: comment
             responses:
                 "200":
                     headers:
@@ -1416,7 +1404,6 @@ resourceTypes:
             description: Update program code and name.
             body:
                 application/json:
-                    schema: programDto
             responses:
                 "200":
                     headers:
