@@ -3,62 +3,61 @@ package org.openlmis.referencedata.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
-import org.openlmis.product.repository.ProductCategoryRepository;
-import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 @Transactional
 public class StockServiceTest {
 
+  private List<Stock> stocks;
+  private Integer currentInstanceNumber;
+
+  @Mock
+  private StockRepository stockRepository;
+
+  @InjectMocks
   @Autowired
   private StockService stockService;
 
-  @Autowired
-  private StockRepository stockRepository;
-
-  @Autowired
-  private ProductRepository productRepository;
-
-  @Autowired
-  private ProductCategoryRepository productCategoryRepository;
-
-  private List<Stock> stocks;
-
-  private Integer currentInstanceNumber;
-
   @Before
   public void setUp() {
-    currentInstanceNumber = 0;
     stocks = new ArrayList<>();
-    for ( int stockNumber = 0; stockNumber < 5; stockNumber++ ) {
-      stocks.add(generateStock());
-    }
+    currentInstanceNumber = 0;
+    generateInstances();
+    initMocks(this);
+    mockRepositories();
   }
 
   @Test
   public void testSearchStocks() {
     List<Stock> receivedStocks = stockService.searchStocks(
-            stocks.get(0).getProduct());
+        stocks.get(0).getProduct());
 
-    Assert.assertEquals(1,receivedStocks.size());
-    for ( Stock programProduct : receivedStocks ) {
-      Assert.assertEquals(
-              programProduct.getProduct().getId(),
-              stocks.get(0).getProduct().getId());
+    Assert.assertEquals(1, receivedStocks.size());
+    Assert.assertEquals(
+        stocks.get(0).getProduct().getId(),
+        receivedStocks.get(0).getProduct().getId());
+    Assert.assertEquals(
+        stocks.get(0).getId(),
+        receivedStocks.get(0).getId());
+  }
+
+  private void generateInstances() {
+    for (int instancesCount = 0; instancesCount < 5; instancesCount++) {
+      stocks.add(generateStock());
     }
   }
 
@@ -66,24 +65,25 @@ public class StockServiceTest {
     ProductCategory productCategory = generateProductCategory();
     Product product = generateProduct(productCategory);
     Stock stock = new Stock();
+    stock.setId(UUID.randomUUID());
     stock.setProduct(product);
-    stockRepository.save(stock);
     return stock;
   }
 
   private ProductCategory generateProductCategory() {
     Integer instanceNumber = generateInstanceNumber();
     ProductCategory productCategory = new ProductCategory();
+    productCategory.setId(UUID.randomUUID());
     productCategory.setCode("code" + instanceNumber);
     productCategory.setName("vaccine" + instanceNumber);
     productCategory.setDisplayOrder(1);
-    productCategoryRepository.save(productCategory);
     return productCategory;
   }
 
   private Product generateProduct(ProductCategory productCategory) {
     Integer instanceNumber = generateInstanceNumber();
     Product product = new Product();
+    product.setId(UUID.randomUUID());
     product.setCode("code" + instanceNumber);
     product.setPrimaryName("product" + instanceNumber);
     product.setDispensingUnit("unit" + instanceNumber);
@@ -95,12 +95,32 @@ public class StockServiceTest {
     product.setFullSupply(true);
     product.setTracer(false);
     product.setProductCategory(productCategory);
-    productRepository.save(product);
     return product;
   }
 
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
+  }
+
+  private void mockRepositories() {
+    for (Stock stock : stocks) {
+      List<Stock> matchedStocks = new ArrayList<>();
+      for (Stock stockToMatch : stocks) {
+        if (stockToMatch.getProduct().getId()
+            .equals(stock.getProduct().getId())) {
+          matchedStocks.add(stockToMatch);
+        }
+      }
+      when(stockRepository
+          .searchStocks(stock.getProduct()))
+          .thenReturn(matchedStocks);
+      when(stockRepository
+          .findOne(stock.getId()))
+          .thenReturn(stock);
+      when(stockRepository
+          .save(stock))
+          .thenReturn(stock);
+    }
   }
 }

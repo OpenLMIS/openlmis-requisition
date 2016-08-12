@@ -13,12 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 @Service
 public class RequisitionLineService {
@@ -32,14 +26,11 @@ public class RequisitionLineService {
   @Autowired
   private RequisitionService requisitionService;
 
-  @PersistenceContext
-  private EntityManager entityManager;
-
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
 
   /**
-   * Saves given RequisitionLine if possible
+   * Saves given RequisitionLine if possible.
    *
    * @param requisition Requisition which contains given RequisitionLine.
    * @param requisitionLine Requisition Line to be saved.
@@ -74,26 +65,7 @@ public class RequisitionLineService {
    * @return list of requisition lines with matched parameters.
    */
   public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<RequisitionLine> query = builder.createQuery(RequisitionLine.class);
-    Root<RequisitionLine> root = query.from(RequisitionLine.class);
-    Predicate predicate = builder.conjunction();
-
-    if (requisition != null) {
-      predicate = builder.and(
-          predicate,
-          builder.equal(
-              root.get("requisition"), requisition));
-    }
-    if (product != null) {
-      predicate = builder.and(
-          predicate,
-          builder.equal(
-              root.get("product"), product));
-    }
-
-    query.where(predicate);
-    return entityManager.createQuery(query).getResultList();
+    return requisitionLineRepository.searchRequisitionLines(requisition, product);
   }
 
   /**
@@ -126,13 +98,12 @@ public class RequisitionLineService {
       List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
       previousRequisition = requisitionService.searchRequisitions(
-          requisition.getFacility(),
-          requisition.getProgram(),
-          null,
-          null,
-          previousPeriods.iterator().next(),
-          null,
-          null);
+              requisition.getFacility(),
+              requisition.getProgram(),
+              null,null,
+              previousPeriods.iterator().next(),
+              null,
+              null);
       if (previousRequisition.size() == 0) {
         return;
       }

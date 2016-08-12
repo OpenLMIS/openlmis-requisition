@@ -45,20 +45,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
 @Service
 public class OrderService {
 
   Logger logger = LoggerFactory.getLogger(OrderService.class);
-
-  @PersistenceContext
-  EntityManager entityManager;
 
   @Autowired
   private RequisitionService requisitionService;
@@ -90,29 +80,10 @@ public class OrderService {
    */
   public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
                                   Program program) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Order> query = builder.createQuery(Order.class);
-    Root<Order> root = query.from(Order.class);
-    Predicate predicate = builder.conjunction();
-    if (supplyingFacility != null) {
-      predicate = builder.and(
-              predicate,
-              builder.equal(
-                      root.get("supplyingFacility"), supplyingFacility));
-    }
-    if (requestingFacility != null) {
-      predicate = builder.and(
-              predicate,
-              builder.equal(
-                      root.get("requestingFacility"), requestingFacility));
-    }
-    if (program != null) {
-      predicate = builder.and(predicate,
-              builder.equal(
-                      root.get("program"), program));
-    }
-    query.where(predicate);
-    return entityManager.createQuery(query).getResultList();
+    return orderRepository.searchOrders(
+            supplyingFacility,
+            requestingFacility,
+            program);
   }
 
   /**
@@ -211,9 +182,10 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public void convertToOrder(List<Requisition> requisitionList, UUID userId) {
+  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
     User user = userRepository.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
+    List<Order> convertedOrders = new ArrayList<>();
 
     for (Requisition requisition : requisitionList) {
       requisition = requisitionRepository.findOne(requisition.getId());
@@ -236,22 +208,23 @@ public class OrderService {
       order.setOrderCode(getOrderCodeFor(requisition, order.getProgram()));
       order.setQuotedCost(BigDecimal.ZERO);
 
-      Set<OrderLine> orderLines = new HashSet<>();
       orderRepository.save(order);
 
+      Set<OrderLine> orderLines = new HashSet<>();
       for (RequisitionLine rl : requisition.getRequisitionLines()) {
         OrderLine orderLine = new OrderLine();
         orderLine.setOrder(order);
         orderLine.setProduct(rl.getProduct());
         orderLine.setFilledQuantity(0L);
         orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
+        orderLines.add(orderLine);
         orderLineRepository.save(orderLine);
         orderLines.add(orderLine);
       }
-
       order.setOrderLines(orderLines);
-      orderRepository.save(order);
+      convertedOrders.add(order);
     }
+    return convertedOrders;
   }
 
   private String getOrderCodeFor(Requisition requisition, Program program) {

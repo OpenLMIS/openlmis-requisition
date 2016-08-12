@@ -3,35 +3,35 @@ package org.openlmis.referencedata.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 @Transactional
 public class PeriodServiceTest {
 
+  @Mock
+  private PeriodRepository periodRepository;
+
+  @InjectMocks
   @Autowired
   private PeriodService periodService;
 
-  @Autowired
-  private PeriodRepository periodRepository;
-
-  @Autowired
-  private ScheduleRepository scheduleRepository;
+  private Period period;
+  private Schedule schedule;
 
   private Integer currentInstanceNumber;
   private Schedule testSchedule;
@@ -43,17 +43,15 @@ public class PeriodServiceTest {
     currentInstanceNumber = 0;
     periods = new ArrayList<>();
     testSchedule = generateSchedule();
-    for ( int periodCount = 0; periodCount < 5; periodCount++ ) {
-      periods.add(generatePeriod());
-    }
+    generateInstances();
+    initMocks(this);
+    mockRepositories();
   }
 
   @Test
   public void testSearchPeriod() {
-    List<Period> receivedPeriods =
-            periodService.searchPeriods(
-                    testSchedule,
-                    periods.get(0).getStartDate());
+    List<Period> receivedPeriods = periodService
+            .searchPeriods(testSchedule, periods.get(0).getStartDate());
     Assert.assertEquals(4,receivedPeriods.size());
     for ( Period period : receivedPeriods) {
       Assert.assertEquals(
@@ -64,31 +62,59 @@ public class PeriodServiceTest {
     }
   }
 
+  private void generateInstances() {
+    for ( int periodCount = 0; periodCount < 5; periodCount++ ) {
+      periods.add(generatePeriod());
+    }
+  }
+
   private Period generatePeriod() {
-    Period period = new Period();
     Integer instanceNumber = generateInstanceNumber();
+    period = new Period();
+    period.setId(UUID.randomUUID());
     period.setName("PeriodName" + instanceNumber);
     period.setDescription("PeriodDescription" + instanceNumber);
     period.setEndDate(LocalDate.now().plusDays(instanceNumber));
     period.setStartDate(LocalDate.now().minusDays(instanceNumber));
     period.setProcessingSchedule(testSchedule);
-    periodRepository.save(period);
     return period;
   }
 
   private Schedule generateSchedule() {
-    Schedule schedule = new Schedule();
     Integer instanceNumber = generateInstanceNumber();
+    schedule = new Schedule();
+    schedule.setId(UUID.randomUUID());
     schedule.setCode("ScheduleCode" + instanceNumber);
     schedule.setDescription("ScheduleDescription" + instanceNumber);
     schedule.setName("ScheduleName" + instanceNumber);
     schedule.setModifiedDate(LocalDateTime.now());
-    scheduleRepository.save(schedule);
     return schedule;
   }
 
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
+  }
+
+  private void mockRepositories() {
+    for (Period period : periods) {
+      List<Period> matchedPeriods = new ArrayList<>();
+      for (Period periodWithMatchedProcessingScheduleAndToDate : periods) {
+        if (periodWithMatchedProcessingScheduleAndToDate.getProcessingSchedule().equals(
+                period.getProcessingSchedule()) && periodWithMatchedProcessingScheduleAndToDate
+                .getStartDate().isBefore(period.getStartDate())) {
+          matchedPeriods.add(periodWithMatchedProcessingScheduleAndToDate);
+        }
+      }
+      when(periodRepository
+              .searchPeriods(period.getProcessingSchedule(), period.getStartDate()))
+              .thenReturn(matchedPeriods);
+    }
+    when(periodRepository
+            .findOne(period.getId()))
+            .thenReturn(period);
+    when(periodRepository
+            .save(period))
+            .thenReturn(period);
   }
 }

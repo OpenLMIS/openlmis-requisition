@@ -118,7 +118,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     GeographicZone geographicZone = addGeographicZone("geographicZoneCode", geographicLevel);
 
     Facility facility = addFacility("facilityName", "facilityCode", "facilityDescription",
-                                    facilityType, geographicZone, true, true);
+            facilityType, geographicZone, true, true);
 
     Program program = addProgram("programCode");
 
@@ -126,7 +126,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     user = userRepository.findOne(INITIAL_USER_ID);
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
-                          OrderStatus.ORDERED, new BigDecimal("1.29"));
+            OrderStatus.ORDERED, new BigDecimal("1.29"));
 
     Schedule schedule1 = addSchedule("Schedule1", "S1");
 
@@ -155,22 +155,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             LocalDate.of(2016, Month.DECEMBER, 31));
 
     Facility facility1 = addFacility("facility1", "F1", null, facilityType1,
-                                     geographicZone1, true, false);
+            geographicZone1, true, false);
 
     Facility facility2 = addFacility("facility2", "F2", null, facilityType2,
-                                     geographicZone2, true, false);
+            geographicZone2, true, false);
 
     Requisition requisition1 = addRequisition(program1, facility1, period1,
-                                              RequisitionStatus.RELEASED, null);
+            RequisitionStatus.RELEASED, null);
 
     Requisition requisition2 = addRequisition(program2, facility1, period2,
-                                              RequisitionStatus.RELEASED, null);
+            RequisitionStatus.RELEASED, null);
 
     secondOrder = addOrder(requisition1, "O2", program1, user, facility2, facility2,
-                           facility1, OrderStatus.RECEIVED, new BigDecimal(100));
+            facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
     thirdOrder = addOrder(requisition2, "O3", program2, user, facility2, facility2,
-                          facility1, OrderStatus.RECEIVED, new BigDecimal(200));
+            facility1, OrderStatus.RECEIVED, new BigDecimal(200));
 
     ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
 
@@ -197,7 +197,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     geographicZone = addGeographicZone("zoneCode", geographicLevel);
 
     Facility supplyingFacility = addFacility("supplyingFacilityName", "supplyingFacilityCode",
-        "description", facilityType, geographicZone, true, true);
+            "description", facilityType, geographicZone, true, true);
 
     SupervisoryNode supervisoryNode = addSupervisoryNode(supplyingFacility);
 
@@ -206,10 +206,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Schedule schedule = addSchedule("Schedule3", "S3");
 
     Period period = addPeriod("P3", schedule, LocalDate.of(2015, Month.JANUARY, 1),
-        LocalDate.of(2015, Month.DECEMBER, 31));
+            LocalDate.of(2015, Month.DECEMBER, 31));
 
     requisition = addRequisition(program, supplyingFacility, period,
-        RequisitionStatus.APPROVED, supervisoryNode);
+            RequisitionStatus.APPROVED, supervisoryNode);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
   }
@@ -360,13 +360,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderRepository.save(firstOrder);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType("application/json")
-        .when()
-        .put("/api/orders/{id}/finalize")
-        .then()
-        .statusCode(400);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .pathParam("id", firstOrder.getId().toString())
+            .contentType("application/json")
+            .when()
+            .put("/api/orders/{id}/finalize")
+            .then()
+            .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
@@ -374,34 +374,34 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void testPrintOrderAsCsv() {
     String csvContent = restAssured.given()
-        .queryParam("format", "csv")
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", secondOrder.getId())
-        .when()
-        .get("/api/orders/{id}/print")
-        .then()
-        .statusCode(200)
-        .extract().body().asString();
+            .queryParam("format", "csv")
+            .queryParam(ACCESS_TOKEN, getToken())
+            .pathParam("id", secondOrder.getId())
+            .when()
+            .get("/api/orders/{id}/print")
+            .then()
+            .statusCode(200)
+            .extract().body().asString();
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
     for (OrderLine o : orderRepository.findOne(secondOrder.getId()).getOrderLines()) {
       Assert.assertTrue(csvContent.contains(o.getProduct().getPrimaryName()
-          + "," + o.getFilledQuantity()
-          + "," + o.getOrderedQuantity()));
+              + "," + o.getFilledQuantity()
+              + "," + o.getOrderedQuantity()));
     }
   }
 
   @Test
   public void testPrintOrderAsPdf() {
     restAssured.given()
-        .queryParam("format", "pdf")
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", thirdOrder.getId().toString())
-        .when()
-        .get("/api/orders/{id}/print")
-        .then()
-        .statusCode(200);
+            .queryParam("format", "pdf")
+            .queryParam(ACCESS_TOKEN, getToken())
+            .pathParam("id", thirdOrder.getId().toString())
+            .when()
+            .get("/api/orders/{id}/print")
+            .then()
+            .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -411,13 +411,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderRepository.deleteAll();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(Collections.singletonList(requisition))
-        .when()
-        .post("/api/orders/requisitions")
-        .then()
-        .statusCode(201);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(Collections.singletonList(requisition))
+            .when()
+            .post("/api/orders/requisitions")
+            .then()
+            .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Assert.assertEquals(1, orderRepository.count());
@@ -432,7 +432,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Assert.assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
     Assert.assertEquals(order.getSupplyingFacility().getId(),
-        supplyLine.getSupplyingFacility().getId());
+            supplyLine.getSupplyingFacility().getId());
   }
 
   @Test

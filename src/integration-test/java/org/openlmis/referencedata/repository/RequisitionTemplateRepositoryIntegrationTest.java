@@ -4,6 +4,7 @@ package org.openlmis.referencedata.repository;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
@@ -14,7 +15,9 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -35,10 +38,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
   ProgramRepository programRepository;
 
   private Program program = new Program();
+  private List<RequisitionTemplate> requisitionTemplates;
 
   @Before
   public void setUp() {
-    programRepository.deleteAll();
+    requisitionTemplates = new ArrayList<>();
     program.setCode(REQUISITION_TEMPLATE_REPOSITORY);
     programRepository.save(program);
   }
@@ -160,5 +164,42 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate = repository.save(requisitionTemplate);
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getDisplayOrder(), 1);
+  }
+
+  @Test
+  public void testSearchRequisitionTemplatesByAllParameters() {
+    for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
+      RequisitionTemplate requisitionTemplate = generateInstance();
+      requisitionTemplate.setProgram(generateProgram());
+      requisitionTemplates.add(repository.save(requisitionTemplate));
+    }
+    List<RequisitionTemplate> receivedRequisitionTemplates
+            = repository.searchRequisitionTemplates(requisitionTemplates.get(0).getProgram());
+
+    Assert.assertEquals(1, receivedRequisitionTemplates.size());
+    Assert.assertEquals(
+            requisitionTemplates.get(0).getProgram().getId(),
+            receivedRequisitionTemplates.get(0).getProgram().getId());
+  }
+
+  @Test
+  public void testSearchRequisitionTemplatesByAllParametersNull() {
+    for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
+      RequisitionTemplate requisitionTemplate = generateInstance();
+      requisitionTemplate.setProgram(generateProgram());
+      requisitionTemplates.add(repository.save(requisitionTemplate));
+    }
+    List<RequisitionTemplate> receivedRequisitionTemplates
+            = repository.searchRequisitionTemplates(null);
+
+    Assert.assertEquals(requisitionTemplates.size(), receivedRequisitionTemplates.size());
+  }
+
+  private Program generateProgram() {
+    Program program = new Program();
+    program.setCode("code" + this.getNextInstanceNumber());
+    program.setPeriodsSkippable(false);
+    programRepository.save(program);
+    return program;
   }
 }

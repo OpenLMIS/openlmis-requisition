@@ -258,15 +258,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void testShouldSubmitCorrectRequisition() throws JsonProcessingException {
 
     Requisition response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition.class);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(Requisition.class);
 
     Assert.assertNotNull(response.getId());
     Assert.assertEquals(requisition.getId(), response.getId());
@@ -282,18 +282,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
+            + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -319,18 +319,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
+            + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -356,18 +356,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
+            + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -394,18 +394,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A beginning balance must be a non-negative value.\"\n}";
+            + "\"A beginning balance must be a non-negative value.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -430,19 +430,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A total received quantity"
-          + " must be entered prior to submission of a requisition.\"\n}";
+            + "\"A total received quantity"
+            + " must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -469,18 +469,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A total received quantity must be a non-negative value.\"\n}";
+            + "\"A total received quantity must be a non-negative value.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -506,18 +506,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
+            + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -543,19 +543,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A total consumed quantity"
-          + " must be entered prior to submission of a requisition.\"\n}";
+            + "\"A total consumed quantity"
+            + " must be entered prior to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -581,19 +581,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(SUBMIT_URL)
-          .then()
-          .statusCode(400)
-          .extract().asString();
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .body(requisition)
+            .when()
+            .put(SUBMIT_URL)
+            .then()
+            .statusCode(400)
+            .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-          + "\"A total losses and adjustments must be entered prior "
-          + "to submission of a requisition.\"\n}";
+            + "\"A total losses and adjustments must be entered prior "
+            + "to submission of a requisition.\"\n}";
 
     Assert.assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -653,13 +653,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .when()
-          .delete(DELETE_URL)
-          .then()
-          .statusCode(204);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .when()
+            .delete(DELETE_URL)
+            .then()
+            .statusCode(204);
 
     Assert.assertFalse(requisitionRepository.exists(requisition.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -672,13 +672,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .when()
-          .delete(DELETE_URL)
-          .then()
-          .statusCode(400);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .when()
+            .delete(DELETE_URL)
+            .then()
+            .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -700,14 +700,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Comment[] response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .when()
-          .get(INSERT_COMMENT)
-          .then()
-          .statusCode(200)
-          .extract().as(Comment[].class);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .when()
+            .get(INSERT_COMMENT)
+            .then()
+            .statusCode(200)
+            .extract().as(Comment[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     List<Comment> commentList = Arrays.asList(response);
@@ -726,15 +726,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     userPostComment.setBody("User comment");
 
     Comment[] response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(userPostComment)
-          .pathParam("id", requisition.getId())
-          .when()
-          .post(INSERT_COMMENT)
-          .then()
-          .statusCode(200)
-          .extract().as(Comment[].class);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(userPostComment)
+            .pathParam("id", requisition.getId())
+            .when()
+            .post(INSERT_COMMENT)
+            .then()
+            .statusCode(200)
+            .extract().as(Comment[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     List<Comment> commentList = Arrays.asList(response);
@@ -745,14 +745,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private void testApproveRequisition(Requisition requisition) {
 
     Requisition response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .when()
-          .put(APPROVE_REQUISITION)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition.class);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(APPROVE_REQUISITION)
+            .then()
+            .statusCode(200)
+            .extract().as(Requisition.class);
 
     Assert.assertNotNull(response.getId());
     Assert.assertEquals(requisition.getId(), response.getId());
@@ -781,13 +781,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.delete(requisition);
 
     restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(requisition)
-          .when()
-          .post(INITIATE_URL)
-          .then()
-          .statusCode(201);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(requisition)
+            .when()
+            .post(INITIATE_URL)
+            .then()
+            .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -799,13 +799,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     Requisition[] response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .when()
-          .get(SUBMITTED_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition[].class);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(SUBMITTED_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(Requisition[].class);
 
     Iterable<Requisition> requisitions = Arrays.asList(response);
     Assert.assertTrue(requisitions.iterator().hasNext());
@@ -819,14 +819,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(requisition)
-          .pathParam("id", requisition.getId())
-          .when()
-          .put(AUTHORIZATION_URL)
-          .then()
-          .statusCode(200);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(requisition)
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(AUTHORIZATION_URL)
+            .then()
+            .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -839,14 +839,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(requisition)
-          .pathParam("id", requisition.getId())
-          .when()
-          .put(AUTHORIZATION_URL)
-          .then()
-          .statusCode(400);
+            .queryParam(ACCESS_TOKEN, getToken())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(requisition)
+            .pathParam("id", requisition.getId())
+            .when()
+            .put(AUTHORIZATION_URL)
+            .then()
+            .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

@@ -3,119 +3,107 @@ package org.openlmis.referencedata.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.FacilityRepository;
-import org.openlmis.referencedata.repository.FacilityTypeRepository;
-import org.openlmis.referencedata.repository.GeographicLevelRepository;
-import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 @Transactional
+@SuppressWarnings("PMD.TooManyMethods")
 public class SupplyLineServiceTest {
 
-  private static final String CODE = "123";
+  private List<SupplyLine> supplyLines;
+  private Integer currentInstanceNumber;
 
+  @Mock
+  private SupplyLineRepository supplyLineRepository;
+
+  @InjectMocks
   @Autowired
   private SupplyLineService supplyLineService;
 
-  @Autowired
-  private SupplyLineRepository supplyLineRepository;
-
-  @Autowired
-  private SupervisoryNodeRepository supervisoryNodeRepository;
-
-  @Autowired
-  private GeographicLevelRepository geographicLevelRepository;
-
-  @Autowired
-  private GeographicZoneRepository geographicZoneRepository;
-
-  @Autowired
-  private FacilityTypeRepository facilityTypeRepository;
-
-  @Autowired
-  private FacilityRepository facilityRepository;
-
-  @Autowired
-  private ProgramRepository programRepository;
-
-  private SupplyLine supplyLine;
-  private Integer currentInstanceNumber;
-
   @Before
   public void setUp() {
+    supplyLines = new ArrayList<>();
     currentInstanceNumber = 0;
-    supplyLine = generateSupplyLine();
+    generateInstances();
+    initMocks(this);
+    mockRepositories();
   }
 
   @Test
   public void testSearchSupplyLines() {
     List<SupplyLine> receivedSupplyLines = supplyLineService.searchSupplyLines(
-        supplyLine.getProgram(),
-        supplyLine.getSupervisoryNode());
+        supplyLines.get(0).getProgram(),
+        supplyLines.get(0).getSupervisoryNode());
+
     Assert.assertEquals(1, receivedSupplyLines.size());
-    for ( SupplyLine receivedSupplyLine : receivedSupplyLines ) {
-      Assert.assertEquals(
-          supplyLine.getProgram().getId(),
-          receivedSupplyLine.getProgram().getId());
-      Assert.assertEquals(
-          supplyLine.getSupervisoryNode().getId(),
-          receivedSupplyLine.getSupervisoryNode().getId());
-      Assert.assertEquals(
-          supplyLine.getId(),
-          receivedSupplyLine.getId());
+    Assert.assertEquals(
+        supplyLines.get(0).getProgram().getId(),
+        receivedSupplyLines.get(0).getProgram().getId());
+    Assert.assertEquals(
+        supplyLines.get(0).getSupervisoryNode().getId(),
+        receivedSupplyLines.get(0).getSupervisoryNode().getId());
+    Assert.assertEquals(
+        supplyLines.get(0).getId(),
+        receivedSupplyLines.get(0).getId());
+  }
+
+  private void generateInstances() {
+    for (int instancesCount = 0; instancesCount < 5; instancesCount++) {
+      supplyLines.add(generateSupplyLine());
     }
   }
 
   private SupplyLine generateSupplyLine() {
     SupplyLine supplyLine = new SupplyLine();
+    supplyLine.setId(UUID.randomUUID());
     supplyLine.setProgram(generateProgram());
     supplyLine.setSupervisoryNode(generateSupervisoryNode());
     supplyLine.setSupplyingFacility(generateFacility());
-    supplyLineRepository.save(supplyLine);
     return supplyLine;
   }
 
   private SupervisoryNode generateSupervisoryNode() {
+    Integer instanceNumber = generateInstanceNumber();
     SupervisoryNode supervisoryNode = new SupervisoryNode();
-    supervisoryNode.setCode("234");
+    supervisoryNode.setId(UUID.randomUUID());
+    supervisoryNode.setCode("SupNodeCode" + instanceNumber);
     supervisoryNode.setFacility(generateFacility());
-    supervisoryNodeRepository.save(supervisoryNode);
     return supervisoryNode;
   }
 
   private Program generateProgram() {
+    Integer instanceNumber = generateInstanceNumber();
     Program program = new Program();
-    program.setCode(CODE);
+    program.setId(UUID.randomUUID());
+    program.setCode("ProgramCode" + instanceNumber);
     program.setPeriodsSkippable(false);
-    programRepository.save(program);
     return program;
   }
 
   private Facility generateFacility() {
-    Integer instanceNumber = + generateInstanceNumber();
+    Integer instanceNumber = generateInstanceNumber();
     GeographicLevel geographicLevel = generateGeographicLevel();
     GeographicZone geographicZone = generateGeographicZone(geographicLevel);
     FacilityType facilityType = generateFacilityType();
     Facility facility = new Facility();
+    facility.setId(UUID.randomUUID());
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
     facility.setCode("FacilityCode" + instanceNumber);
@@ -123,35 +111,60 @@ public class SupplyLineServiceTest {
     facility.setDescription("FacilityDescription" + instanceNumber);
     facility.setActive(true);
     facility.setEnabled(true);
-    facilityRepository.save(facility);
     return facility;
   }
 
   private GeographicLevel generateGeographicLevel() {
+    Integer instanceNumber = generateInstanceNumber();
     GeographicLevel geographicLevel = new GeographicLevel();
-    geographicLevel.setCode("GeographicLevel" + generateInstanceNumber());
+    geographicLevel.setId(UUID.randomUUID());
+    geographicLevel.setCode("GeographicLevelCode" + instanceNumber);
     geographicLevel.setLevelNumber(1);
-    geographicLevelRepository.save(geographicLevel);
     return geographicLevel;
   }
 
   private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
+    Integer instanceNumber = generateInstanceNumber();
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("GeographicZone" + generateInstanceNumber());
+    geographicZone.setId(UUID.randomUUID());
+    geographicZone.setCode("GeographicZoneCode" + instanceNumber);
     geographicZone.setLevel(geographicLevel);
-    geographicZoneRepository.save(geographicZone);
     return geographicZone;
   }
 
   private FacilityType generateFacilityType() {
+    Integer instanceNumber = generateInstanceNumber();
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode("FacilityType" + generateInstanceNumber());
-    facilityTypeRepository.save(facilityType);
+    facilityType.setId(UUID.randomUUID());
+    facilityType.setCode("FacilityTypeCode" + instanceNumber);
     return facilityType;
   }
 
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
+  }
+
+  private void mockRepositories() {
+    for (SupplyLine supplyLine : supplyLines) {
+      List<SupplyLine> matchedSupplyLines = new ArrayList<>();
+      for (SupplyLine supLine : supplyLines) {
+        if (supLine.getProgram().getId()
+                .equals(supplyLine.getProgram().getId())
+            || supLine.getSupervisoryNode().getId()
+                .equals(supplyLine.getSupervisoryNode().getId())) {
+          matchedSupplyLines.add(supLine);
+        }
+      }
+      when(supplyLineRepository
+          .searchSupplyLines(supplyLine.getProgram(), supplyLine.getSupervisoryNode()))
+          .thenReturn(matchedSupplyLines);
+      when(supplyLineRepository
+          .findOne(supplyLine.getId()))
+          .thenReturn(supplyLine);
+      when(supplyLineRepository
+          .save(supplyLine))
+          .thenReturn(supplyLine);
+    }
   }
 }

@@ -3,108 +3,110 @@ package org.openlmis.referencedata.service;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.Application;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
-import org.openlmis.product.repository.ProductCategoryRepository;
-import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProgramProduct;
 import org.openlmis.referencedata.repository.ProgramProductRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 @Transactional
 public class ProgramProductServiceTest {
 
+  @Mock
+  private ProgramProductRepository programProductRepository;
+
+  @InjectMocks
   @Autowired
   private ProgramProductService programProductService;
 
-  @Autowired
-  private ProgramProductRepository programProductRepository;
+  private ProgramProduct programProduct;
+  private Program program;
+  private Product product;
+  private ProductCategory productCategory;
 
-  @Autowired
-  private ProgramRepository programRepository;
-
-  @Autowired
-  private ProductRepository productRepository;
-
-  @Autowired
-  private ProductCategoryRepository productCategoryRepository;
-
-  private List<ProgramProduct> programProducts;
   private Integer currentInstanceNumber;
 
   @Before
   public void setUp() {
     currentInstanceNumber = 0;
-    programProducts = new ArrayList<>();
-    for ( int programProductNumber = 0; programProductNumber < 5; programProductNumber++ ) {
-      programProducts.add(generateProgramProduct());
-    }
+    programProductService = new ProgramProductService();
+    generateInstances();
+    initMocks(this);
+    mockRepositories();
   }
 
   @Test
   public void testSearchProgramProducts() {
     List<ProgramProduct> receivedProgramProducts = programProductService.searchProgramProducts(
-            programProducts.get(0).getProgram(),
-            programProducts.get(0).isFullSupply());
-    Assert.assertEquals(1,receivedProgramProducts.size());
-    for ( ProgramProduct programProduct : receivedProgramProducts ) {
+            programProduct.getProgram(),
+            programProduct.isFullSupply());
+
+    Assert.assertEquals(1, receivedProgramProducts.size());
+    for (ProgramProduct programProduct : receivedProgramProducts) {
       Assert.assertEquals(
               programProduct.getProgram().getId(),
-              programProducts.get(0).getProgram().getId());
+              this.programProduct.getProgram().getId());
       Assert.assertEquals(
               programProduct.isFullSupply(),
-              programProducts.get(0).isFullSupply());
+              this.programProduct.isFullSupply());
     }
   }
 
+  private void generateInstances() {
+    programProduct = generateProgramProduct();
+    program = generateProgram();
+    productCategory = generateProductCategory();
+    product = generateProduct(productCategory);
+  }
+
   private ProgramProduct generateProgramProduct() {
-    Program program = generateProgram();
-    ProductCategory productCategory = generateProductCategory();
-    Product product = generateProduct(productCategory);
-    ProgramProduct programProduct = new ProgramProduct();
+    program = generateProgram();
+    productCategory = generateProductCategory();
+    product = generateProduct(productCategory);
+    programProduct = new ProgramProduct();
+    programProduct.setId(UUID.randomUUID());
     programProduct.setProduct(product);
     programProduct.setProductCategory(productCategory);
     programProduct.setProgram(program);
     programProduct.setFullSupply(true);
     programProduct.setActive(true);
     programProduct.setDosesPerMonth(3);
-    programProductRepository.save(programProduct);
     return programProduct;
   }
 
   private Program generateProgram() {
-    Program program = new Program();
+    program = new Program();
+    program.setId(UUID.randomUUID());
     program.setCode("code" + generateInstanceNumber());
     program.setPeriodsSkippable(false);
-    programRepository.save(program);
     return program;
   }
 
   private ProductCategory generateProductCategory() {
     Integer instanceNumber = generateInstanceNumber();
-    ProductCategory productCategory = new ProductCategory();
+    productCategory = new ProductCategory();
+    productCategory.setId(UUID.randomUUID());
     productCategory.setCode("code" + instanceNumber);
     productCategory.setName("vaccine" + instanceNumber);
     productCategory.setDisplayOrder(1);
-    productCategoryRepository.save(productCategory);
     return productCategory;
   }
 
   private Product generateProduct(ProductCategory productCategory) {
     Integer instanceNumber = generateInstanceNumber();
-    Product product = new Product();
+    product = new Product();
+    product.setId(UUID.randomUUID());
     product.setCode("code" + instanceNumber);
     product.setPrimaryName("product" + instanceNumber);
     product.setDispensingUnit("unit" + instanceNumber);
@@ -116,12 +118,23 @@ public class ProgramProductServiceTest {
     product.setFullSupply(true);
     product.setTracer(false);
     product.setProductCategory(productCategory);
-    productRepository.save(product);
     return product;
   }
 
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
+  }
+
+  private void mockRepositories() {
+    when(programProductRepository
+            .findOne(programProduct.getId()))
+            .thenReturn(programProduct);
+    when(programProductRepository
+            .save(programProduct))
+            .thenReturn(programProduct);
+    when(programProductRepository
+            .searchProgramProducts(programProduct.getProgram(), programProduct.isFullSupply()))
+            .thenReturn(Arrays.asList(programProduct));
   }
 }
