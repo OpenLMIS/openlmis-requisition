@@ -39,7 +39,8 @@ import java.util.UUID;
 @Component
 public class CleanRepositoryHelper {
 
-  static final UUID INITIAL_USER_ID = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
+  public static final UUID INITIAL_USER_ID =
+      UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
   @Autowired
   private ProductRepository productRepository;

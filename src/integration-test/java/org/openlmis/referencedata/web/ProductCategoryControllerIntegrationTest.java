@@ -21,11 +21,11 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
-  ProductCategoryRepository productCategoryRepository;
+  private ProductCategoryRepository productCategoryRepository;
 
   private Integer currentInstanceNumber;
 
-  List<ProductCategory> productCategories;
+  private List<ProductCategory> productCategories;
 
   @Before
   public void setUp() {
