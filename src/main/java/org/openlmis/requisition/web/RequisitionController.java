@@ -2,9 +2,11 @@ package org.openlmis.requisition.web;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.repository.CommentRepository;
 import org.openlmis.requisition.domain.Requisition;
@@ -14,6 +16,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +25,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -135,10 +138,14 @@ public class RequisitionController {
       @RequestParam(value = "createdDateFrom", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo) {
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
+      @RequestParam(value = "processingPeriod", required = false) Period processingPeriod,
+      @RequestParam(value = "supervisoryNode", required = false) SupervisoryNode supervisoryNode,
+      @RequestParam(value = "requisitionStatus", required = false)
+              RequisitionStatus requisitionStatus) {
 
     List<Requisition> result = requisitionService.searchRequisitions(facility, program,
-        createdDateFrom, createdDateTo);
+        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
@@ -164,21 +171,19 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id) {
-
+    Requisition rejectedRequisition = null;
     try {
-      requisitionService.reject(id);
+      rejectedRequisition = requisitionService.reject(id);
     } catch (RequisitionException ex) {
       LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    Requisition rejectedRequisition = requisitionRepository.findOne(id);
     return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
   }
 
   /**
    * Add comment to the requisition.
    */
-  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
                                          @PathVariable("id") UUID id, OAuth2Authentication auth) {
@@ -186,12 +191,13 @@ public class RequisitionController {
     comment.setRequisition(requisition);
 
     User user = (User) auth.getPrincipal();
-
     comment.setAuthor(user);
     commentRepository.save(comment);
 
-    List<Comment> comments = requisitionService.getCommentsByReqId(id);
-    return new ResponseEntity<>(comments, HttpStatus.OK);
+    List<Comment> comments = requisition.getComments();
+    MappingJacksonValue value = new MappingJacksonValue(comments);
+    value.setSerializationView(View.BasicInformation.class);
+    return new ResponseEntity<>(value, HttpStatus.OK);
   }
 
   /**
@@ -199,14 +205,16 @@ public class RequisitionController {
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
   public ResponseEntity<Object> getCommentsForRequisition(@PathVariable("id") UUID id) {
-    List<Comment> comments = requisitionService.getCommentsByReqId(id);
-    return new ResponseEntity<Object>(comments, HttpStatus.OK);
+    Requisition requisition = requisitionRepository.findOne(id);
+    List<Comment> comments = requisition.getComments();
+    MappingJacksonValue value = new MappingJacksonValue(comments);
+    value.setSerializationView(View.BasicInformation.class);
+    return new ResponseEntity<>(value, HttpStatus.OK);
   }
 
   /**
    * Approve specified by id requisition.
    */
-  @PreAuthorize("isAuthenticated()")
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -228,12 +236,11 @@ public class RequisitionController {
   /**
    * Get requisitions to approve for right supervisor.
    */
-  @PreAuthorize("isAuthenticated()")
-  @RequestMapping(value = "/requisitions-for-approval", method = RequestMethod.GET)
+  @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
   public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
     User user = (User) auth.getPrincipal();
     List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
-    return new ResponseEntity<Object>(requisitions, HttpStatus.OK);
+    return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
@@ -255,8 +262,8 @@ public class RequisitionController {
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
 
-    Iterable<Requisition> submittedRequisitions =
-        requisitionRepository.findByStatus(RequisitionStatus.SUBMITTED);
+    Iterable<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
+                null, null, null, null, null, null, RequisitionStatus.SUBMITTED);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

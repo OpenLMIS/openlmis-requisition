@@ -1,12 +1,10 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.hierarchyandsupervision.domain.Right;
-import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -26,13 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 @Service
 public class RequisitionService {
@@ -54,12 +45,8 @@ public class RequisitionService {
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
 
-
   @Autowired
   private ConfigurationSettingService configurationSettingService;
-
-  @PersistenceContext
-  private EntityManager entityManager;
 
   /**
    * Initiated given requisition if possible.
@@ -135,7 +122,6 @@ public class RequisitionService {
       LOGGER.debug("Requisition deleted");
       return true;
     }
-
     return false;
   }
 
@@ -171,7 +157,7 @@ public class RequisitionService {
    * @param requisitionId UUID of Requisition to be rejected.
    * @throws RequisitionException Exception thrown when it is not possible to reject a requisition.
    */
-  public void reject(UUID requisitionId) throws RequisitionException {
+  public Requisition reject(UUID requisitionId) throws RequisitionException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -182,26 +168,8 @@ public class RequisitionService {
     } else {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
-      requisitionRepository.save(requisition);
+      return requisitionRepository.save(requisition);
     }
-  }
-
-  /**
-   * Get all comments for specified requisition.
-   */
-  public List<Comment> getCommentsByReqId(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    List<Comment> comments = requisition.getComments();
-    if (comments != null) {
-      for (Comment comment : comments) {
-        User user = comment.getAuthor();
-        comment.setAuthor(user.basicInformation());
-
-        Requisition req = comment.getRequisition();
-        comment.setRequisition(req.basicInformation());
-      }
-    }
-    return comments;
   }
 
   /**
@@ -209,29 +177,13 @@ public class RequisitionService {
    */
   public List<Requisition> searchRequisitions(Facility facility, Program program,
                                               LocalDateTime createdDateFrom,
-                                              LocalDateTime createdDateTo) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    Root<Requisition> root = query.from(Requisition.class);
-
-    Predicate predicate = builder.conjunction();
-    if (facility != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
-    }
-    if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("program"), program));
-    }
-    if (createdDateFrom != null) {
-      predicate = builder.and(predicate,
-          builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
-    }
-    if (createdDateTo != null) {
-      predicate = builder.and(predicate,
-          builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
-    }
-
-    query.where(predicate);
-    return entityManager.createQuery(query).getResultList();
+                                              LocalDateTime createdDateTo,
+                                              Period processingPeriod,
+                                              SupervisoryNode supervisoryNode,
+                                              RequisitionStatus requisitionStatus) {
+    return requisitionRepository.searchRequisitions(
+            facility, program, createdDateFrom,
+            createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
   }
 
   /**
@@ -239,23 +191,11 @@ public class RequisitionService {
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     User user = userRepository.findOne(userId);
-    List<Role> roles = user.getRoles();
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    for (Role role : roles) {
-      if (role.getSupervisedNode() != null && findApproveRight(role.getRights())) {
-        requisitionsForApproval.addAll(getAuthorizedRequisitions(role.getSupervisedNode()));
-      }
+    if (user.getSupervisedNode() != null) {
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));
     }
     return requisitionsForApproval;
-  }
-
-  private boolean findApproveRight(List<Right> rightList) {
-    for (Right right : rightList) {
-      if (right.getName().equals("APPROVE_REQUISITION")) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -270,8 +210,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList =
-          (List<Requisition>) requisitionRepository.findBySupervisoryNode(supNode);
+      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
@@ -313,15 +252,21 @@ public class RequisitionService {
     }
   }
 
+
   /**
-   * Releasing the Requisitions.
+   * Releases the list of given requisitions as order.
+   *
+   * @param requisitionList list of requisitions to be released as order
+   * @return list of released requisitions
    */
-  public void releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+    List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
       loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-      requisitionRepository.save(loadedRequisition);
+      releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
     }
+    return releasedRequisitions;
   }
 
   private Requisition save(Requisition requisition) throws RequisitionException {

@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -41,7 +39,10 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -85,8 +86,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
 
-  private static final String USERNAME = "testUser";
-
   private Order order = new Order();
   private User user = new User();
   private Program program = new Program();
@@ -111,13 +110,15 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Facility facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, true, false);
 
+    user = userRepository.findOne(INITIAL_USER_ID);
+    user.setHomeFacility(facility);
+    userRepository.save(user);
+
     Facility facility2 = addFacility("facility2", "F2", null, facilityType,
-            geographicZone, true, false);
+        geographicZone, true, false);
 
     Requisition requisition1 = addRequisition(program, facility, period,
-            RequisitionStatus.RELEASED);
-
-    user = addUser(USERNAME, "pass", "Alice", "Cat", facility);
+        RequisitionStatus.RELEASED);
 
     order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -138,7 +139,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testOrderList() throws JsonProcessingException {
+  public void testShouldFindOrdersFilledByFacility() {
     Order[] response = restAssured.given()
         .queryParam("access_token", getToken())
         .pathParam("id", user.getHomeFacility().getId())
@@ -154,15 +155,15 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Iterable<Order> orderList = Arrays.asList(response);
     Iterator<Order> orderIterator = orderList.iterator();
-    Assert.assertTrue(orderIterator.hasNext());
+    assertTrue(orderIterator.hasNext());
     Order testOrder = orderIterator.next();
-    Assert.assertFalse(orderIterator.hasNext());
-    Assert.assertEquals(testOrder.getId(), order.getId());
-    Assert.assertEquals(testOrder.getRequisition().getId(), order.getRequisition().getId());
-    Assert.assertEquals(testOrder.getCreatedBy().getId(), order.getCreatedBy().getId());
-    Assert.assertEquals(testOrder.getOrderCode(), order.getOrderCode());
-    Assert.assertEquals(testOrder.getOrderLines().size(), 2);
-    Assert.assertEquals(testOrder.getCreatedDate(), order.getCreatedDate());
+    assertFalse(orderIterator.hasNext());
+    assertEquals(testOrder.getId(), order.getId());
+    assertEquals(testOrder.getRequisition().getId(), order.getRequisition().getId());
+    assertEquals(testOrder.getCreatedBy().getId(), order.getCreatedBy().getId());
+    assertEquals(testOrder.getOrderCode(), order.getOrderCode());
+    assertEquals(testOrder.getOrderLines().size(), 2);
+    assertEquals(testOrder.getCreatedDate(), order.getCreatedDate());
   }
 
   private Facility addFacility(String facilityName, String facilityCode, String facilityDescription,
@@ -183,17 +184,6 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Program program = new Program();
     program.setCode(programCode);
     return programRepository.save(program);
-  }
-
-  private User addUser(String username, String password, String firstName, String lastName,
-                       Facility facility) {
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(password);
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setHomeFacility(facility);
-    return userRepository.save(user);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, Program program, User user,

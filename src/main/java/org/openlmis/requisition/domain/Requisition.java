@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -17,7 +19,6 @@ import org.openlmis.referencedata.domain.Program;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,7 +29,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
@@ -43,23 +43,28 @@ public class Requisition extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
+  // TODO: determine why it has to be set explicitly
   @OneToMany(mappedBy = "requisition",
-      cascade = {CascadeType.REMOVE, CascadeType.MERGE}, fetch = FetchType.EAGER)
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER)
   @Getter
   @Setter
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "requisitionLinesId")
   private Set<RequisitionLine> requisitionLines;
 
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
   @Getter
   private List<Comment> comments;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "facilityId", nullable = false)
   @Getter
   @Setter
   private Facility facility;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
@@ -87,10 +92,6 @@ public class Requisition extends BaseEntity {
   @Setter
   private String remarks;
 
-  Requisition(UUID id) {
-    this.setId(id);
-  }
-
   @ManyToOne
   @JoinColumn(name = "supervisoryNodeId")
   @Getter
@@ -100,9 +101,5 @@ public class Requisition extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
-  }
-
-  public Requisition basicInformation() {
-    return new Requisition(getId());
   }
 }

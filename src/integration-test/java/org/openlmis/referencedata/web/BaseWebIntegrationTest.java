@@ -21,17 +21,21 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public abstract class BaseWebIntegrationTest {
-  static final String BASE_URL = System.getenv("BASE_URL");
-
+  static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
-  RamlDefinition ramlDefinition;
+  static final RamlDefinition ramlDefinition =
+      RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+
   RestAssuredClient restAssured;
+
+  private static final String BASE_URL = System.getenv("BASE_URL");
 
   private String token = null;
 
@@ -41,8 +45,12 @@ public abstract class BaseWebIntegrationTest {
   @Before
   public void loadRaml() {
     RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
     restAssured = ramlDefinition.createRestAssured();
+  }
+
+  @After
+  public void cleanRepositories() {
+    cleanRepositoryHelper.cleanAll();
   }
 
   private String fetchToken() {
@@ -69,14 +77,5 @@ public abstract class BaseWebIntegrationTest {
       token = fetchToken();
     }
     return token;
-  }
-
-  String addTokenToUrl(String url) {
-    return url + "?access_token=" + this.getToken();
-  }
-
-  @After
-  public void cleanRepositories() {
-    cleanRepositoryHelper.cleanAll();
   }
 }

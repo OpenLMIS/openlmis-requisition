@@ -1,21 +1,21 @@
 package org.openlmis.referencedata.repository;
 
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProgramProduct;
+import org.openlmis.referencedata.repository.custom.ProgramProductRepositoryCustom;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.UUID;
 
-public interface ProgramProductRepository extends PagingAndSortingRepository<ProgramProduct, UUID> {
+public interface ProgramProductRepository extends
+        PagingAndSortingRepository<ProgramProduct, UUID>,
+        ProgramProductRepositoryCustom {
 
-  String FULL_SUPPLY = "fullSupply";
-  String PROGRAM = "program";
+  @Override
+  @RestResource
+  <S extends ProgramProduct> S save(S entity);
 
-  Iterable<ProgramProduct> findByProgram(
-          @Param(PROGRAM) Program program);
-
-  Iterable<ProgramProduct> findByProgramAndFullSupply(
-          @Param(PROGRAM) Program program,
-          @Param(FULL_SUPPLY) boolean fullSupply);
+  @Override
+  @RestResource
+  <S extends ProgramProduct> Iterable<S> save(Iterable<S> entities);
 }

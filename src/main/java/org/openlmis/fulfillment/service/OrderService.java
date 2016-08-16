@@ -18,11 +18,9 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.referencedata.service.SupplyLineService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -33,17 +31,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,20 +50,17 @@ public class OrderService {
 
   Logger logger = LoggerFactory.getLogger(OrderService.class);
 
-  @PersistenceContext
-  EntityManager entityManager;
-
   @Autowired
   private RequisitionService requisitionService;
+
+  @Autowired
+  private SupplyLineService supplyLineService;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
   private UserRepository userRepository;
-
-  @Autowired
-  private SupplyLineRepository supplyLineRepository;
 
   @Autowired
   private OrderLineRepository orderLineRepository;
@@ -80,12 +73,17 @@ public class OrderService {
 
   /**
    * Finds orders matching all of provided parameters.
+   * @param supplyingFacility supplyingFacility of searched Orders.
+   * @param requestingFacility requestingFacility of searched Orders.
+   * @param program program of searched Orders.
+   * @return ist of Orders with matched parameters.
    */
   public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
-                                  Program program, Period period, Schedule schedule,
-                                  LocalDate startDate, LocalDate endDate) {
-    return orderRepository.searchOrders(supplyingFacility, requestingFacility, program,
-            period, schedule, startDate, endDate);
+                                  Program program) {
+    return orderRepository.searchOrders(
+            supplyingFacility,
+            requestingFacility,
+            program);
   }
 
   /**
@@ -184,9 +182,10 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public void convertToOrder(List<Requisition> requisitionList, UUID userId) {
+  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
     User user = userRepository.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
+    List<Order> convertedOrders = new ArrayList<>();
 
     for (Requisition requisition : requisitionList) {
       requisition = requisitionRepository.findOne(requisition.getId());
@@ -199,8 +198,9 @@ public class OrderService {
       order.setReceivingFacility(requisition.getFacility());
       order.setRequestingFacility(requisition.getFacility());
 
-      SupplyLine supplyLine = supplyLineRepository.findByProgramAndSupervisoryNode(
-          requisition.getProgram(), requisition.getSupervisoryNode());
+      List<SupplyLine> supplyLines = supplyLineService
+          .searchSupplyLines(requisition.getProgram(), requisition.getSupervisoryNode());
+      SupplyLine supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
       order.setProgram(supplyLine.getProgram());
@@ -210,15 +210,21 @@ public class OrderService {
 
       orderRepository.save(order);
 
+      Set<OrderLine> orderLines = new HashSet<>();
       for (RequisitionLine rl : requisition.getRequisitionLines()) {
         OrderLine orderLine = new OrderLine();
         orderLine.setOrder(order);
         orderLine.setProduct(rl.getProduct());
         orderLine.setFilledQuantity(0L);
         orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
+        orderLines.add(orderLine);
         orderLineRepository.save(orderLine);
+        orderLines.add(orderLine);
       }
+      order.setOrderLines(orderLines);
+      convertedOrders.add(order);
     }
+    return convertedOrders;
   }
 
   private String getOrderCodeFor(Requisition requisition, Program program) {

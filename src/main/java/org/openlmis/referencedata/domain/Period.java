@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.referencedata.utils.LocalDatePersistenceConverter;
 
 import java.time.LocalDate;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -40,6 +41,7 @@ public class Period extends BaseEntity {
 
   @JsonSerialize(using = LocalDateSerializer.class)
   @JsonDeserialize(using = LocalDateDeserializer.class)
+  @Convert(converter = LocalDatePersistenceConverter.class)
   @Column(nullable = false)
   @Getter
   @Setter
@@ -47,6 +49,7 @@ public class Period extends BaseEntity {
 
   @JsonSerialize(using = LocalDateSerializer.class)
   @JsonDeserialize(using = LocalDateDeserializer.class)
+  @Convert(converter = LocalDatePersistenceConverter.class)
   @Column(nullable = false)
   @Getter
   @Setter

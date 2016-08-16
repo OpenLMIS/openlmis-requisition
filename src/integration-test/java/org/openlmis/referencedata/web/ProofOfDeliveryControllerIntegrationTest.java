@@ -1,7 +1,7 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -33,11 +33,19 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.reporting.exception.ReportingException;
+import org.openlmis.reporting.model.Template;
+import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,9 +56,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = "/api/proofOfDeliveries/{id}/print";
+  private static final String PRINT_POD = "Print POD";
+  private static final String CONSISTENCY_REPORT = "Consistency Report";
+  private static final String ACCESS_TOKEN = "access_token";
+
+  @Autowired
+  private TemplateService templateService;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -102,6 +119,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private ProofOfDeliveryLine proofOfDeliveryLine2 = new ProofOfDeliveryLine();
   private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<>();
 
+  /**
+   * Prepare the test environment.
+   */
   @Before
   public void setUp() {
     Schedule schedule1 = new Schedule();
@@ -130,7 +150,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     requisition1.setStatus(RequisitionStatus.RELEASED);
     requisitionRepository.save(requisition1);
 
-    Assert.assertEquals(1, userRepository.count());
+    assertEquals(1, userRepository.count());
     User user = userRepository.findAll().iterator().next();
 
     OrderLine orderLine1 = new OrderLine();
@@ -150,14 +170,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setReceivedDate(new Date());
     proofOfDeliveryRepository.save(proofOfDelivery);
 
-    initProofOfDeliverLine1(orderLine1);
-    initProofOfdeliverLine2(orderLine2);
+    initProofOfDeliveryLine1(orderLine1);
+    initProofOfDeliveryLine2(orderLine2);
     proofOfDeliveryLineList.add(proofOfDeliveryLine1);
     proofOfDeliveryLineList.add(proofOfDeliveryLine2);
     proofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
   }
 
-  private void initProofOfdeliverLine2(OrderLine orderLine2) {
+  private void initProofOfDeliveryLine2(OrderLine orderLine2) {
     proofOfDeliveryLine2.setOrderLine(orderLine2);
     proofOfDeliveryLine2.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLine2.setQuantityShipped(200L);
@@ -169,7 +189,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryLineRepository.save(proofOfDeliveryLine2);
   }
 
-  private void initProofOfDeliverLine1(OrderLine orderLine1) {
+  private void initProofOfDeliveryLine1(OrderLine orderLine1) {
     proofOfDeliveryLine1.setOrderLine(orderLine1);
     proofOfDeliveryLine1.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLine1.setQuantityShipped(100L);
@@ -198,13 +218,13 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     orderLine1.setOrder(order1);
     orderLine1.setProduct(product1);
-    orderLine1.setOrderedQuantity(new Long(50));
+    orderLine1.setOrderedQuantity(50L);
     orderLine1.setFilledQuantity(50L);
     orderLineRepository.save(orderLine1);
 
     orderLine2.setOrder(order1);
     orderLine2.setProduct(product2);
-    orderLine2.setOrderedQuantity(new Long(20));
+    orderLine2.setOrderedQuantity(20L);
     orderLine2.setFilledQuantity(15L);
     orderLineRepository.save(orderLine2);
 
@@ -308,12 +328,20 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testPrintProofOfDeliveryToPdf() {
+  public void testShouldPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
+    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+    FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
+    MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",
+        podReport.getFilename(), "multipart/form-data", IOUtils.toByteArray(fileInputStream));
+
+    Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, "");
+    templateService.validateFileAndInsertTemplate(template, templateOfProofOfDelivery);
+
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
-        .queryParam("access_token", getToken())
+        .queryParam(ACCESS_TOKEN, getToken())
         .when()
-        .get("/api/proofOfDeliveries/{id}/print")
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200);
 

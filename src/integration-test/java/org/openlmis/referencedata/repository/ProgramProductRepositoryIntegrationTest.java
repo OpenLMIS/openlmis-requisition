@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.repository;
 
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.Product;
@@ -12,129 +11,140 @@ import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProgramProduct;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Iterator;
-
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProgramProductRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<ProgramProduct> {
 
   @Autowired
-  ProgramProductRepository programProductRepository;
+  private ProgramProductRepository programProductRepository;
 
   @Autowired
-  ProductRepository productRepository;
+  private ProductRepository productRepository;
 
   @Autowired
-  ProductCategoryRepository productCategoryRepositoryRepository;
+  private ProgramRepository programRepository;
 
   @Autowired
-  ProgramRepository programRepository;
+  private ProductCategoryRepository productCategoryRepository;
 
-  private Program program = new Program();
-  private Product product = new Product();
-  private ProductCategory productCategory = new ProductCategory();
+  private List<ProgramProduct> programProducts;
 
-  @Autowired
   ProgramProductRepository getRepository() {
     return this.programProductRepository;
   }
 
-  @Before
-  public void setUp() {
-    this.program.setCode("code");
-    programRepository.save( this.program);
-    this.product.setCode("code2");
-    this.product.setPrimaryName("Product #" + getNextInstanceNumber());
-    this.product.setDispensingUnit("unit");
-    this.product.setDosesPerDispensingUnit(10);
-    this.product.setPackSize(1);
-    this.product.setPackRoundingThreshold(0);
-    this.product.setRoundToZero(false);
-    this.product.setActive(true);
-    this.product.setFullSupply(true);
-    this.product.setTracer(false);
-    this.productCategory.setCode("code3");
-    this.productCategory.setName("vaccine");
-    this.productCategory.setDisplayOrder(1);
-    productCategoryRepositoryRepository.save( this.productCategory);
-    this.product.setProductCategory(productCategory);
-    productRepository.save( this.product);
-
-  }
-
   ProgramProduct generateInstance() {
+    Program program = generateProgram();
+    ProductCategory productCategory = generateProductCategory();
+    Product product = generateProduct(productCategory);
     ProgramProduct programProduct = new ProgramProduct();
-    programProduct.setProgram(program);
     programProduct.setProduct(product);
     programProduct.setProductCategory(productCategory);
+    programProduct.setProgram(program);
     programProduct.setFullSupply(true);
     programProduct.setActive(true);
     programProduct.setDosesPerMonth(3);
     return programProduct;
   }
 
-  @Test
-  public void testGetAllProgramProducts() {
-    for ( int i = 0; i < 10; i++ ) {
-      ProgramProduct testProgram = this.generateInstance();
-      testProgram.setFullSupply(true);
-      programProductRepository.save(testProgram);
-    }
-    for ( int i = 0; i < 5; i++ ) {
-      ProgramProduct testProgram2 = this.generateInstance();
-      testProgram2.setFullSupply(false);
-      programProductRepository.save(testProgram2);
-    }
-    assertEquals(15, getIterableSize(programProductRepository.findByProgram(program)));
-  }
-
-  @Test
-  public void testGetProductsWhenFullSupplyTrue() {
-    for ( int i = 0; i < 10 ; i++ ) {
-      ProgramProduct testProgram = this.generateInstance();
-      testProgram.setFullSupply(true);
-      programProductRepository.save(testProgram);
-    }
-    for ( int i = 0; i < 5; i ++ ) {
-      ProgramProduct testProgram2 = this.generateInstance();
-      testProgram2.setFullSupply(false);
-      programProductRepository.save(testProgram2);
-    }
-    Iterable<ProgramProduct> programProductIterable =
-            programProductRepository.findByProgramAndFullSupply(program,true);
-    assertEquals(10, getIterableSize(programProductIterable));
-    for (ProgramProduct programProduct : programProductIterable ) {
-      assertEquals(true, programProduct.isFullSupply());
+  @Before
+  public void setUp() {
+    programProducts = new ArrayList<>();
+    for (int programProductNumber = 0; programProductNumber < 5; programProductNumber++) {
+      programProducts.add(programProductRepository.save(generateInstance()));
     }
   }
 
   @Test
-  public void testGetProductsWhenFullSupplyFalse() {
-    for ( int i = 0; i < 10; i++ ) {
-      ProgramProduct testProgram = this.generateInstance();
-      testProgram.setFullSupply(true);
-      programProductRepository.save(testProgram);
-    }
-    for ( int i = 0; i < 5; i ++ ) {
-      ProgramProduct testProgram2 = this.generateInstance();
-      testProgram2.setFullSupply(false);
-      programProductRepository.save(testProgram2);
-    }
-    Iterable<ProgramProduct> programProductIterable =
-            programProductRepository.findByProgramAndFullSupply(program,false);
-    assertEquals(5, getIterableSize(programProductIterable));
-    for (ProgramProduct programProduct : programProductIterable ) {
-      assertEquals(false, programProduct.isFullSupply());
+  public void searchProgramProductsByAllParameters() {
+    ProgramProduct programProduct = cloneProgramProduct(programProducts.get(0));
+    List<ProgramProduct> receivedProgramProducts =
+            programProductRepository.searchProgramProducts(
+                    programProduct.getProgram(),
+                    programProduct.isFullSupply());
+
+    Assert.assertEquals(2, receivedProgramProducts.size());
+    for (ProgramProduct receivedProgramProduct : receivedProgramProducts) {
+      Assert.assertEquals(
+              programProduct.getProgram().getId(),
+              receivedProgramProduct.getProgram().getId());
+      Assert.assertEquals(
+              programProduct.isFullSupply(),
+              receivedProgramProduct.isFullSupply());
     }
   }
 
-  private int getIterableSize(Iterable iterable) {
-    int iterableSize = 0;
-    Iterator iterator = iterable.iterator();
-    while (iterator.hasNext()) {
-      iterableSize++;
-      iterator.next();
+  @Test
+  public void searchProgramProductsByProgram() {
+    ProgramProduct programProduct = cloneProgramProduct(programProducts.get(0));
+    List<ProgramProduct> receivedProgramProducts =
+            programProductRepository.searchProgramProducts(
+                    programProduct.getProgram(),
+                    null);
+
+    Assert.assertEquals(2, receivedProgramProducts.size());
+    for (ProgramProduct receivedProgramProduct : receivedProgramProducts) {
+      Assert.assertEquals(
+              programProduct.getProgram().getId(),
+              receivedProgramProduct.getProgram().getId());
     }
-    return iterableSize;
+  }
+
+  @Test
+  public void searchProgramProductsByAllParametersNull() {
+    List<ProgramProduct> receivedProgramProducts =
+            programProductRepository.searchProgramProducts(null, null);
+
+    Assert.assertEquals(programProducts.size(), receivedProgramProducts.size());
+  }
+
+  private ProgramProduct cloneProgramProduct(ProgramProduct programProduct) {
+    ProgramProduct clonedProgramProduct = new ProgramProduct();
+    clonedProgramProduct.setProgram(programProduct.getProgram());
+    clonedProgramProduct.setProduct(programProduct.getProduct());
+    clonedProgramProduct.setProductCategory(programProduct.getProductCategory());
+    clonedProgramProduct.setFullSupply(programProduct.isFullSupply());
+    clonedProgramProduct.setActive(programProduct.isActive());
+    clonedProgramProduct.setDosesPerMonth(programProduct.getDosesPerMonth());
+    programProductRepository.save(clonedProgramProduct);
+    return clonedProgramProduct;
+  }
+
+  private Program generateProgram() {
+    Program program = new Program();
+    program.setCode("code" + this.getNextInstanceNumber());
+    program.setPeriodsSkippable(false);
+    programRepository.save(program);
+    return program;
+  }
+
+  private Product generateProduct(ProductCategory productCategory) {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    Product product = new Product();
+    product.setCode("code" + instanceNumber);
+    product.setPrimaryName("product" + instanceNumber);
+    product.setDispensingUnit("unit" + instanceNumber);
+    product.setDosesPerDispensingUnit(10);
+    product.setPackSize(1);
+    product.setPackRoundingThreshold(0);
+    product.setRoundToZero(false);
+    product.setActive(true);
+    product.setFullSupply(true);
+    product.setTracer(false);
+    product.setProductCategory(productCategory);
+    productRepository.save(product);
+    return product;
+  }
+
+  private ProductCategory generateProductCategory() {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    ProductCategory productCategory = new ProductCategory();
+    productCategory.setCode("code" + instanceNumber);
+    productCategory.setName("vaccine" + instanceNumber);
+    productCategory.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory);
+    return productCategory;
   }
 }

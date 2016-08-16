@@ -41,7 +41,9 @@ schemas:
               "goLiveDate": { "type": "string", "required": false, "title": "goLiveDate" },
               "goDownDate": { "type": "string", "required": false, "title": "goDownDate" },
               "comment": { "type": "string", "required": false, "title": "comment" },
-              "enabled": { "type": "boolean", "required": true, "title": "enabled" }
+              "enabled": { "type": "boolean", "required": true, "title": "enabled" },
+              "openLmisAccessible": { "type": "boolean", "required": false, "title": "openLmisAccessible" },
+              "supportedPrograms": { "type": "array", "required": false, "title": "supportedPrograms", "items": { "type": "object", "$ref":"#/schemas/program" }, "uniqueItems": false }
           }
       }
 
@@ -184,7 +186,8 @@ schemas:
               "roundToZero": { "type": "boolean", "required": true, "title": "roundToZero" },
               "active": { "type": "boolean", "required": true, "title": "active" },
               "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
-              "tracer": { "type": "boolean", "required": true, "title": "tracer" }
+              "tracer": { "type": "boolean", "required": true, "title": "tracer" },
+              "productCategory": { "type": "object", "$ref": "#/schemas/productCategory", "required": true, "title": "productCategory" }
           }
       }
 
@@ -212,7 +215,7 @@ schemas:
               "name": { "type": "string", "required": false, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
               "active": { "type": "boolean", "required": false, "title": "active" },
-              "skippable": { "type": "boolean", "required": true, "title": "skippable" },
+              "periodsSkippable": { "type": "boolean", "required": true, "title": "periodsSkippable" },
               "showNonFullSupplyTab": { "type": "boolean", "required": false, "title": "showNonFullSupplyTab" }
           }
       }
@@ -248,7 +251,9 @@ schemas:
               "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
               "processingPeriod": { "type": "object", "$ref": "#/schemas/period", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
-              "creator": { "type": "object", "$ref": "#/schemas/user", "required": false, "title": "creator" },
+              "remarks": { "type": "string", "required": false, "title": "remarks" },
+              "emergency": { "type": "boolean", "required": false, "title": "emergency" },
+              "supervisoryNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": false, "title": "supervisoryNode" },
               "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "object", "$ref":"#/schemas/requisitionLine" }, "uniqueItems": false }
           }
       }
@@ -260,11 +265,16 @@ schemas:
           "description": "A single requisitionLine",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": true, "title": "requisition" },
+              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
               "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
-              "quantityRequested": { "type": "integer", "required": false, "title": "quantityRequested" },
               "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
-              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" }
+              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
+              "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
+              "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },
+              "stockOnHand": { "type": "integer", "required": false, "title": "stockOnHand" },
+              "requestedQuantity": { "type": "integer", "required": false, "title": "requestedQuantity" },
+              "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
+              "requestedQuantityExplanation": { "type": "integer", "required": false, "title": "requestedQuantityExplanation" }
           }
       }
 
@@ -464,6 +474,46 @@ schemas:
           }
       }
 
+  - requisitionList: |
+      {   "type": "array",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "RequisitionList",
+          "description": "A list of requisitions",
+          "items": { "type": "object", "$ref":"#/schemas/requisition", "required": false }
+      }
+
+  - template: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "Template",
+          "description": "A single template",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "name": { "type": "string", "required": true, "unique": true, "title": "name" },
+              "data": { "type": "array", "required": false, "title": "data", "items": { "type": "byte"}, "uniqueItems": false },
+              "templateParameters": { "type": "array", "required": false, "title": "templateParameters", "items": { "type": "object", "$ref": "#/schemas/templateParameter" }, "uniqueItems": false },
+              "type": { "type": "string", "required": false, "title": "type" },
+              "description": { "type": "string", "required": false, "title": "description" }
+          }
+      }
+
+  - templateParameter: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "TemplateParameter",
+          "description": "A single templateParameter",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "template": { "type": "object", "$ref": "#/schemas/template", "required": true },
+              "name": { "type": "string", "required": false, "title": "name" },
+              "displayName": { "type": "string", "required": false, "title": "displayName" },
+              "defaultValue": { "type": "string", "required": false, "title": "defaultValue" },
+              "dataType": { "type": "string", "required": false, "title": "dataType" },
+              "selectSql": { "type": "string", "required": false, "title": "selectSql" },
+              "description": { "type": "string", "required": false, "title": "description" }
+          }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -551,121 +601,27 @@ resourceTypes:
                   X-XSS-Protection:
 
     /search:
-        /findBySupplyingFacility:
             get:
                 is: [ secured ]
-                description: Find Orders with matched SupplyingFacility.
+                description: Find Orders with matched parameters.
                 queryParameters:
                     supplyingFacility:
                         displayName: supplyingFacility
-                        description: SupplyingFacility ID
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findBySupplyingFacilityAndRequestingFacility:
-            get:
-                is: [ secured ]
-                description: Find Orders with matched SupplyingFacility and RequestingFacility.
-                queryParameters:
-                    supplyingFacility:
-                        displayName: supplyingFacility
-                        description: SupplyingFacility ID
+                        description: supplyingFacility ID
                         type: string
                         required: true
                         repeat: false
                     requestingFacility:
                         displayName: requestingFacility
-                        description: RequestingFacility ID
+                        description: requestingFacility ID
                         type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
-        /findBySupplyingFacilityAndProgram:
-                    get:
-                        is: [ secured ]
-                        description: Find Orders with matched SupplyingFacility and Program.
-                        queryParameters:
-                            supplyingFacility:
-                                displayName: supplyingFacility
-                                description: SupplyingFacility ID
-                                type: string
-                                required: true
-                                repeat: false
-                            program:
-                                displayName: program
-                                description: Program ID
-                                type: string
-                                required: true
-                                repeat: false
-                        responses:
-                            "200":
-                                headers:
-                                  X-Content-Type-Options:
-                                  X-XSS-Protection:
-                                body:
-                                  application/json:
-                            "404":
-                                headers:
-                                  X-Content-Type-Options:
-                                  X-XSS-Protection:
-                            "500":
-                                headers:
-                                  X-Content-Type-Options:
-                                  X-XSS-Protection:
-
-        /findBySupplyingFacilityAndRequestingFacilityAndProgram:
-            get:
-                is: [ secured ]
-                description: Find Orders with matched SupplyingFacility, RequestingFacility and Program.
-                queryParameters:
-                    supplyingFacility:
-                        displayName: supplyingFacility
-                        description: SupplyingFacility ID
-                        type: string
-                        required: true
-                        repeat: false
-                    requestingFacility:
-                        displayName: requestingFacility
-                        description: RequestingFacility ID
-                        type: string
-                        required: true
+                        required: false
                         repeat: false
                     program:
                         displayName: program
-                        description: Program ID
+                        description: program ID
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                 responses:
                     "200":
@@ -682,7 +638,7 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-                          
+
     /{id}/print:
         uriParameters:
             id:
@@ -716,7 +672,7 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-    /{id}/finalizeOrder:
+    /{id}/finalize:
             uriParameters:
                 id:
                     displayName: orderId
@@ -735,9 +691,42 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+    /requisitions:
+        post:
+            is: [ secured ]
+            description: Convert Requisition list to orders.
+            body:
+              application/json:
+            responses:
+                "201":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /periods:
     displayName: Period
+    post:
+        is: [ secured ]
+        description: Creates given period if possible.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
     /{id}/difference:
         uriParameters:
             id:
@@ -759,59 +748,43 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
                 "500":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /search:
-        /findByProcessingSchedule:
-            get:
-                is: [ secured ]
-                description: Find Periods with matched ProcessingSchedule.
-                queryParameters:
-                    processingSchedule:
+        get:
+            is: [ secured ]
+            description: Find periods with matched parametrs.
+            queryParameters:
+                processingSchedule:
                         displayName: processingSchedule
                         type: string
                         required: true
                         repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
+                toDate:
+                        displayName: toDate
+                        type: string
+                        required: false
+                        repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
 
-        /findPreviousPeriods:
-            get:
-                is: [ secured ]
-                description: Find previous Periods in given Schedule.
-                queryParameters:
-                    processingSchedule:
-                        displayName: processingSchedule
-                        type: string
-                        required: true
-                        repeat: false
-                    startDate:
-                        displayName: startDate
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
         /findFirst1ByOrderByEndDateDesc:
             get:
                 is: [ secured ]
@@ -830,10 +803,10 @@ resourceTypes:
 
 /productCategories:
     displayName: ProductCategories
-    /search/findByCode:
+    /search:
         get:
             is: [ secured ]
-            description: Find ProductCategories with matched Code.
+            description: Find product categories with matched code.
             queryParameters:
                 code:
                     displayName: code
@@ -856,40 +829,13 @@ resourceTypes:
 /programProducts:
     displayName: Program Products
     /search:
-        /findByProgram:
             get:
                 is: [ secured ]
-                description: Find ProgramProducts with matched Program.
+                description: Find program products with matched parameters.
                 queryParameters:
                     program:
                         displayName: program
-                        description: Program ID
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                   "200":
-                       headers:
-                         X-Content-Type-Options:
-                         X-XSS-Protection:
-                       body:
-                         application/json:
-                   "404":
-                       headers:
-                         X-Content-Type-Options:
-                         X-XSS-Protection:
-                   "500":
-                       headers:
-                         X-Content-Type-Options:
-                         X-XSS-Protection:
-        /findByProgramAndFullSupply:
-            get:
-                is: [ secured ]
-                description: Find ProgramProducts with matched Program.
-                queryParameters:
-                    program:
-                        displayName: program
-                        description: Program ID
+                        description: program ID
                         type: string
                         required: true
                         repeat: false
@@ -897,7 +843,7 @@ resourceTypes:
                         displayName: fullSupply
                         description: Full supply
                         type: boolean
-                        required: true
+                        required: false
                         repeat: false
                 responses:
                    "200":
@@ -910,29 +856,14 @@ resourceTypes:
                        headers:
                          X-Content-Type-Options:
                          X-XSS-Protection:
+                       body:
+                         application/json:
                    "500":
                        headers:
                          X-Content-Type-Options:
                          X-XSS-Protection:
-
-/proofOfDeliveries:
-    displayName: ProofOfDeliveries
-    /{id}/print:
-        get:
-            is: [ secured ]
-            description: Print proof of delivery.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/pdf:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-
+                       body:
+                         application/json:
 /requisitions:
     displayName: Requisition
     /submitted:
@@ -1017,7 +948,6 @@ resourceTypes:
                 description: Submit earlier initiated requisition.
                 body:
                     application/json:
-                        schema: requisition
                 responses:
                     "200":
                         headers:
@@ -1029,6 +959,27 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+                        body:
+                          application/json:
+
+    /initiate:
+            post:
+                is: [ secured ]
+                description: Initiate requisition.
+                body:
+                    application/json:
+                responses:
+                    "201":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+
     /{id}/authorize:
             uriParameters:
                 id:
@@ -1079,6 +1030,21 @@ resourceTypes:
                     repeat: false
                 createdDateTo:
                     displayName: createdDateTo
+                    type: string
+                    required: false
+                    repeat: false
+                processingPeriod:
+                    displayName: processingPeriod
+                    type: string
+                    required: false
+                    repeat: false
+                supervisoryNode:
+                    displayName: supervisoryNode
+                    type: string
+                    required: false
+                    repeat: false
+                requisitionStatus:
+                    displayName: supervisoryNode
                     type: string
                     required: false
                     repeat: false
@@ -1145,6 +1111,7 @@ resourceTypes:
                 required: true
                 repeat: false
         get:
+            is: [ secured ]
             description: Get all comments for specified requisition.
             responses:
                 "200":
@@ -1162,7 +1129,6 @@ resourceTypes:
             description: Add comment to the requisition.
             body:
                 application/json:
-                    schema: comment
             responses:
                 "200":
                     headers:
@@ -1175,100 +1141,69 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-        /findByStatus:
-            get:
-                is: [ secured ]
-                description: Find Requsitions with matched status.
-                queryParameters:
-                    status:
-                        displayName: status
-                        description: status
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
+/requisitionLines:
+    /search:
+        get:
+            is: [ secured ]
+            description: Find requisitionLines with matched parameters.
+            queryParameters:
+                requisition:
+                    displayName: requisition
+                    description: requisition ID
+                    type: string
+                    required: true
+                    repeat: false
+                product:
+                    displayName: product
+                    description: product ID
+                    type: string
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
-        /findByProcessingPeriodAndFacilityAndProgram:
-            get:
-                is: [ secured ]
-                description: Find Requsition with matched Processing Period, Facility and Program.
-                queryParameters:
-                    period:
-                        displayName: processingPeriod
-                        description: processingPeriod
-                        type: string
-                        required: true
-                        repeat: false
-                    facility:
-                        displayName: facility
-                        description: facility
-                        type: string
-                        required: true
-                        repeat: false
-                    program:
-                        displayName: program
-                        description: program
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
 /requisitionTemplates:
     displayName: Requisition Template
     /search:
-        /findByProgram:
-            get:
-                is: [ secured ]
-                description: Find Requsition Template with matched and Program.
-                queryParameters:
-                    program:
-                        displayName: program
-                        description: program
-                        type: string
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Find requisition templates with matched parameters.
+            queryParameters:
+                program:
+                    displayName: program
+                    description: program ID
+                    type: string
+                    required: false
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
 /schedules:
     displayName: Schedule
     /{id}/difference:
@@ -1304,41 +1239,42 @@ resourceTypes:
 
 /supplyLines:
     displayName: Supply Lines
-    /search/findByProgramAndSupervisoryNode:
+    /search:
         get:
-                    is: [ secured ]
-                    description: Find SupplyLines with matched Program and SupervisoryNode.
-                    queryParameters:
-                        program:
-                            displayName: program
-                            type: string
-                            required: true
-                            repeat: false
-                        supervisoryNode:
-                            displayName: supervisoryNode
-                            type: string
-                            required: true
-                            repeat: false
-                    responses:
-                        "200":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
-                            body:
-                              application/json:
-                        "400":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
-                        "500":
-                            headers:
-                              X-Content-Type-Options:
-                              X-XSS-Protection:
+            is: [ secured ]
+            description: Find Supply Lines with matched parameters.
+            queryParameters:
+                program:
+                    displayName: program
+                    description: program ID
+                    type: string
+                    required: true
+                    repeat: false
+                supervisoryNode:
+                    displayName: supervisoryNode
+                    description: supervisoryNode ID
+                    type: string
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /users:
     displayName: User
     /search:
-        /findByFirstName:
             get:
                 is: [ secured ]
                 description: Search Users with matched FirstName
@@ -1347,88 +1283,43 @@ resourceTypes:
                         displayName: firstName
                         description: FirstName
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                         example: firstName
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByLastName:
-            get:
-                is: [ secured ]
-                description: Search Users with matched LastName.
-                queryParameters:
                     lastName:
                         displayName: lastName
                         description: LastName
                         type: string
-                        required: true
+                        required: false
                         repeat: false
                         example: lastName
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByVerified:
-            get:
-                is: [ secured ]
-                description: Search Users with matched Verified.
-                queryParameters:
                     verified:
                         displayName: verified
                         description: Verified
                         type: boolean
-                        required: true
+                        required: false
                         repeat: false
                         example: "true"
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByActive:
-            get:
-                is: [ secured ]
-                description: Search Users with matched Active.
-                queryParameters:
                     active:
                         displayName: active
                         description: Active
                         type: boolean
-                        required: true
+                        required: false
                         repeat: false
                         example: "true"
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByHomeFacility:
-            get:
-                is: [ secured ]
-                description: Search Users with matched HomeFacility.
-                queryParameters:
                     homeFacility:
                         displayName: homeFacility
                         description: HomeFacilityId (href)
                         type: string
-                        required: true
+                        required: false
                         repeat: false
+                    username:
+                        displayName: username
+                        description: Username
+                        type: string
+                        required: false
+                        repeat: false
+                        example: username
                 responses:
                     200:
                         headers:
@@ -1440,53 +1331,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-
-        /findByUsername:
-            get:
-                is: [ secured ]
-                description: Search Users with matched Username.
-                queryParameters:
-                    username:
-                        displayName: username
-                        description: Username
-                        type: string
-                        required: true
-                        repeat: false
-                        example: username
-                responses:
-                    200:
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-
-        /findByFirstNameAndLastName:
-            get:
-                is: [ secured ]
-                description: Search Users with matched FirstName and LastName.
-                queryParameters:
-                    firstName:
-                        displayName: firstName
-                        description: FirstName
-                        type: string
-                        required: true
-                        repeat: false
-                        example: firstName
-                    lastName:
-                        displayName: lastName
-                        description: LastName
-                        type: string
-                        required: true
-                        repeat: false
-                        example: lastName
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
 
 /facilities:
     displayName: Facility
@@ -1559,7 +1403,6 @@ resourceTypes:
             description: Update program code and name.
             body:
                 application/json:
-                    schema: programDto
             responses:
                 "200":
                     headers:
@@ -1571,3 +1414,95 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+
+/stocks:
+    displayName: Stock
+    /search:
+        get:
+            is: [ secured ]
+            description: Find Stocks with matched parametrs.
+            queryParameters:
+                stockInventory:
+                        displayName: stockInventory
+                        type: string
+                        required: false
+                        repeat: false
+                product:
+                        displayName: product
+                        type: string
+                        required: false
+                        repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+
+/proofOfDeliveries:
+    displayName: Proof Of Delivery
+    /{id}/print:
+        uriParameters:
+              id:
+                  displayName: proofOfDeliveryId
+                  type: string
+                  required: true
+                  repeat: false
+        get:
+            is: [ secured ]
+            description: Print proof of delivery to a pdf file.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/pdf:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+/templates:
+    displayName: Report Template
+    post:
+          is: [ secured ]
+          description: Add report template to database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    file:
+                         displayName: Template with ".jrxml" format
+                         type: file
+                         required: false
+                         repeat: false
+                    name:
+                         displayName: Name of Template in database
+                         type: string
+                         required: false
+                         repeat: false
+                    description:
+                         displayName: Descryption of Template
+                         type: string
+                         required: false
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:

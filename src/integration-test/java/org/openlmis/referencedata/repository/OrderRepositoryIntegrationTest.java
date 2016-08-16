@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
 
   @Autowired
@@ -43,67 +43,10 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
+  private List<Order> orders;
+
   OrderRepository getRepository() {
     return this.repository;
-  }
-  
-  private String[] orderRepository = {
-      "OrderRepositoryIntegrationTest1", 
-      "OrderRepositoryIntegrationTest2", 
-      "OrderRepositoryIntegrationTest3", 
-      "OrderRepositoryIntegrationTest4", 
-      "OrderRepositoryIntegrationTest5"
-  };
-  private List<Facility> testFacilities;
-  private List<Program> testPrograms;
-  private int testSetSize = 51;
-
-  private Facility facility = new Facility();
-  private Program program = new Program();
-  private User user;
-
-  @Before
-  public void setUp() {
-    testFacilities = new ArrayList<>();
-    testPrograms = new ArrayList<>();
-
-    for (String order : orderRepository) {
-      facility = new Facility();
-
-      FacilityType facilityType = new FacilityType();
-      facilityType.setCode(order);
-      facilityTypeRepository.save(facilityType);
-
-      GeographicLevel level = new GeographicLevel();
-      level.setCode(order);
-      level.setLevelNumber(1);
-      geographicLevelRepository.save(level);
-
-      GeographicZone geographicZone = new GeographicZone();
-      geographicZone.setCode(order);
-      geographicZone.setLevel(level);
-      geographicZoneRepository.save(geographicZone);
-
-      facility.setType(facilityType);
-      facility.setGeographicZone(geographicZone);
-      facility.setCode(order);
-      facility.setName(order);
-      facility.setDescription("Test facility");
-      facility.setActive(true);
-      facility.setEnabled(true);
-      facilityRepository.save(facility);
-      testFacilities.add(facility);
-    }
-
-    for (String order : orderRepository) {
-      program.setCode(order);
-      programRepository.save(program);
-      testPrograms.add(program);
-    }
-
-    Assert.assertEquals(1, userRepository.count());
-    user = userRepository.findAll().iterator().next();
-    generateTestSet();
   }
 
   Order generateInstance() {
@@ -112,81 +55,145 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setOrderCode("O" + instanceNumber);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
-    order.setProgram(program);
-    order.setCreatedBy(user);
-    order.setRequestingFacility(facility);
-    order.setReceivingFacility(facility);
-    order.setSupplyingFacility(facility);
+    order.setProgram(generateProgram());
+    order.setCreatedBy(generateUser());
+    order.setRequestingFacility(generateFacility());
+    order.setReceivingFacility(generateFacility());
+    order.setSupplyingFacility(generateFacility());
     return order;
   }
 
-  @Test
-  public void testFindBySupplyingFacility() {
-    for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacility(testFacilities.get(i));
-
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-      }
+  @Before
+  public void setUp() {
+    orders = new ArrayList<>();
+    for (int orderCount = 0; orderCount < 5; orderCount++) {
+      orders.add(repository.save(generateInstance()));
     }
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndRequestingFacility() {
-    for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacility(
-          testFacilities.get(i), testFacilities.get(i));
+  public void testSearchOrdersByAllParameters() {
+    Order order = cloneOrder(orders.get(0));
+    List<Order> receivedOrders = repository.searchOrders(
+            order.getSupplyingFacility(),
+            order.getRequestingFacility(),
+            order.getProgram());
 
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getRequestingFacility(), testFacilities.get(i));
-      }
+    Assert.assertEquals(2, receivedOrders.size());
+    for (Order receivedOrder : receivedOrders) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              receivedOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getRequestingFacility().getId(),
+              receivedOrder.getRequestingFacility().getId());
+      Assert.assertEquals(
+              order.getProgram().getId(),
+              receivedOrder.getProgram().getId());
     }
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndProgram() {
-    for (int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndProgram(
-          testFacilities.get(i), testPrograms.get(i));
+  public void testSearchOrdersByAllParametersNull() {
+    List<Order> receivedOrders = repository.searchOrders(null, null, null);
 
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getProgram(), testPrograms.get(i));
-      }
-    }
+    Assert.assertEquals(orders.size(), receivedOrders.size());
   }
 
   @Test
-  public void testFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
-    for ( int i = 0; i < orderRepository.length; i++) {
-      Iterable<Order> result = repository.findBySupplyingFacilityAndRequestingFacilityAndProgram(
-          testFacilities.get(i), testFacilities.get(i), testPrograms.get(i));
+  public void testSearchOrdersBySupplyingFacilityAndProgram() {
+    Order order = cloneOrder(orders.get(0));
+    List<Order> receivedOrders = repository.searchOrders(
+            order.getSupplyingFacility(),
+            null,
+            order.getProgram());
 
-      Iterator iterator = result.iterator();
-      while (iterator.hasNext()) {
-        Order order = (Order)iterator.next();
-        Assert.assertEquals(order.getSupplyingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getRequestingFacility(), testFacilities.get(i));
-        Assert.assertEquals(order.getProgram(), testPrograms.get(i));
-      }
+    Assert.assertEquals(2, receivedOrders.size());
+    for (Order receivedOrder : receivedOrders) {
+      Assert.assertEquals(
+              order.getSupplyingFacility().getId(),
+              receivedOrder.getSupplyingFacility().getId());
+      Assert.assertEquals(
+              order.getProgram().getId(),
+              receivedOrder.getProgram().getId());
     }
   }
 
+  private Order cloneOrder(Order order) {
+    Order clonedOrder = new Order();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    clonedOrder.setSupplyingFacility(order.getSupplyingFacility());
+    clonedOrder.setRequestingFacility(order.getRequestingFacility());
+    clonedOrder.setReceivingFacility(order.getReceivingFacility());
+    clonedOrder.setProgram(order.getProgram());
+    clonedOrder.setOrderCode(order.getOrderCode() + instanceNumber);
+    clonedOrder.setQuotedCost(order.getQuotedCost());
+    clonedOrder.setStatus(order.getStatus());
+    clonedOrder.setCreatedBy(order.getCreatedBy());
+    clonedOrder.setCreatedDate(order.getCreatedDate());
+    repository.save(clonedOrder);
+    return  clonedOrder;
+  }
 
-  private void generateTestSet() {
-    for (int i = 0; i < testSetSize; i++) {
-      Order tmp = generateInstance();
-      tmp.setSupplyingFacility(testFacilities.get(i % orderRepository.length));
-      tmp.setRequestingFacility(testFacilities.get(i % orderRepository.length));
-      tmp.setProgram(testPrograms.get(i % orderRepository.length));
-      repository.save(tmp);
-    }
+  private Program generateProgram() {
+    Program program = new Program();
+    program.setCode("code" +  this.getNextInstanceNumber());
+    program.setPeriodsSkippable(false);
+    programRepository.save(program);
+    return program;
+  }
+
+  private Facility generateFacility() {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    GeographicLevel geographicLevel = generateGeographicLevel();
+    GeographicZone geographicZone = generateGeographicZone(geographicLevel);
+    FacilityType facilityType = generateFacilityType();
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("FacilityCode" + instanceNumber);
+    facility.setName("FacilityName" + instanceNumber);
+    facility.setDescription("FacilityDescription" + instanceNumber);
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
+    return facility;
+  }
+
+  private GeographicLevel generateGeographicLevel() {
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GeographicLevel" + this.getNextInstanceNumber());
+    geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
+    return geographicLevel;
+  }
+
+  private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("GeographicZone" + this.getNextInstanceNumber());
+    geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
+    return geographicZone;
+  }
+
+  private FacilityType generateFacilityType() {
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("FacilityType" + this.getNextInstanceNumber());
+    facilityTypeRepository.save(facilityType);
+    return facilityType;
+  }
+
+  private User generateUser() {
+    User user = new User();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    user.setFirstName("Ala" + instanceNumber);
+    user.setLastName("ma" + instanceNumber);
+    user.setUsername("kota" + instanceNumber);
+    user.setPassword("iDobrze" + instanceNumber);
+    user.setHomeFacility(generateFacility());
+    user.setVerified(true);
+    user.setActive(true);
+    userRepository.save(user);
+    return user;
   }
 }

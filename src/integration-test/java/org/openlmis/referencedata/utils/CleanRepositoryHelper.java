@@ -22,7 +22,10 @@ import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramProductRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.reporting.repository.TemplateParameterRepository;
+import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -31,8 +34,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Component
 public class CleanRepositoryHelper {
+
+  public static final UUID INITIAL_USER_ID =
+      UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
   @Autowired
   private ProductRepository productRepository;
@@ -112,41 +120,60 @@ public class CleanRepositoryHelper {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private StockRepository stockRepository;
+
+  @Autowired
+  private TemplateParameterRepository templateParameterRepository;
+
+  @Autowired
+  private TemplateRepository templateRepository;
+
   /**
    * Delete all entities from most of repositories.
    */
   @Transactional
   public void cleanAll() {
-    requisitionGroupRepository.deleteAll();
-    requisitionGroupProgramScheduleRepository.deleteAll();
-    supplyLineRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
+    templateParameterRepository.deleteAll();
+    templateRepository.deleteAll();
     proofOfDeliveryLineRepository.deleteAll();
     proofOfDeliveryRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    commentRepository.deleteAll();
-    requisitionTemplateRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
+    configurationSettingRepository.deleteAll();
     facilityTypeApprovedProductRepository.deleteAll();
+    commentRepository.deleteAll();
+    orderLineRepository.deleteAll();
+    requisitionLineRepository.deleteAll();
+    stockRepository.deleteAll();
     programProductRepository.deleteAll();
-    productRepository.deleteAll();
     requisitionRepository.deleteAll();
-    programRepository.deleteAll();
+    requisitionGroupProgramScheduleRepository.deleteAll();
+    requisitionTemplateRepository.deleteAll();
+    supplyLineRepository.deleteAll();
+    orderRepository.deleteAll();
+    productRepository.deleteAll();
     periodRepository.deleteAll();
+    programRepository.deleteAll();
+    supervisoryNodeRepository.deleteAll();
+    deleteAllUsersExceptAdmin();
+    productCategoryRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    facilityRepository.deleteAll();
+    facilityTypeRepository.deleteAll();
+    requisitionGroupRepository.deleteAll();
+    geographicZoneRepository.deleteAll();
+    facilityOperatorRepository.deleteAll();
+    geographicLevelRepository.deleteAll();
+  }
+
+  private void deleteAllUsersExceptAdmin() {
+    User initialUser = userRepository.findOne(INITIAL_USER_ID);
+    initialUser.setHomeFacility(null);
+    initialUser.setSupervisedNode(null);
+    userRepository.save(initialUser);
     for (User user : userRepository.findAll()) {
-      if (!user.getUsername().equals("admin")) {
+      if (!user.getId().equals(INITIAL_USER_ID)) {
         userRepository.delete(user);
       }
     }
-    facilityRepository.deleteAll();
-    facilityOperatorRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    configurationSettingRepository.deleteAll();
   }
 }
