@@ -8,20 +8,16 @@ import org.mockito.Mock;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 public class ConfigurationSettingServiceTest {
 
   @Mock
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @InjectMocks
-  @Autowired
   private ConfigurationSettingService configurationSettingService;
 
   private ConfigurationSetting configurationSetting;

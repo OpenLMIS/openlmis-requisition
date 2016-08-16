@@ -8,8 +8,6 @@ import org.mockito.Mock;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,14 +18,12 @@ import java.util.UUID;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 public class PeriodServiceTest {
 
   @Mock
   private PeriodRepository periodRepository;
 
   @InjectMocks
-  @Autowired
   private PeriodService periodService;
 
   private Period period;

@@ -8,8 +8,6 @@ import org.mockito.Mock;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,14 +16,12 @@ import java.util.UUID;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 public class RequisitionTemplateServiceTest {
 
   @Mock
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @InjectMocks
-  @Autowired
   private RequisitionTemplateService requisitionTemplateService;
 
   private RequisitionTemplate requisitionTemplate;
