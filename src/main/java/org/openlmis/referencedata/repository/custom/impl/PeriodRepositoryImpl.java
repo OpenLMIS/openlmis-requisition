@@ -39,9 +39,8 @@ public class PeriodRepositoryImpl implements PeriodRepositoryCustom {
     if (toDate != null) {
       predicate = builder.and(
               predicate,
-              builder.lessThan(
+              builder.lessThanOrEqualTo(
                       root.get("startDate"), toDate));
-      query.orderBy(builder.asc(root.get("startDate")));
     }
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();

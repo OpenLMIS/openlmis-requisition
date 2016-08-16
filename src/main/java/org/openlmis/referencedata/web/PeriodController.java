@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -55,9 +56,9 @@ public class PeriodController {
   @RequestMapping(value = "/periods/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchPeriods(
           @RequestParam(value = "processingSchedule", required = true) Schedule processingSchedule,
-          @RequestParam(value = "toDate", required = false) String toDate) {
-    LocalDate limitDate = LocalDate.parse(toDate);
-    List<Period> result = periodService.searchPeriods(processingSchedule, limitDate);
+          @RequestParam(value = "toDate", required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+    List<Period> result = periodService.searchPeriods(processingSchedule, toDate);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }

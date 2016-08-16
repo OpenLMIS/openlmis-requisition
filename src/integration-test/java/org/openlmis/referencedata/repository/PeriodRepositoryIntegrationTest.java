@@ -94,7 +94,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
       periodRepository.save(periods.get(periodsCount));
     }
     List<Period> receivedPeriods =
-            periodRepository.searchPeriods(testSchedule, periods.get(0).getStartDate());
+            periodRepository.searchPeriods(testSchedule, periods.get(1).getStartDate());
 
     Assert.assertEquals(4, receivedPeriods.size());
     for (Period period : receivedPeriods) {
@@ -102,7 +102,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
               testSchedule.getId(),
               period.getProcessingSchedule().getId());
       Assert.assertTrue(
-              periods.get(0).getStartDate().isAfter(period.getStartDate()));
+              period.getStartDate().isBefore(periods.get(0).getStartDate()));
     }
   }
 
@@ -121,9 +121,10 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     List<Period> receivedPeriods =
             periodRepository.searchPeriods(null, periods.get(1).getStartDate());
 
-    Assert.assertEquals(3, receivedPeriods.size());
+    Assert.assertEquals(4, receivedPeriods.size());
     for (Period period : receivedPeriods) {
-      Assert.assertTrue(periods.get(0).getStartDate().isAfter(period.getStartDate()));
+      Assert.assertTrue(
+              period.getStartDate().isBefore(periods.get(0).getStartDate()));
     }
   }
 
