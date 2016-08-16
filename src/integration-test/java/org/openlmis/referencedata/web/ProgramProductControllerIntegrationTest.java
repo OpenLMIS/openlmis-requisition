@@ -53,7 +53,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testSearchProgramProducts() {
+  public void testShouldFindProgramProducts() {
     ProgramProduct[] response = restAssured.given()
             .queryParam(PROGRAM, programProducts.get(0).getProgram().getId())
             .queryParam(FULL_SUPPLY, programProducts.get(0).isFullSupply())
@@ -61,6 +61,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
             .when()
             .get(SEARCH_URL)
             .then()
+            .statusCode(200)
             .extract().as(ProgramProduct[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

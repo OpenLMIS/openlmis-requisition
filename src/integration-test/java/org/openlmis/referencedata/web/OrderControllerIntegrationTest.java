@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -356,7 +355,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testWrongOrderStatus() throws JsonProcessingException {
+  public void testShouldNotFinalizeIfWrongOrderStatus() {
     firstOrder.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(firstOrder);
 
@@ -373,7 +372,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testPrintOrderAsCsv() {
+  public void testShouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
             .queryParam("format", "csv")
             .queryParam(ACCESS_TOKEN, getToken())
@@ -394,7 +393,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testPrintOrderAsPdf() {
+  public void testShouldPrintOrderAsPdf() {
     restAssured.given()
             .queryParam("format", "pdf")
             .queryParam(ACCESS_TOKEN, getToken())
@@ -408,7 +407,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testConvertToOrder() {
+  public void testShouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
 
     restAssured.given()
@@ -425,19 +424,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Order order = orderRepository.findAll().iterator().next();
 
     assertEquals(user.getId(), order.getCreatedBy().getId());
-
     assertEquals(OrderStatus.ORDERED, order.getStatus());
     assertEquals(order.getRequisition().getId(), requisition.getId());
     assertEquals(order.getReceivingFacility().getId(), requisition.getFacility().getId());
     assertEquals(order.getRequestingFacility().getId(), requisition.getFacility().getId());
-
     assertEquals(order.getProgram().getId(), requisition.getProgram().getId());
-    assertEquals(order.getSupplyingFacility().getId(),
-            supplyLine.getSupplyingFacility().getId());
+    assertEquals(order.getSupplyingFacility().getId(), supplyLine.getSupplyingFacility().getId());
   }
 
   @Test
-  public void testFindBySupplyingFacility() {
+  public void testShouldFindBySupplyingFacility() {
     Order[] response = restAssured.given()
             .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
             .queryParam(ACCESS_TOKEN, getToken())
@@ -457,7 +453,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchBySupplyingFacilityAndRequestingFacility() {
+  public void testShouldFindBySupplyingFacilityAndRequestingFacility() {
     Order[] response = restAssured.given()
             .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
             .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())
@@ -481,7 +477,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchBySupplyingFacilityAndRequestingFacilityAndProgram() {
+  public void testShouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     Order[] response = restAssured.given()
             .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
             .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())

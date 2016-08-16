@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testCreatePeriodsWithoutGap() throws JsonProcessingException {
+  public void testShouldCreatePeriodWithoutGap() {
     firstPeriod.setProcessingSchedule(schedule);
 
     restAssured.given()
@@ -84,7 +83,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testCreatePeriodsWithAGap() throws JsonProcessingException {
+  public void testShouldCreatePeriodWithAGap() {
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
     scheduleRepository.save(schedule);
@@ -117,7 +116,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testGetTotalDifference() {
+  public void testShouldDisplayTotalDifference() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -135,7 +134,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchPeriods() {
+  public void testShouldFindPeriods() {
     firstPeriod.setProcessingSchedule(schedule);
     firstPeriod.setStartDate(LocalDate.now().plusDays(1));
     periodRepository.save(firstPeriod);

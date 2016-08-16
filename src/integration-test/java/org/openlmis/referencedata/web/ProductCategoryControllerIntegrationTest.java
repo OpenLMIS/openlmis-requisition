@@ -37,7 +37,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testSearchProductCategories() {
+  public void testShouldFindProductCategories() {
     ProductCategory[] response = restAssured.given()
             .queryParam(CODE, productCategories.get(0).getCode())
             .queryParam(ACCESS_TOKEN, getToken())

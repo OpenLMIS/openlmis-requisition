@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -140,7 +139,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testOrderList() throws JsonProcessingException {
+  public void testShouldFindOrdersFilledByFacility() {
     Order[] response = restAssured.given()
         .queryParam("access_token", getToken())
         .pathParam("id", user.getHomeFacility().getId())

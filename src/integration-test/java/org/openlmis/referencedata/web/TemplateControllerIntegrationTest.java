@@ -21,7 +21,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private TemplateRepository templateRepository;
 
   @Test
-  public void testAddReportTemplate() throws IOException {
+  public void testShouldAddReportTemplate() throws IOException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
 
     restAssured.given()
@@ -30,8 +30,10 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .multiPart("file", podReport.getFilename(), podReport.getInputStream())
         .formParam("name", TEMPLATE_CONTROLLER_TEST)
         .formParam("description", TEMPLATE_CONTROLLER_TEST)
-        .when().post(RESOURCE_URL)
-        .then().statusCode(200);
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(200);
 
     assertNotNull(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

@@ -42,7 +42,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchStocks() {
+  public void testShouldFindStocks() {
     Stock[] response = restAssured.given()
             .queryParam("product", stocks.get(0).getProduct().getId())
             .queryParam("access_token", getToken())

@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,7 +122,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private LocalDateTime localDateTime = LocalDateTime.now();
 
   @Before
-  public void setUp() throws JsonProcessingException {
+  public void setUp() {
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
     productCategory1.setName("PC1 name");
@@ -216,7 +215,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testSearchRequisitions() {
+  public void testShouldFindRequisitions() {
     Requisition[] response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .queryParam("program", program.getId())
@@ -258,7 +257,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldSubmitCorrectRequisition() throws JsonProcessingException {
+  public void testShouldSubmitCorrectRequisition() {
 
     Requisition response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -278,8 +277,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullRequisitionLines()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullRequisitionLines() {
 
     requisition.setRequisitionLines(null);
     requisition = requisitionRepository.save(requisition);
@@ -303,8 +301,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullQuantityInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
@@ -340,8 +337,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -377,8 +373,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -415,8 +410,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -452,8 +446,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -490,8 +483,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullStockHandInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullStockHandInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -527,8 +519,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLinetest()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -565,8 +556,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullAttributesInRequisitionLine()
-          throws JsonProcessingException {
+  public void testShouldNotSubmitRequisitionWithNullAttributesInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
@@ -603,7 +593,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testSkip() throws JsonProcessingException {
+  public void testShouldSkipRequisition() {
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -617,7 +607,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testReject() throws JsonProcessingException {
+  public void testShouldRejectRequisition() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -635,7 +625,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testRejectWithBadStatus() throws JsonProcessingException {
+  public void testShouldNotRejectWithWrongStatus() {
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -650,7 +640,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testDelete() {
+  public void testShouldDeleteRequisition() {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
@@ -669,7 +659,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testDeleteWithBadStatus() {
+  public void testShouldNotDeleteRequisitionWithWrongStatus() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -695,7 +685,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testGetCommentsForRequisition() {
+  public void testShouldGetCommentsForRequisition() {
     createComment(user, requisition, "First comment");
     createComment(user, requisition, "Second comment");
 
@@ -719,7 +709,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testInsertComment() throws JsonProcessingException {
+  public void testShouldInsertComment() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -764,14 +754,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testApproveRequisition() {
+  public void testShouldApproveAuthorizedRequisition() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
     testApproveRequisition(requisition);
   }
 
   @Test
-  public void testApproveRequisitionSkippedAuthorization() {
+  public void testShouldApproveSubmittedRequisitionIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -779,7 +769,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testInitializeRequisition() throws JsonProcessingException {
+  public void testShouldInitializeRequisition() {
 
     requisitionRepository.delete(requisition);
 
@@ -796,7 +786,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testGetSubmittedRequisitions() throws JsonProcessingException {
+  public void testShouldGetSubmittedRequisitions() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -816,7 +806,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testAuthorize() throws JsonProcessingException {
+  public void testShouldAuthorizeRequisition() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -835,7 +825,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testSkippedAuthorize() throws JsonProcessingException {
+  public void testShouldNotAuthorizeIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);

@@ -62,7 +62,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchUsers() {
+  public void testShouldFindUsers() {
     User[] response = restAssured.given()
             .queryParam(USERNAME, users.get(0).getUsername())
             .queryParam(FIRST_NAME, users.get(0).getFirstName())
