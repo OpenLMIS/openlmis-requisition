@@ -1,9 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.Product;
@@ -53,7 +53,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testSearchProgramProducts() {
+  public void testShouldFindProgramProducts() {
     ProgramProduct[] response = restAssured.given()
             .queryParam(PROGRAM, programProducts.get(0).getProgram().getId())
             .queryParam(FULL_SUPPLY, programProducts.get(0).isFullSupply())
@@ -61,15 +61,16 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
             .when()
             .get(SEARCH_URL)
             .then()
+            .statusCode(200)
             .extract().as(ProgramProduct[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( ProgramProduct programProduct : response ) {
-      Assert.assertEquals(
+      assertEquals(
               programProduct.getProgram().getId(),
               programProducts.get(0).getProgram().getId());
-      Assert.assertEquals(
+      assertEquals(
               programProduct.isFullSupply(),
               programProducts.get(0).isFullSupply());
     }

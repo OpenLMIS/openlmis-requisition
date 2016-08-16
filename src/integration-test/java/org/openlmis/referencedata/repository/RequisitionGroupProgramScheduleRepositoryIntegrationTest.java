@@ -42,8 +42,6 @@ public class RequisitionGroupProgramScheduleRepositoryIntegrationTest
   public void setUp() {
     final String code = "RequisitionGroup";
 
-    programRepository.deleteAll();
-    scheduleRepository.deleteAll();
     program = new Program();
     program.setCode(code);
     programRepository.save(program);

@@ -43,7 +43,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testGetTotalDifference() {
+  public void testShouldDisplayTotalDifference() {
     String response = restAssured.given()
         .pathParam("id", schedule.getId())
         .queryParam("access_token", getToken())

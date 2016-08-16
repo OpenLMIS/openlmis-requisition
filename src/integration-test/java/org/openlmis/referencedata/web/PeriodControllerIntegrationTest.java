@@ -1,11 +1,11 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
@@ -53,7 +53,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testCreatePeriodsWithoutGap() throws JsonProcessingException {
+  public void testShouldCreatePeriodWithoutGap() {
     firstPeriod.setProcessingSchedule(schedule);
 
     restAssured.given()
@@ -79,11 +79,11 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Period.class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertNotNull(savedPeriod.getId());
+    assertNotNull(savedPeriod.getId());
   }
 
   @Test
-  public void testCreatePeriodsWithAGap() throws JsonProcessingException {
+  public void testShouldCreatePeriodWithAGap() {
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
     scheduleRepository.save(schedule);
@@ -116,7 +116,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testGetTotalDifference() {
+  public void testShouldDisplayTotalDifference() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -134,7 +134,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchPeriods() {
+  public void testShouldFindPeriods() {
     firstPeriod.setProcessingSchedule(schedule);
     firstPeriod.setStartDate(LocalDate.now().plusDays(1));
     periodRepository.save(firstPeriod);
@@ -153,12 +153,12 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Period[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( Period period : response ) {
-      Assert.assertEquals(
+      assertEquals(
           period.getProcessingSchedule().getId(),
           firstPeriod.getProcessingSchedule().getId());
-      Assert.assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
+      assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
     }
   }
 }

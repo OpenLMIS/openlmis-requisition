@@ -1,9 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.ProductCategory;
@@ -21,11 +21,11 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
-  ProductCategoryRepository productCategoryRepository;
+  private ProductCategoryRepository productCategoryRepository;
 
   private Integer currentInstanceNumber;
 
-  List<ProductCategory> productCategories;
+  private List<ProductCategory> productCategories;
 
   @Before
   public void setUp() {
@@ -37,7 +37,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testSearchProductCategories() {
+  public void testShouldFindProductCategories() {
     ProductCategory[] response = restAssured.given()
             .queryParam(CODE, productCategories.get(0).getCode())
             .queryParam(ACCESS_TOKEN, getToken())
@@ -48,9 +48,9 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
             .extract().as(ProductCategory[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( ProductCategory productCategory : response ) {
-      Assert.assertEquals(productCategory.getCode(), productCategories.get(0).getCode());
+      assertEquals(productCategory.getCode(), productCategories.get(0).getCode());
     }
   }
 

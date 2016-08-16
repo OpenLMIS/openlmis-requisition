@@ -27,7 +27,7 @@ import java.util.UUID;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public abstract class BaseWebIntegrationTest {
-  static final UUID INITIAL_USER_ID = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
+  static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
   static final RamlDefinition ramlDefinition =

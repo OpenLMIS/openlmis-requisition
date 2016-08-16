@@ -65,15 +65,6 @@ public class OrderLineRepositoryIntegrationTest {
 
   @Before
   public void setUp() {
-    orderLineRepository.deleteAll();
-    productRepository.deleteAll();
-    orderRepository.deleteAll();
-    programRepository.deleteAll();
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(orderLine);
     facilityTypeRepository.save(facilityType);

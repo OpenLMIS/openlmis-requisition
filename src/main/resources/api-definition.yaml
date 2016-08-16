@@ -864,7 +864,6 @@ resourceTypes:
                          X-XSS-Protection:
                        body:
                          application/json:
-
 /requisitions:
     displayName: Requisition
     /submitted:

@@ -17,7 +17,6 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
 
   @Before
   public void setUp() {
-    repository.deleteAll();
     repository.save(getExampleSchedule());
   }
 

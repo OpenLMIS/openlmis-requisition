@@ -54,11 +54,6 @@ public class RequisitionGroupRepositoryIntegrationTest
   public void setUp() {
     final String code = "code";
 
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-
     GeographicLevel geographicLevel = new GeographicLevel();
     geographicLevel.setCode(code);
     geographicLevel.setLevelNumber(1);

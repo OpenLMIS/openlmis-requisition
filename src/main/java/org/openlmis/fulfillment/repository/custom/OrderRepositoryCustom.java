@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface OrderRepositoryCustom {
 
-  List<Order> searchOrders(Facility supplyingFacility,
-                           Facility requestingFacility,
+  List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
                            Program program);
 }

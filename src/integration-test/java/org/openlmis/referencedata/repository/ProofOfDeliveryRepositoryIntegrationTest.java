@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.repository;
 
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.openlmis.fulfillment.domain.Order;
@@ -57,7 +56,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Before
   public void setUp() {
-    cleanUp();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(orderProofOfDeliveryString);
     facilityTypeRepository.save(facilityType);
@@ -98,17 +96,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     order.setReceivingFacility(facility);
     order.setSupplyingFacility(facility);
     orderRepository.save(order);
-  }
-
-  @After
-  public void cleanUp() {
-    proofOfDeliveryRepository.deleteAll();
-    orderRepository.deleteAll();
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
   }
 
   ProofOfDelivery generateInstance() {

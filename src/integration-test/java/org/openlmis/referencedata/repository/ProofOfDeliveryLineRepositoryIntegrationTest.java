@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.repository;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,7 +83,6 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
 
   @Before
   public void setUp() {
-    cleanUp();
     FacilityType facilityType = new FacilityType();
     facilityType.setCode(proofOfDeliveryLineCode);
     facilityTypeRepository.save(facilityType);
@@ -158,21 +156,6 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     proofOfDelivery.setReceivedBy(proofOfDeliveryLineCode);
     proofOfDelivery.setReceivedDate(new Date());
     proofOfDeliveryRepository.save(proofOfDelivery);
-  }
-
-  @After
-  public void cleanUp() {
-    proofOfDeliveryLineRepository.deleteAll();
-    proofOfDeliveryRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
   }
 
   @Test
