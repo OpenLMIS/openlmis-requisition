@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.Product;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -53,9 +53,9 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
             .extract().as(Stock[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( Stock stock : response ) {
-      Assert.assertEquals(
+      assertEquals(
               stock.getProduct().getId(),
               stocks.get(0).getProduct().getId());
     }

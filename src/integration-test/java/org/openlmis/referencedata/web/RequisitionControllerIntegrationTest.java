@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -46,7 +45,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -230,26 +233,26 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().as(Requisition[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( Requisition receivedRequisition : response ) {
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getProgram().getId(),
               program.getId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getProcessingPeriod().getId(),
               period.getId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getFacility().getId(),
               facility.getId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getSupervisoryNode().getId(),
               supervisoryNode.getId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getStatus(),
               RequisitionStatus.INITIATED);
-      Assert.assertTrue(
+      assertTrue(
               receivedRequisition.getCreatedDate().isBefore(localDateTime.plusDays(2)));
-      Assert.assertTrue(
+      assertTrue(
               receivedRequisition.getCreatedDate().isAfter(localDateTime.minusDays(2)));
     }
   }
@@ -268,9 +271,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .statusCode(200)
             .extract().as(Requisition.class);
 
-    Assert.assertNotNull(response.getId());
-    Assert.assertEquals(requisition.getId(), response.getId());
-    Assert.assertEquals(RequisitionStatus.SUBMITTED, response.getStatus());
+    assertNotNull(response.getId());
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.SUBMITTED, response.getStatus());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -295,7 +298,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
             + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -332,7 +335,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
             + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -369,7 +372,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
             + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -407,7 +410,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
             + "\"A beginning balance must be a non-negative value.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -444,7 +447,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             + "\"A total received quantity"
             + " must be entered prior to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -482,7 +485,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
             + "\"A total received quantity must be a non-negative value.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -519,7 +522,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
             + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -557,7 +560,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             + "\"A total consumed quantity"
             + " must be entered prior to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -595,7 +598,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             + "\"A total losses and adjustments must be entered prior "
             + "to submission of a requisition.\"\n}";
 
-    Assert.assertTrue(response.contains(expectedExceptionMessage));
+    assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -661,7 +664,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .then()
             .statusCode(204);
 
-    Assert.assertFalse(requisitionRepository.exists(requisition.getId()));
+    assertFalse(requisitionRepository.exists(requisition.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -711,8 +714,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     List<Comment> commentList = Arrays.asList(response);
-    Assert.assertEquals("First comment", commentList.get(0).getBody());
-    Assert.assertEquals("Second comment", commentList.get(1).getBody());
+    assertEquals("First comment", commentList.get(0).getBody());
+    assertEquals("Second comment", commentList.get(1).getBody());
   }
 
   @Test
@@ -738,8 +741,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     List<Comment> commentList = Arrays.asList(response);
-    Assert.assertEquals("Previous comment", commentList.get(0).getBody());
-    Assert.assertEquals("User comment", commentList.get(1).getBody());
+    assertEquals("Previous comment", commentList.get(0).getBody());
+    assertEquals("User comment", commentList.get(1).getBody());
   }
 
   private void testApproveRequisition(Requisition requisition) {
@@ -754,9 +757,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .statusCode(200)
             .extract().as(Requisition.class);
 
-    Assert.assertNotNull(response.getId());
-    Assert.assertEquals(requisition.getId(), response.getId());
-    Assert.assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+    assertNotNull(response.getId());
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -808,7 +811,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().as(Requisition[].class);
 
     Iterable<Requisition> requisitions = Arrays.asList(response);
-    Assert.assertTrue(requisitions.iterator().hasNext());
+    assertTrue(requisitions.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

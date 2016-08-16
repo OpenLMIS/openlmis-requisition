@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Test;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.http.MediaType;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -33,7 +33,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .when().post(RESOURCE_URL)
         .then().statusCode(200);
 
-    Assert.assertNotNull(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST));
+    assertNotNull(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -1,9 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -71,15 +71,15 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
         .extract().as(SupplyLine[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( SupplyLine responseSupplyLine : response ) {
-      Assert.assertEquals(
+      assertEquals(
           supplyLine.getProgram().getId(),
           responseSupplyLine.getProgram().getId());
-      Assert.assertEquals(
+      assertEquals(
           supplyLine.getSupervisoryNode().getId(),
           responseSupplyLine.getSupervisoryNode().getId());
-      Assert.assertEquals(
+      assertEquals(
           supplyLine.getId(),
           responseSupplyLine.getId());
     }

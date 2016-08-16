@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
@@ -12,6 +11,7 @@ import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -46,8 +46,8 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Program.class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(response.getCode(), "newCode");
-    Assert.assertEquals(response.getName(), "newName");
+    assertEquals(response.getCode(), "newCode");
+    assertEquals(response.getName(), "newName");
   }
 
   @Test

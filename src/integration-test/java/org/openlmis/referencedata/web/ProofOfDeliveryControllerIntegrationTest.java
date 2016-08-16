@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -57,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -150,7 +150,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     requisition1.setStatus(RequisitionStatus.RELEASED);
     requisitionRepository.save(requisition1);
 
-    Assert.assertEquals(1, userRepository.count());
+    assertEquals(1, userRepository.count());
     User user = userRepository.findAll().iterator().next();
 
     OrderLine orderLine1 = new OrderLine();
