@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -9,17 +8,16 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 public class StockServiceTest {
 
   private List<Stock> stocks;
@@ -29,7 +27,6 @@ public class StockServiceTest {
   private StockRepository stockRepository;
 
   @InjectMocks
-  @Autowired
   private StockService stockService;
 
   @Before
@@ -38,19 +35,21 @@ public class StockServiceTest {
     currentInstanceNumber = 0;
     generateInstances();
     initMocks(this);
-    mockRepositories();
   }
 
   @Test
-  public void testSearchStocks() {
+  public void testShouldFindStockIfMatchedProduct() {
+    when(stockRepository
+            .searchStocks(stocks.get(0).getProduct()))
+            .thenReturn(Arrays.asList(stocks.get(0)));
     List<Stock> receivedStocks = stockService.searchStocks(
         stocks.get(0).getProduct());
 
-    Assert.assertEquals(1, receivedStocks.size());
-    Assert.assertEquals(
+    assertEquals(1, receivedStocks.size());
+    assertEquals(
         stocks.get(0).getProduct().getId(),
         receivedStocks.get(0).getProduct().getId());
-    Assert.assertEquals(
+    assertEquals(
         stocks.get(0).getId(),
         receivedStocks.get(0).getId());
   }
@@ -101,26 +100,5 @@ public class StockServiceTest {
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    for (Stock stock : stocks) {
-      List<Stock> matchedStocks = new ArrayList<>();
-      for (Stock stockToMatch : stocks) {
-        if (stockToMatch.getProduct().getId()
-            .equals(stock.getProduct().getId())) {
-          matchedStocks.add(stockToMatch);
-        }
-      }
-      when(stockRepository
-          .searchStocks(stock.getProduct()))
-          .thenReturn(matchedStocks);
-      when(stockRepository
-          .findOne(stock.getId()))
-          .thenReturn(stock);
-      when(stockRepository
-          .save(stock))
-          .thenReturn(stock);
-    }
   }
 }

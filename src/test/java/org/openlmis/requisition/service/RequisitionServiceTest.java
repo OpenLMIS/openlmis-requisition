@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -24,8 +23,6 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,16 +32,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionServiceTest {
 
   private static final String REQUISITION_TEST_NAME = "RequisitionServiceTest";
 
   private Requisition requisition;
+
   private Requisition requisition2;
   private Requisition requisition3;
   private Set<Requisition> requisitions;
@@ -73,7 +73,6 @@ public class RequisitionServiceTest {
   private RequisitionRepository requisitionRepository;
 
   @InjectMocks
-  @Autowired
   private RequisitionService requisitionService;
 
   @Before
@@ -84,11 +83,11 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldDeleteRequisition() throws RequisitionException {
+  public void testShouldDeleteRequisitionIfItIsInitiated() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.INITIATED);
     boolean deleted = requisitionService.tryDelete(requisition.getId());
 
-    Assert.assertTrue(deleted);
+    assertTrue(deleted);
   }
 
   @Test
@@ -96,58 +95,67 @@ public class RequisitionServiceTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     boolean deleted = requisitionService.tryDelete(requisition.getId());
 
-    Assert.assertFalse(deleted);
+    assertFalse(deleted);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotDeleteWhenRequisitionDoesNotExists() throws RequisitionException {
+  public void testShouldThrowExceptionWhenDeletingNotExistingRequisition()
+          throws RequisitionException {
     UUID deletedRequisitionId = requisition.getId();
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
+    when(requisitionRepository
+            .findOne(requisition.getId()))
+            .thenReturn(null);
     requisitionService.tryDelete(deletedRequisitionId);
   }
 
   @Test
-  public void testShouldSkipRequisition() throws RequisitionException {
+  public void testShouldSkipRequisitionIfItIsValid() throws RequisitionException {
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
 
-    Assert.assertEquals(skippedRequisition.getStatus(), RequisitionStatus.SKIPPED);
+    assertEquals(skippedRequisition.getStatus(), RequisitionStatus.SKIPPED);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotSkipRequisitionIfProgramIsNotSkippable() throws RequisitionException {
+  public void testShouldThrowExceptionWhenSkippingNotSkippableProgram()
+          throws RequisitionException {
     requisition.getProgram().setPeriodsSkippable(false);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotSkipRequisitionIfItDoesNotExists() throws RequisitionException {
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
+  public void testShouldThrowExceptionWhenSkippingNotExistingRequisition()
+          throws RequisitionException {
+    when(requisitionRepository
+            .findOne(requisition.getId()))
+            .thenReturn(null);
     requisitionService.skip(requisition.getId());
   }
 
   @Test
-  public void testShouldRejectRequisition() throws RequisitionException {
+  public void testShouldRejectRequisitionIfRequisitionStatusIsAuthorized()
+          throws RequisitionException {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
-    Assert.assertEquals(returnedRequisition.getStatus(), RequisitionStatus.INITIATED);
+    assertEquals(returnedRequisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotAllowRejectionIfRequisitionStatusIsApproved()
+  public void testShouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws RequisitionException {
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisitionService.reject(requisition.getId());
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotAllowRejectionIfRequisitionDoesNotExists() throws RequisitionException {
+  public void testShouldThrowExceptionWhenRejectingNotExistingRequisition()
+          throws RequisitionException {
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
     requisitionService.reject(requisition.getId());
   }
 
   @Test
-  public void testGetAuthorizedRequisitionsForSupervisorNode() {
+  public void testShouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
     requisition2.setStatus(RequisitionStatus.AUTHORIZED);
@@ -162,75 +170,85 @@ public class RequisitionServiceTest {
         requisitionService.getAuthorizedRequisitions(supervisoryNode);
     List<Requisition> expected = Arrays.asList(requisition, requisition2);
 
-    Assert.assertEquals(expected, authorizedRequisitions);
+    assertEquals(expected, authorizedRequisitions);
   }
 
   @Test
-  public void testGetRequisitionsForApproval() {
+  public void testShouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
     user.setSupervisedNode(supervisoryNode);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
     requisition2.setSupervisoryNode(supervisoryNode);
 
-    when(userRepository.findOne(user.getId())).thenReturn(user);
-    when(requisitionRepository.searchRequisitions(
-            null, null, null, null, null, supervisoryNode, null))
+    when(userRepository
+            .findOne(user.getId()))
+            .thenReturn(user);
+    when(requisitionRepository
+            .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
             .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> requisitionsForApproval = requisitionService
             .getRequisitionsForApproval(user.getId());
     List<Requisition> expected = Arrays.asList(requisition);
 
-    Assert.assertEquals(expected, requisitionsForApproval);
+    assertEquals(expected, requisitionsForApproval);
   }
 
   @Test
-  public void testShouldInitiateRequisition() throws RequisitionException {
+  public void testShouldInitiateRequisitionIfItNotAlreadyExist() throws RequisitionException {
     requisition.setStatus(null);
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
+    when(requisitionRepository
+            .findOne(requisition.getId()))
+            .thenReturn(null);
     Requisition initiatedRequisition = requisitionService.initiateRequisition(requisition);
 
-    Assert.assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
+    assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotInitiateRequisitionWhenItIsNull() throws RequisitionException {
+  public void testShouldThrowExceptionWhenInitiatingEmptyRequisition()
+          throws RequisitionException {
     requisitionService.initiateRequisition(null);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotInitiateRequisitionWhenItAlreadyExists() throws RequisitionException {
+  public void testShouldThrowExceptionWhenInitiatingAlreadyExistingRequisition()
+          throws RequisitionException {
     requisitionService.initiateRequisition(requisition);
   }
 
   @Test
-  public void testShouldAuthorizeRequisition() throws RequisitionException {
+  public void testShouldAuthorizeRequisitionIfItIsSubmitted() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionService.authorize(requisition.getId(), requisition, false);
 
-    Assert.assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+    assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldNotAllowAuthorizationIfItIsConfiguredToBeSkipped()
+  public void testShouldThrowExceptionIfAuthorizationIsConfiguredToBeSkipped()
       throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(true);
+    when(configurationSettingService
+            .getBoolValue("skipAuthorization"))
+            .thenReturn(true);
     requisitionService.authorize(requisition.getId(), requisition, false);
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotAllowAuthorizationIfRequisitionStatusIsInitiated()
+  public void shouldThrowExceptionWhenAuthorizingInitiatedRequisition()
       throws RequisitionException {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionService.authorize(requisition.getId(), requisition, false);
   }
 
   @Test(expected = RequisitionException.class)
-  public void shouldNotAllowAuthorizationIfRequisitionDoesNotExists()
+  public void shouldThrowExceptionWhenAuthorizingNotExistingRequisition()
       throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
+    when(requisitionRepository
+            .findOne(requisition.getId()))
+            .thenReturn(null);
     requisitionService.authorize(requisition.getId(), requisition, false);
   }
 
@@ -239,11 +257,11 @@ public class RequisitionServiceTest {
     List<Requisition> requisitions = Arrays.asList(requisition);
     List<Requisition> expectedRequisitions = requisitionService
         .releaseRequisitionsAsOrder(requisitions);
-    Assert.assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
+    assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
   }
 
   @Test
-  public void testSearchRequisitions() {
+  public void testShouldFindRequisitionIfItExists() {
     when(requisitionRepository.searchRequisitions(requisition.getFacility(),
         requisition.getProgram(),
         requisition.getCreatedDate().minusDays(2),
@@ -261,26 +279,26 @@ public class RequisitionServiceTest {
         requisition.getSupervisoryNode(),
         requisition.getStatus());
 
-    Assert.assertEquals(1,receivedRequisitions.size());
-    Assert.assertEquals(
+    assertEquals(1,receivedRequisitions.size());
+    assertEquals(
         receivedRequisitions.get(0).getFacility().getId(),
         requisition.getFacility().getId());
-    Assert.assertEquals(
+    assertEquals(
         receivedRequisitions.get(0).getProgram().getId(),
         requisition.getProgram().getId());
-    Assert.assertTrue(
+    assertTrue(
         receivedRequisitions.get(0).getCreatedDate().isAfter(
             requisition.getCreatedDate().minusDays(2)));
-    Assert.assertTrue(
+    assertTrue(
         receivedRequisitions.get(0).getCreatedDate().isBefore(
             requisition.getCreatedDate().plusDays(2)));
-    Assert.assertEquals(
+    assertEquals(
         receivedRequisitions.get(0).getProcessingPeriod().getId(),
         requisition.getProcessingPeriod().getId());
-    Assert.assertEquals(
+    assertEquals(
         receivedRequisitions.get(0).getSupervisoryNode().getId(),
         requisition.getSupervisoryNode().getId());
-    Assert.assertEquals(
+    assertEquals(
         receivedRequisitions.get(0).getStatus(),
         requisition.getStatus());
   }
@@ -435,7 +453,11 @@ public class RequisitionServiceTest {
   }
 
   private void mockRepositories() {
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
-    when(requisitionRepository.save(requisition)).thenReturn(requisition);
+    when(requisitionRepository
+            .findOne(requisition.getId()))
+            .thenReturn(requisition);
+    when(requisitionRepository
+            .save(requisition))
+            .thenReturn(requisition);
   }
 }

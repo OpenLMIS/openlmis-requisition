@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -13,17 +12,16 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.SupplyLine;
 import org.openlmis.referencedata.repository.SupplyLineRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 @SuppressWarnings("PMD.TooManyMethods")
 public class SupplyLineServiceTest {
 
@@ -34,7 +32,6 @@ public class SupplyLineServiceTest {
   private SupplyLineRepository supplyLineRepository;
 
   @InjectMocks
-  @Autowired
   private SupplyLineService supplyLineService;
 
   @Before
@@ -43,23 +40,26 @@ public class SupplyLineServiceTest {
     currentInstanceNumber = 0;
     generateInstances();
     initMocks(this);
-    mockRepositories();
   }
 
   @Test
-  public void testSearchSupplyLines() {
+  public void testShouldFindSupplyLineIfMatchedProgramAndSupervisoryNode() {
+    when(supplyLineRepository
+            .searchSupplyLines(supplyLines.get(0).getProgram(),
+                    supplyLines.get(0).getSupervisoryNode()))
+            .thenReturn(Arrays.asList(supplyLines.get(0)));
     List<SupplyLine> receivedSupplyLines = supplyLineService.searchSupplyLines(
         supplyLines.get(0).getProgram(),
         supplyLines.get(0).getSupervisoryNode());
 
-    Assert.assertEquals(1, receivedSupplyLines.size());
-    Assert.assertEquals(
+    assertEquals(1, receivedSupplyLines.size());
+    assertEquals(
         supplyLines.get(0).getProgram().getId(),
         receivedSupplyLines.get(0).getProgram().getId());
-    Assert.assertEquals(
+    assertEquals(
         supplyLines.get(0).getSupervisoryNode().getId(),
         receivedSupplyLines.get(0).getSupervisoryNode().getId());
-    Assert.assertEquals(
+    assertEquals(
         supplyLines.get(0).getId(),
         receivedSupplyLines.get(0).getId());
   }
@@ -143,28 +143,5 @@ public class SupplyLineServiceTest {
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    for (SupplyLine supplyLine : supplyLines) {
-      List<SupplyLine> matchedSupplyLines = new ArrayList<>();
-      for (SupplyLine supLine : supplyLines) {
-        if (supLine.getProgram().getId()
-                .equals(supplyLine.getProgram().getId())
-            || supLine.getSupervisoryNode().getId()
-                .equals(supplyLine.getSupervisoryNode().getId())) {
-          matchedSupplyLines.add(supLine);
-        }
-      }
-      when(supplyLineRepository
-          .searchSupplyLines(supplyLine.getProgram(), supplyLine.getSupervisoryNode()))
-          .thenReturn(matchedSupplyLines);
-      when(supplyLineRepository
-          .findOne(supplyLine.getId()))
-          .thenReturn(supplyLine);
-      when(supplyLineRepository
-          .save(supplyLine))
-          .thenReturn(supplyLine);
-    }
   }
 }

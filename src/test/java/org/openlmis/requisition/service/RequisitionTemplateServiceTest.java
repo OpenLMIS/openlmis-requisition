@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -13,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -25,7 +25,6 @@ public class RequisitionTemplateServiceTest {
   private RequisitionTemplateService requisitionTemplateService;
 
   private RequisitionTemplate requisitionTemplate;
-  private Program program;
   private Integer currentInstanceNumber;
 
   @Before
@@ -33,17 +32,19 @@ public class RequisitionTemplateServiceTest {
     currentInstanceNumber = 0;
     requisitionTemplate = generateRequisitionTemplate();
     initMocks(this);
-    mockRepositories();
   }
 
   @Test
-  public void testSearchRequisitionTemplates() {
+  public void testShouldFindRequisitionTemplateIfItExists() {
+    when(requisitionTemplateRepository
+            .searchRequisitionTemplates(requisitionTemplate.getProgram()))
+            .thenReturn(Arrays.asList(requisitionTemplate));
     List<RequisitionTemplate> receivedRequisitionTemplates
             = requisitionTemplateService
             .searchRequisitionTemplates(requisitionTemplate.getProgram());
-    Assert.assertEquals(1,receivedRequisitionTemplates.size());
+    assertEquals(1,receivedRequisitionTemplates.size());
 
-    Assert.assertEquals(
+    assertEquals(
             requisitionTemplate.getProgram().getId(),
             receivedRequisitionTemplates.get(0).getProgram().getId());
   }
@@ -55,7 +56,7 @@ public class RequisitionTemplateServiceTest {
   }
 
   private Program generateProgram() {
-    program = new Program();
+    Program program = new Program();
     program.setId(UUID.randomUUID());
     program.setCode("code" + generateInstanceNumber());
     program.setPeriodsSkippable(false);
@@ -65,14 +66,5 @@ public class RequisitionTemplateServiceTest {
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    when(requisitionTemplateRepository
-            .searchRequisitionTemplates(requisitionTemplate.getProgram()))
-            .thenReturn(Arrays.asList(requisitionTemplate));
-    when(requisitionTemplateRepository
-            .findOne(requisitionTemplate.getId()))
-            .thenReturn(requisitionTemplate);
   }
 }

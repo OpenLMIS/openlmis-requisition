@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -24,8 +23,6 @@ import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -35,10 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionLineServiceTest {
 
@@ -73,8 +70,7 @@ public class RequisitionLineServiceTest {
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @InjectMocks
-  @Autowired
-  RequisitionLineService requisitionLineService;
+  private RequisitionLineService requisitionLineService;
 
   @Before
   public void setUp() {
@@ -84,7 +80,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void testShouldInitiateRequisitionLineFields() {
+  public void testShouldInitiateRequisitionLineFieldsIfValidRequisitionProvided() {
     final Integer expectedBeginningBalance = 20;
     final Integer expectedTotalReceivedQuantity = 0;
 
@@ -102,8 +98,8 @@ public class RequisitionLineServiceTest {
     RequisitionLine requisitionLine = requisitionWithInitiatedLines
         .getRequisitionLines().iterator().next();
 
-    Assert.assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
-    Assert.assertEquals(expectedTotalReceivedQuantity, requisitionLine.getTotalReceivedQuantity());
+    assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
+    assertEquals(expectedTotalReceivedQuantity, requisitionLine.getTotalReceivedQuantity());
   }
 
 
@@ -124,12 +120,12 @@ public class RequisitionLineServiceTest {
 
     requisitionLineService.save(requisition, requisitionLine2);
 
-    Assert.assertEquals(expectedBeginningBalance, requisitionLine2.getBeginningBalance());
+    assertEquals(expectedBeginningBalance, requisitionLine2.getBeginningBalance());
   }
 
 
   @Test
-  public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
+  public void testShouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
     final Integer expectedBeginningBalance = 0;
 
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
@@ -146,12 +142,12 @@ public class RequisitionLineServiceTest {
     RequisitionLine requisitionLine = requisitionWithInitiatedLines
         .getRequisitionLines().iterator().next();
 
-    Assert.assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
+    assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
   }
 
 
   @Test
-  public void shouldDisplayColumnsInCorrectOrder() {
+  public void testShouldDisplayColumnsInCorrectOrder() {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
@@ -169,30 +165,30 @@ public class RequisitionLineServiceTest {
     List<RequisitionTemplate> requisitionTemplateList
         = requisitionTemplateService.searchRequisitionTemplates(requisition2.getProgram());
 
-    Assert.assertEquals(1 ,requisitionTemplateList.size());
+    assertEquals(1 ,requisitionTemplateList.size());
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
         = requisitionTemplateList.get(0).getColumnsMap();
 
-    Assert.assertEquals(1, testRequisitionTemplateColumnHashMap
+    assertEquals(1, testRequisitionTemplateColumnHashMap
         .get(TOTAL_QUANTITY_RECEIVED_FIELD).getDisplayOrder());
-    Assert.assertEquals(2, testRequisitionTemplateColumnHashMap
+    assertEquals(2, testRequisitionTemplateColumnHashMap
         .get(BEGINNING_BALANCE_FIELD).getDisplayOrder());
   }
 
   @Test
-  public void testSearchRequisitionLines() {
+  public void testShouldFindRequisitionLineIfItExists() {
     when(requisitionLineRepository.searchRequisitionLines(
         requisition, null)).thenReturn(Arrays.asList(requisitionLine));
 
     List<RequisitionLine> receivedRequisitionLines = requisitionLineService.searchRequisitionLines(
         requisition, null);
 
-    Assert.assertEquals(1, receivedRequisitionLines.size());
+    assertEquals(1, receivedRequisitionLines.size());
 
     RequisitionLine receivedRequisitionLine = receivedRequisitionLines.get(0);
 
-    Assert.assertEquals(requisitionLine, receivedRequisitionLine);
+    assertEquals(requisitionLine, receivedRequisitionLine);
   }
 
   private void generateInstances() {
@@ -211,7 +207,6 @@ public class RequisitionLineServiceTest {
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
-
 
     program = new Program();
     program.setId(UUID.randomUUID());
@@ -232,7 +227,6 @@ public class RequisitionLineServiceTest {
     geographicZone.setCode(REQUISITION_REPOSITORY_NAME);
     geographicZone.setLevel(level);
 
-
     Facility facility = new Facility();
     facility.setId(UUID.randomUUID());
     facility.setType(facilityType);
@@ -240,7 +234,6 @@ public class RequisitionLineServiceTest {
     facility.setCode(REQUISITION_REPOSITORY_NAME);
     facility.setActive(true);
     facility.setEnabled(true);
-
 
     Schedule schedule = new Schedule();
     schedule.setId(UUID.randomUUID());

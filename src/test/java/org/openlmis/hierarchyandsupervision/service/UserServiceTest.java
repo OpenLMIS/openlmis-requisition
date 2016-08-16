@@ -1,6 +1,5 @@
 package org.openlmis.hierarchyandsupervision.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -11,23 +10,21 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 public class UserServiceTest {
 
   @Mock
   private UserRepository userRepository;
 
   @InjectMocks
-  @Autowired
   private UserService userService;
 
   private Integer currentInstanceNumber;
@@ -40,11 +37,20 @@ public class UserServiceTest {
     userService = new UserService();
     generateInstances();
     initMocks(this);
-    mockRepositories();
   }
 
   @Test
-  public void testSearchUsers() {
+  public void testShouldFindUsersIfMatchedRequiredFields() {
+    when(userRepository
+            .searchUsers(
+                    users.get(0).getUsername(),
+                    users.get(0).getFirstName(),
+                    users.get(0).getLastName(),
+                    users.get(0).getHomeFacility(),
+                    users.get(0).getActive(),
+                    users.get(0).getActive()))
+            .thenReturn(Arrays.asList(users.get(0)));
+
     List<User> receivedUsers = userService.searchUsers(
             users.get(0).getUsername(),
             users.get(0).getFirstName(),
@@ -53,23 +59,23 @@ public class UserServiceTest {
             users.get(0).getActive(),
             users.get(0).getVerified());
 
-    Assert.assertEquals(1,receivedUsers.size());
-    Assert.assertEquals(
+    assertEquals(1,receivedUsers.size());
+    assertEquals(
             receivedUsers.get(0).getUsername(),
             users.get(0).getUsername());
-    Assert.assertEquals(
+    assertEquals(
             receivedUsers.get(0).getFirstName(),
             users.get(0).getFirstName());
-    Assert.assertEquals(
+    assertEquals(
             receivedUsers.get(0).getLastName(),
             users.get(0).getLastName());
-    Assert.assertEquals(
+    assertEquals(
             receivedUsers.get(0).getHomeFacility().getId(),
             users.get(0).getHomeFacility().getId());
-    Assert.assertEquals(
+    assertEquals(
             receivedUsers.get(0).getHomeFacility().getActive(),
             users.get(0).getActive());
-    Assert.assertEquals(
+    assertEquals(
             receivedUsers.get(0).getVerified(),
             users.get(0).getVerified());
   }
@@ -129,61 +135,8 @@ public class UserServiceTest {
     return facilityType;
   }
 
-  private Boolean checkIfUserMatchCriteria(User userModel, User userToCheck) {
-    if (!userModel.getUsername().equalsIgnoreCase(userToCheck.getUsername())) {
-      return false;
-    }
-    if (!userModel.getFirstName().equalsIgnoreCase(userToCheck.getFirstName())) {
-      return false;
-    }
-    if (!userModel.getLastName().equalsIgnoreCase(userToCheck.getLastName())) {
-      return false;
-    }
-    if (userModel.getHomeFacility().getId() != userToCheck.getHomeFacility().getId()) {
-      return false;
-    }
-    if (userModel.getActive() != userToCheck.getActive()) {
-      return false;
-    }
-    if (userModel.getVerified() != userToCheck.getVerified()) {
-      return false;
-    }
-    return true;
-  }
-
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    for (User user : users) {
-      when(userRepository
-              .findOne(user.getId()))
-              .thenReturn(user);
-    }
-    for (User user : users) {
-      when(userRepository
-              .save(user))
-              .thenReturn(user);
-    }
-    for (User user : users) {
-      List<User> matchedUsers = new ArrayList<>();
-      for (User userWithMatchedParameters : users) {
-        Boolean isUserMatched = checkIfUserMatchCriteria(user, userWithMatchedParameters);
-        if (isUserMatched) {
-          matchedUsers.add(userWithMatchedParameters);
-        }
-      }
-      when(userRepository
-              .searchUsers(
-                      user.getUsername(),
-                      user.getFirstName(),
-                      user.getLastName(),
-                      user.getHomeFacility(),
-                      user.getActive(),
-                      user.getActive()))
-              .thenReturn(matchedUsers);
-    }
   }
 }

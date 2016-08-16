@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -25,9 +26,6 @@ public class PeriodServiceTest {
 
   @InjectMocks
   private PeriodService periodService;
-
-  private Period period;
-  private Schedule schedule;
 
   private Integer currentInstanceNumber;
   private Schedule testSchedule;
@@ -41,19 +39,24 @@ public class PeriodServiceTest {
     testSchedule = generateSchedule();
     generateInstances();
     initMocks(this);
-    mockRepositories();
   }
 
   @Test
-  public void testSearchPeriod() {
+  public void testShouldFindPeriodsWithinProvidedDateIfTheyExist() {
+    List<Period> matchedPeriods = new ArrayList<>();
+    matchedPeriods.addAll(periods);
+    matchedPeriods.remove(periods.get(0));
+    when(periodRepository
+            .searchPeriods(testSchedule, periods.get(0).getStartDate()))
+            .thenReturn(matchedPeriods);
     List<Period> receivedPeriods = periodService
             .searchPeriods(testSchedule, periods.get(0).getStartDate());
-    Assert.assertEquals(4,receivedPeriods.size());
+    assertEquals(4,receivedPeriods.size());
     for ( Period period : receivedPeriods) {
-      Assert.assertEquals(
+      assertEquals(
               testSchedule.getId(),
               period.getProcessingSchedule().getId());
-      Assert.assertTrue(
+      assertTrue(
               periods.get(0).getStartDate().isAfter(period.getStartDate()));
     }
   }
@@ -66,7 +69,7 @@ public class PeriodServiceTest {
 
   private Period generatePeriod() {
     Integer instanceNumber = generateInstanceNumber();
-    period = new Period();
+    Period period = new Period();
     period.setId(UUID.randomUUID());
     period.setName("PeriodName" + instanceNumber);
     period.setDescription("PeriodDescription" + instanceNumber);
@@ -78,7 +81,7 @@ public class PeriodServiceTest {
 
   private Schedule generateSchedule() {
     Integer instanceNumber = generateInstanceNumber();
-    schedule = new Schedule();
+    Schedule schedule = new Schedule();
     schedule.setId(UUID.randomUUID());
     schedule.setCode("ScheduleCode" + instanceNumber);
     schedule.setDescription("ScheduleDescription" + instanceNumber);
@@ -90,27 +93,5 @@ public class PeriodServiceTest {
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    for (Period period : periods) {
-      List<Period> matchedPeriods = new ArrayList<>();
-      for (Period periodWithMatchedProcessingScheduleAndToDate : periods) {
-        if (periodWithMatchedProcessingScheduleAndToDate.getProcessingSchedule().equals(
-                period.getProcessingSchedule()) && periodWithMatchedProcessingScheduleAndToDate
-                .getStartDate().isBefore(period.getStartDate())) {
-          matchedPeriods.add(periodWithMatchedProcessingScheduleAndToDate);
-        }
-      }
-      when(periodRepository
-              .searchPeriods(period.getProcessingSchedule(), period.getStartDate()))
-              .thenReturn(matchedPeriods);
-    }
-    when(periodRepository
-            .findOne(period.getId()))
-            .thenReturn(period);
-    when(periodRepository
-            .save(period))
-            .thenReturn(period);
   }
 }

@@ -1,6 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -10,7 +9,6 @@ import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
@@ -31,22 +29,21 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@Transactional
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderServiceTest {
 
@@ -72,12 +69,11 @@ public class OrderServiceTest {
   private SupplyLineRepository supplyLineRepository;
 
   @InjectMocks
-  @Autowired
   private OrderService orderService;
 
   private Integer currentInstanceNumber;
-  private User user;
 
+  private User user;
   private List<Order> orders;
   private List<Requisition> requisitions;
   private List<SupplyLine> supplyLines;
@@ -90,71 +86,89 @@ public class OrderServiceTest {
     currentInstanceNumber = 0;
     generateInstances();
     initMocks(this);
-    mockRepositories();
-    mockServices();
   }
 
   @Test
-  public void testShouldConvertToOrder() {
+  public void testShouldConvertRequisitionsToOrders() {
+    for (Order order : orders) {
+      when(orderRepository
+              .save(order))
+              .thenReturn(order);
+    }
+    for (int i = 0; i < requisitions.size(); i++) {
+      when(requisitionRepository
+              .findOne(requisitions.get(i).getId()))
+              .thenReturn(requisitions.get(i));
+      when(supplyLineService.searchSupplyLines(
+              requisitions.get(i).getProgram(),
+              requisitions.get(i).getSupervisoryNode()))
+              .thenReturn(Arrays.asList(supplyLines.get(i)));
+    }
     orders = orderService.convertToOrder(requisitions, user.getId());
-    Assert.assertEquals(2, orders.size());
+    assertEquals(2, orders.size());
     for (Order order : orders) {
       Requisition requisition = requisitions.get(0);
       if (!requisition.getId().equals(order.getRequisition().getId())) {
         requisition = requisitions.get(1);
       }
-      requisition = requisitionRepository.findOne(requisition.getId());
 
-      Assert.assertEquals(
+      assertEquals(
               OrderStatus.ORDERED,
               order.getStatus());
-      Assert.assertEquals(
+      assertEquals(
               order.getRequisition().getId(),
               requisition.getId());
-      Assert.assertEquals(
+      assertEquals(
               order.getReceivingFacility().getId(),
               requisition.getFacility().getId());
-      Assert.assertEquals(
+      assertEquals(
               order.getRequestingFacility().getId(),
               requisition.getFacility().getId());
-      Assert.assertEquals(
+      assertEquals(
               order.getProgram().getId(),
               requisition.getProgram().getId());
-      Assert.assertEquals(
+      assertEquals(
               order.getSupplyingFacility().getId(),
               supplyLines.get(orders.indexOf(order)).getSupplyingFacility().getId());
-      Assert.assertEquals(1, order.getOrderLines().size());
-      Assert.assertEquals(1, requisition.getRequisitionLines().size());
+      assertEquals(1, order.getOrderLines().size());
+      assertEquals(1, requisition.getRequisitionLines().size());
 
       OrderLine orderLine = order.getOrderLines().iterator().next();
       RequisitionLine requisitionLine = requisition.getRequisitionLines().iterator().next();
-      Assert.assertEquals(requisitionLine.getRequestedQuantity().longValue(),
+      assertEquals(requisitionLine.getRequestedQuantity().longValue(),
               orderLine.getOrderedQuantity().longValue());
-      Assert.assertEquals(requisitionLine.getProduct().getId(), orderLine.getProduct().getId());
+      assertEquals(requisitionLine.getProduct().getId(), orderLine.getProduct().getId());
     }
   }
 
   @Test
-  public void testSearchOrders() {
+  public void testShouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
+    when(orderRepository
+            .searchOrders(
+                    orders.get(0).getSupplyingFacility(),
+                    orders.get(0).getRequestingFacility(),
+                    orders.get(0).getProgram()))
+            .thenReturn(Arrays.asList(orders.get(0)));
+
     List<Order> receivedOrders = orderService.searchOrders(
             orders.get(0).getSupplyingFacility(),
             orders.get(0).getRequestingFacility(),
             orders.get(0).getProgram());
 
-    Assert.assertEquals(1, receivedOrders.size());
-    Assert.assertEquals(
+    assertEquals(1, receivedOrders.size());
+    assertEquals(
             receivedOrders.get(0).getSupplyingFacility().getId(),
             orders.get(0).getSupplyingFacility().getId());
-    Assert.assertEquals(
+    assertEquals(
             receivedOrders.get(0).getRequestingFacility().getId(),
             orders.get(0).getRequestingFacility().getId());
-    Assert.assertEquals(
+    assertEquals(
             receivedOrders.get(0).getProgram().getId(),
             orders.get(0).getProgram().getId());
   }
 
   @Test
-  public void testOrderToCsv() {
+  public void testShouldConvertOrderToCsvIfItExists() {
     List<String> header = new ArrayList<>();
     header.add(OrderService.DEFAULT_COLUMNS[0]);
     header.add(OrderService.DEFAULT_COLUMNS[1]);
@@ -164,7 +178,7 @@ public class OrderServiceTest {
 
     String received = orderService.orderToCsv(orders.get(0), header.toArray(new String[0]));
     String expected = prepareExpectedCsvOutput(orders.get(0), header);
-    Assert.assertEquals(expected,received);
+    assertEquals(expected,received);
   }
 
   private void generateInstances() {
@@ -366,32 +380,6 @@ public class OrderServiceTest {
     return supplyLine;
   }
 
-  private Boolean checkIfSupplyLineMatchCriteria(SupplyLine supplyLine, Requisition requisition) {
-    if (supplyLine.getProgram().getId() != requisition.getProgram().getId()) {
-      return false;
-    }
-    if (supplyLine.getSupervisoryNode().getId() != requisition.getSupervisoryNode().getId()) {
-      return false;
-    }
-    return true;
-  }
-
-  private Boolean checkIfOrderMatchCriteria(Order orderModel, Order orderToCheck) {
-    if (orderModel.getSupplyingFacility().getId()
-            != orderToCheck.getSupplyingFacility().getId()) {
-      return false;
-    }
-    if (orderModel.getRequestingFacility().getId()
-            != orderToCheck.getRequestingFacility().getId()) {
-      return false;
-    }
-    if (orderModel.getProgram().getId()
-            != orderToCheck.getProgram().getId()) {
-      return false;
-    }
-    return true;
-  }
-
   private String prepareExpectedCsvOutput(Order order, List<String> header) {
     String expected = "";
     for (int column = 0; column < header.size(); column++) {
@@ -417,86 +405,6 @@ public class OrderServiceTest {
     return currentInstanceNumber;
   }
 
-  private void mockRequisitionRepositoryFindOneRequisition() {
-    for (Requisition requisition : requisitions) {
-      when(requisitionRepository
-              .findOne(requisition.getId()))
-              .thenReturn(requisition);
-    }
-  }
-
-  private void mockUserRepositoryFindOneUser() {
-    when(userRepository
-            .findOne(user.getId()))
-            .thenReturn(user);
-  }
-
-  private void mockOrderRepositoryFindOneOrder() {
-    for (Order order : orders) {
-      when(orderRepository
-              .findOne(order.getId()))
-              .thenReturn(order);
-    }
-  }
-
-  private void mockOrderRepositorySaveOrder() {
-    for (Order order : orders) {
-      when(orderRepository
-              .save(order))
-              .thenReturn(order);
-    }
-  }
-
-  private void mockOrderRepositoryCountOrders() {
-    when(orderRepository
-            .count())
-            .thenReturn(Long.valueOf(2));
-  }
-
-  private void mockOrderRepositorySearchOrders() {
-    List<Order> matchedOrders = new ArrayList<>();
-    for (Order orderWithMatchedParameters : orders) {
-      Boolean isOrderMatched = checkIfOrderMatchCriteria(orders.get(0), orderWithMatchedParameters);
-      if (isOrderMatched) {
-        matchedOrders.add(orderWithMatchedParameters);
-      }
-    }
-    when(orderRepository
-            .searchOrders(
-                    orders.get(0).getSupplyingFacility(),
-                    orders.get(0).getRequestingFacility(),
-                    orders.get(0).getProgram()))
-            .thenReturn(matchedOrders);
-  }
-
-  private void mockSupplyLineServiceSearchSupplyLine() {
-    for (Requisition requisition : requisitions) {
-      List<SupplyLine> supplyLinesToReturn = new ArrayList<>();
-      for (SupplyLine supplyLine : supplyLines) {
-        Boolean isSupplyLineMatched = checkIfSupplyLineMatchCriteria(supplyLine,requisition);
-        if (isSupplyLineMatched) {
-          supplyLinesToReturn.add(supplyLine);
-        }
-      }
-      when(supplyLineService.searchSupplyLines(
-                      requisition.getProgram(),
-                      requisition.getSupervisoryNode()))
-              .thenReturn(supplyLinesToReturn);
-    }
-  }
-
-  private void mockRepositories() {
-    mockOrderRepositoryFindOneOrder();
-    mockOrderRepositorySaveOrder();
-    mockOrderRepositorySearchOrders();
-    mockOrderRepositoryCountOrders();
-    mockUserRepositoryFindOneUser();
-    mockRequisitionRepositoryFindOneRequisition();
-  }
-
-  private void mockServices() {
-    mockSupplyLineServiceSearchSupplyLine();
-  }
 }
 
 

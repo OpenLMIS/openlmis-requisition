@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -39,21 +39,23 @@ public class ProgramProductServiceTest {
     programProductService = new ProgramProductService();
     generateInstances();
     initMocks(this);
-    mockRepositories();
   }
 
   @Test
-  public void testSearchProgramProducts() {
+  public void testShouldFindProgramProductIfMatchedProgramAndFullSupply() {
+    when(programProductRepository
+            .searchProgramProducts(programProduct.getProgram(), programProduct.isFullSupply()))
+            .thenReturn(Arrays.asList(programProduct));
     List<ProgramProduct> receivedProgramProducts = programProductService.searchProgramProducts(
             programProduct.getProgram(),
             programProduct.isFullSupply());
 
-    Assert.assertEquals(1, receivedProgramProducts.size());
+    assertEquals(1, receivedProgramProducts.size());
     for (ProgramProduct programProduct : receivedProgramProducts) {
-      Assert.assertEquals(
+      assertEquals(
               programProduct.getProgram().getId(),
               this.programProduct.getProgram().getId());
-      Assert.assertEquals(
+      assertEquals(
               programProduct.isFullSupply(),
               this.programProduct.isFullSupply());
     }
@@ -120,17 +122,5 @@ public class ProgramProductServiceTest {
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
-  }
-
-  private void mockRepositories() {
-    when(programProductRepository
-            .findOne(programProduct.getId()))
-            .thenReturn(programProduct);
-    when(programProductRepository
-            .save(programProduct))
-            .thenReturn(programProduct);
-    when(programProductRepository
-            .searchProgramProducts(programProduct.getProgram(), programProduct.isFullSupply()))
-            .thenReturn(Arrays.asList(programProduct));
   }
 }
