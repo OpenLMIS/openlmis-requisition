@@ -153,12 +153,13 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Period[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(1, response.length);
+    assertEquals(2, response.length);
     for ( Period period : response ) {
       assertEquals(
           period.getProcessingSchedule().getId(),
           firstPeriod.getProcessingSchedule().getId());
-      assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
     }
+    assertTrue(response[1].getStartDate().isBefore(firstPeriod.getStartDate()));
+    assertTrue(response[0].getStartDate().isEqual(firstPeriod.getStartDate()));
   }
 }

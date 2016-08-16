@@ -812,7 +812,7 @@ resourceTypes:
                     displayName: code
                     description: productCategory code.
                     type: string
-                    required: true
+                    required: false
                     repeat: false
             responses:
                "200":
