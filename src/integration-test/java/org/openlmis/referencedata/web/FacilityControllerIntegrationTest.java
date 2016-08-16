@@ -35,6 +35,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,6 +47,10 @@ import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = "/api/facilities";
+  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -91,6 +96,9 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private Program program = new Program();
   private Period period = new Period();
   private Schedule schedule = new Schedule();
+  private Facility facility = new Facility();
+  private Facility facility2 = new Facility();
+  private Requisition requisition = new Requisition();
 
   @Before
   public void setUp() {
@@ -107,20 +115,20 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
     FacilityType facilityType = addFacilityType("FT1");
 
-    Facility facility = addFacility("facility1", "F1", null, facilityType,
+    facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, true, false);
 
     user = userRepository.findOne(INITIAL_USER_ID);
     user.setHomeFacility(facility);
     userRepository.save(user);
 
-    Facility facility2 = addFacility("facility2", "F2", null, facilityType,
+    facility2 = addFacility("facility2", "F2", null, facilityType,
         geographicZone, true, false);
 
-    Requisition requisition1 = addRequisition(program, facility, period,
+    requisition = addRequisition(program, facility, period,
         RequisitionStatus.RELEASED);
 
-    order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
+    order = addOrder(requisition, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));
 
     ProductCategory productCategory1 = addProductCategory("PCCode1", "PCName1", 1);
@@ -185,6 +193,52 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     Assert.assertEquals(testOrder.getOrderCode(), order.getOrderCode());
     Assert.assertEquals(testOrder.getOrderLines().size(), 2);
     Assert.assertEquals(testOrder.getCreatedDate(), order.getCreatedDate());
+  }
+
+  @Test
+  public void testShouldDeleteFacility() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .when()
+          .delete(DELETE_URL)
+          .then()
+          .statusCode(204);
+
+    Assert.assertFalse(facilityRepository.exists(facility.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateFacility() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+    facilityRepository.delete(facility);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(facility)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private Facility addFacility(String facilityName, String facilityCode, String facilityDescription,

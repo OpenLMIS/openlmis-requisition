@@ -12,6 +12,7 @@ import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,10 @@ import java.util.List;
 import static org.junit.Assert.assertThat;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = "/api/stocks";
+  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private StockRepository stockRepository;
@@ -47,6 +52,42 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     stockRepository.deleteAll();
     productRepository.deleteAll();
     productCategoryRepository.deleteAll();
+  }
+
+  @Test
+  public void testShouldDeleteStock() {
+
+    Stock stock = stocks.get(4);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .when()
+          .delete(DELETE_URL)
+          .then()
+          .statusCode(204);
+
+    Assert.assertFalse(stockRepository.exists(stock.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateStock() {
+
+    Stock stock = stocks.get(4);
+    stockRepository.delete(stock);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(stock)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

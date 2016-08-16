@@ -1,8 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
@@ -18,10 +15,14 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
@@ -167,5 +168,23 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           firstPeriod.getProcessingSchedule().getId());
       Assert.assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
     }
+  }
+
+  @Test
+  public void testShouldDeletePeriod() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstPeriod.getId())
+          .when()
+          .delete(DELETE_URL)
+          .then()
+          .statusCode(204);
+
+    Assert.assertFalse(periodRepository.exists(firstPeriod.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

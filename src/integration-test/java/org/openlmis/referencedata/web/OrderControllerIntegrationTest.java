@@ -1,7 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertThat;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
@@ -48,11 +46,14 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
 
+import static org.junit.Assert.assertThat;
+
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
@@ -524,5 +525,38 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
               order.getProgram().getId(),
               firstOrder.getProgram().getId());
     }
+  }
+
+  @Test
+  public void testShouldDeleteOrder() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .when()
+          .delete(DELETE_URL)
+          .then()
+          .statusCode(204);
+
+    Assert.assertFalse(orderRepository.exists(firstOrder.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateOrder() {
+
+    orderRepository.delete(firstOrder);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(firstOrder)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

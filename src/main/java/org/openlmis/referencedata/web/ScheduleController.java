@@ -2,6 +2,7 @@ package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -11,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,6 +37,43 @@ public class ScheduleController {
 
   @Autowired
   private PeriodService periodService;
+
+  /**
+   * Allows creating new schedules.
+   *
+   * @param schedule A schedule bound to the request body
+   * @return ResponseEntity containing the created schedule
+   */
+  @RequestMapping(value = "/schedules", method = RequestMethod.POST)
+  public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
+    if (schedule == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Creating new schedule");
+      // Ignore provided id
+      schedule.setId(null);
+      Schedule newSchedule = scheduleRepository.save(schedule);
+      return new ResponseEntity<Schedule>(newSchedule, HttpStatus.CREATED);
+    }
+  }
+
+  /**
+   * Allows deleting schedule.
+   *
+   * @param scheduleId UUID of schedule whose we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/schedules/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteSchedule(@PathVariable("id") UUID scheduleId) {
+    Schedule schedule = scheduleRepository.findOne(scheduleId);
+    if (schedule == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Deleting choosen schedule");
+      scheduleRepository.delete(schedule);
+      return new ResponseEntity<Stock>(HttpStatus.NO_CONTENT);
+    }
+  }
 
   /**
    * Calculates total difference in days and months

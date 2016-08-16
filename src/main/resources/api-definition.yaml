@@ -132,8 +132,8 @@ schemas:
               "createdBy": { "type": "object", "$ref": "#/schemas/user", "required": true, "title": "createdBy" },
               "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title":"program" },
               "requestingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "requestingFacility" },
-              "receivingFacilityId": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "receivingFacilityId" },
-              "supplyingFacilityId": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "supplyingFacilityId" },
+              "receivingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "receivingFacility" },
+              "supplyingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "supplyingFacility" },
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
               "status": { "type": "object", "$ref": "#/schemas/orderStatus", "required": true, "title": "status" },
               "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
@@ -580,6 +580,43 @@ resourceTypes:
 
 /orders:
     displayName: Order
+    post:
+        is: [ secured ]
+        description: Creates new order.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen order.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /csv/{id}:
         uriParameters:
             id:
@@ -727,6 +764,25 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen period.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /{id}/difference:
         uriParameters:
             id:
@@ -1207,6 +1263,43 @@ resourceTypes:
 
 /schedules:
     displayName: Schedule
+    post:
+        is: [ secured ]
+        description: Creates schedule.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen schedule.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /{id}/difference:
         uriParameters:
             id:
@@ -1335,6 +1428,43 @@ resourceTypes:
 
 /facilities:
     displayName: Facility
+    post:
+        is: [ secured ]
+        description: Creates new facility.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen facility.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /{id}/orders:
         uriParameters:
             id:
@@ -1418,6 +1548,43 @@ resourceTypes:
 
 /stocks:
     displayName: Stock
+    post:
+        is: [ secured ]
+        description: Creates stock.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen stock.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /search:
         get:
             is: [ secured ]

@@ -93,6 +93,24 @@ public class PeriodController {
   }
 
   /**
+   * Allows deleting period.
+   *
+   * @param periodId UUID of period whose we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/periods/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deletePeriod(@PathVariable("id") UUID periodId) {
+    Period period = periodRepository.findOne(periodId);
+    if (period == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Deleting choosen period");
+      periodRepository.delete(period);
+      return new ResponseEntity<Period>(HttpStatus.NO_CONTENT);
+    }
+  }
+
+  /**
    * Returns total difference between start date and end date from given Period.
    *
    * @param periodId UUID of given period.

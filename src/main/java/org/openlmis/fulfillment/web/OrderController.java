@@ -9,7 +9,6 @@ import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +23,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
 
 
 
@@ -44,6 +43,42 @@ public class OrderController {
   @Autowired
   private OrderService orderService;
 
+  /**
+   * Allows creating new orders.
+   *
+   * @param order A order bound to the request body
+   * @return ResponseEntity containing the created order
+   */
+  @RequestMapping(value = "/orders", method = RequestMethod.POST)
+  public ResponseEntity<?> createOrder(@RequestBody Order order) {
+    if (order == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Creating new order");
+      // Ignore provided id
+      order.setId(null);
+      Order newOrder = orderRepository.save(order);
+      return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
+    }
+  }
+
+  /**
+   * Allows deleting order.
+   *
+   * @param orderId UUID of order whose we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteOrder(@PathVariable("id") UUID orderId) {
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Deleting choosen order");
+      orderRepository.delete(order);
+      return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
+    }
+  }
 
   /**
    * Finds Orders matching all of provided parameters.

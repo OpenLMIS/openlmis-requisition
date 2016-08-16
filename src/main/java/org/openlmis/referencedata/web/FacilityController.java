@@ -9,22 +9,23 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 @RepositoryRestController
 public class FacilityController {
-  Logger logger = LoggerFactory.getLogger(FacilityController.class);
+  private static final Logger logger = LoggerFactory.getLogger(FacilityController.class);
 
   @Autowired
   private ProgramRepository programRepository;
@@ -34,6 +35,43 @@ public class FacilityController {
 
   @Autowired
   private OrderService orderService;
+
+  /**
+   * Allows creating new facilities.
+   *
+   * @param facility A facility bound to the request body
+   * @return ResponseEntity containing the created facility
+   */
+  @RequestMapping(value = "/facilities", method = RequestMethod.POST)
+  public ResponseEntity<?> createFacility(@RequestBody Facility facility) {
+    if (facility == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      logger.debug("Creating new facility");
+      // Ignore provided id
+      facility.setId(null);
+      Facility newFacility = facilityRepository.save(facility);
+      return new ResponseEntity<Facility>(newFacility, HttpStatus.CREATED);
+    }
+  }
+
+  /**
+   * Allows deleting facility.
+   *
+   * @param facilityId UUID of facility whose we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/facilities/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteFacility(@PathVariable("id") UUID facilityId) {
+    Facility facility = facilityRepository.findOne(facilityId);
+    try {
+      facilityRepository.delete(facility);
+    } catch (DataIntegrityViolationException ex) {
+      logger.debug("Facility cannot be deleted because of existing dependencies", ex);
+      return new ResponseEntity(HttpStatus.CONFLICT);
+    }
+    return new ResponseEntity<Facility>(HttpStatus.NO_CONTENT);
+  }
 
   /**
    * Return list of orders, filtered according to params, filled by certain facility.

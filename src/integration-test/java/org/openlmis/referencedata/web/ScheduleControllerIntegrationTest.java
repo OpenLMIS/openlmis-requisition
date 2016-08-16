@@ -1,10 +1,8 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
@@ -12,10 +10,19 @@ import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = "/api/schedules";
+  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private ScheduleRepository scheduleRepository;
@@ -55,12 +62,48 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", schedule.getId())
         .queryParam("access_token", getToken())
         .when()
-        .get("/api/schedules/{id}/difference")
+        .get(DIFFERENCE_URL)
         .then()
         .statusCode(200)
         .extract().asString();
 
     assertTrue(response.contains("Period lasts 1 months and 0 days"));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldDeleteSchedule() {
+
+    periodRepository.delete(period);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", schedule.getId())
+          .when()
+          .delete(DELETE_URL)
+          .then()
+          .statusCode(204);
+
+    Assert.assertFalse(scheduleRepository.exists(schedule.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateSchedule() {
+
+    periodRepository.delete(period);
+    scheduleRepository.delete(schedule);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(schedule)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
