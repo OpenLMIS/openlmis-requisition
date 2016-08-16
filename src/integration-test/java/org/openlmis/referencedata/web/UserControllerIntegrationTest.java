@@ -1,10 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.User;
@@ -62,17 +61,8 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     }
   }
 
-  @After
-  public void cleanUp() {
-    userRepository.delete(users);
-    facilityRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-  }
-
   @Test
-  public void testSearchUsers() {
+  public void testShouldFindUsers() {
     User[] response = restAssured.given()
             .queryParam(USERNAME, users.get(0).getUsername())
             .queryParam(FIRST_NAME, users.get(0).getFirstName())
@@ -88,24 +78,24 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
             .extract().as(User[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( User user : response ) {
-      Assert.assertEquals(
+      assertEquals(
               user.getUsername(),
               users.get(0).getUsername());
-      Assert.assertEquals(
+      assertEquals(
               user.getFirstName(),
               users.get(0).getFirstName());
-      Assert.assertEquals(
+      assertEquals(
               user.getLastName(),
               users.get(0).getLastName());
-      Assert.assertEquals(
+      assertEquals(
               user.getHomeFacility().getId(),
               users.get(0).getHomeFacility().getId());
-      Assert.assertEquals(
+      assertEquals(
               user.getActive(),
               users.get(0).getActive());
-      Assert.assertEquals(
+      assertEquals(
               user.getVerified(),
               users.get(0).getVerified());
     }

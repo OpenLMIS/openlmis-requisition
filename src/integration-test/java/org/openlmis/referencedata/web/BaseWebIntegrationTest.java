@@ -5,9 +5,12 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
+import org.openlmis.referencedata.utils.CleanRepositoryHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpEntity;
@@ -24,7 +27,7 @@ import java.util.UUID;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public abstract class BaseWebIntegrationTest {
-  static final UUID INITIAL_USER_ID = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
+  static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
   static final RamlDefinition ramlDefinition =
@@ -36,10 +39,18 @@ public abstract class BaseWebIntegrationTest {
 
   private String token = null;
 
+  @Autowired
+  private CleanRepositoryHelper cleanRepositoryHelper;
+
   @Before
   public void loadRaml() {
     RestAssured.baseURI = BASE_URL;
     restAssured = ramlDefinition.createRestAssured();
+  }
+
+  @After
+  public void cleanRepositories() {
+    cleanRepositoryHelper.cleanAll();
   }
 
   private String fetchToken() {

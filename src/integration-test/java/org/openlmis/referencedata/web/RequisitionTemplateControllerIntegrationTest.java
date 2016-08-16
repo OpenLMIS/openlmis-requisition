@@ -1,10 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
@@ -35,14 +34,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     requisitionTemplate = generateRequisitionTemplate();
   }
 
-  @After
-  public void cleanUp() {
-    requisitionTemplateRepository.deleteAll();
-    programRepository.deleteAll();
-  }
-
   @Test
-  public void testSearchRequisitionTemplates() {
+  public void testShouldFindRequisitionTemplates() {
     RequisitionTemplate[] response = restAssured.given()
         .queryParam(PROGRAM, requisitionTemplate.getProgram().getId())
         .queryParam(ACCESS_TOKEN, getToken())
@@ -53,12 +46,12 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .extract().as(RequisitionTemplate[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( RequisitionTemplate responseRequisitionTemplate : response ) {
-      Assert.assertEquals(
+      assertEquals(
           requisitionTemplate.getProgram().getId(),
           responseRequisitionTemplate.getProgram().getId());
-      Assert.assertEquals(
+      assertEquals(
           requisitionTemplate.getId(),
           responseRequisitionTemplate.getId());
     }

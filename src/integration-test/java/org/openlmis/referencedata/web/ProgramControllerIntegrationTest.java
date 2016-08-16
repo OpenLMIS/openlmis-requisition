@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
@@ -13,6 +11,7 @@ import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -32,13 +31,8 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
     programRepository.save(program);
   }
 
-  @After
-  public void cleanup() {
-    programRepository.deleteAll();
-  }
-
   @Test
-  public void testUpdate() {
+  public void testShouldUpdate() {
     ProgramDto programDto = new ProgramDto(program.getId(), "newCode", "newName");
 
     Program response = restAssured.given()
@@ -52,12 +46,12 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Program.class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(response.getCode(), "newCode");
-    Assert.assertEquals(response.getName(), "newName");
+    assertEquals(response.getCode(), "newCode");
+    assertEquals(response.getName(), "newName");
   }
 
   @Test
-  public void testUpdateIfProgramWithGivenIdNotExist() {
+  public void testShouldNotUpdateIfProgramWithGivenIdNotExist() {
     ProgramDto programDto = new ProgramDto(UUID.randomUUID(), "new code", "new name");
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -71,7 +65,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testUpdateIfProgramIdIsNull() {
+  public void testShouldNotUpdateIfProgramIdIsNull() {
     ProgramDto programDto = new ProgramDto(null, "new code", "new name");
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

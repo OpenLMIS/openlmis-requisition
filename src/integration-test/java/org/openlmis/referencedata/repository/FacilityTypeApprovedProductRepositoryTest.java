@@ -50,18 +50,15 @@ public class FacilityTypeApprovedProductRepositoryTest extends
 
   @Before
   public void setUp() {
-    facilityTypeRepository.deleteAll();
     facilityType = new FacilityType();
     facilityType.setCode("facilityType");
     facilityTypeRepository.save(facilityType);
     facilityType2 = new FacilityType();
     facilityType2.setCode("newFacilityType");
     facilityTypeRepository.save(facilityType2);
-    programRepository.deleteAll();
     program = new Program();
     program.setCode("programCode");
     programRepository.save(program);
-    productRepository.deleteAll();
     product = new Product();
     product.setCode("productCode");
     product.setPrimaryName("productPrimaryName");
@@ -73,7 +70,6 @@ public class FacilityTypeApprovedProductRepositoryTest extends
     product.setActive(true);
     product.setFullSupply(true);
     product.setTracer(false);
-    productCategoryRepository.deleteAll();
     productCategory = new ProductCategory();
     productCategory.setCode("productCategoryCode");
     productCategory.setName("productCategoryName");
@@ -81,7 +77,6 @@ public class FacilityTypeApprovedProductRepositoryTest extends
     productCategoryRepository.save(productCategory);
     product.setProductCategory(productCategory);
     productRepository.save(product);
-    programProductRepository.deleteAll();
     programProduct = new ProgramProduct();
     programProduct.setProgram(program);
     programProduct.setProduct(product);

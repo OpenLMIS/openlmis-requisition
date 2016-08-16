@@ -1,4 +1,4 @@
-package org.openlmis.download;
+package org.openlmis.csv.generator;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,22 +30,6 @@ public class CsvGeneratorTest {
   private Facility facility = new Facility();
   private Program program = new Program();
   private User user = new User();
-
-  Order generateInstance() {
-    Order order = new Order();
-    order.setOrderCode("1t1t1t");
-    order.setQuotedCost(new BigDecimal("1.29"));
-    order.setStatus(OrderStatus.PICKING);
-    order.setProgram(program);
-    order.setCreatedBy(user);
-    order.setRequestingFacility(facility);
-    order.setReceivingFacility(facility);
-    order.setSupplyingFacility(facility);
-    LocalDateTime date = LocalDateTime.parse("1410-07-15T10:11:30");
-    order.setCreatedDate(date);
-
-    return order;
-  }
 
   /**Set up test.*/
   @Before
@@ -100,6 +84,22 @@ public class CsvGeneratorTest {
             + "Example fCode,1410-07-15T10:11:30,Example pName 2,2Q2Q2Q2,22222222\r\n"
             + "Example fCode,1410-07-15T10:11:30,Example pName 3,3Q3Q3Q3,33333333\r\n";
     Assert.assertEquals(exp, csv);
+  }
+
+  private Order generateInstance() {
+    Order order = new Order();
+    order.setOrderCode("1t1t1t");
+    order.setQuotedCost(new BigDecimal("1.29"));
+    order.setStatus(OrderStatus.PICKING);
+    order.setProgram(program);
+    order.setCreatedBy(user);
+    order.setRequestingFacility(facility);
+    order.setReceivingFacility(facility);
+    order.setSupplyingFacility(facility);
+    LocalDateTime date = LocalDateTime.parse("1410-07-15T10:11:30");
+    order.setCreatedDate(date);
+
+    return order;
   }
 
   private Set<OrderLine> generateOrderLines() {

@@ -1,9 +1,12 @@
 package org.openlmis.referencedata.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Period;
@@ -14,9 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
-
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -54,14 +54,8 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setEndDate(LocalDate.of(2016, 3, 2));
   }
 
-  @After
-  public void cleanup() {
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-  }
-
   @Test
-  public void testCreatePeriodsWithoutGap() throws JsonProcessingException {
+  public void testShouldCreatePeriodWithoutGap() {
     firstPeriod.setProcessingSchedule(schedule);
 
     restAssured.given()
@@ -87,11 +81,11 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Period.class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertNotNull(savedPeriod.getId());
+    assertNotNull(savedPeriod.getId());
   }
 
   @Test
-  public void testCreatePeriodsWithAGap() throws JsonProcessingException {
+  public void testShouldCreatePeriodWithAGap() {
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
     scheduleRepository.save(schedule);
@@ -124,7 +118,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testGetTotalDifference() {
+  public void testShouldDisplayTotalDifference() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -142,7 +136,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchPeriods() {
+  public void testShouldFindPeriods() {
     firstPeriod.setProcessingSchedule(schedule);
     firstPeriod.setStartDate(LocalDate.now().plusDays(1));
     periodRepository.save(firstPeriod);
@@ -161,13 +155,14 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(Period[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(2, response.length);
     for ( Period period : response ) {
-      Assert.assertEquals(
+      assertEquals(
           period.getProcessingSchedule().getId(),
           firstPeriod.getProcessingSchedule().getId());
-      Assert.assertTrue(period.getStartDate().isBefore(firstPeriod.getStartDate()));
     }
+    assertTrue(response[1].getStartDate().isBefore(firstPeriod.getStartDate()));
+    assertTrue(response[0].getStartDate().isEqual(firstPeriod.getStartDate()));
   }
 
   @Test
@@ -184,7 +179,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(204);
 
-    Assert.assertFalse(periodRepository.exists(firstPeriod.getId()));
+    assertFalse(periodRepository.exists(firstPeriod.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -40,10 +40,6 @@ public class SupervisoryNodeRepositoryIntegrationTest extends
 
   @Before
   public void setUp() {
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-
     String code = "code";
 
     geographicLevel.setCode(code);

@@ -1,10 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.Product;
@@ -92,23 +91,8 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     requisitionLine = generateRequisitionLine();
   }
 
-  @After
-  public void cleanUp() {
-    requisitionLineRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-  }
-
   @Test
-  public void testSearchRequisitionLines() {
+  public void testShouldFindRequisitionLines() {
     RequisitionLine[] response = restAssured.given()
         .queryParam(REQUISITION, requisition.getId())
         .queryParam(PRODUCT, product.getId())
@@ -120,24 +104,24 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
         .extract().as(RequisitionLine[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( RequisitionLine responseRequisitionLine : response ) {
-      Assert.assertEquals(
+      assertEquals(
           requisition.getId(),
           responseRequisitionLine.getRequisition().getId());
-      Assert.assertEquals(
+      assertEquals(
           product.getId(),
           responseRequisitionLine.getProduct().getId());
-      Assert.assertEquals(
+      assertEquals(
           BEGINNING_BALANCE,
           responseRequisitionLine.getBeginningBalance());
-      Assert.assertEquals(
+      assertEquals(
           TOTAL_RECEIVED_QUANTITY,
           responseRequisitionLine.getTotalReceivedQuantity());
-      Assert.assertEquals(
+      assertEquals(
           TOTAL_LOSSES_AND_ADJUSTMENTS,
           responseRequisitionLine.getTotalLossesAndAdjustments());
-      Assert.assertEquals(
+      assertEquals(
           requisitionLine.getId(),
           responseRequisitionLine.getId());
     }

@@ -1,7 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,14 +49,8 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
     periodRepository.save(period);
   }
 
-  @After
-  public void cleanup() {
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-  }
-
   @Test
-  public void testGetTotalDifference() {
+  public void testShouldDisplayTotalDifference() {
     String response = restAssured.given()
         .pathParam("id", schedule.getId())
         .queryParam("access_token", getToken())

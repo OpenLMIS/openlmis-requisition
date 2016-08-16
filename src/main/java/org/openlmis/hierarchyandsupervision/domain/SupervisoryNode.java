@@ -1,5 +1,7 @@
 package org.openlmis.hierarchyandsupervision.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,12 +42,18 @@ public class SupervisoryNode extends BaseEntity {
   @Setter
   private Facility facility;
 
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "parentId")
   @ManyToOne
   @JoinColumn(name = "parentid")
   @Getter
   @Setter
   private SupervisoryNode parentNode;
 
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "childNodesSetId")
   @OneToMany(mappedBy = "parentNode")
   @Getter
   @Setter

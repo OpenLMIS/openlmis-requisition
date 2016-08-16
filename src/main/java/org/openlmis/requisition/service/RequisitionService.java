@@ -25,13 +25,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
 @Service
 public class RequisitionService {
   private static final String REQUISITION_NULL_MESSAGE = "requisition cannot be null";
@@ -54,9 +47,6 @@ public class RequisitionService {
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
-
-  @PersistenceContext
-  private EntityManager entityManager;
 
   /**
    * Initiated given requisition if possible.
@@ -132,7 +122,6 @@ public class RequisitionService {
       LOGGER.debug("Requisition deleted");
       return true;
     }
-
     return false;
   }
 
@@ -168,7 +157,7 @@ public class RequisitionService {
    * @param requisitionId UUID of Requisition to be rejected.
    * @throws RequisitionException Exception thrown when it is not possible to reject a requisition.
    */
-  public void reject(UUID requisitionId) throws RequisitionException {
+  public Requisition reject(UUID requisitionId) throws RequisitionException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -179,7 +168,7 @@ public class RequisitionService {
     } else {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
-      requisitionRepository.save(requisition);
+      return requisitionRepository.save(requisition);
     }
   }
 
@@ -192,39 +181,9 @@ public class RequisitionService {
                                               Period processingPeriod,
                                               SupervisoryNode supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    Root<Requisition> root = query.from(Requisition.class);
-    Predicate predicate = builder.conjunction();
-    if (facility != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
-    }
-    if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("program"), program));
-    }
-    if (createdDateFrom != null) {
-      predicate = builder.and(predicate,
-          builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
-    }
-    if (createdDateTo != null) {
-      predicate = builder.and(predicate,
-          builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
-    }
-    if (processingPeriod != null) {
-      predicate = builder.and(predicate,
-              builder.equal(root.get("processingPeriod"), processingPeriod));
-    }
-    if (supervisoryNode != null) {
-      predicate = builder.and(predicate,
-              builder.equal(root.get("supervisoryNode"), supervisoryNode));
-    }
-    if (requisitionStatus != null) {
-      predicate = builder.and(predicate,
-              builder.equal(root.get("status"), requisitionStatus));
-    }
-
-    query.where(predicate);
-    return entityManager.createQuery(query).getResultList();
+    return requisitionRepository.searchRequisitions(
+            facility, program, createdDateFrom,
+            createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
   }
 
   /**
@@ -293,15 +252,21 @@ public class RequisitionService {
     }
   }
 
+
   /**
-   * Releasing the Requisitions.
+   * Releases the list of given requisitions as order.
+   *
+   * @param requisitionList list of requisitions to be released as order
+   * @return list of released requisitions
    */
-  public void releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+    List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
       loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-      requisitionRepository.save(loadedRequisition);
+      releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
     }
+    return releasedRequisitions;
   }
 
   private Requisition save(Requisition requisition) throws RequisitionException {

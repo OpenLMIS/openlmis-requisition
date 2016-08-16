@@ -1,8 +1,6 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.product.domain.Product;
@@ -17,7 +15,9 @@ import org.springframework.http.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -47,13 +47,6 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     }
   }
 
-  @After
-  public void cleanup() {
-    stockRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-  }
-
   @Test
   public void testShouldDeleteStock() {
 
@@ -68,7 +61,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(204);
 
-    Assert.assertFalse(stockRepository.exists(stock.getId()));
+    assertFalse(stockRepository.exists(stock.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -91,7 +84,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testSearchStocks() {
+  public void testShouldFindStocks() {
     Stock[] response = restAssured.given()
             .queryParam("product", stocks.get(0).getProduct().getId())
             .queryParam("access_token", getToken())
@@ -102,9 +95,9 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
             .extract().as(Stock[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( Stock stock : response ) {
-      Assert.assertEquals(
+      assertEquals(
               stock.getProduct().getId(),
               stocks.get(0).getProduct().getId());
     }

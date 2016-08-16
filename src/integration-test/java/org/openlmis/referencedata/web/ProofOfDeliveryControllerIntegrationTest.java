@@ -2,8 +2,6 @@ package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -58,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -151,7 +150,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     requisition1.setStatus(RequisitionStatus.RELEASED);
     requisitionRepository.save(requisition1);
 
-    Assert.assertEquals(1, userRepository.count());
+    assertEquals(1, userRepository.count());
     User user = userRepository.findAll().iterator().next();
 
     OrderLine orderLine1 = new OrderLine();
@@ -219,13 +218,13 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     orderLine1.setOrder(order1);
     orderLine1.setProduct(product1);
-    orderLine1.setOrderedQuantity(new Long(50));
+    orderLine1.setOrderedQuantity(50L);
     orderLine1.setFilledQuantity(50L);
     orderLineRepository.save(orderLine1);
 
     orderLine2.setOrder(order1);
     orderLine2.setProduct(product2);
-    orderLine2.setOrderedQuantity(new Long(20));
+    orderLine2.setOrderedQuantity(20L);
     orderLine2.setFilledQuantity(15L);
     orderLineRepository.save(orderLine2);
 
@@ -328,27 +327,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     return product1;
   }
 
-  /**
-   * Cleanup the test environment.
-   */
-  @After
-  public void cleanUp() {
-    proofOfDeliveryLineRepository.deleteAll();
-    proofOfDeliveryRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    facilityRepository.deleteAll();
-    programRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-  }
-
   @Test
-  public void testPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
+  public void testShouldPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
     FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
     MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",

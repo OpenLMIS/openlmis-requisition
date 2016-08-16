@@ -19,7 +19,6 @@ public class ProductRepositoryIntegrationTest extends BaseCrudRepositoryIntegrat
   }
 
   Product generateInstance() {
-    productCategoryRepository.deleteAll();
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode("PC1");
     productCategory1.setName("PC1 name");

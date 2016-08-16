@@ -1,9 +1,6 @@
 package org.openlmis.referencedata.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -43,7 +40,10 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -146,29 +146,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     addOrderLine(order, product2, 10L, 15L);
   }
 
-  /**
-   * Cleanup the test environment.
-   */
-  @After
-  public void cleanUp() {
-    user.setHomeFacility(null);
-    userRepository.save(user);
-    orderLineRepository.deleteAll();
-    orderRepository.deleteAll();
-    requisitionRepository.deleteAll();
-    programRepository.deleteAll();
-    periodRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    productRepository.deleteAll();
-    productCategoryRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-  }
-
   @Test
-  public void testOrderList() throws JsonProcessingException {
+  public void testShouldFindOrdersFilledByFacility() {
     Order[] response = restAssured.given()
         .queryParam("access_token", getToken())
         .pathParam("id", user.getHomeFacility().getId())
@@ -184,15 +163,15 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     Iterable<Order> orderList = Arrays.asList(response);
     Iterator<Order> orderIterator = orderList.iterator();
-    Assert.assertTrue(orderIterator.hasNext());
+    assertTrue(orderIterator.hasNext());
     Order testOrder = orderIterator.next();
-    Assert.assertFalse(orderIterator.hasNext());
-    Assert.assertEquals(testOrder.getId(), order.getId());
-    Assert.assertEquals(testOrder.getRequisition().getId(), order.getRequisition().getId());
-    Assert.assertEquals(testOrder.getCreatedBy().getId(), order.getCreatedBy().getId());
-    Assert.assertEquals(testOrder.getOrderCode(), order.getOrderCode());
-    Assert.assertEquals(testOrder.getOrderLines().size(), 2);
-    Assert.assertEquals(testOrder.getCreatedDate(), order.getCreatedDate());
+    assertFalse(orderIterator.hasNext());
+    assertEquals(testOrder.getId(), order.getId());
+    assertEquals(testOrder.getRequisition().getId(), order.getRequisition().getId());
+    assertEquals(testOrder.getCreatedBy().getId(), order.getCreatedBy().getId());
+    assertEquals(testOrder.getOrderCode(), order.getOrderCode());
+    assertEquals(testOrder.getOrderLines().size(), 2);
+    assertEquals(testOrder.getCreatedDate(), order.getCreatedDate());
   }
 
   @Test
@@ -214,7 +193,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(204);
 
-    Assert.assertFalse(facilityRepository.exists(facility.getId()));
+    assertFalse(facilityRepository.exists(facility.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

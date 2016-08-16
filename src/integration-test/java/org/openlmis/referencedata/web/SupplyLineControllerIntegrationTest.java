@@ -1,10 +1,9 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -59,19 +58,8 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
     supplyLine = generateSupplyLine();
   }
 
-  @After
-  public void cleanup() {
-    supplyLineRepository.deleteAll();
-    supervisoryNodeRepository.deleteAll();
-    facilityRepository.deleteAll();
-    geographicZoneRepository.deleteAll();
-    geographicLevelRepository.deleteAll();
-    facilityTypeRepository.deleteAll();
-    programRepository.deleteAll();
-  }
-
   @Test
-  public void testSearchSupplyLines() {
+  public void testShouldFindSupplyLines() {
     SupplyLine[] response = restAssured.given()
         .queryParam("program", supplyLine.getProgram().getId())
         .queryParam("supervisoryNode", supplyLine.getSupervisoryNode().getId())
@@ -83,15 +71,15 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
         .extract().as(SupplyLine[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    Assert.assertEquals(1, response.length);
+    assertEquals(1, response.length);
     for ( SupplyLine responseSupplyLine : response ) {
-      Assert.assertEquals(
+      assertEquals(
           supplyLine.getProgram().getId(),
           responseSupplyLine.getProgram().getId());
-      Assert.assertEquals(
+      assertEquals(
           supplyLine.getSupervisoryNode().getId(),
           responseSupplyLine.getSupervisoryNode().getId());
-      Assert.assertEquals(
+      assertEquals(
           supplyLine.getId(),
           responseSupplyLine.getId());
     }
