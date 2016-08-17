@@ -1,7 +1,7 @@
-package org.openlmis.referencedata.repository;
+package org.openlmis.hierarchyandsupervision.repository;
 
-import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.custom.SupplyLineRepositoryCustom;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.repository.custom.SupplyLineRepositoryCustom;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;

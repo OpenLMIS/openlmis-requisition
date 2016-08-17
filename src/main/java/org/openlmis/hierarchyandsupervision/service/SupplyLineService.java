@@ -1,9 +1,9 @@
-package org.openlmis.referencedata.service;
+package org.openlmis.hierarchyandsupervision.service;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

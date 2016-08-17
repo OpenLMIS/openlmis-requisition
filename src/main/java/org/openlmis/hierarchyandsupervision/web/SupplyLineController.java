@@ -1,10 +1,10 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
+import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
-import org.openlmis.referencedata.service.SupplyLineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

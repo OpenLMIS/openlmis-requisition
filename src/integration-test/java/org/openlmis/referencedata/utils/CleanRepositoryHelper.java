@@ -11,7 +11,7 @@ import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
-import org.openlmis.referencedata.repository.CommentRepository;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.referencedata.repository.FacilityOperatorRepository;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeApprovedProductRepository;
@@ -23,7 +23,7 @@ import org.openlmis.referencedata.repository.ProgramProductRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.referencedata.repository.StockRepository;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.openlmis.reporting.repository.TemplateParameterRepository;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
