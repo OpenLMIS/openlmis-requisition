@@ -1,11 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,12 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
@@ -175,11 +176,49 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", firstPeriod.getId())
           .when()
-          .delete(DELETE_URL)
+          .delete(DELETE_OR_GET_URL)
           .then()
           .statusCode(204);
 
     assertFalse(periodRepository.exists(firstPeriod.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllPeriods() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+
+    Period[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Period[].class);
+
+    Iterable<Period> periods = Arrays.asList(response);
+    assertTrue(periods.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenPeriod() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+
+    Period response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstPeriod.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Period.class);
+
+    assertTrue(periodRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -7,6 +7,7 @@ import org.openlmis.referencedata.service.StockService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,13 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.UUID;
 
 @RepositoryRestController
 public class StockController {
-  private Logger logger = LoggerFactory.getLogger(ScheduleController.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StockController.class);
 
   @Autowired
   private StockService stockService;
@@ -40,7 +43,7 @@ public class StockController {
     if (stock == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
-      logger.debug("Creating new stock");
+      LOGGER.debug("Creating new stock");
       // Ignore provided id
       stock.setId(null);
       Stock newStock = stockRepository.save(stock);
@@ -49,19 +52,55 @@ public class StockController {
   }
 
   /**
+   * Get all stocks.
+   *
+   * @return Stocks.
+   */
+  @RequestMapping(value = "/stocks", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllStocks() {
+    Iterable<Stock> stocks = stockRepository.findAll();
+    if (stocks == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(stocks, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen stock.
+   *
+   * @param stockId UUID of stock which we want to get
+   * @return Stock.
+   */
+  @RequestMapping(value = "/stocks/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getStock(@PathVariable("id") UUID stockId) {
+    Stock stock = stockRepository.findOne(stockId);
+    if (stock == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(stock, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting stock.
    *
-   * @param stockId UUID of stock whose we want to delete
+   * @param stockId UUID of stock which we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/stocks/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteStock(@PathVariable("id") UUID stockId) {
     Stock stock = stockRepository.findOne(stockId);
     if (stock == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      logger.debug("Deleting choosen stock");
-      stockRepository.delete(stock);
+      try {
+        stockRepository.delete(stock);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Stock cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
       return new ResponseEntity<Stock>(HttpStatus.NO_CONTENT);
     }
   }

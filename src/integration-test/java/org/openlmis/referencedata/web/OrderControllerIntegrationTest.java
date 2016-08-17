@@ -1,11 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,14 +41,20 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Arrays;
 import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
@@ -515,7 +515,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", firstOrder.getId())
           .when()
-          .delete(DELETE_URL)
+          .delete(DELETE_OR_GET_URL)
           .then()
           .statusCode(204);
 
@@ -537,6 +537,40 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllOrders() {
+
+    Order[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Order[].class);
+
+    Iterable<Order> orders = Arrays.asList(response);
+    assertTrue(orders.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenOrder() {
+
+    Order response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Order.class);
+
+    assertTrue(orderRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -25,7 +25,8 @@ import java.util.UUID;
 
 @RepositoryRestController
 public class FacilityController {
-  private static final Logger logger = LoggerFactory.getLogger(FacilityController.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(FacilityController.class);
 
   @Autowired
   private ProgramRepository programRepository;
@@ -47,7 +48,7 @@ public class FacilityController {
     if (facility == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
-      logger.debug("Creating new facility");
+      LOGGER.debug("Creating new facility");
       // Ignore provided id
       facility.setId(null);
       Facility newFacility = facilityRepository.save(facility);
@@ -56,21 +57,57 @@ public class FacilityController {
   }
 
   /**
+   * Get all facilities.
+   *
+   * @return Facilities.
+   */
+  @RequestMapping(value = "/facilities", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllFacilities() {
+    Iterable<Facility> facilities = facilityRepository.findAll();
+    if (facilities == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(facilities, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen facility.
+   *
+   * @param facilityId UUID of facility which we want to get
+   * @return Facility.
+   */
+  @RequestMapping(value = "/facilities/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getFacility(@PathVariable("id") UUID facilityId) {
+    Facility facility = facilityRepository.findOne(facilityId);
+    if (facility == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(facility, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting facility.
    *
-   * @param facilityId UUID of facility whose we want to delete
+   * @param facilityId UUID of facility which we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/facilities/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteFacility(@PathVariable("id") UUID facilityId) {
     Facility facility = facilityRepository.findOne(facilityId);
-    try {
-      facilityRepository.delete(facility);
-    } catch (DataIntegrityViolationException ex) {
-      logger.debug("Facility cannot be deleted because of existing dependencies", ex);
-      return new ResponseEntity(HttpStatus.CONFLICT);
+    if (facility == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      try {
+        facilityRepository.delete(facility);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Facility cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<Facility>(HttpStatus.NO_CONTENT);
     }
-    return new ResponseEntity<Facility>(HttpStatus.NO_CONTENT);
   }
 
   /**

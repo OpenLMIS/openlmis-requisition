@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,8 @@ import java.util.UUID;
 
 @RepositoryRestController
 public class PeriodController {
-  private Logger logger = LoggerFactory.getLogger(PeriodController.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PeriodController.class);
 
   @Autowired @Qualifier("beforeSavePeriodValidator")
   private PeriodValidator validator;
@@ -73,7 +75,7 @@ public class PeriodController {
   @RequestMapping(value = "/periods", method = RequestMethod.POST)
   public ResponseEntity<?> createPeriod(@RequestBody Period period,
                                         BindingResult bindingResult) {
-    logger.debug("Creating new period");
+    LOGGER.debug("Creating new period");
     validator.validate(period, bindingResult);
     if (bindingResult.getErrorCount() == 0) {
       Period newPeriod = periodRepository.save(period);
@@ -94,19 +96,55 @@ public class PeriodController {
   }
 
   /**
+   * Get all periods.
+   *
+   * @return Periods.
+   */
+  @RequestMapping(value = "/periods", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllPeriods() {
+    Iterable<Period> periods = periodRepository.findAll();
+    if (periods == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(periods, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen period.
+   *
+   * @param periodId UUID of period which we want to get
+   * @return Period.
+   */
+  @RequestMapping(value = "/periods/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getPeriod(@PathVariable("id") UUID periodId) {
+    Period period = periodRepository.findOne(periodId);
+    if (period == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(period, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting period.
    *
-   * @param periodId UUID of period whose we want to delete
+   * @param periodId UUID of period which we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/periods/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deletePeriod(@PathVariable("id") UUID periodId) {
     Period period = periodRepository.findOne(periodId);
     if (period == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      logger.debug("Deleting choosen period");
-      periodRepository.delete(period);
+      try {
+        periodRepository.delete(period);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Period cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
       return new ResponseEntity<Period>(HttpStatus.NO_CONTENT);
     }
   }
@@ -127,7 +165,7 @@ public class PeriodController {
     String days = Integer.toString(total.getDays() + 1);
 
     String[] msgArgs = {months, days};
-    logger.debug("Returning total days and months of schedule periods");
+    LOGGER.debug("Returning total days and months of schedule periods");
 
     return messageSource.getMessage("requisition.message.totalPeriod", msgArgs, LocaleContextHolder
             .getLocale());

@@ -1,8 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,11 +8,20 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
 
@@ -55,6 +61,73 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           requisitionTemplate.getId(),
           responseRequisitionTemplate.getId());
     }
+  }
+
+  @Test
+  public void testShouldDeleteRequisitionTemplate() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionTemplate.getId())
+          .when()
+          .delete(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(requisitionTemplateRepository.exists(requisitionTemplate.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateRequisitionTemplate() {
+
+    requisitionTemplateRepository.delete(requisitionTemplate);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(requisitionTemplate)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllRequisitionTemplates() {
+
+    RequisitionTemplate[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionTemplate[].class);
+
+    Iterable<RequisitionTemplate> requisitionTemplates = Arrays.asList(response);
+    assertTrue(requisitionTemplates.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenRequisitionTemplate() {
+
+    RequisitionTemplate response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionTemplate.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionTemplate.class);
+
+    assertTrue(requisitionTemplateRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private RequisitionTemplate generateRequisitionTemplate() {

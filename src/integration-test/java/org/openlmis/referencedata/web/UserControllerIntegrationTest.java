@@ -1,8 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,14 +14,23 @@ import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/users";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String USERNAME = "username";
   private static final String FIRST_NAME = "firstName";
@@ -99,6 +105,78 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
               user.getVerified(),
               users.get(0).getVerified());
     }
+  }
+
+  @Test
+  public void testShouldDeleteUser() {
+
+    User user = users.get(4);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", user.getId())
+          .when()
+          .delete(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(userRepository.exists(user.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateUser() {
+
+    User user = users.get(4);
+    userRepository.delete(user);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(user)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllUsers() {
+
+    User[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(User[].class);
+
+    Iterable<User> users = Arrays.asList(response);
+    assertTrue(users.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenUser() {
+
+    User user = users.get(4);
+
+    User response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", user.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(User.class);
+
+    assertTrue(userRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private User generateUser() {

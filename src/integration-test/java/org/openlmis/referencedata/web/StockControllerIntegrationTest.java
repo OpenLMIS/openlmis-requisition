@@ -13,16 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/stocks";
-  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
@@ -57,7 +59,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", stock.getId())
           .when()
-          .delete(DELETE_URL)
+          .delete(DELETE_OR_GET_URL)
           .then()
           .statusCode(204);
 
@@ -80,6 +82,42 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllStocks() {
+
+    Stock[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Stock[].class);
+
+    Iterable<Stock> stocks = Arrays.asList(response);
+    assertTrue(stocks.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenStock() {
+
+    Stock stock = stocks.get(4);
+
+    Stock response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Stock.class);
+
+    assertTrue(stockRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

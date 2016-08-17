@@ -12,6 +12,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,8 @@ import java.util.UUID;
 
 @RepositoryRestController
 public class OrderController {
-  Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
   @Autowired
   private OrderRepository orderRepository;
@@ -54,11 +56,43 @@ public class OrderController {
     if (order == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
-      logger.debug("Creating new order");
+      LOGGER.debug("Creating new order");
       // Ignore provided id
       order.setId(null);
       Order newOrder = orderRepository.save(order);
       return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
+    }
+  }
+
+  /**
+   * Get all orders.
+   *
+   * @return Orders.
+   */
+  @RequestMapping(value = "/orders", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllOrders() {
+    Iterable<Order> orders = orderRepository.findAll();
+    if (orders == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(orders, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen order.
+   *
+   * @param orderId UUID of order whose we want to get
+   * @return Order.
+   */
+  @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getOrder(@PathVariable("id") UUID orderId) {
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(order, HttpStatus.OK);
     }
   }
 
@@ -72,10 +106,14 @@ public class OrderController {
   public ResponseEntity<?> deleteOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      logger.debug("Deleting choosen order");
-      orderRepository.delete(order);
+      try {
+        orderRepository.delete(order);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Order cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
       return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
     }
   }
@@ -115,7 +153,7 @@ public class OrderController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    logger.debug("Finalizing the order");
+    LOGGER.debug("Finalizing the order");
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
 
@@ -139,7 +177,7 @@ public class OrderController {
       try {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order does not exist.");
       } catch (IOException ex) {
-        logger.info("Error sending error message to client.", ex);
+        LOGGER.info("Error sending error message to client.", ex);
       }
     }
     String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
@@ -150,7 +188,7 @@ public class OrderController {
       try {
         orderService.orderToPdf(order, columns, response.getOutputStream());
       } catch (IOException ex) {
-        logger.debug("Error getting response output stream.", ex);
+        LOGGER.debug("Error getting response output stream.", ex);
       }
     } else {
       response.setContentType("text/csv");
@@ -162,7 +200,7 @@ public class OrderController {
         IOUtils.copy(input, response.getOutputStream());
         response.flushBuffer();
       } catch (IOException ex) {
-        logger.debug("Error writing csv file to output stream.", ex);
+        LOGGER.debug("Error writing csv file to output stream.", ex);
       }
     }
   }

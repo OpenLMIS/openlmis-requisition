@@ -580,6 +580,20 @@ resourceTypes:
 
 /orders:
     displayName: Order
+    get:
+        is: [ secured ]
+        description: Get all orders.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     post:
         is: [ secured ]
         description: Creates new order.
@@ -614,6 +628,20 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen order.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -746,6 +774,20 @@ resourceTypes:
 
 /periods:
     displayName: Period
+    get:
+        is: [ secured ]
+        description: Get all periods.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     post:
         is: [ secured ]
         description: Creates given period if possible.
@@ -780,6 +822,20 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen period.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -922,6 +978,20 @@ resourceTypes:
                          application/json:
 /requisitions:
     displayName: Requisition
+    get:
+        is: [ secured ]
+        description: Get all requisitions.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     /submitted:
         get:
             is: [ secured ]
@@ -953,6 +1023,20 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen requisition.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -1198,6 +1282,71 @@ resourceTypes:
                       X-XSS-Protection:
 
 /requisitionLines:
+    get:
+        is: [ secured ]
+        description: Get all requisitionLines.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new requisitionLine.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen requisitionLine.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen requisitionLine.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /search:
         get:
             is: [ secured ]
@@ -1233,6 +1382,71 @@ resourceTypes:
 
 /requisitionTemplates:
     displayName: Requisition Template
+    get:
+        is: [ secured ]
+        description: Get all requisitionTemplates.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new requisitionTemplate.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen requisitionTemplate.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen requisitionTemplate.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /search:
         get:
             is: [ secured ]
@@ -1262,9 +1476,23 @@ resourceTypes:
 
 /schedules:
     displayName: Schedule
+    get:
+        is: [ secured ]
+        description: Get all schedules.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates schedule.
+        description: Creates new schedule.
         body:
             application/json:
         responses:
@@ -1296,6 +1524,20 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen schedule.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -1332,6 +1574,71 @@ resourceTypes:
 
 /supplyLines:
     displayName: Supply Lines
+    get:
+        is: [ secured ]
+        description: Get all supplyLines.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new supplyLine.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen supplyLine.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen supplyLine.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /search:
         get:
             is: [ secured ]
@@ -1367,6 +1674,71 @@ resourceTypes:
 
 /users:
     displayName: User
+    get:
+        is: [ secured ]
+        description: Get all users.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new user.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen user.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen user.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
     /search:
             get:
                 is: [ secured ]
@@ -1427,6 +1799,20 @@ resourceTypes:
 
 /facilities:
     displayName: Facility
+    get:
+        is: [ secured ]
+        description: Get all facilities.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     post:
         is: [ secured ]
         description: Creates new facility.
@@ -1461,6 +1847,20 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen facility.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -1527,6 +1927,38 @@ resourceTypes:
 
 /programs:
     displayName: Program
+    get:
+        is: [ secured ]
+        description: Get all programs.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new program.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
     /update:
         put:
             is: [ secured ]
@@ -1544,12 +1976,59 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen program.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen program.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /stocks:
     displayName: Stock
+    get:
+        is: [ secured ]
+        description: Get all stocks.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates stock.
+        description: Creates new stock.
         body:
             application/json:
         responses:
@@ -1581,6 +2060,20 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get choosen stock.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:

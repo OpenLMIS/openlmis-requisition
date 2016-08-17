@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
@@ -11,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,8 @@ import java.util.UUID;
 
 @RepositoryRestController
 public class ScheduleController {
-  private Logger logger = LoggerFactory.getLogger(ScheduleController.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleController.class);
 
   @Autowired
   private ScheduleRepository scheduleRepository;
@@ -49,7 +50,7 @@ public class ScheduleController {
     if (schedule == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
-      logger.debug("Creating new schedule");
+      LOGGER.debug("Creating new schedule");
       // Ignore provided id
       schedule.setId(null);
       Schedule newSchedule = scheduleRepository.save(schedule);
@@ -58,20 +59,56 @@ public class ScheduleController {
   }
 
   /**
+   * Get all schedules.
+   *
+   * @return Schedules.
+   */
+  @RequestMapping(value = "/schedules", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllSchedules() {
+    Iterable<Schedule> schedules = scheduleRepository.findAll();
+    if (schedules == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(schedules, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen schedule.
+   *
+   * @param scheduleId UUID of schedule which we want to get
+   * @return Schedule.
+   */
+  @RequestMapping(value = "/schedules/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getSchedule(@PathVariable("id") UUID scheduleId) {
+    Schedule schedule = scheduleRepository.findOne(scheduleId);
+    if (schedule == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(schedule, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting schedule.
    *
-   * @param scheduleId UUID of schedule whose we want to delete
+   * @param scheduleId UUID of schedule which we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/schedules/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteSchedule(@PathVariable("id") UUID scheduleId) {
     Schedule schedule = scheduleRepository.findOne(scheduleId);
     if (schedule == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      logger.debug("Deleting choosen schedule");
-      scheduleRepository.delete(schedule);
-      return new ResponseEntity<Stock>(HttpStatus.NO_CONTENT);
+      try {
+        scheduleRepository.delete(schedule);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Schedule cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<Schedule>(HttpStatus.NO_CONTENT);
     }
   }
 
@@ -98,7 +135,7 @@ public class ScheduleController {
       String days = Integer.toString(total.getDays());
 
       String[] msgArgs = {months, days};
-      logger.debug("Returning total days and months of schedule periods");
+      LOGGER.debug("Returning total days and months of schedule periods");
 
       return messageSource.getMessage("requisition.message.totalPeriod", msgArgs,
               LocaleContextHolder.getLocale());

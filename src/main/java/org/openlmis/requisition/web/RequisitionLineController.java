@@ -3,22 +3,108 @@ package org.openlmis.requisition.web;
 import org.openlmis.product.domain.Product;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.RequisitionLineService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
+import java.util.UUID;
 
 @RepositoryRestController
 public class RequisitionLineController {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineController.class);
+
   @Autowired
   private RequisitionLineService requisitionLineService;
+
+  @Autowired
+  private RequisitionLineRepository requisitionLineRepository;
+
+  /**
+   * Allows creating new requisitionLines.
+   *
+   * @param requisitionLine A requisitionLine bound to the request body
+   * @return ResponseEntity containing the created requisitionLine
+   */
+  @RequestMapping(value = "/requisitionLines", method = RequestMethod.POST)
+  public ResponseEntity<?> createRequisitionLine(@RequestBody RequisitionLine requisitionLine) {
+    if (requisitionLine == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Creating new requisitionLine");
+      // Ignore provided id
+      requisitionLine.setId(null);
+      RequisitionLine newRequisitionLine = requisitionLineRepository.save(requisitionLine);
+      return new ResponseEntity<RequisitionLine>(newRequisitionLine, HttpStatus.CREATED);
+    }
+  }
+
+  /**
+   * Get all requisitionLines.
+   *
+   * @return RequisitionLines.
+   */
+  @RequestMapping(value = "/requisitionLines", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllRequisitionLines() {
+    Iterable<RequisitionLine> requisitionLines = requisitionLineRepository.findAll();
+    if (requisitionLines == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(requisitionLines, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen requisitionLine.
+   *
+   * @param requisitionLineId UUID of requisitionLine which we want to get
+   * @return RequisitionLine.
+   */
+  @RequestMapping(value = "/requisitionLines/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getRequisitionLine(@PathVariable("id") UUID requisitionLineId) {
+    RequisitionLine requisitionLine = requisitionLineRepository.findOne(requisitionLineId);
+    if (requisitionLine == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(requisitionLine, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Allows deleting requisitionLine.
+   *
+   * @param requisitionLineId UUID of requisitionLine which we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/requisitionLines/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteRequisitionLine(@PathVariable("id") UUID requisitionLineId) {
+    RequisitionLine requisitionLine = requisitionLineRepository.findOne(requisitionLineId);
+    if (requisitionLine == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      try {
+        requisitionLineRepository.delete(requisitionLine);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("RequisitionLine cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<RequisitionLine>(HttpStatus.NO_CONTENT);
+    }
+  }
 
   /**
    * Returns all requisition lines with matched parameters.

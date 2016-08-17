@@ -1,7 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.Comment;
@@ -38,16 +36,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.validation.Valid;
+
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RepositoryRestController
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionController {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
@@ -125,6 +126,38 @@ public class RequisitionController {
     } catch (RequisitionException ex) {
       LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Get all requisitions.
+   *
+   * @return Requisitions.
+   */
+  @RequestMapping(value = "/requisitions", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllRequisitions() {
+    Iterable<Requisition> requisitions = requisitionRepository.findAll();
+    if (requisitions == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(requisitions, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen requisition.
+   *
+   * @param requisitionId UUID of requisition whose we want to get
+   * @return Requisition.
+   */
+  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(requisition, HttpStatus.OK);
     }
   }
 

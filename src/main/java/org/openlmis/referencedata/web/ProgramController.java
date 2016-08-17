@@ -6,12 +6,17 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.UUID;
 
 @RepositoryRestController
 public class ProgramController {
@@ -20,6 +25,79 @@ public class ProgramController {
 
   @Autowired
   private ProgramRepository programRepository;
+
+  /**
+   * Allows creating new programs.
+   *
+   * @param program A program bound to the request body
+   * @return ResponseEntity containing the created program
+   */
+  @RequestMapping(value = "/programs", method = RequestMethod.POST)
+  public ResponseEntity<?> createProgram(@RequestBody Program program) {
+    if (program == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Creating new program");
+      // Ignore provided id
+      program.setId(null);
+      Program newProgram = programRepository.save(program);
+      return new ResponseEntity<Program>(newProgram, HttpStatus.CREATED);
+    }
+  }
+
+  /**
+   * Get all programs.
+   *
+   * @return Programs.
+   */
+  @RequestMapping(value = "/programs", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllPrograms() {
+    Iterable<Program> programs = programRepository.findAll();
+    if (programs == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(programs, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen program.
+   *
+   * @param programId UUID of program which we want to get
+   * @return Program.
+   */
+  @RequestMapping(value = "/programs/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getChoosenProgram(@PathVariable("id") UUID programId) {
+    Program program = programRepository.findOne(programId);
+    if (program == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(program, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Allows deleting program.
+   *
+   * @param programId UUID of program which we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/programs/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteProgram(@PathVariable("id") UUID programId) {
+    Program program = programRepository.findOne(programId);
+    if (program == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      try {
+        programRepository.delete(program);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Program cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<Program>(HttpStatus.NO_CONTENT);
+    }
+  }
 
   /**
    * Updating Program code and name.

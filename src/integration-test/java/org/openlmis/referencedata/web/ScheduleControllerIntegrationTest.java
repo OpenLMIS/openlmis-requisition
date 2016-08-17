@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/schedules";
-  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String ACCESS_TOKEN = "access_token";
 
@@ -74,7 +75,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", schedule.getId())
           .when()
-          .delete(DELETE_URL)
+          .delete(DELETE_OR_GET_URL)
           .then()
           .statusCode(204);
 
@@ -97,6 +98,40 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllSchedules() {
+
+    Schedule[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Schedule[].class);
+
+    Iterable<Schedule> schedules = Arrays.asList(response);
+    assertTrue(schedules.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenSchedule() {
+
+    Schedule response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", schedule.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Schedule.class);
+
+    assertTrue(scheduleRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/facilities";
-  private static final String DELETE_URL = RESOURCE_URL + "/{id}";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
@@ -189,7 +189,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", facility.getId())
           .when()
-          .delete(DELETE_URL)
+          .delete(DELETE_OR_GET_URL)
           .then()
           .statusCode(204);
 
@@ -217,6 +217,40 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllFacilities() {
+
+    Facility[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Facility[].class);
+
+    Iterable<Facility> facilities = Arrays.asList(response);
+    assertTrue(facilities.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenFacility() {
+
+    Facility response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Facility.class);
+
+    assertTrue(facilityRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

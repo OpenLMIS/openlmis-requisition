@@ -9,15 +9,20 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String ACCESS_TOKEN = "access_token";
-  private static final String UPDATE_URL = "/api/programs/update";
+  private static final String RESOURCE_URL = "/api/programs";
+  private static final String UPDATE_URL = RESOURCE_URL + "/update";
+  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
 
   @Autowired
   private ProgramRepository programRepository;
@@ -76,5 +81,72 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
+  public void testShouldDeleteProgram() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", program.getId())
+          .when()
+          .delete(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(programRepository.exists(program.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateProgram() {
+
+    programRepository.delete(program);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(program)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllProgram() {
+
+    Program[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Program[].class);
+
+    Iterable<Program> programs = Arrays.asList(response);
+    assertTrue(programs.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenProgram() {
+
+    Program response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", program.getId())
+          .when()
+          .get(DELETE_OR_GET_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Program.class);
+
+    assertTrue(programRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
