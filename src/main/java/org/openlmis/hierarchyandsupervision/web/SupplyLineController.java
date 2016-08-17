@@ -1,9 +1,9 @@
-package org.openlmis.referencedata.web;
+package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.service.SupplyLineService;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;

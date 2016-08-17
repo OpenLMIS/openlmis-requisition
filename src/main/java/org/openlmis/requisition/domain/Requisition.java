@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;

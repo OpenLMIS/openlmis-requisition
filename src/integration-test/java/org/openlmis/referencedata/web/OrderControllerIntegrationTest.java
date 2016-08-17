@@ -1,9 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,8 +9,10 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
@@ -27,7 +25,6 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.domain.SupplyLine;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -35,7 +32,6 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -46,6 +42,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {

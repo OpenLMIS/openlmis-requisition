@@ -1,8 +1,8 @@
-package org.openlmis.referencedata.repository.custom;
+package org.openlmis.hierarchyandsupervision.repository.custom;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 
 import java.util.List;
 

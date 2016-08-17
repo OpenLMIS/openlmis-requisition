@@ -5,13 +5,14 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
