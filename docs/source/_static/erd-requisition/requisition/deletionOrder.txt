@@ -1,0 +1,12 @@
+settings
+requisition_group_program_schedules
+requisition_lines
+proof_of_delivery_lines
+template_parameters
+columnsmap
+order_lines
+requisition_templates
+proof_of_deliveries
+orders
+requisitions
+templates

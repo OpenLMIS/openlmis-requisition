@@ -3,13 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: header.png
+    :align: center
+    :scale: 130%
+    :alt: OPENLMIS
+
 Welcome to OpenLMIS's documentation!
 ====================================
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+
+   erd/index
 
 
 
