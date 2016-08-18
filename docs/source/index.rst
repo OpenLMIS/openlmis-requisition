@@ -21,7 +21,6 @@ Contents:
    styleguide/index
    api/index
 
-
 Indices and tables
 ==================
 
