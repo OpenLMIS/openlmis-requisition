@@ -18,7 +18,7 @@ Contents:
 
    erd/index
    developer-docs/index
-
+   styleguide/index
 
 
 Indices and tables
