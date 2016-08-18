@@ -7,4 +7,4 @@ Style guide is available under the following link:
 
 .. raw:: html
 
-   <iframe style="width:100%;height:500px;" src="https://kpalkowska.github.io/#/" frameborder="0" allowfullscreen></iframe>
+   <iframe style="width:110%;height:500px;" src="https://kpalkowska.github.io/#/" frameborder="0" allowfullscreen></iframe>
