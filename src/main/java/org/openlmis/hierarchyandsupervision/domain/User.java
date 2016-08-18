@@ -38,7 +38,7 @@ public class User extends BaseEntity {
   @Getter
   @Setter
   private String firstName;
-  
+
   @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter
