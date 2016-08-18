@@ -53,6 +53,9 @@ public class Requisition extends BaseEntity {
       property = "requisitionLinesId")
   private Set<RequisitionLine> requisitionLines;
 
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "commentsId")
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
   @Getter
   private List<Comment> comments;
