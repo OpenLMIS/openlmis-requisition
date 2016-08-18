@@ -17,6 +17,7 @@ Contents:
    :maxdepth: 1
 
    erd/index
+   developer-docs/index
 
 
 
