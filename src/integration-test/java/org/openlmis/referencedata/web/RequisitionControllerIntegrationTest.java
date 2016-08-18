@@ -64,7 +64,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
   private static final String SUBMITTED_URL = RESOURCE_URL + "/submitted";
   private static final String AUTHORIZATION_URL = RESOURCE_URL + "/{id}/authorize";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
 
@@ -113,6 +113,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
+  private RequisitionLine requisitionLine = new RequisitionLine();
+  private Set<RequisitionLine> requisitionLines = new HashSet<>();
   private Requisition requisition = new Requisition();
   private Period period = new Period();
   private Product product = new Product();
@@ -187,7 +189,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisitionRepository.save(requisition);
 
-    RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setStockOnHand(1);
@@ -197,7 +198,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
     requisitionLines.add(requisitionLine);
 
     user = userRepository.findOne(INITIAL_USER_ID);
@@ -651,7 +651,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .delete(DELETE_OR_GET_URL)
+            .delete(ID_URL)
             .then()
             .statusCode(204);
 
@@ -670,7 +670,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .delete(DELETE_OR_GET_URL)
+            .delete(ID_URL)
             .then()
             .statusCode(400);
 
@@ -870,12 +870,49 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(Requisition.class);
 
     assertTrue(requisitionRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateRequisition() {
+
+    requisitionRepository.delete(requisition);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(requisition)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdateRequisition() {
+
+    requisition.setStatus(RequisitionStatus.APPROVED);
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertEquals(response.getStatus(), RequisitionStatus.APPROVED);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

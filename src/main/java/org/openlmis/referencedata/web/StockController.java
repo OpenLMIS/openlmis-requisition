@@ -68,6 +68,26 @@ public class StockController {
   }
 
   /**
+   * Allows updating stocks.
+   *
+   * @param stock A stock bound to the request body
+   * @param stockId UUID of stock which we want to update
+   * @return ResponseEntity containing the updated stock
+   */
+  @RequestMapping(value = "/stocks/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateStock(@RequestBody Stock stock,
+                                       @PathVariable("id") UUID stockId) {
+    Stock stockFromDb = stockRepository.findOne(stockId);
+    if (stockFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating stock");
+      Stock updatedStock = stockRepository.save(stock);
+      return new ResponseEntity<Stock>(updatedStock, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get choosen stock.
    *
    * @param stockId UUID of stock which we want to get

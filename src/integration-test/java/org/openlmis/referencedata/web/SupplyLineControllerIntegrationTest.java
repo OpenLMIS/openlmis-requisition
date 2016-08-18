@@ -32,7 +32,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
 
   private static final String RESOURCE_URL = "/api/supplyLines";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
@@ -100,7 +100,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", supplyLine.getId())
           .when()
-          .delete(DELETE_OR_GET_URL)
+          .delete(ID_URL)
           .then()
           .statusCode(204);
 
@@ -122,6 +122,26 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdateSupplyLine() {
+
+    supplyLine.setDescription("OpenLMIS");
+
+    SupplyLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", supplyLine.getId())
+          .body(supplyLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(SupplyLine.class);
+
+    assertEquals(response.getDescription(), "OpenLMIS");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -150,7 +170,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", supplyLine.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(SupplyLine.class);

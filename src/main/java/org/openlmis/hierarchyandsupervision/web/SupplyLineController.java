@@ -69,6 +69,26 @@ public class SupplyLineController {
   }
 
   /**
+   * Allows updating supplyLines.
+   *
+   * @param supplyLine A supplyLine bound to the request body
+   * @param supplyLineId UUID of supplyLine which we want to update
+   * @return ResponseEntity containing the updated supplyLine
+   */
+  @RequestMapping(value = "/supplyLines/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateSupplyLine(@RequestBody SupplyLine supplyLine,
+                                       @PathVariable("id") UUID supplyLineId) {
+    SupplyLine supplyLineFromDb = supplyLineRepository.findOne(supplyLineId);
+    if (supplyLineFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating supplyLine");
+      SupplyLine updatedSupplyLine = supplyLineRepository.save(supplyLine);
+      return new ResponseEntity<SupplyLine>(updatedSupplyLine, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get choosen supplyLine.
    *
    * @param supplyLineId UUID of supplyLine which we want to get

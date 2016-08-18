@@ -69,6 +69,26 @@ public class RequisitionLineController {
   }
 
   /**
+   * Allows updating requisitionLines.
+   *
+   * @param requisitionLine A requisitionLine bound to the request body
+   * @param requisitionLineId UUID of requisitionLine which we want to update
+   * @return ResponseEntity containing the updated requisitionLine
+   */
+  @RequestMapping(value = "/requisitionLines/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisitionLines(@RequestBody RequisitionLine requisitionLine,
+                                       @PathVariable("id") UUID requisitionLineId) {
+    RequisitionLine requisitionLineFromDb = requisitionLineRepository.findOne(requisitionLineId);
+    if (requisitionLineFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating requisitionLine");
+      RequisitionLine updatedRequisitionLine = requisitionLineRepository.save(requisitionLine);
+      return new ResponseEntity<RequisitionLine>(updatedRequisitionLine, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get choosen requisitionLine.
    *
    * @param requisitionLineId UUID of requisitionLine which we want to get

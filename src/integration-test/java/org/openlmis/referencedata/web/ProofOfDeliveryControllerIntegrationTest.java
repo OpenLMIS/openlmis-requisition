@@ -41,6 +41,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,11 +58,16 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/proofOfDeliveries/{id}/print";
+  private static final String RESOURCE_URL = "/api/proofOfDeliveries";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String PRINT_URL = RESOURCE_URL + "/{id}/print";
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";
@@ -341,10 +347,66 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .pathParam("id", proofOfDelivery.getId())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
-        .get(RESOURCE_URL)
+        .get(PRINT_URL)
         .then()
         .statusCode(200);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldDeleteProofOfDelivery() {
+
+    proofOfDeliveryLineRepository.deleteAll();
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(orderRepository.exists(proofOfDelivery.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldCreateProofOfDelivery() {
+
+    proofOfDeliveryLineRepository.deleteAll();
+    proofOfDeliveryRepository.delete(proofOfDelivery);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(proofOfDelivery)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdateProofOfDelivery() {
+
+    proofOfDelivery.setTotalReceivedPacks(2);
+
+    ProofOfDelivery response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .body(proofOfDelivery)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery.class);
+
+    assertTrue(response.getTotalReceivedPacks().equals(2));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -73,6 +73,23 @@ public class RequisitionController {
   }
 
   /**
+   * Allows creating new requisitions.
+   *
+   * @param requisition A requisition bound to the request body
+   * @return ResponseEntity containing the created requisition
+   */
+  @RequestMapping(value = "/requisitions", method = POST)
+  public ResponseEntity<?> createRequisition(@RequestBody @Valid Requisition requisition,
+                                               BindingResult bindingResult) {
+    try {
+      Requisition newRequisition = requisitionService.initiateRequisition(requisition);
+      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
+    } catch (RequisitionException ex) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
    * Initiates requisition.
    * @return result
    */
@@ -126,6 +143,26 @@ public class RequisitionController {
     } catch (RequisitionException ex) {
       LOGGER.debug(ex.getMessage(), ex);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Allows updating requisitions.
+   *
+   * @param requisition A requisition bound to the request body
+   * @param requisitionId UUID of requisition which we want to update
+   * @return ResponseEntity containing the updated requisition
+   */
+  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
+                                       @PathVariable("id") UUID requisitionId) {
+    Requisition requisitionFromDb = requisitionRepository.findOne(requisitionId);
+    if (requisitionFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating requisition");
+      Requisition updatedRequisition = requisitionRepository.save(requisition);
+      return new ResponseEntity<Requisition>(updatedRequisition, HttpStatus.OK);
     }
   }
 

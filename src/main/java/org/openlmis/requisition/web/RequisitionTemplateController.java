@@ -71,19 +71,42 @@ public class RequisitionTemplateController {
   }
 
   /**
-   * Get choosen requisitionLine.
+   * Allows updating requisitionTemplates.
+   *
+   * @param requisitionTemplate A requisitionTemplate bound to the request body
+   * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
+   * @return ResponseEntity containing the updated requisitionTemplate
+   */
+  @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisitionTemplate(
+        @RequestBody RequisitionTemplate requisitionTemplate,
+        @PathVariable("id") UUID requisitionTemplateId) {
+    RequisitionTemplate requisitionTemplateFromDb =
+          requisitionTemplateRepository.findOne(requisitionTemplateId);
+    if (requisitionTemplateFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating requisitionTemplate");
+      RequisitionTemplate updatedRequisitionTemplate =
+            requisitionTemplateRepository.save(requisitionTemplate);
+      return new ResponseEntity<RequisitionTemplate>(updatedRequisitionTemplate, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get choosen requisitionTemplate.
    *
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to get
    * @return RequisitionTemplate.
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
-    RequisitionTemplate requisitionTemplates =
+    RequisitionTemplate requisitionTemplate =
           requisitionTemplateRepository.findOne(requisitionTemplateId);
-    if (requisitionTemplates == null) {
+    if (requisitionTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(requisitionTemplates, HttpStatus.OK);
+      return new ResponseEntity<>(requisitionTemplate, HttpStatus.OK);
     }
   }
 

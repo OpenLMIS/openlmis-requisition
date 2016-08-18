@@ -21,7 +21,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
 
@@ -71,7 +71,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisitionTemplate.getId())
           .when()
-          .delete(DELETE_OR_GET_URL)
+          .delete(ID_URL)
           .then()
           .statusCode(204);
 
@@ -93,6 +93,27 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdateRequisitionTemplate() {
+
+    Program program = generateProgram();
+    requisitionTemplate.setProgram(program);
+
+    RequisitionTemplate response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionTemplate.getId())
+          .body(requisitionTemplate)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionTemplate.class);
+
+    assertEquals(response.getProgram().getId(), program.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -121,7 +142,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisitionTemplate.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(RequisitionTemplate.class);

@@ -14,13 +14,14 @@ import org.springframework.http.MediaType;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/schedules";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String ACCESS_TOKEN = "access_token";
 
@@ -75,7 +76,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", schedule.getId())
           .when()
-          .delete(DELETE_OR_GET_URL)
+          .delete(ID_URL)
           .then()
           .statusCode(204);
 
@@ -98,6 +99,26 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(201);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdateSchedule() {
+
+    schedule.setDescription("OpenLMIS");
+
+    Schedule response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", schedule.getId())
+          .body(schedule)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Schedule.class);
+
+    assertEquals(response.getDescription(), "OpenLMIS");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -126,7 +147,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", schedule.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(Schedule.class);

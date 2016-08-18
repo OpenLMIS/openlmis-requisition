@@ -73,6 +73,26 @@ public class FacilityController {
   }
 
   /**
+   * Allows updating facilities.
+   *
+   * @param facility A facility bound to the request body
+   * @param facilityId UUID of facility which we want to update
+   * @return ResponseEntity containing the updated facility
+   */
+  @RequestMapping(value = "/facilities/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateFacilities(@RequestBody Facility facility,
+                                       @PathVariable("id") UUID facilityId) {
+    Facility facilityFromDb = facilityRepository.findOne(facilityId);
+    if (facilityFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating facility");
+      Facility updatedFacility = facilityRepository.save(facility);
+      return new ResponseEntity<Facility>(updatedFacility, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get choosen facility.
    *
    * @param facilityId UUID of facility which we want to get

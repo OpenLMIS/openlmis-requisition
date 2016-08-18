@@ -59,6 +59,26 @@ public class ScheduleController {
   }
 
   /**
+   * Allows updating schedules.
+   *
+   * @param schedule A schedule bound to the request body
+   * @param scheduleId UUID of schedule which we want to update
+   * @return ResponseEntity containing the updated schedule
+   */
+  @RequestMapping(value = "/schedules/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateSchedule(@RequestBody Schedule schedule,
+                                       @PathVariable("id") UUID scheduleId) {
+    Schedule scheduleFromDb = scheduleRepository.findOne(scheduleId);
+    if (scheduleFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating schedule");
+      Schedule updatedSchedule = scheduleRepository.save(schedule);
+      return new ResponseEntity<Schedule>(updatedSchedule, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get all schedules.
    *
    * @return Schedules.

@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 public class RequisitionLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/requisitionLines";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION = "requisition";
@@ -83,7 +83,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-  private RequisitionLine requisitionLine;
+  private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
   private Period period = new Period();
   private Product product = new Product();
@@ -149,6 +149,26 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void testShouldUpdateRequisitionLine() {
+
+    requisitionLine.setBeginningBalance(1);
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(response.getBeginningBalance().equals(1));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void testShouldGetAllRequisitionLines() {
 
     RequisitionLine[] response = restAssured.given()
@@ -173,7 +193,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisitionLine.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(RequisitionLine.class);
@@ -245,7 +265,6 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition = requisitionRepository.save(requisition);
 
-    RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setRequisition(requisition);
     requisitionLine.setRequestedQuantity(1);

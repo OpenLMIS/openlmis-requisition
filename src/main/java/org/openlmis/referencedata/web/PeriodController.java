@@ -112,6 +112,26 @@ public class PeriodController {
   }
 
   /**
+   * Allows updating periods.
+   *
+   * @param period A period bound to the request body
+   * @param periodId UUID of period which we want to update
+   * @return ResponseEntity containing the updated period
+   */
+  @RequestMapping(value = "/periods/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updatePeriod(@RequestBody Period period,
+                                       @PathVariable("id") UUID periodId) {
+    Period periodFromDb = periodRepository.findOne(periodId);
+    if (periodFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating period");
+      Period updatedPeriod = periodRepository.save(period);
+      return new ResponseEntity<Period>(updatedPeriod, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get choosen period.
    *
    * @param periodId UUID of period which we want to get

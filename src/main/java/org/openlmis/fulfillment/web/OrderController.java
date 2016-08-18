@@ -81,6 +81,26 @@ public class OrderController {
   }
 
   /**
+   * Allows updating orders.
+   *
+   * @param order A order bound to the request body
+   * @param orderId UUID of order which we want to update
+   * @return ResponseEntity containing the updated order
+   */
+  @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateOrder(@RequestBody Order order,
+                                       @PathVariable("id") UUID orderId) {
+    Order orderFromDb = orderRepository.findOne(orderId);
+    if (orderFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating order");
+      Order updatedOrder = orderRepository.save(order);
+      return new ResponseEntity<Order>(updatedOrder, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get choosen order.
    *
    * @param orderId UUID of order whose we want to get

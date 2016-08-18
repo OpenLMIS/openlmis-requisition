@@ -23,7 +23,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/periods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
@@ -176,11 +176,32 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", firstPeriod.getId())
           .when()
-          .delete(DELETE_OR_GET_URL)
+          .delete(ID_URL)
           .then()
           .statusCode(204);
 
     assertFalse(periodRepository.exists(firstPeriod.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdatePeriod() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+    firstPeriod.setDescription("OpenLMIS");
+
+    Period response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstPeriod.getId())
+          .body(firstPeriod)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Period.class);
+
+    assertEquals(response.getDescription(), "OpenLMIS");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -213,7 +234,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", firstPeriod.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(Period.class);

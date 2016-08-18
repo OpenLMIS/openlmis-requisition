@@ -22,7 +22,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ACCESS_TOKEN = "access_token";
   private static final String RESOURCE_URL = "/api/programs";
   private static final String UPDATE_URL = RESOURCE_URL + "/update";
-  private static final String DELETE_OR_GET_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
 
   @Autowired
   private ProgramRepository programRepository;
@@ -91,7 +91,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", program.getId())
           .when()
-          .delete(DELETE_OR_GET_URL)
+          .delete(ID_URL)
           .then()
           .statusCode(204);
 
@@ -117,7 +117,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllProgram() {
+  public void testShouldGetAllPrograms() {
 
     Program[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -141,7 +141,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", program.getId())
           .when()
-          .get(DELETE_OR_GET_URL)
+          .get(ID_URL)
           .then()
           .statusCode(200)
           .extract().as(Program.class);
