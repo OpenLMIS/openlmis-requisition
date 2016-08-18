@@ -1,6 +1,6 @@
-==============
+================
 Developer docs
-==============
+================
 
 Developer docs of services in OpenLMIS v3.
 
