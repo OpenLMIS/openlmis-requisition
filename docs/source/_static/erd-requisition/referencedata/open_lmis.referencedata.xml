@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="open_lmis" schema="referencedata" type="PostgreSQL - 9.4.7">
+   <tables>
+      <table name="comments" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid"/>
+         <column autoUpdated="false" digits="0" id="1" name="body" nullable="true" remarks="" size="255" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="2" name="createddate" nullable="true" remarks="" size="2147483647" type="bytea"/>
+         <column autoUpdated="false" digits="0" id="3" name="userid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_pfa45pmaiea4gk0nxw9plfffe" implied="false" onDeleteCascade="false" table="users"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="4" name="requisitionid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_ijaormip6ev8na8cuo92no7d4" implied="false" onDeleteCascade="false" table="requisitions"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="comments_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="facilities" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="receivingfacilityid" foreignKey="fk_cwjg2pr7a8swak30ydndda0mf" implied="false" onDeleteCascade="false" table="orders"/>
+            <child column="requestingfacilityid" foreignKey="fk_6abhgh57m7qyoo0bgpe34p1pq" implied="false" onDeleteCascade="false" table="orders"/>
+            <child column="supplyingfacilityid" foreignKey="fk_oojomfs5ocun0xb49qyqh004h" implied="false" onDeleteCascade="false" table="orders"/>
+            <child column="programid" foreignKey="fk_7dcqda7cxul14x54an1vgvlh8" implied="false" onDeleteCascade="false" table="programs"/>
+            <child column="dropofffacilityid" foreignKey="fk_3kckws3uta8jqcutwc06g1uqb" implied="false" onDeleteCascade="false" table="requisition_group_program_schedules"/>
+            <child column="facilityid" foreignKey="fk_gvyrjqlw7k01v7rsceu48sxcn" implied="false" onDeleteCascade="false" table="requisitions"/>
+            <child column="facilityid" foreignKey="fk_kfdthc42ojyxy0bf9xcku4cn3" implied="false" onDeleteCascade="false" table="supervisory_nodes"/>
+            <child column="supplyingfacilityid" foreignKey="fk_lgwli17mut9jyk6sq52gj1eo8" implied="false" onDeleteCascade="false" table="supply_lines"/>
+            <child column="facilityid" foreignKey="fk_s7emwtar4rkyro1ukm08ej3q2" implied="false" onDeleteCascade="false" table="users"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="active" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="2" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="comment" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="5" name="enabled" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="6" id="6" name="godowndate" nullable="true" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="6" id="7" name="golivedate" nullable="true" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="0" id="8" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="9" name="openlmisaccessible" nullable="true" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="10" name="geographiczoneid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_e8rr5j4trisvc7xrxea9kvg3u" implied="false" onDeleteCascade="false" table="geographic_zones"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="11" name="operatedbyid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_8k332b677t4raksi29mvmhld4" implied="false" onDeleteCascade="false" table="facility_operators"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="12" name="typeid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_56x9dtl6wsv4arecea25ylof8" implied="false" onDeleteCascade="false" table="facility_types"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="13" name="facilityid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_p0anylonkxt0w33753ik9m2a1" implied="false" onDeleteCascade="false" table="requisition_groups"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facilities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_mnsci7u7h2r2b3tohhn0b819" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="facility_operators" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="operatedbyid" foreignKey="fk_8k332b677t4raksi29mvmhld4" implied="false" onDeleteCascade="false" table="facilities"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="displayorder" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="4" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_operators_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_g7ooo22v3vokh2qrqbxw7uaps" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="facility_type_approved_products" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid"/>
+         <column autoUpdated="false" digits="17" id="1" name="emergencyorderpoint" nullable="true" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="17" id="2" name="maxmonthsofstock" nullable="false" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="17" id="3" name="minmonthsofstock" nullable="true" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="0" id="4" name="facilitytypeid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_5qp5dh1ahflgue36eu4jclgv8" implied="false" onDeleteCascade="false" table="facility_types"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="5" name="programproductid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_4xh6g95xth0d0jyt81u4idsd1" implied="false" onDeleteCascade="false" table="program_products"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_type_approved_products_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="facility_types" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="typeid" foreignKey="fk_56x9dtl6wsv4arecea25ylof8" implied="false" onDeleteCascade="false" table="facilities"/>
+            <child column="facilitytypeid" foreignKey="fk_5qp5dh1ahflgue36eu4jclgv8" implied="false" onDeleteCascade="false" table="facility_type_approved_products"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="active" nullable="true" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="2" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="displayorder" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="5" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_nfppl8ui0vgjoxenm5v2727wo" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="geographic_levels" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="levelid" foreignKey="fk_re90f49h8un1rexttwb3f7gc4" implied="false" onDeleteCascade="false" table="geographic_zones"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="levelnumber" nullable="false" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="3" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="geographic_levels_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_by9o3bl6rafeuane589514s2v" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="geographic_zones" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="geographiczoneid" foreignKey="fk_e8rr5j4trisvc7xrxea9kvg3u" implied="false" onDeleteCascade="false" table="facilities"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="catchmentpopulation" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="2" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="5" id="3" name="latitude" nullable="true" remarks="" size="8" type="numeric"/>
+         <column autoUpdated="false" digits="5" id="4" name="longitude" nullable="true" remarks="" size="8" type="numeric"/>
+         <column autoUpdated="false" digits="0" id="5" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="6" name="levelid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_re90f49h8un1rexttwb3f7gc4" implied="false" onDeleteCascade="false" table="geographic_levels"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="geographic_zones_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_jpns3ahywgm4k52rdfm08m9k0" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="periods" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="processingperiodid" foreignKey="fk_b2aveqk4vhah3f98jhnrfg3hp" implied="false" onDeleteCascade="false" table="requisitions"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="enddate" nullable="false" remarks="" size="13" type="date"/>
+         <column autoUpdated="false" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="startdate" nullable="false" remarks="" size="13" type="date"/>
+         <column autoUpdated="false" digits="0" id="5" name="processingscheduleid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_dkb96doqlhfvn8b6qia8b2mn5" implied="false" onDeleteCascade="false" table="schedule"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="periods_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="products" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="productid" foreignKey="fk_h33qtb6lc22cfd8j9rdqtg4nk" implied="false" onDeleteCascade="false" table="order_lines"/>
+            <child column="productid" foreignKey="fk_4yaony6u0tp7cajjqd2o5swry" implied="false" onDeleteCascade="false" table="program_products"/>
+            <child column="productid" foreignKey="fk_qgtn8rrl8tyh6630mofwflm5j" implied="false" onDeleteCascade="false" table="requisition_lines"/>
+            <child column="productid" foreignKey="fk_g4ywi1h69cv78el8pct3ovawf" implied="false" onDeleteCascade="false" table="stocks"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="active" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="2" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="dispensingunit" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="dosesperdispensingunit" nullable="false" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="5" name="fullsupply" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="6" name="packroundingthreshold" nullable="false" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="7" name="packsize" nullable="false" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="8" name="primaryname" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="9" name="roundtozero" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="10" name="tracer" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="11" name="productcategoryid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_95r8b2ge4wwtsk6uachcbtjv0" implied="false" onDeleteCascade="false" table="program_categories"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="products_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_57ivhy5aj3qfmdvl6vxdfjs4p" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="program_categories" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="productcategoryid" foreignKey="fk_95r8b2ge4wwtsk6uachcbtjv0" implied="false" onDeleteCascade="false" table="products"/>
+            <child column="productcategoryid" foreignKey="fk_8uesk8hyubjv1d632sl6pmeoh" implied="false" onDeleteCascade="false" table="program_products"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="code" nullable="false" remarks="" size="255" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="2" name="displayorder" nullable="false" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="3" name="name" nullable="false" remarks="" size="255" type="varchar"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="program_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_4gabk47rh70wagvw5vb5jvllc" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+         <index name="uk_qdfa59xptfbjk0krj0y0fnjiy" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="program_products" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="programproductid" foreignKey="fk_4xh6g95xth0d0jyt81u4idsd1" implied="false" onDeleteCascade="false" table="facility_type_approved_products"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="active" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="2" name="displayorder" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="3" name="dosespermonth" nullable="false" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="4" name="fullsupply" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="5" name="maxmonthsstock" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="0" id="6" name="priceperpack" nullable="true" remarks="" size="2147483647" type="bytea"/>
+         <column autoUpdated="false" digits="0" id="7" name="productid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_4yaony6u0tp7cajjqd2o5swry" implied="false" onDeleteCascade="false" table="products"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="8" name="productcategoryid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_8uesk8hyubjv1d632sl6pmeoh" implied="false" onDeleteCascade="false" table="program_categories"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="9" name="programid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_4a0k84emal5ck79vhido1w2nt" implied="false" onDeleteCascade="false" table="programs"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="program_products_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="programs" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="programid" foreignKey="fk_9my5ps2v6m6hkbi83f8seonhs" implied="false" onDeleteCascade="false" table="orders"/>
+            <child column="programid" foreignKey="fk_4a0k84emal5ck79vhido1w2nt" implied="false" onDeleteCascade="false" table="program_products"/>
+            <child column="programid" foreignKey="fk_1xyxdh32uyjbfc8mr7x6sw8go" implied="false" onDeleteCascade="false" table="requisition_group_program_schedules"/>
+            <child column="programid" foreignKey="fk_3syitbi4eny1st4rngcinxh6m" implied="false" onDeleteCascade="false" table="requisition_templates"/>
+            <child column="programid" foreignKey="fk_4tpvgev3mbliy9g4yw2xyig1q" implied="false" onDeleteCascade="false" table="requisitions"/>
+            <child column="programid" foreignKey="fk_jpm2l6bx05ecom5dw9n1waeqm" implied="false" onDeleteCascade="false" table="supply_lines"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="active" nullable="true" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="2" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="5" name="periodsskippable" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="6" name="shownonfullsupplytab" nullable="true" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="7" name="programid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_7dcqda7cxul14x54an1vgvlh8" implied="false" onDeleteCascade="false" table="facilities"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="programs_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_pry5cowyujos5wcl2tjfu9hpb" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="requisition_groups" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="facilityid" foreignKey="fk_p0anylonkxt0w33753ik9m2a1" implied="false" onDeleteCascade="false" table="facilities"/>
+            <child column="requisitiongroupprogramschedulesid" foreignKey="fk_8i4iaku64chx5ic38tl83a1hj" implied="false" onDeleteCascade="false" table="requisition_group_program_schedules"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="supervisorynodeid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_n3ualqoora73x5iq76m6q83ek" implied="false" onDeleteCascade="false" table="supervisory_nodes"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="requisition_groups_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_nrqjt84p9wmrm1qmr7nokj8sg" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="rights" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid"/>
+         <column autoUpdated="false" digits="0" id="1" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="righttype" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="rightid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_3d6fd6b1ebp47uyhtlhkeskir" implied="false" onDeleteCascade="false" table="roles"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="rights_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_4f64k9vkx833wfpw8n25x2602" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="roles" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="rightid" foreignKey="fk_3d6fd6b1ebp47uyhtlhkeskir" implied="false" onDeleteCascade="false" table="rights"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="roleid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_osi4gte2mm5a4ulcs928dqt4p" implied="false" onDeleteCascade="false" table="users"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="roles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_ofx66keruapi6vyqpv6f2or37" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="schedule" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="processingscheduleid" foreignKey="fk_dkb96doqlhfvn8b6qia8b2mn5" implied="false" onDeleteCascade="false" table="periods"/>
+            <child column="processingscheduleid" foreignKey="fk_3j9brvgnf7jjjhxayg0x7j1l4" implied="false" onDeleteCascade="false" table="requisition_group_program_schedules"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="modifieddate" nullable="true" remarks="" size="2147483647" type="bytea"/>
+         <column autoUpdated="false" digits="0" id="4" name="name" nullable="false" remarks="" size="2147483647" type="text"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="schedule_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_bs5r9n70832hqbegm4c0tpqos" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+         <index name="uk_mfoqwlcsgf6qa1v6lauq33taq" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="stocks" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid"/>
+         <column autoUpdated="false" digits="0" id="1" name="storedquantity" nullable="true" remarks="" size="19" type="int8"/>
+         <column autoUpdated="false" digits="0" id="2" name="productid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_g4ywi1h69cv78el8pct3ovawf" implied="false" onDeleteCascade="false" table="products"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="stocks_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="supervisory_nodes" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="supervisorynodeid" foreignKey="fk_n3ualqoora73x5iq76m6q83ek" implied="false" onDeleteCascade="false" table="requisition_groups"/>
+            <child column="supervisorynodeid" foreignKey="fk_mkdl7c3o8gknukjlgh0qdalbr" implied="false" onDeleteCascade="false" table="requisitions"/>
+            <child column="parentid" foreignKey="fk_5x6atdx9x2xxa5ckj25uu15eo" implied="false" onDeleteCascade="false" table="supervisory_nodes"/>
+            <child column="supervisorynodeid" foreignKey="fk_1ur0507aqj2y3eqr5um41fcjt" implied="false" onDeleteCascade="false" table="supply_lines"/>
+            <child column="supervisorynodeid" foreignKey="fk_5s7wxdww5jqygltn89ptiolaa" implied="false" onDeleteCascade="false" table="users"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="code" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="name" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="4" name="facilityid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_kfdthc42ojyxy0bf9xcku4cn3" implied="false" onDeleteCascade="false" table="facilities"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="5" name="parentid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_5x6atdx9x2xxa5ckj25uu15eo" implied="false" onDeleteCascade="false" table="supervisory_nodes"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="supervisory_nodes_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_9vforn7hxhuinr8bmu0vkad3v" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+      </table>
+      <table name="supply_lines" numRows="0" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid"/>
+         <column autoUpdated="false" digits="0" id="1" name="description" nullable="true" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="2" name="programid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_jpm2l6bx05ecom5dw9n1waeqm" implied="false" onDeleteCascade="false" table="programs"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="3" name="supervisorynodeid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_1ur0507aqj2y3eqr5um41fcjt" implied="false" onDeleteCascade="false" table="supervisory_nodes"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="4" name="supplyingfacilityid" nullable="false" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_lgwli17mut9jyk6sq52gj1eo8" implied="false" onDeleteCascade="false" table="facilities"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="supply_lines_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="users" numRows="1" remarks="" schema="referencedata" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid">
+            <child column="userid" foreignKey="fk_pfa45pmaiea4gk0nxw9plfffe" implied="false" onDeleteCascade="false" table="comments"/>
+            <child column="userid" foreignKey="fk_2gcgbfud7n5ixb7qqb6nuaqxw" implied="false" onDeleteCascade="false" table="orders"/>
+            <child column="roleid" foreignKey="fk_osi4gte2mm5a4ulcs928dqt4p" implied="false" onDeleteCascade="false" table="roles"/>
+         </column>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="1" name="active" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="2" name="firstname" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="3" name="lastname" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" defaultValue="'not-in-use'::text" digits="0" id="4" name="password" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" digits="0" id="5" name="username" nullable="false" remarks="" size="2147483647" type="text"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="6" name="verified" nullable="false" remarks="" size="1" type="bool"/>
+         <column autoUpdated="false" digits="0" id="7" name="facilityid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_s7emwtar4rkyro1ukm08ej3q2" implied="false" onDeleteCascade="false" table="facilities"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="8" name="supervisorynodeid" nullable="true" remarks="" size="2147483647" type="uuid">
+            <parent column="id" foreignKey="fk_5s7wxdww5jqygltn89ptiolaa" implied="false" onDeleteCascade="false" table="supervisory_nodes"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="users_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="uk_r43af9ap4edm43mmtq01oddj6" unique="true">
+            <column ascending="true" name="username"/>
+         </index>
+      </table>
+   </tables>
+</database>
