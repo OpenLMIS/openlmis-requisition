@@ -73,3 +73,7 @@ https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#inte
 ### Debugging
 See the Debugging section in the Service Template README at
 https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#debugging.
+
+### Documentation
+Documentation is available at:
+http://openlmis-requisition.readthedocs.io/en/latest/
