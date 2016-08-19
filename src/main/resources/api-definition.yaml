@@ -2,7 +2,7 @@
 ---
 title: OpenLMIS Requisition API
 version: "1.0.0"
-baseUri: "${baseUrl}/api"
+baseUri: "@baseUrl@/api"
 
 documentation:
     - title: Getting Started
@@ -434,7 +434,7 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "order": { "type": "object", "$ref": "#/schemas/order", "required": true },
-              "profOfDeliveryLineItems": { "type": "array", "required": false, "title": "profOfDeliveryLineItems", "items": { "type": "object", "$ref": "#/schemas/proofOfDeliveryLine" }, "uniqueItems": false },
+              "proofOfDeliveryLineItems": { "type": "array", "required": false, "title": "proofOfDeliveryLineItems", "items": { "type": "object", "$ref": "#/schemas/proofOfDeliveryLine" }, "uniqueItems": false },
               "totalShippedPacks": { "type": "integer", "required": false, "title": "totalShippedPacks" },
               "totalReceivedPacks": { "type": "integer", "required": false, "title": "totalReceivedPacks" },
               "totalReturnedPacks": { "type": "integer", "required": false, "title": "totalReturnedPacks" },
@@ -791,6 +791,41 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+
+/orderLines:
+    displayName: Order Lines
+    get:
+        is: [ secured ]
+        description: Get all orderLines.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new orderLine.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
 
 /periods:
     displayName: Period

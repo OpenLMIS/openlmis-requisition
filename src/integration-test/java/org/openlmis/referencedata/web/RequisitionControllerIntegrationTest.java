@@ -39,6 +39,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +68,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
+  private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
 
   @Autowired
   private ProductRepository productRepository;
@@ -707,6 +709,36 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Comment> commentList = Arrays.asList(response);
     assertEquals("First comment", commentList.get(0).getBody());
     assertEquals("Second comment", commentList.get(1).getBody());
+  }
+
+  @Test
+  public void testShouldGetRequisitionsForApprovalForSpecificUser() {
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    user.setSupervisedNode(supervisoryNode);
+    userRepository.save(user);
+
+    Requisition[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Requisition[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    List<Requisition> responseList = Arrays.asList(response);
+    List<Requisition> expectedRequisitionList = new ArrayList<>();
+    expectedRequisitionList.add(requisition);
+
+    for (int i = 0; i < responseList.size(); i++) {
+      assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
+    }
+    user.setSupervisedNode(null);
+    userRepository.save(user);
   }
 
   @Test

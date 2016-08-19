@@ -36,9 +36,6 @@ import org.openlmis.referencedata.repository.ScheduleRepository;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.TemplateService;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
@@ -51,10 +48,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -83,9 +79,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Autowired
   private UserRepository userRepository;
-
-  @Autowired
-  private RequisitionRepository requisitionRepository;
 
   @Autowired
   private ProgramRepository programRepository;
@@ -123,7 +116,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryLine proofOfDeliveryLine1 = new ProofOfDeliveryLine();
   private ProofOfDeliveryLine proofOfDeliveryLine2 = new ProofOfDeliveryLine();
-  private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<>();
+  private Set<ProofOfDeliveryLine> proofOfDeliveryLineList = new HashSet<>();
 
   /**
    * Prepare the test environment.
@@ -148,13 +141,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     periodRepository.save(period1);
 
     Facility facility1 = initFacility1();
-    Requisition requisition1 = new Requisition();
-    requisition1.setProgram(program1);
-    requisition1.setCreatedDate(LocalDateTime.of(2015, Month.JANUARY, 1, 10, 0, 0));
-    requisition1.setFacility(facility1);
-    requisition1.setProcessingPeriod(period1);
-    requisition1.setStatus(RequisitionStatus.RELEASED);
-    requisitionRepository.save(requisition1);
 
     assertEquals(1, userRepository.count());
     User user = userRepository.findAll().iterator().next();
@@ -357,8 +343,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void testShouldDeleteProofOfDelivery() {
 
-    proofOfDeliveryLineRepository.deleteAll();
-
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -368,25 +352,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
           .then()
           .statusCode(204);
 
-    assertFalse(orderRepository.exists(proofOfDelivery.getId()));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void testShouldCreateProofOfDelivery() {
-
-    proofOfDeliveryLineRepository.deleteAll();
-    proofOfDeliveryRepository.delete(proofOfDelivery);
-
-    restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(proofOfDelivery)
-          .when()
-          .post(RESOURCE_URL)
-          .then()
-          .statusCode(201);
-
+    assertFalse(proofOfDeliveryRepository.exists(proofOfDelivery.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -407,6 +373,40 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
           .extract().as(ProofOfDelivery.class);
 
     assertTrue(response.getTotalReceivedPacks().equals(2));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetAllProofOfDeliveries() {
+
+    ProofOfDelivery[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery[].class);
+
+    Iterable<ProofOfDelivery> proofOfDeliveries = Arrays.asList(response);
+    assertTrue(proofOfDeliveries.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenProofOfDelivery() {
+
+    ProofOfDelivery response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery.class);
+
+    assertTrue(proofOfDeliveryRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
