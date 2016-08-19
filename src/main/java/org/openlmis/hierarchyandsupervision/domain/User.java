@@ -8,7 +8,6 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.view.View;
 
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -16,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.util.List;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 @Entity
@@ -38,7 +38,7 @@ public class User extends BaseEntity {
   @Getter
   @Setter
   private String firstName;
-  
+
   @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter

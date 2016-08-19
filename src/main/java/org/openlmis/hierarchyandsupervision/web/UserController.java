@@ -1,6 +1,5 @@
 package org.openlmis.hierarchyandsupervision.web;
 
-import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.service.UserService;
@@ -69,7 +68,7 @@ public class UserController {
   }
 
   /**
-   * Get choosen order.
+   * Get choosen user.
    *
    * @param userId UUID of user whose we want to get
    * @return User.
@@ -102,7 +101,7 @@ public class UserController {
         LOGGER.debug("User cannot be deleted because of existing dependencies", ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
-      return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
     }
   }
 

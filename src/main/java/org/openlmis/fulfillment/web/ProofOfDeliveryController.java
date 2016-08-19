@@ -57,8 +57,8 @@ public class ProofOfDeliveryController {
       LOGGER.debug("Creating new proofOfDelivery");
       // Ignore provided id
       proofOfDelivery.setId(null);
-      ProofOfDelivery newOrder = proofOfDeliveryRepository.save(proofOfDelivery);
-      return new ResponseEntity<ProofOfDelivery>(newOrder, HttpStatus.CREATED);
+      ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
+      return new ResponseEntity<ProofOfDelivery>(newProofOfDelivery, HttpStatus.CREATED);
     }
   }
 

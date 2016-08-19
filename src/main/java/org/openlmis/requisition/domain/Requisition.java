@@ -15,10 +15,6 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +26,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "requisitions")
@@ -53,6 +52,9 @@ public class Requisition extends BaseEntity {
       property = "requisitionLinesId")
   private Set<RequisitionLine> requisitionLines;
 
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "commentsId")
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
   @Getter
   private List<Comment> comments;
