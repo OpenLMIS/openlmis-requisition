@@ -6,11 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.List;
 
 @Entity
 @Table(name = "templates")
@@ -30,7 +32,7 @@ public class Template extends BaseEntity {
   @Setter
   private byte[] data;
 
-  @OneToMany(mappedBy = "template")
+  @OneToMany(mappedBy = "template", cascade = CascadeType.REMOVE)
   @Getter
   @Setter
   private List<TemplateParameter> templateParameters;

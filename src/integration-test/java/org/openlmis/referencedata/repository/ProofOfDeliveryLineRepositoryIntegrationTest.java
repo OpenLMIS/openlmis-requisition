@@ -74,8 +74,7 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
-  private static final String proofOfDeliveryLineCode =
-      "OrderProofOfDeliveryLineRepositoryIntegrationTest";
+  private static final String CODE = "ProofOfDeliveryLineRepositoryIntegrationTest";
 
   private OrderLine orderLine = new OrderLine();
 
@@ -84,38 +83,38 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(proofOfDeliveryLineCode);
+    facilityType.setCode(CODE);
     facilityTypeRepository.save(facilityType);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode(proofOfDeliveryLineCode);
+    level.setCode(CODE);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(proofOfDeliveryLineCode);
+    geographicZone.setCode(CODE);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(proofOfDeliveryLineCode);
-    facility.setName(proofOfDeliveryLineCode);
+    facility.setCode(CODE);
+    facility.setName(CODE);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Program program = new Program();
-    program.setCode(proofOfDeliveryLineCode);
+    program.setCode(CODE);
     programRepository.save(program);
 
     Assert.assertEquals(1, userRepository.count());
     User user = userRepository.findAll().iterator().next();
 
     Order order = new Order();
-    order.setOrderCode(proofOfDeliveryLineCode);
+    order.setOrderCode(CODE);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
@@ -132,7 +131,7 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     productCategoryRepository.save(productCategory1);
 
     Product product = new Product();
-    product.setCode(proofOfDeliveryLineCode);
+    product.setCode(CODE);
     product.setPrimaryName("Product");
     product.setDispensingUnit("unit");
     product.setDosesPerDispensingUnit(10);
@@ -152,8 +151,8 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     orderLineRepository.save(orderLine);
 
     proofOfDelivery.setOrder(order);
-    proofOfDelivery.setDeliveredBy(proofOfDeliveryLineCode);
-    proofOfDelivery.setReceivedBy(proofOfDeliveryLineCode);
+    proofOfDelivery.setDeliveredBy(CODE);
+    proofOfDelivery.setReceivedBy(CODE);
     proofOfDelivery.setReceivedDate(new Date());
     proofOfDeliveryRepository.save(proofOfDelivery);
   }
