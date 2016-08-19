@@ -16,15 +16,8 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   erd/index
    developer-docs/index
+   erd/index
    styleguide/index
    api/index
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
