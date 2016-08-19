@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
@@ -25,10 +27,13 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private Order order;
 
+  @JsonIdentityInfo(
+        generator = ObjectIdGenerators.IntSequenceGenerator.class,
+        property = "proofOfDeliveryLineItemsId")
   @OneToMany(mappedBy = "proofOfDelivery",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
   @Getter
-  private List<ProofOfDeliveryLine> profOfDeliveryLineItems;
+  private List<ProofOfDeliveryLine> proofOfDeliveryLineItems;
 
   @Column
   @Getter
