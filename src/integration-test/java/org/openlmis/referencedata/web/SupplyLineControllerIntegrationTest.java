@@ -13,13 +13,13 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.SupplyLineRepository;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest {

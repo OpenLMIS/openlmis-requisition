@@ -11,7 +11,7 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
-import org.openlmis.referencedata.domain.Comment;
+import org.openlmis.requisition.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -19,7 +19,7 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.repository.CommentRepository;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -39,6 +39,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +67,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String DELETE_URL = "/api/requisitions/{id}";
   private static final String SEARCH_URL = "/api/requisitions/search";
   private static final String INITIATE_URL = "/api/requisitions/initiate";
+  private static final String REQ_FOR_APPROVAL_URL = "/api/requisitions/requisitions-for-approval";
 
   @Autowired
   private ProductRepository productRepository;
@@ -706,6 +708,36 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Comment> commentList = Arrays.asList(response);
     assertEquals("First comment", commentList.get(0).getBody());
     assertEquals("Second comment", commentList.get(1).getBody());
+  }
+
+  @Test
+  public void testShouldGetRequisitionsForApprovalForSpecificUser() {
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    user.setSupervisedNode(supervisoryNode);
+    userRepository.save(user);
+
+    Requisition[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Requisition[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    List<Requisition> responseList = Arrays.asList(response);
+    List<Requisition> expectedRequisitionList = new ArrayList<>();
+    expectedRequisitionList.add(requisition);
+
+    for (int i = 0; i < responseList.size(); i++) {
+      assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
+    }
+    user.setSupervisedNode(null);
+    userRepository.save(user);
   }
 
   @Test

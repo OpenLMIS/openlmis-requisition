@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
@@ -54,6 +53,9 @@ public class Requisition extends BaseEntity {
       property = "requisitionLinesId")
   private Set<RequisitionLine> requisitionLines;
 
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "commentsId")
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
   @Getter
   private List<Comment> comments;

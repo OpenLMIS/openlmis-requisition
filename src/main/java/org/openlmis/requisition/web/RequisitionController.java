@@ -4,11 +4,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.Comment;
+import org.openlmis.requisition.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.repository.CommentRepository;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;

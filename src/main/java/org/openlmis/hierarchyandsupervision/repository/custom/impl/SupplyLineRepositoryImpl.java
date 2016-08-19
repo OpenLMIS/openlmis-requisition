@@ -1,8 +1,8 @@
-package org.openlmis.referencedata.repository.custom.impl;
+package org.openlmis.hierarchyandsupervision.repository.custom.impl;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.SupplyLine;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
