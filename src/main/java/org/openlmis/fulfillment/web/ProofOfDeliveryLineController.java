@@ -20,7 +20,8 @@ import java.util.UUID;
 @RepositoryRestController
 public class ProofOfDeliveryLineController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProofOfDeliveryLineController.class);
+  private static final Logger LOGGER =
+        LoggerFactory.getLogger(ProofOfDeliveryLineController.class);
 
   @Autowired
   private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
@@ -33,14 +34,16 @@ public class ProofOfDeliveryLineController {
    * @return ResponseEntity containing the created proofOfDeliveryLine
    */
   @RequestMapping(value = "/proofOfDeliveryLines", method = RequestMethod.POST)
-  public ResponseEntity<?> createProofOfDeliveryLine(@RequestBody ProofOfDeliveryLine proofOfDeliveryLine) {
+  public ResponseEntity<?> createProofOfDeliveryLine(
+        @RequestBody ProofOfDeliveryLine proofOfDeliveryLine) {
     if (proofOfDeliveryLine == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
       LOGGER.debug("Creating new proofOfDeliveryLine");
       // Ignore provided id
       proofOfDeliveryLine.setId(null);
-      ProofOfDeliveryLine newProofOfDeliveryLine = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+      ProofOfDeliveryLine newProofOfDeliveryLine =
+            proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
       return new ResponseEntity<ProofOfDeliveryLine>(newProofOfDeliveryLine, HttpStatus.CREATED);
     }
   }
@@ -92,7 +95,8 @@ public class ProofOfDeliveryLineController {
    */
   @RequestMapping(value = "/proofOfDeliveryLines/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getProofOfDeliveryLine(@PathVariable("id") UUID proofOfDeliveryLineId) {
-    ProofOfDeliveryLine proofOfDeliveryLine = proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
+    ProofOfDeliveryLine proofOfDeliveryLine =
+          proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
     if (proofOfDeliveryLine == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -107,15 +111,18 @@ public class ProofOfDeliveryLineController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/proofOfDeliveryLines/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteProofOfDeliveryLine(@PathVariable("id") UUID proofOfDeliveryLineId) {
-    ProofOfDeliveryLine proofOfDeliveryLine = proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
+  public ResponseEntity<?> deleteProofOfDeliveryLine(
+        @PathVariable("id") UUID proofOfDeliveryLineId) {
+    ProofOfDeliveryLine proofOfDeliveryLine =
+          proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
     if (proofOfDeliveryLine == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
       try {
         proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("ProofOfDeliveryLine cannot be deleted because of existing dependencies", ex);
+        LOGGER.debug("ProofOfDeliveryLine cannot be deleted "
+              + "because of existing dependencies", ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<ProofOfDeliveryLine>(HttpStatus.NO_CONTENT);
