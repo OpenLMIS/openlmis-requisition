@@ -48,6 +48,7 @@ import static org.junit.Assert.assertTrue;
 public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderLines";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
@@ -225,6 +226,43 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Iterable<OrderLine> orderLines = Arrays.asList(response);
     assertTrue(orderLines.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldUpdateOrderLine() {
+
+    orderLine.setOrderedQuantity(100L);
+
+    OrderLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", orderLine.getId())
+          .body(orderLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(OrderLine.class);
+
+    assertTrue(response.getOrderedQuantity().equals(100L));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void testShouldGetChoosenOrderLine() {
+
+    OrderLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", orderLine.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(OrderLine.class);
+
+    assertTrue(orderLineRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

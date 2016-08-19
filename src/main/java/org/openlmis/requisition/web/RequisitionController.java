@@ -90,25 +90,6 @@ public class RequisitionController {
   }
 
   /**
-   * Initiates requisition.
-   * @return result
-   */
-  @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisitionDto,
-                                               BindingResult bindingResult) {
-    try {
-
-      Requisition requisition = requisitionService.initiateRequisition(
-          requisitionDto);
-      ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
-      return response;
-
-    } catch (RequisitionException ex) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  /**
    * Submits earlier initiated requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.PUT)

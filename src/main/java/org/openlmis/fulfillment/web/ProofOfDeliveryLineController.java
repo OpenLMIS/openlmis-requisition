@@ -20,7 +20,8 @@ import java.util.UUID;
 @RepositoryRestController
 public class ProofOfDeliveryLineController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProofOfDeliveryLineController.class);
+  private static final Logger LOGGER =
+        LoggerFactory.getLogger(ProofOfDeliveryLineController.class);
 
   @Autowired
   private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
@@ -120,7 +121,8 @@ public class ProofOfDeliveryLineController {
       try {
         proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("ProofOfDeliveryLine cannot be deleted because of existing dependencies", ex);
+        LOGGER.debug("ProofOfDeliveryLine cannot be deleted "
+              + "because of existing dependencies", ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<ProofOfDeliveryLine>(HttpStatus.NO_CONTENT);
