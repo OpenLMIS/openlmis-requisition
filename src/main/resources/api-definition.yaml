@@ -2,7 +2,7 @@
 ---
 title: OpenLMIS Requisition API
 version: "1.0.0"
-baseUri: "${baseUrl}/api"
+baseUri: "@baseUrl@/api"
 
 documentation:
     - title: Getting Started
