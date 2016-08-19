@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,5 +45,18 @@ public class UserController {
             lastName, homeFacility, active, verified);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  /**
+   * Custom endpoint for creating and updating users.
+   */
+  @RequestMapping(value = "/users", method = RequestMethod.POST)
+  public ResponseEntity<?> save(@RequestBody User user, OAuth2Authentication auth) {
+    OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auth.getDetails();
+    String token = details.getTokenValue();
+
+    userService.save(user, token);
+
+    return new ResponseEntity<>(user, HttpStatus.OK);
   }
 }

@@ -356,9 +356,10 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "username": { "type": "string", "required": true, "title": "username" },
-              "password": { "type": "string", "required": true, "title": "password" },
               "firstName": { "type": "string", "required": true, "title": "firstName" },
               "lastName": { "type": "string", "required": true, "title": "lastName" },
+              "email": { "type": "string", "required": true, "title": "email" },
+              "timezone": { "type": "string", "required": false, "title": "timezone" },
               "homeFacility": { "type": "object", "$ref": "#/schemas/facility", "required": false, "title": "homeFacility" },
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
@@ -1274,6 +1275,22 @@ resourceTypes:
 
 /users:
     displayName: User
+    post:
+        is: [ secured ]
+        description: Create or update User
+        body:
+            application/json:
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "500":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     /search:
             get:
                 is: [ secured ]

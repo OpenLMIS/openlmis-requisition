@@ -57,7 +57,7 @@ public class CsvGeneratorTest {
     program.setCode("1h1h1h1");
 
     user.setUsername("Name, Surname");
-    user.setPassword("Pswd");
+    user.setEmail("mail@mail.com");
     user.setFirstName("Klasa");
     user.setLastName("User");
     user.setId(new UUID(50,50));
