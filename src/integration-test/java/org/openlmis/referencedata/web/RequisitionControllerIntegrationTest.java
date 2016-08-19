@@ -67,7 +67,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String AUTHORIZATION_URL = RESOURCE_URL + "/{id}/authorize";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
   private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
 
   @Autowired
@@ -811,7 +810,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(requisition)
             .when()
-            .post(INITIATE_URL)
+            .post(RESOURCE_URL)
             .then()
             .statusCode(201);
 
@@ -908,23 +907,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .extract().as(Requisition.class);
 
     assertTrue(requisitionRepository.exists(response.getId()));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void testShouldCreateRequisition() {
-
-    requisitionRepository.delete(requisition);
-
-    restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(requisition)
-          .when()
-          .post(RESOURCE_URL)
-          .then()
-          .statusCode(201);
-
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -1122,7 +1122,7 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates new requisition.
+        description: Initiate requisition.
         body:
             application/json:
         responses:
@@ -1263,25 +1263,6 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
-
-    /initiate:
-            post:
-                is: [ secured ]
-                description: Initiate requisition.
-                body:
-                    application/json:
-                responses:
-                    "201":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "400":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-
     /{id}/authorize:
             uriParameters:
                 id:
@@ -1309,7 +1290,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-
     /search:
         get:
             is: [ secured ]
@@ -1365,7 +1345,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-
     /{id}/approve:
         uriParameters:
             id:
@@ -1387,7 +1366,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-
     /requisitions-for-approval:
         get:
             is: [ secured ]
@@ -1403,7 +1381,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-
     /{id}/comments:
         uriParameters:
             id:
