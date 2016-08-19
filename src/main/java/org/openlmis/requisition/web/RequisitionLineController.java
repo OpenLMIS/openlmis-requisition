@@ -89,7 +89,7 @@ public class RequisitionLineController {
   }
 
   /**
-   * Get choosen requisitionLine.
+   * Get chosen requisitionLine.
    *
    * @param requisitionLineId UUID of requisitionLine which we want to get
    * @return RequisitionLine.

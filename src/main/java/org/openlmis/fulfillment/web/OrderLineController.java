@@ -81,7 +81,7 @@ public class OrderLineController {
   }
 
   /**
-   * Get choosen orderLine.
+   * Get chosen orderLine.
    *
    * @param orderLineId UUID of orderLine whose we want to get
    * @return OrderLine.

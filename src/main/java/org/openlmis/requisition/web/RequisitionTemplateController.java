@@ -94,7 +94,7 @@ public class RequisitionTemplateController {
   }
 
   /**
-   * Get choosen requisitionTemplate.
+   * Get chosen requisitionTemplate.
    *
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to get
    * @return RequisitionTemplate.

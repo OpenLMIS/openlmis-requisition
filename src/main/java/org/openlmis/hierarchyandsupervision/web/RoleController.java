@@ -61,7 +61,7 @@ public class RoleController {
   }
 
   /**
-   * Get choosen role.
+   * Get chosen role.
    *
    * @param roleId UUID of role whose we want to get
    * @return Role.

@@ -124,7 +124,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenStock() {
+  public void testShouldGetChosenStock() {
 
     Stock stock = stocks.get(4);
 

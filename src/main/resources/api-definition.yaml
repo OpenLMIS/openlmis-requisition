@@ -638,7 +638,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen order.
+            description: Get chosen order.
             responses:
                 "200":
                     headers:
@@ -851,7 +851,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen orderLine.
+            description: Get chosen orderLine.
             responses:
                 "200":
                     headers:
@@ -939,7 +939,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen period.
+            description: Get chosen period.
             responses:
                 "200":
                     headers:
@@ -1175,7 +1175,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen requisition.
+            description: Get chosen requisition.
             responses:
                 "200":
                     headers:
@@ -1480,7 +1480,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen requisitionLine.
+            description: Get chosen requisitionLine.
             responses:
                 "200":
                     headers:
@@ -1600,7 +1600,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen requisitionTemplate.
+            description: Get chosen requisitionTemplate.
             responses:
                 "200":
                     headers:
@@ -1714,7 +1714,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen schedule.
+            description: Get chosen schedule.
             responses:
                 "200":
                     headers:
@@ -1832,7 +1832,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen supplyLine.
+            description: Get chosen supplyLine.
             responses:
                 "200":
                     headers:
@@ -1952,7 +1952,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen user.
+            description: Get chosen user.
             responses:
                 "200":
                     headers:
@@ -2097,7 +2097,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen facility.
+            description: Get chosen facility.
             responses:
                 "200":
                     headers:
@@ -2262,7 +2262,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen program.
+            description: Get chosen program.
             responses:
                 "200":
                     headers:
@@ -2350,7 +2350,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen stock.
+            description: Get chosen stock.
             responses:
                 "200":
                     headers:
@@ -2466,7 +2466,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen proofOfDelivery.
+            description: Get chosen proofOfDelivery.
             responses:
                 "200":
                     headers:
@@ -2591,7 +2591,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get choosen template.
+            description: Get chosen template.
             responses:
                 "200":
                     headers:

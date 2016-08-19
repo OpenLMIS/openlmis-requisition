@@ -61,7 +61,7 @@ public class SupervisoryNodeController {
   }
 
   /**
-   * Get choosen supervisoryNode.
+   * Get chosen supervisoryNode.
    *
    * @param supervisoryNodeId UUID of supervisoryNode whose we want to get
    * @return SupervisoryNode.

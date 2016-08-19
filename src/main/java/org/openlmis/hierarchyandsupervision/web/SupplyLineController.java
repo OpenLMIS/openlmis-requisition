@@ -89,7 +89,7 @@ public class SupplyLineController {
   }
 
   /**
-   * Get choosen supplyLine.
+   * Get chosen supplyLine.
    *
    * @param supplyLineId UUID of supplyLine which we want to get
    * @return SupplyLine.

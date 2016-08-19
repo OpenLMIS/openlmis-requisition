@@ -83,7 +83,7 @@ public class FacilityOperatorController {
   }
 
   /**
-   * Get choosen facilityOperator.
+   * Get chosen facilityOperator.
    *
    * @param facilityOperatorId UUID of facilityOperator whose we want to get
    * @return facilityOperator.

@@ -88,7 +88,7 @@ public class StockController {
   }
 
   /**
-   * Get choosen stock.
+   * Get chosen stock.
    *
    * @param stockId UUID of stock which we want to get
    * @return Stock.

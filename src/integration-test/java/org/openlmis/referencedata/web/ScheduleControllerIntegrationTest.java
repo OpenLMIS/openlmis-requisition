@@ -140,7 +140,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenSchedule() {
+  public void testShouldGetChosenSchedule() {
 
     Schedule response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

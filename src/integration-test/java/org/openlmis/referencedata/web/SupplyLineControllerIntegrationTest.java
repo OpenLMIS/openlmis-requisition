@@ -163,7 +163,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldGetChoosenSupplyLine() {
+  public void testShouldGetChosenSupplyLine() {
 
     SupplyLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

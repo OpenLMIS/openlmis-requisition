@@ -95,7 +95,7 @@ public class ScheduleController {
   }
 
   /**
-   * Get choosen schedule.
+   * Get chosen schedule.
    *
    * @param scheduleId UUID of schedule which we want to get
    * @return Schedule.

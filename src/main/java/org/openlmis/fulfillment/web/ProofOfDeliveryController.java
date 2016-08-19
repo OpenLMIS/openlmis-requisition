@@ -99,7 +99,7 @@ public class ProofOfDeliveryController {
   }
 
   /**
-   * Get choosen proofOfDelivery.
+   * Get chosen proofOfDelivery.
    *
    * @param proofOfDeliveryId UUID of proofOfDelivery whose we want to get
    * @return ProofOfDelivery.

@@ -88,7 +88,7 @@ public class ProofOfDeliveryLineController {
   }
 
   /**
-   * Get choosen proofOfDeliveryLine.
+   * Get chosen proofOfDeliveryLine.
    *
    * @param proofOfDeliveryLineId UUID of proofOfDeliveryLine whose we want to get
    * @return ProofOfDeliveryLine.

@@ -394,7 +394,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetChoosenProofOfDelivery() {
+  public void testShouldGetChosenProofOfDelivery() {
 
     ProofOfDelivery response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

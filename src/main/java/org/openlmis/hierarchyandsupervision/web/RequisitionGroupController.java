@@ -61,7 +61,7 @@ public class RequisitionGroupController {
   }
 
   /**
-   * Get choosen requisitionGroup.
+   * Get chosen requisitionGroup.
    *
    * @param requisitionGroupId UUID of requisitionGroup whose we want to get
    * @return RequisitionGroup.

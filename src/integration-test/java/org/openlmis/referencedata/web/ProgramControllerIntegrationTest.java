@@ -134,7 +134,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenProgram() {
+  public void testShouldGetChosenProgram() {
 
     Program response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

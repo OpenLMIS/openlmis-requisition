@@ -135,7 +135,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldGetChoosenRequisitionTemplate() {
+  public void testShouldGetChosenRequisitionTemplate() {
 
     RequisitionTemplate response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

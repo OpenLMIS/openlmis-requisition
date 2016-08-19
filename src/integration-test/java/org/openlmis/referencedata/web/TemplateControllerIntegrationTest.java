@@ -116,7 +116,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenRequisitionTemplate() {
+  public void testShouldGetChosenRequisitionTemplate() {
 
     Template response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

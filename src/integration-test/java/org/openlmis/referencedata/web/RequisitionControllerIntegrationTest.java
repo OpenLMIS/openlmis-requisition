@@ -894,7 +894,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldGetChoosenRequisition() {
+  public void testShouldGetChosenRequisition() {
 
     Requisition response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

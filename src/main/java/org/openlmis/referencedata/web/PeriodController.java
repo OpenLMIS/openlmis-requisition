@@ -132,7 +132,7 @@ public class PeriodController {
   }
 
   /**
-   * Get choosen period.
+   * Get chosen period.
    *
    * @param periodId UUID of period which we want to get
    * @return Period.

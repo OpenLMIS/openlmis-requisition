@@ -81,7 +81,7 @@ public class GeographicLevelController {
   }
 
   /**
-   * Get choosen geographicLevel.
+   * Get chosen geographicLevel.
    *
    * @param geographicLevelId UUID of geographicLevel which we want to get
    * @return geographicLevel.

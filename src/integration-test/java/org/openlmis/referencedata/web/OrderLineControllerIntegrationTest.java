@@ -250,7 +250,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenOrderLine() {
+  public void testShouldGetChosenOrderLine() {
 
     OrderLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

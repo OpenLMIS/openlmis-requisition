@@ -258,7 +258,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenFacility() {
+  public void testShouldGetChosenFacility() {
 
     Facility response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

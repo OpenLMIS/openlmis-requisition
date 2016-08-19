@@ -161,7 +161,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenUser() {
+  public void testShouldGetChosenUser() {
 
     User user = users.get(4);
 

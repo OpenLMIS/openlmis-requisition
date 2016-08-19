@@ -68,7 +68,7 @@ public class UserController {
   }
 
   /**
-   * Get choosen user.
+   * Get chosen user.
    *
    * @param userId UUID of user whose we want to get
    * @return User.

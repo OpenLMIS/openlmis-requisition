@@ -95,7 +95,7 @@ public class TemplateController {
   }
 
   /**
-   * Get choosen template.
+   * Get chosen template.
    *
    * @param templateId UUID of template which we want to get
    * @return Template.

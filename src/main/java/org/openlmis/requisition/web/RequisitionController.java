@@ -164,7 +164,7 @@ public class RequisitionController {
   }
 
   /**
-   * Get choosen requisition.
+   * Get chosen requisition.
    *
    * @param requisitionId UUID of requisition whose we want to get
    * @return Requisition.

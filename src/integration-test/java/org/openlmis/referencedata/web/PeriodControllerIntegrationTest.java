@@ -225,7 +225,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenPeriod() {
+  public void testShouldGetChosenPeriod() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 

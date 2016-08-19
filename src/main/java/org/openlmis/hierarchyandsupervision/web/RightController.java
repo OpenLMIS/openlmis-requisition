@@ -61,7 +61,7 @@ public class RightController {
   }
 
   /**
-   * Get choosen right.
+   * Get chosen right.
    *
    * @param rightId UUID of right whose we want to get
    * @return Right.

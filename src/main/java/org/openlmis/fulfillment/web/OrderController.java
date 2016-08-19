@@ -101,7 +101,7 @@ public class OrderController {
   }
 
   /**
-   * Get choosen order.
+   * Get chosen order.
    *
    * @param orderId UUID of order whose we want to get
    * @return Order.

@@ -64,7 +64,7 @@ public class RequisitionGroupProgramScheduleController {
   }
 
   /**
-   * Get choosen requisitionGroupProgramSchedule.
+   * Get chosen requisitionGroupProgramSchedule.
    *
    * @param requisitionId UUID of requisitionGroupProgramSchedule whose we want to get
    * @return RequisitionGroupProgramSchedule.

@@ -93,7 +93,7 @@ public class FacilityController {
   }
 
   /**
-   * Get choosen facility.
+   * Get chosen facility.
    *
    * @param facilityId UUID of facility which we want to get
    * @return Facility.

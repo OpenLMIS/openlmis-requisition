@@ -62,13 +62,13 @@ public class ProgramController {
   }
 
   /**
-   * Get choosen program.
+   * Get chosen program.
    *
    * @param programId UUID of program which we want to get
    * @return Program.
    */
   @RequestMapping(value = "/programs/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getChoosenProgram(@PathVariable("id") UUID programId) {
+  public ResponseEntity<?> getChosenProgram(@PathVariable("id") UUID programId) {
     Program program = programRepository.findOne(programId);
     if (program == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);

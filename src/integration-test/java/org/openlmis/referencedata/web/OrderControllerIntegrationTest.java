@@ -578,7 +578,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChoosenOrder() {
+  public void testShouldGetChosenOrder() {
 
     Order response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
