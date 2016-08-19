@@ -76,4 +76,4 @@ https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#debu
 
 ## Documentation
 Documentation is available at:
-http://openlmis-requisition.readthedocs.io/en/latest/
+http://openlmis-requisition.readthedocs.io
