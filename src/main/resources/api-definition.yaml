@@ -523,6 +523,7 @@ traits:
                   type: string
                   required: true
                   repeat: false
+
 resourceTypes:
     - collection:
         get:
@@ -723,7 +724,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-
     /{id}/print:
         uriParameters:
             id:
@@ -1042,7 +1042,7 @@ resourceTypes:
                           X-XSS-Protection:
 
 /productCategories:
-    displayName: ProductCategories
+    displayName: Product Categories
     /search:
         get:
             is: [ secured ]
@@ -1104,6 +1104,7 @@ resourceTypes:
                          X-XSS-Protection:
                        body:
                          application/json:
+
 /requisitions:
     displayName: Requisition
     get:
@@ -1421,6 +1422,7 @@ resourceTypes:
                       X-XSS-Protection:
 
 /requisitionLines:
+    displayName: Requisition Lines
     get:
         is: [ secured ]
         description: Get all requisitionLines.
