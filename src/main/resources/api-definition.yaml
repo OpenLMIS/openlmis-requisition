@@ -2552,3 +2552,41 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+
+/facilityOperators:
+    displayName: Facility Operators
+    post:
+          is: [ secured ]
+          description: Add Facility Operator to database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    name:
+                         displayName: Name of Facility Operator in database
+                         type: string
+                         required: true
+                         repeat: false
+                    code:
+                         displayName: code of Facility Operator in database
+                         type: string
+                         required: false
+                         repeat: false
+                    description:
+                         displayName: Description of Facility Operator
+                         type: string
+                         required: false
+                         repeat: false
+                    displayOrder:
+                         displayName: Display order of Facility Operator
+                         type: integer
+                         required: false
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
