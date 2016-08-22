@@ -77,6 +77,26 @@ public class SupervisoryNodeController {
   }
 
   /**
+   * Allows updating supervisoryNode.
+   *
+   * @param supervisoryNode A supervisoryNode bound to the request body
+   * @param supervisoryNodeId UUID of supervisoryNode which we want to update
+   * @return ResponseEntity containing the updated supervisoryNode
+   */
+  @RequestMapping(value = "/supervisoryNodes/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateSupervisoryNode(@RequestBody SupervisoryNode supervisoryNode,
+                                       @PathVariable("id") UUID supervisoryNodeId) {
+    SupervisoryNode supervisoryNodeFromDb = supervisoryNodeRepository.findOne(supervisoryNodeId);
+    if (supervisoryNodeFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating supervisoryNode");
+      SupervisoryNode updatedSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
+      return new ResponseEntity<SupervisoryNode>(updatedSupervisoryNode, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting supervisoryNode.
    *
    * @param supervisoryNodeId UUID of supervisoryNode whose we want to delete

@@ -77,6 +77,27 @@ public class RequisitionGroupController {
   }
 
   /**
+   * Allows updating requisitionGroup.
+   *
+   * @param requisitionGroup A requisitionGroup bound to the request body
+   * @param requisitionGroupId UUID of requisitionGroup which we want to update
+   * @return ResponseEntity containing the updated requisitionGroup
+   */
+  @RequestMapping(value = "/requisitionGroups/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisitionGroup(@RequestBody RequisitionGroup requisitionGroup,
+                                                 @PathVariable("id") UUID requisitionGroupId) {
+    RequisitionGroup requisitionGroupFromDb =
+          requisitionGroupRepository.findOne(requisitionGroupId);
+    if (requisitionGroupFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating requisitionGroup");
+      RequisitionGroup updatedRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
+      return new ResponseEntity<RequisitionGroup>(updatedRequisitionGroup, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting requisitionGroup.
    *
    * @param requisitionGroupId UUID of requisitionGroup whose we want to delete

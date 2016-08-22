@@ -119,7 +119,7 @@ public class OrderController {
   /**
    * Allows deleting order.
    *
-   * @param orderId UUID of order whose we want to delete
+   * @param orderId UUID of order which we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)

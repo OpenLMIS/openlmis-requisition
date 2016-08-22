@@ -36,7 +36,7 @@ public class GeographicLevelController {
     if (geographicLevel == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
-      LOGGER.debug("Creating new facility");
+      LOGGER.debug("Creating new geographicLevel");
       // Ignore provided id
       geographicLevel.setId(null);
       GeographicLevel newGeographicLevel = geographicLevelRepository.save(geographicLevel);
@@ -74,7 +74,7 @@ public class GeographicLevelController {
     if (geographicLevelFromDb == null) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     } else {
-      LOGGER.debug("Updating facility");
+      LOGGER.debug("Updating geographicLevel");
       GeographicLevel updatedGeographicLevel = geographicLevelRepository.save(geographicLevel);
       return new ResponseEntity<GeographicLevel>(updatedGeographicLevel, HttpStatus.OK);
     }
