@@ -27,10 +27,18 @@ services:
   db:
     image: openlmis/postgres
     env_file: .env
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://localhost:514"
+        syslog-facility: "local1"
+    depends_on: [log]
   log:
     image: openlmis/rsyslog
     volumes:
       - '../logs/requisition:/var/log'
+    ports:
+      - "514:514"
   auth:
     image: openlmis/auth
     ports:

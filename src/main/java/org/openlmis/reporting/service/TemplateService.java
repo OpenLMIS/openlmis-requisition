@@ -6,7 +6,6 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-
 import org.apache.log4j.Logger;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
@@ -21,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.UUID;
 
 @Service
 public class TemplateService {
@@ -38,10 +36,6 @@ public class TemplateService {
     return templateRepository.findByName(name);
   }
 
-  public Template getById(UUID id) {
-    return templateRepository.findOne(id);
-  }
-
   /**
    * Validate ".jrmxl" file and insert this template to database.
    */
@@ -51,10 +45,17 @@ public class TemplateService {
     throwIfTemplateWithSameNameAlreadyExists(template.getName());
     validateFile(template, file);
 
+    saveWithParameters(template);
+  }
+
+  /**
+   * Insert template and template parameters to database.
+   */
+  public void saveWithParameters(Template template) {
     templateRepository.save(template);
     for (TemplateParameter parameter : template.getTemplateParameters()) {
       parameter.setTemplate(template);
-      templateParameterRepository.save(parameter);
+      parameter = templateParameterRepository.save(parameter);
     }
   }
 
