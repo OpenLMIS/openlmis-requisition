@@ -1,5 +1,11 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +17,6 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
-import org.openlmis.requisition.domain.Comment;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -19,7 +24,6 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
@@ -27,9 +31,11 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.PeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.domain.ConfigurationSetting;
@@ -41,15 +47,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -198,7 +196,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     user = userRepository.findOne(INITIAL_USER_ID);
@@ -314,7 +312,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -350,7 +348,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -387,7 +385,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -422,7 +420,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -460,7 +458,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -496,7 +494,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -532,7 +530,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setStockOnHand(1);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);
@@ -569,7 +567,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLine.setTotalLossesAndAdjustments(null);
     requisitionLineRepository.save(requisitionLine);
 
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
     requisition.setRequisitionLines(requisitionLines);

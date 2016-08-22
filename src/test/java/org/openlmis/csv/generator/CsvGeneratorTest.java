@@ -3,7 +3,6 @@ package org.openlmis.csv.generator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.mockito.Mockito;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
@@ -20,9 +19,7 @@ import org.openlmis.referencedata.domain.Program;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public class CsvGeneratorTest {
@@ -65,7 +62,7 @@ public class CsvGeneratorTest {
 
   @Test
   public void testCsvWrite() {
-    Set<OrderLine> orderLines = generateOrderLines();
+    List<OrderLine> orderLines = generateOrderLines();
     Order testOrder = Mockito.spy(generateInstance());
     Mockito.doReturn(orderLines).when(testOrder).getOrderLines();
 
@@ -102,8 +99,8 @@ public class CsvGeneratorTest {
     return order;
   }
 
-  private Set<OrderLine> generateOrderLines() {
-    Set<OrderLine> orderLines = new LinkedHashSet<>();
+  private List<OrderLine> generateOrderLines() {
+    List<OrderLine> orderLines = new ArrayList<>();
     orderLines.add(generateOrderLine("Example pName", "1Q1Q1Q1", 11111111));
     orderLines.add(generateOrderLine("Example pName 2", "2Q2Q2Q2", 22222222));
     orderLines.add(generateOrderLine("Example pName 3", "3Q3Q3Q3", 33333333));

@@ -1,5 +1,11 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -26,17 +32,12 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionServiceTest {
@@ -48,7 +49,7 @@ public class RequisitionServiceTest {
   private Requisition requisition2;
   private Requisition requisition3;
   private Set<Requisition> requisitions;
-  private Set<RequisitionLine> requisitionLines;
+  private List<RequisitionLine> requisitionLines;
   private SupervisoryNode supervisoryNode;
   private User user;
   private Facility facility;
@@ -436,7 +437,7 @@ public class RequisitionServiceTest {
     return product;
   }
 
-  private Set<RequisitionLine> generateRequisitionLines() {
+  private List<RequisitionLine> generateRequisitionLines() {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
@@ -447,7 +448,7 @@ public class RequisitionServiceTest {
     requisitionLine.setTotalReceivedQuantity(1);
     requisitionLine.setTotalLossesAndAdjustments(1);
 
-    requisitionLines = new HashSet<>();
+    requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
     return requisitionLines;
   }

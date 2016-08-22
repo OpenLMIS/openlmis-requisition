@@ -17,7 +17,6 @@ import org.openlmis.referencedata.domain.Program;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -51,7 +50,7 @@ public class Requisition extends BaseEntity {
   @JsonIdentityInfo(
       generator = ObjectIdGenerators.IntSequenceGenerator.class,
       property = "requisitionLinesId")
-  private Set<RequisitionLine> requisitionLines;
+  private List<RequisitionLine> requisitionLines;
 
   @JsonIdentityInfo(
       generator = ObjectIdGenerators.IntSequenceGenerator.class,

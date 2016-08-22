@@ -1,5 +1,8 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -52,12 +55,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -228,7 +226,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLine2.setFilledQuantity(15L);
     orderLineRepository.save(orderLine2);
 
-    Set<OrderLine> orderLines = new HashSet<>();
+    List<OrderLine> orderLines = new ArrayList<>();
     orderLines.add(orderLine1);
     orderLines.add(orderLine2);
     order1 = orderRepository.save(order1);

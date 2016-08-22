@@ -18,7 +18,7 @@ import org.openlmis.requisition.domain.Requisition;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -105,7 +105,7 @@ public class Order extends BaseEntity {
       fetch = FetchType.EAGER)
   @Getter
   @Setter
-  private Set<OrderLine> orderLines;
+  private List<OrderLine> orderLines;
 
   @PrePersist
   private void prePersist() {

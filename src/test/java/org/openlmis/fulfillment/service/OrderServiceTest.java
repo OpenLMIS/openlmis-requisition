@@ -39,9 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
@@ -222,7 +220,7 @@ public class OrderServiceTest {
     order.setQuotedCost(BigDecimal.valueOf(1));
     order.setOrderCode("OrderCode" + instanceNumber);
     order.setStatus(OrderStatus.ORDERED);
-    Set<OrderLine> orderLines = new HashSet<>();
+    List<OrderLine> orderLines = new ArrayList<>();
     orderLines.add(generateOrderLine(order));
     order.setOrderLines(orderLines);
     return order;
@@ -238,7 +236,7 @@ public class OrderServiceTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNode(generateSupervisoryNode());
     requisition.setEmergency(true);
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(generateRequisitionLines());
     requisition.setRequisitionLines(requisitionLines);
     return requisition;
