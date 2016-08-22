@@ -42,7 +42,7 @@ public class ProgramProductServiceTest {
   }
 
   @Test
-  public void testShouldFindProgramProductIfMatchedProgramAndFullSupply() {
+  public void shouldFindProgramProductIfMatchedProgramAndFullSupply() {
     when(programProductRepository
             .searchProgramProducts(programProduct.getProgram(), programProduct.isFullSupply()))
             .thenReturn(Arrays.asList(programProduct));

@@ -35,7 +35,7 @@ public class RequisitionTemplateServiceTest {
   }
 
   @Test
-  public void testShouldFindRequisitionTemplateIfItExists() {
+  public void shouldFindRequisitionTemplateIfItExists() {
     when(requisitionTemplateRepository
             .searchRequisitionTemplates(requisitionTemplate.getProgram()))
             .thenReturn(Arrays.asList(requisitionTemplate));

@@ -44,7 +44,7 @@ public class SupplyLineServiceTest {
   }
 
   @Test
-  public void testShouldFindSupplyLineIfMatchedProgramAndSupervisoryNode() {
+  public void shouldFindSupplyLineIfMatchedProgramAndSupervisoryNode() {
     when(supplyLineRepository
             .searchSupplyLines(supplyLines.get(0).getProgram(),
                     supplyLines.get(0).getSupervisoryNode()))

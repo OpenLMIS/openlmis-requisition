@@ -80,7 +80,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void testShouldInitiateRequisitionLineFieldsIfValidRequisitionProvided() {
+  public void shouldInitiateRequisitionLineFieldsIfValidRequisitionProvided() {
     final Integer expectedBeginningBalance = 20;
     final Integer expectedTotalReceivedQuantity = 0;
 
@@ -104,7 +104,7 @@ public class RequisitionLineServiceTest {
 
 
   @Test
-  public void testShouldResetBeginningBalanceWhenSavingRequisitionLine()
+  public void shouldResetBeginningBalanceWhenSavingRequisitionLine()
       throws RequisitionException {
     final Integer expectedBeginningBalance = 20;
 
@@ -125,7 +125,7 @@ public class RequisitionLineServiceTest {
 
 
   @Test
-  public void testShouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
+  public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
     final Integer expectedBeginningBalance = 0;
 
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
@@ -147,7 +147,7 @@ public class RequisitionLineServiceTest {
 
 
   @Test
-  public void testShouldDisplayColumnsInCorrectOrder() {
+  public void shouldDisplayColumnsInCorrectOrder() {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
@@ -177,7 +177,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void testShouldFindRequisitionLineIfItExists() {
+  public void shouldFindRequisitionLineIfItExists() {
     when(requisitionLineRepository.searchRequisitionLines(
         requisition, null)).thenReturn(Arrays.asList(requisitionLine));
 

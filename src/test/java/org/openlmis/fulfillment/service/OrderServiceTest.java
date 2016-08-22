@@ -89,7 +89,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void testShouldConvertRequisitionsToOrders() {
+  public void shouldConvertRequisitionsToOrders() {
     for (Order order : orders) {
       when(orderRepository
               .save(order))
@@ -142,7 +142,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void testShouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
+  public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
     when(orderRepository
             .searchOrders(
                     orders.get(0).getSupplyingFacility(),
@@ -168,7 +168,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void testShouldConvertOrderToCsvIfItExists() {
+  public void shouldConvertOrderToCsvIfItExists() {
     List<String> header = new ArrayList<>();
     header.add(OrderService.DEFAULT_COLUMNS[0]);
     header.add(OrderService.DEFAULT_COLUMNS[1]);

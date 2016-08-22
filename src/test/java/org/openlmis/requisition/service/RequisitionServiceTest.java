@@ -83,7 +83,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldDeleteRequisitionIfItIsInitiated() throws RequisitionException {
+  public void shouldDeleteRequisitionIfItIsInitiated() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.INITIATED);
     boolean deleted = requisitionService.tryDelete(requisition.getId());
 
@@ -91,7 +91,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldNotDeleteRequisitionWhenStatusIsSubmitted() throws RequisitionException {
+  public void shouldNotDeleteRequisitionWhenStatusIsSubmitted() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     boolean deleted = requisitionService.tryDelete(requisition.getId());
 
@@ -99,7 +99,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenDeletingNotExistingRequisition()
+  public void shouldThrowExceptionWhenDeletingNotExistingRequisition()
           throws RequisitionException {
     UUID deletedRequisitionId = requisition.getId();
     when(requisitionRepository
@@ -109,21 +109,21 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldSkipRequisitionIfItIsValid() throws RequisitionException {
+  public void shouldSkipRequisitionIfItIsValid() throws RequisitionException {
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
 
     assertEquals(skippedRequisition.getStatus(), RequisitionStatus.SKIPPED);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenSkippingNotSkippableProgram()
+  public void shouldThrowExceptionWhenSkippingNotSkippableProgram()
           throws RequisitionException {
     requisition.getProgram().setPeriodsSkippable(false);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenSkippingNotExistingRequisition()
+  public void shouldThrowExceptionWhenSkippingNotExistingRequisition()
           throws RequisitionException {
     when(requisitionRepository
             .findOne(requisition.getId()))
@@ -132,7 +132,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldRejectRequisitionIfRequisitionStatusIsAuthorized()
+  public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized()
           throws RequisitionException {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
@@ -141,21 +141,21 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
+  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws RequisitionException {
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisitionService.reject(requisition.getId());
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenRejectingNotExistingRequisition()
+  public void shouldThrowExceptionWhenRejectingNotExistingRequisition()
           throws RequisitionException {
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
     requisitionService.reject(requisition.getId());
   }
 
   @Test
-  public void testShouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
+  public void shouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
     requisition2.setStatus(RequisitionStatus.AUTHORIZED);
@@ -174,7 +174,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
+  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
     user.setSupervisedNode(supervisoryNode);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
@@ -195,7 +195,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldInitiateRequisitionIfItNotAlreadyExist() throws RequisitionException {
+  public void shouldInitiateRequisitionIfItNotAlreadyExist() throws RequisitionException {
     requisition.setStatus(null);
     when(requisitionRepository
             .findOne(requisition.getId()))
@@ -206,19 +206,19 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenInitiatingEmptyRequisition()
+  public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
           throws RequisitionException {
     requisitionService.initiateRequisition(null);
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionWhenInitiatingAlreadyExistingRequisition()
+  public void shouldThrowExceptionWhenInitiatingAlreadyExistingRequisition()
           throws RequisitionException {
     requisitionService.initiateRequisition(requisition);
   }
 
   @Test
-  public void testShouldAuthorizeRequisitionIfItIsSubmitted() throws RequisitionException {
+  public void shouldAuthorizeRequisitionIfItIsSubmitted() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionService.authorize(requisition.getId(), requisition, false);
 
@@ -226,7 +226,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionException.class)
-  public void testShouldThrowExceptionIfAuthorizationIsConfiguredToBeSkipped()
+  public void shouldThrowExceptionIfAuthorizationIsConfiguredToBeSkipped()
       throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     when(configurationSettingService
@@ -253,7 +253,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldReleaseRequisitionsAsOrder() {
+  public void shouldReleaseRequisitionsAsOrder() {
     List<Requisition> requisitions = Arrays.asList(requisition);
     List<Requisition> expectedRequisitions = requisitionService
         .releaseRequisitionsAsOrder(requisitions);
@@ -261,7 +261,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void testShouldFindRequisitionIfItExists() {
+  public void shouldFindRequisitionIfItExists() {
     when(requisitionRepository.searchRequisitions(requisition.getFacility(),
         requisition.getProgram(),
         requisition.getCreatedDate().minusDays(2),

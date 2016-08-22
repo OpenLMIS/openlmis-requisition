@@ -42,7 +42,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void testShouldFindPeriodsWithinProvidedDateIfTheyExist() {
+  public void shouldFindPeriodsWithinProvidedDateIfTheyExist() {
     List<Period> matchedPeriods = new ArrayList<>();
     matchedPeriods.addAll(periods);
     matchedPeriods.remove(periods.get(0));

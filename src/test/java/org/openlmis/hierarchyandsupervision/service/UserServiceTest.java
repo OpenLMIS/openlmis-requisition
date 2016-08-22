@@ -40,7 +40,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testShouldFindUsersIfMatchedRequiredFields() {
+  public void shouldFindUsersIfMatchedRequiredFields() {
     when(userRepository
             .searchUsers(
                     users.get(0).getUsername(),

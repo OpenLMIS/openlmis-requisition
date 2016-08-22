@@ -38,7 +38,7 @@ public class StockServiceTest {
   }
 
   @Test
-  public void testShouldFindStockIfMatchedProduct() {
+  public void shouldFindStockIfMatchedProduct() {
     when(stockRepository
             .searchStocks(stocks.get(0).getProduct()))
             .thenReturn(Arrays.asList(stocks.get(0)));
