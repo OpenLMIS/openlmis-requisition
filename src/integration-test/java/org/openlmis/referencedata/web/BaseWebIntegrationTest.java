@@ -27,10 +27,11 @@ import java.util.UUID;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public abstract class BaseWebIntegrationTest {
-  static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
-  static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
+  protected static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
+  protected static final String RAML_ASSERT_MESSAGE =
+      "HTTP request/response should match RAML definition.";
 
-  RestAssuredClient restAssured;
+  protected RestAssuredClient restAssured;
 
   private static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
