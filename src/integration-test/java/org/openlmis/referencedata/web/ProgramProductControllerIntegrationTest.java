@@ -53,7 +53,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldFindProgramProducts() {
+  public void shouldFindProgramProducts() {
     ProgramProduct[] response = restAssured.given()
             .queryParam(PROGRAM, programProducts.get(0).getProgram().getId())
             .queryParam(FULL_SUPPLY, programProducts.get(0).isFullSupply())

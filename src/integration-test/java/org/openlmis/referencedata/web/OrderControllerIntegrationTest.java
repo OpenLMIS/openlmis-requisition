@@ -355,7 +355,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldNotFinalizeIfWrongOrderStatus() {
+  public void shouldNotFinalizeIfWrongOrderStatus() {
     firstOrder.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(firstOrder);
 
@@ -372,7 +372,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldPrintOrderAsCsv() {
+  public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
             .queryParam("format", "csv")
             .queryParam(ACCESS_TOKEN, getToken())
@@ -393,7 +393,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldPrintOrderAsPdf() {
+  public void shouldPrintOrderAsPdf() {
     restAssured.given()
             .queryParam("format", "pdf")
             .queryParam(ACCESS_TOKEN, getToken())
@@ -407,7 +407,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldConvertRequisitionToOrder() {
+  public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
 
     restAssured.given()
@@ -433,7 +433,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindBySupplyingFacility() {
+  public void shouldFindBySupplyingFacility() {
     Order[] response = restAssured.given()
             .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
             .queryParam(ACCESS_TOKEN, getToken())
@@ -453,7 +453,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindBySupplyingFacilityAndRequestingFacility() {
+  public void shouldFindBySupplyingFacilityAndRequestingFacility() {
     Order[] response = restAssured.given()
             .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
             .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())
@@ -477,7 +477,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
+  public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     Order[] response = restAssured.given()
             .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility().getId())
             .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility().getId())

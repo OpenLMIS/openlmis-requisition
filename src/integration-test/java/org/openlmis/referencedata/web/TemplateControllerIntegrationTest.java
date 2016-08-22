@@ -21,7 +21,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private TemplateRepository templateRepository;
 
   @Test
-  public void testShouldAddReportTemplate() throws IOException {
+  public void shouldAddReportTemplate() throws IOException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
 
     restAssured.given()

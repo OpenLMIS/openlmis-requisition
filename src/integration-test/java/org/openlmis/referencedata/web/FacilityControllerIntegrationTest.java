@@ -139,7 +139,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindOrdersFilledByFacility() {
+  public void shouldFindOrdersFilledByFacility() {
     Order[] response = restAssured.given()
         .queryParam("access_token", getToken())
         .pathParam("id", user.getHomeFacility().getId())

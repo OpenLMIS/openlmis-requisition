@@ -59,7 +59,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldFindSupplyLines() {
+  public void shouldFindSupplyLines() {
     SupplyLine[] response = restAssured.given()
         .queryParam("program", supplyLine.getProgram().getId())
         .queryParam("supervisoryNode", supplyLine.getSupervisoryNode().getId())

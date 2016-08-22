@@ -53,7 +53,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreatePeriodWithoutGap() {
+  public void shouldCreatePeriodWithoutGap() {
     firstPeriod.setProcessingSchedule(schedule);
 
     restAssured.given()
@@ -83,7 +83,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreatePeriodWithAGap() {
+  public void shouldCreatePeriodWithAGap() {
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
     scheduleRepository.save(schedule);
@@ -116,7 +116,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDisplayTotalDifference() {
+  public void shouldDisplayTotalDifference() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -134,7 +134,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindPeriods() {
+  public void shouldFindPeriods() {
     firstPeriod.setProcessingSchedule(schedule);
     firstPeriod.setStartDate(LocalDate.now().plusDays(1));
     periodRepository.save(firstPeriod);

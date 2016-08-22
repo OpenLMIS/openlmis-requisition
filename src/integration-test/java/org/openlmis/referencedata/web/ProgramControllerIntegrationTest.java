@@ -32,7 +32,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdate() {
+  public void shouldUpdate() {
     ProgramDto programDto = new ProgramDto(program.getId(), "newCode", "newName");
 
     Program response = restAssured.given()
@@ -51,7 +51,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldNotUpdateIfProgramWithGivenIdNotExist() {
+  public void shouldNotUpdateIfProgramWithGivenIdNotExist() {
     ProgramDto programDto = new ProgramDto(UUID.randomUUID(), "new code", "new name");
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -65,7 +65,7 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldNotUpdateIfProgramIdIsNull() {
+  public void shouldNotUpdateIfProgramIdIsNull() {
     ProgramDto programDto = new ProgramDto(null, "new code", "new name");
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

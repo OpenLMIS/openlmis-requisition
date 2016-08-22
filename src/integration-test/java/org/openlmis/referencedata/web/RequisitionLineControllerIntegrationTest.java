@@ -92,7 +92,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldFindRequisitionLines() {
+  public void shouldFindRequisitionLines() {
     RequisitionLine[] response = restAssured.given()
         .queryParam(REQUISITION, requisition.getId())
         .queryParam(PRODUCT, product.getId())

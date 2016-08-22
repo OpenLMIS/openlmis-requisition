@@ -328,7 +328,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
+  public void shouldPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
     FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
     MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",
