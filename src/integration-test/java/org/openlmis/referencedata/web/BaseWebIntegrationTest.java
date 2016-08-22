@@ -30,10 +30,10 @@ public abstract class BaseWebIntegrationTest {
   static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
 
-  static final RamlDefinition ramlDefinition =
-      RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-
   RestAssuredClient restAssured;
+
+  private static final RamlDefinition ramlDefinition =
+      RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
 
   private static final String BASE_URL = System.getenv("BASE_URL");
 
