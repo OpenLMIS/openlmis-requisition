@@ -142,6 +142,7 @@ public class CleanRepositoryHelper {
    */
   @Transactional
   public void cleanAll() {
+    requisitionGroupRepository.deleteAll();
     templateParameterRepository.deleteAll();
     templateRepository.deleteAll();
     proofOfDeliveryLineRepository.deleteAll();
@@ -167,7 +168,6 @@ public class CleanRepositoryHelper {
     scheduleRepository.deleteAll();
     facilityRepository.deleteAll();
     facilityTypeRepository.deleteAll();
-    requisitionGroupRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     facilityOperatorRepository.deleteAll();
     geographicLevelRepository.deleteAll();

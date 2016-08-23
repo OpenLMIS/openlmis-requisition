@@ -3618,8 +3618,106 @@ resourceTypes:
                       body:
                           application/json:
 
-/requisitionGroupProgramSchedules:
+/requisitionGroups:
     displayName: Requisition Group
+    post:
+          is: [ secured ]
+          description: Create new requisitionGroup.
+          body:
+              application/json:
+          responses:
+              "201":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+    get:
+          is: [ secured ]
+          description: Get all requisitionGroups.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                     application/json:
+    /{id}:
+          uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+          put:
+              is: [ secured ]
+              description: Update existing requisitionGroup.
+              body:
+                  application/json:
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+          get:
+              is: [ secured ]
+              description: Get chosen requisitionGroup.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+          delete:
+              is: [ secured ]
+              description: Delete chosen requisitionGroup.
+              responses:
+                  "204":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "409":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+
+/requisitionGroupProgramSchedules:
+    displayName: Requisition Group Program Schedule
     post:
           is: [ secured ]
           description: Create new requisitionGroupProgramSchedule.
@@ -3697,7 +3795,7 @@ resourceTypes:
                           application/json:
           delete:
               is: [ secured ]
-              description: Delete chosen requisitionGroup.
+              description: Delete chosen requisitionGroupProgramSchedule.
               responses:
                   "204":
                       headers:

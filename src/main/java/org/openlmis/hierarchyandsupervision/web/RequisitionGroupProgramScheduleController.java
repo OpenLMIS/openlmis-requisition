@@ -81,6 +81,30 @@ public class RequisitionGroupProgramScheduleController {
   }
 
   /**
+   * Allows updating requisitionGroupProgramSchedule.
+   *
+   * @param reqGroupProgSchedule A requisitionGroupProgramSchedule
+   *                                        bound to the request body
+   * @param requisitionId UUID of requisitionGroupProgramSchedule
+   *                                          which we want to update
+   * @return ResponseEntity containing the updated requisitionGroup
+   */
+  @RequestMapping(value = "/requisitionGroupProgramSchedules/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisitionGroup(
+        @RequestBody RequisitionGroupProgramSchedule reqGroupProgSchedule,
+        @PathVariable("id") UUID requisitionId) {
+    RequisitionGroupProgramSchedule reqGroupProgramSchedule =
+          repository.findOne(requisitionId);
+    if (reqGroupProgramSchedule == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating requisitionGroupProgramSchedule");
+      RequisitionGroupProgramSchedule updated = repository.save(reqGroupProgramSchedule);
+      return new ResponseEntity<RequisitionGroupProgramSchedule>(updated, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Allows deleting requisitionGroupProgramSchedule.
    *
    * @param requisitionId UUID of requisitionGroupProgramSchedule whose we want to delete
