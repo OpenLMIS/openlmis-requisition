@@ -1,11 +1,12 @@
 package org.openlmis.hierarchyandsupervision.service;
 
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.utils.AuthUserRequest;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.utils.AuthUserRequest;
 import org.openlmis.referencedata.domain.Facility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class UserService {
   /**
    * Creating or updating users.
    */
+  @Transactional
   public void save(User user, String token) {
     User savedUser = userRepository.save(user);
     saveAuthUser(savedUser, token);
