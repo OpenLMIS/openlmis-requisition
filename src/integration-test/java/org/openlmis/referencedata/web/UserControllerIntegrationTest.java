@@ -68,7 +68,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindUsers() {
+  public void shouldFindUsers() {
     User[] response = restAssured.given()
             .queryParam(USERNAME, users.get(0).getUsername())
             .queryParam(FIRST_NAME, users.get(0).getFirstName())
@@ -108,7 +108,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDeleteUser() {
+  public void shouldDeleteUser() {
 
     User user = users.get(4);
 
@@ -126,7 +126,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreateUser() {
+  public void shouldCreateUser() {
 
     User user = users.get(4);
     userRepository.delete(user);
@@ -144,7 +144,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllUsers() {
+  public void shouldGetAllUsers() {
 
     User[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -161,7 +161,7 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenUser() {
+  public void shouldGetChosenUser() {
 
     User user = users.get(4);
 

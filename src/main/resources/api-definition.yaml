@@ -3372,7 +3372,7 @@ resourceTypes:
     displayName: Requisition Group
     post:
           is: [ secured ]
-          description: Create new requisitionGroup.
+          description: Create new requisitionGroupProgramSchedule.
           body:
               application/json:
           responses:
@@ -3390,7 +3390,7 @@ resourceTypes:
                       application/json:
     get:
           is: [ secured ]
-          description: Get all requisitionGroups.
+          description: Get all requisitionGroupProgramSchedules.
           responses:
               "200":
                   headers:
@@ -3413,7 +3413,7 @@ resourceTypes:
                 repeat: false
           put:
               is: [ secured ]
-              description: Update existing requisitionGroup.
+              description: Update existing requisitionGroupProgramSchedule.
               body:
                   application/json:
               responses:
@@ -3431,7 +3431,7 @@ resourceTypes:
                           application/json:
           get:
               is: [ secured ]
-              description: Get chosen requisitionGroup.
+              description: Get chosen requisitionGroupProgramSchedule.
               responses:
                   "200":
                       headers:
@@ -3447,7 +3447,7 @@ resourceTypes:
                           application/json:
           delete:
               is: [ secured ]
-              description: Delete chosen requisitionGroup.
+              description: Delete chosen requisitionGroupProgramSchedule.
               responses:
                   "204":
                       headers:

@@ -56,7 +56,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreatePeriodWithoutGap() {
+  public void shouldCreatePeriodWithoutGap() {
     firstPeriod.setProcessingSchedule(schedule);
 
     restAssured.given()
@@ -86,7 +86,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreatePeriodWithAGap() {
+  public void shouldCreatePeriodWithAGap() {
     schedule.setCode("newCode");
     schedule.setName("newSchedule");
     scheduleRepository.save(schedule);
@@ -119,7 +119,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDisplayTotalDifference() {
+  public void shouldDisplayTotalDifference() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -137,7 +137,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindPeriods() {
+  public void shouldFindPeriods() {
     firstPeriod.setProcessingSchedule(schedule);
     firstPeriod.setStartDate(LocalDate.now().plusDays(1));
     periodRepository.save(firstPeriod);
@@ -167,7 +167,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDeletePeriod() {
+  public void shouldDeletePeriod() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -185,7 +185,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdatePeriod() {
+  public void shouldUpdatePeriod() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
     firstPeriod.setDescription("OpenLMIS");
@@ -206,7 +206,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllPeriods() {
+  public void shouldGetAllPeriods() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
@@ -225,7 +225,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenPeriod() {
+  public void shouldGetChosenPeriod() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 

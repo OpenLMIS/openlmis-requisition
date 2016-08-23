@@ -97,7 +97,7 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
-  public void testShouldDeleteFacilityTypeApprovedProduct() {
+  public void shouldDeleteFacilityTypeApprovedProduct() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -113,7 +113,7 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
-  public void testShouldCreateFacilityTypeApprovedProduct() {
+  public void shouldCreateFacilityTypeApprovedProduct() {
 
     repository.delete(facilityTypeAppProd);
 
@@ -130,7 +130,7 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
-  public void testShouldUpdateFacilityTypeApprovedProduct() {
+  public void shouldUpdateFacilityTypeApprovedProduct() {
 
     facilityTypeAppProd.setMaxMonthsOfStock(9.00);
 
@@ -150,7 +150,7 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
-  public void testShouldGetAllFacilityTypeApprovedProducts() {
+  public void shouldGetAllFacilityTypeApprovedProducts() {
 
     FacilityTypeApprovedProduct[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -167,7 +167,7 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
-  public void testShouldGetChosenFacilityTypeApprovedProduct() {
+  public void shouldGetChosenFacilityTypeApprovedProduct() {
 
     FacilityTypeApprovedProduct response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

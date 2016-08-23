@@ -44,7 +44,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldDeleteGeographicZone() {
+  public void shouldDeleteGeographicZone() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -60,7 +60,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldCreateGeographicZone() {
+  public void shouldCreateGeographicZone() {
 
     geographicZoneRepository.delete(geoZone);
 
@@ -77,7 +77,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldUpdateGeographicZone() {
+  public void shouldUpdateGeographicZone() {
 
     geoZone.setCode("OpenLMIS");
 
@@ -97,7 +97,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldGetAllGeographicZones() {
+  public void shouldGetAllGeographicZones() {
 
     GeographicZone[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -114,7 +114,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldGetChosenGeographicZone() {
+  public void shouldGetChosenGeographicZone() {
 
     GeographicZone response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

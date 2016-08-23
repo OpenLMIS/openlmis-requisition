@@ -217,7 +217,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldFindRequisitions() {
+  public void shouldFindRequisitions() {
     Requisition[] response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .queryParam("program", program.getId())
@@ -259,7 +259,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldSubmitCorrectRequisition() {
+  public void shouldSubmitCorrectRequisition() {
 
     Requisition response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -279,7 +279,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullRequisitionLines() {
+  public void shouldNotSubmitRequisitionWithNullRequisitionLines() {
 
     requisition.setRequisitionLines(null);
     requisition = requisitionRepository.save(requisition);
@@ -303,7 +303,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
@@ -339,7 +339,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -375,7 +375,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -412,7 +412,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -448,7 +448,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -485,7 +485,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullStockHandInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullStockHandInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -521,7 +521,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
@@ -558,7 +558,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotSubmitRequisitionWithNullAttributesInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullAttributesInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
@@ -595,7 +595,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldSkipRequisition() {
+  public void shouldSkipRequisition() {
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -609,7 +609,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldRejectRequisition() {
+  public void shouldRejectRequisition() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -627,7 +627,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotRejectWithWrongStatus() {
+  public void shouldNotRejectWithWrongStatus() {
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -642,7 +642,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldDeleteRequisition() {
+  public void shouldDeleteRequisition() {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
@@ -661,7 +661,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotDeleteRequisitionWithWrongStatus() {
+  public void shouldNotDeleteRequisitionWithWrongStatus() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -687,7 +687,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldGetCommentsForRequisition() {
+  public void shouldGetCommentsForRequisition() {
     createComment(user, requisition, "First comment");
     createComment(user, requisition, "Second comment");
 
@@ -711,7 +711,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldGetRequisitionsForApprovalForSpecificUser() {
+  public void shouldGetRequisitionsForApprovalForSpecificUser() {
     requisition.setSupervisoryNode(supervisoryNode);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -741,7 +741,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldInsertComment() {
+  public void shouldInsertComment() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -786,14 +786,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldApproveAuthorizedRequisition() {
+  public void shouldApproveAuthorizedRequisition() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
     testApproveRequisition(requisition);
   }
 
   @Test
-  public void testShouldApproveSubmittedRequisitionIfSkippedAuthorization() {
+  public void shouldApproveSubmittedRequisitionIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -801,7 +801,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldInitializeRequisition() {
+  public void shouldInitializeRequisition() {
 
     requisitionRepository.delete(requisition);
 
@@ -818,7 +818,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldGetSubmittedRequisitions() {
+  public void shouldGetSubmittedRequisitions() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -838,7 +838,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldAuthorizeRequisition() {
+  public void shouldAuthorizeRequisition() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
@@ -857,7 +857,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldNotAuthorizeIfSkippedAuthorization() {
+  public void shouldNotAuthorizeIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -877,7 +877,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldGetAllRequisitions() {
+  public void shouldGetAllRequisitions() {
 
     Requisition[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -894,7 +894,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldGetChosenRequisition() {
+  public void shouldGetChosenRequisition() {
 
     Requisition response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -911,7 +911,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void testShouldUpdateRequisition() {
+  public void shouldUpdateRequisition() {
 
     requisition.setStatus(RequisitionStatus.APPROVED);
 

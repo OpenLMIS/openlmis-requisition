@@ -41,7 +41,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldFindRequisitionTemplates() {
+  public void shouldFindRequisitionTemplates() {
     RequisitionTemplate[] response = restAssured.given()
         .queryParam(PROGRAM, requisitionTemplate.getProgram().getId())
         .queryParam(ACCESS_TOKEN, getToken())
@@ -64,7 +64,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldDeleteRequisitionTemplate() {
+  public void shouldDeleteRequisitionTemplate() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -80,7 +80,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldCreateRequisitionTemplate() {
+  public void shouldCreateRequisitionTemplate() {
 
     requisitionTemplateRepository.delete(requisitionTemplate);
 
@@ -97,7 +97,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldUpdateRequisitionTemplate() {
+  public void shouldUpdateRequisitionTemplate() {
 
     Program program = generateProgram();
     requisitionTemplate.setProgram(program);
@@ -118,7 +118,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldGetAllRequisitionTemplates() {
+  public void shouldGetAllRequisitionTemplates() {
 
     RequisitionTemplate[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -135,7 +135,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldGetChosenRequisitionTemplate() {
+  public void shouldGetChosenRequisitionTemplate() {
 
     RequisitionTemplate response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

@@ -50,7 +50,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDeleteStock() {
+  public void shouldDeleteStock() {
 
     Stock stock = stocks.get(4);
 
@@ -68,7 +68,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreateStock() {
+  public void shouldCreateStock() {
 
     Stock stock = stocks.get(4);
     stockRepository.delete(stock);
@@ -86,7 +86,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdateStock() {
+  public void shouldUpdateStock() {
 
     Stock stock = stocks.get(4);
     stock.setStoredQuantity(1234L);
@@ -107,7 +107,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllStocks() {
+  public void shouldGetAllStocks() {
 
     Stock[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -124,7 +124,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenStock() {
+  public void shouldGetChosenStock() {
 
     Stock stock = stocks.get(4);
 
@@ -143,7 +143,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindStocks() {
+  public void shouldFindStocks() {
     Stock[] response = restAssured.given()
             .queryParam("product", stocks.get(0).getProduct().getId())
             .queryParam("access_token", getToken())

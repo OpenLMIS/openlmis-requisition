@@ -89,7 +89,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldDeleteSupervisoryNode() {
+  public void shouldDeleteSupervisoryNode() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -105,7 +105,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldCreateSupervisoryNode() {
+  public void shouldCreateSupervisoryNode() {
 
     repository.delete(supervisoryNode);
 
@@ -122,7 +122,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldUpdateSupervisoryNode() {
+  public void shouldUpdateSupervisoryNode() {
 
     supervisoryNode.setCode("OpenLMIS");
 
@@ -142,7 +142,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetAllSupervisoryNodes() {
+  public void shouldGetAllSupervisoryNodes() {
 
     SupervisoryNode[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -159,7 +159,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetChosenSupervisoryNode() {
+  public void shouldGetChosenSupervisoryNode() {
 
     SupervisoryNode response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

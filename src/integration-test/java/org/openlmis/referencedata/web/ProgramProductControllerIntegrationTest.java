@@ -59,7 +59,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldFindProgramProducts() {
+  public void shouldFindProgramProducts() {
     ProgramProduct[] response = restAssured.given()
             .queryParam(PROGRAM, programProducts.get(0).getProgram().getId())
             .queryParam(FULL_SUPPLY, programProducts.get(0).isFullSupply())
@@ -83,7 +83,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldDeleteProgramProduct() {
+  public void shouldDeleteProgramProduct() {
 
     ProgramProduct programProduct = programProducts.get(4);
 
@@ -101,7 +101,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldCreateProgramProduct() {
+  public void shouldCreateProgramProduct() {
 
     ProgramProduct programProduct = programProducts.get(4);
     programProductRepository.delete(programProduct);
@@ -119,7 +119,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldUpdateProgramProduct() {
+  public void shouldUpdateProgramProduct() {
 
     ProgramProduct programProduct = programProducts.get(4);
     programProduct.setDosesPerMonth(4);
@@ -140,7 +140,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldGetAllProgramProducts() {
+  public void shouldGetAllProgramProducts() {
 
     ProgramProduct[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -157,7 +157,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void testShouldGetChosenProgramProduct() {
+  public void shouldGetChosenProgramProduct() {
 
     ProgramProduct programProduct = programProducts.get(4);
 

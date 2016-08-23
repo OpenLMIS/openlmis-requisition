@@ -42,7 +42,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldFindProductCategories() {
+  public void shouldFindProductCategories() {
     ProductCategory[] response = restAssured.given()
             .queryParam(CODE, productCategories.get(0).getCode())
             .queryParam(ACCESS_TOKEN, getToken())
@@ -75,7 +75,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldDeleteProductCategory() {
+  public void shouldDeleteProductCategory() {
 
     ProductCategory productCategory = productCategories.get(4);
 
@@ -93,7 +93,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldCreateProductCategory() {
+  public void shouldCreateProductCategory() {
 
     ProductCategory productCategory = productCategories.get(4);
     productCategoryRepository.delete(productCategory);
@@ -111,7 +111,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldUpdateProductCategory() {
+  public void shouldUpdateProductCategory() {
 
     ProductCategory productCategory = productCategories.get(4);
     productCategory.setCode("OpenLMIS");
@@ -132,7 +132,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetAllProductCategories() {
+  public void shouldGetAllProductCategories() {
 
     ProductCategory[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -149,7 +149,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetChosenProductCategory() {
+  public void shouldGetChosenProductCategory() {
 
     ProductCategory productCategory = productCategories.get(4);
 

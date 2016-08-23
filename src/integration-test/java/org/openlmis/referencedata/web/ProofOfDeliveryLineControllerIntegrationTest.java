@@ -289,7 +289,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldDeleteProofOfDeliveryLine() {
+  public void shouldDeleteProofOfDeliveryLine() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -305,7 +305,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldGetAllProofOfDeliveryLines() {
+  public void shouldGetAllProofOfDeliveryLines() {
 
     ProofOfDeliveryLine[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -322,7 +322,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void testShouldGetChosenProofOfDeliveryLine() {
+  public void shouldGetChosenProofOfDeliveryLine() {
 
     ProofOfDeliveryLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

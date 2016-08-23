@@ -147,7 +147,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldFindOrdersFilledByFacility() {
+  public void shouldFindOrdersFilledByFacility() {
     Order[] response = restAssured.given()
         .queryParam("access_token", getToken())
         .pathParam("id", user.getHomeFacility().getId())
@@ -175,7 +175,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDeleteFacility() {
+  public void shouldDeleteFacility() {
 
     user.setHomeFacility(null);
     userRepository.save(user);
@@ -198,7 +198,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreateFacility() {
+  public void shouldCreateFacility() {
 
     user.setHomeFacility(null);
     userRepository.save(user);
@@ -221,7 +221,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdateFacility() {
+  public void shouldUpdateFacility() {
 
     facility.setDescription("OpenLMIS");
 
@@ -241,7 +241,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllFacilities() {
+  public void shouldGetAllFacilities() {
 
     Facility[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -258,7 +258,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenFacility() {
+  public void shouldGetChosenFacility() {
 
     Facility response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

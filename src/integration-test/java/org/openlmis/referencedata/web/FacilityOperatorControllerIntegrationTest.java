@@ -41,7 +41,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void testShouldCreateFacilityOperator() {
+  public void shouldCreateFacilityOperator() {
     facilityOperatorRepository.delete(facilityOperators);
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -57,7 +57,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
 
 
   @Test
-  public void testShouldGetAllFacilityOperators() {
+  public void shouldGetAllFacilityOperators() {
     FacilityOperator[] response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -72,7 +72,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void testShouldUpdateFacilityOperator() {
+  public void shouldUpdateFacilityOperator() {
     facilityOperators.get(0).setName("NewNameUpdate");
     FacilityOperator response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -91,7 +91,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
 
 
   @Test
-  public void testShouldGetFacilityOperator() {
+  public void shouldGetFacilityOperator() {
 
     FacilityOperator response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -108,7 +108,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void testShouldDeleteFacilityOperator() {
+  public void shouldDeleteFacilityOperator() {
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())

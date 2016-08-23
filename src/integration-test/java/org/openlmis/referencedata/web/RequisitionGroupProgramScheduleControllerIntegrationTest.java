@@ -56,7 +56,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   }
 
   @Test
-  public void testShouldDeleteRequisitionGroupProgramSchedule() {
+  public void shouldDeleteRequisitionGroupProgramSchedule() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -72,7 +72,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   }
 
   @Test
-  public void testShouldCreateRequisitionGroupProgramSchedule() {
+  public void shouldCreateRequisitionGroupProgramSchedule() {
 
     repository.delete(reqGroupProgSchedule);
 
@@ -89,7 +89,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   }
 
   @Test
-  public void testShouldGetAllRequisitionGroupsProgramSchedule() {
+  public void shouldGetAllRequisitionGroupsProgramSchedule() {
 
     RequisitionGroupProgramSchedule[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -107,7 +107,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   }
 
   @Test
-  public void testShouldGetChosenRequisitionGroupProgramSchedule() {
+  public void shouldGetChosenRequisitionGroupProgramSchedule() {
 
     RequisitionGroupProgramSchedule response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

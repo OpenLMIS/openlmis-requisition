@@ -196,7 +196,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreateOrder() {
+  public void shouldCreateOrder() {
 
     orderLineRepository.delete(orderLine);
 
@@ -213,7 +213,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllOrders() {
+  public void shouldGetAllOrders() {
 
     OrderLine[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -230,7 +230,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdateOrderLine() {
+  public void shouldUpdateOrderLine() {
 
     orderLine.setOrderedQuantity(100L);
 
@@ -250,7 +250,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenOrderLine() {
+  public void shouldGetChosenOrderLine() {
 
     OrderLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

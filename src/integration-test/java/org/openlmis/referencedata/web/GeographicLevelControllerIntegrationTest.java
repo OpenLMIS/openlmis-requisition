@@ -35,7 +35,7 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldDeleteGeographicLevel() {
+  public void shouldDeleteGeographicLevel() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -51,7 +51,7 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldCreateGeographicLevel() {
+  public void shouldCreateGeographicLevel() {
 
     geographicLevelRepository.delete(geoLevel);
 
@@ -68,7 +68,7 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldUpdateGeographicLevel() {
+  public void shouldUpdateGeographicLevel() {
 
     geoLevel.setCode("OpenLMIS");
 
@@ -88,7 +88,7 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetAllGeographicLevels() {
+  public void shouldGetAllGeographicLevels() {
 
     GeographicLevel[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -105,7 +105,7 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetChosenGeographicLevel() {
+  public void shouldGetChosenGeographicLevel() {
 
     GeographicLevel response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

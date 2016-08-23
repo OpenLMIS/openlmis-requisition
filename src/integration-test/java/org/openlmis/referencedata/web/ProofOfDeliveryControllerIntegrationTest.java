@@ -320,7 +320,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
+  public void shouldPrintProofOfDeliveryToPdf() throws IOException, ReportingException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
     FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
     MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",
@@ -341,7 +341,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldDeleteProofOfDelivery() {
+  public void shouldDeleteProofOfDelivery() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -357,7 +357,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldUpdateProofOfDelivery() {
+  public void shouldUpdateProofOfDelivery() {
 
     proofOfDelivery.setTotalReceivedPacks(2);
 
@@ -377,7 +377,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetAllProofOfDeliveries() {
+  public void shouldGetAllProofOfDeliveries() {
 
     ProofOfDelivery[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -394,7 +394,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetChosenProofOfDelivery() {
+  public void shouldGetChosenProofOfDelivery() {
 
     ProofOfDelivery response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

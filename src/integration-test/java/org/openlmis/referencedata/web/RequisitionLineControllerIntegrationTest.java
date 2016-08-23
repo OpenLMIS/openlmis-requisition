@@ -96,7 +96,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldFindRequisitionLines() {
+  public void shouldFindRequisitionLines() {
     RequisitionLine[] response = restAssured.given()
         .queryParam(REQUISITION, requisition.getId())
         .queryParam(PRODUCT, product.getId())
@@ -132,7 +132,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldCreateRequisitionLine() {
+  public void shouldCreateRequisitionLine() {
 
     requisitionLineRepository.delete(requisitionLine);
 
@@ -149,7 +149,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldUpdateRequisitionLine() {
+  public void shouldUpdateRequisitionLine() {
 
     requisitionLine.setBeginningBalance(1);
 
@@ -169,7 +169,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetAllRequisitionLines() {
+  public void shouldGetAllRequisitionLines() {
 
     RequisitionLine[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -186,7 +186,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void testShouldGetChosenRequisitionLine() {
+  public void shouldGetChosenRequisitionLine() {
 
     RequisitionLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

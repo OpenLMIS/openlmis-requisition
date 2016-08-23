@@ -66,7 +66,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldFindSupplyLines() {
+  public void shouldFindSupplyLines() {
     SupplyLine[] response = restAssured.given()
         .queryParam("program", supplyLine.getProgram().getId())
         .queryParam("supervisoryNode", supplyLine.getSupervisoryNode().getId())
@@ -93,7 +93,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldDeleteSupplyLine() {
+  public void shouldDeleteSupplyLine() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -109,7 +109,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldCreateSupplyLine() {
+  public void shouldCreateSupplyLine() {
 
     supplyLineRepository.delete(supplyLine);
 
@@ -126,7 +126,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldUpdateSupplyLine() {
+  public void shouldUpdateSupplyLine() {
 
     supplyLine.setDescription("OpenLMIS");
 
@@ -146,7 +146,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldGetAllSupplyLines() {
+  public void shouldGetAllSupplyLines() {
 
     SupplyLine[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -163,7 +163,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void testShouldGetChosenSupplyLine() {
+  public void shouldGetChosenSupplyLine() {
 
     SupplyLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

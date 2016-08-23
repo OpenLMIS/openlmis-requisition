@@ -52,7 +52,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDisplayTotalDifference() {
+  public void shouldDisplayTotalDifference() {
     String response = restAssured.given()
         .pathParam("id", schedule.getId())
         .queryParam("access_token", getToken())
@@ -67,7 +67,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDeleteSchedule() {
+  public void shouldDeleteSchedule() {
 
     periodRepository.delete(period);
 
@@ -85,7 +85,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldCreateSchedule() {
+  public void shouldCreateSchedule() {
 
     periodRepository.delete(period);
     scheduleRepository.delete(schedule);
@@ -103,7 +103,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdateSchedule() {
+  public void shouldUpdateSchedule() {
 
     schedule.setDescription("OpenLMIS");
 
@@ -123,7 +123,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllSchedules() {
+  public void shouldGetAllSchedules() {
 
     Schedule[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -140,7 +140,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenSchedule() {
+  public void shouldGetChosenSchedule() {
 
     Schedule response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

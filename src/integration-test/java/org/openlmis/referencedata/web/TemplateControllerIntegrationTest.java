@@ -44,7 +44,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldAddReportTemplate() throws IOException {
+  public void shouldAddReportTemplate() throws IOException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
 
     restAssured.given()
@@ -63,7 +63,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldDeleteTemplate() {
+  public void shouldDeleteTemplate() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -79,7 +79,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldUpdateRequisitionTemplate() {
+  public void shouldUpdateRequisitionTemplate() {
 
     template.setDescription(TEMPLATE_CONTROLLER_TEST);
 
@@ -99,7 +99,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetAllRequisitionTemplates() {
+  public void shouldGetAllRequisitionTemplates() {
 
     Template[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -116,7 +116,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void testShouldGetChosenRequisitionTemplate() {
+  public void shouldGetChosenRequisitionTemplate() {
 
     Template response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
