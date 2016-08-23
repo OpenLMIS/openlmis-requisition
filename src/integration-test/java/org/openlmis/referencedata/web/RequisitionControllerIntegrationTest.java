@@ -65,6 +65,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
   private static final String SUBMITTED_URL = RESOURCE_URL + "/submitted";
   private static final String AUTHORIZATION_URL = RESOURCE_URL + "/{id}/authorize";
+  private static final String ID_COMMENT_URL = RESOURCE_URL + "/comments/{id}";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
@@ -678,12 +679,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private void createComment(User author, Requisition req, String commentText) {
+  private Comment createComment(User author, Requisition req, String commentText) {
     Comment comment = new Comment();
     comment.setAuthor(author);
     comment.setRequisition(req);
     comment.setBody(commentText);
     commentRepository.save(comment);
+    return comment;
   }
 
   @Test
@@ -765,6 +767,67 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Comment> commentList = Arrays.asList(response);
     assertEquals("Previous comment", commentList.get(0).getBody());
     assertEquals("User comment", commentList.get(1).getBody());
+  }
+
+  @Test
+  public void shouldGetChosenComment() {
+
+    Comment comment = createComment(user, requisition, "Comment");
+
+    Comment response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .when()
+          .get(ID_COMMENT_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment.class);
+
+    assertTrue(commentRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateComment() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    Comment comment = createComment(user, requisition, "Comment");
+    comment.setBody("OpenLMIS");
+
+    Comment response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .body(comment)
+          .when()
+          .put(ID_COMMENT_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment.class);
+
+    assertEquals(response.getBody(), "OpenLMIS");
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteComment() {
+
+    Comment comment = createComment(user, requisition, "Comment");
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .when()
+          .delete(ID_COMMENT_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(commentRepository.exists(requisition.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private void testApproveRequisition(Requisition requisition) {

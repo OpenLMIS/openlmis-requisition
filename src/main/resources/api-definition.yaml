@@ -1610,6 +1610,60 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+    /comments/{id}:
+        uriParameters:
+            id:
+                displayName: id
+                description: comment id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete comment from requisition.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen comment from requisition.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update comment.
+            body:
+                application/json:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
 /requisitionLines:
     displayName: Requisition Lines

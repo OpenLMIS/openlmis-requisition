@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -261,6 +262,74 @@ public class RequisitionController {
     MappingJacksonValue value = new MappingJacksonValue(comments);
     value.setSerializationView(View.BasicInformation.class);
     return new ResponseEntity<>(value, HttpStatus.OK);
+  }
+
+  /**
+   * Allows updating comments.
+   *
+   * @param comment A comment bound to the request body
+   * @param commentId UUID of comment which we want to update
+   * @return ResponseEntity containing the updated requisition
+   */
+  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisitionComment(@RequestBody Comment comment,
+                                                    @PathVariable("id") UUID commentId,
+                                                    OAuth2Authentication auth) {
+    Comment requisitionComment = commentRepository.findOne(commentId);
+    if (requisitionComment == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating comment");
+      comment.setRequisition(requisitionComment.getRequisition());
+
+      User user = (User) auth.getPrincipal();
+      comment.setAuthor(user);
+
+      Comment updatedComment = commentRepository.save(comment);
+      MappingJacksonValue value = new MappingJacksonValue(updatedComment);
+      value.setSerializationView(View.BasicInformation.class);
+      return new ResponseEntity<>(value, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get chosen comment.
+   *
+   * @param commentId UUID of comment which we want to get
+   * @return Comment.
+   */
+  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getChoosenRequisitionComment(@PathVariable("id") UUID commentId) {
+    Comment comment = commentRepository.findOne(commentId);
+    if (comment == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      MappingJacksonValue value = new MappingJacksonValue(comment);
+      value.setSerializationView(View.BasicInformation.class);
+      return new ResponseEntity<>(value, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Allows deleting requisitionLine.
+   *
+   * @param commentId UUID of requisitionLine which we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId) {
+    Comment comment = commentRepository.findOne(commentId);
+    if (comment == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      try {
+        commentRepository.delete(comment);
+      } catch (DataIntegrityViolationException ex) {
+        LOGGER.debug("Comment cannot be deleted because of existing dependencies", ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
+    }
   }
 
   /**
