@@ -7,6 +7,8 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupRepository;
+import org.openlmis.hierarchyandsupervision.repository.RightRepository;
+import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -129,6 +131,12 @@ public class CleanRepositoryHelper {
   @Autowired
   private TemplateRepository templateRepository;
 
+  @Autowired
+  private RoleRepository roleRepository;
+
+  @Autowired
+  private RightRepository rightRepository;
+
   /**
    * Delete all entities from most of repositories.
    */
@@ -163,6 +171,8 @@ public class CleanRepositoryHelper {
     geographicZoneRepository.deleteAll();
     facilityOperatorRepository.deleteAll();
     geographicLevelRepository.deleteAll();
+    roleRepository.deleteAll();
+    rightRepository.deleteAll();
   }
 
   private void deleteAllUsersExceptAdmin() {

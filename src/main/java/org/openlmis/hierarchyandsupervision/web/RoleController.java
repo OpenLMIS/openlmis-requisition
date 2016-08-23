@@ -61,6 +61,26 @@ public class RoleController {
   }
 
   /**
+   * Allows updating roles.
+   *
+   * @param role A role bound to the request body
+   * @param roleId UUID of role which we want to update
+   * @return ResponseEntity containing the updated role
+   */
+  @RequestMapping(value = "/roles/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRole(@RequestBody Role role,
+                                            @PathVariable("id") UUID roleId) {
+    Role roleFromDb = roleRepository.findOne(roleId);
+    if (roleFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating role");
+      Role updatedRole = roleRepository.save(role);
+      return new ResponseEntity<Role>(updatedRole, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get chosen role.
    *
    * @param roleId UUID of role whose we want to get

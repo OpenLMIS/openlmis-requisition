@@ -3368,6 +3368,202 @@ resourceTypes:
                       body:
                           application/json:
 
+/roles:
+    displayName: Role
+    post:
+          is: [ secured ]
+          description: Create new role.
+          body:
+              application/json:
+          responses:
+              "201":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+    get:
+          is: [ secured ]
+          description: Get all roles.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                     application/json:
+    /{id}:
+          uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+          put:
+              is: [ secured ]
+              description: Update existing role.
+              body:
+                  application/json:
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+          get:
+              is: [ secured ]
+              description: Get chosen role.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+          delete:
+              is: [ secured ]
+              description: Delete chosen role.
+              responses:
+                  "204":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "409":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+
+/rights:
+    displayName: Right
+    post:
+          is: [ secured ]
+          description: Create new right.
+          body:
+              application/json:
+          responses:
+              "201":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+    get:
+          is: [ secured ]
+          description: Get all rights.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                      application/json:
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                     application/json:
+    /{id}:
+          uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+          put:
+              is: [ secured ]
+              description: Update existing right.
+              body:
+                  application/json:
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+          get:
+              is: [ secured ]
+              description: Get chosen right.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+          delete:
+              is: [ secured ]
+              description: Delete chosen right.
+              responses:
+                  "204":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+                  "409":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                          application/json:
+
 /requisitionGroupProgramSchedules:
     displayName: Requisition Group
     post:
@@ -3447,7 +3643,7 @@ resourceTypes:
                           application/json:
           delete:
               is: [ secured ]
-              description: Delete chosen requisitionGroupProgramSchedule.
+              description: Delete chosen requisitionGroup.
               responses:
                   "204":
                       headers:

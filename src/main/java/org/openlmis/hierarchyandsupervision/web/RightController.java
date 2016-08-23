@@ -61,6 +61,26 @@ public class RightController {
   }
 
   /**
+   * Allows updating rights.
+   *
+   * @param right A role bound to the request body
+   * @param rightId UUID of role which we want to update
+   * @return ResponseEntity containing the updated role
+   */
+  @RequestMapping(value = "/rights/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRight(@RequestBody Right right,
+                                      @PathVariable("id") UUID rightId) {
+    Right rightFromDb = rightRepository.findOne(rightId);
+    if (rightFromDb == null) {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    } else {
+      LOGGER.debug("Updating right");
+      Right updatedRight = rightRepository.save(right);
+      return new ResponseEntity<Right>(updatedRight, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Get chosen right.
    *
    * @param rightId UUID of right whose we want to get
