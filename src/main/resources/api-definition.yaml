@@ -363,6 +363,7 @@ schemas:
               "homeFacility": { "type": "object", "$ref": "#/schemas/facility", "required": false, "title": "homeFacility" },
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
+              "restrictLogin": { "type": "boolean", "required": false, "title": "restrictLogin" },
               "roles": { "type": "array", "required": false, "title": "roles", "items": { "type": "object", "$ref": "#/schemas/role" }, "uniqueItems": false}
           }
       }
