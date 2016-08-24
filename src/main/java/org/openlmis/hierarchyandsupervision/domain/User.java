@@ -73,6 +73,11 @@ public class User extends BaseEntity {
   @Setter
   private Boolean active;
 
+  @Column(nullable = false, columnDefinition = "boolean DEFAULT false")
+  @Getter
+  @Setter
+  private Boolean restrictLogin;
+
   @OneToMany
   @JoinColumn(name = "roleId")
   @Getter
@@ -87,6 +92,10 @@ public class User extends BaseEntity {
 
     if (this.active == null) {
       this.active = false;
+    }
+
+    if (this.restrictLogin == null) {
+      this.restrictLogin = false;
     }
   }
 }
