@@ -122,4 +122,24 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
     assertTrue(repository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public void shouldUpdateRequisitionGroupProgramSchedule() {
+
+    reqGroupProgSchedule.setDirectDelivery(true);
+
+    RequisitionGroupProgramSchedule response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", reqGroupProgSchedule.getId())
+          .body(reqGroupProgSchedule)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionGroupProgramSchedule.class);
+
+    assertTrue(response.isDirectDelivery());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 }

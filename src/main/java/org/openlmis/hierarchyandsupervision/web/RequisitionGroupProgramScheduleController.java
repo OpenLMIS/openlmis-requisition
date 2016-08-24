@@ -96,7 +96,7 @@ public class RequisitionGroupProgramScheduleController {
    * @return ResponseEntity containing the updated requisitionGroup
    */
   @RequestMapping(value = "/requisitionGroupProgramSchedules/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisitionGroup(
+  public ResponseEntity<?> updateRequisitionGroupProgramSchedule(
         @RequestBody RequisitionGroupProgramSchedule reqGroupProgSchedule,
         @PathVariable("id") UUID requisitionId) {
     try {
