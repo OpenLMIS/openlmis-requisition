@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -36,14 +37,18 @@ public class FacilityTypeApprovedProductController {
   @RequestMapping(value = "/facilityTypeApprovedProducts", method = RequestMethod.POST)
   public ResponseEntity<?> createFacility(
         @RequestBody FacilityTypeApprovedProduct facilityTypeApprovedProduct) {
-    if (facilityTypeApprovedProduct == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new facilityTypeApprovedProduct");
       // Ignore provided id
       facilityTypeApprovedProduct.setId(null);
       FacilityTypeApprovedProduct newFacility = repository.save(facilityTypeApprovedProduct);
       return new ResponseEntity<FacilityTypeApprovedProduct>(newFacility, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating facilityTypeApprovedProduct",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -75,13 +80,16 @@ public class FacilityTypeApprovedProductController {
   public ResponseEntity<?> updateFacilityTypeApprovedProduct(
         @RequestBody FacilityTypeApprovedProduct facilityTypeApprovedProduct,
         @PathVariable("id") UUID facilityTypeApprovedProductId) {
-    FacilityTypeApprovedProduct facilityFromDb = repository.findOne(facilityTypeApprovedProductId);
-    if (facilityFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating facilityTypeApprovedProduct");
       FacilityTypeApprovedProduct updatedFacility = repository.save(facilityTypeApprovedProduct);
       return new ResponseEntity<FacilityTypeApprovedProduct>(updatedFacility, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating facilityTypeApprovedProduct",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -35,14 +36,18 @@ public class FacilityOperatorController {
    */
   @RequestMapping(value = "/facilityOperators", method = RequestMethod.POST)
   public ResponseEntity<?> createFacilityOperator(@RequestBody FacilityOperator facilityOperator) {
-    if (facilityOperator == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new facility operator");
       // Ignore provided id
       facilityOperator.setId(null);
       FacilityOperator newFacilityOperator = facilityOperatorRepository.save(facilityOperator);
       return new ResponseEntity<FacilityOperator>(newFacilityOperator, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating facilityOperator",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -72,14 +77,16 @@ public class FacilityOperatorController {
   @RequestMapping(value = "/facilityOperators/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateFacilityOperators(@RequestBody FacilityOperator facilityOperator,
                                        @PathVariable("id") UUID facilityOperatorId) {
-    FacilityOperator facilityOperatorFromDb
-            = facilityOperatorRepository.findOne(facilityOperatorId);
-    if (facilityOperatorFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
-      LOGGER.debug("Updating facilityOperator");
+    try {
+      LOGGER.debug("Updating facility operator");
       FacilityOperator updatedFacilityOperator = facilityOperatorRepository.save(facilityOperator);
       return new ResponseEntity<FacilityOperator>(updatedFacilityOperator, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating facilityOperator",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -118,7 +125,6 @@ public class FacilityOperatorController {
               new ErrorResponse("FacilityOperator cannot be deleted"
                     + "because of existing dependencies", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
-        LOGGER.debug("FacilityOperator cannot be deleted because of existing dependencies", ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<FacilityOperator>(HttpStatus.NO_CONTENT);

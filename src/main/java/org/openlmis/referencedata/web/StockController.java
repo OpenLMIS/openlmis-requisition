@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,14 +42,17 @@ public class StockController {
    */
   @RequestMapping(value = "/stocks", method = RequestMethod.POST)
   public ResponseEntity<?> createStock(@RequestBody Stock stock) {
-    if (stock == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new stock");
       // Ignore provided id
       stock.setId(null);
       Stock newStock = stockRepository.save(stock);
       return new ResponseEntity<Stock>(newStock, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating stock", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -78,13 +82,15 @@ public class StockController {
   @RequestMapping(value = "/stocks/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateStock(@RequestBody Stock stock,
                                        @PathVariable("id") UUID stockId) {
-    Stock stockFromDb = stockRepository.findOne(stockId);
-    if (stockFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating stock");
       Stock updatedStock = stockRepository.save(stock);
       return new ResponseEntity<Stock>(updatedStock, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating stock", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

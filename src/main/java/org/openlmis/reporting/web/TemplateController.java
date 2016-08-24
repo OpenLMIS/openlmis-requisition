@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -83,15 +84,15 @@ public class TemplateController {
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateTemplate(@RequestBody Template template,
                                           @PathVariable("id") UUID templateId) {
-    Template templateFromDb =
-          templateRepository.findOne(templateId);
-    if (templateFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating template");
-      Template updatedTemplate =
-            templateRepository.save(template);
+      Template updatedTemplate = templateRepository.save(template);
       return new ResponseEntity<Template>(updatedTemplate, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating template", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

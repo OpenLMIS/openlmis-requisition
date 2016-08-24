@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -54,14 +55,17 @@ public class OrderController {
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   public ResponseEntity<?> createOrder(@RequestBody Order order) {
-    if (order == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new order");
       // Ignore provided id
       order.setId(null);
       Order newOrder = orderRepository.save(order);
       return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while saving order", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -91,13 +95,15 @@ public class OrderController {
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateOrder(@RequestBody Order order,
                                        @PathVariable("id") UUID orderId) {
-    Order orderFromDb = orderRepository.findOne(orderId);
-    if (orderFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating order");
       Order updatedOrder = orderRepository.save(order);
       return new ResponseEntity<Order>(updatedOrder, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while updating order", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

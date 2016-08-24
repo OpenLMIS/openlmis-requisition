@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -37,15 +38,19 @@ public class ProofOfDeliveryLineController {
   @RequestMapping(value = "/proofOfDeliveryLines", method = RequestMethod.POST)
   public ResponseEntity<?> createProofOfDeliveryLine(
           @RequestBody ProofOfDeliveryLine proofOfDeliveryLine) {
-    if (proofOfDeliveryLine == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new proofOfDeliveryLine");
       // Ignore provided id
       proofOfDeliveryLine.setId(null);
       ProofOfDeliveryLine newProofOfDeliveryLine
               = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
       return new ResponseEntity<ProofOfDeliveryLine>(newProofOfDeliveryLine, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating proofOfDeliveryLine",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -76,15 +81,17 @@ public class ProofOfDeliveryLineController {
   public ResponseEntity<?> updateProofOfDeliveryLine(
         @RequestBody ProofOfDeliveryLine proofOfDeliveryLine,
         @PathVariable("id") UUID proofOfDeliveryLineId) {
-    ProofOfDeliveryLine proofOfDeliveryLineFromDb =
-          proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
-    if (proofOfDeliveryLineFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating proofOfDeliveryLine");
-      ProofOfDeliveryLine updatedProofOfDeliveryLine =
-            proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+      ProofOfDeliveryLine updatedProofOfDeliveryLine
+            = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
       return new ResponseEntity<ProofOfDeliveryLine>(updatedProofOfDeliveryLine, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating proofOfDeliveryLine",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

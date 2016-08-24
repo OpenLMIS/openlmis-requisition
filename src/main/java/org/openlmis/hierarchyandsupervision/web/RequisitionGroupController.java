@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -34,14 +35,18 @@ public class RequisitionGroupController {
    */
   @RequestMapping(value = "/requisitionGroups", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionGroup(@RequestBody RequisitionGroup requisitionGroup) {
-    if (requisitionGroup == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new requisitionGroup");
       // Ignore provided id
       requisitionGroup.setId(null);
       RequisitionGroup newRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
       return new ResponseEntity<RequisitionGroup>(newRequisitionGroup, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating requisitionGroup",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -87,14 +92,16 @@ public class RequisitionGroupController {
   @RequestMapping(value = "/requisitionGroups/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionGroup(@RequestBody RequisitionGroup requisitionGroup,
                                                  @PathVariable("id") UUID requisitionGroupId) {
-    RequisitionGroup requisitionGroupFromDb =
-          requisitionGroupRepository.findOne(requisitionGroupId);
-    if (requisitionGroupFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating requisitionGroup");
       RequisitionGroup updatedRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
       return new ResponseEntity<RequisitionGroup>(updatedRequisitionGroup, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating requisitionGroup",
+                  ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

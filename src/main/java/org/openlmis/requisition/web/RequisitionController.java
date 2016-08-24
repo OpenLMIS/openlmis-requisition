@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -138,13 +140,15 @@ public class RequisitionController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
                                        @PathVariable("id") UUID requisitionId) {
-    Requisition requisitionFromDb = requisitionRepository.findOne(requisitionId);
-    if (requisitionFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating requisition");
       Requisition updatedRequisition = requisitionRepository.save(requisition);
       return new ResponseEntity<Requisition>(updatedRequisition, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating requisition", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -276,9 +280,7 @@ public class RequisitionController {
                                                     @PathVariable("id") UUID commentId,
                                                     OAuth2Authentication auth) {
     Comment requisitionComment = commentRepository.findOne(commentId);
-    if (requisitionComment == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating comment");
       comment.setRequisition(requisitionComment.getRequisition());
 
@@ -289,6 +291,11 @@ public class RequisitionController {
       MappingJacksonValue value = new MappingJacksonValue(updatedComment);
       value.setSerializationView(View.BasicInformation.class);
       return new ResponseEntity<>(value, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating comment", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -325,7 +332,10 @@ public class RequisitionController {
       try {
         commentRepository.delete(comment);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Comment cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Comment cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);

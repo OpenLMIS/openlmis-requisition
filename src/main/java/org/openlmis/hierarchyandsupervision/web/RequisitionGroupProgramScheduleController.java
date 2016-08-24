@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -36,15 +37,19 @@ public class RequisitionGroupProgramScheduleController {
   @RequestMapping(value = "/requisitionGroupProgramSchedules", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionGroupProgramSchedule(
         @RequestBody RequisitionGroupProgramSchedule requisition) {
-    if (requisition == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new requisitionGPS");
       // Ignore provided id
       requisition.setId(null);
       RequisitionGroupProgramSchedule newRequisition = repository.save(requisition);
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             newRequisition, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating"
+                  + "requisitionGroupProgramSchedule", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -94,14 +99,17 @@ public class RequisitionGroupProgramScheduleController {
   public ResponseEntity<?> updateRequisitionGroup(
         @RequestBody RequisitionGroupProgramSchedule reqGroupProgSchedule,
         @PathVariable("id") UUID requisitionId) {
-    RequisitionGroupProgramSchedule reqGroupProgramSchedule =
-          repository.findOne(requisitionId);
-    if (reqGroupProgramSchedule == null) {
+    try {
+      LOGGER.debug("Updating requisitionGPS");
+      RequisitionGroupProgramSchedule newRequisition = repository.save(reqGroupProgSchedule);
+      return new ResponseEntity<RequisitionGroupProgramSchedule>(
+            newRequisition, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating"
+                  + "requisitionGroupProgramSchedule", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
-      LOGGER.debug("Updating requisitionGroupProgramSchedule");
-      RequisitionGroupProgramSchedule updated = repository.save(reqGroupProgramSchedule);
-      return new ResponseEntity<RequisitionGroupProgramSchedule>(updated, HttpStatus.OK);
     }
   }
 

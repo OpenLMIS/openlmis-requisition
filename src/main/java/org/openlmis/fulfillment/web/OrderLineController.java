@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -34,14 +35,17 @@ public class OrderLineController {
    */
   @RequestMapping(value = "/orderLines", method = RequestMethod.POST)
   public ResponseEntity<?> createOrderLine(@RequestBody OrderLine orderLine) {
-    if (orderLine == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new orderLine");
       // Ignore provided id
       orderLine.setId(null);
       OrderLine newOrderLine = orderLineRepository.save(orderLine);
       return new ResponseEntity<OrderLine>(newOrderLine, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while saving orderLine", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -71,13 +75,15 @@ public class OrderLineController {
   @RequestMapping(value = "/orderLines/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateOrderLine(@RequestBody OrderLine orderLine,
                                        @PathVariable("id") UUID orderLineId) {
-    OrderLine orderLineFromDb = orderLineRepository.findOne(orderLineId);
-    if (orderLineFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
-      LOGGER.debug("Updating order");
+    try {
+      LOGGER.debug("Updating orderLine");
       OrderLine updatedOrderLine = orderLineRepository.save(orderLine);
       return new ResponseEntity<OrderLine>(updatedOrderLine, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while updating orderLine", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

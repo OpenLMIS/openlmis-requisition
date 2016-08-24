@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -34,14 +35,17 @@ public class GeographicLevelController {
    */
   @RequestMapping(value = "/geographicLevels", method = RequestMethod.POST)
   public ResponseEntity<?> createGeographicLevel(@RequestBody GeographicLevel geographicLevel) {
-    if (geographicLevel == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new geographicLevel");
       // Ignore provided id
       geographicLevel.setId(null);
       GeographicLevel newGeographicLevel = geographicLevelRepository.save(geographicLevel);
       return new ResponseEntity<GeographicLevel>(newGeographicLevel, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating geographicLevel", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -71,13 +75,15 @@ public class GeographicLevelController {
   @RequestMapping(value = "/geographicLevels/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateGeographicLevel(@RequestBody GeographicLevel geographicLevel,
                                             @PathVariable("id") UUID geographicLevelId) {
-    GeographicLevel geographicLevelFromDb = geographicLevelRepository.findOne(geographicLevelId);
-    if (geographicLevelFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating geographicLevel");
       GeographicLevel updatedGeographicLevel = geographicLevelRepository.save(geographicLevel);
       return new ResponseEntity<GeographicLevel>(updatedGeographicLevel, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating geographicLevel", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

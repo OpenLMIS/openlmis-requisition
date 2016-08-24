@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
@@ -52,14 +53,17 @@ public class ProofOfDeliveryController {
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.POST)
   public ResponseEntity<?> createProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery) {
-    if (proofOfDelivery == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new proofOfDelivery");
       // Ignore provided id
       proofOfDelivery.setId(null);
       ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
       return new ResponseEntity<ProofOfDelivery>(newProofOfDelivery, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while saving proofOfDelivery", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -89,13 +93,15 @@ public class ProofOfDeliveryController {
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery,
                                        @PathVariable("id") UUID proofOfDeliveryId) {
-    ProofOfDelivery proofOfDeliveryFromDb = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
-    if (proofOfDeliveryFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating proofOfDelivery");
       ProofOfDelivery updatedProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
       return new ResponseEntity<ProofOfDelivery>(updatedProofOfDelivery, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while updating proofOfDelivery", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

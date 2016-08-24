@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -40,14 +41,17 @@ public class ProductCategoryController {
    */
   @RequestMapping(value = "/productCategories", method = RequestMethod.POST)
   public ResponseEntity<?> createProductCategory(@RequestBody ProductCategory productCategory) {
-    if (productCategory == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new productCategory");
       // Ignore provided id
       productCategory.setId(null);
       ProductCategory newProductCategory = productCategoryRepository.save(productCategory);
       return new ResponseEntity<ProductCategory>(newProductCategory, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating productCategory", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -77,13 +81,15 @@ public class ProductCategoryController {
   @RequestMapping(value = "/productCategories/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProductCategory(@RequestBody ProductCategory productCategory,
                                        @PathVariable("id") UUID productCategoryId) {
-    ProductCategory productCategoryFromDb = productCategoryRepository.findOne(productCategoryId);
-    if (productCategoryFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
-      LOGGER.debug("Updating productCategory");
+    try {
+      LOGGER.debug("Updating new productCategory");
       ProductCategory updatedProductCategory = productCategoryRepository.save(productCategory);
       return new ResponseEntity<ProductCategory>(updatedProductCategory, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating productCategory", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

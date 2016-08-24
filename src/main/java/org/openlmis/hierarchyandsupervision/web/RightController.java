@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -34,14 +35,17 @@ public class RightController {
    */
   @RequestMapping(value = "/rights", method = RequestMethod.POST)
   public ResponseEntity<?> createRight(@RequestBody Right right) {
-    if (right == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new right");
       // Ignore provided id
       right.setId(null);
       Right newRight = rightRepository.save(right);
       return new ResponseEntity<Right>(newRight, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating right", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -71,13 +75,15 @@ public class RightController {
   @RequestMapping(value = "/rights/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRight(@RequestBody Right right,
                                       @PathVariable("id") UUID rightId) {
-    Right rightFromDb = rightRepository.findOne(rightId);
-    if (rightFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating right");
       Right updatedRight = rightRepository.save(right);
       return new ResponseEntity<Right>(updatedRight, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating right", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

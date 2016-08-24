@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,14 +42,17 @@ public class ProgramProductController {
    */
   @RequestMapping(value = "/programProducts", method = RequestMethod.POST)
   public ResponseEntity<?> createProgramProduct(@RequestBody ProgramProduct programProduct) {
-    if (programProduct == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new programProduct");
       // Ignore provided id
       programProduct.setId(null);
       ProgramProduct newProgramProduct = programProductRepository.save(programProduct);
       return new ResponseEntity<ProgramProduct>(newProgramProduct, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating programProduct", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -78,13 +82,15 @@ public class ProgramProductController {
   @RequestMapping(value = "/programProducts/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProgramProduct(@RequestBody ProgramProduct programProduct,
                                                  @PathVariable("id") UUID programProductId) {
-    ProgramProduct programProductFromDb = programProductRepository.findOne(programProductId);
-    if (programProductFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating programProduct");
       ProgramProduct updatedProgramProduct = programProductRepository.save(programProduct);
       return new ResponseEntity<ProgramProduct>(updatedProgramProduct, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating programProduct", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

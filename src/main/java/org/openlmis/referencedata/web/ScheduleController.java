@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -48,14 +49,17 @@ public class ScheduleController {
    */
   @RequestMapping(value = "/schedules", method = RequestMethod.POST)
   public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
-    if (schedule == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new schedule");
       // Ignore provided id
       schedule.setId(null);
       Schedule newSchedule = scheduleRepository.save(schedule);
       return new ResponseEntity<Schedule>(newSchedule, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating schedule", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -69,13 +73,15 @@ public class ScheduleController {
   @RequestMapping(value = "/schedules/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateSchedule(@RequestBody Schedule schedule,
                                        @PathVariable("id") UUID scheduleId) {
-    Schedule scheduleFromDb = scheduleRepository.findOne(scheduleId);
-    if (scheduleFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating schedule");
       Schedule updatedSchedule = scheduleRepository.save(schedule);
       return new ResponseEntity<Schedule>(updatedSchedule, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating schedule", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

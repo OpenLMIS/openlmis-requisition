@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,14 +43,17 @@ public class RequisitionLineController {
    */
   @RequestMapping(value = "/requisitionLines", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionLine(@RequestBody RequisitionLine requisitionLine) {
-    if (requisitionLine == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new requisitionLine");
       // Ignore provided id
       requisitionLine.setId(null);
       RequisitionLine newRequisitionLine = requisitionLineRepository.save(requisitionLine);
       return new ResponseEntity<RequisitionLine>(newRequisitionLine, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating requisitionLine", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -79,13 +83,15 @@ public class RequisitionLineController {
   @RequestMapping(value = "/requisitionLines/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionLines(@RequestBody RequisitionLine requisitionLine,
                                        @PathVariable("id") UUID requisitionLineId) {
-    RequisitionLine requisitionLineFromDb = requisitionLineRepository.findOne(requisitionLineId);
-    if (requisitionLineFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating requisitionLine");
       RequisitionLine updatedRequisitionLine = requisitionLineRepository.save(requisitionLine);
       return new ResponseEntity<RequisitionLine>(updatedRequisitionLine, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while creating requisitionLine", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 

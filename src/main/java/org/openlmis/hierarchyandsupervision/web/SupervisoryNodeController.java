@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -34,14 +35,17 @@ public class SupervisoryNodeController {
    */
   @RequestMapping(value = "/supervisoryNodes", method = RequestMethod.POST)
   public ResponseEntity<?> createSupervisoryNode(@RequestBody SupervisoryNode supervisoryNode) {
-    if (supervisoryNode == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Creating new supervisoryNode");
       // Ignore provided id
       supervisoryNode.setId(null);
       SupervisoryNode newSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
       return new ResponseEntity<SupervisoryNode>(newSupervisoryNode, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while saving supervisoryNode", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -87,13 +91,15 @@ public class SupervisoryNodeController {
   @RequestMapping(value = "/supervisoryNodes/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateSupervisoryNode(@RequestBody SupervisoryNode supervisoryNode,
                                        @PathVariable("id") UUID supervisoryNodeId) {
-    SupervisoryNode supervisoryNodeFromDb = supervisoryNodeRepository.findOne(supervisoryNodeId);
-    if (supervisoryNodeFromDb == null) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    } else {
+    try {
       LOGGER.debug("Updating supervisoryNode");
       SupervisoryNode updatedSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
       return new ResponseEntity<SupervisoryNode>(updatedSupervisoryNode, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while updating supervisoryNode", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
   }
 
