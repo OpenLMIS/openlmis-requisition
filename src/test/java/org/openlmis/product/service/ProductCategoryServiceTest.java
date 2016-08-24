@@ -36,7 +36,7 @@ public class ProductCategoryServiceTest {
   }
 
   @Test
-  public void testShouldFindProductCategoryIfMatchedCode() {
+  public void shouldFindProductCategoryIfMatchedCode() {
     when(productCategoryRepository
             .searchProductCategories(productCategories.get(0).getCode()))
             .thenReturn(Arrays.asList(productCategories.get(0)));

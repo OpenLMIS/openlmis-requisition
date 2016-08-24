@@ -2,6 +2,7 @@ package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.Right;
 import org.openlmis.hierarchyandsupervision.repository.RightRepository;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +112,10 @@ public class RightController {
       try {
         rightRepository.delete(right);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Right cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Right cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Right>(HttpStatus.NO_CONTENT);

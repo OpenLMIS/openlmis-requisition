@@ -2,6 +2,7 @@ package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.RequisitionGroupProgramSchedule;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,8 +121,10 @@ public class RequisitionGroupProgramScheduleController {
       try {
         repository.delete(requisition);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("RequisitionGroupProgramSchedule cannot "
-              + "be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("RequisitionGroupProgramSchedule cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<RequisitionGroupProgramSchedule>(HttpStatus.NO_CONTENT);

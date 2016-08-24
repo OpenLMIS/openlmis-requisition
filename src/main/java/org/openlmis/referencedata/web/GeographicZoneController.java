@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.slf4j.Logger;
@@ -111,7 +112,10 @@ public class GeographicZoneController {
       try {
         geographicZoneRepository.delete(geographicZone);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("GeographicZone cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("GeographicZone cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<GeographicZone>(HttpStatus.NO_CONTENT);

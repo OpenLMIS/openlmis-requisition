@@ -1,5 +1,6 @@
 package org.openlmis.product.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.service.ProductCategoryService;
@@ -117,7 +118,10 @@ public class ProductCategoryController {
       try {
         productCategoryRepository.delete(productCategory);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("ProductCategory cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("ProductCategory cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<ProductCategory>(HttpStatus.NO_CONTENT);

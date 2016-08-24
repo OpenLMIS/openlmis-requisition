@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
@@ -118,7 +119,10 @@ public class StockController {
       try {
         stockRepository.delete(stock);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Stock cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Stock cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Stock>(HttpStatus.NO_CONTENT);

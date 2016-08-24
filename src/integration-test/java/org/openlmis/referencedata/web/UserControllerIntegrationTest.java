@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.utils.AuthUserRequest;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -15,13 +16,17 @@ import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -56,14 +61,13 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private List<User> users;
 
-  private Integer currentInstanceNumber;
+  private static Integer currentInstanceNumber = 0;
 
   @Before
   public void setUp() {
     users = new ArrayList<>();
-    currentInstanceNumber = 0;
     for ( int userCount = 0; userCount < 5; userCount++ ) {
-      users.add(generateUser());
+      users.add(createUser());
     }
   }
 
@@ -126,24 +130,6 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateUser() {
-
-    User user = users.get(4);
-    userRepository.delete(user);
-
-    restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(user)
-          .when()
-          .post(RESOURCE_URL)
-          .then()
-          .statusCode(201);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldGetAllUsers() {
 
     User[] response = restAssured.given()
@@ -179,17 +165,141 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  /**
+   * Creating requisition and auth users.
+   */
+  public void shouldCreateRequisitionAndAuthUsers() {
+    User user = generateUser();
+
+    User response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(user)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(User.class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertNotNull(response);
+
+    User savedUser = userRepository.findOne(response.getId());
+    assertNotNull(savedUser);
+
+    assertEquals(user.getUsername(), savedUser.getUsername());
+    assertEquals(user.getFirstName(), savedUser.getFirstName());
+    assertEquals(user.getLastName(), savedUser.getLastName());
+    assertEquals(user.getEmail(), savedUser.getEmail());
+    assertEquals(user.getHomeFacility().getId(), savedUser.getHomeFacility().getId());
+    assertEquals(user.getActive(), savedUser.getActive());
+    assertEquals(user.getVerified(), savedUser.getVerified());
+
+    AuthUserRequest authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertEquals(savedUser.getEmail(), authUser.getEmail());
+    assertEquals(savedUser.getId(), authUser.getReferenceDataUserId());
+
+    removeAuthUserByUsername(authUser.getUsername());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionAndAuthUsers() {
+    User newUser = generateUser();
+
+    User user = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(newUser)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(User.class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertNotNull(user);
+
+    User savedUser = userRepository.findOne(user.getId());
+    assertNotNull(savedUser);
+
+    user.setEmail(generateInstanceNumber() + "@mail.com");
+    assertNotEquals(user.getEmail(), savedUser.getEmail());
+
+    AuthUserRequest authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertEquals(savedUser.getEmail(), authUser.getEmail());
+    assertEquals(savedUser.getId(), authUser.getReferenceDataUserId());
+
+    User response = restAssured.given()
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(user)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(User.class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertNotNull(response);
+
+    savedUser = userRepository.findOne(user.getId());
+    assertNotNull(savedUser);
+
+    assertEquals(user.getUsername(), savedUser.getUsername());
+    assertEquals(user.getFirstName(), savedUser.getFirstName());
+    assertEquals(user.getLastName(), savedUser.getLastName());
+    assertEquals(user.getEmail(), savedUser.getEmail());
+    assertEquals(user.getHomeFacility().getId(), savedUser.getHomeFacility().getId());
+    assertEquals(user.getActive(), savedUser.getActive());
+    assertEquals(user.getVerified(), savedUser.getVerified());
+
+    authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertEquals(savedUser.getEmail(), authUser.getEmail());
+    assertEquals(savedUser.getId(), authUser.getReferenceDataUserId());
+
+    removeAuthUserByUsername(authUser.getUsername());
+  }
+
+  private AuthUserRequest getAutUserByUsername(String username) {
+    String url = "http://auth:8080/api/users/search/findOneByUsername?username=" + username
+        + "&access_token=" + getToken();
+
+    RestTemplate restTemplate = new RestTemplate();
+    return restTemplate.getForObject(url, AuthUserRequest.class);
+  }
+
+  private void removeAuthUserByUsername(String username) {
+    String url = "http://auth:8080/api/users/search/findOneByUsername?username=" + username
+        + "&access_token=" + getToken();
+
+    RestTemplate restTemplate = new RestTemplate();
+    Map map = restTemplate.getForObject(url, Map.class);
+    String href = ((String) ((Map) ((Map) map.get("_links")).get("self")).get("href"));
+    String id = href.split("users/")[1];
+
+    url = "http://auth:8080/api/users/" + id + "?access_token=" + getToken();
+    restTemplate.delete(url);
+  }
+
+  private User createUser() {
+    return userRepository.save(generateUser());
+  }
+
   private User generateUser() {
     User user = new User();
     Integer instanceNumber = generateInstanceNumber();
     user.setFirstName("Ala" + instanceNumber);
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
-    user.setPassword("iDobrze" + instanceNumber);
+    user.setEmail(instanceNumber + "@mail.com");
     user.setHomeFacility(generateFacility());
     user.setVerified(true);
     user.setActive(true);
-    userRepository.save(user);
     return user;
   }
 

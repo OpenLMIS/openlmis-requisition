@@ -1,6 +1,7 @@
 package org.openlmis.reporting.web;
 
 import org.apache.log4j.Logger;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.repository.TemplateRepository;
@@ -128,7 +129,10 @@ public class TemplateController {
       try {
         templateRepository.delete(template);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Template cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Template cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);

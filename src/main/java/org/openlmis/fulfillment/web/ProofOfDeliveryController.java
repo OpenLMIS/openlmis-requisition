@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.utils.ReportUtils;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.JasperReportsViewFactory;
 import org.openlmis.reporting.service.TemplateService;
@@ -129,7 +130,10 @@ public class ProofOfDeliveryController {
       try {
         proofOfDeliveryRepository.delete(proofOfDelivery);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("ProofOfDelivery cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("ProofOfDelivery cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<ProofOfDelivery>(HttpStatus.NO_CONTENT);

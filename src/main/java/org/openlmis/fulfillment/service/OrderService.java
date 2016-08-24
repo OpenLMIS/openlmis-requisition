@@ -15,12 +15,12 @@ import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -39,10 +39,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -154,7 +152,7 @@ public class OrderService {
 
   private List<Map<String, Object>> orderToRows(Order order) {
     List<Map<String, Object>> rows = new ArrayList<>();
-    Set<OrderLine> orderLines = order.getOrderLines();
+    List<OrderLine> orderLines = order.getOrderLines();
     String orderNum = order.getOrderCode();
     String facilityCode = order.getRequestingFacility().getCode();
     LocalDateTime createdDate = order.getCreatedDate();
@@ -210,7 +208,7 @@ public class OrderService {
 
       orderRepository.save(order);
 
-      Set<OrderLine> orderLines = new HashSet<>();
+      List<OrderLine> orderLines = new ArrayList<>();
       for (RequisitionLine rl : requisition.getRequisitionLines()) {
         OrderLine orderLine = new OrderLine();
         orderLine.setOrder(order);
@@ -219,7 +217,6 @@ public class OrderService {
         orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
         orderLines.add(orderLine);
         orderLineRepository.save(orderLine);
-        orderLines.add(orderLine);
       }
       order.setOrderLines(orderLines);
       convertedOrders.add(order);

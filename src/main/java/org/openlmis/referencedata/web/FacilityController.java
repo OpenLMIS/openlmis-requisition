@@ -2,6 +2,7 @@ package org.openlmis.referencedata.web;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.repository.FacilityRepository;
@@ -123,7 +124,10 @@ public class FacilityController {
       try {
         facilityRepository.delete(facility);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Facility cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Facility cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Facility>(HttpStatus.NO_CONTENT);

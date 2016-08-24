@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
@@ -92,7 +93,10 @@ public class ProgramController {
       try {
         programRepository.delete(program);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Program cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Program cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Program>(HttpStatus.NO_CONTENT);

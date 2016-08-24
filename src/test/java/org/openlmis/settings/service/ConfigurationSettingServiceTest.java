@@ -30,23 +30,23 @@ public class ConfigurationSettingServiceTest {
   }
 
   @Test
-  public void testShouldGetValueIfKeyExists() throws ConfigurationSettingException {
+  public void shouldGetValueIfKeyExists() throws ConfigurationSettingException {
     assertTrue(configurationSettingService.getStringValue("key").equals("value"));
   }
 
   @Test(expected = ConfigurationSettingException.class)
-  public void testShouldThrowExceptionIfKeyDoesNotExists() throws ConfigurationSettingException {
+  public void shouldThrowExceptionIfKeyDoesNotExists() throws ConfigurationSettingException {
     configurationSettingService.getStringValue("testEmpty");
   }
 
   @Test
-  public void testShouldCatchExceptionAndReturnFalseIfKeyDoesNotExists()
+  public void shouldCatchExceptionAndReturnFalseIfKeyDoesNotExists()
           throws ConfigurationSettingException {
     assertTrue(configurationSettingService.getBoolValue("testEmpty").equals(Boolean.FALSE));
   }
 
   @Test
-  public void testShouldGetBoolTrueValueIfKeyExists() {
+  public void shouldGetBoolTrueValueIfKeyExists() {
     configurationSetting = new ConfigurationSetting();
     configurationSetting.setKey("testTrue");
     configurationSetting.setValue(Boolean.TRUE.toString());
@@ -57,7 +57,7 @@ public class ConfigurationSettingServiceTest {
   }
 
   @Test
-  public void testShouldGetBoolFalseValueIfKeyExists() {
+  public void shouldGetBoolFalseValueIfKeyExists() {
     ConfigurationSetting setting = new ConfigurationSetting();
     setting.setKey("testFalse");
     setting.setValue(Boolean.FALSE.toString());

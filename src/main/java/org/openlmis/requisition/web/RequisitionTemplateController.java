@@ -1,6 +1,7 @@
 package org.openlmis.requisition.web;
 
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -127,7 +128,10 @@ public class RequisitionTemplateController {
       try {
         requisitionTemplateRepository.delete(requisitionTemplate);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("RequisitionTemplate cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("RequisitionTemplate cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);

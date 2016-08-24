@@ -34,17 +34,20 @@ public class JasperReportsViewFactory {
   private DataSource replicationDataSource;
 
   /**
-   *  Create Jasper Report View.
-   *  Create Jasper Report (".jasper" file) from bytes from Template entity.
-   *  Set 'Jasper' exporter parameters, data source, web application context, url to file.
+   * Create Jasper Report View.
+   * Create Jasper Report (".jasper" file) from bytes from Template entity.
+   * Set 'Jasper' exporter parameters, data source, web application context, url to file.
    */
   public JasperReportsMultiFormatView getJasperReportsView(Template template,
                                                            HttpServletRequest request)
       throws IOException, ClassNotFoundException, JRException {
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
-
     setExportParams(jasperView);
-    setDataSourceAndUrlAndApplicationContext(template, jasperView, request);
+    jasperView.setJdbcDataSource(replicationDataSource);
+    jasperView.setUrl(getReportUrlForReportData(template));
+    if (getApplicationContext(request) != null) {
+      jasperView.setApplicationContext(getApplicationContext(request));
+    }
     return jasperView;
   }
 
@@ -58,25 +61,18 @@ public class JasperReportsViewFactory {
   }
 
   /**
-   * Set application context, data source and url to file in jasper view.
+   * Get application context from servlet.
    */
-  private void setDataSourceAndUrlAndApplicationContext(Template template,
-                                                        JasperReportsMultiFormatView jasperView,
-                                                        HttpServletRequest servletRequest)
-      throws IOException, ClassNotFoundException, JRException {
-
+  public WebApplicationContext getApplicationContext(HttpServletRequest servletRequest) {
     ServletContext servletContext = servletRequest.getSession().getServletContext();
-    WebApplicationContext ctx =
+    WebApplicationContext webApplicationContext =
         WebApplicationContextUtils.getWebApplicationContext(servletContext);
-    jasperView.setJdbcDataSource(replicationDataSource);
-    jasperView.setUrl(getReportUrlForReportData(template));
-    if (ctx != null) {
-      jasperView.setApplicationContext(ctx);
-    }
+    return webApplicationContext;
   }
 
   /**
    * Create ".jasper" file with byte array from Template.
+   *
    * @return Url to ".jasper" file.
    */
   private String getReportUrlForReportData(Template template)

@@ -1,5 +1,9 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -25,16 +29,12 @@ import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionLineServiceTest {
@@ -80,7 +80,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void testShouldInitiateRequisitionLineFieldsIfValidRequisitionProvided() {
+  public void shouldInitiateRequisitionLineFieldsIfValidRequisitionProvided() {
     final Integer expectedBeginningBalance = 20;
     final Integer expectedTotalReceivedQuantity = 0;
 
@@ -104,7 +104,7 @@ public class RequisitionLineServiceTest {
 
 
   @Test
-  public void testShouldResetBeginningBalanceWhenSavingRequisitionLine()
+  public void shouldResetBeginningBalanceWhenSavingRequisitionLine()
       throws RequisitionException {
     final Integer expectedBeginningBalance = 20;
 
@@ -125,7 +125,7 @@ public class RequisitionLineServiceTest {
 
 
   @Test
-  public void testShouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
+  public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
     final Integer expectedBeginningBalance = 0;
 
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
@@ -147,7 +147,7 @@ public class RequisitionLineServiceTest {
 
 
   @Test
-  public void testShouldDisplayColumnsInCorrectOrder() {
+  public void shouldDisplayColumnsInCorrectOrder() {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
@@ -177,7 +177,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void testShouldFindRequisitionLineIfItExists() {
+  public void shouldFindRequisitionLineIfItExists() {
     when(requisitionLineRepository.searchRequisitionLines(
         requisition, null)).thenReturn(Arrays.asList(requisitionLine));
 
@@ -254,8 +254,8 @@ public class RequisitionLineServiceTest {
     requisitionLine2 = createTestRequisitionLine(
         product, 100, 50, requisition2);
 
-    requisition.setRequisitionLines(new HashSet<>(Arrays.asList(requisitionLine)));
-    requisition2.setRequisitionLines(new HashSet<>(Arrays.asList(requisitionLine2)));
+    requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
+    requisition2.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine2)));
     requisitionTemplate = new RequisitionTemplate();
 
   }

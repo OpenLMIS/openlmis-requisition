@@ -48,7 +48,7 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
     int instanceNumber = this.getNextInstanceNumber();
     User user = new User();
     user.setUsername("user" + instanceNumber);
-    user.setPassword("test" + instanceNumber);
+    user.setEmail(instanceNumber + "@mail.com");
     user.setFirstName("Test");
     user.setLastName("User");
     user.setHomeFacility(generateFacility());
@@ -179,7 +179,7 @@ public class UserRepositoryIntegrationTest extends BaseCrudRepositoryIntegration
     int instanceNumber = this.getNextInstanceNumber();
     User clonedUser = new User();
     clonedUser.setUsername(user.getUsername() + instanceNumber);
-    clonedUser.setPassword("test" + instanceNumber);
+    clonedUser.setEmail(instanceNumber + "@mail.com");
     clonedUser.setFirstName(user.getFirstName());
     clonedUser.setLastName(user.getLastName());
     clonedUser.setHomeFacility(user.getHomeFacility());

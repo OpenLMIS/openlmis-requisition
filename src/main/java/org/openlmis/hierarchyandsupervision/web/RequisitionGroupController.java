@@ -2,6 +2,7 @@ package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.RequisitionGroup;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupRepository;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +113,10 @@ public class RequisitionGroupController {
       try {
         requisitionGroupRepository.delete(requisitionGroup);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("RequisitionGroup cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("RequisitionGroup cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<RequisitionGroup>(HttpStatus.NO_CONTENT);

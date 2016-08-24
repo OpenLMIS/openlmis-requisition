@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.FacilityOperator;
 import org.openlmis.referencedata.repository.FacilityOperatorRepository;
 import org.slf4j.Logger;
@@ -113,6 +114,10 @@ public class FacilityOperatorController {
       try {
         facilityOperatorRepository.delete(facilityOperator);
       } catch (DataIntegrityViolationException ex) {
+        ErrorResponse errorResponse =
+              new ErrorResponse("FacilityOperator cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         LOGGER.debug("FacilityOperator cannot be deleted because of existing dependencies", ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

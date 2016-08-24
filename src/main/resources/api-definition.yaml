@@ -356,9 +356,10 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "username": { "type": "string", "required": true, "title": "username" },
-              "password": { "type": "string", "required": true, "title": "password" },
               "firstName": { "type": "string", "required": true, "title": "firstName" },
               "lastName": { "type": "string", "required": true, "title": "lastName" },
+              "email": { "type": "string", "required": true, "title": "email" },
+              "timezone": { "type": "string", "required": false, "title": "timezone" },
               "homeFacility": { "type": "object", "$ref": "#/schemas/facility", "required": false, "title": "homeFacility" },
               "verified": { "type": "boolean", "required": false, "title": "verified" },
               "active": { "type": "boolean", "required": false, "title": "active" },
@@ -2155,11 +2156,11 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates new user.
+        description: Create or update user.
         body:
             application/json:
         responses:
-            "201":
+            "200":
                 headers:
                   X-Content-Type-Options:
                   X-XSS-Protection:
@@ -2205,22 +2206,6 @@ resourceTypes:
                     body:
                       application/json:
                 "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-        put:
-            is: [ secured ]
-            description: Update existing user.
-            body:
-                application/json:
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:

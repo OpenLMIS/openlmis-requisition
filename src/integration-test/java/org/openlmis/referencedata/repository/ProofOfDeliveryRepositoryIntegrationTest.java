@@ -46,7 +46,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
 
-  private String orderProofOfDeliveryString = "OrderProofOfDeliveryRepositoryIntegrationTest";
+  private static final String CODE = "ProofOfDeliveryRepositoryIntegrationTest";
 
   private Order order = new Order();
 
@@ -57,37 +57,37 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();
-    facilityType.setCode(orderProofOfDeliveryString);
+    facilityType.setCode(CODE);
     facilityTypeRepository.save(facilityType);
 
     GeographicLevel level = new GeographicLevel();
-    level.setCode(orderProofOfDeliveryString);
+    level.setCode(CODE);
     level.setLevelNumber(1);
     geographicLevelRepository.save(level);
 
     GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(orderProofOfDeliveryString);
+    geographicZone.setCode(CODE);
     geographicZone.setLevel(level);
     geographicZoneRepository.save(geographicZone);
 
     Facility facility = new Facility();
     facility.setType(facilityType);
     facility.setGeographicZone(geographicZone);
-    facility.setCode(orderProofOfDeliveryString);
-    facility.setName(orderProofOfDeliveryString);
+    facility.setCode(CODE);
+    facility.setName(CODE);
     facility.setDescription("Test facility");
     facility.setActive(true);
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
     Program program = new Program();
-    program.setCode(orderProofOfDeliveryString);
+    program.setCode(CODE);
     programRepository.save(program);
 
     Assert.assertEquals(1, userRepository.count());
     User user = userRepository.findAll().iterator().next();
 
-    order.setOrderCode(orderProofOfDeliveryString);
+    order.setOrderCode(CODE);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);

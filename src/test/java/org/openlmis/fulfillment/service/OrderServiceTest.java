@@ -1,5 +1,9 @@
 package org.openlmis.fulfillment.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -10,8 +14,11 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
+import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Facility;
@@ -21,9 +28,6 @@ import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
-import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -35,14 +39,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderServiceTest {
@@ -89,7 +87,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void testShouldConvertRequisitionsToOrders() {
+  public void shouldConvertRequisitionsToOrders() {
     for (Order order : orders) {
       when(orderRepository
               .save(order))
@@ -142,7 +140,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void testShouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
+  public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
     when(orderRepository
             .searchOrders(
                     orders.get(0).getSupplyingFacility(),
@@ -168,7 +166,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void testShouldConvertOrderToCsvIfItExists() {
+  public void shouldConvertOrderToCsvIfItExists() {
     List<String> header = new ArrayList<>();
     header.add(OrderService.DEFAULT_COLUMNS[0]);
     header.add(OrderService.DEFAULT_COLUMNS[1]);
@@ -222,7 +220,7 @@ public class OrderServiceTest {
     order.setQuotedCost(BigDecimal.valueOf(1));
     order.setOrderCode("OrderCode" + instanceNumber);
     order.setStatus(OrderStatus.ORDERED);
-    Set<OrderLine> orderLines = new HashSet<>();
+    List<OrderLine> orderLines = new ArrayList<>();
     orderLines.add(generateOrderLine(order));
     order.setOrderLines(orderLines);
     return order;
@@ -238,7 +236,7 @@ public class OrderServiceTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNode(generateSupervisoryNode());
     requisition.setEmergency(true);
-    Set<RequisitionLine> requisitionLines = new HashSet<>();
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(generateRequisitionLines());
     requisition.setRequisitionLines(requisitionLines);
     return requisition;
@@ -327,7 +325,7 @@ public class OrderServiceTest {
     user.setFirstName("Ala" + instanceNumber);
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
-    user.setPassword("iDobrze" + instanceNumber);
+    user.setEmail(instanceNumber + "@mail.com");
     user.setHomeFacility(generateFacility());
     user.setVerified(true);
     user.setActive(true);

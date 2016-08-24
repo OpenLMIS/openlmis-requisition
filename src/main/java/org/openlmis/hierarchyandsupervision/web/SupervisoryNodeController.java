@@ -2,6 +2,7 @@ package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +112,10 @@ public class SupervisoryNodeController {
       try {
         supervisoryNodeRepository.delete(supervisoryNode);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("SupervisoryNode cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("SupervisoryNode cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<SupervisoryNode>(HttpStatus.NO_CONTENT);

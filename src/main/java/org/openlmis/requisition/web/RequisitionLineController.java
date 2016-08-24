@@ -1,5 +1,6 @@
 package org.openlmis.requisition.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.product.domain.Product;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -119,7 +120,10 @@ public class RequisitionLineController {
       try {
         requisitionLineRepository.delete(requisitionLine);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("RequisitionLine cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("RequisitionLine cannot be deleted"
+                    + "because of existing dependencies", ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<RequisitionLine>(HttpStatus.NO_CONTENT);

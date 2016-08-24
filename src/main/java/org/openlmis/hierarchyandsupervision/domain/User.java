@@ -1,6 +1,7 @@
 package org.openlmis.hierarchyandsupervision.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,18 +22,14 @@ import java.util.List;
 @Entity
 @Table(name = "users", schema = "referencedata")
 @NoArgsConstructor
+@AllArgsConstructor
 public class User extends BaseEntity {
-  private static final String DEFAULT_PASSWORD = "not-in-use";
 
   @JsonView(View.BasicInformation.class)
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
   @Setter
   private String username;
-
-  @Column(nullable = false, columnDefinition = "text DEFAULT '" + DEFAULT_PASSWORD + "'::text")
-  @Setter
-  private String password;
 
   @Column(nullable = false, columnDefinition = "text")
   @Getter
@@ -43,6 +40,16 @@ public class User extends BaseEntity {
   @Getter
   @Setter
   private String lastName;
+
+  @Column(nullable = false, unique = true)
+  @Getter
+  @Setter
+  private String email;
+
+  @Column
+  @Getter
+  @Setter
+  private String timezone;
 
   @ManyToOne
   @JoinColumn(name = "supervisoryNodeId")
@@ -80,10 +87,6 @@ public class User extends BaseEntity {
 
     if (this.active == null) {
       this.active = false;
-    }
-
-    if (this.password == null) {
-      this.password = DEFAULT_PASSWORD;
     }
   }
 }

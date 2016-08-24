@@ -1,5 +1,6 @@
 package org.openlmis.referencedata.web;
 
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Schedule;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
@@ -125,7 +126,10 @@ public class ScheduleController {
       try {
         scheduleRepository.delete(schedule);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Schedule cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Schedule cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Schedule>(HttpStatus.NO_CONTENT);

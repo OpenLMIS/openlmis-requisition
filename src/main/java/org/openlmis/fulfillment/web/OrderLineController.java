@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +112,10 @@ public class OrderLineController {
       try {
         orderLineRepository.delete(orderLine);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("OrderLine cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("OrderLine cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<OrderLine>(HttpStatus.NO_CONTENT);

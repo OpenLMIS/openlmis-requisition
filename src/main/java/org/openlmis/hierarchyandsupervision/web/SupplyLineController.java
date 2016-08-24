@@ -4,6 +4,7 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Program;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +120,10 @@ public class SupplyLineController {
       try {
         supplyLineRepository.delete(supplyLine);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("SupplyLine cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("SupplyLine cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<SupplyLine>(HttpStatus.NO_CONTENT);

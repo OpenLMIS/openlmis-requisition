@@ -189,7 +189,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     user.setFirstName("Ala" + instanceNumber);
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
-    user.setPassword("iDobrze" + instanceNumber);
+    user.setEmail(instanceNumber + "@mail.com");
     user.setHomeFacility(generateFacility());
     user.setVerified(true);
     user.setActive(true);

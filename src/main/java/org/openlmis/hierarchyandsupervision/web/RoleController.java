@@ -2,6 +2,7 @@ package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.Role;
 import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +112,10 @@ public class RoleController {
       try {
         roleRepository.delete(role);
       } catch (DataIntegrityViolationException ex) {
-        LOGGER.debug("Role cannot be deleted because of existing dependencies", ex);
+        ErrorResponse errorResponse =
+              new ErrorResponse("Role cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
       return new ResponseEntity<Role>(HttpStatus.NO_CONTENT);

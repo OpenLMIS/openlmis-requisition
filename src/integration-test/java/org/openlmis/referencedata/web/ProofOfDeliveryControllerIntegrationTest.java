@@ -48,9 +48,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -220,7 +222,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLine2.setFilledQuantity(15L);
     orderLineRepository.save(orderLine2);
 
-    Set<OrderLine> orderLines = new HashSet<>();
+    List<OrderLine> orderLines = new ArrayList<>();
     orderLines.add(orderLine1);
     orderLines.add(orderLine2);
     order1 = orderRepository.save(order1);
