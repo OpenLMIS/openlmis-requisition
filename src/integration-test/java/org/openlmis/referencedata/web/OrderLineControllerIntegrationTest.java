@@ -42,6 +42,7 @@ import java.time.Month;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -94,6 +95,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
   private OrderLine orderLine = new OrderLine();
+  private Order order = new Order();
   private User user;
 
   @Before
@@ -176,7 +178,6 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setSupervisoryNode(supervisoryNode);
     requisitionRepository.save(requisition);
 
-    Order order = new Order();
     order.setRequisition(requisition);
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
@@ -263,6 +264,22 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(OrderLine.class);
 
     assertTrue(orderLineRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteOrderLine() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", orderLine.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(orderLineRepository.exists(orderLine.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

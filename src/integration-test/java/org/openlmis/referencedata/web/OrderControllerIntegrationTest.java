@@ -41,8 +41,10 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -192,6 +194,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     addOrderLine(thirdOrder, product1, 50L, 50L);
 
     addOrderLine(thirdOrder, product2, 5L, 10L);
+
+    OrderLine orderLine = addOrderLine(firstOrder, product1, 35L, 50L);
+
+    List<OrderLine> orderLines = new ArrayList<>();
+    orderLines.add(orderLine);
+    firstOrder.setOrderLines(orderLines);
+
+    firstOrder = orderRepository.save(firstOrder);
 
     geographicLevel = addGeographicLevel("levelCode", 1);
 

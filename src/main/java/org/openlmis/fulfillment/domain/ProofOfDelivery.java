@@ -9,6 +9,7 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -31,8 +32,10 @@ public class ProofOfDelivery extends BaseEntity {
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
         property = "proofOfDeliveryLineItemsId")
   @OneToMany(mappedBy = "proofOfDelivery",
-      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
+      cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER)
   @Getter
+  @Setter
   private List<ProofOfDeliveryLine> proofOfDeliveryLineItems;
 
   @Column
