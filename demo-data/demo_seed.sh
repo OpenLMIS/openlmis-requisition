@@ -15,3 +15,7 @@ ${GENERATOR} ${FILES}
 
 # TODO: Automatically populate the database with seed file
 mv input.sql ${DIRECTORY}
+
+echo "\nGenerated ${DIRECTORY}/input.sql"
+echo "To insert the data into database, first run the service, and then from outside of container type:"
+echo "docker exec -i openlmisrequisition_db_1 psql -Upostgres open_lmis < demo-data/input.sql"
