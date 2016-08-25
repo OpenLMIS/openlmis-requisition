@@ -1,7 +1,6 @@
 *.iml
 *.ipr
 *.iws
-*.sql
 .gradle/
 build/
 out/
@@ -14,3 +13,4 @@ node_modules/
 api-definition.json
 api-definition-raml.yaml
 api-definition.html
+demo-data/*.sql
