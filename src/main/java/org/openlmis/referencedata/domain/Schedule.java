@@ -7,9 +7,11 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 
 import java.time.LocalDateTime;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -17,7 +19,7 @@ import javax.persistence.Table;
 
 
 @Entity
-@Table(name = "schedule", schema = "referencedata")
+@Table(name = "schedules", schema = "referencedata")
 @NoArgsConstructor
 public class Schedule extends BaseEntity {
 
@@ -33,6 +35,7 @@ public class Schedule extends BaseEntity {
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @Convert(converter = LocalDateTimePersistenceConverter.class)
   @Getter
   @Setter
   private LocalDateTime modifiedDate;

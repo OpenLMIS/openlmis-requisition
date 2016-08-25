@@ -1,5 +1,9 @@
 package org.openlmis.fulfillment.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
@@ -11,7 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -30,17 +34,14 @@ public class ProofOfDelivery extends BaseEntity {
   @Getter
   private List<ProofOfDeliveryLine> profOfDeliveryLineItems;
 
-  @Column
   @Getter
   @Setter
   private Integer totalShippedPacks;
 
-  @Column
   @Getter
   @Setter
   private Integer totalReceivedPacks;
 
-  @Column
   @Getter
   @Setter
   private Integer totalReturnedPacks;
@@ -55,8 +56,9 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private String receivedBy;
 
-  @Column
+  @JsonSerialize(using = LocalDateSerializer.class)
+  @JsonDeserialize(using = LocalDateDeserializer.class)
   @Getter
   @Setter
-  private Date receivedDate;
+  private LocalDate receivedDate;
 }

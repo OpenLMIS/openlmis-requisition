@@ -1,6 +1,7 @@
 *.iml
 *.ipr
 *.iws
+*.sql
 .gradle/
 build/
 out/

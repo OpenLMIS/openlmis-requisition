@@ -1,0 +1,17 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "name": "MANAGE_GEOGRAPHIC_ZONE",
+    "rightType": "ADMIN"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "name": "MANAGE_SUPERVISORY_NODE",
+    "rightType": "ADMIN"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "name": "MANAGE_PRODUCT",
+    "rightType": "ADMIN"
+  }
+]

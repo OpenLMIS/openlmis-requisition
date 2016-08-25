@@ -1,0 +1,31 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "code": "CND",
+    "name": "Canada",
+    "level": "/api/geographicLevels/00000000-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "code": "CND-ONT",
+    "name": "Ontario",
+    "level": "/api/geographicLevels/00000000-0000-0000-0000-000000000002"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "code": "CND-ONT-TOR",
+    "name": "Toronto",
+    "level": "/api/geographicLevels/00000000-0000-0000-0000-000000000003",
+    "latitude": 43.41,
+    "longitude": 79.28,
+    "catchmentPopulation": 2600000
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000004",
+    "code": "CND-ONT-TOR-ETO",
+    "name": "Etobicoke",
+    "level": "/api/geographicLevels/00000000-0000-0000-0000-000000000004",
+    "latitude": 43.48,
+    "longitude": 79.31
+  }
+]

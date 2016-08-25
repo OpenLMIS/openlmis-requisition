@@ -165,7 +165,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setTotalReturnedPacks(10);
     proofOfDelivery.setDeliveredBy("delivered by");
     proofOfDelivery.setReceivedBy("received by");
-    proofOfDelivery.setReceivedDate(new Date());
+    proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDeliveryRepository.save(proofOfDelivery);
 
     initProofOfDeliveryLine1(orderLine1);
