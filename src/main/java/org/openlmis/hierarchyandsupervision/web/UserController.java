@@ -16,6 +16,11 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,8 +28,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestClientException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import javax.validation.Valid;
 
 @Controller
 public class UserController extends BaseController {
@@ -37,13 +45,26 @@ public class UserController extends BaseController {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private Validator validator;
+
+  @InitBinder
+  protected void initBinder(WebDataBinder binder) {
+    binder.setValidator(this.validator);
+  }
+
   /**
    * Custom endpoint for creating and updating users.
    */
   @RequestMapping(value = "/users", method = RequestMethod.POST)
-  public ResponseEntity<?> save(@RequestBody User user, OAuth2Authentication auth) {
+  public ResponseEntity<?> save(@RequestBody @Valid User user, BindingResult bindingResult,
+                                OAuth2Authentication auth) {
     OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auth.getDetails();
     String token = details.getTokenValue();
+
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
 
     try {
       userService.save(user, token);
@@ -137,5 +158,15 @@ public class UserController extends BaseController {
             lastName, homeFacility, active, verified);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
+  }
+
+  private Map<String, String> getErrors(final BindingResult bindingResult) {
+    return new HashMap<String, String>() {
+      {
+        for (FieldError error : bindingResult.getFieldErrors()) {
+          put(error.getField(), error.getDefaultMessage());
+        }
+      }
+    };
   }
 }

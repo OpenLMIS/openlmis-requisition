@@ -51,10 +51,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -211,15 +211,15 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     requisitionRepository.save(requisition);
 
     Order order = new Order();
-    order.setRequisition(requisition);
-    order.setOrderCode("O");
-    order.setQuotedCost(new BigDecimal("10.00"));
-    order.setStatus(OrderStatus.ORDERED);
-    order.setProgram(program);
+    order.setStatus(OrderStatus.SHIPPED);
+    order.setCreatedDate(LocalDateTime.now());
     order.setCreatedBy(user);
+    order.setOrderCode("O1");
+    order.setProgram(program);
+    order.setQuotedCost(new BigDecimal(100));
+    order.setSupplyingFacility(facility);
     order.setRequestingFacility(facility);
     order.setReceivingFacility(facility);
-    order.setSupplyingFacility(facility);
     orderRepository.save(order);
 
     OrderLine orderLine = new OrderLine();
@@ -235,7 +235,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setTotalReturnedPacks(10);
     proofOfDelivery.setDeliveredBy("delivered by");
     proofOfDelivery.setReceivedBy("received by");
-    proofOfDelivery.setReceivedDate(new Date());
+    proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDeliveryRepository.save(proofOfDelivery);
 
     proofOfDeliveryLine.setOrderLine(orderLine);

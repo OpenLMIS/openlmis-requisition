@@ -53,7 +53,7 @@ public class Order extends BaseEntity {
   private LocalDateTime createdDate;
 
   @ManyToOne
-  @JoinColumn(name = "userId", nullable = false)
+  @JoinColumn(name = "createdById", nullable = false)
   @Getter
   @Setter
   private User createdBy;

@@ -31,7 +31,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -153,7 +153,7 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     proofOfDelivery.setOrder(order);
     proofOfDelivery.setDeliveredBy(CODE);
     proofOfDelivery.setReceivedBy(CODE);
-    proofOfDelivery.setReceivedDate(new Date());
+    proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDeliveryRepository.save(proofOfDelivery);
   }
 

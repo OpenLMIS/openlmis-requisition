@@ -1,0 +1,63 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "product": "/api/products/00000000-0000-0000-0000-000000000001",
+    "requisition": "/api/requisitions/00000000-0000-0000-0000-000000000001",
+    "stockInHand": 10,
+    "beginningBalance": 5,
+    "totalReceivedQuantity": 5,
+    "requestedQuantity": 15,
+    "totalConsumedQuantity": 4
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "product": "/api/products/00000000-0000-0000-0000-000000000002",
+    "requisition": "/api/requisitions/00000000-0000-0000-0000-000000000001",
+    "stockInHand": 1000,
+    "beginningBalance": 400,
+    "totalReceivedQuantity": 800,
+    "requestedQuantity": 800,
+    "totalConsumedQuantity": 600
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "product": "/api/products/00000000-0000-0000-0000-000000000003",
+    "requisition": "/api/requisitions/00000000-0000-0000-0000-000000000001",
+    "stockInHand": 22,
+    "beginningBalance": 6,
+    "totalReceivedQuantity": 16,
+    "requestedQuantity": 500,
+    "totalConsumedQuantity": 0,
+    "requestedQuantityExplanation": "Too few left to make any use out of it."
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000004",
+    "product": "/api/products/00000000-0000-0000-0000-000000000001",
+    "requisition": "/api/requisitions/00000000-0000-0000-0000-000000000002",
+    "stockInHand": 300,
+    "beginningBalance": 300,
+    "totalReceivedQuantity": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 100
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000005",
+    "product": "/api/products/00000000-0000-0000-0000-000000000002",
+    "requisition": "/api/requisitions/00000000-0000-0000-0000-000000000002",
+    "stockInHand": 250,
+    "beginningBalance": 50,
+    "totalReceivedQuantity": 250,
+    "requestedQuantity": 250,
+    "totalConsumedQuantity": 50
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000006",
+    "product": "/api/products/00000000-0000-0000-0000-000000000002",
+    "requisition": "/api/requisitions/00000000-0000-0000-0000-000000000003",
+    "stockInHand": 30000,
+    "beginningBalance": 1000,
+    "totalReceivedQuantity": 30000,
+    "requestedQuantity": 35000,
+    "totalConsumedQuantity": 1000
+  }
+]

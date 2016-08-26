@@ -1,0 +1,26 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "facilityType": "/api/facilityTypes/00000000-0000-0000-0000-000000000001",
+    "programProduct": "/api/programProducts/00000000-0000-0000-0000-000000000001",
+    "maxMonthsOfStock": "5.5",
+    "minMonthsOfStock": "3.3",
+    "emergencyOrderPoint": "6"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "facilityType": "/api/facilityTypes/00000000-0000-0000-0000-000000000002",
+    "programProduct": "/api/programProducts/00000000-0000-0000-0000-000000000001",
+    "maxMonthsOfStock": "12",
+    "minMonthsOfStock": "8.5",
+    "emergencyOrderPoint": "15"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "facilityType": "/api/facilityTypes/00000000-0000-0000-0000-000000000002",
+    "programProduct": "/api/programProducts/00000000-0000-0000-0000-000000000003",
+    "maxMonthsOfStock": "18",
+    "minMonthsOfStock": "12",
+    "emergencyOrderPoint": "24"
+  }
+]

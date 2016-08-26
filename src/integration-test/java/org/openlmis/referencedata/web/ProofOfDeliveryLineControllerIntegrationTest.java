@@ -25,15 +25,15 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProcessingSchedule;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
+import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -44,7 +44,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -218,7 +217,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
     proofOfDelivery.setTotalReturnedPacks(10);
     proofOfDelivery.setDeliveredBy("delivered by");
     proofOfDelivery.setReceivedBy("received by");
-    proofOfDelivery.setReceivedDate(new Date());
+    proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDeliveryRepository.save(proofOfDelivery);
 
     proofOfDeliveryLine.setOrderLine(orderLine);
