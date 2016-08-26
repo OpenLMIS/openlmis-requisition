@@ -6,37 +6,39 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
 
+@Controller
+public class OrderController extends BaseController {
 
-
-@RepositoryRestController
-public class OrderController {
-  Logger logger = LoggerFactory.getLogger(OrderController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
   @Autowired
   private OrderRepository orderRepository;
@@ -44,6 +46,106 @@ public class OrderController {
   @Autowired
   private OrderService orderService;
 
+  /**
+   * Allows creating new orders.
+   *
+   * @param order A order bound to the request body
+   * @return ResponseEntity containing the created order
+   */
+  @RequestMapping(value = "/orders", method = RequestMethod.POST)
+  public ResponseEntity<?> createOrder(@RequestBody Order order) {
+    try {
+      LOGGER.debug("Creating new order");
+      // Ignore provided id
+      order.setId(null);
+      Order newOrder = orderRepository.save(order);
+      return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while saving order", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Get all orders.
+   *
+   * @return Orders.
+   */
+  @RequestMapping(value = "/orders", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllOrders() {
+    Iterable<Order> orders = orderRepository.findAll();
+    if (orders == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(orders, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Allows updating orders.
+   *
+   * @param order A order bound to the request body
+   * @param orderId UUID of order which we want to update
+   * @return ResponseEntity containing the updated order
+   */
+  @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateOrder(@RequestBody Order order,
+                                       @PathVariable("id") UUID orderId) {
+    try {
+      LOGGER.debug("Updating order");
+      Order updatedOrder = orderRepository.save(order);
+      return new ResponseEntity<Order>(updatedOrder, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error occurred while updating order", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Get chosen order.
+   *
+   * @param orderId UUID of order whose we want to get
+   * @return Order.
+   */
+  @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getOrder(@PathVariable("id") UUID orderId) {
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(order, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Allows deleting order.
+   *
+   * @param orderId UUID of order which we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteOrder(@PathVariable("id") UUID orderId) {
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      try {
+        orderRepository.delete(order);
+      } catch (DataIntegrityViolationException ex) {
+        ErrorResponse errorResponse =
+              new ErrorResponse("Order cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
+    }
+  }
 
   /**
    * Finds Orders matching all of provided parameters.
@@ -80,7 +182,7 @@ public class OrderController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    logger.debug("Finalizing the order");
+    LOGGER.debug("Finalizing the order");
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
 
@@ -104,7 +206,7 @@ public class OrderController {
       try {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order does not exist.");
       } catch (IOException ex) {
-        logger.info("Error sending error message to client.", ex);
+        LOGGER.info("Error sending error message to client.", ex);
       }
     }
     String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
@@ -115,7 +217,7 @@ public class OrderController {
       try {
         orderService.orderToPdf(order, columns, response.getOutputStream());
       } catch (IOException ex) {
-        logger.debug("Error getting response output stream.", ex);
+        LOGGER.debug("Error getting response output stream.", ex);
       }
     } else {
       response.setContentType("text/csv");
@@ -127,7 +229,7 @@ public class OrderController {
         IOUtils.copy(input, response.getOutputStream());
         response.flushBuffer();
       } catch (IOException ex) {
-        logger.debug("Error writing csv file to output stream.", ex);
+        LOGGER.debug("Error writing csv file to output stream.", ex);
       }
     }
   }

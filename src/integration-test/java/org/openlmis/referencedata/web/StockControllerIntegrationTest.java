@@ -10,14 +10,22 @@ import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Stock;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = "/api/stocks";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private StockRepository stockRepository;
@@ -39,6 +47,99 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
     for ( int stockNumber = 0; stockNumber < 5; stockNumber++ ) {
       stocks.add(generateStock());
     }
+  }
+
+  @Test
+  public void shouldDeleteStock() {
+
+    Stock stock = stocks.get(4);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(stockRepository.exists(stock.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateStock() {
+
+    Stock stock = stocks.get(4);
+    stockRepository.delete(stock);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(stock)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateStock() {
+
+    Stock stock = stocks.get(4);
+    stock.setStoredQuantity(1234L);
+
+    Stock response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .body(stock)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Stock.class);
+
+    assertTrue(response.getStoredQuantity().equals(1234L));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllStocks() {
+
+    Stock[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Stock[].class);
+
+    Iterable<Stock> stocks = Arrays.asList(response);
+    assertTrue(stocks.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenStock() {
+
+    Stock stock = stocks.get(4);
+
+    Stock response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Stock.class);
+
+    assertTrue(stockRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

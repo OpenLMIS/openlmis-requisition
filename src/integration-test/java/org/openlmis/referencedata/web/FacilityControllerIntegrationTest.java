@@ -18,20 +18,21 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,6 +47,10 @@ import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
+
+  private static final String RESOURCE_URL = "/api/facilities";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -78,10 +83,10 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
@@ -89,8 +94,11 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order order = new Order();
   private User user = new User();
   private Program program = new Program();
-  private Period period = new Period();
-  private Schedule schedule = new Schedule();
+  private ProcessingPeriod period = new ProcessingPeriod();
+  private ProcessingSchedule schedule = new ProcessingSchedule();
+  private Facility facility = new Facility();
+  private Facility facility2 = new Facility();
+  private Requisition requisition = new Requisition();
 
   @Before
   public void setUp() {
@@ -107,20 +115,20 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
 
     FacilityType facilityType = addFacilityType("FT1");
 
-    Facility facility = addFacility("facility1", "F1", null, facilityType,
+    facility = addFacility("facility1", "F1", null, facilityType,
             geographicZone, true, false);
 
     user = userRepository.findOne(INITIAL_USER_ID);
     user.setHomeFacility(facility);
     userRepository.save(user);
 
-    Facility facility2 = addFacility("facility2", "F2", null, facilityType,
+    facility2 = addFacility("facility2", "F2", null, facilityType,
         geographicZone, true, false);
 
-    Requisition requisition1 = addRequisition(program, facility, period,
+    requisition = addRequisition(program, facility, period,
         RequisitionStatus.RELEASED);
 
-    order = addOrder(requisition1, "O2", this.program, this.user, facility2, facility2,
+    order = addOrder(requisition, "O2", this.program, this.user, facility2, facility2,
             facility, OrderStatus.RECEIVED, new BigDecimal(100));
 
     ProductCategory productCategory1 = addProductCategory("PCCode1", "PCName1", 1);
@@ -164,6 +172,106 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(testOrder.getOrderCode(), order.getOrderCode());
     assertEquals(testOrder.getOrderLines().size(), 2);
     assertEquals(testOrder.getCreatedDate(), order.getCreatedDate());
+  }
+
+  @Test
+  public void shouldDeleteFacility() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(facilityRepository.exists(facility.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateFacility() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+    facilityRepository.delete(facility);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(facility)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateFacility() {
+
+    facility.setDescription("OpenLMIS");
+
+    Facility response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .body(facility)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Facility.class);
+
+    assertEquals(response.getDescription(), "OpenLMIS");
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllFacilities() {
+
+    Facility[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Facility[].class);
+
+    Iterable<Facility> facilities = Arrays.asList(response);
+    assertTrue(facilities.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenFacility() {
+
+    Facility response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Facility.class);
+
+    assertTrue(facilityRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private Facility addFacility(String facilityName, String facilityCode, String facilityDescription,
@@ -221,16 +329,16 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     return productRepository.save(product);
   }
 
-  private Schedule addSchedule(String scheduleName, String scheduleCode) {
-    Schedule schedule = new Schedule();
+  private ProcessingSchedule addSchedule(String scheduleName, String scheduleCode) {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode(scheduleCode);
     schedule.setName(scheduleName);
     return scheduleRepository.save(schedule);
   }
 
-  private Period addPeriod(String periodName, Schedule processingSchedule,
-                           LocalDate startDate, LocalDate endDate) {
-    Period period = new Period();
+  private ProcessingPeriod addPeriod(String periodName, ProcessingSchedule processingSchedule,
+                                     LocalDate startDate, LocalDate endDate) {
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setProcessingSchedule(processingSchedule);
     period.setName(periodName);
     period.setStartDate(startDate);
@@ -238,7 +346,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     return periodRepository.save(period);
   }
 
-  private Requisition addRequisition(Program program, Facility facility, Period processingPeriod,
+  private Requisition addRequisition(Program program, Facility facility,
+                                     ProcessingPeriod processingPeriod,
                                      RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setProgram(program);

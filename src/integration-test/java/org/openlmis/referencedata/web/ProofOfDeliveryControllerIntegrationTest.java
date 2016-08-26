@@ -1,8 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -16,7 +13,9 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
@@ -26,16 +25,16 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.TemplateService;
@@ -44,6 +43,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,11 +54,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/proofOfDeliveries/{id}/print";
+  private static final String RESOURCE_URL = "/api/proofOfDeliveries";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String PRINT_URL = RESOURCE_URL + "/{id}/print";
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";
@@ -76,19 +85,16 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private UserRepository userRepository;
 
   @Autowired
-  private RequisitionRepository requisitionRepository;
-
-  @Autowired
   private ProgramRepository programRepository;
 
   @Autowired
   private FacilityRepository facilityRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private ProductRepository productRepository;
@@ -111,54 +117,119 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
 
+  @Autowired
+  private SupervisoryNodeRepository supervisoryNodeRepository;
+
+  @Autowired
+  private RequisitionRepository requisitionRepository;
+
+  private User user;
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
-  private ProofOfDeliveryLine proofOfDeliveryLine1 = new ProofOfDeliveryLine();
-  private ProofOfDeliveryLine proofOfDeliveryLine2 = new ProofOfDeliveryLine();
-  private List<ProofOfDeliveryLine> proofOfDeliveryLineList = new ArrayList<>();
+  private ProofOfDeliveryLine proofOfDeliveryLine = new ProofOfDeliveryLine();
 
   /**
    * Prepare the test environment.
    */
   @Before
   public void setUp() {
-    Schedule schedule1 = new Schedule();
-    schedule1.setCode("S1");
-    schedule1.setName("Schedule1");
-    scheduleRepository.save(schedule1);
-
-    Program program1 = new Program();
-    program1.setCode("P1");
-    program1.setName("Program1");
-    programRepository.save(program1);
-
-    Period period1 = new Period();
-    period1.setProcessingSchedule(schedule1);
-    period1.setName("P1");
-    period1.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
-    period1.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
-    periodRepository.save(period1);
-
-    Facility facility1 = initFacility1();
-    Requisition requisition1 = new Requisition();
-    requisition1.setProgram(program1);
-    requisition1.setCreatedDate(LocalDateTime.of(2015, Month.JANUARY, 1, 10, 0, 0));
-    requisition1.setFacility(facility1);
-    requisition1.setProcessingPeriod(period1);
-    requisition1.setStatus(RequisitionStatus.RELEASED);
-    requisitionRepository.save(requisition1);
-
     assertEquals(1, userRepository.count());
-    User user = userRepository.findAll().iterator().next();
+    user = userRepository.findOne(INITIAL_USER_ID);
 
-    OrderLine orderLine1 = new OrderLine();
-    OrderLine orderLine2 = new OrderLine();
-    Product product1 = initProduct1();
-    Product product2 = initProduct2();
-    Facility facility2 = initFacility2();
-    Order order1 = initOrder(user, program1, facility1, facility2, product1, product2,
-        orderLine1, orderLine2);
+    ProductCategory productCategory = new ProductCategory();
+    productCategory.setCode("PC");
+    productCategory.setName("name");
+    productCategory.setDisplayOrder(1);
+    productCategoryRepository.save(productCategory);
 
-    proofOfDelivery.setOrder(order1);
+    Product product = new Product();
+    product.setPrimaryName("productName");
+    product.setCode("productCode");
+    product.setDispensingUnit("dispensingUnit");
+    product.setDosesPerDispensingUnit(1);
+    product.setPackSize(10);
+    product.setPackRoundingThreshold(10);
+    product.setRoundToZero(false);
+    product.setActive(true);
+    product.setFullSupply(false);
+    product.setTracer(false);
+    product.setProductCategory(productCategory);
+    productRepository.save(product);
+
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("F");
+    facilityTypeRepository.save(facilityType);
+
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GL");
+    geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
+
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("geographicZoneCode");
+    geographicZone.setLevel(geographicLevel);
+    geographicZoneRepository.save(geographicZone);
+
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("facilityCode");
+    facility.setName("facilityName");
+    facility.setDescription("facilityDescription");
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
+
+    SupervisoryNode supervisoryNode = new SupervisoryNode();
+    supervisoryNode.setCode("NodeCode");
+    supervisoryNode.setName("NodeName");
+    supervisoryNode.setFacility(facility);
+    supervisoryNodeRepository.save(supervisoryNode);
+
+    Program program = new Program();
+    program.setCode("programCode");
+    programRepository.save(program);
+
+    ProcessingSchedule schedule = new ProcessingSchedule();
+    schedule.setCode("scheduleCode");
+    schedule.setName("scheduleName");
+    scheduleRepository.save(schedule);
+
+    ProcessingPeriod period = new ProcessingPeriod();
+    period.setProcessingSchedule(schedule);
+    period.setName("periodName");
+    period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
+    period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
+    periodRepository.save(period);
+
+    Requisition requisition = new Requisition();
+    requisition.setProgram(program);
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(period);
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setEmergency(false);
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisitionRepository.save(requisition);
+
+    Order order = new Order();
+    order.setStatus(OrderStatus.SHIPPED);
+    order.setCreatedDate(LocalDateTime.now());
+    order.setCreatedBy(user);
+    order.setOrderCode("O1");
+    order.setProgram(program);
+    order.setQuotedCost(new BigDecimal(100));
+    order.setSupplyingFacility(facility);
+    order.setRequestingFacility(facility);
+    order.setReceivingFacility(facility);
+    orderRepository.save(order);
+
+    OrderLine orderLine = new OrderLine();
+    orderLine.setOrder(order);
+    orderLine.setProduct(product);
+    orderLine.setOrderedQuantity(100L);
+    orderLine.setFilledQuantity(100L);
+    orderLineRepository.save(orderLine);
+
+    proofOfDelivery.setOrder(order);
     proofOfDelivery.setTotalShippedPacks(100);
     proofOfDelivery.setTotalReceivedPacks(100);
     proofOfDelivery.setTotalReturnedPacks(10);
@@ -167,161 +238,21 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDeliveryRepository.save(proofOfDelivery);
 
-    initProofOfDeliveryLine1(orderLine1);
-    initProofOfDeliveryLine2(orderLine2);
-    proofOfDeliveryLineList.add(proofOfDeliveryLine1);
-    proofOfDeliveryLineList.add(proofOfDeliveryLine2);
+    proofOfDeliveryLine.setOrderLine(orderLine);
+    proofOfDeliveryLine.setProofOfDelivery(proofOfDelivery);
+    proofOfDeliveryLine.setQuantityShipped(100L);
+    proofOfDeliveryLine.setQuantityReturned(100L);
+    proofOfDeliveryLine.setQuantityReceived(100L);
+    proofOfDeliveryLine.setPackToShip(100L);
+    proofOfDeliveryLine.setReplacedProductCode("replaced product code");
+    proofOfDeliveryLine.setNotes("Notes");
+    proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+
+    List<ProofOfDeliveryLine> proofOfDeliveryLines = new ArrayList<>();
+    proofOfDeliveryLines.add(proofOfDeliveryLine);
+
+    proofOfDelivery.setProofOfDeliveryLineItems(proofOfDeliveryLines);
     proofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
-  }
-
-  private void initProofOfDeliveryLine2(OrderLine orderLine2) {
-    proofOfDeliveryLine2.setOrderLine(orderLine2);
-    proofOfDeliveryLine2.setProofOfDelivery(proofOfDelivery);
-    proofOfDeliveryLine2.setQuantityShipped(200L);
-    proofOfDeliveryLine2.setQuantityReturned(200L);
-    proofOfDeliveryLine2.setQuantityReceived(200L);
-    proofOfDeliveryLine2.setPackToShip(200L);
-    proofOfDeliveryLine2.setReplacedProductCode("replaced product code2");
-    proofOfDeliveryLine2.setNotes("Notes2");
-    proofOfDeliveryLineRepository.save(proofOfDeliveryLine2);
-  }
-
-  private void initProofOfDeliveryLine1(OrderLine orderLine1) {
-    proofOfDeliveryLine1.setOrderLine(orderLine1);
-    proofOfDeliveryLine1.setProofOfDelivery(proofOfDelivery);
-    proofOfDeliveryLine1.setQuantityShipped(100L);
-    proofOfDeliveryLine1.setQuantityReturned(100L);
-    proofOfDeliveryLine1.setQuantityReceived(100L);
-    proofOfDeliveryLine1.setPackToShip(100L);
-    proofOfDeliveryLine1.setReplacedProductCode("replaced product code");
-    proofOfDeliveryLine1.setNotes("Notes");
-    proofOfDeliveryLineRepository.save(proofOfDeliveryLine1);
-  }
-
-  private Order initOrder(User user, Program program1, Facility facility1, Facility facility2,
-                          Product product1, Product product2, OrderLine orderLine1,
-                          OrderLine orderLine2) {
-    Order order1 = new Order();
-    order1.setStatus(OrderStatus.SHIPPED);
-    order1.setCreatedDate(LocalDateTime.now());
-    order1.setCreatedBy(user);
-    order1.setOrderCode("O1");
-    order1.setProgram(program1);
-    order1.setQuotedCost(new BigDecimal(100));
-    order1.setSupplyingFacility(facility1);
-    order1.setRequestingFacility(facility2);
-    order1.setReceivingFacility(facility2);
-    orderRepository.save(order1);
-
-    orderLine1.setOrder(order1);
-    orderLine1.setProduct(product1);
-    orderLine1.setOrderedQuantity(50L);
-    orderLine1.setFilledQuantity(50L);
-    orderLineRepository.save(orderLine1);
-
-    orderLine2.setOrder(order1);
-    orderLine2.setProduct(product2);
-    orderLine2.setOrderedQuantity(20L);
-    orderLine2.setFilledQuantity(15L);
-    orderLineRepository.save(orderLine2);
-
-    List<OrderLine> orderLines = new ArrayList<>();
-    orderLines.add(orderLine1);
-    orderLines.add(orderLine2);
-    order1 = orderRepository.save(order1);
-    return order1;
-  }
-
-  private Facility initFacility2() {
-    GeographicLevel geographicLevel2 = new GeographicLevel();
-    geographicLevel2.setCode("GL2");
-    geographicLevel2.setLevelNumber(1);
-    geographicLevelRepository.save(geographicLevel2);
-    GeographicZone geographicZone2 = new GeographicZone();
-    geographicZone2.setCode("GZ2");
-    geographicZone2.setLevel(geographicLevel2);
-    geographicZoneRepository.save(geographicZone2);
-    FacilityType facilityType2 = new FacilityType();
-    facilityType2.setCode("FT2");
-    facilityTypeRepository.save(facilityType2);
-    Facility facility2 = new Facility();
-    facility2.setCode("F2");
-    facility2.setName("Facility2");
-    facility2.setGeographicZone(geographicZone2);
-    facility2.setType(facilityType2);
-    facility2.setActive(true);
-    facility2.setEnabled(false);
-    facilityRepository.save(facility2);
-    return facility2;
-  }
-
-  private Facility initFacility1() {
-    GeographicLevel geographicLevel1 = new GeographicLevel();
-    geographicLevel1.setCode("GL1");
-    geographicLevel1.setLevelNumber(1);
-    geographicLevelRepository.save(geographicLevel1);
-    GeographicZone geographicZone1 = new GeographicZone();
-    geographicZone1.setCode("GZ1");
-    geographicZone1.setLevel(geographicLevel1);
-    geographicZoneRepository.save(geographicZone1);
-    FacilityType facilityType1 = new FacilityType();
-    facilityType1.setCode("FT1");
-    facilityTypeRepository.save(facilityType1);
-    Facility facility1 = new Facility();
-    facility1.setCode("F1");
-    facility1.setName("Facility1");
-    facility1.setGeographicZone(geographicZone1);
-    facility1.setType(facilityType1);
-    facility1.setActive(true);
-    facility1.setEnabled(false);
-    facilityRepository.save(facility1);
-    return facility1;
-  }
-
-  private Product initProduct2() {
-    ProductCategory productCategory2 = new ProductCategory();
-    productCategory2.setCode("PC2");
-    productCategory2.setName("PC2 name");
-    productCategory2.setDisplayOrder(2);
-    productCategoryRepository.save(productCategory2);
-
-    Product product2 = new Product();
-    product2.setCode("P2");
-    product2.setPrimaryName("Product2");
-    product2.setDispensingUnit("pills");
-    product2.setDosesPerDispensingUnit(2);
-    product2.setPackSize(20);
-    product2.setPackRoundingThreshold(20);
-    product2.setRoundToZero(true);
-    product2.setActive(true);
-    product2.setFullSupply(false);
-    product2.setTracer(false);
-    product2.setProductCategory(productCategory2);
-    productRepository.save(product2);
-    return product2;
-  }
-
-  private Product initProduct1() {
-    ProductCategory productCategory1 = new ProductCategory();
-    productCategory1.setCode("PC1");
-    productCategory1.setName("PC1 name");
-    productCategory1.setDisplayOrder(1);
-    productCategoryRepository.save(productCategory1);
-
-    Product product1 = new Product();
-    product1.setCode("P1");
-    product1.setPrimaryName("Product1");
-    product1.setDispensingUnit("pills");
-    product1.setDosesPerDispensingUnit(1);
-    product1.setPackSize(10);
-    product1.setPackRoundingThreshold(10);
-    product1.setRoundToZero(false);
-    product1.setActive(true);
-    product1.setFullSupply(true);
-    product1.setTracer(false);
-    product1.setProductCategory(productCategory1);
-    productRepository.save(product1);
-    return product1;
   }
 
   @Test
@@ -338,10 +269,98 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .pathParam("id", proofOfDelivery.getId())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
-        .get(RESOURCE_URL)
+        .get(PRINT_URL)
         .then()
         .statusCode(200);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteProofOfDelivery() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(proofOfDeliveryRepository.exists(proofOfDelivery.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateProofOfDelivery() {
+
+    proofOfDelivery.setTotalReceivedPacks(2);
+
+    ProofOfDelivery response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .body(proofOfDelivery)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery.class);
+
+    assertTrue(response.getTotalReceivedPacks().equals(2));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllProofOfDeliveries() {
+
+    ProofOfDelivery[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery[].class);
+
+    Iterable<ProofOfDelivery> proofOfDeliveries = Arrays.asList(response);
+    assertTrue(proofOfDeliveries.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenProofOfDelivery() {
+
+    ProofOfDelivery response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery.class);
+
+    assertTrue(proofOfDeliveryRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateProofOfDelivery() {
+
+    proofOfDeliveryRepository.delete(proofOfDelivery);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(proofOfDelivery)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertFalse(proofOfDelivery.getProofOfDeliveryLineItems().isEmpty());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

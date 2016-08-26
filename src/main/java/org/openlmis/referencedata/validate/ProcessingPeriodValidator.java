@@ -1,8 +1,8 @@
 package org.openlmis.referencedata.validate;
 
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.repository.PeriodRepository;
-import org.openlmis.referencedata.service.PeriodService;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
+import org.openlmis.referencedata.service.ProcessingPeriodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -10,16 +10,16 @@ import org.springframework.validation.Validator;
 
 import java.time.LocalDate;
 
-public class PeriodValidator implements Validator {
+public class ProcessingPeriodValidator implements Validator {
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private PeriodService periodService;
+  private ProcessingPeriodService periodService;
 
   @Override
   public boolean supports(Class<?> clazz) {
-    return Period.class.equals(clazz);
+    return ProcessingPeriod.class.equals(clazz);
   }
 
   @Override
@@ -27,8 +27,8 @@ public class PeriodValidator implements Validator {
     ValidationUtils.rejectIfEmpty(err, "startDate", "startDate.empty", "Start date is null");
     ValidationUtils.rejectIfEmpty(err, "endDate", "endDate.empty", "End date is null");
 
-    Period period = (Period) obj;
-    Iterable<Period> iterable = periodService
+    ProcessingPeriod period = (ProcessingPeriod) obj;
+    Iterable<ProcessingPeriod> iterable = periodService
             .searchPeriods(period.getProcessingSchedule(), null);
 
     LocalDate startDate = period.getStartDate();
@@ -36,7 +36,7 @@ public class PeriodValidator implements Validator {
 
     if (endDate.isAfter(startDate)) {
       if (iterable.iterator().hasNext()) {
-        Period periodFromRepo = periodRepository.findFirst1ByOrderByEndDateDesc();
+        ProcessingPeriod periodFromRepo = periodRepository.findFirst1ByOrderByEndDateDesc();
         LocalDate lastEndDate = periodFromRepo.getEndDate();
         if (!startDate.equals(lastEndDate.plusDays(1))) {
           err.rejectValue("startDate", "{gap.between.lastEndDate.and.startDate.validation.error}",

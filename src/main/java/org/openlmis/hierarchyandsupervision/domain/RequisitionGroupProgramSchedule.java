@@ -7,7 +7,7 @@ import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,7 +35,7 @@ public class RequisitionGroupProgramSchedule extends BaseEntity {
   @JoinColumn(name = "processingScheduleId", nullable = false)
   @Getter
   @Setter
-  private Schedule processingSchedule;
+  private ProcessingSchedule processingSchedule;
 
   @Column(nullable = false)
   @Getter

@@ -9,7 +9,6 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.view.View;
 
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -19,6 +18,8 @@ import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+
+import java.util.List;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 @Entity

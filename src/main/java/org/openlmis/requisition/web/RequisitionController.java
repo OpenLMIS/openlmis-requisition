@@ -1,17 +1,17 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.requisition.domain.Comment;
+import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.requisition.repository.CommentRepository;
+import org.openlmis.referencedata.web.BaseController;
+import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -21,12 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
@@ -37,17 +38,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.validation.Valid;
 
-@RepositoryRestController
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+@Controller
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionController {
+public class RequisitionController extends BaseController {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
   @Autowired
@@ -72,19 +77,17 @@ public class RequisitionController {
   }
 
   /**
-   * Initiates requisition.
-   * @return result
+   * Allows creating new requisitions.
+   *
+   * @param requisition A requisition bound to the request body
+   * @return ResponseEntity containing the created requisition
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisitionDto,
+  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisition,
                                                BindingResult bindingResult) {
     try {
-
-      Requisition requisition = requisitionService.initiateRequisition(
-          requisitionDto);
-      ResponseEntity response = new ResponseEntity<>(requisition, HttpStatus.CREATED);
-      return response;
-
+      Requisition newRequisition = requisitionService.initiateRequisition(requisition);
+      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
     } catch (RequisitionException ex) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -129,6 +132,60 @@ public class RequisitionController {
   }
 
   /**
+   * Allows updating requisitions.
+   *
+   * @param requisition A requisition bound to the request body
+   * @param requisitionId UUID of requisition which we want to update
+   * @return ResponseEntity containing the updated requisition
+   */
+  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
+                                       @PathVariable("id") UUID requisitionId) {
+    try {
+      LOGGER.debug("Updating requisition");
+      Requisition updatedRequisition = requisitionRepository.save(requisition);
+      return new ResponseEntity<Requisition>(updatedRequisition, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating requisition", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Get all requisitions.
+   *
+   * @return Requisitions.
+   */
+  @RequestMapping(value = "/requisitions", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<?> getAllRequisitions() {
+    Iterable<Requisition> requisitions = requisitionRepository.findAll();
+    if (requisitions == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(requisitions, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Get chosen requisition.
+   *
+   * @param requisitionId UUID of requisition whose we want to get
+   * @return Requisition.
+   */
+  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(requisition, HttpStatus.OK);
+    }
+  }
+
+  /**
    * Finds requisitions matching all of provided parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
@@ -139,7 +196,7 @@ public class RequisitionController {
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
-      @RequestParam(value = "processingPeriod", required = false) Period processingPeriod,
+      @RequestParam(value = "processingPeriod", required = false) ProcessingPeriod processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) SupervisoryNode supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
               RequisitionStatus requisitionStatus) {
@@ -210,6 +267,80 @@ public class RequisitionController {
     MappingJacksonValue value = new MappingJacksonValue(comments);
     value.setSerializationView(View.BasicInformation.class);
     return new ResponseEntity<>(value, HttpStatus.OK);
+  }
+
+  /**
+   * Allows updating comments.
+   *
+   * @param comment A comment bound to the request body
+   * @param commentId UUID of comment which we want to update
+   * @return ResponseEntity containing the updated requisition
+   */
+  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateRequisitionComment(@RequestBody Comment comment,
+                                                    @PathVariable("id") UUID commentId,
+                                                    OAuth2Authentication auth) {
+    Comment requisitionComment = commentRepository.findOne(commentId);
+    try {
+      LOGGER.debug("Updating comment");
+      comment.setRequisition(requisitionComment.getRequisition());
+
+      User user = (User) auth.getPrincipal();
+      comment.setAuthor(user);
+
+      Comment updatedComment = commentRepository.save(comment);
+      MappingJacksonValue value = new MappingJacksonValue(updatedComment);
+      value.setSerializationView(View.BasicInformation.class);
+      return new ResponseEntity<>(value, HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating comment", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Get chosen comment.
+   *
+   * @param commentId UUID of comment which we want to get
+   * @return Comment.
+   */
+  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.GET)
+  public ResponseEntity<?> getChoosenRequisitionComment(@PathVariable("id") UUID commentId) {
+    Comment comment = commentRepository.findOne(commentId);
+    if (comment == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else {
+      MappingJacksonValue value = new MappingJacksonValue(comment);
+      value.setSerializationView(View.BasicInformation.class);
+      return new ResponseEntity<>(value, HttpStatus.OK);
+    }
+  }
+
+  /**
+   * Allows deleting requisitionLine.
+   *
+   * @param commentId UUID of requisitionLine which we want to delete
+   * @return ResponseEntity containing the HTTP Status
+   */
+  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId) {
+    Comment comment = commentRepository.findOne(commentId);
+    if (comment == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      try {
+        commentRepository.delete(comment);
+      } catch (DataIntegrityViolationException ex) {
+        ErrorResponse errorResponse =
+              new ErrorResponse("Comment cannot be deleted because of existing dependencies",
+                    ex.getMessage());
+        LOGGER.error(errorResponse.getMessage(), ex);
+        return new ResponseEntity(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
+    }
   }
 
   /**

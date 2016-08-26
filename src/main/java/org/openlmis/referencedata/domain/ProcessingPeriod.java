@@ -9,25 +9,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.utils.LocalDatePersistenceConverter;
 
-import java.time.LocalDate;
-
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "periods", schema = "referencedata")
 @NoArgsConstructor
-public class Period extends BaseEntity {
+public class ProcessingPeriod extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "processingScheduleId", nullable = false)
   @Getter
   @Setter
-  private Schedule processingSchedule;
+  private ProcessingSchedule processingSchedule;
 
   @Column(nullable = false, columnDefinition = "text")
   @Getter

@@ -5,15 +5,16 @@ import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
-public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Schedule> {
+public class ProcessingScheduleRepositoryIntegrationTest
+      extends BaseCrudRepositoryIntegrationTest<ProcessingSchedule> {
 
   @Autowired
-  ScheduleRepository repository;
+  ProcessingScheduleRepository repository;
 
   @Before
   public void setUp() {
@@ -21,27 +22,27 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
   }
 
   @Override
-  ScheduleRepository getRepository() {
+  ProcessingScheduleRepository getRepository() {
     return this.repository;
   }
 
   @Override
-  Schedule generateInstance() {
+  ProcessingSchedule generateInstance() {
     return getExampleSchedule();
   }
 
   @Test
   public void testGetAllSchedules() {
     repository.save(getExampleSchedule());
-    Iterable<Schedule> result = repository.findAll();
+    Iterable<ProcessingSchedule> result = repository.findAll();
     int size = Lists.newArrayList(result).size();
     Assert.assertEquals(2, size);
   }
 
   @Test
   public void testScheduleEdit() {
-    Iterable<Schedule> iterable = repository.findAll();
-    Schedule scheduleFromRepo = iterable.iterator().next();
+    Iterable<ProcessingSchedule> iterable = repository.findAll();
+    ProcessingSchedule scheduleFromRepo = iterable.iterator().next();
     String newDescription = "New test description babe";
     Assert.assertNotEquals(newDescription, scheduleFromRepo.getDescription());
 
@@ -54,9 +55,9 @@ public class ScheduleRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
     Assert.assertEquals(newDescription, scheduleFromRepo.getDescription());
   }
 
-  private Schedule getExampleSchedule() {
+  private ProcessingSchedule getExampleSchedule() {
     int instanceNumber = this.getNextInstanceNumber();
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode("code" + instanceNumber);
     schedule.setName("schedule#" + instanceNumber);
     schedule.setDescription("Test schedule");

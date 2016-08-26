@@ -1,11 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -19,9 +13,9 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -39,6 +33,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionServiceTest {
 
@@ -53,7 +53,7 @@ public class RequisitionServiceTest {
   private SupervisoryNode supervisoryNode;
   private User user;
   private Facility facility;
-  private Period period;
+  private ProcessingPeriod period;
   private Program program;
 
   private Product product;
@@ -358,12 +358,12 @@ public class RequisitionServiceTest {
     return facility;
   }
 
-  private Period generatePeriod() {
-    Schedule schedule = new Schedule();
+  private ProcessingPeriod generatePeriod() {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setName("scheduleName");
     schedule.setCode(REQUISITION_TEST_NAME);
 
-    period = new Period();
+    period = new ProcessingPeriod();
     period.setId(UUID.randomUUID());
     period.setProcessingSchedule(schedule);
     period.setStartDate(LocalDate.of(2016, 1, 1));
