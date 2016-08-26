@@ -6,9 +6,9 @@ import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.RequisitionGroupProgramSchedule;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -29,7 +29,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   private RequisitionGroupProgramScheduleRepository repository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private ProgramRepository programRepository;
@@ -39,7 +39,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
 
   @Before
   public void setUp() {
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode("scheduleCode");
     schedule.setName("scheduleName");
     scheduleRepository.save(schedule);

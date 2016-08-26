@@ -12,7 +12,7 @@ import lombok.Setter;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
 
 import javax.persistence.CascadeType;
@@ -74,7 +74,7 @@ public class Requisition extends BaseEntity {
   @JoinColumn(name = "processingPeriodId", nullable = false)
   @Getter
   @Setter
-  private Period processingPeriod;
+  private ProcessingPeriod processingPeriod;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)

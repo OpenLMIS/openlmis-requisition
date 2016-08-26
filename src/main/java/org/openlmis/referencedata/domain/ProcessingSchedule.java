@@ -8,18 +8,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 
 
 @Entity
 @Table(name = "schedule", schema = "referencedata")
 @NoArgsConstructor
-public class Schedule extends BaseEntity {
+public class ProcessingSchedule extends BaseEntity {
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter

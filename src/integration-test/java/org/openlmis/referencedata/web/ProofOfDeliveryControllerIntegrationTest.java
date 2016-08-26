@@ -25,16 +25,16 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.TemplateService;
@@ -91,10 +91,10 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private FacilityRepository facilityRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private ProductRepository productRepository;
@@ -189,12 +189,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     program.setCode("programCode");
     programRepository.save(program);
 
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode("scheduleCode");
     schedule.setName("scheduleName");
     scheduleRepository.save(schedule);
 
-    Period period = new Period();
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setProcessingSchedule(schedule);
     period.setName("periodName");
     period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));

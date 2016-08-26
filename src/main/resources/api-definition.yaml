@@ -155,14 +155,14 @@ schemas:
           }
       }
 
-  - period: |
+  - processingPeriod: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "Period",
-          "description": "A single period",
+          "title": "Processing Period",
+          "description": "A single processingPeriod",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "processingSchedule": { "type": "object", "$ref": "#/schemas/schedule", "required": true, "title": "processingSchedule" },
+              "processingSchedule": { "type": "object", "$ref": "#/schemas/processingSchedule", "required": true, "title": "processingSchedule" },
               "name": { "type": "string", "required": true, "title": "name" },
               "description": { "type": "string", "required": false, "title": "description" },
               "startDate": { "type": "string", "required": true, "title": "startDate" },
@@ -249,7 +249,7 @@ schemas:
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
               "facility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "facility" },
               "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
-              "processingPeriod": { "type": "object", "$ref": "#/schemas/period", "required": true, "title": "processingPeriod" },
+              "processingPeriod": { "type": "object", "$ref": "#/schemas/processingPeriod", "required": true, "title": "processingPeriod" },
               "status": { "type": "string", "required": true, "title": "status" },
               "remarks": { "type": "string", "required": false, "title": "remarks" },
               "emergency": { "type": "boolean", "required": false, "title": "emergency" },
@@ -334,11 +334,11 @@ schemas:
           }
       }
 
-  - schedule: |
+  - processingSchedule: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "Schedule",
-          "description": "A single schedule",
+          "title": "Processing Schedule",
+          "description": "A single processingSchedule",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
@@ -421,7 +421,7 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "program": { "type": "object", "$ref": "#/schemas/program", "required": true },
-              "processingSchedule": { "type": "object", "$ref": "#/schemas/schedule", "required": true },
+              "processingSchedule": { "type": "object", "$ref": "#/schemas/processingSchedule", "required": true },
               "directDelivery": { "type": "boolean", "required": true, "title": "directDelivery" },
               "dropOffFacility": { "type": "object", "$ref": "#/schemas/facility", "required": false }
           }
@@ -881,8 +881,8 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-/periods:
-    displayName: Period
+/processingPeriods:
+    displayName: Processing Period
     get:
         is: [ secured ]
         description: Get all periods.
@@ -899,7 +899,7 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates given period if possible.
+        description: Creates given processingPeriod if possible.
         body:
             application/json:
         responses:
@@ -924,7 +924,7 @@ resourceTypes:
                 repeat: false
         delete:
             is: [ secured ]
-            description: Delete chosen period.
+            description: Delete chosen processingPeriod.
             responses:
                 "204":
                     headers:
@@ -940,7 +940,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get chosen period.
+            description: Get chosen processingPeriod.
             responses:
                 "200":
                     headers:
@@ -954,7 +954,7 @@ resourceTypes:
                       X-XSS-Protection:
         put:
             is: [ secured ]
-            description: Update existing period.
+            description: Update existing processingPeriod.
             body:
                 application/json:
             responses:
@@ -977,7 +977,7 @@ resourceTypes:
                 repeat: false
         get:
             is: [ secured ]
-            description: Display total days of period.
+            description: Display total days of processingPeriod.
             responses:
                 "200":
                     headers:
@@ -1029,7 +1029,7 @@ resourceTypes:
         /findFirst1ByOrderByEndDateDesc:
             get:
                 is: [ secured ]
-                description: Get last Period.
+                description: Get last processingPeriod.
                 responses:
                     "200":
                         headers:
@@ -1901,8 +1901,8 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-/schedules:
-    displayName: Schedule
+/processingSchedules:
+    displayName: Processing Schedule
     get:
         is: [ secured ]
         description: Get all schedules.
@@ -1919,7 +1919,7 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates new schedule.
+        description: Creates new processingSchedule.
         body:
             application/json:
         responses:
@@ -1944,7 +1944,7 @@ resourceTypes:
                 repeat: false
         delete:
             is: [ secured ]
-            description: Delete chosen schedule.
+            description: Delete chosen processingSchedule.
             responses:
                 "204":
                     headers:
@@ -1960,7 +1960,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get chosen schedule.
+            description: Get chosen processingSchedule.
             responses:
                 "200":
                     headers:
@@ -1974,7 +1974,7 @@ resourceTypes:
                       X-XSS-Protection:
         put:
             is: [ secured ]
-            description: Update existing schedule.
+            description: Update existing processingSchedule.
             body:
                 application/json:
             responses:
@@ -1998,7 +1998,7 @@ resourceTypes:
                 repeat: false
         get:
             is: [ secured ]
-            description: Display total days and months of schedule periods.
+            description: Display total days and months of processingSchedule periods.
             responses:
               200:
                   headers:
@@ -2377,12 +2377,12 @@ resourceTypes:
                     required: false
                     repeat: false
                 period:
-                    displayName: period
+                    displayName: processingPeriod
                     type: string
                     required: false
                     repeat: false
                 schedule:
-                    displayName: schedule
+                    displayName: processingSchedule
                     type: string
                     required: false
                     repeat: false

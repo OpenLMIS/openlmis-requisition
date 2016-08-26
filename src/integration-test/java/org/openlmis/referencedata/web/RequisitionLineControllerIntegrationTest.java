@@ -11,16 +11,16 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -61,7 +61,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private ProductCategoryRepository productCategoryRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
   private GeographicLevelRepository geographicLevelRepository;
@@ -79,14 +79,14 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private ProgramRepository programRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
 
   private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
-  private Period period = new Period();
+  private ProcessingPeriod period = new ProcessingPeriod();
   private Product product = new Product();
   private Program program = new Program();
   private Facility facility = new Facility();
@@ -264,7 +264,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode(TEST_CODE);
     schedule.setName(TEST_NAME);
     scheduleRepository.save(schedule);

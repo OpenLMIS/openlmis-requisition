@@ -18,16 +18,16 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -83,10 +83,10 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
@@ -94,8 +94,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order order = new Order();
   private User user = new User();
   private Program program = new Program();
-  private Period period = new Period();
-  private Schedule schedule = new Schedule();
+  private ProcessingPeriod period = new ProcessingPeriod();
+  private ProcessingSchedule schedule = new ProcessingSchedule();
   private Facility facility = new Facility();
   private Facility facility2 = new Facility();
   private Requisition requisition = new Requisition();
@@ -329,16 +329,16 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     return productRepository.save(product);
   }
 
-  private Schedule addSchedule(String scheduleName, String scheduleCode) {
-    Schedule schedule = new Schedule();
+  private ProcessingSchedule addSchedule(String scheduleName, String scheduleCode) {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode(scheduleCode);
     schedule.setName(scheduleName);
     return scheduleRepository.save(schedule);
   }
 
-  private Period addPeriod(String periodName, Schedule processingSchedule,
-                           LocalDate startDate, LocalDate endDate) {
-    Period period = new Period();
+  private ProcessingPeriod addPeriod(String periodName, ProcessingSchedule processingSchedule,
+                                     LocalDate startDate, LocalDate endDate) {
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setProcessingSchedule(processingSchedule);
     period.setName(periodName);
     period.setStartDate(startDate);
@@ -346,7 +346,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     return periodRepository.save(period);
   }
 
-  private Requisition addRequisition(Program program, Facility facility, Period processingPeriod,
+  private Requisition addRequisition(Program program, Facility facility,
+                                     ProcessingPeriod processingPeriod,
                                      RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setProgram(program);

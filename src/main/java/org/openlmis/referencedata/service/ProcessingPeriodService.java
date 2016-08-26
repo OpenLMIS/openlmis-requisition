@@ -1,8 +1,8 @@
 package org.openlmis.referencedata.service;
 
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +10,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class PeriodService {
+public class ProcessingPeriodService {
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   /**
    * Finds Periods matching all of provided parameters.
@@ -21,8 +21,8 @@ public class PeriodService {
    * @param toDate to which day shall Period start.
    * @return list of all Periods matching all of provided parameters.
    */
-  public List<Period> searchPeriods(
-          Schedule processingSchedule, LocalDate toDate) {
+  public List<ProcessingPeriod> searchPeriods(
+        ProcessingSchedule processingSchedule, LocalDate toDate) {
     return periodRepository.searchPeriods(processingSchedule, toDate);
   }
 

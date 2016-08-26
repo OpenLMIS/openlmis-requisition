@@ -4,7 +4,7 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -178,7 +178,7 @@ public class RequisitionService {
   public List<Requisition> searchRequisitions(Facility facility, Program program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
-                                              Period processingPeriod,
+                                              ProcessingPeriod processingPeriod,
                                               SupervisoryNode supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
     return requisitionRepository.searchRequisitions(

@@ -4,7 +4,7 @@ import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Comment;
@@ -196,7 +196,7 @@ public class RequisitionController extends BaseController {
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
-      @RequestParam(value = "processingPeriod", required = false) Period processingPeriod,
+      @RequestParam(value = "processingPeriod", required = false) ProcessingPeriod processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) SupervisoryNode supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
               RequisitionStatus requisitionStatus) {

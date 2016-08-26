@@ -4,10 +4,10 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.repository.PeriodRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -18,31 +18,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
+public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/schedules";
+  private static final String RESOURCE_URL = "/api/processingSchedules";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
-  private Schedule schedule;
-  private Period period;
+  private ProcessingSchedule schedule;
+  private ProcessingPeriod period;
 
   @Before
   public void setUp() {
-    schedule = new Schedule();
+    schedule = new ProcessingSchedule();
     schedule.setCode("code");
     schedule.setName("schedule");
     schedule.setDescription("Test schedule");
     scheduleRepository.save(schedule);
 
-    period = new Period();
+    period = new ProcessingPeriod();
     period.setName("period");
     period.setProcessingSchedule(schedule);
     period.setDescription("Test period");
@@ -107,7 +107,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
 
     schedule.setDescription("OpenLMIS");
 
-    Schedule response = restAssured.given()
+    ProcessingSchedule response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", schedule.getId())
@@ -116,7 +116,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(Schedule.class);
+          .extract().as(ProcessingSchedule.class);
 
     assertEquals(response.getDescription(), "OpenLMIS");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -125,16 +125,16 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetAllSchedules() {
 
-    Schedule[] response = restAssured.given()
+    ProcessingSchedule[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .when()
           .get(RESOURCE_URL)
           .then()
           .statusCode(200)
-          .extract().as(Schedule[].class);
+          .extract().as(ProcessingSchedule[].class);
 
-    Iterable<Schedule> schedules = Arrays.asList(response);
+    Iterable<ProcessingSchedule> schedules = Arrays.asList(response);
     assertTrue(schedules.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -142,7 +142,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetChosenSchedule() {
 
-    Schedule response = restAssured.given()
+    ProcessingSchedule response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", schedule.getId())
@@ -150,7 +150,7 @@ public class ScheduleControllerIntegrationTest extends BaseWebIntegrationTest {
           .get(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(Schedule.class);
+          .extract().as(ProcessingSchedule.class);
 
     assertTrue(scheduleRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

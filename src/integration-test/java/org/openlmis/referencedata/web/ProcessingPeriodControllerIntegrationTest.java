@@ -3,10 +3,10 @@ package org.openlmis.referencedata.web;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.repository.PeriodRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -19,9 +19,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
+public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/periods";
+  private static final String RESOURCE_URL = "/api/processingPeriods";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
@@ -30,14 +30,14 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ACCESS_TOKEN = "access_token";
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
-  private Period firstPeriod = new Period();
-  private Period secondPeriod = new Period();
-  private Schedule schedule = new Schedule();
+  private ProcessingPeriod firstPeriod = new ProcessingPeriod();
+  private ProcessingPeriod secondPeriod = new ProcessingPeriod();
+  private ProcessingSchedule schedule = new ProcessingSchedule();
 
   @Before
   public void setUp() {
@@ -72,14 +72,14 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
     secondPeriod.setProcessingSchedule(schedule);
 
-    Period savedPeriod = restAssured.given()
+    ProcessingPeriod savedPeriod = restAssured.given()
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(secondPeriod)
         .when()
         .post(RESOURCE_URL)
         .then()
         .statusCode(201)
-        .extract().as(Period.class);
+        .extract().as(ProcessingPeriod.class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertNotNull(savedPeriod.getId());
@@ -145,7 +145,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     secondPeriod.setStartDate(LocalDate.now());
     periodRepository.save(secondPeriod);
 
-    Period[] response = restAssured.given()
+    ProcessingPeriod[] response = restAssured.given()
         .queryParam(PROCESSING_SCHEDULE, firstPeriod.getProcessingSchedule().getId())
         .queryParam(START_DATE, firstPeriod.getStartDate().toString())
         .queryParam(ACCESS_TOKEN, getToken())
@@ -153,11 +153,11 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Period[].class);
+        .extract().as(ProcessingPeriod[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(2, response.length);
-    for ( Period period : response ) {
+    for ( ProcessingPeriod period : response ) {
       assertEquals(
           period.getProcessingSchedule().getId(),
           firstPeriod.getProcessingSchedule().getId());
@@ -190,7 +190,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     periodRepository.save(firstPeriod);
     firstPeriod.setDescription("OpenLMIS");
 
-    Period response = restAssured.given()
+    ProcessingPeriod response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", firstPeriod.getId())
@@ -199,7 +199,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(Period.class);
+          .extract().as(ProcessingPeriod.class);
 
     assertEquals(response.getDescription(), "OpenLMIS");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -210,16 +210,16 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
-    Period[] response = restAssured.given()
+    ProcessingPeriod[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .when()
           .get(RESOURCE_URL)
           .then()
           .statusCode(200)
-          .extract().as(Period[].class);
+          .extract().as(ProcessingPeriod[].class);
 
-    Iterable<Period> periods = Arrays.asList(response);
+    Iterable<ProcessingPeriod> periods = Arrays.asList(response);
     assertTrue(periods.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -229,7 +229,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
 
-    Period response = restAssured.given()
+    ProcessingPeriod response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", firstPeriod.getId())
@@ -237,7 +237,7 @@ public class PeriodControllerIntegrationTest extends BaseWebIntegrationTest {
           .get(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(Period.class);
+          .extract().as(ProcessingPeriod.class);
 
     assertTrue(periodRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

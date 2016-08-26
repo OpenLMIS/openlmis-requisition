@@ -3,8 +3,8 @@ package org.openlmis.referencedata.repository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
@@ -12,20 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Period> {
+public class ProcessingPeriodRepositoryIntegrationTest
+      extends BaseCrudRepositoryIntegrationTest<ProcessingPeriod> {
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   private static final String PERIOD_NAME = "name";
   private static final String PERIOD_DESCRIPTION = "description";
 
-  private Schedule testSchedule;
+  private ProcessingSchedule testSchedule;
 
-  PeriodRepository getRepository() {
+  ProcessingPeriodRepository getRepository() {
     return this.periodRepository;
   }
 
@@ -35,17 +36,19 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     scheduleRepository.save(testSchedule);
   }
 
-  private Schedule generateScheduleInstance(String name, String code, String description) {
-    Schedule schedule = new Schedule();
+  private ProcessingSchedule generateScheduleInstance(String name, String code,
+                                                      String description) {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setName(name);
     schedule.setDescription(description);
     schedule.setCode(code);
     return schedule;
   }
 
-  private Period generatePeriodInstance(
-      String name, Schedule schedule, String description, LocalDate startDate, LocalDate endDate) {
-    Period period = new Period();
+  private ProcessingPeriod generatePeriodInstance(
+        String name, ProcessingSchedule schedule, String description,
+        LocalDate startDate, LocalDate endDate) {
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setName(name);
     period.setProcessingSchedule(schedule);
     period.setDescription(description);
@@ -54,9 +57,9 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
     return period;
   }
 
-  Period generateInstance() {
+  ProcessingPeriod generateInstance() {
     int instanceNumber = this.getNextInstanceNumber();
-    Period period = new Period();
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setName("period" + instanceNumber);
     period.setDescription("Test period");
     period.setStartDate(LocalDate.of(2016, 1, 1));
@@ -67,7 +70,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
   @Test
   public void testPeriodEdit() {
-    Period periodFromRepo = generatePeriodInstance("period" + getNextInstanceNumber(),
+    ProcessingPeriod periodFromRepo = generatePeriodInstance("period" + getNextInstanceNumber(),
         testSchedule, "Test period", LocalDate.of(2016, 1, 1), LocalDate.of(2016, 2, 1));
     periodFromRepo = periodRepository.save(periodFromRepo);
     UUID id = periodFromRepo.getId();
@@ -83,7 +86,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
   @Test
   public void testSearchPeriodsByAllParameters() {
-    List<Period> periods = new ArrayList<>();
+    List<ProcessingPeriod> periods = new ArrayList<>();
     for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
       periods.add(generatePeriodInstance(
               PERIOD_NAME + periodsCount,
@@ -93,11 +96,11 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
               LocalDate.now().plusDays(periodsCount)));
       periodRepository.save(periods.get(periodsCount));
     }
-    List<Period> receivedPeriods =
+    List<ProcessingPeriod> receivedPeriods =
             periodRepository.searchPeriods(testSchedule, periods.get(1).getStartDate());
 
     Assert.assertEquals(4, receivedPeriods.size());
-    for (Period period : receivedPeriods) {
+    for (ProcessingPeriod period : receivedPeriods) {
       Assert.assertEquals(
               testSchedule.getId(),
               period.getProcessingSchedule().getId());
@@ -108,7 +111,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
   @Test
   public void testSearchPeriodsByDateTo() {
-    List<Period> periods = new ArrayList<>();
+    List<ProcessingPeriod> periods = new ArrayList<>();
     for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
       periods.add(generatePeriodInstance(
               PERIOD_NAME + periodsCount,
@@ -118,11 +121,11 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
               LocalDate.now().plusDays(periodsCount)));
       periodRepository.save(periods.get(periodsCount));
     }
-    List<Period> receivedPeriods =
+    List<ProcessingPeriod> receivedPeriods =
             periodRepository.searchPeriods(null, periods.get(1).getStartDate());
 
     Assert.assertEquals(4, receivedPeriods.size());
-    for (Period period : receivedPeriods) {
+    for (ProcessingPeriod period : receivedPeriods) {
       Assert.assertTrue(
               period.getStartDate().isBefore(periods.get(0).getStartDate()));
     }
@@ -130,7 +133,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
 
   @Test
   public void testSearchPeriodsByAllParametersNull() {
-    List<Period> periods = new ArrayList<>();
+    List<ProcessingPeriod> periods = new ArrayList<>();
     for (int periodsCount = 0; periodsCount < 5; periodsCount++) {
       periods.add(generatePeriodInstance(
               PERIOD_NAME + periodsCount,
@@ -140,7 +143,7 @@ public class PeriodRepositoryIntegrationTest extends BaseCrudRepositoryIntegrati
               LocalDate.now().plusDays(periodsCount)));
       periodRepository.save(periods.get(periodsCount));
     }
-    List<Period> receivedPeriods =
+    List<ProcessingPeriod> receivedPeriods =
             periodRepository.searchPeriods(null, null);
 
     Assert.assertEquals(periods.size(), receivedPeriods.size());

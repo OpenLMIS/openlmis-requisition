@@ -20,10 +20,10 @@ import org.openlmis.referencedata.repository.FacilityTypeApprovedProductReposito
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramProductRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.openlmis.reporting.repository.TemplateParameterRepository;
@@ -60,10 +60,10 @@ public class CleanRepositoryHelper {
   private ProgramRepository programRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private FacilityRepository facilityRepository;

@@ -1,9 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -14,10 +10,10 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
-import org.openlmis.referencedata.service.PeriodService;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
+import org.openlmis.referencedata.service.ProcessingPeriodService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -36,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionLineServiceTest {
 
@@ -51,14 +51,14 @@ public class RequisitionLineServiceTest {
   private RequisitionTemplate requisitionTemplate;
   private Program program;
   private Product product;
-  private Period period;
-  private Period period2;
+  private ProcessingPeriod period;
+  private ProcessingPeriod period2;
 
   @Mock
   private RequisitionLineRepository requisitionLineRepository;
 
   @Mock
-  private PeriodService periodService;
+  private ProcessingPeriodService periodService;
 
   @Mock
   private RequisitionService requisitionService;
@@ -235,7 +235,7 @@ public class RequisitionLineServiceTest {
     facility.setActive(true);
     facility.setEnabled(true);
 
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setId(UUID.randomUUID());
     schedule.setCode("code");
     schedule.setName("name");
@@ -260,7 +260,8 @@ public class RequisitionLineServiceTest {
 
   }
 
-  private Requisition createTestRequisition(Facility facility, Period period, Program program,
+  private Requisition createTestRequisition(Facility facility, ProcessingPeriod period,
+                                            Program program,
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
@@ -282,9 +283,10 @@ public class RequisitionLineServiceTest {
     return requisitionLine;
   }
 
-  private Period createTestPeriod(String description, String name,
-                                  Schedule schedule, LocalDate startDate, LocalDate endDate) {
-    Period period = new Period();
+  private ProcessingPeriod createTestPeriod(String description, String name,
+                                            ProcessingSchedule schedule,
+                                            LocalDate startDate, LocalDate endDate) {
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setId(UUID.randomUUID());
     period.setDescription(description);
     period.setName(name);

@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.openlmis.hierarchyandsupervision.domain.RequisitionGroupProgramSchedule;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -20,10 +20,10 @@ public class RequisitionGroupProgramScheduleRepositoryIntegrationTest
   ProgramRepository programRepository;
 
   @Autowired
-  ScheduleRepository scheduleRepository;
+  ProcessingScheduleRepository scheduleRepository;
 
   private Program program;
-  private Schedule schedule;
+  private ProcessingSchedule schedule;
 
   RequisitionGroupProgramScheduleRepository getRepository() {
     return this.repository;
@@ -46,7 +46,7 @@ public class RequisitionGroupProgramScheduleRepositoryIntegrationTest
     program.setCode(code);
     programRepository.save(program);
 
-    schedule = new Schedule();
+    schedule = new ProcessingSchedule();
     schedule.setCode(code);
     schedule.setName(code);
     scheduleRepository.save(schedule);

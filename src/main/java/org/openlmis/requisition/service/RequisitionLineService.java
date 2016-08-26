@@ -1,8 +1,8 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.Period;
-import org.openlmis.referencedata.service.PeriodService;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
+import org.openlmis.referencedata.service.ProcessingPeriodService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -21,7 +21,7 @@ public class RequisitionLineService {
   private RequisitionLineRepository requisitionLineRepository;
 
   @Autowired
-  private PeriodService periodService;
+  private ProcessingPeriodService periodService;
 
   @Autowired
   private RequisitionService requisitionService;
@@ -88,7 +88,7 @@ public class RequisitionLineService {
 
   private void initiateBeginningBalance(Requisition requisition,
                                         RequisitionTemplate requisitionTemplate) {
-    Iterable<Period> previousPeriods = periodService.searchPeriods(
+    Iterable<ProcessingPeriod> previousPeriods = periodService.searchPeriods(
         requisition.getProcessingPeriod().getProcessingSchedule(),
         requisition.getProcessingPeriod().getStartDate());
 
@@ -128,7 +128,7 @@ public class RequisitionLineService {
   }
 
   private void resetBeginningBalance(Requisition requisition, RequisitionLine requisitionLine) {
-    Iterable<Period> previousPeriods = periodService.searchPeriods(
+    Iterable<ProcessingPeriod> previousPeriods = periodService.searchPeriods(
         requisitionLine.getRequisition().getProcessingPeriod().getProcessingSchedule(),
         requisitionLine.getRequisition().getProcessingPeriod().getStartDate());
 
