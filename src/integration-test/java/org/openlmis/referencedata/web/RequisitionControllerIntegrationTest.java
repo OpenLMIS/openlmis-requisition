@@ -57,6 +57,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String INSERT_COMMENT = RESOURCE_URL + "/{id}/comments";
+  private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
   private static final String APPROVE_REQUISITION = RESOURCE_URL + "/{id}/approve";
   private static final String SKIP_URL = RESOURCE_URL + "/{id}/skip";
   private static final String REJECT_URL = RESOURCE_URL + "/{id}/reject";
@@ -871,7 +872,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(requisition)
             .when()
-            .post(RESOURCE_URL)
+            .post(INITIATE_URL)
             .then()
             .statusCode(201);
 

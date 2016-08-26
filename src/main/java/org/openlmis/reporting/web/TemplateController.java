@@ -2,6 +2,7 @@ package org.openlmis.reporting.web;
 
 import org.apache.log4j.Logger;
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
+import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.repository.TemplateRepository;
@@ -9,9 +10,9 @@ import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,8 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
-@RepositoryRestController
-public class TemplateController {
+@Controller
+public class TemplateController extends BaseController {
 
   private static final String CONSISTENCY_REPORT = "Consistency Report";
 

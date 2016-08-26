@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@RepositoryRestController
-public class PeriodController {
+@Controller
+public class PeriodController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PeriodController.class);
 

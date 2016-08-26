@@ -984,7 +984,7 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                     body:
-                      application/json:
+                      text/plain:
                 "400":
                     headers:
                       X-Content-Type-Options:
@@ -1312,24 +1312,25 @@ resourceTypes:
                 headers:
                   X-Content-Type-Options:
                   X-XSS-Protection:
-    post:
-        is: [ secured ]
-        description: Initiate requisition.
-        body:
-            application/json:
-        responses:
-            "201":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
+    /initiate:
+        post:
+            is: [ secured ]
+            description: Initiate requisition.
+            body:
+              application/json:
+            responses:
+                "201":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
     /submitted:
         get:
             is: [ secured ]
@@ -2004,7 +2005,7 @@ resourceTypes:
                     X-Content-Type-Options:
                     X-XSS-Protection:
                   body:
-                    application/json:
+                    text/plain:
               400:
                   headers:
                     X-Content-Type-Options:

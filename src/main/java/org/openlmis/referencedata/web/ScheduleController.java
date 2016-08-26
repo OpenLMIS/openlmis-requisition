@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,8 +24,8 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
-@RepositoryRestController
-public class ScheduleController {
+@Controller
+public class ScheduleController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleController.class);
 

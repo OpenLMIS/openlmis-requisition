@@ -6,6 +6,7 @@ import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Period;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -21,12 +22,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
@@ -48,9 +49,9 @@ import java.util.UUID;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-@RepositoryRestController
+@Controller
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionController {
+public class RequisitionController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
@@ -81,8 +82,8 @@ public class RequisitionController {
    * @param requisition A requisition bound to the request body
    * @return ResponseEntity containing the created requisition
    */
-  @RequestMapping(value = "/requisitions", method = POST)
-  public ResponseEntity<?> createRequisition(@RequestBody @Valid Requisition requisition,
+  @RequestMapping(value = "/requisitions/initiate", method = POST)
+  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisition,
                                                BindingResult bindingResult) {
     try {
       Requisition newRequisition = requisitionService.initiateRequisition(requisition);
