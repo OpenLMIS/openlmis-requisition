@@ -2,8 +2,10 @@ package org.openlmis.requisition.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Facility;
@@ -34,9 +36,9 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
+@RunWith(MockitoJUnitRunner.class)
 public class RequisitionLineServiceTest {
 
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionLineServiceIntegrationTest";
@@ -75,7 +77,6 @@ public class RequisitionLineServiceTest {
   @Before
   public void setUp() {
     generateInstances();
-    initMocks(this);
     mockRepositories();
   }
 

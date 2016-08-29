@@ -2,8 +2,10 @@ package org.openlmis.referencedata.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
@@ -17,8 +19,8 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ProcessingPeriodServiceTest {
 
   @Mock
@@ -27,7 +29,7 @@ public class ProcessingPeriodServiceTest {
   @InjectMocks
   private ProcessingPeriodService periodService;
 
-  private Integer currentInstanceNumber;
+  private int currentInstanceNumber;
   private ProcessingSchedule testSchedule;
 
   private List<ProcessingPeriod> periods;
@@ -38,7 +40,6 @@ public class ProcessingPeriodServiceTest {
     periods = new ArrayList<>();
     testSchedule = generateSchedule();
     generateInstances();
-    initMocks(this);
   }
 
   @Test

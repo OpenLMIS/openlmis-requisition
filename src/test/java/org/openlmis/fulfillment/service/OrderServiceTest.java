@@ -5,12 +5,13 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
+@RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
 
   @Mock
@@ -105,7 +107,6 @@ public class OrderServiceTest {
     requisitions = new ArrayList<>();
     supplyLines = new ArrayList<>();
     currentInstanceNumber = 0;
-    initMocks(this);
     generateInstances();
   }
 
@@ -158,7 +159,6 @@ public class OrderServiceTest {
     }
     verify(requisitionRepository, atLeastOnce()).findOne(anyObject());
     verify(supplyLineService, atLeastOnce()).searchSupplyLines(anyObject(), anyObject());
-
   }
 
   @Test
@@ -204,7 +204,8 @@ public class OrderServiceTest {
     LocalDateTime ldt = zdt.toLocalDateTime();
     order.setCreatedDate(ldt);
 
-    String received = orderService.orderToCsv(orders.get(0), header.toArray(new String[0])).replace("\r\n","\n");
+    String received = orderService.orderToCsv(
+        orders.get(0), header.toArray(new String[0])).replace("\r\n","\n");
     String expected = prepareExpectedCsvOutput(orders.get(0), header);
     assertEquals(expected, received);
   }
@@ -353,8 +354,10 @@ public class OrderServiceTest {
     return supplyLine;
   }
 
-  private String prepareExpectedCsvOutput(Order order, List<String> header) throws IOException, URISyntaxException {
-    URL url = Thread.currentThread().getContextClassLoader().getResource("OrderServiceTest_expected.csv");
+  private String prepareExpectedCsvOutput(Order order, List<String> header)
+      throws IOException, URISyntaxException {
+    URL url =
+        Thread.currentThread().getContextClassLoader().getResource("OrderServiceTest_expected.csv");
     byte[] encoded = Files.readAllBytes(Paths.get(url.getPath()));
     return new String(encoded, Charset.defaultCharset());
   }
@@ -365,5 +368,3 @@ public class OrderServiceTest {
   }
 
 }
-
-

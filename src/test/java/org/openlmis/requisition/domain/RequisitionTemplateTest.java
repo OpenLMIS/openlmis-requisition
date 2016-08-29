@@ -9,13 +9,10 @@ import java.util.Map;
 
 public class RequisitionTemplateTest {
 
-  RequisitionTemplate requisitionTemplate;
+  private RequisitionTemplate requisitionTemplate;
 
   private static final String[] COLUMN_NAMES = {"column1", "column2", "column3", "column4"};
 
-  /**
-   * Prepare the test environment.
-   */
   @Before
   public void setUp() {
     requisitionTemplate = new RequisitionTemplate();

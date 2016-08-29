@@ -2,8 +2,10 @@ package org.openlmis.referencedata.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Stock;
@@ -16,12 +18,12 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
+@RunWith(MockitoJUnitRunner.class)
 public class StockServiceTest {
 
   private List<Stock> stocks;
-  private Integer currentInstanceNumber;
+  private int currentInstanceNumber;
 
   @Mock
   private StockRepository stockRepository;
@@ -34,7 +36,6 @@ public class StockServiceTest {
     stocks = new ArrayList<>();
     currentInstanceNumber = 0;
     generateInstances();
-    initMocks(this);
   }
 
   @Test

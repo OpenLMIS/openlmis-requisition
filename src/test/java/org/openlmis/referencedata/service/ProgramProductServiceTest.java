@@ -2,8 +2,10 @@ package org.openlmis.referencedata.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Program;
@@ -16,8 +18,8 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ProgramProductServiceTest {
 
   @Mock
@@ -31,14 +33,12 @@ public class ProgramProductServiceTest {
   private Product product;
   private ProductCategory productCategory;
 
-  private Integer currentInstanceNumber;
+  private int currentInstanceNumber;
 
   @Before
   public void setUp() {
     currentInstanceNumber = 0;
-    programProductService = new ProgramProductService();
     generateInstances();
-    initMocks(this);
   }
 
   @Test

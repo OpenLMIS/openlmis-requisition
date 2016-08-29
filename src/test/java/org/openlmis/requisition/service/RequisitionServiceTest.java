@@ -2,8 +2,10 @@ package org.openlmis.requisition.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
@@ -37,9 +39,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
+@RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
   private static final String REQUISITION_TEST_NAME = "RequisitionServiceTest";
@@ -79,7 +81,6 @@ public class RequisitionServiceTest {
   @Before
   public void setUp() {
     generateInstances();
-    initMocks(this);
     mockRepositories();
   }
 

@@ -2,8 +2,10 @@ package org.openlmis.referencedata.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.referencedata.domain.Facility;
@@ -21,13 +23,13 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @SuppressWarnings("PMD.TooManyMethods")
+@RunWith(MockitoJUnitRunner.class)
 public class SupplyLineServiceTest {
 
   private List<SupplyLine> supplyLines;
-  private Integer currentInstanceNumber;
+  private int currentInstanceNumber;
 
   @Mock
   private SupplyLineRepository supplyLineRepository;
@@ -40,7 +42,6 @@ public class SupplyLineServiceTest {
     supplyLines = new ArrayList<>();
     currentInstanceNumber = 0;
     generateInstances();
-    initMocks(this);
   }
 
   @Test

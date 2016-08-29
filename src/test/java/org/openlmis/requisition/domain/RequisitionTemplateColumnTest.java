@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 public class RequisitionTemplateColumnTest {
-  RequisitionTemplateColumn requisitionTemplateColumn;
+  private RequisitionTemplateColumn requisitionTemplateColumn;
 
   @Before
   public void setUp() {

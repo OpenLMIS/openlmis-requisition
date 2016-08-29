@@ -77,7 +77,7 @@ public class UserServiceTest {
             users.get(0).getActive(),
             users.get(0).getVerified());
 
-    assertEquals(1,receivedUsers.size());
+    assertEquals(1, receivedUsers.size());
     assertEquals(
             receivedUsers.get(0).getUsername(),
             users.get(0).getUsername());
