@@ -1,11 +1,22 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.utils.AuthUserRequest;
+import org.openlmis.hierarchyandsupervision.utils.PasswordChangeRequest;
+import org.openlmis.hierarchyandsupervision.utils.PasswordResetRequest;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
@@ -22,13 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -36,6 +41,8 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/users";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String RESET_PASSWORD_URL = RESOURCE_URL + "/passwordReset";
+  private static final String CHANGE_PASSWORD_URL = RESOURCE_URL + "/changePassword";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String USERNAME = "username";
   private static final String FIRST_NAME = "firstName";
@@ -165,10 +172,10 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  /**
-   * Creating requisition and auth users.
-   */
-  public void shouldCreateRequisitionAndAuthUsers() {
+  //TODO: This test should be updated when example email will be added to notification module
+  @Ignore
+  @Test
+  public void shouldCreateRequisitionAndAuthUsersAndSendResetPasswordEmail() {
     User user = generateUser();
 
     User response = restAssured.given()
@@ -206,34 +213,20 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateRequisitionAndAuthUsers() {
-    User newUser = generateUser();
+    User user = createUser();
+    saveAuthUser(user);
 
-    User user = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(newUser)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(User.class);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertNotNull(user);
-
-    User savedUser = userRepository.findOne(user.getId());
-    assertNotNull(savedUser);
-
-    user.setEmail(generateInstanceNumber() + "@mail.com");
-    assertNotEquals(user.getEmail(), savedUser.getEmail());
-
-    AuthUserRequest authUser = getAutUserByUsername(savedUser.getUsername());
+    AuthUserRequest authUser = getAutUserByUsername(user.getUsername());
     assertNotNull(authUser);
 
-    assertEquals(savedUser.getEmail(), authUser.getEmail());
-    assertEquals(savedUser.getId(), authUser.getReferenceDataUserId());
+    assertEquals(user.getEmail(), authUser.getEmail());
+    assertEquals(user.getId(), authUser.getReferenceDataUserId());
+
+    user.setEmail(generateInstanceNumber() + "@mail.com");
+    assertNotEquals(authUser.getEmail(), user.getEmail());
 
     User response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(user)
         .when()
@@ -245,16 +238,10 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertNotNull(response);
 
-    savedUser = userRepository.findOne(user.getId());
+    User savedUser = userRepository.findOne(user.getId());
     assertNotNull(savedUser);
 
-    assertEquals(user.getUsername(), savedUser.getUsername());
-    assertEquals(user.getFirstName(), savedUser.getFirstName());
-    assertEquals(user.getLastName(), savedUser.getLastName());
     assertEquals(user.getEmail(), savedUser.getEmail());
-    assertEquals(user.getHomeFacility().getId(), savedUser.getHomeFacility().getId());
-    assertEquals(user.getActive(), savedUser.getActive());
-    assertEquals(user.getVerified(), savedUser.getVerified());
 
     authUser = getAutUserByUsername(savedUser.getUsername());
     assertNotNull(authUser);
@@ -263,6 +250,83 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(savedUser.getId(), authUser.getReferenceDataUserId());
 
     removeAuthUserByUsername(authUser.getUsername());
+  }
+
+  @Test
+  public void shouldResetPassword() {
+    User savedUser = createUser();
+    saveAuthUser(savedUser);
+
+    AuthUserRequest authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertNull(authUser.getPassword());
+
+    PasswordResetRequest passwordResetRequest =
+        new PasswordResetRequest(savedUser.getUsername(), "test12345");
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(passwordResetRequest)
+        .when()
+        .post(RESET_PASSWORD_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertNotNull(authUser.getPassword());
+
+    removeAuthUserByUsername(authUser.getUsername());
+  }
+
+  @Test
+  public void shouldChangePasswordIfValidResetTokenIsProvided() {
+    User savedUser = createUser();
+    saveAuthUser(savedUser);
+
+    AuthUserRequest authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertNull(authUser.getPassword());
+
+    UUID tokenId = passwordResetToken(authUser.getReferenceDataUserId());
+    PasswordChangeRequest passwordChangeRequest =
+        new PasswordChangeRequest(tokenId, authUser.getUsername(), "test12345");
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(passwordChangeRequest)
+        .when()
+        .post(CHANGE_PASSWORD_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    authUser = getAutUserByUsername(savedUser.getUsername());
+    assertNotNull(authUser);
+
+    assertNotNull(authUser.getPassword());
+
+    removeAuthUserByUsername(authUser.getUsername());
+  }
+
+  private void saveAuthUser(User user) {
+    AuthUserRequest userRequest = new AuthUserRequest();
+    userRequest.setUsername(user.getUsername());
+    userRequest.setEmail(user.getEmail());
+    userRequest.setReferenceDataUserId(user.getId());
+
+    String url = "http://auth:8080/api/users?access_token=" + getToken();
+    RestTemplate restTemplate = new RestTemplate();
+
+    restTemplate.postForObject(url, userRequest, Object.class);
   }
 
   private AuthUserRequest getAutUserByUsername(String username) {
@@ -284,6 +348,14 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
     url = "http://auth:8080/api/users/" + id + "?access_token=" + getToken();
     restTemplate.delete(url);
+  }
+
+  private UUID passwordResetToken(UUID referenceDataUserId) {
+    String url = "http://auth:8080/api/users/passwordResetToken?userId=" + referenceDataUserId
+        + "&access_token=" + getToken();
+    RestTemplate restTemplate = new RestTemplate();
+
+    return restTemplate.postForObject(url, null, UUID.class);
   }
 
   private User createUser() {

@@ -6,6 +6,7 @@ services:
       - db
       - log
       - auth
+      - notification
     volumes:
       - '.:/app'
     command:
@@ -36,4 +37,7 @@ services:
       - '../logs/requisition:/var/log'
   auth:
     image: openlmis/auth
+    env_file: .env
+  notification:
+    image: openlmis/notification
     env_file: .env

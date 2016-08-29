@@ -4,6 +4,8 @@ import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
+import org.openlmis.hierarchyandsupervision.utils.PasswordChangeRequest;
+import org.openlmis.hierarchyandsupervision.utils.PasswordResetRequest;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.web.BaseController;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
+
 import javax.validation.Valid;
 
 @Controller
@@ -77,6 +80,60 @@ public class UserController extends BaseController {
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
   }
+
+  /**
+   * Resets a user's password.
+   */
+  @RequestMapping(value = "/users/passwordReset", method = RequestMethod.POST)
+  public ResponseEntity<?> passwordReset(
+      @RequestBody @Valid PasswordResetRequest passwordResetRequest,
+      BindingResult bindingResult, OAuth2Authentication auth) {
+
+    OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auth.getDetails();
+    String token = details.getTokenValue();
+
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      userService.passwordReset(passwordResetRequest, token);
+
+      return new ResponseEntity<>(HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("Could not reset user password", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Changes user's password if valid reset token is provided.
+   */
+  @RequestMapping(value = "/users/changePassword", method = RequestMethod.POST)
+  public ResponseEntity<?> changePassword(
+      @RequestBody @Valid PasswordChangeRequest passwordChangeRequest, BindingResult bindingResult,
+      OAuth2Authentication auth) {
+    OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auth.getDetails();
+    String token = details.getTokenValue();
+
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      userService.changePassword(passwordChangeRequest, token);
+
+      return new ResponseEntity(HttpStatus.OK);
+    } catch (RestClientException ex) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("Could not reset user password", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+  }
+
 
   /**
    * Get all users.

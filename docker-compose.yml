@@ -20,6 +20,7 @@ services:
       - auth
       - nginx-proxy
       - registrator
+      - notification
     env_file: .env
     environment:
       - VIRTUAL_HOST=localhost
@@ -51,3 +52,8 @@ services:
       - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+  notification:
+    image: openlmis/notification
+    ports:
+    - "8082:8080"
+    env_file: .env

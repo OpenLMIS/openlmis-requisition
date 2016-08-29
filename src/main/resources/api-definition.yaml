@@ -2268,6 +2268,36 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+    /passwordReset:
+            post:
+                is: [ secured ]
+                description: Resets a user's password.
+                body:
+                    application/json:
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+    /changePassword:
+            post:
+                is: [ secured ]
+                description: Changes user's password if valid reset token is provided.
+                body:
+                    application/json:
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
 
 /facilities:
     displayName: Facility
