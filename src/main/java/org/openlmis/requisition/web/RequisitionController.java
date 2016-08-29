@@ -144,9 +144,10 @@ public class RequisitionController extends BaseController {
     try {
       LOGGER.debug("Updating requisition");
       Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-      if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
+      if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED
+            || requisitionToUpdate.getStatus() == RequisitionStatus.SUBMITTED) {
         requisitionToUpdate = requisitionRepository.save(requisition);
-      } else if (requisitionToUpdate.getStatus() == RequisitionStatus.SUBMITTED) {
+      } else if (requisitionToUpdate.getStatus() == RequisitionStatus.AUTHORIZED) {
         requisitionToUpdate.setApprovedQuantity(requisition.getApprovedQuantity());
         requisitionToUpdate.setRemarks(requisition.getRemarks());
         requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
