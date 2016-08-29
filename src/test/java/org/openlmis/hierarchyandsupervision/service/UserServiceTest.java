@@ -45,7 +45,7 @@ public class UserServiceTest {
   @InjectMocks
   private UserService userService;
 
-  private Integer currentInstanceNumber;
+  private int currentInstanceNumber;
   private List<User> users;
 
   @Before

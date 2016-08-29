@@ -23,7 +23,7 @@ public class ProductCategoryServiceTest {
   @InjectMocks
   private ProductCategoryService productCategoryService;
 
-  private Integer currentInstanceNumber;
+  private int currentInstanceNumber;
   private List<ProductCategory> productCategories;
 
   @Before
