@@ -1,0 +1,44 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "code": "C1",
+    "primaryName": "Acetylsalicylic Acid",
+    "dispensingUnit": "Tablet 300mg",
+    "dosesPerDispensingUnit": 2,
+    "packSize": 16,
+    "packRoundingThreshold": 5,
+    "roundToZero": "true",
+    "active": "true",
+    "fullSupply": "false",
+    "tracer": "true",
+    "productCategory": "/api/productCategories/00000000-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "code": "C2",
+    "primaryName": "Glibenclamide",
+    "dispensingUnit": "Tablet 5mg",
+    "dosesPerDispensingUnit": 4,
+    "packSize": 40,
+    "packRoundingThreshold": 3,
+    "roundToZero": "true",
+    "active": "true",
+    "fullSupply": "true",
+    "tracer": "false",
+    "productCategory": "/api/productCategories/00000000-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "code": "C3",
+    "primaryName": "Streptococcus Pneumoniae Vaccine",
+    "dispensingUnit": "Syringe 5ml",
+    "dosesPerDispensingUnit": 1,
+    "packSize": 5,
+    "packRoundingThreshold": 5,
+    "roundToZero": "true",
+    "active": "false",
+    "fullSupply": "false",
+    "tracer": "true",
+    "productCategory": "/api/productCategories/00000000-0000-0000-0000-000000000005"
+  }
+]

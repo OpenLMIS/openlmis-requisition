@@ -1,10 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,14 +19,23 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/users";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String USERNAME = "username";
   private static final String FIRST_NAME = "firstName";
@@ -108,6 +112,62 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldDeleteUser() {
+
+    User user = users.get(4);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", user.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(userRepository.exists(user.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllUsers() {
+
+    User[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(User[].class);
+
+    Iterable<User> users = Arrays.asList(response);
+    assertTrue(users.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenUser() {
+
+    User user = users.get(4);
+
+    User response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", user.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(User.class);
+
+    assertTrue(userRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  /**
+   * Creating requisition and auth users.
+   */
   public void shouldCreateRequisitionAndAuthUsers() {
     User user = generateUser();
 
@@ -146,12 +206,12 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateRequisitionAndAuthUsers() {
-    User user = generateUser();
+    User newUser = generateUser();
 
-    user = restAssured.given()
+    User user = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(user)
+        .body(newUser)
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -237,9 +297,11 @@ public class UserControllerIntegrationTest extends BaseWebIntegrationTest {
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
     user.setEmail(instanceNumber + "@mail.com");
+    user.setTimezone("UTC");
     user.setHomeFacility(generateFacility());
     user.setVerified(true);
     user.setActive(true);
+    user.setRestrictLogin(false);
     return user;
   }
 

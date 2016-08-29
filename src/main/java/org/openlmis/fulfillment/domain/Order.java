@@ -16,10 +16,6 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -33,6 +29,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -54,7 +53,7 @@ public class Order extends BaseEntity {
   private LocalDateTime createdDate;
 
   @ManyToOne
-  @JoinColumn(name = "userId", nullable = false)
+  @JoinColumn(name = "createdById", nullable = false)
   @Getter
   @Setter
   private User createdBy;
@@ -101,7 +100,7 @@ public class Order extends BaseEntity {
 
   // TODO: determine why it has to be set explicitly
   @OneToMany(mappedBy = "order",
-      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER)
   @Getter
   @Setter

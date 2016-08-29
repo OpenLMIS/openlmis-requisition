@@ -1,0 +1,15 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "username": "administrator",
+    "password": "password",
+    "email": "administrator@openlmis.org",
+    "firstName": "Admin",
+    "lastName": "Strator",
+    "verified": "true",
+    "active": "true",
+    "restrictLogin": "false",
+    "homeFacility": "/api/facilities/00000000-0000-0000-0000-000000000001",
+    "timeZone": "CET"
+  }
+]

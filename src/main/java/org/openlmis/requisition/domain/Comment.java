@@ -1,13 +1,19 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.view.View;
 
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -29,7 +35,7 @@ public class Comment extends BaseEntity {
   private Requisition requisition;
 
   @OneToOne
-  @JoinColumn(name = "userId", nullable = false)
+  @JoinColumn(name = "authorId", nullable = false)
   @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
@@ -40,6 +46,9 @@ public class Comment extends BaseEntity {
   @Setter
   private String body;
 
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @Convert(converter = LocalDateTimePersistenceConverter.class)
   @JsonView(View.BasicInformation.class)
   @Getter
   @Setter

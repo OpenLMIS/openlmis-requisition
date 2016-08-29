@@ -37,7 +37,6 @@ targetCompatibility = 1.8
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
-    compile "org.springframework.boot:spring-boot-starter-data-rest"
     compile "org.projectlombok:lombok:1.16.8"
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
     compile "org.postgresql:postgresql:9.4.1208"
@@ -65,6 +64,22 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.+"
     testCompile "org.powermock:powermock-api-mockito:1.6.5"
     testCompile "org.powermock:powermock-module-junit4:1.6.5"
+}
+
+idea {
+    project {
+        vcs = 'Git'
+        ipr.withXml { xmlFile ->
+            // enable 'Annotation Processors', source: https://gist.github.com/stephanos/8645809
+            xmlFile.asNode().component
+                    .find { it.@name == 'CompilerConfiguration' }['annotationProcessing'][0]
+                    .replaceNode {
+                annotationProcessing {
+                    profile(default: true, name: 'Default', useClasspath: 'true', enabled: true)
+                }
+            }
+        }
+    }
 }
 
 flyway {
@@ -123,6 +138,11 @@ task generateMigration << {
 task checkApiIsRaml(type:Exec) {
     executable "raml-cop"
     args "src/main/resources/api-definition.yaml"
+}
+
+task demoDataSeed(type:Exec) {
+    executable "./demo-data/demo_seed.sh"
+    args "./demo-data", "node ./demo-data/seed_generator.js"
 }
 
 configure(checkApiIsRaml) {

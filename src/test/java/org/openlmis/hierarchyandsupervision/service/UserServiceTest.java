@@ -139,6 +139,7 @@ public class UserServiceTest {
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
     user.setEmail(instanceNumber + "@mail.com");
+    user.setTimezone("UTC");
     user.setHomeFacility(generateFacility());
     user.setVerified(true);
     user.setActive(true);

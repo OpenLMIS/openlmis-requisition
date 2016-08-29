@@ -1,8 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,28 +11,36 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class RequisitionLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/requisitionLines";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION = "requisition";
@@ -56,7 +61,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private ProductCategoryRepository productCategoryRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
   private GeographicLevelRepository geographicLevelRepository;
@@ -74,14 +79,14 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private ProgramRepository programRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-  private RequisitionLine requisitionLine;
+  private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
-  private Period period = new Period();
+  private ProcessingPeriod period = new ProcessingPeriod();
   private Product product = new Product();
   private Program program = new Program();
   private Facility facility = new Facility();
@@ -125,6 +130,93 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
           requisitionLine.getId(),
           responseRequisitionLine.getId());
     }
+  }
+
+  @Test
+  public void shouldCreateRequisitionLine() {
+
+    requisitionLineRepository.delete(requisitionLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(requisitionLine)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionLine() {
+
+    requisitionLine.setBeginningBalance(1);
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(response.getBeginningBalance().equals(1));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllRequisitionLines() {
+
+    RequisitionLine[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine[].class);
+
+    Iterable<RequisitionLine> requisitionLines = Arrays.asList(response);
+    assertTrue(requisitionLines.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenRequisitionLine() {
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(requisitionLineRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteRequisitionLine() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(requisitionLineRepository.exists(requisitionLine.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private RequisitionLine generateRequisitionLine() {
@@ -172,7 +264,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode(TEST_CODE);
     schedule.setName(TEST_NAME);
     scheduleRepository.save(schedule);
@@ -190,7 +282,6 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition = requisitionRepository.save(requisition);
 
-    RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setRequisition(requisition);
     requisitionLine.setRequestedQuantity(1);

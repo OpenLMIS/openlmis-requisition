@@ -11,9 +11,9 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -45,10 +45,10 @@ public class RequisitionLineRepositoryIntegrationTest
   private FacilityRepository facilityRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
   private GeographicLevelRepository geographicLevelRepository;
@@ -162,8 +162,8 @@ public class RequisitionLineRepositoryIntegrationTest
     return program;
   }
 
-  private Period generatePeriod() {
-    Period period = new Period();
+  private ProcessingPeriod generatePeriod() {
+    ProcessingPeriod period = new ProcessingPeriod();
     Integer instanceNumber = this.getNextInstanceNumber();
     period.setName("PeriodName" + instanceNumber);
     period.setDescription("PeriodDescription" + instanceNumber);
@@ -174,8 +174,8 @@ public class RequisitionLineRepositoryIntegrationTest
     return period;
   }
 
-  private Schedule generateSchedule() {
-    Schedule schedule = new Schedule();
+  private ProcessingSchedule generateSchedule() {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode("Schedule" + this.getNextInstanceNumber());
     schedule.setName("name" + this.getNextInstanceNumber());
     scheduleRepository.save(schedule);

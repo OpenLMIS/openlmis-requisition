@@ -5,7 +5,7 @@ This repository holds the files for the OpenLMIS Requisition Independent Service
 * Docker 1.11+
 * Docker Compose 1.6+
 
-## Quick Start
+## <a name="quickstart">Quick Start</a>
 1. Fork/clone this repository from GitHub.
 
  ```shell
@@ -73,6 +73,16 @@ https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#inte
 ### Debugging
 See the Debugging section in the Service Template README at
 https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#debugging.
+
+### Demo Data
+You can use a standard data set for demonstration purposes. To do so, first follow the Quick Start
+until step 3 is done: https://github.com/OpenLMIS/openlmis-requisition/blob/master/README.md#quickstart.
+Then, before `gradle bootRun`, use `gradle demoDataSeed`. This will generate a sql input file under
+`./demo-data` directory.
+
+To insert this data into the database, finish the Quick Start steps,
+and then outside of container's interactive shell, run:
+`docker exec -i openlmisrequisition_db_1 psql -Upostgres open_lmis < demo-data/input.sql`
 
 ## Documentation
 Documentation is available at:

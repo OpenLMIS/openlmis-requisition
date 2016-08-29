@@ -1,0 +1,30 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "code": "PRG001",
+    "name": "Active Program Periods Skippable",
+    "active": "true",
+    "periodsSkippable": "true"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "code": "PRG002",
+    "name": "Active Program Periods Not Skippable",
+    "active": "true",
+    "periodsSkippable": "false"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "code": "PRG003",
+    "name": "Inactive Program Periods Skippable",
+    "active": "false",
+    "periodsSkippable": "true"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000004",
+    "code": "PRG004",
+    "name": "Inactive Program Periods Not Skippable",
+    "active": "false",
+    "periodsSkippable": "false"
+  }
+]

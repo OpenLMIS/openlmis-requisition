@@ -7,6 +7,8 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupRepository;
+import org.openlmis.hierarchyandsupervision.repository.RightRepository;
+import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -18,10 +20,10 @@ import org.openlmis.referencedata.repository.FacilityTypeApprovedProductReposito
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramProductRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.referencedata.repository.StockRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
 import org.openlmis.reporting.repository.TemplateParameterRepository;
@@ -58,10 +60,10 @@ public class CleanRepositoryHelper {
   private ProgramRepository programRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -129,11 +131,18 @@ public class CleanRepositoryHelper {
   @Autowired
   private TemplateRepository templateRepository;
 
+  @Autowired
+  private RoleRepository roleRepository;
+
+  @Autowired
+  private RightRepository rightRepository;
+
   /**
    * Delete all entities from most of repositories.
    */
   @Transactional
   public void cleanAll() {
+    requisitionGroupRepository.deleteAll();
     templateParameterRepository.deleteAll();
     templateRepository.deleteAll();
     proofOfDeliveryLineRepository.deleteAll();
@@ -159,10 +168,11 @@ public class CleanRepositoryHelper {
     scheduleRepository.deleteAll();
     facilityRepository.deleteAll();
     facilityTypeRepository.deleteAll();
-    requisitionGroupRepository.deleteAll();
     geographicZoneRepository.deleteAll();
     facilityOperatorRepository.deleteAll();
     geographicLevelRepository.deleteAll();
+    roleRepository.deleteAll();
+    rightRepository.deleteAll();
   }
 
   private void deleteAllUsersExceptAdmin() {

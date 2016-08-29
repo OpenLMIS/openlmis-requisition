@@ -22,16 +22,16 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -41,9 +41,13 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -52,6 +56,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
@@ -88,10 +93,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
@@ -128,9 +133,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
             OrderStatus.ORDERED, new BigDecimal("1.29"));
 
-    Schedule schedule1 = addSchedule("Schedule1", "S1");
+    ProcessingSchedule schedule1 = addSchedule("Schedule1", "S1");
 
-    Schedule schedule2 = addSchedule("Schedule2", "S2");
+    ProcessingSchedule schedule2 = addSchedule("Schedule2", "S2");
 
     Program program1 = addProgram("P1");
 
@@ -148,10 +153,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     FacilityType facilityType2 = addFacilityType("FT2");
 
-    Period period1 = addPeriod("P1", schedule1, LocalDate.of(2015, Month.JANUARY, 1),
+    ProcessingPeriod period1 = addPeriod("P1", schedule1, LocalDate.of(2015, Month.JANUARY, 1),
             LocalDate.of(2015, Month.DECEMBER, 31));
 
-    Period period2 = addPeriod("P2", schedule2, LocalDate.of(2016, Month.JANUARY, 1),
+    ProcessingPeriod period2 = addPeriod("P2", schedule2, LocalDate.of(2016, Month.JANUARY, 1),
             LocalDate.of(2016, Month.DECEMBER, 31));
 
     Facility facility1 = addFacility("facility1", "F1", null, facilityType1,
@@ -190,6 +195,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     addOrderLine(thirdOrder, product2, 5L, 10L);
 
+    OrderLine orderLine = addOrderLine(firstOrder, product1, 35L, 50L);
+
+    List<OrderLine> orderLines = new ArrayList<>();
+    orderLines.add(orderLine);
+    firstOrder.setOrderLines(orderLines);
+
+    firstOrder = orderRepository.save(firstOrder);
+
     geographicLevel = addGeographicLevel("levelCode", 1);
 
     facilityType = addFacilityType("typeCode");
@@ -203,9 +216,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     program = addProgram("progCode");
 
-    Schedule schedule = addSchedule("Schedule3", "S3");
+    ProcessingSchedule schedule = addSchedule("Schedule3", "S3");
 
-    Period period = addPeriod("P3", schedule, LocalDate.of(2015, Month.JANUARY, 1),
+    ProcessingPeriod period = addPeriod("P3", schedule, LocalDate.of(2015, Month.JANUARY, 1),
             LocalDate.of(2015, Month.DECEMBER, 31));
 
     requisition = addRequisition(program, supplyingFacility, period,
@@ -269,16 +282,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return productRepository.save(product);
   }
 
-  private Schedule addSchedule(String scheduleName, String scheduleCode) {
-    Schedule schedule = new Schedule();
+  private ProcessingSchedule addSchedule(String scheduleName, String scheduleCode) {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode(scheduleCode);
     schedule.setName(scheduleName);
     return scheduleRepository.save(schedule);
   }
 
-  private Period addPeriod(String periodName, Schedule processingSchedule,
-                           LocalDate startDate, LocalDate endDate) {
-    Period period = new Period();
+  private ProcessingPeriod addPeriod(String periodName, ProcessingSchedule processingSchedule,
+                                     LocalDate startDate, LocalDate endDate) {
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setProcessingSchedule(processingSchedule);
     period.setName(periodName);
     period.setStartDate(startDate);
@@ -286,7 +299,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return periodRepository.save(period);
   }
 
-  private Requisition addRequisition(Program program, Facility facility, Period processingPeriod,
+  private Requisition addRequisition(Program program, Facility facility,
+                                     ProcessingPeriod processingPeriod,
                                      RequisitionStatus requisitionStatus,
                                      SupervisoryNode supervisoryNode) {
     Requisition requisition = new Requisition();
@@ -502,5 +516,92 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
               order.getProgram().getId(),
               firstOrder.getProgram().getId());
     }
+  }
+
+  @Test
+  public void shouldDeleteOrder() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(orderRepository.exists(firstOrder.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateOrder() {
+
+    orderRepository.delete(firstOrder);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(firstOrder)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateOrder() {
+
+    firstOrder.setQuotedCost(new BigDecimal("10.90"));
+
+    Order response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .body(firstOrder)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Order.class);
+
+    assertEquals(response.getQuotedCost(), new BigDecimal("10.90"));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllOrders() {
+
+    Order[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Order[].class);
+
+    Iterable<Order> orders = Arrays.asList(response);
+    assertTrue(orders.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenOrder() {
+
+    Order response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Order.class);
+
+    assertTrue(orderRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

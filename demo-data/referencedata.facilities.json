@@ -1,0 +1,46 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "code": "FAC001",
+    "name": "Facility Active Enabled",
+    "geographicZone": "/api/geographicZones/00000000-0000-0000-0000-000000000001",
+    "type": "/api/facilityTypes/00000000-0000-0000-0000-000000000001",
+    "operator": "/api/facilityOperators/00000000-0000-0000-0000-000000000001",
+    "active": "true",
+    "enabled": "true",
+    "openLmisAccessible": "true"
+  },
+  {
+  "id": "00000000-0000-0000-0000-000000000002",
+  "code": "FAC002",
+  "name": "Facility Active Disabled",
+  "geographicZone": "/api/geographicZones/00000000-0000-0000-0000-000000000001",
+  "type": "/api/facilityTypes/00000000-0000-0000-0000-000000000001",
+  "operator": "/api/facilityOperators/00000000-0000-0000-0000-000000000001",
+  "active": "true",
+  "enabled": "false",
+  "openLmisAccessible": "false"
+  },
+  {
+  "id": "00000000-0000-0000-0000-000000000003",
+  "code": "FAC003",
+  "name": "Facility Inactive Enabled",
+  "geographicZone": "/api/geographicZones/00000000-0000-0000-0000-000000000002",
+  "type": "/api/facilityTypes/00000000-0000-0000-0000-000000000002",
+  "operator": "/api/facilityOperators/00000000-0000-0000-0000-000000000002",
+  "active": "false",
+  "enabled": "true",
+  "openLmisAccessible": "false"
+  },
+  {
+  "id": "00000000-0000-0000-0000-000000000004",
+  "code": "FAC004",
+  "name": "Facility Inactive Disabled",
+  "geographicZone": "/api/geographicZones/00000000-0000-0000-0000-000000000002",
+  "type": "/api/facilityTypes/00000000-0000-0000-0000-000000000002",
+  "operator": "/api/facilityOperators/00000000-0000-0000-0000-000000000002",
+  "active": "false",
+  "enabled": "false",
+  "openLmisAccessible": "true"
+  }
+]

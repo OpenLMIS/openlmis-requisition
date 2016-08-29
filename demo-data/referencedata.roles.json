@@ -1,0 +1,17 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "name": "LMU In-Charge",
+    "supervisedNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "name": "LMU",
+    "supervisedNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000002"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "name": "Store In-Charge",
+    "supervisedNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000003"
+  }
+]

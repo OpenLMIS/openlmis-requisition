@@ -27,9 +27,9 @@ import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -314,13 +314,13 @@ public class OrderServiceTest {
     return supervisoryNode;
   }
 
-  private Period generatePeriod() {
-    Schedule schedule = new Schedule();
+  private ProcessingPeriod generatePeriod() {
+    ProcessingSchedule schedule = new ProcessingSchedule();
     Integer instanceNumber = generateInstanceNumber();
     schedule.setName("scheduleName" + instanceNumber);
     schedule.setCode("scheduleName" + instanceNumber);
 
-    Period period = new Period();
+    ProcessingPeriod period = new ProcessingPeriod();
     period.setId(UUID.randomUUID());
     period.setProcessingSchedule(schedule);
     period.setStartDate(LocalDate.now());

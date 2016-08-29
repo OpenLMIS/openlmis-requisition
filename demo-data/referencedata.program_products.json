@@ -1,0 +1,35 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "program": "/api/programs/00000000-0000-0000-0000-000000000001",
+    "product": "/api/products/00000000-0000-0000-0000-000000000001",
+    "productCategory": "/api/productCategories/00000000-0000-0000-0000-000000000001",
+    "dosesPerMonth": 10,
+    "active": "true",
+    "fullSupply": "true",
+    "maxMonthStock": 1000,
+    "displayOrder": 1
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "program": "/api/programs/00000000-0000-0000-0000-000000000001",
+    "product": "/api/products/00000000-0000-0000-0000-000000000002",
+    "productCategory": "/api/productCategories/00000000-0000-0000-0000-000000000001",
+    "dosesPerMonth": 3,
+    "active": "false",
+    "fullSupply": "true",
+    "maxMonthStock": 10,
+    "displayOrder": 2
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000003",
+    "program": "/api/programs/00000000-0000-0000-0000-000000000002",
+    "product": "/api/products/00000000-0000-0000-0000-000000000002",
+    "productCategory": "/api/productCategories/00000000-0000-0000-0000-000000000002",
+    "dosesPerMonth": 1,
+    "active": "true",
+    "fullSupply": "false",
+    "maxMonthStock": 30,
+    "displayOrder": 3
+  }
+]

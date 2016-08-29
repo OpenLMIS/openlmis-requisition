@@ -1,11 +1,5 @@
 package org.openlmis.referencedata.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,16 +15,16 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Period;
+import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.Schedule;
+import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
-import org.openlmis.referencedata.repository.PeriodRepository;
+import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
-import org.openlmis.referencedata.repository.ScheduleRepository;
+import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -49,23 +43,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
   private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
-  private static final String INSERT_COMMENT = "/api/requisitions/{id}/comments";
-  private static final String APPROVE_REQUISITION = "/api/requisitions/{id}/approve";
-  private static final String SKIP_URL = "/api/requisitions/{id}/skip";
-  private static final String REJECT_URL = "/api/requisitions/{id}/reject";
-  private static final String SUBMIT_URL = "/api/requisitions/{id}/submit";
-  private static final String SUBMITTED_URL = "/api/requisitions/submitted";
-  private static final String AUTHORIZATION_URL = "/api/requisitions/{id}/authorize";
-  private static final String DELETE_URL = "/api/requisitions/{id}";
-  private static final String SEARCH_URL = "/api/requisitions/search";
-  private static final String INITIATE_URL = "/api/requisitions/initiate";
-  private static final String REQ_FOR_APPROVAL_URL = "/api/requisitions/requisitions-for-approval";
+  private static final String RESOURCE_URL = "/api/requisitions";
+  private static final String INSERT_COMMENT = RESOURCE_URL + "/{id}/comments";
+  private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
+  private static final String APPROVE_REQUISITION = RESOURCE_URL + "/{id}/approve";
+  private static final String SKIP_URL = RESOURCE_URL + "/{id}/skip";
+  private static final String REJECT_URL = RESOURCE_URL + "/{id}/reject";
+  private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
+  private static final String SUBMITTED_URL = RESOURCE_URL + "/submitted";
+  private static final String AUTHORIZATION_URL = RESOURCE_URL + "/{id}/authorize";
+  private static final String ID_COMMENT_URL = RESOURCE_URL + "/comments/{id}";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
 
   @Autowired
   private ProductRepository productRepository;
@@ -77,10 +79,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ProgramRepository programRepository;
 
   @Autowired
-  private PeriodRepository periodRepository;
+  private ProcessingPeriodRepository periodRepository;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
+  private ProcessingScheduleRepository scheduleRepository;
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -112,8 +114,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
+  private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
-  private Period period = new Period();
+  private ProcessingPeriod period = new ProcessingPeriod();
   private Product product = new Product();
   private Program program = new Program();
   private Facility facility = new Facility();
@@ -167,7 +170,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     facility.setEnabled(true);
     facilityRepository.save(facility);
 
-    Schedule schedule = new Schedule();
+    ProcessingSchedule schedule = new ProcessingSchedule();
     schedule.setCode(REQUISITION_REPOSITORY_NAME);
     schedule.setName(REQUISITION_REPOSITORY_NAME);
     scheduleRepository.save(schedule);
@@ -183,10 +186,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
     requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setEmergency(false);
 
     requisitionRepository.save(requisition);
 
-    RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(product);
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setStockOnHand(1);
@@ -650,7 +653,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .delete(DELETE_URL)
+            .delete(ID_URL)
             .then()
             .statusCode(204);
 
@@ -669,19 +672,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .pathParam("id", requisition.getId())
             .when()
-            .delete(DELETE_URL)
+            .delete(ID_URL)
             .then()
             .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private void createComment(User author, Requisition req, String commentText) {
+  private Comment createComment(User author, Requisition req, String commentText) {
     Comment comment = new Comment();
     comment.setAuthor(author);
     comment.setRequisition(req);
     comment.setBody(commentText);
     commentRepository.save(comment);
+    return comment;
   }
 
   @Test
@@ -763,6 +767,67 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Comment> commentList = Arrays.asList(response);
     assertEquals("Previous comment", commentList.get(0).getBody());
     assertEquals("User comment", commentList.get(1).getBody());
+  }
+
+  @Test
+  public void shouldGetChosenComment() {
+
+    Comment comment = createComment(user, requisition, "Comment");
+
+    Comment response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .when()
+          .get(ID_COMMENT_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment.class);
+
+    assertTrue(commentRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateComment() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    Comment comment = createComment(user, requisition, "Comment");
+    comment.setBody("OpenLMIS");
+
+    Comment response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .body(comment)
+          .when()
+          .put(ID_COMMENT_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment.class);
+
+    assertEquals(response.getBody(), "OpenLMIS");
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteComment() {
+
+    Comment comment = createComment(user, requisition, "Comment");
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .when()
+          .delete(ID_COMMENT_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(commentRepository.exists(requisition.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private void testApproveRequisition(Requisition requisition) {
@@ -871,6 +936,134 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .then()
             .statusCode(400);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllRequisitions() {
+
+    Requisition[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition[].class);
+
+    Iterable<Requisition> requisition = Arrays.asList(response);
+    assertTrue(requisition.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenRequisition() {
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertTrue(requisitionRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionEmergencyIfStatusIsInitiated() {
+
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+
+    requisition.setEmergency(true);
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertTrue(response.getEmergency());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionEmergencyIfStatusIsSubmitted() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    requisition.setEmergency(true);
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertTrue(response.getEmergency());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotUpdateRequisitionEmergencyIfStatusIsAuthorized() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    requisition.setEmergency(true);
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertFalse(response.getEmergency());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionApprovedQuantityAndRemarksIfStatusIsAuthorized() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    requisition.setApprovedQuantity(1);
+    requisition.setRemarks("test");
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertTrue(response.getApprovedQuantity().equals(1));
+    assertEquals(response.getRemarks(), "test");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
