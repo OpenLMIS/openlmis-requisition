@@ -219,6 +219,100 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldUpdateRequisitionLineIfStatusIsInitiated() {
+
+    requisitionLine.setBeginningBalance(1);
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(response.getBeginningBalance().equals(1));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionLineIfStatusIsSubmitted() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    requisitionLineRepository.save(requisitionLine);
+
+    requisitionLine.setBeginningBalance(1);
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(response.getBeginningBalance().equals(1));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotUpdateRequisitionLineIfStatusIsAuthorized() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+    requisitionLineRepository.save(requisitionLine);
+
+    requisitionLine.setBeginningBalance(1);
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertFalse(response.getBeginningBalance().equals(1));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionApprovedQuantityAndRemarksIfStatusIsAuthorized() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+    requisitionLineRepository.save(requisitionLine);
+
+    requisitionLine.setApprovedQuantity(1);
+    requisitionLine.setRemarks("test");
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(response.getApprovedQuantity().equals(1));
+    assertEquals(response.getRemarks(), "test");
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   private RequisitionLine generateRequisitionLine() {
     ProductCategory productCategory1 = new ProductCategory();
     productCategory1.setCode(TEST_CODE);

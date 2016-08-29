@@ -974,10 +974,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldUpdateRequisitionEmergencyIfStatusIsInitiated() {
-
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition);
+  public void shouldUpdateRequisition() {
 
     requisition.setEmergency(true);
 
@@ -993,77 +990,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .extract().as(Requisition.class);
 
     assertTrue(response.getEmergency());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldUpdateRequisitionEmergencyIfStatusIsSubmitted() {
-
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
-
-    requisition.setEmergency(true);
-
-    Requisition response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(ID_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition.class);
-
-    assertTrue(response.getEmergency());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotUpdateRequisitionEmergencyIfStatusIsAuthorized() {
-
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    requisition.setEmergency(true);
-
-    Requisition response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(ID_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition.class);
-
-    assertFalse(response.getEmergency());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldUpdateRequisitionApprovedQuantityAndRemarksIfStatusIsAuthorized() {
-
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    requisition.setApprovedQuantity(1);
-    requisition.setRemarks("test");
-
-    Requisition response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisition.getId())
-          .body(requisition)
-          .when()
-          .put(ID_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition.class);
-
-    assertTrue(response.getApprovedQuantity().equals(1));
-    assertEquals(response.getRemarks(), "test");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

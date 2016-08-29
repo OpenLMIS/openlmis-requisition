@@ -90,16 +90,6 @@ public class Requisition extends BaseEntity {
   @Setter
   private Boolean emergency;
 
-  @Column(length = 250)
-  @Getter
-  @Setter
-  private String remarks;
-
-  @Column
-  @Getter
-  @Setter
-  private Integer approvedQuantity;
-
   @ManyToOne
   @JoinColumn(name = "supervisoryNodeId")
   @Getter

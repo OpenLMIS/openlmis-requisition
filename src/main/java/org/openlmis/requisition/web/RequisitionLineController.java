@@ -5,6 +5,7 @@ import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.RequisitionLineService;
 import org.slf4j.Logger;
@@ -86,8 +87,17 @@ public class RequisitionLineController extends BaseController {
                                        @PathVariable("id") UUID requisitionLineId) {
     try {
       LOGGER.debug("Updating requisitionLine");
-      RequisitionLine updatedRequisitionLine = requisitionLineRepository.save(requisitionLine);
-      return new ResponseEntity<RequisitionLine>(updatedRequisitionLine, HttpStatus.OK);
+      RequisitionLine requisitionLineToUpdate = requisitionLineRepository.findOne(requisitionLineId);
+      if (requisitionLine.getRequisition().getStatus() == RequisitionStatus.INITIATED
+            || requisitionLine.getRequisition().getStatus() == RequisitionStatus.SUBMITTED) {
+        requisitionLineToUpdate = requisitionLineRepository.save(requisitionLine);
+      } else if (requisitionLineToUpdate.getRequisition().getStatus()
+            == RequisitionStatus.AUTHORIZED) {
+        requisitionLineToUpdate.setApprovedQuantity(requisitionLine.getApprovedQuantity());
+        requisitionLineToUpdate.setRemarks(requisitionLine.getRemarks());
+        requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
+      }
+      return new ResponseEntity<RequisitionLine>(requisitionLineToUpdate, HttpStatus.OK);
     } catch (RestClientException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating requisitionLine", ex.getMessage());

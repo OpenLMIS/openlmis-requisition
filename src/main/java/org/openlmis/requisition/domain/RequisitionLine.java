@@ -69,4 +69,14 @@ public class RequisitionLine extends BaseEntity {
   @Getter
   @Setter
   private String requestedQuantityExplanation;
+
+  @Column(length = 250)
+  @Getter
+  @Setter
+  private String remarks;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer approvedQuantity;
 }
