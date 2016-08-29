@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -12,9 +11,9 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -26,45 +25,19 @@ public class RequisitionTemplateServiceTest {
   @InjectMocks
   private RequisitionTemplateService requisitionTemplateService;
 
-  private RequisitionTemplate requisitionTemplate;
-  private int currentInstanceNumber;
-
-  @Before
-  public void setUp() {
-    currentInstanceNumber = 0;
-    requisitionTemplate = generateRequisitionTemplate();
-  }
-
   @Test
   public void shouldFindRequisitionTemplateIfItExists() {
+    Program program = mock(Program.class);
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+
     when(requisitionTemplateRepository
-            .searchRequisitionTemplates(requisitionTemplate.getProgram()))
+            .searchRequisitionTemplates(program))
             .thenReturn(Arrays.asList(requisitionTemplate));
+
     List<RequisitionTemplate> receivedRequisitionTemplates =
-            requisitionTemplateService.searchRequisitionTemplates(requisitionTemplate.getProgram());
+            requisitionTemplateService.searchRequisitionTemplates(program);
+
     assertEquals(1, receivedRequisitionTemplates.size());
-
-    assertEquals(
-            requisitionTemplate.getProgram().getId(),
-            receivedRequisitionTemplates.get(0).getProgram().getId());
-  }
-
-  private RequisitionTemplate generateRequisitionTemplate() {
-    requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(generateProgram());
-    return requisitionTemplate;
-  }
-
-  private Program generateProgram() {
-    Program program = new Program();
-    program.setId(UUID.randomUUID());
-    program.setCode("code" + generateInstanceNumber());
-    program.setPeriodsSkippable(false);
-    return program;
-  }
-
-  private Integer generateInstanceNumber() {
-    currentInstanceNumber += 1;
-    return currentInstanceNumber;
+    assertEquals(requisitionTemplate, receivedRequisitionTemplates.get(0));
   }
 }
