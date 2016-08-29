@@ -143,8 +143,15 @@ public class RequisitionController extends BaseController {
                                        @PathVariable("id") UUID requisitionId) {
     try {
       LOGGER.debug("Updating requisition");
-      Requisition updatedRequisition = requisitionRepository.save(requisition);
-      return new ResponseEntity<Requisition>(updatedRequisition, HttpStatus.OK);
+      Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
+      if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
+        requisitionToUpdate = requisitionRepository.save(requisition);
+      } else if (requisitionToUpdate.getStatus() == RequisitionStatus.SUBMITTED) {
+        requisitionToUpdate.setApprovedQuantity(requisition.getApprovedQuantity());
+        requisitionToUpdate.setRemarks(requisition.getRemarks());
+        requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
+      }
+      return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
     } catch (RestClientException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating requisition", ex.getMessage());

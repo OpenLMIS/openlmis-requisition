@@ -186,6 +186,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setProcessingPeriod(period);
     requisition.setProgram(program);
     requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setEmergency(false);
 
     requisitionRepository.save(requisition);
 
@@ -973,9 +974,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldUpdateRequisition() {
+  public void shouldUpdateRequisitionEmergencyIfStatusIsInitiated() {
 
-    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisition.setEmergency(true);
 
     Requisition response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -988,7 +989,55 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .statusCode(200)
           .extract().as(Requisition.class);
 
-    assertEquals(response.getStatus(), RequisitionStatus.APPROVED);
+    assertTrue(response.getEmergency());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotUpdateRequisitionEmergencyIfStatusIsSubmitted() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    requisition.setEmergency(true);
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertFalse(response.getEmergency());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionApprovedQuantityAndRemarksIfStatusIsSubmitted() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    requisition.setApprovedQuantity(1);
+    requisition.setRemarks("test");
+
+    Requisition response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .body(requisition)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Requisition.class);
+
+    assertTrue(response.getApprovedQuantity().equals(1));
+    assertEquals(response.getRemarks(), "test");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
