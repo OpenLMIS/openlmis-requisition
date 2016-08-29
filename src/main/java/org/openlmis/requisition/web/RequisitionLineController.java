@@ -87,7 +87,8 @@ public class RequisitionLineController extends BaseController {
                                        @PathVariable("id") UUID requisitionLineId) {
     try {
       LOGGER.debug("Updating requisitionLine");
-      RequisitionLine requisitionLineToUpdate = requisitionLineRepository.findOne(requisitionLineId);
+      RequisitionLine requisitionLineToUpdate =
+            requisitionLineRepository.findOne(requisitionLineId);
       if (requisitionLine.getRequisition().getStatus() == RequisitionStatus.INITIATED
             || requisitionLine.getRequisition().getStatus() == RequisitionStatus.SUBMITTED) {
         requisitionLineToUpdate = requisitionLineRepository.save(requisitionLine);
