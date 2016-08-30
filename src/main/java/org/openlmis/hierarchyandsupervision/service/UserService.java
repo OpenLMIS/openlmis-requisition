@@ -1,6 +1,7 @@
 package org.openlmis.hierarchyandsupervision.service;
 
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.exception.ExternalApiException;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.utils.AuthUserRequest;
 import org.openlmis.hierarchyandsupervision.utils.NotificationRequest;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -73,24 +75,32 @@ public class UserService {
    * Resets a user's password.
    */
   public void passwordReset(PasswordResetRequest passwordResetRequest, String token) {
-    String url = "http://auth:8080/api/users/passwordReset?access_token=" + token;
-    RestTemplate restTemplate = new RestTemplate();
+    try {
+      String url = "http://auth:8080/api/users/passwordReset?access_token=" + token;
+      RestTemplate restTemplate = new RestTemplate();
 
-    restTemplate.postForObject(url, passwordResetRequest, String.class);
+      restTemplate.postForObject(url, passwordResetRequest, String.class);
 
-    verifyUser(passwordResetRequest.getUsername());
+      verifyUser(passwordResetRequest.getUsername());
+    } catch (RestClientException ex) {
+      throw new ExternalApiException("Could not reset auth user password", ex);
+    }
   }
 
   /**
    * Changes user's password if valid reset token is provided.
    */
   public void changePassword(PasswordChangeRequest passwordChangeRequest, String token) {
-    String url = "http://auth:8080/api/users/changePassword?access_token=" + token;
+    try {
+      String url = "http://auth:8080/api/users/changePassword?access_token=" + token;
 
-    RestTemplate restTemplate = new RestTemplate();
-    restTemplate.postForObject(url, passwordChangeRequest, String.class);
+      RestTemplate restTemplate = new RestTemplate();
+      restTemplate.postForObject(url, passwordChangeRequest, String.class);
 
-    verifyUser(passwordChangeRequest.getUsername());
+      verifyUser(passwordChangeRequest.getUsername());
+    } catch (RestClientException ex) {
+      throw new ExternalApiException("Could not reset auth user password", ex);
+    }
   }
 
   private void verifyUser(String username) {
@@ -100,15 +110,19 @@ public class UserService {
   }
 
   private void saveAuthUser(User user, String token) {
-    AuthUserRequest userRequest = new AuthUserRequest();
-    userRequest.setUsername(user.getUsername());
-    userRequest.setEmail(user.getEmail());
-    userRequest.setReferenceDataUserId(user.getId());
+    try {
+      AuthUserRequest userRequest = new AuthUserRequest();
+      userRequest.setUsername(user.getUsername());
+      userRequest.setEmail(user.getEmail());
+      userRequest.setReferenceDataUserId(user.getId());
 
-    String url = "http://auth:8080/api/users?access_token=" + token;
-    RestTemplate restTemplate = new RestTemplate();
+      String url = "http://auth:8080/api/users?access_token=" + token;
+      RestTemplate restTemplate = new RestTemplate();
 
-    restTemplate.postForObject(url, userRequest, Object.class);
+      restTemplate.postForObject(url, userRequest, Object.class);
+    } catch (RestClientException ex) {
+      throw new ExternalApiException("Could not save auth user", ex);
+    }
   }
 
   private void sendResetPasswordEmail(User user, String authToken) {
@@ -126,19 +140,27 @@ public class UserService {
   }
 
   private UUID createPasswordResetToken(UUID userId, String token) {
-    String url = "http://auth:8080/api/users/passwordResetToken?userId=" + userId
-        + "&access_token=" + token;
-    RestTemplate restTemplate = new RestTemplate();
+    try {
+      String url = "http://auth:8080/api/users/passwordResetToken?userId=" + userId
+          + "&access_token=" + token;
+      RestTemplate restTemplate = new RestTemplate();
 
-    return restTemplate.postForObject(url, null, UUID.class);
+      return restTemplate.postForObject(url, null, UUID.class);
+    } catch (RestClientException ex) {
+      throw new ExternalApiException("Could not create reset password token", ex);
+    }
   }
 
   private void sendMail(String from, String to, String subject, String content, String token) {
-    NotificationRequest request = new NotificationRequest(from, to, subject, content, null);
+    try {
+      NotificationRequest request = new NotificationRequest(from, to, subject, content, null);
 
-    String url = "http://notification:8080/notification?access_token=" + token;
-    RestTemplate restTemplate = new RestTemplate();
+      String url = "http://notification:8080/notification?access_token=" + token;
+      RestTemplate restTemplate = new RestTemplate();
 
-    restTemplate.postForObject(url, request, Object.class);
+      restTemplate.postForObject(url, request, Object.class);
+    } catch (RestClientException ex) {
+      throw new ExternalApiException("Could not send reset password email", ex);
+    }
   }
 }
