@@ -9,15 +9,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.product.domain.Product;
-import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.FacilityType;
-import org.openlmis.referencedata.domain.GeographicLevel;
-import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -26,39 +20,24 @@ import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
-  private static final String REQUISITION_TEST_NAME = "RequisitionServiceTest";
-
   private Requisition requisition;
-
-  private Requisition requisition2;
-  private Requisition requisition3;
-  private Set<Requisition> requisitions;
-  private List<RequisitionLine> requisitionLines;
-  private SupervisoryNode supervisoryNode;
-  private User user;
-  private Facility facility;
-  private ProcessingPeriod period;
-  private Program program;
-
-  private Product product;
 
   @Mock
   private UserRepository userRepository;
@@ -80,7 +59,7 @@ public class RequisitionServiceTest {
 
   @Before
   public void setUp() {
-    generateInstances();
+    generateRequisition();
     mockRepositories();
   }
 
@@ -112,6 +91,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldSkipRequisitionIfItIsValid() throws RequisitionException {
+    when(requisition.getProgram().getPeriodsSkippable()).thenReturn(true);
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
 
     assertEquals(skippedRequisition.getStatus(), RequisitionStatus.SKIPPED);
@@ -120,7 +100,7 @@ public class RequisitionServiceTest {
   @Test(expected = RequisitionException.class)
   public void shouldThrowExceptionWhenSkippingNotSkippableProgram()
           throws RequisitionException {
-    requisition.getProgram().setPeriodsSkippable(false);
+    when(requisition.getProgram().getPeriodsSkippable()).thenReturn(false);
     requisitionService.skip(requisition.getId());
   }
 
@@ -134,8 +114,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized()
-          throws RequisitionException {
+  public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
@@ -158,42 +137,45 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
+    SupervisoryNode supervisoryNode = mock(SupervisoryNode.class);
+
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
-    requisition2.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition2.setSupervisoryNode(supervisoryNode);
-    requisition3.setSupervisoryNode(supervisoryNode);
 
-    when(requisitionRepository.searchRequisitions(
-        null, null, null, null, null, supervisoryNode, null))
-        .thenReturn(Arrays.asList(requisition, requisition2));
+    when(requisitionRepository
+        .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
+        .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getAuthorizedRequisitions(supervisoryNode);
-    List<Requisition> expected = Arrays.asList(requisition, requisition2);
+    List<Requisition> expected = Arrays.asList(requisition);
 
     assertEquals(expected, authorizedRequisitions);
   }
 
   @Test
   public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
-    user.setSupervisedNode(supervisoryNode);
+    SupervisoryNode supervisoryNode = mock(SupervisoryNode.class);
+    User user = mock(User.class);
+
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
-    requisition2.setSupervisoryNode(supervisoryNode);
 
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
+    when(user.getSupervisedNode()).thenReturn(supervisoryNode);
     when(userRepository
-            .findOne(user.getId()))
+            .findOne(userId))
             .thenReturn(user);
     when(requisitionRepository
             .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
             .thenReturn(Arrays.asList(requisition));
 
-    List<Requisition> requisitionsForApproval = requisitionService
-            .getRequisitionsForApproval(user.getId());
-    List<Requisition> expected = Arrays.asList(requisition);
+    List<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
 
-    assertEquals(expected, requisitionsForApproval);
+    assertEquals(1, requisitionsForApproval.size());
+    assertEquals(requisitionsForApproval.get(0), requisition);
   }
 
   @Test
@@ -225,6 +207,7 @@ public class RequisitionServiceTest {
     requisitionService.authorize(requisition.getId(), requisition, false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+    verify(requisitionRepository).save(requisition);
   }
 
   @Test(expected = RequisitionException.class)
@@ -264,13 +247,15 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFindRequisitionIfItExists() {
-    when(requisitionRepository.searchRequisitions(requisition.getFacility(),
+    when(requisitionRepository.searchRequisitions(
+        requisition.getFacility(),
         requisition.getProgram(),
         requisition.getCreatedDate().minusDays(2),
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriod(),
         requisition.getSupervisoryNode(),
-        requisition.getStatus())).thenReturn(Arrays.asList(requisition));
+        requisition.getStatus()))
+        .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
         requisition.getFacility(),
@@ -281,13 +266,13 @@ public class RequisitionServiceTest {
         requisition.getSupervisoryNode(),
         requisition.getStatus());
 
-    assertEquals(1,receivedRequisitions.size());
+    assertEquals(1, receivedRequisitions.size());
     assertEquals(
-        receivedRequisitions.get(0).getFacility().getId(),
-        requisition.getFacility().getId());
+        receivedRequisitions.get(0).getFacility(),
+        requisition.getFacility());
     assertEquals(
-        receivedRequisitions.get(0).getProgram().getId(),
-        requisition.getProgram().getId());
+        receivedRequisitions.get(0).getProgram(),
+        requisition.getProgram());
     assertTrue(
         receivedRequisitions.get(0).getCreatedDate().isAfter(
             requisition.getCreatedDate().minusDays(2)));
@@ -295,163 +280,29 @@ public class RequisitionServiceTest {
         receivedRequisitions.get(0).getCreatedDate().isBefore(
             requisition.getCreatedDate().plusDays(2)));
     assertEquals(
-        receivedRequisitions.get(0).getProcessingPeriod().getId(),
-        requisition.getProcessingPeriod().getId());
+        receivedRequisitions.get(0).getProcessingPeriod(),
+        requisition.getProcessingPeriod());
     assertEquals(
-        receivedRequisitions.get(0).getSupervisoryNode().getId(),
-        requisition.getSupervisoryNode().getId());
+        receivedRequisitions.get(0).getSupervisoryNode(),
+        requisition.getSupervisoryNode());
     assertEquals(
         receivedRequisitions.get(0).getStatus(),
         requisition.getStatus());
   }
 
-  private void generateInstances() {
-    user = generateUser();
-    program = generateProgram();
-    facility = generateFacility();
-    period = generatePeriod();
-    supervisoryNode = generateSupervisoryNode();
-    requisitions = generateRequisitions();
-    product = generateProduct();
-    requisitionLines =  generateRequisitionLines();
-    requisition.setRequisitionLines(requisitionLines);
-  }
-
-  private User generateUser() {
-    user = new User();
-    user.setId(UUID.randomUUID());
-    user.setUsername("Username");
-    user.setFirstName("Firstname");
-    user.setLastName("Lastname");
-    return user;
-  }
-
-  private Program generateProgram() {
-    program = new Program();
-    program.setId(UUID.randomUUID());
-    program.setCode(REQUISITION_TEST_NAME);
-    program.setPeriodsSkippable(true);
-    return program;
-  }
-
-  private Facility generateFacility() {
-    FacilityType facilityType = new FacilityType();
-    facilityType.setId(UUID.randomUUID());
-    facilityType.setCode(REQUISITION_TEST_NAME);
-
-    GeographicLevel level = new GeographicLevel();
-    level.setId(UUID.randomUUID());
-    level.setCode(REQUISITION_TEST_NAME);
-    level.setLevelNumber(1);
-
-    GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setId(UUID.randomUUID());
-    geographicZone.setCode(REQUISITION_TEST_NAME);
-    geographicZone.setLevel(level);
-
-    facility = new Facility();
-    facility.setId(UUID.randomUUID());
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
-    facility.setCode(REQUISITION_TEST_NAME);
-    facility.setActive(true);
-    facility.setEnabled(true);
-    return facility;
-  }
-
-  private ProcessingPeriod generatePeriod() {
-    ProcessingSchedule schedule = new ProcessingSchedule();
-    schedule.setName("scheduleName");
-    schedule.setCode(REQUISITION_TEST_NAME);
-
-    period = new ProcessingPeriod();
-    period.setId(UUID.randomUUID());
-    period.setProcessingSchedule(schedule);
-    period.setStartDate(LocalDate.of(2016, 1, 1));
-    period.setEndDate(LocalDate.of(2016, 1, 2));
-    period.setName("periodName");
-    period.setDescription("description");
-    return period;
-  }
-
-  private SupervisoryNode generateSupervisoryNode() {
-    supervisoryNode = new SupervisoryNode();
-    supervisoryNode.setId(UUID.randomUUID());
-    supervisoryNode.setCode("Test");
-    supervisoryNode.setFacility(facility);
-    return supervisoryNode;
-  }
-
-  private Set<Requisition> generateRequisitions() {
+  private Requisition generateRequisition() {
     requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
+    requisition.setFacility(mock(Facility.class));
+    requisition.setProcessingPeriod(mock(ProcessingPeriod.class));
+    requisition.setProgram(mock(Program.class));
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupervisoryNode(supervisoryNode);
-
-    requisition2 = new Requisition();
-    requisition2.setId(UUID.randomUUID());
-    requisition2.setFacility(facility);
-    requisition2.setProcessingPeriod(period);
-    requisition2.setProgram(program);
-    requisition2.setCreatedDate(LocalDateTime.now().minusDays(5));
-    requisition2.setStatus(RequisitionStatus.INITIATED);
-    requisition2.setSupervisoryNode(supervisoryNode);
-
-    requisition3 = new Requisition();
-    requisition3.setId(UUID.randomUUID());
-    requisition3.setFacility(facility);
-    requisition3.setProcessingPeriod(period);
-    requisition3.setProgram(program);
-    requisition.setCreatedDate(LocalDateTime.now().minusDays(9));
-    requisition3.setStatus(RequisitionStatus.INITIATED);
-    requisition3.setSupervisoryNode(supervisoryNode);
-
-    requisitions = new HashSet<>();
-    requisitions.add(requisition);
-    requisitions.add(requisition2);
-    requisitions.add(requisition3);
-    return requisitions;
-  }
-
-  private Product generateProduct() {
-    ProductCategory productCategory1 = new ProductCategory();
-    productCategory1.setCode("PC1");
-    productCategory1.setName("PC1 name");
-    productCategory1.setDisplayOrder(1);
-
-    product = new Product();
-    product.setCode("code");
-    product.setPrimaryName("product");
-    product.setDispensingUnit("unit");
-    product.setDosesPerDispensingUnit(10);
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setRoundToZero(false);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
-    product.setProductCategory(productCategory1);
-    return product;
-  }
-
-  private List<RequisitionLine> generateRequisitionLines() {
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
-    requisitionLine.setProduct(product);
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setBeginningBalance(1);
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-
-    requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
-    return requisitionLines;
+    requisition.setSupervisoryNode(mock(SupervisoryNode.class));
+    List<RequisitionLine> requisitionLines = new ArrayList<>();
+    requisitionLines.add(mock(RequisitionLine.class));
+    requisition.setRequisitionLines(requisitionLines);
+    return requisition;
   }
 
   private void mockRepositories() {

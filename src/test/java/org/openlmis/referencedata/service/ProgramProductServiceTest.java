@@ -29,7 +29,7 @@ public class ProgramProductServiceTest {
   public void shouldFindProgramProductIfMatchedProgramAndFullSupply() {
     Program program = mock(Program.class);
     ProgramProduct programProduct = mock(ProgramProduct.class);
-    Boolean isFullSupply = true;
+    final Boolean isFullSupply = true;
 
     when(programProductRepository
             .searchProgramProducts(program, isFullSupply))

@@ -42,11 +42,11 @@ public class UserServiceTest {
   public void shouldFindUsersIfMatchedRequiredFields() {
     User user = mock(User.class);
     Facility facility = mock(Facility.class);
-    String firstName = "Ala";
-    String lastName = "ma";
-    String userName = "kota";
-    Boolean verified = true;
-    Boolean active = true;
+    final String firstName = "Ala";
+    final String lastName = "ma";
+    final String userName = "kota";
+    final Boolean verified = true;
+    final Boolean active = true;
 
     when(userRepository
             .searchUsers(userName, firstName, lastName, facility, active, verified))
@@ -62,7 +62,7 @@ public class UserServiceTest {
   @Test
   public void shouldSaveRequisitionAndAuthUsers() throws Exception {
     User user = mock(User.class);
-    String token = "authToken";
+    final String token = "authToken";
 
     when(userRepository.save(user)).thenReturn(user);
 
