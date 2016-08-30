@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +47,7 @@ public class ProductCategoryController extends BaseController {
       productCategory.setId(null);
       ProductCategory newProductCategory = productCategoryRepository.save(productCategory);
       return new ResponseEntity<ProductCategory>(newProductCategory, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating productCategory", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -86,7 +85,7 @@ public class ProductCategoryController extends BaseController {
       LOGGER.debug("Updating new productCategory");
       ProductCategory updatedProductCategory = productCategoryRepository.save(productCategory);
       return new ResponseEntity<ProductCategory>(updatedProductCategory, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating productCategory", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -41,7 +40,7 @@ public class FacilityTypeController extends BaseController {
       facilityType.setId(null);
       FacilityType newFacilityType = facilityTypeRepository.save(facilityType);
       return new ResponseEntity<FacilityType>(newFacilityType, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating facilityType", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -79,7 +78,7 @@ public class FacilityTypeController extends BaseController {
       LOGGER.debug("Updating facility");
       FacilityType updatedFacilityType = facilityTypeRepository.save(facilityType);
       return new ResponseEntity<FacilityType>(updatedFacilityType, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facilityType", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

@@ -145,7 +145,7 @@ public class RequisitionController extends BaseController {
       LOGGER.debug("Updating requisition");
       Requisition requisitionToUpdate = requisitionRepository.save(requisition);
       return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating requisition", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

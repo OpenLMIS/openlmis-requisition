@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -43,7 +42,7 @@ public class FacilityTypeApprovedProductController extends BaseController {
       facilityTypeApprovedProduct.setId(null);
       FacilityTypeApprovedProduct newFacility = repository.save(facilityTypeApprovedProduct);
       return new ResponseEntity<FacilityTypeApprovedProduct>(newFacility, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating facilityTypeApprovedProduct",
                   ex.getMessage());
@@ -84,7 +83,7 @@ public class FacilityTypeApprovedProductController extends BaseController {
       LOGGER.debug("Updating facilityTypeApprovedProduct");
       FacilityTypeApprovedProduct updatedFacility = repository.save(facilityTypeApprovedProduct);
       return new ResponseEntity<FacilityTypeApprovedProduct>(updatedFacility, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facilityTypeApprovedProduct",
                   ex.getMessage());

@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -60,7 +59,7 @@ public class OrderController extends BaseController {
       order.setId(null);
       Order newOrder = orderRepository.save(order);
       return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while saving order", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -98,7 +97,7 @@ public class OrderController extends BaseController {
       LOGGER.debug("Updating order");
       Order updatedOrder = orderRepository.save(order);
       return new ResponseEntity<Order>(updatedOrder, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while updating order", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

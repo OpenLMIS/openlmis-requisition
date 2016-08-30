@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class ProgramController extends BaseController {
       program.setId(null);
       Program newProgram = programRepository.save(program);
       return new ResponseEntity<Program>(newProgram, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating program", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

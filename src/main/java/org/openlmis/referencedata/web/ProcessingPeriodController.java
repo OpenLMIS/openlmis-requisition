@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -128,7 +127,7 @@ public class ProcessingPeriodController extends BaseController {
       LOGGER.debug("Updating processingPeriod");
       ProcessingPeriod updatedProcessingPeriod = periodRepository.save(period);
       return new ResponseEntity<ProcessingPeriod>(updatedProcessingPeriod, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating processingPeriod",
                   ex.getMessage());

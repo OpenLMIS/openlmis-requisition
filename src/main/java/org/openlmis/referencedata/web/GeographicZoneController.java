@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -41,7 +40,7 @@ public class GeographicZoneController extends BaseController {
       geographicZone.setId(null);
       GeographicZone newGeographicZone = geographicZoneRepository.save(geographicZone);
       return new ResponseEntity<GeographicZone>(newGeographicZone, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating geographicZone", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -79,7 +78,7 @@ public class GeographicZoneController extends BaseController {
       LOGGER.debug("Updating geographicZone");
       GeographicZone updatedGeographicZone = geographicZoneRepository.save(geographicZone);
       return new ResponseEntity<GeographicZone>(updatedGeographicZone, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating geographicZone", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

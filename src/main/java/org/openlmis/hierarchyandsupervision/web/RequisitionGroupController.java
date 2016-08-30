@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class RequisitionGroupController extends BaseController {
       requisitionGroup.setId(null);
       RequisitionGroup newRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
       return new ResponseEntity<RequisitionGroup>(newRequisitionGroup, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating requisitionGroup",
                   ex.getMessage());
@@ -97,7 +96,7 @@ public class RequisitionGroupController extends BaseController {
       LOGGER.debug("Updating requisitionGroup");
       RequisitionGroup updatedRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
       return new ResponseEntity<RequisitionGroup>(updatedRequisitionGroup, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating requisitionGroup",
                   ex.getMessage());

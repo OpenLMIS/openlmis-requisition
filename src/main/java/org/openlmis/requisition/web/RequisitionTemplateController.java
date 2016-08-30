@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -52,7 +51,7 @@ public class RequisitionTemplateController extends BaseController {
       RequisitionTemplate newRequisitionTemplate =
             requisitionTemplateRepository.save(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating requisitionTemplate",
                   ex.getMessage());
@@ -93,7 +92,7 @@ public class RequisitionTemplateController extends BaseController {
       RequisitionTemplate updatedRequisitionTemplate =
             requisitionTemplateRepository.save(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(updatedRequisitionTemplate, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating requisitionTemplate",
                   ex.getMessage());

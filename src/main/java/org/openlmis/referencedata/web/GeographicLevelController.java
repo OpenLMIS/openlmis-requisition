@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -41,7 +40,7 @@ public class GeographicLevelController extends BaseController {
       geographicLevel.setId(null);
       GeographicLevel newGeographicLevel = geographicLevelRepository.save(geographicLevel);
       return new ResponseEntity<GeographicLevel>(newGeographicLevel, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating geographicLevel", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -79,7 +78,7 @@ public class GeographicLevelController extends BaseController {
       LOGGER.debug("Updating geographicLevel");
       GeographicLevel updatedGeographicLevel = geographicLevelRepository.save(geographicLevel);
       return new ResponseEntity<GeographicLevel>(updatedGeographicLevel, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating geographicLevel", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

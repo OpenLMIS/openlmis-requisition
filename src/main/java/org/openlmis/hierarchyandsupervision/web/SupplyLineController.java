@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +49,7 @@ public class SupplyLineController extends BaseController {
       supplyLine.setId(null);
       SupplyLine newSupplyLine = supplyLineRepository.save(supplyLine);
       return new ResponseEntity<SupplyLine>(newSupplyLine, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating supplyLine", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -88,7 +87,7 @@ public class SupplyLineController extends BaseController {
       LOGGER.debug("Updating supplyLine");
       SupplyLine updatedSupplyLine = supplyLineRepository.save(supplyLine);
       return new ResponseEntity<SupplyLine>(updatedSupplyLine, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating supplyLine", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

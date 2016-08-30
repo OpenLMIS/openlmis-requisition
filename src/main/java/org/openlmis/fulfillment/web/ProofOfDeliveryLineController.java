@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -46,7 +45,7 @@ public class ProofOfDeliveryLineController extends BaseController {
       ProofOfDeliveryLine newProofOfDeliveryLine
               = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
       return new ResponseEntity<ProofOfDeliveryLine>(newProofOfDeliveryLine, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating proofOfDeliveryLine",
                   ex.getMessage());
@@ -87,7 +86,7 @@ public class ProofOfDeliveryLineController extends BaseController {
       ProofOfDeliveryLine updatedProofOfDeliveryLine
             = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
       return new ResponseEntity<ProofOfDeliveryLine>(updatedProofOfDeliveryLine, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating proofOfDeliveryLine",
                   ex.getMessage());

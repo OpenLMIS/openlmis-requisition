@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class RoleController extends BaseController {
       role.setId(null);
       Role newRole = roleRepository.save(role);
       return new ResponseEntity<Role>(newRole, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating role", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -80,7 +79,7 @@ public class RoleController extends BaseController {
       LOGGER.debug("Updating new role");
       Role updatedRole = roleRepository.save(role);
       return new ResponseEntity<Role>(updatedRole, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating role", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

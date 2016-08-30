@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
@@ -60,7 +59,7 @@ public class ProofOfDeliveryController extends BaseController {
       proofOfDelivery.setId(null);
       ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
       return new ResponseEntity<ProofOfDelivery>(newProofOfDelivery, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while saving proofOfDelivery", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -98,7 +97,7 @@ public class ProofOfDeliveryController extends BaseController {
       LOGGER.debug("Updating proofOfDelivery");
       ProofOfDelivery updatedProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
       return new ResponseEntity<ProofOfDelivery>(updatedProofOfDelivery, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while updating proofOfDelivery", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
@@ -53,7 +52,7 @@ public class FacilityController extends BaseController {
       facility.setId(null);
       Facility newFacility = facilityRepository.save(facility);
       return new ResponseEntity<Facility>(newFacility, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating facility", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -91,7 +90,7 @@ public class FacilityController extends BaseController {
       LOGGER.debug("Updating facility");
       Facility updatedFacility = facilityRepository.save(facility);
       return new ResponseEntity<Facility>(updatedFacility, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facility", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

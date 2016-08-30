@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -55,7 +54,7 @@ public class ProcessingScheduleController extends BaseController {
       schedule.setId(null);
       ProcessingSchedule newSchedule = scheduleRepository.save(schedule);
       return new ResponseEntity<ProcessingSchedule>(newSchedule, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating processingSchedule",
                   ex.getMessage());
@@ -78,7 +77,7 @@ public class ProcessingScheduleController extends BaseController {
       LOGGER.debug("Updating processingSchedule");
       ProcessingSchedule updatedSchedule = scheduleRepository.save(schedule);
       return new ResponseEntity<ProcessingSchedule>(updatedSchedule, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating processingSchedule",
                   ex.getMessage());

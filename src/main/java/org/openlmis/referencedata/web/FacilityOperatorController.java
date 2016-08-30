@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class FacilityOperatorController extends BaseController {
       facilityOperator.setId(null);
       FacilityOperator newFacilityOperator = facilityOperatorRepository.save(facilityOperator);
       return new ResponseEntity<FacilityOperator>(newFacilityOperator, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating facilityOperator",
                   ex.getMessage());
@@ -81,7 +80,7 @@ public class FacilityOperatorController extends BaseController {
       LOGGER.debug("Updating facility operator");
       FacilityOperator updatedFacilityOperator = facilityOperatorRepository.save(facilityOperator);
       return new ResponseEntity<FacilityOperator>(updatedFacilityOperator, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facilityOperator",
                   ex.getMessage());

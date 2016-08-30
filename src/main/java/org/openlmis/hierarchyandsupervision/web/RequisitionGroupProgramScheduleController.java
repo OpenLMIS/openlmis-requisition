@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
 
@@ -45,7 +44,7 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
       RequisitionGroupProgramSchedule newRequisition = repository.save(requisition);
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             newRequisition, HttpStatus.CREATED);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating"
                   + "requisitionGroupProgramSchedule", ex.getMessage());
@@ -105,7 +104,7 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
       RequisitionGroupProgramSchedule newRequisition = repository.save(reqGroupProgSchedule);
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             newRequisition, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating"
                   + "requisitionGroupProgramSchedule", ex.getMessage());
