@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public class UserController extends BaseController {
       userService.save(user, token);
 
       return new ResponseEntity<>(user, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
+    } catch (RestClientException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while saving user", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -98,7 +99,7 @@ public class UserController extends BaseController {
       userService.passwordReset(passwordResetRequest, token);
 
       return new ResponseEntity<>(HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
+    } catch (RestClientException ex) {
       ErrorResponse errorResponse =
           new ErrorResponse("Could not reset user password", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
@@ -124,7 +125,7 @@ public class UserController extends BaseController {
       userService.changePassword(passwordChangeRequest, token);
 
       return new ResponseEntity(HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
+    } catch (RestClientException ex) {
       ErrorResponse errorResponse =
           new ErrorResponse("Could not reset user password", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
