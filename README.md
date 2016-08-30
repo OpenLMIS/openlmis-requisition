@@ -84,6 +84,3 @@ To insert this data into the database, finish the Quick Start steps,
 and then outside of container's interactive shell, run:
 `docker exec -i openlmisrequisition_db_1 psql -Upostgres open_lmis < demo-data/input.sql`
 
-## Documentation
-Documentation is available at:
-http://openlmis-requisition.readthedocs.io
