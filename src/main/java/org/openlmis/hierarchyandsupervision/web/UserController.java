@@ -143,11 +143,7 @@ public class UserController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllUsers() {
     Iterable<User> users = userRepository.findAll();
-    if (users == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(users, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(users, HttpStatus.OK);
   }
 
   /**

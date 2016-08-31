@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -20,6 +21,8 @@ public class RightControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/rights";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private RightRepository rightRepository;
@@ -69,7 +72,7 @@ public class RightControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldUpdateRight() {
 
-    right.setDescription("OpenLMIS");
+    right.setDescription(DESCRIPTION);
 
     Right response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -82,7 +85,28 @@ public class RightControllerIntegrationTest extends BaseWebIntegrationTest {
           .statusCode(200)
           .extract().as(Right.class);
 
-    assertEquals(response.getDescription(), "OpenLMIS");
+    assertEquals(response.getDescription(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewRightIfDoesNotExists() {
+
+    rightRepository.delete(right);
+    right.setDescription(DESCRIPTION);
+
+    Right response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(right)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Right.class);
+
+    assertEquals(response.getDescription(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -117,6 +141,23 @@ public class RightControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(Right.class);
 
     assertTrue(rightRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentRight() {
+
+    rightRepository.delete(right);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", right.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

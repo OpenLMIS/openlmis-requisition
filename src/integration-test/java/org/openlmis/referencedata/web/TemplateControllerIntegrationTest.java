@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,6 +25,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private TemplateRepository templateRepository;
@@ -99,6 +101,27 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldCreateNewRequisitionTemplateIfDoesNotExists() {
+
+    templateRepository.delete(template);
+    template.setDescription(TEMPLATE_CONTROLLER_TEST);
+
+    Template response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(template)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Template.class);
+
+    assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetAllRequisitionTemplates() {
 
     Template[] response = restAssured.given()
@@ -129,6 +152,23 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(Template.class);
 
     assertTrue(templateRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentRequisitionTemplate() {
+
+    templateRepository.delete(template);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", template.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

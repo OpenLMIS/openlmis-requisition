@@ -40,6 +40,7 @@ public class RightController extends BaseController {
       // Ignore provided id
       right.setId(null);
       Right newRight = rightRepository.save(right);
+      LOGGER.debug("Created new right with id: " + right.getId());
       return new ResponseEntity<Right>(newRight, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -58,11 +59,7 @@ public class RightController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRights() {
     Iterable<Right> rights = rightRepository.findAll();
-    if (rights == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(rights, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(rights, HttpStatus.OK);
   }
 
   /**
@@ -76,8 +73,9 @@ public class RightController extends BaseController {
   public ResponseEntity<?> updateRight(@RequestBody Right right,
                                       @PathVariable("id") UUID rightId) {
     try {
-      LOGGER.debug("Updating right");
+      LOGGER.debug("Updating right with id: " + rightId);
       Right updatedRight = rightRepository.save(right);
+      LOGGER.debug("Updated right with id: " + rightId);
       return new ResponseEntity<Right>(updatedRight, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

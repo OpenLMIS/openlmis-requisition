@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,6 +52,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private static final Integer BEGINNING_BALANCE = 100;
   private static final Integer TOTAL_RECEIVED_QUANTITY = 200;
   private static final Integer TOTAL_LOSSES_AND_ADJUSTMENTS = 300;
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
@@ -205,6 +207,23 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldNotGetNonexistentRequisitionLine() {
+
+    requisitionLineRepository.delete(requisitionLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldDeleteRequisitionLine() {
 
     restAssured.given()
@@ -217,6 +236,27 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
           .statusCode(204);
 
     assertFalse(requisitionLineRepository.exists(requisitionLine.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewRequisitionLineIfDoesNotExists() {
+
+    requisitionLineRepository.delete(requisitionLine);
+    requisitionLine.setBeginningBalance(1);
+
+    RequisitionLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(requisitionLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionLine.class);
+
+    assertTrue(response.getBeginningBalance().equals(1));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

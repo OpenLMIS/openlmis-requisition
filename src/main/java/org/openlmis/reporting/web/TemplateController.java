@@ -67,11 +67,7 @@ public class TemplateController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllTemplates() {
     Iterable<Template> templates = templateRepository.findAll();
-    if (templates == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(templates, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(templates, HttpStatus.OK);
   }
 
   /**
@@ -85,8 +81,9 @@ public class TemplateController extends BaseController {
   public ResponseEntity<?> updateTemplate(@RequestBody Template template,
                                           @PathVariable("id") UUID templateId) {
     try {
-      LOGGER.debug("Updating template");
+      LOGGER.debug("Updating template with id: " + templateId);
       Template updatedTemplate = templateRepository.save(template);
+      LOGGER.debug("Updated template with id: " + templateId);
       return new ResponseEntity<Template>(updatedTemplate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

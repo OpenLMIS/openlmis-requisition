@@ -40,6 +40,7 @@ public class ProgramController extends BaseController {
       // Ignore provided id
       program.setId(null);
       Program newProgram = programRepository.save(program);
+      LOGGER.debug("Created new program with id: " + program.getId());
       return new ResponseEntity<Program>(newProgram, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -58,11 +59,7 @@ public class ProgramController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllPrograms() {
     Iterable<Program> programs = programRepository.findAll();
-    if (programs == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(programs, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(programs, HttpStatus.OK);
   }
 
   /**

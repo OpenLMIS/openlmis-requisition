@@ -40,6 +40,7 @@ public class FacilityOperatorController extends BaseController {
       // Ignore provided id
       facilityOperator.setId(null);
       FacilityOperator newFacilityOperator = facilityOperatorRepository.save(facilityOperator);
+      LOGGER.debug("Created new facility operator with id: " + facilityOperator.getId());
       return new ResponseEntity<FacilityOperator>(newFacilityOperator, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -59,11 +60,7 @@ public class FacilityOperatorController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllfacilityOperators() {
     Iterable<FacilityOperator> facilityOperators = facilityOperatorRepository.findAll();
-    if (facilityOperators == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(facilityOperators, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(facilityOperators, HttpStatus.OK);
   }
 
   /**
@@ -77,8 +74,9 @@ public class FacilityOperatorController extends BaseController {
   public ResponseEntity<?> updateFacilityOperators(@RequestBody FacilityOperator facilityOperator,
                                        @PathVariable("id") UUID facilityOperatorId) {
     try {
-      LOGGER.debug("Updating facility operator");
+      LOGGER.debug("Updating facility operator with id: " + facilityOperatorId);
       FacilityOperator updatedFacilityOperator = facilityOperatorRepository.save(facilityOperator);
+      LOGGER.debug("Updated facility operator with id: " + facilityOperatorId);
       return new ResponseEntity<FacilityOperator>(updatedFacilityOperator, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

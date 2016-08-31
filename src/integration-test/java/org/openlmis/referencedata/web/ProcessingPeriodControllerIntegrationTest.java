@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,6 +29,8 @@ public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegratio
   private static final String PROCESSING_SCHEDULE = "processingSchedule";
   private static final String START_DATE = "toDate";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private ProcessingScheduleRepository scheduleRepository;
@@ -188,7 +191,7 @@ public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegratio
   public void shouldUpdatePeriod() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
-    firstPeriod.setDescription("OpenLMIS");
+    firstPeriod.setDescription(DESCRIPTION);
 
     ProcessingPeriod response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -201,7 +204,27 @@ public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegratio
           .statusCode(200)
           .extract().as(ProcessingPeriod.class);
 
-    assertEquals(response.getDescription(), "OpenLMIS");
+    assertEquals(response.getDescription(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewPeriodIfDoesNotExists() {
+    firstPeriod.setProcessingSchedule(schedule);
+    firstPeriod.setDescription(DESCRIPTION);
+
+    ProcessingPeriod response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(firstPeriod)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProcessingPeriod.class);
+
+    assertEquals(response.getDescription(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -240,6 +263,24 @@ public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegratio
           .extract().as(ProcessingPeriod.class);
 
     assertTrue(periodRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentPeriod() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+    periodRepository.delete(firstPeriod);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstPeriod.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

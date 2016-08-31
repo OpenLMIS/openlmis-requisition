@@ -15,17 +15,20 @@ import org.springframework.http.MediaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/stocks";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private StockRepository stockRepository;
@@ -107,6 +110,28 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldCreateNewStockIfDoesNotExists() {
+
+    Stock stock = stocks.get(4);
+    stockRepository.delete(stock);
+    stock.setStoredQuantity(1234L);
+
+    Stock response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(stock)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Stock.class);
+
+    assertTrue(response.getStoredQuantity().equals(1234L));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetAllStocks() {
 
     Stock[] response = restAssured.given()
@@ -139,6 +164,24 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(Stock.class);
 
     assertTrue(stockRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentStock() {
+
+    Stock stock = stocks.get(4);
+    stockRepository.delete(stock);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

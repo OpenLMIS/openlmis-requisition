@@ -46,6 +46,7 @@ public class StockController extends BaseController {
       // Ignore provided id
       stock.setId(null);
       Stock newStock = stockRepository.save(stock);
+      LOGGER.debug("Created new stock with id: " + stock.getId());
       return new ResponseEntity<Stock>(newStock, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -64,11 +65,7 @@ public class StockController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllStocks() {
     Iterable<Stock> stocks = stockRepository.findAll();
-    if (stocks == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(stocks, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(stocks, HttpStatus.OK);
   }
 
   /**
@@ -82,8 +79,9 @@ public class StockController extends BaseController {
   public ResponseEntity<?> updateStock(@RequestBody Stock stock,
                                        @PathVariable("id") UUID stockId) {
     try {
-      LOGGER.debug("Updating stock");
+      LOGGER.debug("Updating stock with id: " + stockId);
       Stock updatedStock = stockRepository.save(stock);
+      LOGGER.debug("Updated stock with id: " + stockId);
       return new ResponseEntity<Stock>(updatedStock, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

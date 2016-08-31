@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,6 +52,8 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/facilities";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -223,7 +226,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldUpdateFacility() {
 
-    facility.setDescription("OpenLMIS");
+    facility.setDescription(DESCRIPTION);
 
     Facility response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -236,7 +239,34 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
           .statusCode(200)
           .extract().as(Facility.class);
 
-    assertEquals(response.getDescription(), "OpenLMIS");
+    assertEquals(response.getDescription(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewFacilityIfDoesNotExists() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+    facilityRepository.delete(facility);
+    facility.setDescription(DESCRIPTION);
+
+    Facility response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(facility)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Facility.class);
+
+    assertEquals(response.getDescription(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -271,6 +301,29 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(Facility.class);
 
     assertTrue(facilityRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentFacility() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+    facilityRepository.delete(facility);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

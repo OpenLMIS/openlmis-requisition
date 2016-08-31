@@ -46,6 +46,7 @@ public class ProductCategoryController extends BaseController {
       // Ignore provided id
       productCategory.setId(null);
       ProductCategory newProductCategory = productCategoryRepository.save(productCategory);
+      LOGGER.debug("Creating new productCategory with id: " + productCategory.getId());
       return new ResponseEntity<ProductCategory>(newProductCategory, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -64,11 +65,7 @@ public class ProductCategoryController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllProductCategories() {
     Iterable<ProductCategory> productCategories = productCategoryRepository.findAll();
-    if (productCategories == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(productCategories, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(productCategories, HttpStatus.OK);
   }
 
   /**
@@ -82,8 +79,9 @@ public class ProductCategoryController extends BaseController {
   public ResponseEntity<?> updateProductCategory(@RequestBody ProductCategory productCategory,
                                        @PathVariable("id") UUID productCategoryId) {
     try {
-      LOGGER.debug("Updating new productCategory");
+      LOGGER.debug("Updating productCategory with id: " + productCategoryId);
       ProductCategory updatedProductCategory = productCategoryRepository.save(productCategory);
+      LOGGER.debug("Updated productCategory with id: " + productCategoryId);
       return new ResponseEntity<ProductCategory>(updatedProductCategory, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
@@ -24,6 +26,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private ProgramRepository programRepository;
@@ -118,6 +121,28 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
+  public void shouldCreateNewRequisitionTemplateIfDoesNotExists() {
+
+    requisitionTemplateRepository.delete(requisitionTemplate);
+    Program program = generateProgram();
+    requisitionTemplate.setProgram(program);
+
+    RequisitionTemplate response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(requisitionTemplate)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionTemplate.class);
+
+    assertEquals(response.getProgram().getId(), program.getId());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetAllRequisitionTemplates() {
 
     RequisitionTemplate[] response = restAssured.given()
@@ -148,6 +173,23 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           .extract().as(RequisitionTemplate.class);
 
     assertTrue(requisitionTemplateRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentRequisitionTemplate() {
+
+    requisitionTemplateRepository.delete(requisitionTemplate);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionTemplate.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

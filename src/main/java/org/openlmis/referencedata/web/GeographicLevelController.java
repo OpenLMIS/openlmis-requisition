@@ -39,6 +39,7 @@ public class GeographicLevelController extends BaseController {
       // Ignore provided id
       geographicLevel.setId(null);
       GeographicLevel newGeographicLevel = geographicLevelRepository.save(geographicLevel);
+      LOGGER.debug("Created new geographicLevel with id: " + geographicLevel.getId());
       return new ResponseEntity<GeographicLevel>(newGeographicLevel, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -57,11 +58,7 @@ public class GeographicLevelController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllGeographicLevel() {
     Iterable<GeographicLevel> geographicLevels = geographicLevelRepository.findAll();
-    if (geographicLevels == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(geographicLevels, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(geographicLevels, HttpStatus.OK);
   }
 
   /**
@@ -75,8 +72,9 @@ public class GeographicLevelController extends BaseController {
   public ResponseEntity<?> updateGeographicLevel(@RequestBody GeographicLevel geographicLevel,
                                             @PathVariable("id") UUID geographicLevelId) {
     try {
-      LOGGER.debug("Updating geographicLevel");
+      LOGGER.debug("Updating geographicLevel with id: " + geographicLevelId);
       GeographicLevel updatedGeographicLevel = geographicLevelRepository.save(geographicLevel);
+      LOGGER.debug("Updated geographicLevel with id: " + geographicLevelId);
       return new ResponseEntity<GeographicLevel>(updatedGeographicLevel, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

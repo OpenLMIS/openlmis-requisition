@@ -53,6 +53,7 @@ public class ProcessingScheduleController extends BaseController {
       // Ignore provided id
       schedule.setId(null);
       ProcessingSchedule newSchedule = scheduleRepository.save(schedule);
+      LOGGER.debug("Created new processingSchedule with id: " + schedule.getId());
       return new ResponseEntity<ProcessingSchedule>(newSchedule, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -74,8 +75,9 @@ public class ProcessingScheduleController extends BaseController {
   public ResponseEntity<?> updateProcessingSchedule(@RequestBody ProcessingSchedule schedule,
                                        @PathVariable("id") UUID scheduleId) {
     try {
-      LOGGER.debug("Updating processingSchedule");
+      LOGGER.debug("Updating processingSchedule with id: " + scheduleId);
       ProcessingSchedule updatedSchedule = scheduleRepository.save(schedule);
+      LOGGER.debug("Updated processingSchedule with id: " + scheduleId);
       return new ResponseEntity<ProcessingSchedule>(updatedSchedule, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -95,11 +97,7 @@ public class ProcessingScheduleController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllProcessingSchedules() {
     Iterable<ProcessingSchedule> schedules = scheduleRepository.findAll();
-    if (schedules == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(schedules, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(schedules, HttpStatus.OK);
   }
 
   /**

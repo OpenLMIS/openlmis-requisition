@@ -40,6 +40,7 @@ public class SupervisoryNodeController extends BaseController {
       // Ignore provided id
       supervisoryNode.setId(null);
       SupervisoryNode newSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
+      LOGGER.debug("Created new supervisoryNode with id: " + supervisoryNode.getId());
       return new ResponseEntity<SupervisoryNode>(newSupervisoryNode, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -58,11 +59,7 @@ public class SupervisoryNodeController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllSupervisoryNodes() {
     Iterable<SupervisoryNode> supervisoryNodes = supervisoryNodeRepository.findAll();
-    if (supervisoryNodes == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(supervisoryNodes, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(supervisoryNodes, HttpStatus.OK);
   }
 
   /**
@@ -92,8 +89,9 @@ public class SupervisoryNodeController extends BaseController {
   public ResponseEntity<?> updateSupervisoryNode(@RequestBody SupervisoryNode supervisoryNode,
                                        @PathVariable("id") UUID supervisoryNodeId) {
     try {
-      LOGGER.debug("Updating supervisoryNode");
+      LOGGER.debug("Updating supervisoryNode with id: " + supervisoryNodeId);
       SupervisoryNode updatedSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
+      LOGGER.debug("Updated supervisoryNode with id: " + supervisoryNodeId);
       return new ResponseEntity<SupervisoryNode>(updatedSupervisoryNode, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

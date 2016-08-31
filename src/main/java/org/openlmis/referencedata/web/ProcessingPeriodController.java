@@ -78,9 +78,12 @@ public class ProcessingPeriodController extends BaseController {
   public ResponseEntity<?> createProcessingPeriod(@RequestBody ProcessingPeriod period,
                                         BindingResult bindingResult) {
     LOGGER.debug("Creating new processingPeriod");
+    // Ignore provided id
+    period.setId(null);
     validator.validate(period, bindingResult);
     if (bindingResult.getErrorCount() == 0) {
       ProcessingPeriod newPeriod = periodRepository.save(period);
+      LOGGER.debug("Created new processingPeriod with id: " + newPeriod.getId());
       return new ResponseEntity<ProcessingPeriod>(newPeriod, HttpStatus.CREATED);
     } else {
       return new ResponseEntity(getPeriodErrors(bindingResult), HttpStatus.BAD_REQUEST);
@@ -106,11 +109,7 @@ public class ProcessingPeriodController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllProcessingPeriods() {
     Iterable<ProcessingPeriod> periods = periodRepository.findAll();
-    if (periods == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(periods, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(periods, HttpStatus.OK);
   }
 
   /**
@@ -124,8 +123,9 @@ public class ProcessingPeriodController extends BaseController {
   public ResponseEntity<?> updateProcessingPeriod(@RequestBody ProcessingPeriod period,
                                        @PathVariable("id") UUID periodId) {
     try {
-      LOGGER.debug("Updating processingPeriod");
+      LOGGER.debug("Updating processingPeriod with id: " + periodId);
       ProcessingPeriod updatedProcessingPeriod = periodRepository.save(period);
+      LOGGER.debug("Updated processingPeriod with id: " + periodId);
       return new ResponseEntity<ProcessingPeriod>(updatedProcessingPeriod, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

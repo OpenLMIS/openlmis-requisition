@@ -48,6 +48,7 @@ public class SupplyLineController extends BaseController {
       // Ignore provided id
       supplyLine.setId(null);
       SupplyLine newSupplyLine = supplyLineRepository.save(supplyLine);
+      LOGGER.debug("Created new supplyLine with id: " + supplyLine.getId());
       return new ResponseEntity<SupplyLine>(newSupplyLine, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -66,11 +67,7 @@ public class SupplyLineController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllSupplyLines() {
     Iterable<SupplyLine> supplyLines = supplyLineRepository.findAll();
-    if (supplyLines == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(supplyLines, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(supplyLines, HttpStatus.OK);
   }
 
   /**
@@ -84,8 +81,9 @@ public class SupplyLineController extends BaseController {
   public ResponseEntity<?> updateSupplyLine(@RequestBody SupplyLine supplyLine,
                                        @PathVariable("id") UUID supplyLineId) {
     try {
-      LOGGER.debug("Updating supplyLine");
+      LOGGER.debug("Updating supplyLine with id: " + supplyLineId);
       SupplyLine updatedSupplyLine = supplyLineRepository.save(supplyLine);
+      LOGGER.debug("Updated supplyLine with id: " + supplyLineId);
       return new ResponseEntity<SupplyLine>(updatedSupplyLine, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

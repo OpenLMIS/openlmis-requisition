@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,6 +25,8 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String CODE = "code";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private ProductCategoryRepository productCategoryRepository;
@@ -114,7 +117,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   public void shouldUpdateProductCategory() {
 
     ProductCategory productCategory = productCategories.get(4);
-    productCategory.setCode("OpenLMIS");
+    productCategory.setCode(DESCRIPTION);
 
     ProductCategory response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -127,7 +130,29 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
           .statusCode(200)
           .extract().as(ProductCategory.class);
 
-    assertEquals(response.getCode(), "OpenLMIS");
+    assertEquals(response.getCode(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewProductCategoryIfDoesNotExists() {
+
+    ProductCategory productCategory = productCategories.get(4);
+    productCategoryRepository.delete(productCategory);
+    productCategory.setCode(DESCRIPTION);
+
+    ProductCategory response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(productCategory)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProductCategory.class);
+
+    assertEquals(response.getCode(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -164,6 +189,24 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
           .extract().as(ProductCategory.class);
 
     assertTrue(productCategoryRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentProductCategory() {
+
+    ProductCategory productCategory = productCategories.get(4);
+    productCategoryRepository.delete(productCategory);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", productCategory.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

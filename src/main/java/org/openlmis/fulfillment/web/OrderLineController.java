@@ -40,6 +40,7 @@ public class OrderLineController extends BaseController {
       // Ignore provided id
       orderLine.setId(null);
       OrderLine newOrderLine = orderLineRepository.save(orderLine);
+      LOGGER.debug("Creating new orderLine with id: " + orderLine.getId());
       return new ResponseEntity<OrderLine>(newOrderLine, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -58,11 +59,7 @@ public class OrderLineController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllOrderLines() {
     Iterable<OrderLine> orderLines = orderLineRepository.findAll();
-    if (orderLines == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(orderLines, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(orderLines, HttpStatus.OK);
   }
 
   /**
@@ -76,8 +73,9 @@ public class OrderLineController extends BaseController {
   public ResponseEntity<?> updateOrderLine(@RequestBody OrderLine orderLine,
                                        @PathVariable("id") UUID orderLineId) {
     try {
-      LOGGER.debug("Updating orderLine");
+      LOGGER.debug("Updating orderLine with id: " + orderLineId);
       OrderLine updatedOrderLine = orderLineRepository.save(orderLine);
+      LOGGER.debug("Updated orderLine with id: " + orderLineId);
       return new ResponseEntity<OrderLine>(updatedOrderLine, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

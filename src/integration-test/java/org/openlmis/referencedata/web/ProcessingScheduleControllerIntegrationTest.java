@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -24,6 +25,8 @@ public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrat
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String DIFFERENCE_URL = RESOURCE_URL + "/{id}/difference";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private ProcessingScheduleRepository scheduleRepository;
@@ -105,7 +108,7 @@ public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrat
   @Test
   public void shouldUpdateSchedule() {
 
-    schedule.setDescription("OpenLMIS");
+    schedule.setDescription(DESCRIPTION);
 
     ProcessingSchedule response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -118,7 +121,29 @@ public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrat
           .statusCode(200)
           .extract().as(ProcessingSchedule.class);
 
-    assertEquals(response.getDescription(), "OpenLMIS");
+    assertEquals(response.getDescription(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewScheduleIfDoesNotExists() {
+
+    periodRepository.delete(period);
+    scheduleRepository.delete(schedule);
+    schedule.setDescription(DESCRIPTION);
+
+    ProcessingSchedule response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(schedule)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProcessingSchedule.class);
+
+    assertEquals(response.getDescription(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -153,6 +178,24 @@ public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrat
           .extract().as(ProcessingSchedule.class);
 
     assertTrue(scheduleRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentSchedule() {
+
+    periodRepository.delete(period);
+    scheduleRepository.delete(schedule);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", schedule.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

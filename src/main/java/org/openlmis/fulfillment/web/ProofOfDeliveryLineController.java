@@ -44,6 +44,7 @@ public class ProofOfDeliveryLineController extends BaseController {
       proofOfDeliveryLine.setId(null);
       ProofOfDeliveryLine newProofOfDeliveryLine
               = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+      LOGGER.debug("Created new proofOfDeliveryLine with id: " + proofOfDeliveryLine.getId());
       return new ResponseEntity<ProofOfDeliveryLine>(newProofOfDeliveryLine, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -63,11 +64,7 @@ public class ProofOfDeliveryLineController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllProofOfDeliveryLines() {
     Iterable<ProofOfDeliveryLine> proofOfDeliveryLines = proofOfDeliveryLineRepository.findAll();
-    if (proofOfDeliveryLines == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(proofOfDeliveryLines, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(proofOfDeliveryLines, HttpStatus.OK);
   }
 
   /**
@@ -82,9 +79,10 @@ public class ProofOfDeliveryLineController extends BaseController {
         @RequestBody ProofOfDeliveryLine proofOfDeliveryLine,
         @PathVariable("id") UUID proofOfDeliveryLineId) {
     try {
-      LOGGER.debug("Updating proofOfDeliveryLine");
+      LOGGER.debug("Updating proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
       ProofOfDeliveryLine updatedProofOfDeliveryLine
             = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+      LOGGER.debug("Updated proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
       return new ResponseEntity<ProofOfDeliveryLine>(updatedProofOfDeliveryLine, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

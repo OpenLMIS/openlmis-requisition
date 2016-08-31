@@ -39,6 +39,7 @@ public class GeographicZoneController extends BaseController {
       // Ignore provided id
       geographicZone.setId(null);
       GeographicZone newGeographicZone = geographicZoneRepository.save(geographicZone);
+      LOGGER.debug("Created new geographicZone with id: " + geographicZone.getId());
       return new ResponseEntity<GeographicZone>(newGeographicZone, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -57,11 +58,7 @@ public class GeographicZoneController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllGeographicZones() {
     Iterable<GeographicZone> geographicZones = geographicZoneRepository.findAll();
-    if (geographicZones == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(geographicZones, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(geographicZones, HttpStatus.OK);
   }
 
   /**
@@ -75,8 +72,9 @@ public class GeographicZoneController extends BaseController {
   public ResponseEntity<?> updateGeographicZone(@RequestBody GeographicZone geographicZone,
                                                  @PathVariable("id") UUID geographicZoneId) {
     try {
-      LOGGER.debug("Updating geographicZone");
+      LOGGER.debug("Updating geographicZone with id: " + geographicZoneId);
       GeographicZone updatedGeographicZone = geographicZoneRepository.save(geographicZone);
+      LOGGER.debug("Updated geographicZone with id: " + geographicZoneId);
       return new ResponseEntity<GeographicZone>(updatedGeographicZone, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

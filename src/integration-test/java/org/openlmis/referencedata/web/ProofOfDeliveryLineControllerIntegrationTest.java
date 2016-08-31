@@ -44,6 +44,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -56,6 +57,8 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   private static final String RESOURCE_URL = "/api/proofOfDeliveryLines";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String NOTES = "OpenLMIS";
 
   @Autowired
   private OrderRepository orderRepository;
@@ -284,6 +287,23 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
+  public void shouldNotGetNonexistentProofOfDeliveryLine() {
+
+    proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDeliveryLine.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateProofOfDeliveryLine() {
 
     proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
@@ -303,7 +323,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldUpdateProofOfDeliveryLine() {
 
-    proofOfDeliveryLine.setNotes("OpenLMIS");
+    proofOfDeliveryLine.setNotes(NOTES);
 
     ProofOfDeliveryLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -316,7 +336,28 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
           .statusCode(200)
           .extract().as(ProofOfDeliveryLine.class);
 
-    assertEquals(response.getNotes(), "OpenLMIS");
+    assertEquals(response.getNotes(), NOTES);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewProofOfDeliveryLineIfDoesNotExists() {
+
+    proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
+    proofOfDeliveryLine.setNotes(NOTES);
+
+    ProofOfDeliveryLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(proofOfDeliveryLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDeliveryLine.class);
+
+    assertEquals(response.getNotes(), NOTES);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

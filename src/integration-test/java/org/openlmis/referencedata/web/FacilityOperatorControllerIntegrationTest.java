@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +22,8 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
   private static final String ACCESS_TOKEN = "access_token";
   private static final String RESOURCE_URL = "/api/facilityOperators";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String NAME = "OpenLMIS";
 
   @Autowired
   private FacilityOperatorRepository facilityOperatorRepository;
@@ -55,7 +58,6 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-
   @Test
   public void shouldGetAllFacilityOperators() {
     FacilityOperator[] response = restAssured.given()
@@ -73,7 +75,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldUpdateFacilityOperator() {
-    facilityOperators.get(0).setName("NewNameUpdate");
+    facilityOperators.get(0).setName(NAME);
     FacilityOperator response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -85,10 +87,28 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
             .statusCode(200)
             .extract().as(FacilityOperator.class);
 
-    assertEquals(response.getName(), "NewNameUpdate");
+    assertEquals(response.getName(), NAME);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldCreateNewFacilityOperatorIfDoesNotExists() {
+    facilityOperatorRepository.delete(facilityOperators);
+    facilityOperators.get(0).setName(NAME);
+    FacilityOperator response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(facilityOperators.get(0))
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(FacilityOperator.class);
+
+    assertEquals(response.getName(), NAME);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 
   @Test
   public void shouldGetFacilityOperator() {
@@ -104,6 +124,23 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
             .extract().as(FacilityOperator.class);
 
     assertTrue(facilityOperatorRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentFacilityOperator() {
+
+    facilityOperatorRepository.delete(facilityOperators.get(0));
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facilityOperators.get(0).getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

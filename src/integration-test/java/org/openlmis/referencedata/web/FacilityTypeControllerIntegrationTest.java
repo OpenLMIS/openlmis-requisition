@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,6 +22,8 @@ public class FacilityTypeControllerIntegrationTest extends BaseWebIntegrationTes
   private static final String RESOURCE_URL = "/api/facilityTypes";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
@@ -69,7 +72,7 @@ public class FacilityTypeControllerIntegrationTest extends BaseWebIntegrationTes
   @Test
   public void shouldUpdateFacilityType() {
 
-    facilityType.setDescription("OpenLMIS");
+    facilityType.setDescription(DESCRIPTION);
 
     FacilityType response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -82,7 +85,28 @@ public class FacilityTypeControllerIntegrationTest extends BaseWebIntegrationTes
           .statusCode(200)
           .extract().as(FacilityType.class);
 
-    assertEquals(response.getDescription(), "OpenLMIS");
+    assertEquals(response.getDescription(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewFacilityTypeIfDoesNotExists() {
+
+    facilityTypeRepository.delete(facilityType);
+    facilityType.setDescription(DESCRIPTION);
+
+    FacilityType response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(facilityType)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(FacilityType.class);
+
+    assertEquals(response.getDescription(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -117,6 +141,23 @@ public class FacilityTypeControllerIntegrationTest extends BaseWebIntegrationTes
           .extract().as(FacilityType.class);
 
     assertTrue(facilityTypeRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentFacilityType() {
+
+    facilityTypeRepository.delete(facilityType);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facilityType.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

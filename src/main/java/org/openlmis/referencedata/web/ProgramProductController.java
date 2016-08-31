@@ -46,6 +46,7 @@ public class ProgramProductController extends BaseController {
       // Ignore provided id
       programProduct.setId(null);
       ProgramProduct newProgramProduct = programProductRepository.save(programProduct);
+      LOGGER.debug("Created new programProduct with id: " + programProduct.getId());
       return new ResponseEntity<ProgramProduct>(newProgramProduct, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -64,11 +65,7 @@ public class ProgramProductController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllProgramProducts() {
     Iterable<ProgramProduct> programProducts = programProductRepository.findAll();
-    if (programProducts == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(programProducts, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(programProducts, HttpStatus.OK);
   }
 
   /**
@@ -82,8 +79,9 @@ public class ProgramProductController extends BaseController {
   public ResponseEntity<?> updateProgramProduct(@RequestBody ProgramProduct programProduct,
                                                  @PathVariable("id") UUID programProductId) {
     try {
-      LOGGER.debug("Updating programProduct");
+      LOGGER.debug("Updating programProduct with id: " + programProductId);
       ProgramProduct updatedProgramProduct = programProductRepository.save(programProduct);
+      LOGGER.debug("Updated programProduct with id: " + programProductId);
       return new ResponseEntity<ProgramProduct>(updatedProgramProduct, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

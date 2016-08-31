@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,6 +24,8 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   private static final String RESOURCE_URL = "/api/geographicZones";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String CODE = "OpenLMIS";
 
   @Autowired
   private GeographicLevelRepository geographicLevelRepository;
@@ -79,7 +82,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   @Test
   public void shouldUpdateGeographicZone() {
 
-    geoZone.setCode("OpenLMIS");
+    geoZone.setCode(CODE);
 
     GeographicZone response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -92,7 +95,28 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
           .statusCode(200)
           .extract().as(GeographicZone.class);
 
-    assertEquals(response.getCode(), "OpenLMIS");
+    assertEquals(response.getCode(), CODE);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewGeographicZoneIfDoesNotExists() {
+
+    geographicZoneRepository.delete(geoZone);
+    geoZone.setCode(CODE);
+
+    GeographicZone response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(geoZone)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(GeographicZone.class);
+
+    assertEquals(response.getCode(), CODE);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -127,6 +151,23 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
           .extract().as(GeographicZone.class);
 
     assertTrue(geographicZoneRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentGeographicZone() {
+
+    geographicZoneRepository.delete(geoZone);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", geoZone.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

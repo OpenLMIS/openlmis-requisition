@@ -56,6 +56,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -71,6 +72,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private TemplateService templateService;
@@ -313,6 +315,26 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldCreateNewProofOfDeliveryIfDoesNotExists() {
+
+    proofOfDelivery.setTotalReceivedPacks(2);
+
+    ProofOfDelivery response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(proofOfDelivery)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDelivery.class);
+
+    assertTrue(response.getTotalReceivedPacks().equals(2));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetAllProofOfDeliveries() {
 
     ProofOfDelivery[] response = restAssured.given()
@@ -343,6 +365,23 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
           .extract().as(ProofOfDelivery.class);
 
     assertTrue(proofOfDeliveryRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentProofOfDelivery() {
+
+    proofOfDeliveryRepository.delete(proofOfDelivery);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDelivery.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

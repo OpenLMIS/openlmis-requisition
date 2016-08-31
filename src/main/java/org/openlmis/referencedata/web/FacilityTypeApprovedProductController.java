@@ -41,6 +41,8 @@ public class FacilityTypeApprovedProductController extends BaseController {
       // Ignore provided id
       facilityTypeApprovedProduct.setId(null);
       FacilityTypeApprovedProduct newFacility = repository.save(facilityTypeApprovedProduct);
+      LOGGER.debug("Created new facilityTypeApprovedProduct with id: "
+            + facilityTypeApprovedProduct.getId());
       return new ResponseEntity<FacilityTypeApprovedProduct>(newFacility, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -60,11 +62,7 @@ public class FacilityTypeApprovedProductController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllFacilityTypeApprovedProducts() {
     Iterable<FacilityTypeApprovedProduct> facilityTypeApprovedProducts = repository.findAll();
-    if (facilityTypeApprovedProducts == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(facilityTypeApprovedProducts, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(facilityTypeApprovedProducts, HttpStatus.OK);
   }
 
   /**
@@ -80,8 +78,11 @@ public class FacilityTypeApprovedProductController extends BaseController {
         @RequestBody FacilityTypeApprovedProduct facilityTypeApprovedProduct,
         @PathVariable("id") UUID facilityTypeApprovedProductId) {
     try {
-      LOGGER.debug("Updating facilityTypeApprovedProduct");
+      LOGGER.debug("Updating facilityTypeApprovedProduct with id: "
+            + facilityTypeApprovedProductId);
       FacilityTypeApprovedProduct updatedFacility = repository.save(facilityTypeApprovedProduct);
+      LOGGER.debug("Updated facilityTypeApprovedProduct with id: "
+            + facilityTypeApprovedProductId);
       return new ResponseEntity<FacilityTypeApprovedProduct>(updatedFacility, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

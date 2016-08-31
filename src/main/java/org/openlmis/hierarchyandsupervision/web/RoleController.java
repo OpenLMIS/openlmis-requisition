@@ -40,6 +40,7 @@ public class RoleController extends BaseController {
       // Ignore provided id
       role.setId(null);
       Role newRole = roleRepository.save(role);
+      LOGGER.debug("Created new role with id: " + role.getId());
       return new ResponseEntity<Role>(newRole, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -58,11 +59,7 @@ public class RoleController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRoles() {
     Iterable<Role> roles = roleRepository.findAll();
-    if (roles == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(roles, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(roles, HttpStatus.OK);
   }
 
   /**
@@ -76,8 +73,9 @@ public class RoleController extends BaseController {
   public ResponseEntity<?> updateRole(@RequestBody Role role,
                                             @PathVariable("id") UUID roleId) {
     try {
-      LOGGER.debug("Updating new role");
+      LOGGER.debug("Updating role with id: " + roleId);
       Role updatedRole = roleRepository.save(role);
+      LOGGER.debug("Updated role with id: " + roleId);
       return new ResponseEntity<Role>(updatedRole, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

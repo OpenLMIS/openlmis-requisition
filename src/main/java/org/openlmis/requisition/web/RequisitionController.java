@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -142,8 +141,9 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
                                        @PathVariable("id") UUID requisitionId) {
     try {
-      LOGGER.debug("Updating requisition");
+      LOGGER.debug("Updating requisition with id: " + requisitionId);
       Requisition requisitionToUpdate = requisitionRepository.save(requisition);
+      LOGGER.debug("Updated requisition with id: " + requisitionId);
       return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -162,11 +162,7 @@ public class RequisitionController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRequisitions() {
     Iterable<Requisition> requisitions = requisitionRepository.findAll();
-    if (requisitions == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(requisitions, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
   /**
@@ -282,17 +278,18 @@ public class RequisitionController extends BaseController {
                                                     OAuth2Authentication auth) {
     Comment requisitionComment = commentRepository.findOne(commentId);
     try {
-      LOGGER.debug("Updating comment");
+      LOGGER.debug("Updating comment with id: " + commentId);
       comment.setRequisition(requisitionComment.getRequisition());
 
       User user = (User) auth.getPrincipal();
       comment.setAuthor(user);
 
       Comment updatedComment = commentRepository.save(comment);
+      LOGGER.debug("Updated comment with id: " + commentId);
       MappingJacksonValue value = new MappingJacksonValue(updatedComment);
       value.setSerializationView(View.BasicInformation.class);
       return new ResponseEntity<>(value, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating comment", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);

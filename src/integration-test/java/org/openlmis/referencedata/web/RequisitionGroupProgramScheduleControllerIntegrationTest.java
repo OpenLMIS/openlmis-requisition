@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -24,6 +25,7 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   private static final String RESOURCE_URL = "/api/requisitionGroupProgramSchedules";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private RequisitionGroupProgramScheduleRepository repository;
@@ -124,6 +126,23 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
   }
 
   @Test
+  public void shouldNotGetNonexistentRequisitionGroupProgramSchedule() {
+
+    repository.delete(reqGroupProgSchedule);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", reqGroupProgSchedule.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldUpdateRequisitionGroupProgramSchedule() {
 
     reqGroupProgSchedule.setDirectDelivery(true);
@@ -132,6 +151,27 @@ public class RequisitionGroupProgramScheduleControllerIntegrationTest
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", reqGroupProgSchedule.getId())
+          .body(reqGroupProgSchedule)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(RequisitionGroupProgramSchedule.class);
+
+    assertTrue(response.isDirectDelivery());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewRequisitionGroupProgramScheduleIfDoesNotExists() {
+
+    repository.delete(reqGroupProgSchedule);
+    reqGroupProgSchedule.setDirectDelivery(true);
+
+    RequisitionGroupProgramSchedule response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
           .body(reqGroupProgSchedule)
           .when()
           .put(ID_URL)

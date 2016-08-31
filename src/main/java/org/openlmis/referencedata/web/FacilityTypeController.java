@@ -39,6 +39,7 @@ public class FacilityTypeController extends BaseController {
       // Ignore provided id
       facilityType.setId(null);
       FacilityType newFacilityType = facilityTypeRepository.save(facilityType);
+      LOGGER.debug("Created new facilityType with id: " + facilityType.getId());
       return new ResponseEntity<FacilityType>(newFacilityType, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -57,11 +58,7 @@ public class FacilityTypeController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllFacilityTypes() {
     Iterable<FacilityType> facilityTypes = facilityTypeRepository.findAll();
-    if (facilityTypes == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(facilityTypes, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(facilityTypes, HttpStatus.OK);
   }
 
   /**
@@ -75,8 +72,9 @@ public class FacilityTypeController extends BaseController {
   public ResponseEntity<?> updateFacilityType(@RequestBody FacilityType facilityType,
                                             @PathVariable("id") UUID facilityTypeId) {
     try {
-      LOGGER.debug("Updating facility");
+      LOGGER.debug("Updating facility with id: " + facilityTypeId);
       FacilityType updatedFacilityType = facilityTypeRepository.save(facilityType);
+      LOGGER.debug("Updated facility with id: " + facilityTypeId);
       return new ResponseEntity<FacilityType>(updatedFacilityType, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

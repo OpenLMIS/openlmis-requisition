@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,6 +52,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/orderLines";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -251,6 +253,27 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldCreateNewOrderLineIfDoesNotExists() {
+
+    orderLineRepository.delete(orderLine);
+    orderLine.setOrderedQuantity(100L);
+
+    OrderLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(orderLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(OrderLine.class);
+
+    assertTrue(response.getOrderedQuantity().equals(100L));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetChosenOrderLine() {
 
     OrderLine response = restAssured.given()
@@ -264,6 +287,23 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(OrderLine.class);
 
     assertTrue(orderLineRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentOrderLine() {
+
+    orderLineRepository.delete(orderLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", orderLine.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

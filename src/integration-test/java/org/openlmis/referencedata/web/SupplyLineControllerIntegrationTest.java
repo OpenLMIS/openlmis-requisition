@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,6 +35,8 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String DESCRIPTION = "OpenLMIS";
 
   @Autowired
   private SupplyLineRepository supplyLineRepository;
@@ -128,7 +131,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   @Test
   public void shouldUpdateSupplyLine() {
 
-    supplyLine.setDescription("OpenLMIS");
+    supplyLine.setDescription(DESCRIPTION);
 
     SupplyLine response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -141,7 +144,28 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
           .statusCode(200)
           .extract().as(SupplyLine.class);
 
-    assertEquals(response.getDescription(), "OpenLMIS");
+    assertEquals(response.getDescription(), DESCRIPTION);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewSupplyLineIfDoesNotExists() {
+
+    supplyLineRepository.delete(supplyLine);
+    supplyLine.setDescription(DESCRIPTION);
+
+    SupplyLine response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(supplyLine)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(SupplyLine.class);
+
+    assertEquals(response.getDescription(), DESCRIPTION);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -176,6 +200,23 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
           .extract().as(SupplyLine.class);
 
     assertTrue(supplyLineRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentSupplyLine() {
+
+    supplyLineRepository.delete(supplyLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", supplyLine.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

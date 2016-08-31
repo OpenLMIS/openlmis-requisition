@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,6 +33,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
   private static final String FULL_SUPPLY = "fullSupply";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private ProgramProductRepository programProductRepository;
@@ -140,6 +142,28 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
+  public void shouldCreateNewProgramProductIfDoesNotExists() {
+
+    ProgramProduct programProduct = programProducts.get(4);
+    programProductRepository.delete(programProduct);
+    programProduct.setDosesPerMonth(4);
+
+    ProgramProduct response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(programProduct)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProgramProduct.class);
+
+    assertTrue(response.getDosesPerMonth().equals(4));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetAllProgramProducts() {
 
     ProgramProduct[] response = restAssured.given()
@@ -172,6 +196,24 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
           .extract().as(ProgramProduct.class);
 
     assertTrue(programProductRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentProgramProduct() {
+
+    ProgramProduct programProduct = programProducts.get(4);
+    programProductRepository.delete(programProduct);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", programProduct.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

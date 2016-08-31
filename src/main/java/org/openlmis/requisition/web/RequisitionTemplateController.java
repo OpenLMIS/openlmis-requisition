@@ -50,6 +50,7 @@ public class RequisitionTemplateController extends BaseController {
       requisitionTemplate.setId(null);
       RequisitionTemplate newRequisitionTemplate =
             requisitionTemplateRepository.save(requisitionTemplate);
+      LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
       return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -69,11 +70,7 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRequisitionTemplates() {
     Iterable<RequisitionTemplate> requisitionTemplates = requisitionTemplateRepository.findAll();
-    if (requisitionTemplates == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(requisitionTemplates, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(requisitionTemplates, HttpStatus.OK);
   }
 
   /**
@@ -88,9 +85,10 @@ public class RequisitionTemplateController extends BaseController {
         @RequestBody RequisitionTemplate requisitionTemplate,
         @PathVariable("id") UUID requisitionTemplateId) {
     try {
-      LOGGER.debug("Updating requisitionTemplate");
+      LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
       RequisitionTemplate updatedRequisitionTemplate =
             requisitionTemplateRepository.save(requisitionTemplate);
+      LOGGER.debug("Updated requisitionTemplate with id: " + requisitionTemplateId);
       return new ResponseEntity<RequisitionTemplate>(updatedRequisitionTemplate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

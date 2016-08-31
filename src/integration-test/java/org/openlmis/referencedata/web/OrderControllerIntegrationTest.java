@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,6 +62,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String PROGRAM = "program";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String NUMBER = "10.90";
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -554,7 +557,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldUpdateOrder() {
 
-    firstOrder.setQuotedCost(new BigDecimal("10.90"));
+    firstOrder.setQuotedCost(new BigDecimal(NUMBER));
 
     Order response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -567,7 +570,28 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           .statusCode(200)
           .extract().as(Order.class);
 
-    assertEquals(response.getQuotedCost(), new BigDecimal("10.90"));
+    assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewOrderIfDoesNotExists() {
+
+    orderRepository.delete(firstOrder);
+    firstOrder.setQuotedCost(new BigDecimal(NUMBER));
+
+    Order response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(firstOrder)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Order.class);
+
+    assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -602,6 +626,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           .extract().as(Order.class);
 
     assertTrue(orderRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentOrder() {
+
+    orderRepository.delete(firstOrder);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

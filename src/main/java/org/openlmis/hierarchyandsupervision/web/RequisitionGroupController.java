@@ -40,6 +40,7 @@ public class RequisitionGroupController extends BaseController {
       // Ignore provided id
       requisitionGroup.setId(null);
       RequisitionGroup newRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
+      LOGGER.debug("Created new requisitionGroup with id: " + requisitionGroup.getId());
       return new ResponseEntity<RequisitionGroup>(newRequisitionGroup, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -59,11 +60,7 @@ public class RequisitionGroupController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRequisitionGroup() {
     Iterable<RequisitionGroup> requisitionGroups = requisitionGroupRepository.findAll();
-    if (requisitionGroups == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(requisitionGroups, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(requisitionGroups, HttpStatus.OK);
   }
 
   /**
@@ -93,8 +90,9 @@ public class RequisitionGroupController extends BaseController {
   public ResponseEntity<?> updateRequisitionGroup(@RequestBody RequisitionGroup requisitionGroup,
                                                  @PathVariable("id") UUID requisitionGroupId) {
     try {
-      LOGGER.debug("Updating requisitionGroup");
+      LOGGER.debug("Updating requisitionGroup with id: " + requisitionGroupId);
       RequisitionGroup updatedRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
+      LOGGER.debug("Updated requisitionGroup with id: " + requisitionGroupId);
       return new ResponseEntity<RequisitionGroup>(updatedRequisitionGroup, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

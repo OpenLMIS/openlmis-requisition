@@ -49,6 +49,7 @@ public class RequisitionLineController extends BaseController {
       // Ignore provided id
       requisitionLine.setId(null);
       RequisitionLine newRequisitionLine = requisitionLineRepository.save(requisitionLine);
+      LOGGER.debug("Created new requisitionLine with id: " + requisitionLine.getId());
       return new ResponseEntity<RequisitionLine>(newRequisitionLine, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
@@ -67,11 +68,7 @@ public class RequisitionLineController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRequisitionLines() {
     Iterable<RequisitionLine> requisitionLines = requisitionLineRepository.findAll();
-    if (requisitionLines == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(requisitionLines, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(requisitionLines, HttpStatus.OK);
   }
 
   /**
@@ -85,7 +82,7 @@ public class RequisitionLineController extends BaseController {
   public ResponseEntity<?> updateRequisitionLines(@RequestBody RequisitionLine requisitionLine,
                                        @PathVariable("id") UUID requisitionLineId) {
     try {
-      LOGGER.debug("Updating requisitionLine");
+      LOGGER.debug("Updating requisitionLine with id: " + requisitionLineId);
       RequisitionLine requisitionLineToUpdate =
             requisitionLineRepository.findOne(requisitionLineId);
       if (requisitionLine.getRequisition().getStatus() == RequisitionStatus.INITIATED
@@ -97,6 +94,7 @@ public class RequisitionLineController extends BaseController {
         requisitionLineToUpdate.setRemarks(requisitionLine.getRemarks());
         requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
       }
+      LOGGER.debug("Updated requisitionLine with id: " + requisitionLineId);
       return new ResponseEntity<RequisitionLine>(requisitionLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =

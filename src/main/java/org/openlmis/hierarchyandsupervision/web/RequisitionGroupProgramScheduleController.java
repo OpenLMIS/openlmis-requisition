@@ -42,6 +42,7 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
       // Ignore provided id
       requisition.setId(null);
       RequisitionGroupProgramSchedule newRequisition = repository.save(requisition);
+      LOGGER.debug("Created new requisitionGPS with id: " + requisition.getId());
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             newRequisition, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
@@ -62,11 +63,7 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getAllRequisitionGroupProgramSchedule() {
     Iterable<RequisitionGroupProgramSchedule> requisitions = repository.findAll();
-    if (requisitions == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(requisitions, HttpStatus.OK);
-    }
+    return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
   /**
@@ -100,8 +97,9 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
         @RequestBody RequisitionGroupProgramSchedule reqGroupProgSchedule,
         @PathVariable("id") UUID requisitionId) {
     try {
-      LOGGER.debug("Updating requisitionGPS");
+      LOGGER.debug("Updating requisitionGPS with id: " + reqGroupProgSchedule.getId());
       RequisitionGroupProgramSchedule newRequisition = repository.save(reqGroupProgSchedule);
+      LOGGER.debug("Updated requisitionGPS with id: " + reqGroupProgSchedule.getId());
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             newRequisition, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
