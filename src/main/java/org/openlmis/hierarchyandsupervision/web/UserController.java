@@ -1,6 +1,7 @@
 package org.openlmis.hierarchyandsupervision.web;
 
 import org.openlmis.hierarchyandsupervision.domain.User;
+import org.openlmis.hierarchyandsupervision.exception.ExternalApiException;
 import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.service.UserService;
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
@@ -28,13 +29,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestClientException;
 
-import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.validation.Valid;
 
 @Controller
 public class UserController extends BaseController {
@@ -72,11 +73,11 @@ public class UserController extends BaseController {
       userService.save(user, token);
 
       return new ResponseEntity<>(user, HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (ExternalApiException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while saving user", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -99,11 +100,11 @@ public class UserController extends BaseController {
       userService.passwordReset(passwordResetRequest, token);
 
       return new ResponseEntity<>(HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (ExternalApiException ex) {
       ErrorResponse errorResponse =
           new ErrorResponse("Could not reset user password", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -125,11 +126,11 @@ public class UserController extends BaseController {
       userService.changePassword(passwordChangeRequest, token);
 
       return new ResponseEntity(HttpStatus.OK);
-    } catch (RestClientException ex) {
+    } catch (ExternalApiException ex) {
       ErrorResponse errorResponse =
           new ErrorResponse("Could not reset user password", ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

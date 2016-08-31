@@ -1,21 +1,22 @@
 package org.openlmis.requisition.service;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RequisitionTemplateServiceTest {
 
   @Mock
@@ -24,47 +25,19 @@ public class RequisitionTemplateServiceTest {
   @InjectMocks
   private RequisitionTemplateService requisitionTemplateService;
 
-  private RequisitionTemplate requisitionTemplate;
-  private Integer currentInstanceNumber;
-
-  @Before
-  public void setUp() {
-    currentInstanceNumber = 0;
-    requisitionTemplate = generateRequisitionTemplate();
-    initMocks(this);
-  }
-
   @Test
   public void shouldFindRequisitionTemplateIfItExists() {
+    Program program = mock(Program.class);
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+
     when(requisitionTemplateRepository
-            .searchRequisitionTemplates(requisitionTemplate.getProgram()))
+            .searchRequisitionTemplates(program))
             .thenReturn(Arrays.asList(requisitionTemplate));
-    List<RequisitionTemplate> receivedRequisitionTemplates
-            = requisitionTemplateService
-            .searchRequisitionTemplates(requisitionTemplate.getProgram());
-    assertEquals(1,receivedRequisitionTemplates.size());
 
-    assertEquals(
-            requisitionTemplate.getProgram().getId(),
-            receivedRequisitionTemplates.get(0).getProgram().getId());
-  }
+    List<RequisitionTemplate> receivedRequisitionTemplates =
+            requisitionTemplateService.searchRequisitionTemplates(program);
 
-  private RequisitionTemplate generateRequisitionTemplate() {
-    requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(generateProgram());
-    return requisitionTemplate;
-  }
-
-  private Program generateProgram() {
-    Program program = new Program();
-    program.setId(UUID.randomUUID());
-    program.setCode("code" + generateInstanceNumber());
-    program.setPeriodsSkippable(false);
-    return program;
-  }
-
-  private Integer generateInstanceNumber() {
-    currentInstanceNumber += 1;
-    return currentInstanceNumber;
+    assertEquals(1, receivedRequisitionTemplates.size());
+    assertEquals(requisitionTemplate, receivedRequisitionTemplates.get(0));
   }
 }

@@ -28,7 +28,6 @@ public class CsvGeneratorTest {
   private Program program = new Program();
   private User user = new User();
 
-  /**Set up test.*/
   @Before
   public void setUp() {
     FacilityType facilityType = new FacilityType();

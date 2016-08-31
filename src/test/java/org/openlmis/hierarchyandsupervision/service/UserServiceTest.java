@@ -12,7 +12,6 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
@@ -30,16 +29,12 @@ import org.openlmis.hierarchyandsupervision.utils.NotificationRequest;
 import org.openlmis.hierarchyandsupervision.utils.PasswordChangeRequest;
 import org.openlmis.hierarchyandsupervision.utils.PasswordResetRequest;
 import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.FacilityType;
-import org.openlmis.referencedata.domain.GeographicLevel;
-import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.i18n.ExposedMessageSource;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -62,63 +57,34 @@ public class UserServiceTest {
   @InjectMocks
   private UserService userService;
 
-  private Integer currentInstanceNumber;
-  private List<User> users;
+  private User user;
 
   @Before
   public void setUp() {
-    users = new ArrayList<>();
-    currentInstanceNumber = 0;
-    userService = new UserService();
-    generateInstances();
-    initMocks(this);
+    user = generateUser();
   }
 
   @Test
   public void shouldFindUsersIfMatchedRequiredFields() {
     when(userRepository
             .searchUsers(
-                    users.get(0).getUsername(),
-                    users.get(0).getFirstName(),
-                    users.get(0).getLastName(),
-                    users.get(0).getHomeFacility(),
-                    users.get(0).getActive(),
-                    users.get(0).getVerified()))
-            .thenReturn(Arrays.asList(users.get(0)));
+                    user.getUsername(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getHomeFacility(),
+                    user.getActive(),
+                    user.getVerified()))
+            .thenReturn(Arrays.asList(user));
 
-    List<User> receivedUsers = userService.searchUsers(
-            users.get(0).getUsername(),
-            users.get(0).getFirstName(),
-            users.get(0).getLastName(),
-            users.get(0).getHomeFacility(),
-            users.get(0).getActive(),
-            users.get(0).getVerified());
+    List<User> receivedUsers = userService.searchUsers(user.getUsername(), user.getFirstName(),
+        user.getLastName(), user.getHomeFacility(), user.getActive(), user.getVerified());
 
-    assertEquals(1,receivedUsers.size());
-    assertEquals(
-            receivedUsers.get(0).getUsername(),
-            users.get(0).getUsername());
-    assertEquals(
-            receivedUsers.get(0).getFirstName(),
-            users.get(0).getFirstName());
-    assertEquals(
-            receivedUsers.get(0).getLastName(),
-            users.get(0).getLastName());
-    assertEquals(
-            receivedUsers.get(0).getHomeFacility().getId(),
-            users.get(0).getHomeFacility().getId());
-    assertEquals(
-            receivedUsers.get(0).getHomeFacility().getActive(),
-            users.get(0).getActive());
-    assertEquals(
-            receivedUsers.get(0).getVerified(),
-            users.get(0).getVerified());
+    assertEquals(1, receivedUsers.size());
+    assertEquals(user, receivedUsers.get(0));
   }
 
   @Test
   public void shouldSaveRequisitionAndAuthUsers() throws Exception {
-    User user = users.get(0);
-
     when(userRepository.save(user)).thenReturn(user);
 
     RestTemplate restTemplate = mock(RestTemplate.class);
@@ -143,7 +109,6 @@ public class UserServiceTest {
 
   @Test
   public void shouldSendResetPasswordEmailWhenNewUserIsCreated() throws Exception {
-    User user = users.get(0);
     user.setId(null);
     UUID resetPasswordTokenId = UUID.randomUUID();
     String mailSubject = "subject";
@@ -178,8 +143,6 @@ public class UserServiceTest {
 
   @Test
   public void shouldNotSendResetPasswordEmailWhenUserIsUpdated() throws Exception {
-    User user = users.get(0);
-
     when(userRepository.save(user)).thenReturn(user);
 
     RestTemplate restTemplate = mock(RestTemplate.class);
@@ -201,8 +164,6 @@ public class UserServiceTest {
 
   @Test
   public void shouldResetPasswordAndVerifyUser() throws Exception {
-    User user = users.get(0);
-
     PasswordResetRequest passwordResetRequest = new PasswordResetRequest("username", "newPassword");
 
     when(userRepository.findOneByUsername(passwordResetRequest.getUsername())).thenReturn(user);
@@ -224,8 +185,6 @@ public class UserServiceTest {
 
   @Test
   public void shouldChangePasswordAndVerifyUser() throws Exception {
-    User user = users.get(0);
-
     PasswordChangeRequest passwordResetRequest = new PasswordChangeRequest(UUID.randomUUID(),
         "username", "newPassword");
 
@@ -246,65 +205,17 @@ public class UserServiceTest {
         refEq(passwordResetRequest), eq(String.class));
   }
 
-  private void generateInstances() {
-    for (int instancesCount = 0; instancesCount < 5; instancesCount++) {
-      users.add(generateUser());
-    }
-  }
-
   private User generateUser() {
     User user = new User();
-    Integer instanceNumber = generateInstanceNumber();
     user.setId(UUID.randomUUID());
-    user.setFirstName("Ala" + instanceNumber);
-    user.setLastName("ma" + instanceNumber);
-    user.setUsername("kota" + instanceNumber);
-    user.setEmail(instanceNumber + "@mail.com");
+    user.setFirstName("Ala");
+    user.setLastName("ma");
+    user.setUsername("kota");
+    user.setEmail("test@mail.com");
     user.setTimezone("UTC");
-    user.setHomeFacility(generateFacility());
+    user.setHomeFacility(mock(Facility.class));
     user.setVerified(false);
     user.setActive(true);
     return user;
-  }
-
-  private Facility generateFacility() {
-    Integer instanceNumber = + generateInstanceNumber();
-    GeographicLevel geographicLevel = generateGeographicLevel();
-    GeographicZone geographicZone = generateGeographicZone(geographicLevel);
-    FacilityType facilityType = generateFacilityType();
-    Facility facility = new Facility();
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
-    facility.setCode("FacilityCode" + instanceNumber);
-    facility.setName("FacilityName" + instanceNumber);
-    facility.setDescription("FacilityDescription" + instanceNumber);
-    facility.setActive(true);
-    facility.setEnabled(true);
-    return facility;
-  }
-
-  private GeographicLevel generateGeographicLevel() {
-    GeographicLevel geographicLevel = new GeographicLevel();
-    geographicLevel.setCode("GeographicLevel" + generateInstanceNumber());
-    geographicLevel.setLevelNumber(1);
-    return geographicLevel;
-  }
-
-  private GeographicZone generateGeographicZone(GeographicLevel geographicLevel) {
-    GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("GeographicZone" + generateInstanceNumber());
-    geographicZone.setLevel(geographicLevel);
-    return geographicZone;
-  }
-
-  private FacilityType generateFacilityType() {
-    FacilityType facilityType = new FacilityType();
-    facilityType.setCode("FacilityType" + generateInstanceNumber());
-    return facilityType;
-  }
-
-  private Integer generateInstanceNumber() {
-    currentInstanceNumber += 1;
-    return currentInstanceNumber;
   }
 }

@@ -1,6 +1,5 @@
 package org.openlmis.referencedata.service;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -11,6 +10,9 @@ import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,7 +30,7 @@ public class ConfigurationSettingServiceTest {
   public void shouldGetSettingValue() throws ConfigurationSettingException {
     when(repository.findOne(TEST_STRING)).thenReturn(
             new ConfigurationSetting(TEST_STRING, "testValue"));
-    Assert.assertEquals("testValue", service.getStringValue(TEST_STRING));
+    assertEquals("testValue", service.getStringValue(TEST_STRING));
   }
 
   @Test(expected = ConfigurationSettingException.class)
@@ -38,20 +40,20 @@ public class ConfigurationSettingServiceTest {
 
   @Test
   public void shouldReturnFalseForEmptyBooleanVal() throws ConfigurationSettingException {
-    Assert.assertFalse(service.getBoolValue("testEmpty"));
+    assertFalse(service.getBoolValue("testEmpty"));
   }
 
   @Test
   public void shouldReturnTrueBooleanValue() {
     when(repository.findOne("testTrue")).thenReturn(
             new ConfigurationSetting(TEST_STRING, "true"));
-    Assert.assertTrue(service.getBoolValue("testTrue"));
+    assertTrue(service.getBoolValue("testTrue"));
   }
 
   @Test
   public void shouldReturnFalseBooleanValue() {
     when(repository.findOne(TEST_STRING)).thenReturn(
             new ConfigurationSetting(TEST_STRING, "false"));
-    Assert.assertFalse(service.getBoolValue("testTrue"));
+    assertFalse(service.getBoolValue("testTrue"));
   }
 }
