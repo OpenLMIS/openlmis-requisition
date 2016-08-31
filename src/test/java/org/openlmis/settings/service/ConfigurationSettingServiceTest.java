@@ -2,16 +2,18 @@ package org.openlmis.settings.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ConfigurationSettingServiceTest {
 
   @Mock
@@ -25,7 +27,6 @@ public class ConfigurationSettingServiceTest {
   @Before
   public void setUp() {
     generateInstances();
-    initMocks(this);
     mockRepositories();
   }
 
@@ -78,5 +79,4 @@ public class ConfigurationSettingServiceTest {
             .findOne(configurationSetting.getKey()))
             .thenReturn(configurationSetting);
   }
-
 }
