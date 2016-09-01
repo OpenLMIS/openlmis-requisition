@@ -29,6 +29,7 @@ public class FacilityOperatorController extends BaseController {
 
   /**
    * Allows creating new facilityOperators.
+   * If the id is specified, it will be ignored.
    *
    * @param facilityOperator A facilityOperator bound to the request body.
    * @return ResponseEntity containing the created facilityOperator.
@@ -37,7 +38,6 @@ public class FacilityOperatorController extends BaseController {
   public ResponseEntity<?> createFacilityOperator(@RequestBody FacilityOperator facilityOperator) {
     try {
       LOGGER.debug("Creating new facility operator");
-      // Ignore provided id
       facilityOperator.setId(null);
       FacilityOperator newFacilityOperator = facilityOperatorRepository.save(facilityOperator);
       LOGGER.debug("Created new facility operator with id: " + facilityOperator.getId());
@@ -58,7 +58,7 @@ public class FacilityOperatorController extends BaseController {
    */
   @RequestMapping(value = "/facilityOperators", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<?> getAllfacilityOperators() {
+  public ResponseEntity<?> getAllFacilityOperators() {
     Iterable<FacilityOperator> facilityOperators = facilityOperatorRepository.findAll();
     return new ResponseEntity<>(facilityOperators, HttpStatus.OK);
   }
@@ -75,9 +75,19 @@ public class FacilityOperatorController extends BaseController {
                                        @PathVariable("id") UUID facilityOperatorId) {
     try {
       LOGGER.debug("Updating facility operator with id: " + facilityOperatorId);
-      FacilityOperator updatedFacilityOperator = facilityOperatorRepository.save(facilityOperator);
+
+      FacilityOperator facilityOperatorToUpdate =
+            facilityOperatorRepository.findOne(facilityOperatorId);
+
+      if (facilityOperatorToUpdate == null) {
+        facilityOperatorToUpdate = new FacilityOperator();
+      }
+
+      facilityOperatorToUpdate.updateFrom(facilityOperator);
+      facilityOperatorToUpdate = facilityOperatorRepository.save(facilityOperatorToUpdate);
+
       LOGGER.debug("Updated facility operator with id: " + facilityOperatorId);
-      return new ResponseEntity<FacilityOperator>(updatedFacilityOperator, HttpStatus.OK);
+      return new ResponseEntity<FacilityOperator>(facilityOperatorToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facilityOperator",
@@ -94,7 +104,7 @@ public class FacilityOperatorController extends BaseController {
    * @return facilityOperator.
    */
   @RequestMapping(value = "/facilityOperators/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getFacilityOperators(@PathVariable("id") UUID facilityOperatorId) {
+  public ResponseEntity<?> getFacilityOperator(@PathVariable("id") UUID facilityOperatorId) {
     FacilityOperator facilityOperator = facilityOperatorRepository.findOne(facilityOperatorId);
     if (facilityOperator == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -119,8 +129,8 @@ public class FacilityOperatorController extends BaseController {
         facilityOperatorRepository.delete(facilityOperator);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("FacilityOperator cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facilityOperator",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

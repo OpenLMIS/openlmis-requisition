@@ -52,6 +52,23 @@ public class RoleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotDeleteNonexistentRole() {
+
+    roleRepository.delete(role);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", role.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateRole() {
 
     roleRepository.delete(role);
@@ -89,7 +106,7 @@ public class RoleControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewRoleIfDoesNotExists() {
+  public void shouldCreateNewRoleIfDoesNotExist() {
 
     roleRepository.delete(role);
     role.setDescription(DESCRIPTION);

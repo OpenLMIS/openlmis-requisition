@@ -37,6 +37,7 @@ public class RequisitionTemplateController extends BaseController {
 
   /**
    * Allows creating new requisitionLines.
+   * If the id is specified, it will be ignored.
    *
    * @param requisitionTemplate A requisitionTemplate bound to the request body
    * @return ResponseEntity containing the created requisitionTemplate
@@ -46,7 +47,6 @@ public class RequisitionTemplateController extends BaseController {
         @RequestBody RequisitionTemplate requisitionTemplate) {
     try {
       LOGGER.debug("Creating new requisitionTemplate");
-      // Ignore provided id
       requisitionTemplate.setId(null);
       RequisitionTemplate newRequisitionTemplate =
             requisitionTemplateRepository.save(requisitionTemplate);
@@ -86,10 +86,19 @@ public class RequisitionTemplateController extends BaseController {
         @PathVariable("id") UUID requisitionTemplateId) {
     try {
       LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
-      RequisitionTemplate updatedRequisitionTemplate =
-            requisitionTemplateRepository.save(requisitionTemplate);
+
+      RequisitionTemplate requisitionTemplateToUpdate =
+            requisitionTemplateRepository.findOne(requisitionTemplateId);
+
+      if (requisitionTemplateToUpdate == null) {
+        requisitionTemplateToUpdate = new RequisitionTemplate();
+      }
+
+      requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
+      requisitionTemplateToUpdate = requisitionTemplateRepository.save(requisitionTemplateToUpdate);
+
       LOGGER.debug("Updated requisitionTemplate with id: " + requisitionTemplateId);
-      return new ResponseEntity<RequisitionTemplate>(updatedRequisitionTemplate, HttpStatus.OK);
+      return new ResponseEntity<RequisitionTemplate>(requisitionTemplateToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating requisitionTemplate",
@@ -134,8 +143,8 @@ public class RequisitionTemplateController extends BaseController {
         requisitionTemplateRepository.delete(requisitionTemplate);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("RequisitionTemplate cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionTemplate",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

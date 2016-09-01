@@ -2,7 +2,6 @@ package org.openlmis.referencedata.web;
 
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,7 @@ public class ProgramController extends BaseController {
 
   /**
    * Allows creating new programs.
+   * If the id is specified, it will be ignored.
    *
    * @param program A program bound to the request body
    * @return ResponseEntity containing the created program
@@ -37,7 +37,6 @@ public class ProgramController extends BaseController {
   public ResponseEntity<?> createProgram(@RequestBody Program program) {
     try {
       LOGGER.debug("Creating new program");
-      // Ignore provided id
       program.setId(null);
       Program newProgram = programRepository.save(program);
       LOGGER.debug("Created new program with id: " + program.getId());
@@ -69,7 +68,7 @@ public class ProgramController extends BaseController {
    * @return Program.
    */
   @RequestMapping(value = "/programs/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getChosenProgram(@PathVariable("id") UUID programId) {
+  public ResponseEntity<?> getProgram(@PathVariable("id") UUID programId) {
     Program program = programRepository.findOne(programId);
     if (program == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -94,7 +93,7 @@ public class ProgramController extends BaseController {
         programRepository.delete(program);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("Program cannot be deleted because of existing dependencies",
+              new ErrorResponse("An error accurred while deleting program",
                     ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
@@ -104,27 +103,34 @@ public class ProgramController extends BaseController {
   }
 
   /**
-   * Updating Program code and name.
-   * @param programDto DTO class used to update program's code and name
+   * Allows updating programs.
+   *
+   * @param program A program bound to the request body
+   * @param programId UUID of program which we want to update
+   * @return ResponseEntity containing the updated program
    */
-  @RequestMapping(value = "/programs/update", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateProgramCodeAndName(@RequestBody ProgramDto programDto) {
-    if (programDto == null || programDto.getId() == null) {
-      LOGGER.debug("Update failed - program id not specified");
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+  @RequestMapping(value = "/programs/{id}", method = RequestMethod.PUT)
+  public ResponseEntity<?> updateProgram(@RequestBody Program program,
+                                                    @PathVariable("id") UUID programId) {
+    try {
+      LOGGER.debug("Updating program with id: " + programId);
+
+      Program programToUpdate = programRepository.findOne(programId);
+
+      if (programToUpdate == null) {
+        programToUpdate = new Program();
+      }
+
+      programToUpdate.updateFrom(program);
+      programToUpdate = programRepository.save(programToUpdate);
+
+      LOGGER.debug("Updated programProduct with id: " + programId);
+      return new ResponseEntity<Program>(programToUpdate, HttpStatus.OK);
+    } catch (DataIntegrityViolationException ex) {
+      ErrorResponse errorResponse =
+            new ErrorResponse("An error accurred while updating program", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
-
-    Program program = programRepository.findOne(programDto.getId());
-    if (program == null) {
-      LOGGER.debug("Update failed - program with id: {} not found", programDto.getId());
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-    program.setCode(programDto.getCode());
-    program.setName(programDto.getName());
-
-    program = programRepository.save(program);
-
-    return new ResponseEntity<>(program, HttpStatus.OK);
   }
 }

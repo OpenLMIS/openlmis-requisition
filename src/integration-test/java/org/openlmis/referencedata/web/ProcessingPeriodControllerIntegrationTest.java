@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/processingPeriods";
@@ -188,6 +189,24 @@ public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
+  public void shouldNotDeleteNonexistentPeriod() {
+    firstPeriod.setProcessingSchedule(schedule);
+    periodRepository.save(firstPeriod);
+    periodRepository.delete(firstPeriod);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstPeriod.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldUpdatePeriod() {
     firstPeriod.setProcessingSchedule(schedule);
     periodRepository.save(firstPeriod);
@@ -209,7 +228,7 @@ public class ProcessingPeriodControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldCreateNewPeriodIfDoesNotExists() {
+  public void shouldCreateNewPeriodIfDoesNotExist() {
     firstPeriod.setProcessingSchedule(schedule);
     firstPeriod.setDescription(DESCRIPTION);
 

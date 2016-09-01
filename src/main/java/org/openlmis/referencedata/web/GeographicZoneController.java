@@ -28,6 +28,7 @@ public class GeographicZoneController extends BaseController {
 
   /**
    * Allows creating new geographicZones.
+   * If the id is specified, it will be ignored.
    *
    * @param geographicZone A geographicZone bound to the request body
    * @return ResponseEntity containing the created geographicZone
@@ -36,7 +37,6 @@ public class GeographicZoneController extends BaseController {
   public ResponseEntity<?> createGeographicZone(@RequestBody GeographicZone geographicZone) {
     try {
       LOGGER.debug("Creating new geographicZone");
-      // Ignore provided id
       geographicZone.setId(null);
       GeographicZone newGeographicZone = geographicZoneRepository.save(geographicZone);
       LOGGER.debug("Created new geographicZone with id: " + geographicZone.getId());
@@ -73,9 +73,18 @@ public class GeographicZoneController extends BaseController {
                                                  @PathVariable("id") UUID geographicZoneId) {
     try {
       LOGGER.debug("Updating geographicZone with id: " + geographicZoneId);
-      GeographicZone updatedGeographicZone = geographicZoneRepository.save(geographicZone);
+
+      GeographicZone geographicZoneToUpdate = geographicZoneRepository.findOne(geographicZoneId);
+
+      if (geographicZoneToUpdate == null) {
+        geographicZoneToUpdate = new GeographicZone();
+      }
+
+      geographicZoneToUpdate.updateFrom(geographicZone);
+      geographicZoneToUpdate = geographicZoneRepository.save(geographicZoneToUpdate);
+
       LOGGER.debug("Updated geographicZone with id: " + geographicZoneId);
-      return new ResponseEntity<GeographicZone>(updatedGeographicZone, HttpStatus.OK);
+      return new ResponseEntity<GeographicZone>(geographicZoneToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating geographicZone", ex.getMessage());
@@ -116,8 +125,8 @@ public class GeographicZoneController extends BaseController {
         geographicZoneRepository.delete(geographicZone);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("GeographicZone cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting geographicZone",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

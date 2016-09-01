@@ -35,6 +35,7 @@ public class ProgramProductController extends BaseController {
 
   /**
    * Allows creating new programProducts.
+   * If the id is specified, it will be ignored.
    *
    * @param programProduct A programProduct bound to the request body
    * @return ResponseEntity containing the created programProduct
@@ -43,7 +44,6 @@ public class ProgramProductController extends BaseController {
   public ResponseEntity<?> createProgramProduct(@RequestBody ProgramProduct programProduct) {
     try {
       LOGGER.debug("Creating new programProduct");
-      // Ignore provided id
       programProduct.setId(null);
       ProgramProduct newProgramProduct = programProductRepository.save(programProduct);
       LOGGER.debug("Created new programProduct with id: " + programProduct.getId());
@@ -80,9 +80,18 @@ public class ProgramProductController extends BaseController {
                                                  @PathVariable("id") UUID programProductId) {
     try {
       LOGGER.debug("Updating programProduct with id: " + programProductId);
-      ProgramProduct updatedProgramProduct = programProductRepository.save(programProduct);
+
+      ProgramProduct programProductToUpdate = programProductRepository.findOne(programProductId);
+
+      if ( programProductToUpdate == null) {
+        programProductToUpdate = new ProgramProduct();
+      }
+
+      programProductToUpdate.updateFrom(programProduct);
+      programProductToUpdate = programProductRepository.save(programProductToUpdate);
+
       LOGGER.debug("Updated programProduct with id: " + programProductId);
-      return new ResponseEntity<ProgramProduct>(updatedProgramProduct, HttpStatus.OK);
+      return new ResponseEntity<ProgramProduct>(programProductToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating programProduct", ex.getMessage());
@@ -123,7 +132,7 @@ public class ProgramProductController extends BaseController {
         programProductRepository.delete(programProduct);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("ProgramProduct cannot be deleted because of existing dependencies",
+              new ErrorResponse("An error accurred while deleting programProduct",
                     ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);

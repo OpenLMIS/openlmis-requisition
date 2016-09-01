@@ -70,6 +70,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String COMMENT_TEXT = "OpenLMIS";
+  private static final String COMMENT = "Comment";
 
   @Autowired
   private ProductRepository productRepository;
@@ -664,6 +666,23 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotDeleteNonexistentRequisition() {
+
+    requisitionRepository.delete(requisition);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisition.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotDeleteRequisitionWithWrongStatus() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -774,7 +793,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetChosenComment() {
 
-    Comment comment = createComment(user, requisition, "Comment");
+    Comment comment = createComment(user, requisition, COMMENT);
 
     Comment response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -791,13 +810,57 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotGetNonexistentComment() {
+
+    Comment comment = createComment(user, requisition, COMMENT);
+    commentRepository.delete(comment);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .when()
+          .get(ID_COMMENT_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewCommentIfDoesNotExist() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    Comment comment = new Comment();
+    comment.setBody(COMMENT_TEXT);
+    comment.setAuthor(user);
+    comment.setRequisition(requisition);
+
+    Comment response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(comment)
+          .when()
+          .put(ID_COMMENT_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Comment.class);
+
+    assertEquals(response.getBody(), COMMENT_TEXT);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldUpdateComment() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    Comment comment = createComment(user, requisition, "Comment");
-    comment.setBody("OpenLMIS");
+    Comment comment = createComment(user, requisition, COMMENT);
+    comment.setBody(COMMENT_TEXT);
 
     Comment response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -810,14 +873,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .statusCode(200)
           .extract().as(Comment.class);
 
-    assertEquals(response.getBody(), "OpenLMIS");
+    assertEquals(response.getBody(), COMMENT_TEXT);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldDeleteComment() {
 
-    Comment comment = createComment(user, requisition, "Comment");
+    Comment comment = createComment(user, requisition, COMMENT);
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -829,6 +892,24 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .statusCode(204);
 
     assertFalse(commentRepository.exists(requisition.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteNonexistentComment() {
+
+    Comment comment = createComment(user, requisition, COMMENT);
+    commentRepository.delete(comment);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", comment.getId())
+          .when()
+          .delete(ID_COMMENT_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1013,7 +1094,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldCreateNewRequisitionIfDoesNotExists() {
+  public void shouldCreateNewRequisitionIfDoesNotExist() {
 
     requisitionRepository.delete(requisition);
     requisition.setEmergency(true);

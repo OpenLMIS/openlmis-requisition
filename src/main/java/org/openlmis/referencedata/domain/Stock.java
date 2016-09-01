@@ -24,4 +24,14 @@ public class Stock extends BaseEntity {
   @Getter
   @Setter
   private Long storedQuantity;
+
+  /**
+   * Copy values of attributes into new or updated Stock.
+   *
+   * @param stock Stock with new values.
+   */
+  public void updateFrom(Stock stock) {
+    this.product = stock.getProduct();
+    this.storedQuantity = stock.getStoredQuantity();
+  }
 }

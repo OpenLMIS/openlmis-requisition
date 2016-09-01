@@ -47,6 +47,7 @@ public class OrderController extends BaseController {
 
   /**
    * Allows creating new orders.
+   * If the id is specified, it will be ignored.
    *
    * @param order A order bound to the request body
    * @return ResponseEntity containing the created order
@@ -55,7 +56,6 @@ public class OrderController extends BaseController {
   public ResponseEntity<?> createOrder(@RequestBody Order order) {
     try {
       LOGGER.debug("Creating new order");
-      // Ignore provided id
       order.setId(null);
       Order newOrder = orderRepository.save(order);
       LOGGER.debug("Created new order with id: " + order.getId());
@@ -92,9 +92,18 @@ public class OrderController extends BaseController {
                                        @PathVariable("id") UUID orderId) {
     try {
       LOGGER.debug("Updating order with id: " + orderId);
-      Order updatedOrder = orderRepository.save(order);
+
+      Order orderToUpdate = orderRepository.findOne(orderId);
+
+      if (orderToUpdate == null) {
+        orderToUpdate = new Order();
+      }
+
+      orderToUpdate.updateFrom(order);
+      orderToUpdate = orderRepository.save(orderToUpdate);
+
       LOGGER.debug("Updated order with id: " + orderId);
-      return new ResponseEntity<Order>(updatedOrder, HttpStatus.OK);
+      return new ResponseEntity<Order>(orderToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while updating order", ex.getMessage());
@@ -135,8 +144,7 @@ public class OrderController extends BaseController {
         orderRepository.delete(order);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("Order cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error occurred while deleting order", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

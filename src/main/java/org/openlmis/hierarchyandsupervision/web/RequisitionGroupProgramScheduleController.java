@@ -30,6 +30,7 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
 
   /**
    * Allows creating new requisitionGroupProgramSchedule.
+   * If the id is specified, it will be ignored.
    *
    * @param requisition A requisitionGroupProgramSchedule bound to the request body
    * @return ResponseEntity containing the created requisitionGroupProgramSchedule
@@ -39,7 +40,6 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
         @RequestBody RequisitionGroupProgramSchedule requisition) {
     try {
       LOGGER.debug("Creating new requisitionGPS");
-      // Ignore provided id
       requisition.setId(null);
       RequisitionGroupProgramSchedule newRequisition = repository.save(requisition);
       LOGGER.debug("Created new requisitionGPS with id: " + requisition.getId());
@@ -98,10 +98,20 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
         @PathVariable("id") UUID requisitionId) {
     try {
       LOGGER.debug("Updating requisitionGPS with id: " + reqGroupProgSchedule.getId());
-      RequisitionGroupProgramSchedule newRequisition = repository.save(reqGroupProgSchedule);
+
+      RequisitionGroupProgramSchedule reqGroupProgScheduleToUpdate =
+            repository.findOne(requisitionId);
+
+      if (reqGroupProgScheduleToUpdate == null) {
+        reqGroupProgScheduleToUpdate = new RequisitionGroupProgramSchedule();
+      }
+
+      reqGroupProgScheduleToUpdate.updateFrom(reqGroupProgSchedule);
+      reqGroupProgScheduleToUpdate = repository.save(reqGroupProgScheduleToUpdate);
+
       LOGGER.debug("Updated requisitionGPS with id: " + reqGroupProgSchedule.getId());
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
-            newRequisition, HttpStatus.OK);
+            reqGroupProgScheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating"
@@ -128,8 +138,8 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
         repository.delete(requisition);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("RequisitionGroupProgramSchedule cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionGroupProgramSchedule",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

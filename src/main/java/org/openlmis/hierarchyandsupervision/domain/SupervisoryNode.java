@@ -8,14 +8,13 @@ import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 
-import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Set;
 
 @Entity
 @Table(name = "supervisory_nodes", schema = "referencedata")
@@ -58,4 +57,18 @@ public class SupervisoryNode extends BaseEntity {
   @Getter
   @Setter
   private Set<SupervisoryNode> childNodes;
+
+  /**
+   * Copy values of attributes into new or updated SupervisoryNode.
+   *
+   * @param supervisoryNode SupervisoryNode with new values.
+   */
+  public void updateFrom(SupervisoryNode supervisoryNode) {
+    this.code = supervisoryNode.getCode();
+    this.name = supervisoryNode.getName();
+    this.description = supervisoryNode.getDescription();
+    this.facility = supervisoryNode.getFacility();
+    this.parentNode = supervisoryNode.getParentNode();
+    this.childNodes = supervisoryNode.getChildNodes();
+  }
 }

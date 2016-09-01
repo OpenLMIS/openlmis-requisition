@@ -40,4 +40,16 @@ public class SupplyLine extends BaseEntity {
   @Getter
   @Setter
   private Facility supplyingFacility;
+
+  /**
+   * Copy values of attributes into new or updated SupplyLine.
+   *
+   * @param supplyLine SupplyLine with new values.
+   */
+  public void updateFrom(SupplyLine supplyLine) {
+    this.supervisoryNode = supplyLine.getSupervisoryNode();
+    this.description = supplyLine.getDescription();
+    this.program = supplyLine.getProgram();
+    this.supplyingFacility = supplyLine.getSupplyingFacility();
+  }
 }

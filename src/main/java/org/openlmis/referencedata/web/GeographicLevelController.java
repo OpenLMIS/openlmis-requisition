@@ -28,6 +28,7 @@ public class GeographicLevelController extends BaseController {
 
   /**
    * Allows creating new geographicLevels.
+   * If the id is specified, it will be ignored.
    *
    * @param geographicLevel A geographicLevel bound to the request body
    * @return ResponseEntity containing the created geographicLevel
@@ -36,7 +37,6 @@ public class GeographicLevelController extends BaseController {
   public ResponseEntity<?> createGeographicLevel(@RequestBody GeographicLevel geographicLevel) {
     try {
       LOGGER.debug("Creating new geographicLevel");
-      // Ignore provided id
       geographicLevel.setId(null);
       GeographicLevel newGeographicLevel = geographicLevelRepository.save(geographicLevel);
       LOGGER.debug("Created new geographicLevel with id: " + geographicLevel.getId());
@@ -73,9 +73,19 @@ public class GeographicLevelController extends BaseController {
                                             @PathVariable("id") UUID geographicLevelId) {
     try {
       LOGGER.debug("Updating geographicLevel with id: " + geographicLevelId);
-      GeographicLevel updatedGeographicLevel = geographicLevelRepository.save(geographicLevel);
+
+      GeographicLevel geographicLevelToUpdate =
+            geographicLevelRepository.findOne(geographicLevelId);
+
+      if (geographicLevelToUpdate == null) {
+        geographicLevelToUpdate = new GeographicLevel();
+      }
+
+      geographicLevelToUpdate.updateFrom(geographicLevel);
+      geographicLevelToUpdate = geographicLevelRepository.save(geographicLevelToUpdate);
+
       LOGGER.debug("Updated geographicLevel with id: " + geographicLevelId);
-      return new ResponseEntity<GeographicLevel>(updatedGeographicLevel, HttpStatus.OK);
+      return new ResponseEntity<GeographicLevel>(geographicLevelToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating geographicLevel", ex.getMessage());
@@ -116,8 +126,8 @@ public class GeographicLevelController extends BaseController {
         geographicLevelRepository.delete(geographicLevel);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("GeographicLevel cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting geographicLevel",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -47,6 +47,7 @@ public class ProofOfDeliveryController extends BaseController {
 
   /**
    * Allows creating new proofOfDeliveries.
+   * If the id is specified, it will be ignored.
    *
    * @param proofOfDelivery A proofOfDelivery bound to the request body
    * @return ResponseEntity containing the created proofOfDelivery
@@ -55,7 +56,6 @@ public class ProofOfDeliveryController extends BaseController {
   public ResponseEntity<?> createProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery) {
     try {
       LOGGER.debug("Creating new proofOfDelivery");
-      // Ignore provided id
       proofOfDelivery.setId(null);
       ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
       LOGGER.debug("Created new proofOfDelivery with id: " + proofOfDelivery.getId());
@@ -92,9 +92,19 @@ public class ProofOfDeliveryController extends BaseController {
                                        @PathVariable("id") UUID proofOfDeliveryId) {
     try {
       LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
-      ProofOfDelivery updatedProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
+
+      ProofOfDelivery proofOfDeliveryToUpdate =
+            proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+
+      if (proofOfDeliveryToUpdate == null) {
+        proofOfDeliveryToUpdate = new ProofOfDelivery();
+      }
+
+      proofOfDeliveryToUpdate.updateFrom(proofOfDelivery);
+      proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
+
       LOGGER.debug("Updated proofOfDelivery with id: " + proofOfDeliveryId);
-      return new ResponseEntity<ProofOfDelivery>(updatedProofOfDelivery, HttpStatus.OK);
+      return new ResponseEntity<ProofOfDelivery>(proofOfDeliveryToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while updating proofOfDelivery", ex.getMessage());
@@ -135,8 +145,8 @@ public class ProofOfDeliveryController extends BaseController {
         proofOfDeliveryRepository.delete(proofOfDelivery);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("ProofOfDelivery cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error occurred while deleting proofOfDelivery",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

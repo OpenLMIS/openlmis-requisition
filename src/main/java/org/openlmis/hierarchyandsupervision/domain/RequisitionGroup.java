@@ -6,14 +6,13 @@ import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.List;
 
 /**
  * RequisitionGroup represents a group of facilities which follow a particular schedule for
@@ -56,4 +55,18 @@ public class RequisitionGroup extends BaseEntity {
   @Getter
   @Setter
   private List<Facility> memberFacilites;
+
+  /**
+   * Copy values of attributes into new or updated RequisitionGroup.
+   *
+   * @param requisitionGroup RequisitionGroup with new values.
+   */
+  public void updateFrom(RequisitionGroup requisitionGroup) {
+    this.code = requisitionGroup.getCode();
+    this.name = requisitionGroup.getName();
+    this.description = requisitionGroup.getDescription();
+    this.supervisoryNode = requisitionGroup.getSupervisoryNode();
+    this.requisitionGroupProgramSchedules = requisitionGroup.getRequisitionGroupProgramSchedules();
+    this.memberFacilites = requisitionGroup.getMemberFacilites();
+  }
 }

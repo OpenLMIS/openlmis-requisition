@@ -29,6 +29,7 @@ public class RoleController extends BaseController {
 
   /**
    * Allows creating new roles.
+   * If the id is specified, it will be ignored.
    *
    * @param role A role bound to the request body
    * @return ResponseEntity containing the created role
@@ -37,7 +38,6 @@ public class RoleController extends BaseController {
   public ResponseEntity<?> createRole(@RequestBody Role role) {
     try {
       LOGGER.debug("Creating new role");
-      // Ignore provided id
       role.setId(null);
       Role newRole = roleRepository.save(role);
       LOGGER.debug("Created new role with id: " + role.getId());
@@ -74,9 +74,18 @@ public class RoleController extends BaseController {
                                             @PathVariable("id") UUID roleId) {
     try {
       LOGGER.debug("Updating role with id: " + roleId);
-      Role updatedRole = roleRepository.save(role);
+
+      Role roleToUpdate = roleRepository.findOne(roleId);
+
+      if (roleToUpdate == null) {
+        roleToUpdate = new Role();
+      }
+
+      roleToUpdate.updateFrom(role);
+      roleToUpdate = roleRepository.save(roleToUpdate);
+
       LOGGER.debug("Updated role with id: " + roleId);
-      return new ResponseEntity<Role>(updatedRole, HttpStatus.OK);
+      return new ResponseEntity<Role>(roleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating role", ex.getMessage());
@@ -117,8 +126,7 @@ public class RoleController extends BaseController {
         roleRepository.delete(role);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("Role cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting role", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

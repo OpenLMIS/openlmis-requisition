@@ -54,4 +54,17 @@ public class ProcessingPeriod extends BaseEntity {
   @Setter
   private LocalDate endDate;
 
+  /**
+   * Copy values of attributes into new or updated ProcessingPeriod.
+   *
+   * @param processingPeriod ProcessingPeriod with new values.
+   */
+  public void updateFrom(ProcessingPeriod processingPeriod) {
+    this.processingSchedule = processingPeriod.getProcessingSchedule();
+    this.name = processingPeriod.getName();
+    this.description = processingPeriod.getDescription();
+    this.startDate = processingPeriod.getStartDate();
+    this.endDate = processingPeriod.getEndDate();
+  }
+
 }

@@ -58,4 +58,15 @@ public class Comment extends BaseEntity {
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
   }
+
+  /**
+   * Copy values of attributes into new or updated Comment.
+   *
+   * @param comment Comment with new values.
+   */
+  public void updateFrom(Comment comment) {
+    this.requisition = comment.getRequisition();
+    this.author = comment.getAuthor();
+    this.body = comment.getBody();
+  }
 }

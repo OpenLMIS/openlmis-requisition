@@ -37,6 +37,7 @@ public class SupplyLineController extends BaseController {
 
   /**
    * Allows creating new supplyLines.
+   * If the id is specified, it will be ignored.
    *
    * @param supplyLine A supplyLine bound to the request body
    * @return ResponseEntity containing the created supplyLine
@@ -45,7 +46,6 @@ public class SupplyLineController extends BaseController {
   public ResponseEntity<?> createSupplyLine(@RequestBody SupplyLine supplyLine) {
     try {
       LOGGER.debug("Creating new supplyLine");
-      // Ignore provided id
       supplyLine.setId(null);
       SupplyLine newSupplyLine = supplyLineRepository.save(supplyLine);
       LOGGER.debug("Created new supplyLine with id: " + supplyLine.getId());
@@ -82,9 +82,18 @@ public class SupplyLineController extends BaseController {
                                        @PathVariable("id") UUID supplyLineId) {
     try {
       LOGGER.debug("Updating supplyLine with id: " + supplyLineId);
-      SupplyLine updatedSupplyLine = supplyLineRepository.save(supplyLine);
+
+      SupplyLine supplyLineToUpdate = supplyLineRepository.save(supplyLine);
+
+      if (supplyLineToUpdate == null) {
+        supplyLineToUpdate = new SupplyLine();
+      }
+
+      supplyLineToUpdate.updateFrom(supplyLine);
+      supplyLineToUpdate = supplyLineRepository.save(supplyLineToUpdate);
+
       LOGGER.debug("Updated supplyLine with id: " + supplyLineId);
-      return new ResponseEntity<SupplyLine>(updatedSupplyLine, HttpStatus.OK);
+      return new ResponseEntity<SupplyLine>(supplyLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating supplyLine", ex.getMessage());
@@ -125,8 +134,7 @@ public class SupplyLineController extends BaseController {
         supplyLineRepository.delete(supplyLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("SupplyLine cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting supplyLine", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

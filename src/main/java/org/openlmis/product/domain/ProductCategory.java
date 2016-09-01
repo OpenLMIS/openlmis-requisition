@@ -35,4 +35,15 @@ public class ProductCategory extends BaseEntity {
   @Getter
   @Setter
   private Integer displayOrder;
+
+  /**
+   * Copy values of attributes into new or updated ProductCategory.
+   *
+   * @param productCategory ProductCategory with new values.
+   */
+  public void updateFrom(ProductCategory productCategory) {
+    this.code = productCategory.getCode();
+    this.name = productCategory.getName();
+    this.displayOrder = productCategory.getDisplayOrder();
+  }
 }

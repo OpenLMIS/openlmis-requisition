@@ -57,4 +57,20 @@ public class ProofOfDeliveryLine extends BaseEntity {
   @Getter
   @Setter
   private String notes;
+
+  /**
+   * Copy values of attributes into new or updated ProofOfDeliveryLine.
+   *
+   * @param proofOfDeliveryLine ProofOfDeliveryLine with new values.
+   */
+  public void updateFrom(ProofOfDeliveryLine proofOfDeliveryLine) {
+    this.orderLine = proofOfDeliveryLine.getOrderLine();
+    this.proofOfDelivery = proofOfDeliveryLine.getProofOfDelivery();
+    this.packToShip = proofOfDeliveryLine.getPackToShip();
+    this.quantityShipped = proofOfDeliveryLine.getQuantityShipped();
+    this.quantityReceived = proofOfDeliveryLine.getQuantityReceived();
+    this.quantityReturned = proofOfDeliveryLine.getQuantityReturned();
+    this.replacedProductCode = proofOfDeliveryLine.getReplacedProductCode();
+    this.notes = proofOfDeliveryLine.getNotes();
+  }
 }

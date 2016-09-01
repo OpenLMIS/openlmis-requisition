@@ -142,7 +142,16 @@ public class RequisitionController extends BaseController {
                                        @PathVariable("id") UUID requisitionId) {
     try {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
-      Requisition requisitionToUpdate = requisitionRepository.save(requisition);
+
+      Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
+
+      if (requisitionToUpdate == null) {
+        requisitionToUpdate = new Requisition();
+      }
+
+      requisitionToUpdate.updateFrom(requisition);
+      requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
+
       LOGGER.debug("Updated requisition with id: " + requisitionId);
       return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
@@ -276,15 +285,18 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> updateRequisitionComment(@RequestBody Comment comment,
                                                     @PathVariable("id") UUID commentId,
                                                     OAuth2Authentication auth) {
-    Comment requisitionComment = commentRepository.findOne(commentId);
     try {
       LOGGER.debug("Updating comment with id: " + commentId);
-      comment.setRequisition(requisitionComment.getRequisition());
 
-      User user = (User) auth.getPrincipal();
-      comment.setAuthor(user);
+      Comment requisitionComment = commentRepository.findOne(commentId);
 
-      Comment updatedComment = commentRepository.save(comment);
+      if (requisitionComment == null) {
+        requisitionComment = new Comment();
+      }
+
+      requisitionComment.updateFrom(comment);
+      Comment updatedComment = commentRepository.save(requisitionComment);
+
       LOGGER.debug("Updated comment with id: " + commentId);
       MappingJacksonValue value = new MappingJacksonValue(updatedComment);
       value.setSerializationView(View.BasicInformation.class);

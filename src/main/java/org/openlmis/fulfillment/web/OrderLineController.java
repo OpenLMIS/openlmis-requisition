@@ -29,6 +29,7 @@ public class OrderLineController extends BaseController {
 
   /**
    * Allows creating new orderLines.
+   * If the id is specified, it will be ignored.
    *
    * @param orderLine A orderLine bound to the request body
    * @return ResponseEntity containing the created orderLine
@@ -37,7 +38,6 @@ public class OrderLineController extends BaseController {
   public ResponseEntity<?> createOrderLine(@RequestBody OrderLine orderLine) {
     try {
       LOGGER.debug("Creating new orderLine");
-      // Ignore provided id
       orderLine.setId(null);
       OrderLine newOrderLine = orderLineRepository.save(orderLine);
       LOGGER.debug("Creating new orderLine with id: " + orderLine.getId());
@@ -74,9 +74,18 @@ public class OrderLineController extends BaseController {
                                        @PathVariable("id") UUID orderLineId) {
     try {
       LOGGER.debug("Updating orderLine with id: " + orderLineId);
-      OrderLine updatedOrderLine = orderLineRepository.save(orderLine);
+
+      OrderLine orderLineToUpdate = orderLineRepository.findOne(orderLineId);
+
+      if (orderLineToUpdate == null) {
+        orderLineToUpdate = new OrderLine();
+      }
+
+      orderLineToUpdate.updateFrom(orderLine);
+      orderLineToUpdate = orderLineRepository.save(orderLineToUpdate);
+
       LOGGER.debug("Updated orderLine with id: " + orderLineId);
-      return new ResponseEntity<OrderLine>(updatedOrderLine, HttpStatus.OK);
+      return new ResponseEntity<OrderLine>(orderLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while updating orderLine", ex.getMessage());
@@ -117,8 +126,7 @@ public class OrderLineController extends BaseController {
         orderLineRepository.delete(orderLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("OrderLine cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error occurred while deleting orderLine", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

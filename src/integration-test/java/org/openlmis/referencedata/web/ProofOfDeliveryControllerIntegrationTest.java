@@ -297,6 +297,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldUpdateProofOfDelivery() {
 
+    proofOfDeliveryRepository.delete(proofOfDelivery);
+    proofOfDeliveryRepository.save(proofOfDelivery);
     proofOfDelivery.setTotalReceivedPacks(2);
 
     ProofOfDelivery response = restAssured.given()
@@ -315,7 +317,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateNewProofOfDeliveryIfDoesNotExists() {
+  public void shouldCreateNewProofOfDeliveryIfDoesNotExist() {
 
     proofOfDelivery.setTotalReceivedPacks(2);
 

@@ -47,4 +47,16 @@ public class RequisitionGroupProgramSchedule extends BaseEntity {
   @Getter
   @Setter
   private Facility dropOffFacility;
+
+  /**
+   * Copy values of attributes into new or updated RequisitionGroupProgramSchedule.
+   *
+   * @param requisitionGroupProgramSchedule RequisitionGroupProgramSchedule with new values.
+   */
+  public void updateFrom(RequisitionGroupProgramSchedule requisitionGroupProgramSchedule) {
+    this.program = requisitionGroupProgramSchedule.getProgram();
+    this.processingSchedule = requisitionGroupProgramSchedule.getProcessingSchedule();
+    this.directDelivery = requisitionGroupProgramSchedule.isDirectDelivery();
+    this.dropOffFacility = requisitionGroupProgramSchedule.getDropOffFacility();
+  }
 }

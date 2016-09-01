@@ -31,4 +31,16 @@ public class FacilityOperator extends BaseEntity {
   @Getter
   @Setter
   private Integer displayOrder;
+
+  /**
+   * Copy values of attributes into new or updated FacilityOperator.
+   *
+   * @param facilityOperator FacilityOperator with new values.
+   */
+  public void updateFrom(FacilityOperator facilityOperator) {
+    this.code = facilityOperator.getCode();
+    this.name = facilityOperator.getName();
+    this.description = facilityOperator.getDescription();
+    this.displayOrder = facilityOperator.getDisplayOrder();
+  }
 }

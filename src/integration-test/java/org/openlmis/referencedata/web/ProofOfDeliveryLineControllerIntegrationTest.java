@@ -253,6 +253,23 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
+  public void shouldNotDeleteNonexistentProofOfDeliveryLine() {
+
+    proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDeliveryLine.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetAllProofOfDeliveryLines() {
 
     ProofOfDeliveryLine[] response = restAssured.given()
@@ -341,7 +358,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void shouldCreateNewProofOfDeliveryLineIfDoesNotExists() {
+  public void shouldCreateNewProofOfDeliveryLineIfDoesNotExist() {
 
     proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
     proofOfDeliveryLine.setNotes(NOTES);

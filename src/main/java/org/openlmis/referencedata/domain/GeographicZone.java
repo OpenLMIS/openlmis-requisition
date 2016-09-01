@@ -50,4 +50,18 @@ public class GeographicZone extends BaseEntity {
   @Getter
   @Setter
   private Double longitude;
+
+  /**
+   * Copy values of attributes into new or updated GeographicZone.
+   *
+   * @param geographicZone GeographicZone with new values.
+   */
+  public void updateFrom(GeographicZone geographicZone) {
+    this.code = geographicZone.getCode();
+    this.name = geographicZone.getName();
+    this.level = geographicZone.getLevel();
+    this.catchmentPopulation = geographicZone.getCatchmentPopulation();
+    this.latitude = geographicZone.getLatitude();
+    this.longitude = geographicZone.getLongitude();
+  }
 }

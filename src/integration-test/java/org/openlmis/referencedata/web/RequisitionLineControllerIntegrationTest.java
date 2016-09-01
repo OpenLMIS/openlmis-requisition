@@ -240,7 +240,24 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateNewRequisitionLineIfDoesNotExists() {
+  public void shouldNotDeleteNonexistentRequisitionLine() {
+
+    requisitionLineRepository.delete(requisitionLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionLine.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateNewRequisitionLineIfDoesNotExist() {
 
     requisitionLineRepository.delete(requisitionLine);
     requisitionLine.setBeginningBalance(1);

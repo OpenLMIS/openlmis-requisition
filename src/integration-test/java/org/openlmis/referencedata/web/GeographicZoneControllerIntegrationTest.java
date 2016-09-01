@@ -63,6 +63,23 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
+  public void shouldNotDeleteNonexistentGeographicZone() {
+
+    geographicZoneRepository.delete(geoZone);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", geoZone.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateGeographicZone() {
 
     geographicZoneRepository.delete(geoZone);
@@ -100,7 +117,7 @@ public class GeographicZoneControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void shouldCreateNewGeographicZoneIfDoesNotExists() {
+  public void shouldCreateNewGeographicZoneIfDoesNotExist() {
 
     geographicZoneRepository.delete(geoZone);
     geoZone.setCode(CODE);

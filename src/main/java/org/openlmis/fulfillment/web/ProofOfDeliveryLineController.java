@@ -31,6 +31,7 @@ public class ProofOfDeliveryLineController extends BaseController {
 
   /**
    * Allows creating new proofOfDeliveryLines.
+   * If the id is specified, it will be ignored.
    *
    * @param proofOfDeliveryLine A proofOfDeliveryLine bound to the request body
    * @return ResponseEntity containing the created proofOfDeliveryLine
@@ -80,10 +81,20 @@ public class ProofOfDeliveryLineController extends BaseController {
         @PathVariable("id") UUID proofOfDeliveryLineId) {
     try {
       LOGGER.debug("Updating proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
-      ProofOfDeliveryLine updatedProofOfDeliveryLine
-            = proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
+
+      ProofOfDeliveryLine proofOfDeliveryLineToUpdate
+            = proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
+
+      if (proofOfDeliveryLineToUpdate == null) {
+        proofOfDeliveryLineToUpdate = new ProofOfDeliveryLine();
+      }
+
+      proofOfDeliveryLineToUpdate.updateFrom(proofOfDeliveryLine);
+      proofOfDeliveryLineToUpdate
+            = proofOfDeliveryLineRepository.save(proofOfDeliveryLineToUpdate);
+
       LOGGER.debug("Updated proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
-      return new ResponseEntity<ProofOfDeliveryLine>(updatedProofOfDeliveryLine, HttpStatus.OK);
+      return new ResponseEntity<ProofOfDeliveryLine>(proofOfDeliveryLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating proofOfDeliveryLine",
@@ -128,8 +139,8 @@ public class ProofOfDeliveryLineController extends BaseController {
         proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("ProofOfDeliveryLine cannot be deleted "
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting proofOfDeliveryLine",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

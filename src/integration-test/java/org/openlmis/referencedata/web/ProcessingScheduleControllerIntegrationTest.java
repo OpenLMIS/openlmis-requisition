@@ -88,6 +88,24 @@ public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
+  public void shouldNotDeleteNonexistentSchedule() {
+
+    periodRepository.delete(period);
+    scheduleRepository.delete(schedule);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", schedule.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateSchedule() {
 
     periodRepository.delete(period);
@@ -126,7 +144,7 @@ public class ProcessingScheduleControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
-  public void shouldCreateNewScheduleIfDoesNotExists() {
+  public void shouldCreateNewScheduleIfDoesNotExist() {
 
     periodRepository.delete(period);
     scheduleRepository.delete(schedule);

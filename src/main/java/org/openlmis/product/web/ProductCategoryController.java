@@ -35,6 +35,7 @@ public class ProductCategoryController extends BaseController {
 
   /**
    * Allows creating new productCategories.
+   * If the id is specified, it will be ignored.
    *
    * @param productCategory A productCategory bound to the request body
    * @return ResponseEntity containing the created productCategory
@@ -43,7 +44,6 @@ public class ProductCategoryController extends BaseController {
   public ResponseEntity<?> createProductCategory(@RequestBody ProductCategory productCategory) {
     try {
       LOGGER.debug("Creating new productCategory");
-      // Ignore provided id
       productCategory.setId(null);
       ProductCategory newProductCategory = productCategoryRepository.save(productCategory);
       LOGGER.debug("Creating new productCategory with id: " + productCategory.getId());
@@ -80,9 +80,19 @@ public class ProductCategoryController extends BaseController {
                                        @PathVariable("id") UUID productCategoryId) {
     try {
       LOGGER.debug("Updating productCategory with id: " + productCategoryId);
-      ProductCategory updatedProductCategory = productCategoryRepository.save(productCategory);
+
+      ProductCategory productCategoryToUpdate =
+            productCategoryRepository.findOne(productCategoryId);
+
+      if (productCategoryToUpdate == null) {
+        productCategoryToUpdate = new ProductCategory();
+      }
+
+      productCategoryToUpdate.updateFrom(productCategory);
+      productCategoryToUpdate = productCategoryRepository.save(productCategoryToUpdate);
+
       LOGGER.debug("Updated productCategory with id: " + productCategoryId);
-      return new ResponseEntity<ProductCategory>(updatedProductCategory, HttpStatus.OK);
+      return new ResponseEntity<ProductCategory>(productCategoryToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating productCategory", ex.getMessage());
@@ -123,8 +133,8 @@ public class ProductCategoryController extends BaseController {
         productCategoryRepository.delete(productCategory);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("ProductCategory cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting productCategory",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

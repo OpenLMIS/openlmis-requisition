@@ -4,7 +4,6 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.dto.ProgramDto;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -12,17 +11,17 @@ import org.springframework.http.MediaType;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String RESOURCE_URL = "/api/programs";
-  private static final String UPDATE_URL = RESOURCE_URL + "/update";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
   private ProgramRepository programRepository;
@@ -37,50 +36,44 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldUpdate() {
-    ProgramDto programDto = new ProgramDto(program.getId(), "newCode", "newName");
+  public void shouldUpdateProgram() {
+
+    program.setActive(true);
 
     Program response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(programDto)
-        .when()
-        .put(UPDATE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(Program.class);
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", program.getId())
+          .body(program)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Program.class);
 
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(response.getCode(), "newCode");
-    assertEquals(response.getName(), "newName");
-  }
-
-  @Test
-  public void shouldNotUpdateIfProgramWithGivenIdNotExist() {
-    ProgramDto programDto = new ProgramDto(UUID.randomUUID(), "new code", "new name");
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(programDto)
-        .when()
-        .put(UPDATE_URL)
-        .then()
-        .statusCode(400);
+    assertTrue(response.getActive());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotUpdateIfProgramIdIsNull() {
-    ProgramDto programDto = new ProgramDto(null, "new code", "new name");
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(programDto)
-        .when()
-        .put(UPDATE_URL)
-        .then()
-        .statusCode(400);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  public void shouldCreateNewProgramIfDoesNotExist() {
+
+    programRepository.delete(program);
+    program.setActive(true);
+
+    Program response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", ID)
+          .body(program)
+          .when()
+          .put(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(Program.class);
+
+    assertTrue(response.getActive());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -96,6 +89,23 @@ public class ProgramControllerIntegrationTest extends BaseWebIntegrationTest {
           .statusCode(204);
 
     assertFalse(programRepository.exists(program.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteNonexistentProgram() {
+
+    programRepository.delete(program);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", program.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

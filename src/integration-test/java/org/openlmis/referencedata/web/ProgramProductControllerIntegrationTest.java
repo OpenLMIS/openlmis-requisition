@@ -103,6 +103,24 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
+  public void shouldNotDeleteNonexistentProgramProduct() {
+
+    ProgramProduct programProduct = programProducts.get(4);
+    programProductRepository.delete(programProduct);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", programProduct.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateProgramProduct() {
 
     ProgramProduct programProduct = programProducts.get(4);
@@ -142,7 +160,7 @@ public class ProgramProductControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void shouldCreateNewProgramProductIfDoesNotExists() {
+  public void shouldCreateNewProgramProductIfDoesNotExist() {
 
     ProgramProduct programProduct = programProducts.get(4);
     programProductRepository.delete(programProduct);

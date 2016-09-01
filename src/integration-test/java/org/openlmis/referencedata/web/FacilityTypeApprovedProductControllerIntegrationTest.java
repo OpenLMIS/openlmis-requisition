@@ -115,6 +115,23 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
+  public void shouldNotDeleteNonexistentFacilityTypeApprovedProduct() {
+
+    repository.delete(facilityTypeAppProd);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facilityTypeAppProd.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateFacilityTypeApprovedProduct() {
 
     repository.delete(facilityTypeAppProd);
@@ -152,7 +169,7 @@ public class FacilityTypeApprovedProductControllerIntegrationTest extends BaseWe
   }
 
   @Test
-  public void shouldCreateNewFacilityTypeApprovedProductIfDoesNotExists() {
+  public void shouldCreateNewFacilityTypeApprovedProductIfDoesNotExist() {
 
     repository.delete(facilityTypeAppProd);
     facilityTypeAppProd.setMaxMonthsOfStock(9.00);

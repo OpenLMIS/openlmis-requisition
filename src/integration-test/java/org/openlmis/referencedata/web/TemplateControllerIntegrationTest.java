@@ -81,6 +81,23 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotDeleteNonexistentTemplate() {
+
+    templateRepository.delete(template);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", template.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldUpdateRequisitionTemplate() {
 
     template.setDescription(TEMPLATE_CONTROLLER_TEST);
@@ -101,7 +118,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewRequisitionTemplateIfDoesNotExists() {
+  public void shouldCreateNewRequisitionTemplateIfDoesNotExist() {
 
     templateRepository.delete(template);
     template.setDescription(TEMPLATE_CONTROLLER_TEST);

@@ -51,4 +51,15 @@ public class ProcessingSchedule extends BaseEntity {
     this.modifiedDate = LocalDateTime.now();
   }
 
+  /**
+   * Copy values of attributes into new or updated ProcessingSchedule.
+   *
+   * @param processingSchedule ProcessingSchedule with new values.
+   */
+  public void updateFrom(ProcessingSchedule processingSchedule) {
+    this.code = processingSchedule.getCode();
+    this.description = processingSchedule.getDescription();
+    this.name = processingSchedule.getName();
+  }
+
 }

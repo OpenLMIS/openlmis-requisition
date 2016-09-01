@@ -105,6 +105,23 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldnotDeleteNonexistentSupervisoryNode() {
+
+    repository.delete(supervisoryNode);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", supervisoryNode.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateSupervisoryNode() {
 
     repository.delete(supervisoryNode);
@@ -142,7 +159,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateNewSupervisoryNodeIfDoesNotExists() {
+  public void shouldCreateNewSupervisoryNodeIfDoesNotExist() {
 
     repository.delete(supervisoryNode);
     supervisoryNode.setCode(CODE);

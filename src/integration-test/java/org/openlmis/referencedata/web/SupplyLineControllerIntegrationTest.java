@@ -112,6 +112,23 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
+  public void shouldNotDeleteNonexistentSupplyLine() {
+
+    supplyLineRepository.delete(supplyLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", supplyLine.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateSupplyLine() {
 
     supplyLineRepository.delete(supplyLine);
@@ -149,7 +166,7 @@ public class SupplyLineControllerIntegrationTest extends BaseWebIntegrationTest 
   }
 
   @Test
-  public void shouldCreateNewSupplyLineIfDoesNotExists() {
+  public void shouldCreateNewSupplyLineIfDoesNotExist() {
 
     supplyLineRepository.delete(supplyLine);
     supplyLine.setDescription(DESCRIPTION);

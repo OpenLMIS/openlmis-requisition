@@ -29,6 +29,7 @@ public class FacilityTypeApprovedProductController extends BaseController {
 
   /**
    * Allows creating new facilityTypeApprovedProduct.
+   * If the id is specified, it will be ignored.
    *
    * @param facilityTypeApprovedProduct A facilityTypeApprovedProduct bound to the request body
    * @return ResponseEntity containing the created facilityTypeApprovedProduct
@@ -38,7 +39,6 @@ public class FacilityTypeApprovedProductController extends BaseController {
         @RequestBody FacilityTypeApprovedProduct facilityTypeApprovedProduct) {
     try {
       LOGGER.debug("Creating new facilityTypeApprovedProduct");
-      // Ignore provided id
       facilityTypeApprovedProduct.setId(null);
       FacilityTypeApprovedProduct newFacility = repository.save(facilityTypeApprovedProduct);
       LOGGER.debug("Created new facilityTypeApprovedProduct with id: "
@@ -80,10 +80,20 @@ public class FacilityTypeApprovedProductController extends BaseController {
     try {
       LOGGER.debug("Updating facilityTypeApprovedProduct with id: "
             + facilityTypeApprovedProductId);
-      FacilityTypeApprovedProduct updatedFacility = repository.save(facilityTypeApprovedProduct);
+
+      FacilityTypeApprovedProduct facilityToUpdate =
+            repository.findOne(facilityTypeApprovedProductId);
+
+      if (facilityToUpdate == null) {
+        facilityToUpdate = new FacilityTypeApprovedProduct();
+      }
+
+      facilityToUpdate.updateFrom(facilityTypeApprovedProduct);
+      facilityToUpdate = repository.save(facilityToUpdate);
+
       LOGGER.debug("Updated facilityTypeApprovedProduct with id: "
             + facilityTypeApprovedProductId);
-      return new ResponseEntity<FacilityTypeApprovedProduct>(updatedFacility, HttpStatus.OK);
+      return new ResponseEntity<FacilityTypeApprovedProduct>(facilityToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facilityTypeApprovedProduct",
@@ -130,8 +140,8 @@ public class FacilityTypeApprovedProductController extends BaseController {
         repository.delete(facilityTypeApprovedProduct);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("FacilityTypeApprovedProduct cannot be deleted"
-                    + " because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facilityTypeApprovedProduct",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

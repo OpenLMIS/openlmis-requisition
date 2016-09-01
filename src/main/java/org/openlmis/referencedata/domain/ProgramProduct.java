@@ -64,4 +64,21 @@ public class ProgramProduct extends BaseEntity {
   @Getter
   @Setter
   private Money pricePerPack;
+
+  /**
+   * Copy values of attributes into new or updated ProgramProduct.
+   *
+   * @param programProduct ProgramProduct with new values.
+   */
+  public void updateFrom(ProgramProduct programProduct) {
+    this.program = programProduct.getProgram();
+    this.product = programProduct.getProduct();
+    this.dosesPerMonth = programProduct.getDosesPerMonth();
+    this.active = programProduct.isActive();
+    this.productCategory = programProduct.getProductCategory();
+    this.fullSupply = programProduct.isFullSupply();
+    this.displayOrder = programProduct.getDisplayOrder();
+    this.maxMonthsStock = programProduct.getMaxMonthsStock();
+    this.pricePerPack = programProduct.getPricePerPack();
+  }
 }

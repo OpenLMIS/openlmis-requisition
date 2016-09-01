@@ -538,6 +538,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotDeleteNonexistentOrder() {
+
+    orderRepository.delete(firstOrder);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", firstOrder.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateOrder() {
 
     orderRepository.delete(firstOrder);
@@ -575,7 +592,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewOrderIfDoesNotExists() {
+  public void shouldCreateNewOrderIfDoesNotExist() {
 
     orderRepository.delete(firstOrder);
     firstOrder.setQuotedCost(new BigDecimal(NUMBER));

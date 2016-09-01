@@ -79,4 +79,19 @@ public class RequisitionLine extends BaseEntity {
   @Getter
   @Setter
   private Integer approvedQuantity;
+
+  /**
+   * Copy values of attributes into new or updated RequisitionLine.
+   *
+   * @param  requisitionLine RequisitionLine with new values.
+   */
+  public void updateFrom(RequisitionLine requisitionLine) {
+    this.product = requisitionLine.getProduct();
+    this.requisition = requisitionLine.getRequisition();
+    this.stockInHand = requisitionLine.getStockInHand();
+    this.stockOnHand = requisitionLine.getStockOnHand();
+    this.beginningBalance = requisitionLine.getBeginningBalance();
+    this.totalReceivedQuantity = requisitionLine.getTotalReceivedQuantity();
+
+  }
 }

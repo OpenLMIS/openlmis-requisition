@@ -92,7 +92,7 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldCreateNewFacilityOperatorIfDoesNotExists() {
+  public void shouldCreateNewFacilityOperatorIfDoesNotExist() {
     facilityOperatorRepository.delete(facilityOperators);
     facilityOperators.get(0).setName(NAME);
     FacilityOperator response = restAssured.given()
@@ -145,7 +145,9 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldDeleteFacilityOperator() {
+  public void shouldNotDeleteNonexistentFacilityOperator() {
+
+    facilityOperatorRepository.delete(facilityOperators.get(0).getId());
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -154,7 +156,22 @@ public class FacilityOperatorControllerIntegrationTest extends BaseWebIntegratio
             .when()
             .delete(ID_URL)
             .then()
-            .statusCode(204);
+            .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteFacilityOperator() {
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facilityOperators.get(0).getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
 
     assertFalse(facilityOperatorRepository.exists(facilityOperators.get(0).getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

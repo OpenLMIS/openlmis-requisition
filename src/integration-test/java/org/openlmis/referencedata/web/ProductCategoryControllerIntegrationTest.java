@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProductCategoryControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/productCategories";
@@ -96,6 +97,24 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldNotDeleteNonexistentProductCategory() {
+
+    ProductCategory productCategory = productCategories.get(4);
+    productCategoryRepository.delete(productCategory);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", productCategory.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateProductCategory() {
 
     ProductCategory productCategory = productCategories.get(4);
@@ -135,7 +154,7 @@ public class ProductCategoryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateNewProductCategoryIfDoesNotExists() {
+  public void shouldCreateNewProductCategoryIfDoesNotExist() {
 
     ProductCategory productCategory = productCategories.get(4);
     productCategoryRepository.delete(productCategory);

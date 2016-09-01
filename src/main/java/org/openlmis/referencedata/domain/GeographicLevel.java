@@ -27,4 +27,15 @@ public class GeographicLevel extends BaseEntity {
   @Getter
   @Setter
   private Integer levelNumber;
+
+  /**
+   * Copy values of attributes into new or updated GeographicLevel.
+   *
+   * @param geographicLevel GeographicLevel with new values.
+   */
+  public void updateFrom(GeographicLevel geographicLevel) {
+    this.code = geographicLevel.getCode();
+    this.name = geographicLevel.getName();
+    this.levelNumber = geographicLevel.getLevelNumber();
+  }
 }

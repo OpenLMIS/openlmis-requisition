@@ -7,9 +7,6 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -18,6 +15,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "requisition_templates")
@@ -150,5 +149,15 @@ public class RequisitionTemplate extends BaseEntity {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setCanBeChangedByUser(canBeChangedByUser);
     columnsMap.put(key, column);
+  }
+
+  /**
+   * Copy values of attributes into new or updated RequisitionTemplate.
+   *
+   * @param requisitionTemplate RequisitionTemplate with new values.
+   */
+  public void updateFrom(RequisitionTemplate requisitionTemplate) {
+    this.program = requisitionTemplate.getProgram();
+    this.columnsMap = requisitionTemplate.getColumnsMap();
   }
 }

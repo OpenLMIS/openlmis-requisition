@@ -42,4 +42,16 @@ public class OrderLine extends BaseEntity {
   @Getter
   @Setter
   private Long filledQuantity;
+
+  /**
+   * Copy values of attributes into new or updated OrderLine.
+   *
+   * @param orderLine OrderLine with new values.
+   */
+  public void updateFrom(OrderLine orderLine) {
+    this.order = orderLine.getOrder();
+    this.product = orderLine.getProduct();
+    this.orderedQuantity = orderLine.getOrderedQuantity();
+    this.filledQuantity = orderLine.getFilledQuantity();
+  }
 }

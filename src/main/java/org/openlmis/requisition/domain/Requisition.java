@@ -100,4 +100,20 @@ public class Requisition extends BaseEntity {
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
   }
+
+  /**
+   * Copy values of attributes into new or updated Requisition.
+   *
+   * @param requisition Requisition with new values.
+   */
+  public void updateFrom(Requisition requisition) {
+    this.requisitionLines = requisition.getRequisitionLines();
+    this.comments = requisition.getComments();
+    this.facility = requisition.getFacility();
+    this.program = requisition.getProgram();
+    this.processingPeriod = requisition.getProcessingPeriod();
+    this.status = requisition.getStatus();
+    this.emergency = requisition.getEmergency();
+    this.supervisoryNode = requisition.getSupervisoryNode();
+  }
 }

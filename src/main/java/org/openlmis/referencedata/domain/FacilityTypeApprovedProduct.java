@@ -41,4 +41,17 @@ public class FacilityTypeApprovedProduct extends BaseEntity {
   @Getter
   @Setter
   private Double emergencyOrderPoint;
+
+  /**
+   * Copy values of attributes into new or updated FacilityTypeApprovedProduct.
+   *
+   * @param facilityTypeApprovedProduct FacilityTypeApprovedProduct with new values.
+   */
+  public void updateFrom(FacilityTypeApprovedProduct facilityTypeApprovedProduct) {
+    this.facilityType = facilityTypeApprovedProduct.getFacilityType();
+    this.programProduct = facilityTypeApprovedProduct.getProgramProduct();
+    this.maxMonthsOfStock = facilityTypeApprovedProduct.getMaxMonthsOfStock();
+    this.minMonthsOfStock = facilityTypeApprovedProduct.getMinMonthsOfStock();
+    this.emergencyOrderPoint = facilityTypeApprovedProduct.getEmergencyOrderPoint();
+  }
 }

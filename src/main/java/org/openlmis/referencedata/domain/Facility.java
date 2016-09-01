@@ -4,15 +4,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "facilities", schema = "referencedata")
@@ -86,4 +85,25 @@ public class Facility extends BaseEntity {
   @Getter
   @Setter
   private List<Program> supportedPrograms;
+
+  /**
+   * Copy values of attributes into new or updated Facility.
+   *
+   * @param facility Facility with new values.
+   */
+  public void updateFrom(Facility facility) {
+    this.code = facility.getCode();
+    this.name = facility.getName();
+    this.description = facility.getDescription();
+    this.geographicZone = facility.getGeographicZone();
+    this.type = facility.getType();
+    this.operator = facility.getOperator();
+    this.active = facility.getActive();
+    this.goLiveDate = facility.getGoLiveDate();
+    this.goDownDate = facility.getGoDownDate();
+    this.comment = facility.getComment();
+    this.enabled = facility.getEnabled();
+    this.openLmisAccessible = facility.getOpenLmisAccessible();
+    this.supportedPrograms = facility.getSupportedPrograms();
+  }
 }

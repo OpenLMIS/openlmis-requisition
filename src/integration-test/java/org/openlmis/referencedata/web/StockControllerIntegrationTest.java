@@ -71,6 +71,24 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotDeleteNonexistentStock() {
+
+    Stock stock = stocks.get(4);
+    stockRepository.delete(stock);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", stock.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateStock() {
 
     Stock stock = stocks.get(4);
@@ -110,7 +128,7 @@ public class StockControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewStockIfDoesNotExists() {
+  public void shouldCreateNewStockIfDoesNotExist() {
 
     Stock stock = stocks.get(4);
     stockRepository.delete(stock);

@@ -5,12 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.List;
 
 @Entity
 @Table(name = "roles", schema = "referencedata")
@@ -33,4 +33,15 @@ public class Role extends BaseEntity {
   @Getter
   @Setter
   private List<Right> rights;
+
+  /**
+   * Copy values of attributes into new or updated Role.
+   *
+   * @param role Role with new values.
+   */
+  public void updateFrom(Role role) {
+    this.name = role.getName();
+    this.description = role.getDescription();
+    this.rights = role.getRights();
+  }
 }

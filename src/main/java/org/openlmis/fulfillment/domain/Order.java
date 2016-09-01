@@ -110,4 +110,21 @@ public class Order extends BaseEntity {
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
   }
+
+  /**
+   * Copy values of attributes into new or updated Order.
+   *
+   * @param order Order with new values.
+   */
+  public void updateFrom(Order order) {
+    this.requisition = order.requisition;
+    this.createdBy = order.createdBy;
+    this.program = order.program;
+    this.requestingFacility = order.requestingFacility;
+    this.receivingFacility = order.receivingFacility;
+    this.supplyingFacility = order.supplyingFacility;
+    this.orderCode = order.orderCode;
+    this.status = order.status;
+    this.quotedCost = order.quotedCost;
+  }
 }

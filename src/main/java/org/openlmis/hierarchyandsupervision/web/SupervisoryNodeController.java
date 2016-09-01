@@ -29,6 +29,7 @@ public class SupervisoryNodeController extends BaseController {
 
   /**
    * Allows creating new supervisoryNode.
+   * If the id is specified, it will be ignored.
    *
    * @param supervisoryNode A supervisoryNode bound to the request body
    * @return ResponseEntity containing the created supervisoryNode
@@ -37,7 +38,6 @@ public class SupervisoryNodeController extends BaseController {
   public ResponseEntity<?> createSupervisoryNode(@RequestBody SupervisoryNode supervisoryNode) {
     try {
       LOGGER.debug("Creating new supervisoryNode");
-      // Ignore provided id
       supervisoryNode.setId(null);
       SupervisoryNode newSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
       LOGGER.debug("Created new supervisoryNode with id: " + supervisoryNode.getId());
@@ -90,9 +90,19 @@ public class SupervisoryNodeController extends BaseController {
                                        @PathVariable("id") UUID supervisoryNodeId) {
     try {
       LOGGER.debug("Updating supervisoryNode with id: " + supervisoryNodeId);
-      SupervisoryNode updatedSupervisoryNode = supervisoryNodeRepository.save(supervisoryNode);
+
+      SupervisoryNode supervisoryNodeToUpdate =
+            supervisoryNodeRepository.findOne(supervisoryNodeId);
+
+      if (supervisoryNodeToUpdate == null) {
+        supervisoryNodeToUpdate = new SupervisoryNode();
+      }
+
+      supervisoryNodeToUpdate.updateFrom(supervisoryNode);
+      supervisoryNodeToUpdate = supervisoryNodeRepository.save(supervisoryNodeToUpdate);
+
       LOGGER.debug("Updated supervisoryNode with id: " + supervisoryNodeId);
-      return new ResponseEntity<SupervisoryNode>(updatedSupervisoryNode, HttpStatus.OK);
+      return new ResponseEntity<SupervisoryNode>(supervisoryNodeToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error occurred while updating supervisoryNode", ex.getMessage());
@@ -117,8 +127,8 @@ public class SupervisoryNodeController extends BaseController {
         supervisoryNodeRepository.delete(supervisoryNode);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("SupervisoryNode cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error occurred while deleting supervisoryNode",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

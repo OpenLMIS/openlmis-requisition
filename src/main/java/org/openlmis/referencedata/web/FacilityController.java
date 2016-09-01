@@ -40,6 +40,7 @@ public class FacilityController extends BaseController {
 
   /**
    * Allows creating new facilities.
+   * If the id is specified, it will be ignored.
    *
    * @param facility A facility bound to the request body
    * @return ResponseEntity containing the created facility
@@ -48,7 +49,6 @@ public class FacilityController extends BaseController {
   public ResponseEntity<?> createFacility(@RequestBody Facility facility) {
     try {
       LOGGER.debug("Creating new facility");
-      // Ignore provided id
       facility.setId(null);
       Facility newFacility = facilityRepository.save(facility);
       LOGGER.debug("Created new facility with id: " + facility.getId());
@@ -85,9 +85,18 @@ public class FacilityController extends BaseController {
                                        @PathVariable("id") UUID facilityId) {
     try {
       LOGGER.debug("Updating facility with id: " + facilityId);
-      Facility updatedFacility = facilityRepository.save(facility);
+
+      Facility facilityToUpdate = facilityRepository.findOne(facilityId);
+
+      if (facilityToUpdate == null) {
+        facilityToUpdate = new Facility();
+      }
+
+      facilityToUpdate.updateFrom(facility);
+      facilityToUpdate = facilityRepository.save(facilityToUpdate);
+
       LOGGER.debug("Updated facility with id: " + facilityId);
-      return new ResponseEntity<Facility>(updatedFacility, HttpStatus.OK);
+      return new ResponseEntity<Facility>(facilityToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facility", ex.getMessage());
@@ -128,8 +137,7 @@ public class FacilityController extends BaseController {
         facilityRepository.delete(facility);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("Facility cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facility", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

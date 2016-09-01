@@ -83,6 +83,24 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
+  public void shouldNotDeleteNonexistentRequisitionTemplate() {
+
+    requisitionTemplateRepository.delete(requisitionTemplate);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionTemplate.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+
+  @Test
   public void shouldCreateRequisitionTemplate() {
 
     requisitionTemplateRepository.delete(requisitionTemplate);
@@ -121,7 +139,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void shouldCreateNewRequisitionTemplateIfDoesNotExists() {
+  public void shouldCreateNewRequisitionTemplateIfDoesNotExist() {
 
     requisitionTemplateRepository.delete(requisitionTemplate);
     Program program = generateProgram();

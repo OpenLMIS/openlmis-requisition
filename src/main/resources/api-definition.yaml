@@ -1128,14 +1128,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
     /search:
         get:
             is: [ secured ]
@@ -1244,14 +1240,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
     /search:
             get:
                 is: [ secured ]
@@ -1322,8 +1314,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
     /submitted:
         get:
             is: [ secured ]
@@ -1355,6 +1345,10 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -2561,23 +2555,6 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-    /update:
-        put:
-            is: [ secured ]
-            description: Update program code and name.
-            body:
-                application/json:
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
     /{id}:
         uriParameters:
             id:
@@ -3124,7 +3101,7 @@ resourceTypes:
                         X-XSS-Protection:
           delete:
               is: [ secured ]
-              description: Updates Facility Operators with given id from database.
+              description: Delete Facility Operators with given id from database.
               responses:
                   "204":
                       headers:
@@ -3134,14 +3111,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
 
 /geographicZones:
     displayName: Geographic Zone
@@ -3404,14 +3377,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
 
 /supervisoryNodes:
     displayName: Supervisory Node
@@ -3498,14 +3467,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
 
 /roles:
     displayName: Role
@@ -3594,14 +3559,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
 
 /rights:
     displayName: Right
@@ -3686,14 +3647,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
 
 /requisitionGroups:
     displayName: Requisition Group
@@ -3780,14 +3737,10 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
 
 /requisitionGroupProgramSchedules:
     displayName: Requisition Group Program Schedule
@@ -3872,11 +3825,7 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:
                   "409":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
-                      body:
-                          application/json:

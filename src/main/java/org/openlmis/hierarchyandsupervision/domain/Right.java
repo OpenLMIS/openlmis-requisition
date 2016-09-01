@@ -29,4 +29,15 @@ public class Right extends BaseEntity {
   @Getter
   @Setter
   private String description;
+
+  /**
+   * Copy values of attributes into new or updated Right.
+   *
+   * @param right Right with new values.
+   */
+  public void updateFrom(Right right) {
+    this.name = right.getName();
+    this.rightType = right.getRightType();
+    this.description = right.getDescription();
+  }
 }

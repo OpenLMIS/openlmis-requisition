@@ -53,6 +53,23 @@ public class FacilityTypeControllerIntegrationTest extends BaseWebIntegrationTes
   }
 
   @Test
+  public void shouldNotDeleteNonexistentFacilityType() {
+
+    facilityTypeRepository.delete(facilityType);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facilityType.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateFacilityType() {
 
     facilityTypeRepository.delete(facilityType);
@@ -90,7 +107,7 @@ public class FacilityTypeControllerIntegrationTest extends BaseWebIntegrationTes
   }
 
   @Test
-  public void shouldCreateNewFacilityTypeIfDoesNotExists() {
+  public void shouldCreateNewFacilityTypeIfDoesNotExist() {
 
     facilityTypeRepository.delete(facilityType);
     facilityType.setDescription(DESCRIPTION);

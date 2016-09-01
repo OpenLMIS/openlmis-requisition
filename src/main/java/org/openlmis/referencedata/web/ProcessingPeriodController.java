@@ -69,6 +69,7 @@ public class ProcessingPeriodController extends BaseController {
 
   /**
    * Creates given processingPeriod if possible.
+   * If the id is specified, it will be ignored.
    *
    * @param period ProcessingPeriod object to be created.
    * @param bindingResult Object used for validation.
@@ -78,7 +79,6 @@ public class ProcessingPeriodController extends BaseController {
   public ResponseEntity<?> createProcessingPeriod(@RequestBody ProcessingPeriod period,
                                         BindingResult bindingResult) {
     LOGGER.debug("Creating new processingPeriod");
-    // Ignore provided id
     period.setId(null);
     validator.validate(period, bindingResult);
     if (bindingResult.getErrorCount() == 0) {
@@ -124,9 +124,18 @@ public class ProcessingPeriodController extends BaseController {
                                        @PathVariable("id") UUID periodId) {
     try {
       LOGGER.debug("Updating processingPeriod with id: " + periodId);
-      ProcessingPeriod updatedProcessingPeriod = periodRepository.save(period);
+
+      ProcessingPeriod processingPeriodToUpdate = periodRepository.findOne(periodId);
+
+      if (processingPeriodToUpdate == null) {
+        processingPeriodToUpdate = new ProcessingPeriod();
+      }
+
+      processingPeriodToUpdate.updateFrom(period);
+      processingPeriodToUpdate = periodRepository.save(processingPeriodToUpdate);
+
       LOGGER.debug("Updated processingPeriod with id: " + periodId);
-      return new ResponseEntity<ProcessingPeriod>(updatedProcessingPeriod, HttpStatus.OK);
+      return new ResponseEntity<ProcessingPeriod>(processingPeriodToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating processingPeriod",
@@ -168,8 +177,8 @@ public class ProcessingPeriodController extends BaseController {
         periodRepository.delete(period);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("ProcessingPeriod cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting processingPeriod",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -42,6 +42,7 @@ public class ProcessingScheduleController extends BaseController {
 
   /**
    * Allows creating new processingSchedules.
+   * If the id is specified, it will be ignored.
    *
    * @param schedule A processingSchedule bound to the request body
    * @return ResponseEntity containing the created processingSchedule
@@ -50,7 +51,6 @@ public class ProcessingScheduleController extends BaseController {
   public ResponseEntity<?> createProcessingSchedule(@RequestBody ProcessingSchedule schedule) {
     try {
       LOGGER.debug("Creating new processingSchedule");
-      // Ignore provided id
       schedule.setId(null);
       ProcessingSchedule newSchedule = scheduleRepository.save(schedule);
       LOGGER.debug("Created new processingSchedule with id: " + schedule.getId());
@@ -76,9 +76,18 @@ public class ProcessingScheduleController extends BaseController {
                                        @PathVariable("id") UUID scheduleId) {
     try {
       LOGGER.debug("Updating processingSchedule with id: " + scheduleId);
-      ProcessingSchedule updatedSchedule = scheduleRepository.save(schedule);
+
+      ProcessingSchedule scheduleToUpdate = scheduleRepository.findOne(scheduleId);
+
+      if (scheduleToUpdate == null) {
+        scheduleToUpdate = new ProcessingSchedule();
+      }
+
+      scheduleToUpdate.updateFrom(schedule);
+      scheduleToUpdate = scheduleRepository.save(scheduleToUpdate);
+
       LOGGER.debug("Updated processingSchedule with id: " + scheduleId);
-      return new ResponseEntity<ProcessingSchedule>(updatedSchedule, HttpStatus.OK);
+      return new ResponseEntity<ProcessingSchedule>(scheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating processingSchedule",
@@ -132,8 +141,8 @@ public class ProcessingScheduleController extends BaseController {
         scheduleRepository.delete(schedule);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("ProcessingSchedule cannot be deleted"
-                    + " because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting processingSchedule",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -116,6 +116,23 @@ public class RequisitionGroupControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
+  public void shouldNotDeleteNonexistentRequisitionGroup() {
+
+    repository.delete(requisitionGroup);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", requisitionGroup.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateRequisitionGroup() {
 
     repository.delete(requisitionGroup);
@@ -204,7 +221,7 @@ public class RequisitionGroupControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldCreateNewRequisitionGroupIfDoesNotExists() {
+  public void shouldCreateNewRequisitionGroupIfDoesNotExist() {
 
     repository.delete(requisitionGroup);
     requisitionGroup.setDescription(DESCRIPTION);

@@ -29,6 +29,7 @@ public class RequisitionGroupController extends BaseController {
 
   /**
    * Allows creating new requisitionGroup.
+   * If the id is specified, it will be ignored.
    *
    * @param requisitionGroup A requisitionGroup bound to the request body
    * @return ResponseEntity containing the created requisitionGroup
@@ -37,7 +38,6 @@ public class RequisitionGroupController extends BaseController {
   public ResponseEntity<?> createRequisitionGroup(@RequestBody RequisitionGroup requisitionGroup) {
     try {
       LOGGER.debug("Creating new requisitionGroup");
-      // Ignore provided id
       requisitionGroup.setId(null);
       RequisitionGroup newRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
       LOGGER.debug("Created new requisitionGroup with id: " + requisitionGroup.getId());
@@ -91,9 +91,19 @@ public class RequisitionGroupController extends BaseController {
                                                  @PathVariable("id") UUID requisitionGroupId) {
     try {
       LOGGER.debug("Updating requisitionGroup with id: " + requisitionGroupId);
-      RequisitionGroup updatedRequisitionGroup = requisitionGroupRepository.save(requisitionGroup);
+
+      RequisitionGroup requisitionGroupToUpdate =
+            requisitionGroupRepository.findOne(requisitionGroupId);
+
+      if (requisitionGroupToUpdate == null) {
+        requisitionGroupToUpdate = new RequisitionGroup();
+      }
+
+      requisitionGroupToUpdate.updateFrom(requisitionGroup);
+      requisitionGroupToUpdate = requisitionGroupRepository.save(requisitionGroupToUpdate);
+
       LOGGER.debug("Updated requisitionGroup with id: " + requisitionGroupId);
-      return new ResponseEntity<RequisitionGroup>(updatedRequisitionGroup, HttpStatus.OK);
+      return new ResponseEntity<RequisitionGroup>(requisitionGroupToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating requisitionGroup",
@@ -112,15 +122,15 @@ public class RequisitionGroupController extends BaseController {
   @RequestMapping(value = "/requisitionGroups/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisitionGroup(@PathVariable("id") UUID requisitionGroupId) {
     RequisitionGroup requisitionGroup = requisitionGroupRepository.findOne(requisitionGroupId);
-    if (requisitionGroupId == null) {
+    if (requisitionGroup == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
       try {
         requisitionGroupRepository.delete(requisitionGroup);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("RequisitionGroup cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionGroup",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

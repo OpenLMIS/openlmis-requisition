@@ -201,6 +201,29 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotDeleteNonexistentFacility() {
+
+    user.setHomeFacility(null);
+    userRepository.save(user);
+    order.setSupplyingFacility(facility2);
+    orderRepository.save(order);
+    requisition.setFacility(facility2);
+    requisitionRepository.save(requisition);
+    facilityRepository.delete(facility);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", facility.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateFacility() {
 
     user.setHomeFacility(null);
@@ -244,7 +267,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewFacilityIfDoesNotExists() {
+  public void shouldCreateNewFacilityIfDoesNotExist() {
 
     user.setHomeFacility(null);
     userRepository.save(user);

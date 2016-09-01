@@ -54,6 +54,23 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldNotDeleteNonexistentGeographicLevel() {
+
+    geographicLevelRepository.delete(geoLevel);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", geoLevel.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateGeographicLevel() {
 
     geographicLevelRepository.delete(geoLevel);
@@ -91,7 +108,7 @@ public class GeographicLevelControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateNewGeographicLevelIfDoesNotExists() {
+  public void shouldCreateNewGeographicLevelIfDoesNotExist() {
 
     geographicLevelRepository.delete(geoLevel);
     geoLevel.setCode(CODE);

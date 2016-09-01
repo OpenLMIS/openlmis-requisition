@@ -38,6 +38,7 @@ public class RequisitionLineController extends BaseController {
 
   /**
    * Allows creating new requisitionLines.
+   * If the id is specified, it will be ignored.
    *
    * @param requisitionLine A requisitionLine bound to the request body
    * @return ResponseEntity containing the created requisitionLine
@@ -46,7 +47,6 @@ public class RequisitionLineController extends BaseController {
   public ResponseEntity<?> createRequisitionLine(@RequestBody RequisitionLine requisitionLine) {
     try {
       LOGGER.debug("Creating new requisitionLine");
-      // Ignore provided id
       requisitionLine.setId(null);
       RequisitionLine newRequisitionLine = requisitionLineRepository.save(requisitionLine);
       LOGGER.debug("Created new requisitionLine with id: " + requisitionLine.getId());
@@ -83,16 +83,26 @@ public class RequisitionLineController extends BaseController {
                                        @PathVariable("id") UUID requisitionLineId) {
     try {
       LOGGER.debug("Updating requisitionLine with id: " + requisitionLineId);
+
       RequisitionLine requisitionLineToUpdate =
             requisitionLineRepository.findOne(requisitionLineId);
-      if (requisitionLine.getRequisition().getStatus() == RequisitionStatus.INITIATED
-            || requisitionLine.getRequisition().getStatus() == RequisitionStatus.SUBMITTED) {
-        requisitionLineToUpdate = requisitionLineRepository.save(requisitionLine);
-      } else if (requisitionLineToUpdate.getRequisition().getStatus()
-            == RequisitionStatus.AUTHORIZED) {
-        requisitionLineToUpdate.setApprovedQuantity(requisitionLine.getApprovedQuantity());
-        requisitionLineToUpdate.setRemarks(requisitionLine.getRemarks());
+
+      if (requisitionLineToUpdate == null) {
+        requisitionLineToUpdate = new RequisitionLine();
+        requisitionLineToUpdate.updateFrom(requisitionLine);
         requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
+      } else {
+        if (requisitionLineToUpdate.getRequisition().getStatus() == RequisitionStatus.INITIATED
+              || requisitionLineToUpdate.getRequisition().getStatus()
+              == RequisitionStatus.SUBMITTED) {
+          requisitionLineToUpdate.updateFrom(requisitionLine);
+          requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
+        } else if (requisitionLineToUpdate.getRequisition().getStatus()
+              == RequisitionStatus.AUTHORIZED) {
+          requisitionLineToUpdate.setApprovedQuantity(requisitionLine.getApprovedQuantity());
+          requisitionLineToUpdate.setRemarks(requisitionLine.getRemarks());
+          requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
+        }
       }
       LOGGER.debug("Updated requisitionLine with id: " + requisitionLineId);
       return new ResponseEntity<RequisitionLine>(requisitionLineToUpdate, HttpStatus.OK);
@@ -136,8 +146,8 @@ public class RequisitionLineController extends BaseController {
         requisitionLineRepository.delete(requisitionLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("RequisitionLine cannot be deleted"
-                    + "because of existing dependencies", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionLine",
+                    ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

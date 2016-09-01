@@ -28,6 +28,7 @@ public class FacilityTypeController extends BaseController {
 
   /**
    * Allows creating new facilityType.
+   * If the id is specified, it will be ignored.
    *
    * @param facilityType A facilityType bound to the request body
    * @return ResponseEntity containing the created facilityType
@@ -36,7 +37,6 @@ public class FacilityTypeController extends BaseController {
   public ResponseEntity<?> createFacilityType(@RequestBody FacilityType facilityType) {
     try {
       LOGGER.debug("Creating new facilityType");
-      // Ignore provided id
       facilityType.setId(null);
       FacilityType newFacilityType = facilityTypeRepository.save(facilityType);
       LOGGER.debug("Created new facilityType with id: " + facilityType.getId());
@@ -73,9 +73,18 @@ public class FacilityTypeController extends BaseController {
                                             @PathVariable("id") UUID facilityTypeId) {
     try {
       LOGGER.debug("Updating facility with id: " + facilityTypeId);
-      FacilityType updatedFacilityType = facilityTypeRepository.save(facilityType);
+
+      FacilityType facilityTypeToUpdate = facilityTypeRepository.findOne(facilityTypeId);
+
+      if (facilityTypeToUpdate == null) {
+        facilityTypeToUpdate = new FacilityType();
+      }
+
+      facilityTypeToUpdate.updateFrom(facilityType);
+      facilityTypeToUpdate = facilityTypeRepository.save(facilityTypeToUpdate);
+
       LOGGER.debug("Updated facility with id: " + facilityTypeId);
-      return new ResponseEntity<FacilityType>(updatedFacilityType, HttpStatus.OK);
+      return new ResponseEntity<FacilityType>(facilityTypeToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating facilityType", ex.getMessage());
@@ -116,8 +125,7 @@ public class FacilityTypeController extends BaseController {
         facilityTypeRepository.delete(facilityType);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("FacilityType cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facilityType", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -253,7 +253,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewOrderLineIfDoesNotExists() {
+  public void shouldCreateNewOrderLineIfDoesNotExist() {
 
     orderLineRepository.delete(orderLine);
     orderLine.setOrderedQuantity(100L);
@@ -320,6 +320,23 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
           .statusCode(204);
 
     assertFalse(orderLineRepository.exists(orderLine.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteNonexistentOrderLine() {
+
+    orderLineRepository.delete(orderLine);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", orderLine.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

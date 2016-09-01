@@ -69,4 +69,20 @@ public class ProofOfDelivery extends BaseEntity {
   @Getter
   @Setter
   private LocalDate receivedDate;
+
+  /**
+   * Copy values of attributes into new or updated ProofOfDelivery.
+   *
+   * @param proofOfDelivery ProofOfDelivery with new values.
+   */
+  public void updateFrom(ProofOfDelivery proofOfDelivery) {
+    this.order = proofOfDelivery.order;
+    this.proofOfDeliveryLineItems = proofOfDelivery.getProofOfDeliveryLineItems();
+    this.totalShippedPacks = proofOfDelivery.getTotalShippedPacks();
+    this.totalReceivedPacks = proofOfDelivery.getTotalReceivedPacks();
+    this.totalReturnedPacks = proofOfDelivery.getTotalReturnedPacks();
+    this.deliveredBy = proofOfDelivery.getDeliveredBy();
+    this.receivedBy = proofOfDelivery.getReceivedBy();
+    this.receivedDate = proofOfDelivery.getReceivedDate();
+  }
 }

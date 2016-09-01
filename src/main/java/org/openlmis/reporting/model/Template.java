@@ -6,13 +6,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
 
-import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.List;
 
 @Entity
 @Table(name = "templates")
@@ -46,4 +45,17 @@ public class Template extends BaseEntity {
   @Getter
   @Setter
   private String description;
+
+  /**
+   * Copy values of attributes into new or updated Template.
+   *
+   * @param template Template with new values.
+   */
+  public void updateFrom(Template template) {
+    this.name = template.getName();
+    this.data = template.getData();
+    this.templateParameters = template.getTemplateParameters();
+    this.type = template.getType();
+    this.description = template.getDescription();
+  }
 }

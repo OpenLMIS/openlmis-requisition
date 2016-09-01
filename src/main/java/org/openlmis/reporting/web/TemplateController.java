@@ -82,9 +82,18 @@ public class TemplateController extends BaseController {
                                           @PathVariable("id") UUID templateId) {
     try {
       LOGGER.debug("Updating template with id: " + templateId);
-      Template updatedTemplate = templateRepository.save(template);
+
+      Template templateToUpdate = templateRepository.findOne(templateId);
+
+      if (templateToUpdate == null) {
+        templateToUpdate = new Template();
+      }
+
+      templateToUpdate.updateFrom(template);
+      templateToUpdate = templateRepository.save(templateToUpdate);
+
       LOGGER.debug("Updated template with id: " + templateId);
-      return new ResponseEntity<Template>(updatedTemplate, HttpStatus.OK);
+      return new ResponseEntity<Template>(templateToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating template", ex.getMessage());
@@ -128,8 +137,7 @@ public class TemplateController extends BaseController {
         templateRepository.delete(template);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("Template cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting template", ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

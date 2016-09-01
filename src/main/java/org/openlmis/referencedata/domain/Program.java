@@ -48,4 +48,18 @@ public class Program extends BaseEntity {
       this.periodsSkippable = false;
     }
   }
+
+  /**
+   * Copy values of attributes into new or updated Program.
+   *
+   * @param program ProgramProduct with new values.
+   */
+  public void updateFrom(Program program) {
+    this.code = program.getCode();
+    this.name = program.getName();
+    this.description = program.getDescription();
+    this.active = program.getActive();
+    this.periodsSkippable = program.getPeriodsSkippable();
+    this.showNonFullSupplyTab = program.getShowNonFullSupplyTab();
+  }
 }

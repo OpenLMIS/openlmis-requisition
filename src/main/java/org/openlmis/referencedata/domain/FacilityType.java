@@ -35,4 +35,16 @@ public class FacilityType extends BaseEntity {
   @Getter
   @Setter
   private Boolean active;
+
+  /**
+   * Copy values of attributes into new or updated FacilityType.
+   *
+   * @param facilityType FacilityType with new values.
+   */
+  public void updateFrom(FacilityType facilityType) {
+    this.code = facilityType.getCode();
+    this.name = facilityType.getName();
+    this.description = facilityType.getDescription();
+    this.displayOrder = facilityType.getDisplayOrder();
+  }
 }
