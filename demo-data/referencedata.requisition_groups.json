@@ -3,6 +3,6 @@
     "id": "00000000-0000-0000-0000-000000000001",
     "code": "REQGRP001",
     "name": "Requisition Group 1",
-    "supervisoryNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000001"
+    "supervisoryNode": { "id": "00000000-0000-0000-0000-000000000001" }
   }
 ]

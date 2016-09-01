@@ -1,28 +1,28 @@
 [
   {
     "id": "00000000-0000-0000-0000-000000000001",
-    "supervisoryNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000001",
-    "program": "/api/programs/00000000-0000-0000-0000-000000000001",
-    "supplyingFacility": "/api/facilities/00000000-0000-0000-0000-000000000001",
+    "supervisoryNode": { "id": "00000000-0000-0000-0000-000000000001" },
+    "program": { "id": "00000000-0000-0000-0000-000000000001" },
+    "supplyingFacility": { "id": "00000000-0000-0000-0000-000000000001" },
     "description": "The very first supply line"
   },
   {
     "id": "00000000-0000-0000-0000-000000000002",
-    "supervisoryNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000002",
-    "program": "/api/programs/00000000-0000-0000-0000-000000000002",
-    "supplyingFacility": "/api/facilities/00000000-0000-0000-0000-000000000001"
+    "supervisoryNode": { "id": "00000000-0000-0000-0000-000000000002" },
+    "program": { "id": "00000000-0000-0000-0000-000000000002" },
+    "supplyingFacility": { "id": "00000000-0000-0000-0000-000000000001" }
   },
   {
     "id": "00000000-0000-0000-0000-000000000003",
-    "supervisoryNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000001",
-    "program": "/api/programs/00000000-0000-0000-0000-000000000003",
-    "supplyingFacility": "/api/facilities/00000000-0000-0000-0000-000000000002"
+    "supervisoryNode": { "id": "00000000-0000-0000-0000-000000000001" },
+    "program": { "id": "00000000-0000-0000-0000-000000000003" },
+    "supplyingFacility": { "id": "00000000-0000-0000-0000-000000000002" }
   },
   {
     "id": "00000000-0000-0000-0000-000000000004",
-    "supervisoryNode": "/api/supervisoryNodes/00000000-0000-0000-0000-000000000003",
-    "program": "/api/programs/00000000-0000-0000-0000-000000000002",
-    "supplyingFacility": "/api/facilities/00000000-0000-0000-0000-000000000001",
+    "supervisoryNode": { "id": "00000000-0000-0000-0000-000000000003" },
+    "program": { "id": "00000000-0000-0000-0000-000000000002" },
+    "supplyingFacility": { "id": "00000000-0000-0000-0000-000000000001" },
     "description": "The very fourth supply line"
   }
 ]

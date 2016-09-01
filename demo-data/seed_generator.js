@@ -34,17 +34,16 @@ var filesOrdered = [
 
 // Detects if the given key/value pair represents a foreign key.
 var isForeign = function(obj, key) {
-    return (
-        typeof obj[key] === 'string'
-        && obj[key].indexOf("/api/") === 0);
+    var val = obj[key];
+    return val !== null && typeof val === 'object' && val.hasOwnProperty("id");
 }
 
 // Refractors the key/value pair to match database format.
 var adjustForeign = function(obj, key) {
     var newKey = key.endsWith(dbIdSuffix) ? key : key + dbIdSuffix;
-    var slices = obj[key].split("/");
-    obj[newKey] = slices[slices.length - 1];
+    var newVal = obj[key]["id"];
 
+    obj[newKey] = newVal;
     if (newKey !== key) {
         delete obj[key];
     }
