@@ -896,7 +896,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void deleteCommentShouldBeIdempotent() {
+  public void shouldNotDeleteNonexistentComment() {
 
     Comment comment = createComment(user, requisition, COMMENT);
     commentRepository.delete(comment);
@@ -908,7 +908,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .when()
           .delete(ID_COMMENT_URL)
           .then()
-          .statusCode(204);
+          .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

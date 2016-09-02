@@ -2,15 +2,16 @@ package org.openlmis.referencedata.web;
 
 import org.openlmis.referencedata.exception.CsvInputNotValidException;
 import org.openlmis.referencedata.exception.ExceptionDetail;
+import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 
 @ControllerAdvice
@@ -27,7 +28,7 @@ public class RestExceptionHandler {
    */
   @ExceptionHandler(CsvInputNotValidException.class)
   public ResponseEntity<ExceptionDetail> csvInputNotValidExceptionHandler(
-          HttpRequest request, RuntimeException ex) {
+          CsvInputNotValidException ex, HttpServletRequest request) {
     logException(ex, request);
     HttpStatus status = HttpStatus.BAD_REQUEST;
     String title = "Resource Property Validation Failure";
@@ -40,13 +41,14 @@ public class RestExceptionHandler {
    * @param ex the exception to handle
    * @return the error
    */
-  @ExceptionHandler(RequisitionNotFoundException.class)
+  @ExceptionHandler({RequisitionNotFoundException.class, CommentNotFoundException.class})
   public ResponseEntity<ExceptionDetail> handleReqNotFoundException(
-          HttpRequest request, RequisitionNotFoundException ex) {
+          HttpServletRequest request, Exception ex) {
+    LOGGER.error("HANDLER CALLED");
     logException(ex, request);
     ExceptionDetail detail = getExceptionDetail(ex, HttpStatus.BAD_REQUEST,
-            "Requisition not found");
-    return new ResponseEntity<>(detail, HttpStatus.BAD_REQUEST);
+            ex.getMessage());
+    return new ResponseEntity<>(detail, HttpStatus.NOT_FOUND);
   }
 
   private static ExceptionDetail getExceptionDetail(
@@ -60,7 +62,7 @@ public class RestExceptionHandler {
     return exceptionDetail;
   }
 
-  private void logException(Exception ex, HttpRequest request) {
-    LOGGER.error("Error while executing request: {}", request.getURI(), ex);
+  private void logException(Exception ex, HttpServletRequest request) {
+    LOGGER.error("Error while executing request: {}", request.getRequestURI(), ex);
   }
 }

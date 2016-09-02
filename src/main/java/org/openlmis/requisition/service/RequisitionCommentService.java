@@ -3,6 +3,7 @@ package org.openlmis.requisition.service;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -102,11 +103,12 @@ public class RequisitionCommentService {
    * Deletes a comment with the given id if it exists.
    * @param commentId the id of the comment
    */
-  public void deleteComment(UUID commentId) {
+  public void deleteComment(UUID commentId) throws CommentNotFoundException {
     Comment comment = commentRepository.findOne(commentId);
-    if (comment != null) {
-      commentRepository.delete(comment);
+    if (comment == null) {
+      throw new CommentNotFoundException(commentId);
     }
+    commentRepository.delete(comment);
   }
 
   private Requisition findRequisition(UUID requisitionId) throws RequisitionNotFoundException {

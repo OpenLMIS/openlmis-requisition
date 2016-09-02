@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Comment;
+import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.view.View;
@@ -86,7 +87,8 @@ public class RequisitionCommentController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRequisitionComment(@PathVariable("id") UUID commentId) {
+  public void deleteRequisitionComment(@PathVariable("id") UUID commentId)
+          throws CommentNotFoundException {
     commentService.deleteComment(commentId);
   }
 
