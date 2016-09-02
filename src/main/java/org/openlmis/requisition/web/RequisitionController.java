@@ -7,16 +7,13 @@ import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.web.BaseController;
-import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +22,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -48,8 +44,8 @@ import java.util.UUID;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-@Controller
 @SuppressWarnings("PMD.TooManyMethods")
+@Controller
 public class RequisitionController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
@@ -63,9 +59,6 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionService requisitionService;
-
-  @Autowired
-  private CommentRepository commentRepository;
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
@@ -242,116 +235,6 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
-  }
-
-  /**
-   * Add comment to the requisition.
-   */
-  @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
-  public ResponseEntity<Object> insertComment(@RequestBody Comment comment,
-                                         @PathVariable("id") UUID id, OAuth2Authentication auth) {
-    Requisition requisition = requisitionRepository.findOne(id);
-    comment.setRequisition(requisition);
-
-    User user = (User) auth.getPrincipal();
-    comment.setAuthor(user);
-    commentRepository.save(comment);
-
-    List<Comment> comments = requisition.getComments();
-    MappingJacksonValue value = new MappingJacksonValue(comments);
-    value.setSerializationView(View.BasicInformation.class);
-    return new ResponseEntity<>(value, HttpStatus.OK);
-  }
-
-  /**
-   * Get all comments for specified requisition.
-   */
-  @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
-  public ResponseEntity<Object> getCommentsForRequisition(@PathVariable("id") UUID id) {
-    Requisition requisition = requisitionRepository.findOne(id);
-    List<Comment> comments = requisition.getComments();
-    MappingJacksonValue value = new MappingJacksonValue(comments);
-    value.setSerializationView(View.BasicInformation.class);
-    return new ResponseEntity<>(value, HttpStatus.OK);
-  }
-
-  /**
-   * Allows updating comments.
-   *
-   * @param comment A comment bound to the request body
-   * @param commentId UUID of comment which we want to update
-   * @return ResponseEntity containing the updated requisition
-   */
-  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisitionComment(@RequestBody Comment comment,
-                                                    @PathVariable("id") UUID commentId,
-                                                    OAuth2Authentication auth) {
-    try {
-      LOGGER.debug("Updating comment with id: " + commentId);
-
-      Comment requisitionComment = commentRepository.findOne(commentId);
-
-      if (requisitionComment == null) {
-        requisitionComment = new Comment();
-      }
-
-      requisitionComment.updateFrom(comment);
-      Comment updatedComment = commentRepository.save(requisitionComment);
-
-      LOGGER.debug("Updated comment with id: " + commentId);
-      MappingJacksonValue value = new MappingJacksonValue(updatedComment);
-      value.setSerializationView(View.BasicInformation.class);
-      return new ResponseEntity<>(value, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating comment with id: "
-                  + commentId, ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  /**
-   * Get chosen comment.
-   *
-   * @param commentId UUID of comment which we want to get
-   * @return Comment.
-   */
-  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getChoosenRequisitionComment(@PathVariable("id") UUID commentId) {
-    Comment comment = commentRepository.findOne(commentId);
-    if (comment == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      MappingJacksonValue value = new MappingJacksonValue(comment);
-      value.setSerializationView(View.BasicInformation.class);
-      return new ResponseEntity<>(value, HttpStatus.OK);
-    }
-  }
-
-  /**
-   * Allows deleting requisitionLine.
-   *
-   * @param commentId UUID of requisitionLine which we want to delete
-   * @return ResponseEntity containing the HTTP Status
-   */
-  @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId) {
-    Comment comment = commentRepository.findOne(commentId);
-    if (comment == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
-    } else {
-      try {
-        commentRepository.delete(comment);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while updating comment with id: "
-                    + commentId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
-      return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
-    }
   }
 
   /**
