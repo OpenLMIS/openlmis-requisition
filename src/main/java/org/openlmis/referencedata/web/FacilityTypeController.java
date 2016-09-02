@@ -87,7 +87,8 @@ public class FacilityTypeController extends BaseController {
       return new ResponseEntity<FacilityType>(facilityTypeToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating facilityType", ex.getMessage());
+            new ErrorResponse("An error accurred while updating facilityType with id: "
+                  + facilityTypeId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -125,7 +126,8 @@ public class FacilityTypeController extends BaseController {
         facilityTypeRepository.delete(facilityType);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting facilityType", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facilityType with id: "
+                    + facilityTypeId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -99,7 +99,8 @@ public class FacilityController extends BaseController {
       return new ResponseEntity<Facility>(facilityToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating facility", ex.getMessage());
+            new ErrorResponse("An error accurred while updating facility with id: "
+                  + facilityId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -137,7 +138,8 @@ public class FacilityController extends BaseController {
         facilityRepository.delete(facility);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting facility", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facility with id: "
+                    + facilityId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

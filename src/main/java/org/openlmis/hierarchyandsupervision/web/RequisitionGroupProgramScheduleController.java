@@ -97,7 +97,7 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
         @RequestBody RequisitionGroupProgramSchedule reqGroupProgSchedule,
         @PathVariable("id") UUID requisitionId) {
     try {
-      LOGGER.debug("Updating requisitionGPS with id: " + reqGroupProgSchedule.getId());
+      LOGGER.debug("Updating requisitionGPS with id: " + requisitionId);
 
       RequisitionGroupProgramSchedule reqGroupProgScheduleToUpdate =
             repository.findOne(requisitionId);
@@ -109,13 +109,13 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
       reqGroupProgScheduleToUpdate.updateFrom(reqGroupProgSchedule);
       reqGroupProgScheduleToUpdate = repository.save(reqGroupProgScheduleToUpdate);
 
-      LOGGER.debug("Updated requisitionGPS with id: " + reqGroupProgSchedule.getId());
+      LOGGER.debug("Updated requisitionGPS with id: " + requisitionId);
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             reqGroupProgScheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while updating"
-                  + "requisitionGroupProgramSchedule", ex.getMessage());
+                  + "requisitionGroupProgramSchedule with id: " + requisitionId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -138,8 +138,8 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
         repository.delete(requisition);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting requisitionGroupProgramSchedule",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionGroupProgramSchedule"
+                    + " with id: " + requisitionId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -108,7 +108,8 @@ public class RequisitionLineController extends BaseController {
       return new ResponseEntity<RequisitionLine>(requisitionLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while creating requisitionLine", ex.getMessage());
+            new ErrorResponse("An error accurred while updating requisitionLine with id: "
+                  + requisitionLineId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -146,8 +147,8 @@ public class RequisitionLineController extends BaseController {
         requisitionLineRepository.delete(requisitionLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting requisitionLine",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionLine with id: "
+                    + requisitionLineId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

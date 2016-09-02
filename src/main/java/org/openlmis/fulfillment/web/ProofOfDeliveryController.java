@@ -107,7 +107,8 @@ public class ProofOfDeliveryController extends BaseController {
       return new ResponseEntity<ProofOfDelivery>(proofOfDeliveryToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating proofOfDelivery", ex.getMessage());
+            new ErrorResponse("An error occurred while updating proofOfDelivery with id: "
+                  + proofOfDeliveryId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -145,8 +146,8 @@ public class ProofOfDeliveryController extends BaseController {
         proofOfDeliveryRepository.delete(proofOfDelivery);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting proofOfDelivery",
-                    ex.getMessage());
+              new ErrorResponse("An error occurred while deleting proofOfDelivery with id: "
+                    + proofOfDeliveryId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

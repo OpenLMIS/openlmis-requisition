@@ -83,7 +83,7 @@ public class SupplyLineController extends BaseController {
     try {
       LOGGER.debug("Updating supplyLine with id: " + supplyLineId);
 
-      SupplyLine supplyLineToUpdate = supplyLineRepository.save(supplyLine);
+      SupplyLine supplyLineToUpdate = supplyLineRepository.findOne(supplyLineId);
 
       if (supplyLineToUpdate == null) {
         supplyLineToUpdate = new SupplyLine();
@@ -96,7 +96,8 @@ public class SupplyLineController extends BaseController {
       return new ResponseEntity<SupplyLine>(supplyLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating supplyLine", ex.getMessage());
+            new ErrorResponse("An error accurred while updating supplyLine with id: "
+                  + supplyLineId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -134,7 +135,8 @@ public class SupplyLineController extends BaseController {
         supplyLineRepository.delete(supplyLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting supplyLine", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting supplyLine with id: "
+                    + supplyLineId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

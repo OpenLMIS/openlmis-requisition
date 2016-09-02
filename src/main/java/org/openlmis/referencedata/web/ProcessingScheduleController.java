@@ -90,8 +90,8 @@ public class ProcessingScheduleController extends BaseController {
       return new ResponseEntity<ProcessingSchedule>(scheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating processingSchedule",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating processingSchedule with id: "
+                  + scheduleId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -141,8 +141,8 @@ public class ProcessingScheduleController extends BaseController {
         scheduleRepository.delete(schedule);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting processingSchedule",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting processingSchedule with id: "
+                    + scheduleId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

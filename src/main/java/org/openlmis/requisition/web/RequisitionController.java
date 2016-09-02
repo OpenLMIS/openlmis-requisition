@@ -156,7 +156,8 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisition", ex.getMessage());
+            new ErrorResponse("An error accurred while updating requisition with id: "
+                  + requisitionId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -303,7 +304,8 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(value, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating comment", ex.getMessage());
+            new ErrorResponse("An error accurred while updating comment with id: "
+                  + commentId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -343,8 +345,8 @@ public class RequisitionController extends BaseController {
         commentRepository.delete(comment);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("Comment cannot be deleted because of existing dependencies",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while updating comment with id: "
+                    + commentId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

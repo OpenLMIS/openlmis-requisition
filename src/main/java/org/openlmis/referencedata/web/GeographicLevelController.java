@@ -88,7 +88,8 @@ public class GeographicLevelController extends BaseController {
       return new ResponseEntity<GeographicLevel>(geographicLevelToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating geographicLevel", ex.getMessage());
+            new ErrorResponse("An error accurred while updating geographicLevel with id: "
+                  + geographicLevelId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -126,8 +127,8 @@ public class GeographicLevelController extends BaseController {
         geographicLevelRepository.delete(geographicLevel);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting geographicLevel",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting geographicLevel with id: "
+                    + geographicLevelId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

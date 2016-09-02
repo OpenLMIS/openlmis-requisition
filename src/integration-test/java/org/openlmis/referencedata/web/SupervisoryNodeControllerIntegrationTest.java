@@ -105,7 +105,7 @@ public class SupervisoryNodeControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldnotDeleteNonexistentSupervisoryNode() {
+  public void shouldNotDeleteNonexistentSupervisoryNode() {
 
     repository.delete(supervisoryNode);
 

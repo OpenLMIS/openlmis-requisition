@@ -30,12 +30,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.validation.Valid;
 
 @Controller
 public class UserController extends BaseController {
@@ -179,7 +178,7 @@ public class UserController extends BaseController {
         userRepository.delete(user);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("User cannot be deleted because of existing dependencies",
+              new ErrorResponse("An error occurred while deleting user with id: " + userId,
                     ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);

@@ -88,7 +88,8 @@ public class RightController extends BaseController {
       return new ResponseEntity<Right>(rightToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating right", ex.getMessage());
+            new ErrorResponse("An error accurred while updating right with id: "
+                  + rightId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -126,7 +127,8 @@ public class RightController extends BaseController {
         rightRepository.delete(right);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting right", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting right with id: "
+                    + rightId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

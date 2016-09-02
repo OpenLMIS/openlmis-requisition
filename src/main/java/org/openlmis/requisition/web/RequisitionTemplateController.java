@@ -101,8 +101,8 @@ public class RequisitionTemplateController extends BaseController {
       return new ResponseEntity<RequisitionTemplate>(requisitionTemplateToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisitionTemplate",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating requisitionTemplate with id: "
+                  + requisitionTemplateId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -143,8 +143,8 @@ public class RequisitionTemplateController extends BaseController {
         requisitionTemplateRepository.delete(requisitionTemplate);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting requisitionTemplate",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionTemplate with id: "
+                    + requisitionTemplateId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

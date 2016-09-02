@@ -94,7 +94,8 @@ public class ProgramProductController extends BaseController {
       return new ResponseEntity<ProgramProduct>(programProductToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating programProduct", ex.getMessage());
+            new ErrorResponse("An error accurred while updating programProduct with id: "
+                  + programProductId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -132,8 +133,8 @@ public class ProgramProductController extends BaseController {
         programProductRepository.delete(programProduct);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting programProduct",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting programProduct with id: "
+                    + programProductId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

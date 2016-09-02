@@ -138,8 +138,8 @@ public class ProcessingPeriodController extends BaseController {
       return new ResponseEntity<ProcessingPeriod>(processingPeriodToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating processingPeriod",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating processingPeriod with id: "
+                  + periodId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -177,8 +177,8 @@ public class ProcessingPeriodController extends BaseController {
         periodRepository.delete(period);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting processingPeriod",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting processingPeriod with id: "
+                    + periodId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

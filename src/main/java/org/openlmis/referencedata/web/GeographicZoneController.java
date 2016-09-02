@@ -87,7 +87,8 @@ public class GeographicZoneController extends BaseController {
       return new ResponseEntity<GeographicZone>(geographicZoneToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating geographicZone", ex.getMessage());
+            new ErrorResponse("An error accurred while updating geographicZone with id: "
+                  + geographicZoneId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -125,8 +126,8 @@ public class GeographicZoneController extends BaseController {
         geographicZoneRepository.delete(geographicZone);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting geographicZone",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting geographicZone with id: "
+                    + geographicZoneId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

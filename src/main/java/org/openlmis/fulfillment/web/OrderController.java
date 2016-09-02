@@ -106,7 +106,8 @@ public class OrderController extends BaseController {
       return new ResponseEntity<Order>(orderToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating order", ex.getMessage());
+            new ErrorResponse("An error occurred while updating order with id: "
+                  + orderId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -144,7 +145,8 @@ public class OrderController extends BaseController {
         orderRepository.delete(order);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting order", ex.getMessage());
+              new ErrorResponse("An error occurred while deleting order with id: "
+                    + orderId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

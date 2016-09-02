@@ -94,7 +94,8 @@ public class StockController extends BaseController {
       return new ResponseEntity<Stock>(stockToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating stock", ex.getMessage());
+            new ErrorResponse("An error accurred while updating stock with id: "
+                  + stockId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -132,7 +133,8 @@ public class StockController extends BaseController {
         stockRepository.delete(stock);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting stock", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting stock with id: "
+                    + stockId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -106,8 +106,8 @@ public class RequisitionGroupController extends BaseController {
       return new ResponseEntity<RequisitionGroup>(requisitionGroupToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisitionGroup",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating requisitionGroup with id: "
+                  + requisitionGroupId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -129,8 +129,8 @@ public class RequisitionGroupController extends BaseController {
         requisitionGroupRepository.delete(requisitionGroup);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting requisitionGroup",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting requisitionGroup with id: "
+                    + requisitionGroupId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

@@ -95,7 +95,8 @@ public class ProductCategoryController extends BaseController {
       return new ResponseEntity<ProductCategory>(productCategoryToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating productCategory", ex.getMessage());
+            new ErrorResponse("An error accurred while updating productCategory with id: "
+                  + productCategoryId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -133,8 +134,8 @@ public class ProductCategoryController extends BaseController {
         productCategoryRepository.delete(productCategory);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting productCategory",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting productCategory with id: "
+                    + productCategoryId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

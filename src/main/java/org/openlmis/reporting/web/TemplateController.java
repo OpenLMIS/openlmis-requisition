@@ -96,7 +96,8 @@ public class TemplateController extends BaseController {
       return new ResponseEntity<Template>(templateToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating template", ex.getMessage());
+            new ErrorResponse("An error accurred while updating template with id: "
+                  + templateId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -137,7 +138,8 @@ public class TemplateController extends BaseController {
         templateRepository.delete(template);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting template", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting template with id: "
+                    + templateId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

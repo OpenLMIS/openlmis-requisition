@@ -96,8 +96,8 @@ public class FacilityTypeApprovedProductController extends BaseController {
       return new ResponseEntity<FacilityTypeApprovedProduct>(facilityToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating facilityTypeApprovedProduct",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating facilityTypeApprovedProduct"
+                  + "with id: " + facilityTypeApprovedProductId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -140,8 +140,8 @@ public class FacilityTypeApprovedProductController extends BaseController {
         repository.delete(facilityTypeApprovedProduct);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting facilityTypeApprovedProduct",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facilityTypeApprovedProduct"
+                    + " with id: " + facilityTypeApprovedProductId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

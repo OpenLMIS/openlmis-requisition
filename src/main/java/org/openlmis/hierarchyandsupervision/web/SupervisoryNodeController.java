@@ -105,7 +105,8 @@ public class SupervisoryNodeController extends BaseController {
       return new ResponseEntity<SupervisoryNode>(supervisoryNodeToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating supervisoryNode", ex.getMessage());
+            new ErrorResponse("An error occurred while updating supervisoryNode with id: "
+                  + supervisoryNodeId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -127,8 +128,8 @@ public class SupervisoryNodeController extends BaseController {
         supervisoryNodeRepository.delete(supervisoryNode);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting supervisoryNode",
-                    ex.getMessage());
+              new ErrorResponse("An error occurred while deleting supervisoryNode with id: "
+                    + supervisoryNodeId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

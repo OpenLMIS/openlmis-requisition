@@ -88,7 +88,8 @@ public class RoleController extends BaseController {
       return new ResponseEntity<Role>(roleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating role", ex.getMessage());
+            new ErrorResponse("An error accurred while updating role with id: "
+                  + roleId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -126,7 +127,8 @@ public class RoleController extends BaseController {
         roleRepository.delete(role);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting role", ex.getMessage());
+              new ErrorResponse("An error accurred while deleting role with id: "
+                    + roleId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

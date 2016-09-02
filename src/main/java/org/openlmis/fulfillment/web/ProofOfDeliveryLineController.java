@@ -97,8 +97,8 @@ public class ProofOfDeliveryLineController extends BaseController {
       return new ResponseEntity<ProofOfDeliveryLine>(proofOfDeliveryLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating proofOfDeliveryLine",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating proofOfDeliveryLine with id: "
+                  + proofOfDeliveryLineId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -139,8 +139,8 @@ public class ProofOfDeliveryLineController extends BaseController {
         proofOfDeliveryLineRepository.delete(proofOfDeliveryLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting proofOfDeliveryLine",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting proofOfDeliveryLine with id: "
+                    + proofOfDeliveryLineId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

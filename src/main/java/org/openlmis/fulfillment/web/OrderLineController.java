@@ -88,7 +88,8 @@ public class OrderLineController extends BaseController {
       return new ResponseEntity<OrderLine>(orderLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating orderLine", ex.getMessage());
+            new ErrorResponse("An error occurred while updating orderLine with id: "
+                  + orderLineId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -126,7 +127,8 @@ public class OrderLineController extends BaseController {
         orderLineRepository.delete(orderLine);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting orderLine", ex.getMessage());
+              new ErrorResponse("An error occurred while deleting orderLine with id: "
+                    + orderLineId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }

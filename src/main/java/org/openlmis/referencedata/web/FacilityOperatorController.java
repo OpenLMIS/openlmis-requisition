@@ -90,8 +90,8 @@ public class FacilityOperatorController extends BaseController {
       return new ResponseEntity<FacilityOperator>(facilityOperatorToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating facilityOperator",
-                  ex.getMessage());
+            new ErrorResponse("An error accurred while updating facilityOperator with id: "
+                  + facilityOperatorId, ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -129,8 +129,8 @@ public class FacilityOperatorController extends BaseController {
         facilityOperatorRepository.delete(facilityOperator);
       } catch (DataIntegrityViolationException ex) {
         ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting facilityOperator",
-                    ex.getMessage());
+              new ErrorResponse("An error accurred while deleting facilityOperator with id: "
+                    + facilityOperatorId, ex.getMessage());
         LOGGER.error(errorResponse.getMessage(), ex);
         return new ResponseEntity(HttpStatus.CONFLICT);
       }
