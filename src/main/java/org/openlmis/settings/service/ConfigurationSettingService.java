@@ -15,6 +15,20 @@ public class ConfigurationSettingService {
   private ConfigurationSettingRepository configurationSettingRepository;
 
   /**
+   * Return cofiguration setting with given key.
+   * @param key String value of key.
+   * @return Configuration setting containing given key.
+   * @throws ConfigurationSettingException Exception saying that setting was not found.
+   */
+  public ConfigurationSetting getByKey(String key) throws ConfigurationSettingException {
+    ConfigurationSetting setting = configurationSettingRepository.findOne(key);
+    if (setting == null) {
+      throw new ConfigurationSettingException("Configuration setting '" + key + "' not found");
+    }
+    return setting;
+  }
+
+  /**
    * Return value for given key if possible.
    *
    * @param key String value indicates key.

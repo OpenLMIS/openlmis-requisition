@@ -516,6 +516,17 @@ schemas:
           }
       }
 
+  - configurationSetting: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ConfigurationSetting",
+          "description": "A single configurationSetting",
+          "properties": {
+              "key": { "type": "string", "required": true, "title": "key" },
+              "value": { "type": "string", "required": true, "title": "value" }
+          }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -3831,3 +3842,26 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
+/settings:
+    displayName: Settings.
+    /{key}:
+          uriParameters:
+            key:
+                displayName: key
+                type: string
+                required: true
+                repeat: false
+          get:
+             is: [ secured ]
+             description: Get chosen setting.
+             responses:
+                 "200":
+                     headers:
+                       X-Content-Type-Options:
+                       X-XSS-Protection:
+                     body:
+                         application/json:
+                 "404":
+                     headers:
+                       X-Content-Type-Options:
+                       X-XSS-Protection:

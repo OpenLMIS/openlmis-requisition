@@ -31,6 +31,17 @@ public class ConfigurationSettingServiceTest {
   }
 
   @Test
+  public void shouldGetConfigurationSettingByKeyIfKeyExists() throws ConfigurationSettingException {
+    assertTrue(configurationSettingService.getByKey("key").equals(configurationSetting));
+  }
+
+  @Test(expected = ConfigurationSettingException.class)
+  public void shouldGetConfigurationSettingByKeyIfDoesNotKeyExists()
+      throws ConfigurationSettingException {
+    configurationSettingService.getByKey("testEmpty");
+  }
+
+  @Test
   public void shouldGetValueIfKeyExists() throws ConfigurationSettingException {
     assertTrue(configurationSettingService.getStringValue("key").equals("value"));
   }
