@@ -43,6 +43,7 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -214,15 +215,6 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
     orderLine.setFilledQuantity(100L);
     orderLineRepository.save(orderLine);
 
-    proofOfDelivery.setOrder(order);
-    proofOfDelivery.setTotalShippedPacks(100);
-    proofOfDelivery.setTotalReceivedPacks(100);
-    proofOfDelivery.setTotalReturnedPacks(10);
-    proofOfDelivery.setDeliveredBy("delivered by");
-    proofOfDelivery.setReceivedBy("received by");
-    proofOfDelivery.setReceivedDate(LocalDate.now());
-    proofOfDeliveryRepository.save(proofOfDelivery);
-
     proofOfDeliveryLine.setOrderLine(orderLine);
     proofOfDeliveryLine.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLine.setQuantityShipped(100L);
@@ -231,9 +223,17 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
     proofOfDeliveryLine.setPackToShip(100L);
     proofOfDeliveryLine.setReplacedProductCode("replaced product code");
     proofOfDeliveryLine.setNotes("Notes");
-    proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
 
-    proofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
+    proofOfDelivery.setOrder(order);
+    proofOfDelivery.setTotalShippedPacks(100);
+    proofOfDelivery.setTotalReceivedPacks(100);
+    proofOfDelivery.setTotalReturnedPacks(10);
+    proofOfDelivery.setDeliveredBy("delivered by");
+    proofOfDelivery.setReceivedBy("received by");
+    proofOfDelivery.setReceivedDate(LocalDate.now());
+    proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
+    proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLine);
+    proofOfDeliveryRepository.save(proofOfDelivery);
   }
 
   @Test

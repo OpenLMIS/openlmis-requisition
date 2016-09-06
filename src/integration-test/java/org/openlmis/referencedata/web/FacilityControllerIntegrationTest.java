@@ -37,6 +37,7 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.UUID;
@@ -383,6 +384,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setRequestingFacility(requestingFacility);
     order.setReceivingFacility(receivingFacility);
     order.setSupplyingFacility(supplyingFacility);
+    order.setOrderLines(new ArrayList<>());
     return orderRepository.save(order);
   }
 
@@ -430,6 +432,7 @@ public class FacilityControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setFacility(facility);
     requisition.setProcessingPeriod(processingPeriod);
     requisition.setStatus(requisitionStatus);
+    requisition.setRequisitionLines(new ArrayList<>());
     return requisitionRepository.save(requisition);
   }
 

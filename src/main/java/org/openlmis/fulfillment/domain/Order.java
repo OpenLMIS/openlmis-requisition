@@ -99,9 +99,11 @@ public class Order extends BaseEntity {
   private BigDecimal quotedCost;
 
   // TODO: determine why it has to be set explicitly
-  @OneToMany(mappedBy = "order",
-      cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
-      fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "order",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
   @Getter
   @Setter
   private List<OrderLine> orderLines;
@@ -117,6 +119,8 @@ public class Order extends BaseEntity {
    * @param order Order with new values.
    */
   public void updateFrom(Order order) {
+    this.orderLines.clear();
+    this.orderLines.addAll(order.getOrderLines());
     this.requisition = order.requisition;
     this.createdBy = order.createdBy;
     this.program = order.program;

@@ -186,13 +186,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setEmergency(false);
+    supervisoryNode.setName("name");
+    supervisoryNode.setCode("code");
+    supervisoryNode.setDescription("description");
+    supervisoryNode.setFacility(facility);
+    supervisoryNodeRepository.save(supervisoryNode);
 
-    requisitionRepository.save(requisition);
+    configureRequisition(requisition);
 
     requisitionLine.setProduct(product);
     requisitionLine.setRequestedQuantity(1);
@@ -210,14 +210,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
-
-    supervisoryNode.setName("name");
-    supervisoryNode.setCode("code");
-    supervisoryNode.setDescription("description");
-    supervisoryNode.setFacility(facility);
-    supervisoryNodeRepository.save(supervisoryNode);
-    requisition.setSupervisoryNode(supervisoryNode);
-    requisition.setCreatedDate(localDateTime);
     requisitionRepository.save(requisition);
   }
 
@@ -286,8 +278,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotSubmitRequisitionWithNullRequisitionLines() {
 
-    requisition.setRequisitionLines(null);
-    requisition = requisitionRepository.save(requisition);
+    requisition = configureRequisition(new Requisition());
 
     String response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -700,15 +691,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private Comment createComment(User author, Requisition req, String commentText) {
-    Comment comment = new Comment();
-    comment.setAuthor(author);
-    comment.setRequisition(req);
-    comment.setBody(commentText);
-    commentRepository.save(comment);
-    return comment;
-  }
-
   @Test
   public void shouldGetCommentsForRequisition() {
     createComment(user, requisition, "First comment");
@@ -913,24 +895,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private void testApproveRequisition(Requisition requisition) {
-
-    Requisition response = restAssured.given()
-            .queryParam(ACCESS_TOKEN, getToken())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .pathParam("id", requisition.getId())
-            .when()
-            .put(APPROVE_REQUISITION)
-            .then()
-            .statusCode(200)
-            .extract().as(Requisition.class);
-
-    assertNotNull(response.getId());
-    assertEquals(requisition.getId(), response.getId());
-    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
   @Test
   public void shouldApproveAuthorizedRequisition() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -1094,5 +1058,44 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private void testApproveRequisition(Requisition requisition) {
+
+    Requisition response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(APPROVE_REQUISITION)
+        .then()
+        .statusCode(200)
+        .extract().as(Requisition.class);
+
+    assertNotNull(response.getId());
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private Requisition configureRequisition(Requisition requisition) {
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(period);
+    requisition.setProgram(program);
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setCreatedDate(localDateTime);
+    requisition.setEmergency(false);
+
+    return requisitionRepository.save(requisition);
+  }
+
+  private Comment createComment(User author, Requisition req, String commentText) {
+    Comment comment = new Comment();
+    comment.setAuthor(author);
+    comment.setRequisition(req);
+    comment.setBody(commentText);
+    commentRepository.save(comment);
+    return comment;
   }
 }

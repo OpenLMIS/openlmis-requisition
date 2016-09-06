@@ -46,4 +46,14 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
   }
+
+  /**
+   * Method deletes given requisition line.
+   * @param entity entity to be deleted.
+   */
+  public void delete(RequisitionLine entity) {
+    Requisition requisition = entity.getRequisition();
+    requisition.getRequisitionLines().remove(entity);
+    entityManager.merge(requisition);
+  }
 }

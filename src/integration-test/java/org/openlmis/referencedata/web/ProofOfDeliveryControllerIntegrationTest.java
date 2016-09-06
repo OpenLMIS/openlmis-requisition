@@ -11,7 +11,6 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLine;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
@@ -55,7 +54,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -115,9 +113,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @Autowired
-  private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
 
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
@@ -231,15 +226,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLine.setFilledQuantity(100L);
     orderLineRepository.save(orderLine);
 
-    proofOfDelivery.setOrder(order);
-    proofOfDelivery.setTotalShippedPacks(100);
-    proofOfDelivery.setTotalReceivedPacks(100);
-    proofOfDelivery.setTotalReturnedPacks(10);
-    proofOfDelivery.setDeliveredBy("delivered by");
-    proofOfDelivery.setReceivedBy("received by");
-    proofOfDelivery.setReceivedDate(LocalDate.now());
-    proofOfDeliveryRepository.save(proofOfDelivery);
-
     proofOfDeliveryLine.setOrderLine(orderLine);
     proofOfDeliveryLine.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLine.setQuantityShipped(100L);
@@ -248,13 +234,17 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryLine.setPackToShip(100L);
     proofOfDeliveryLine.setReplacedProductCode("replaced product code");
     proofOfDeliveryLine.setNotes("Notes");
-    proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
 
-    List<ProofOfDeliveryLine> proofOfDeliveryLines = new ArrayList<>();
-    proofOfDeliveryLines.add(proofOfDeliveryLine);
-
-    proofOfDelivery.setProofOfDeliveryLineItems(proofOfDeliveryLines);
-    proofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
+    proofOfDelivery.setOrder(order);
+    proofOfDelivery.setTotalShippedPacks(100);
+    proofOfDelivery.setTotalReceivedPacks(100);
+    proofOfDelivery.setTotalReturnedPacks(10);
+    proofOfDelivery.setDeliveredBy("delivered by");
+    proofOfDelivery.setReceivedBy("received by");
+    proofOfDelivery.setReceivedDate(LocalDate.now());
+    proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
+    proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLine);
+    proofOfDeliveryRepository.save(proofOfDelivery);
   }
 
   @Test
@@ -389,7 +379,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldCreateProofOfDelivery() {
-
+    proofOfDelivery.getProofOfDeliveryLineItems().clear();
     proofOfDeliveryRepository.delete(proofOfDelivery);
 
     restAssured.given()
@@ -401,7 +391,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
           .then()
           .statusCode(201);
 
-    assertFalse(proofOfDelivery.getProofOfDeliveryLineItems().isEmpty());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -44,9 +44,11 @@ public class Requisition extends BaseEntity {
   private LocalDateTime createdDate;
 
   // TODO: determine why it has to be set explicitly
-  @OneToMany(mappedBy = "requisition",
-      cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
-      fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "requisition",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
   @Getter
   @Setter
   @JsonIdentityInfo(
@@ -107,7 +109,8 @@ public class Requisition extends BaseEntity {
    * @param requisition Requisition with new values.
    */
   public void updateFrom(Requisition requisition) {
-    this.requisitionLines = requisition.getRequisitionLines();
+    this.requisitionLines.clear();
+    this.requisitionLines.addAll(requisition.getRequisitionLines());
     this.comments = requisition.getComments();
     this.facility = requisition.getFacility();
     this.program = requisition.getProgram();

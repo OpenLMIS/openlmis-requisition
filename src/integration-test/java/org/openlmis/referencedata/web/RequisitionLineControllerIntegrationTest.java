@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -428,12 +429,6 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     period.setEndDate(LocalDate.of(2016, 2, 1));
     periodRepository.save(period);
 
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition = requisitionRepository.save(requisition);
-
     requisitionLine.setProduct(product);
     requisitionLine.setRequisition(requisition);
     requisitionLine.setRequestedQuantity(1);
@@ -442,7 +437,14 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     requisitionLine.setBeginningBalance(BEGINNING_BALANCE);
     requisitionLine.setTotalReceivedQuantity(TOTAL_RECEIVED_QUANTITY);
     requisitionLine.setTotalLossesAndAdjustments(TOTAL_LOSSES_AND_ADJUSTMENTS);
-    requisitionLineRepository.save(requisitionLine);
+
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(period);
+    requisition.setProgram(program);
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setRequisitionLines(new ArrayList<>());
+    requisition.getRequisitionLines().add(requisitionLine);
+    requisition = requisitionRepository.save(requisition);
 
     return requisitionLine;
   }

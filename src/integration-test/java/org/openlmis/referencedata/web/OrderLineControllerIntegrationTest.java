@@ -39,6 +39,7 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -180,6 +181,11 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setSupervisoryNode(supervisoryNode);
     requisitionRepository.save(requisition);
 
+    orderLine.setOrder(order);
+    orderLine.setProduct(product);
+    orderLine.setOrderedQuantity(100L);
+    orderLine.setFilledQuantity(100L);
+
     order.setRequisition(requisition);
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
@@ -189,13 +195,9 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setRequestingFacility(facility);
     order.setReceivingFacility(facility);
     order.setSupplyingFacility(facility);
+    order.setOrderLines(new ArrayList<>());
+    order.getOrderLines().add(orderLine);
     orderRepository.save(order);
-
-    orderLine.setOrder(order);
-    orderLine.setProduct(product);
-    orderLine.setOrderedQuantity(100L);
-    orderLine.setFilledQuantity(100L);
-    orderLine = orderLineRepository.save(orderLine);
   }
 
   @Test

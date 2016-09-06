@@ -565,6 +565,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldCreateOrder() {
 
+    firstOrder.getOrderLines().clear();
     orderRepository.delete(firstOrder);
 
     restAssured.given()
