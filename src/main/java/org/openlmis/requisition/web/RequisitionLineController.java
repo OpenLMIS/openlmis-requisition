@@ -50,7 +50,7 @@ public class RequisitionLineController extends BaseController {
       requisitionLine.setId(null);
       RequisitionLine newRequisitionLine = requisitionLineRepository.save(requisitionLine);
       LOGGER.debug("Created new requisitionLine with id: " + requisitionLine.getId());
-      return new ResponseEntity<RequisitionLine>(newRequisitionLine, HttpStatus.CREATED);
+      return new ResponseEntity<>(newRequisitionLine, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while creating requisitionLine", ex.getMessage());
