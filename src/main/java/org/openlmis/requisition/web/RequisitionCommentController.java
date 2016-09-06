@@ -81,9 +81,9 @@ public class RequisitionCommentController extends BaseController {
   }
 
   /**
-   * Allows deleting requisitionLine.
+   * Allows deleting comment.
    *
-   * @param commentId UUID of requisitionLine which we want to delete
+   * @param commentId UUID of comment which we want to delete
    */
   @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
