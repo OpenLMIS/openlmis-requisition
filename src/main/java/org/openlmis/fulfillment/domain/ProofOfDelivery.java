@@ -79,8 +79,6 @@ public class ProofOfDelivery extends BaseEntity {
    */
   public void updateFrom(ProofOfDelivery proofOfDelivery) {
     this.order = proofOfDelivery.order;
-    this.proofOfDeliveryLineItems.clear();
-    this.proofOfDeliveryLineItems.addAll(proofOfDelivery.getProofOfDeliveryLineItems());
     this.totalShippedPacks = proofOfDelivery.getTotalShippedPacks();
     this.totalReceivedPacks = proofOfDelivery.getTotalReceivedPacks();
     this.totalReturnedPacks = proofOfDelivery.getTotalReturnedPacks();

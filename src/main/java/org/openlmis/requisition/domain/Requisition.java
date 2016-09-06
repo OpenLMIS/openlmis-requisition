@@ -109,8 +109,6 @@ public class Requisition extends BaseEntity {
    * @param requisition Requisition with new values.
    */
   public void updateFrom(Requisition requisition) {
-    this.requisitionLines.clear();
-    this.requisitionLines.addAll(requisition.getRequisitionLines());
     this.comments = requisition.getComments();
     this.facility = requisition.getFacility();
     this.program = requisition.getProgram();

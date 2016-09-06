@@ -18,7 +18,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "order_lines")
 @NoArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class OrderLine extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)

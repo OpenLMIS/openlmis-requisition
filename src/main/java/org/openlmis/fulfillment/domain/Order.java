@@ -99,6 +99,9 @@ public class Order extends BaseEntity {
   private BigDecimal quotedCost;
 
   // TODO: determine why it has to be set explicitly
+  @JsonIdentityInfo(
+      generator = ObjectIdGenerators.IntSequenceGenerator.class,
+      property = "orderLinesId")
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -119,8 +122,6 @@ public class Order extends BaseEntity {
    * @param order Order with new values.
    */
   public void updateFrom(Order order) {
-    this.orderLines.clear();
-    this.orderLines.addAll(order.getOrderLines());
     this.requisition = order.requisition;
     this.createdBy = order.createdBy;
     this.program = order.program;
