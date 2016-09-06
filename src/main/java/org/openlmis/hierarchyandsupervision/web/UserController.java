@@ -67,10 +67,8 @@ public class UserController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
     try {
       userService.save(user, token);
-
       return new ResponseEntity<>(user, HttpStatus.OK);
     } catch (ExternalApiException ex) {
       ErrorResponse errorResponse =
@@ -94,10 +92,8 @@ public class UserController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
     try {
       userService.passwordReset(passwordResetRequest, token);
-
       return new ResponseEntity<>(HttpStatus.OK);
     } catch (ExternalApiException ex) {
       ErrorResponse errorResponse =
@@ -120,10 +116,8 @@ public class UserController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
     try {
       userService.changePassword(passwordChangeRequest, token);
-
       return new ResponseEntity(HttpStatus.OK);
     } catch (ExternalApiException ex) {
       ErrorResponse errorResponse =

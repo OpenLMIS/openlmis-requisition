@@ -136,18 +136,16 @@ public class RequisitionController extends BaseController {
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
     try {
-      if (requisitionToUpdate == null) {
-        requisitionToUpdate = new Requisition();
-        LOGGER.info("Creating new requisition");
-      } else {
+      if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
         LOGGER.debug("Updating requisition with id: " + requisitionId);
+        requisitionToUpdate.updateFrom(requisition);
+        requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
+
+        LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
+        return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
+      } else {
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
       }
-
-      requisitionToUpdate.updateFrom(requisition);
-      requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
-
-      LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-      return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
             new ErrorResponse("An error accurred while saving requisition with id: "
@@ -155,18 +153,6 @@ public class RequisitionController extends BaseController {
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
-  }
-
-  /**
-   * Get all requisitions.
-   *
-   * @return Requisitions.
-   */
-  @RequestMapping(value = "/requisitions", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<?> getAllRequisitions() {
-    Iterable<Requisition> requisitions = requisitionRepository.findAll();
-    return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
   /**

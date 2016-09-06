@@ -1023,23 +1023,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldGetAllRequisitions() {
-
-    Requisition[] response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .when()
-          .get(RESOURCE_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(Requisition[].class);
-
-    Iterable<Requisition> requisition = Arrays.asList(response);
-    assertTrue(requisition.iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldGetChosenRequisition() {
 
     Requisition response = restAssured.given()
@@ -1074,7 +1057,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldUpdateRequisition() {
+  public void shouldUpdateRequisitionIfStatusIsInitiated() {
 
     requisition.setEmergency(true);
 
@@ -1094,23 +1077,22 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldCreateNewRequisitionIfDoesNotExist() {
+  public void shouldNotUpdateRequisitionIfStatusIsNotInitiated() {
 
-    requisitionRepository.delete(requisition);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
     requisition.setEmergency(true);
 
-    Requisition response = restAssured.given()
+    restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", ID)
+          .pathParam("id", requisition.getId())
           .body(requisition)
           .when()
           .put(ID_URL)
           .then()
-          .statusCode(200)
-          .extract().as(Requisition.class);
+          .statusCode(400);
 
-    assertTrue(response.getEmergency());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

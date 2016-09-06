@@ -112,7 +112,6 @@ public class Requisition extends BaseEntity {
     this.facility = requisition.getFacility();
     this.program = requisition.getProgram();
     this.processingPeriod = requisition.getProcessingPeriod();
-    this.status = requisition.getStatus();
     this.emergency = requisition.getEmergency();
     this.supervisoryNode = requisition.getSupervisoryNode();
   }

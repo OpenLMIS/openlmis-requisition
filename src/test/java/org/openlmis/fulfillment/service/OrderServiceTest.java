@@ -1,13 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,8 +8,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
@@ -49,6 +43,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
@@ -70,6 +72,9 @@ public class OrderServiceTest {
 
   @Mock
   private OrderLineRepository orderLineRepository;
+
+  @Mock
+  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Mock
   private SupplyLineRepository supplyLineRepository;
@@ -108,6 +113,11 @@ public class OrderServiceTest {
               requisitions.get(i).getSupervisoryNode()))
               .thenReturn(Arrays.asList(supplyLines.get(i)));
     }
+    OrderNumberConfiguration orderNumberConfiguration =
+        new OrderNumberConfiguration("prefix", true, true, true);
+    when(orderNumberConfigurationRepository.findAll())
+        .thenReturn(Arrays.asList(orderNumberConfiguration));
+    when(program.getCode()).thenReturn("code");
 
     orders = orderService.convertToOrder(requisitions, userId);
 

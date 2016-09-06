@@ -1294,20 +1294,6 @@ resourceTypes:
 
 /requisitions:
     displayName: Requisition
-    get:
-        is: [ secured ]
-        description: Get all requisitions.
-        responses:
-            "200":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
-            "404":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
     /initiate:
         post:
             is: [ secured ]
@@ -1900,7 +1886,23 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-
+/orderNumberConfigurations:
+    post:
+        is: [ secured ]
+        description: Create or Update OrderNumberConfiguration.
+        body:
+            application/json:
+        responses:
+          200:
+            headers:
+              X-Content-Type-Options:
+              X-XSS-Protection:
+            body:
+              application/json:
+          400:
+            headers:
+              X-Content-Type-Options:
+              X-XSS-Protection:
 /processingSchedules:
     displayName: Processing Schedule
     get:
