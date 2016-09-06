@@ -9,9 +9,4 @@ import java.util.UUID;
 public interface RequisitionTemplateRepository extends
         ReferenceDataRepository<RequisitionTemplate, UUID>,
         RequisitionTemplateRepositoryCustom {
-  @Override
-  <S extends RequisitionTemplate> S save(S entity);
-
-  @Override
-  <S extends RequisitionTemplate> Iterable<S> save(Iterable<S> entities);
 }

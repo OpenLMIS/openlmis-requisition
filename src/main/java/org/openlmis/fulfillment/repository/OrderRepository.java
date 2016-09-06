@@ -11,17 +11,6 @@ import java.util.UUID;
 
 public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>,
         OrderRepositoryCustom {
-  @Override
-  void delete(Order entity);
-
-  @Override
-  void delete(UUID id);
-
-  @Override
-  void delete(Iterable<? extends Order> entities);
-
-  @Override
-  void deleteAll();
 
   String SUPPLYING_FACILITY = "supplyingFacility";
   String REQUESTING_FACILITY = "requestingFacility";

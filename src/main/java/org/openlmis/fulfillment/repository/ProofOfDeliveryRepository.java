@@ -7,8 +7,5 @@ import java.util.UUID;
 
 public interface ProofOfDeliveryRepository extends
     PagingAndSortingRepository<ProofOfDelivery, UUID> {
-
-  @Override
-  void deleteAll();
 }
 

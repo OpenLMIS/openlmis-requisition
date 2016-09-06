@@ -8,8 +8,5 @@ import java.util.UUID;
 
 public interface TemplateRepository extends PagingAndSortingRepository<Template, UUID> {
 
-  @Override
-  void deleteAll();
-
   Template findByName(@Param("name") String name);
 }

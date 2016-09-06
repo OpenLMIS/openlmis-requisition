@@ -6,10 +6,4 @@ import java.util.UUID;
 
 public interface ProgramRepository extends ReferenceDataRepository<Program, UUID> {
   // Add custom Program related members here. See UserRepository.java for examples.
-
-  @Override
-  <S extends Program> S save(S entity);
-
-  @Override
-  <S extends Program> Iterable<S> save(Iterable<S> entities);
 }

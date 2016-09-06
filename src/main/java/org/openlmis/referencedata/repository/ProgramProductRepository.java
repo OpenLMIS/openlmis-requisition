@@ -9,10 +9,4 @@ import java.util.UUID;
 public interface ProgramProductRepository extends
         PagingAndSortingRepository<ProgramProduct, UUID>,
         ProgramProductRepositoryCustom {
-
-  @Override
-  <S extends ProgramProduct> S save(S entity);
-
-  @Override
-  <S extends ProgramProduct> Iterable<S> save(Iterable<S> entities);
 }
