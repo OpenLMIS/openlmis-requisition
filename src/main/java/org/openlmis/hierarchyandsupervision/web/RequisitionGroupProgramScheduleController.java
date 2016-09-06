@@ -39,10 +39,10 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
   public ResponseEntity<?> createRequisitionGroupProgramSchedule(
         @RequestBody RequisitionGroupProgramSchedule requisition) {
     try {
-      LOGGER.debug("Creating new requisitionGPS");
+      LOGGER.debug("Creating new requisitionGroupProgramSchedule");
       requisition.setId(null);
       RequisitionGroupProgramSchedule newRequisition = repository.save(requisition);
-      LOGGER.debug("Created new requisitionGPS with id: " + requisition.getId());
+      LOGGER.debug("Created new requisitionGroupProgramSchedule with id: " + requisition.getId());
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             newRequisition, HttpStatus.CREATED);
     } catch (DataIntegrityViolationException ex) {
@@ -110,7 +110,8 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
       reqGroupProgScheduleToUpdate.updateFrom(reqGroupProgSchedule);
       reqGroupProgScheduleToUpdate = repository.save(reqGroupProgScheduleToUpdate);
 
-      LOGGER.debug("Saved requisitionGPS with id: " + reqGroupProgScheduleToUpdate.getId());
+      LOGGER.debug("Saved requisitionGroupProgramSchedule with id: "
+            + reqGroupProgScheduleToUpdate.getId());
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             reqGroupProgScheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {

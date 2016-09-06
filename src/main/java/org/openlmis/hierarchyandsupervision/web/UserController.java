@@ -67,7 +67,6 @@ public class UserController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
     try {
       userService.save(user, token);
 
@@ -94,7 +93,6 @@ public class UserController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
     try {
       userService.passwordReset(passwordResetRequest, token);
 
@@ -120,7 +118,6 @@ public class UserController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
     try {
       userService.changePassword(passwordChangeRequest, token);
 
