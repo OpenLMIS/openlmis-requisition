@@ -86,6 +86,10 @@ public class RequisitionLineService {
     return requisition;
   }
 
+  public void calculateRequisitionLineFields(Requisition requisition) {
+    calculateStockOnHand(requisition);
+  }
+
   private void initiateBeginningBalance(Requisition requisition,
                                         RequisitionTemplate requisitionTemplate) {
     Iterable<ProcessingPeriod> previousPeriods = periodService.searchPeriods(
@@ -169,6 +173,17 @@ public class RequisitionLineService {
   private void initiateTotalQuantityReceived(Requisition requisition) {
     for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
       requisitionLine.setTotalReceivedQuantity(0);
+    }
+  }
+
+
+  private void calculateStockOnHand(Requisition requisition) {
+    for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
+      requisitionLine.setStockOnHand(
+          requisitionLine.getBeginningBalance()
+              + requisitionLine.getTotalReceivedQuantity()
+              + requisitionLine.getTotalLossesAndAdjustments()
+              - requisitionLine.getTotalConsumedQuantity());
     }
   }
 }

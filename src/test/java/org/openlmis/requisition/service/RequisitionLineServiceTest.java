@@ -113,6 +113,20 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
+  public void shouldCalculateRequisitionLineFieldsCorrectly() throws RequisitionException {
+    final Integer expectedStockOnHand = 1200;
+
+    requisitionLine.setTotalLossesAndAdjustments(-100);
+    requisitionLine.setTotalConsumedQuantity(200);
+    requisitionLine.setTotalReceivedQuantity(500);
+    requisitionLine.setBeginningBalance(1000);
+
+    requisitionLineService.calculateRequisitionLineFields(requisition);
+
+    assertEquals(expectedStockOnHand, requisitionLine.getStockOnHand());
+  }
+
+  @Test
   public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
     final Integer expectedBeginningBalance = 0;
 

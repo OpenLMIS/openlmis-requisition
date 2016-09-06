@@ -97,6 +97,7 @@ public class RequisitionService {
     } else {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
       requisition.setStatus(RequisitionStatus.SUBMITTED);
+      requisitionLineService.calculateRequisitionLineFields(requisition);
       requisitionRepository.save(requisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
       return requisition;
@@ -248,6 +249,7 @@ public class RequisitionService {
       throw new RequisitionException("Requisition object is not valid.");
     } else {
       requisitionDto.setStatus(RequisitionStatus.AUTHORIZED);
+      requisitionLineService.calculateRequisitionLineFields(requisitionDto);
       return requisitionRepository.save(requisitionDto);
     }
   }
