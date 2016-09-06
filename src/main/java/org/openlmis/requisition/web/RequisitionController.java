@@ -140,24 +140,25 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
                                        @PathVariable("id") UUID requisitionId) {
+
+    Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
     try {
-      LOGGER.debug("Updating requisition with id: " + requisitionId);
-
-      Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-
       if (requisitionToUpdate == null) {
         requisitionToUpdate = new Requisition();
+        LOGGER.info("Creating new requisition");
+      } else {
+        LOGGER.debug("Updating requisition with id: " + requisitionId);
       }
 
       requisitionToUpdate.updateFrom(requisition);
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
-      LOGGER.debug("Updated requisition with id: " + requisitionId);
+      LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
       return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisition with id: "
-                  + requisitionId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving requisition with id: "
+                  + requisitionToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -286,26 +287,27 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> updateRequisitionComment(@RequestBody Comment comment,
                                                     @PathVariable("id") UUID commentId,
                                                     OAuth2Authentication auth) {
+
+    Comment requisitionComment = commentRepository.findOne(commentId);
     try {
-      LOGGER.debug("Updating comment with id: " + commentId);
-
-      Comment requisitionComment = commentRepository.findOne(commentId);
-
       if (requisitionComment == null) {
         requisitionComment = new Comment();
+        LOGGER.info("Creating new comment");
+      } else {
+        LOGGER.debug("Updating comment with id: " + commentId);
       }
 
       requisitionComment.updateFrom(comment);
       Comment updatedComment = commentRepository.save(requisitionComment);
 
-      LOGGER.debug("Updated comment with id: " + commentId);
+      LOGGER.debug("Saved comment with id: " + requisitionComment.getId());
       MappingJacksonValue value = new MappingJacksonValue(updatedComment);
       value.setSerializationView(View.BasicInformation.class);
       return new ResponseEntity<>(value, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating comment with id: "
-                  + commentId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving comment with id: "
+                  + requisitionComment.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

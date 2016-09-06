@@ -71,25 +71,26 @@ public class GeographicLevelController extends BaseController {
   @RequestMapping(value = "/geographicLevels/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateGeographicLevel(@RequestBody GeographicLevel geographicLevel,
                                             @PathVariable("id") UUID geographicLevelId) {
+
+    GeographicLevel geographicLevelToUpdate =
+          geographicLevelRepository.findOne(geographicLevelId);
     try {
-      LOGGER.debug("Updating geographicLevel with id: " + geographicLevelId);
-
-      GeographicLevel geographicLevelToUpdate =
-            geographicLevelRepository.findOne(geographicLevelId);
-
       if (geographicLevelToUpdate == null) {
         geographicLevelToUpdate = new GeographicLevel();
+        LOGGER.info("Creating new geographicLevel");
+      } else {
+        LOGGER.debug("Updating geographicLevel with id: " + geographicLevelId);
       }
 
       geographicLevelToUpdate.updateFrom(geographicLevel);
       geographicLevelToUpdate = geographicLevelRepository.save(geographicLevelToUpdate);
 
-      LOGGER.debug("Updated geographicLevel with id: " + geographicLevelId);
+      LOGGER.debug("Saved geographicLevel with id: " + geographicLevelToUpdate.getId());
       return new ResponseEntity<GeographicLevel>(geographicLevelToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating geographicLevel with id: "
-                  + geographicLevelId, ex.getMessage());
+            new ErrorResponse("An error accurred while saved geographicLevel with id: "
+                  + geographicLevelToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

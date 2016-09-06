@@ -79,26 +79,27 @@ public class ProofOfDeliveryLineController extends BaseController {
   public ResponseEntity<?> updateProofOfDeliveryLine(
         @RequestBody ProofOfDeliveryLine proofOfDeliveryLine,
         @PathVariable("id") UUID proofOfDeliveryLineId) {
+
+    ProofOfDeliveryLine proofOfDeliveryLineToUpdate
+          = proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
     try {
-      LOGGER.debug("Updating proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
-
-      ProofOfDeliveryLine proofOfDeliveryLineToUpdate
-            = proofOfDeliveryLineRepository.findOne(proofOfDeliveryLineId);
-
       if (proofOfDeliveryLineToUpdate == null) {
         proofOfDeliveryLineToUpdate = new ProofOfDeliveryLine();
+        LOGGER.info("Creating new proofOfDeliveryLine");
+      } else {
+        LOGGER.debug("Updating proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
       }
 
       proofOfDeliveryLineToUpdate.updateFrom(proofOfDeliveryLine);
       proofOfDeliveryLineToUpdate
             = proofOfDeliveryLineRepository.save(proofOfDeliveryLineToUpdate);
 
-      LOGGER.debug("Updated proofOfDeliveryLine with id: " + proofOfDeliveryLineId);
+      LOGGER.debug("Saved proofOfDeliveryLine with id: " + proofOfDeliveryLineToUpdate.getId());
       return new ResponseEntity<ProofOfDeliveryLine>(proofOfDeliveryLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating proofOfDeliveryLine with id: "
-                  + proofOfDeliveryLineId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving proofOfDeliveryLine with id: "
+                  + proofOfDeliveryLineToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

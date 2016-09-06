@@ -80,24 +80,25 @@ public class SupplyLineController extends BaseController {
   @RequestMapping(value = "/supplyLines/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateSupplyLine(@RequestBody SupplyLine supplyLine,
                                        @PathVariable("id") UUID supplyLineId) {
+
+    SupplyLine supplyLineToUpdate = supplyLineRepository.findOne(supplyLineId);
     try {
-      LOGGER.debug("Updating supplyLine with id: " + supplyLineId);
-
-      SupplyLine supplyLineToUpdate = supplyLineRepository.findOne(supplyLineId);
-
       if (supplyLineToUpdate == null) {
         supplyLineToUpdate = new SupplyLine();
+        LOGGER.info("Creating new supplyLine");
+      } else {
+        LOGGER.debug("Updating supplyLine with id: " + supplyLineId);
       }
 
       supplyLineToUpdate.updateFrom(supplyLine);
       supplyLineToUpdate = supplyLineRepository.save(supplyLineToUpdate);
 
-      LOGGER.debug("Updated supplyLine with id: " + supplyLineId);
+      LOGGER.debug("Saved supplyLine with id: " + supplyLineToUpdate.getId());
       return new ResponseEntity<SupplyLine>(supplyLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating supplyLine with id: "
-                  + supplyLineId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving supplyLine with id: "
+                  + supplyLineToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

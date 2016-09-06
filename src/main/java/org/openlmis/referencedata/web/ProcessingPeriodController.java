@@ -122,24 +122,25 @@ public class ProcessingPeriodController extends BaseController {
   @RequestMapping(value = "/processingPeriods/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProcessingPeriod(@RequestBody ProcessingPeriod period,
                                        @PathVariable("id") UUID periodId) {
+
+    ProcessingPeriod processingPeriodToUpdate = periodRepository.findOne(periodId);
     try {
-      LOGGER.debug("Updating processingPeriod with id: " + periodId);
-
-      ProcessingPeriod processingPeriodToUpdate = periodRepository.findOne(periodId);
-
       if (processingPeriodToUpdate == null) {
         processingPeriodToUpdate = new ProcessingPeriod();
+        LOGGER.info("Creating new processingPeriod");
+      } else {
+        LOGGER.debug("Updating processingPeriod with id: " + periodId);
       }
 
       processingPeriodToUpdate.updateFrom(period);
       processingPeriodToUpdate = periodRepository.save(processingPeriodToUpdate);
 
-      LOGGER.debug("Updated processingPeriod with id: " + periodId);
+      LOGGER.debug("Saved processingPeriod with id: " + processingPeriodToUpdate.getId());
       return new ResponseEntity<ProcessingPeriod>(processingPeriodToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating processingPeriod with id: "
-                  + periodId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving processingPeriod with id: "
+                  + processingPeriodToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

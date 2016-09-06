@@ -90,25 +90,26 @@ public class ProofOfDeliveryController extends BaseController {
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery,
                                        @PathVariable("id") UUID proofOfDeliveryId) {
+
+    ProofOfDelivery proofOfDeliveryToUpdate =
+          proofOfDeliveryRepository.findOne(proofOfDeliveryId);
     try {
-      LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
-
-      ProofOfDelivery proofOfDeliveryToUpdate =
-            proofOfDeliveryRepository.findOne(proofOfDeliveryId);
-
       if (proofOfDeliveryToUpdate == null) {
         proofOfDeliveryToUpdate = new ProofOfDelivery();
+        LOGGER.info("Creating new proofOfDelivery");
+      } else {
+        LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
       }
 
       proofOfDeliveryToUpdate.updateFrom(proofOfDelivery);
       proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
 
-      LOGGER.debug("Updated proofOfDelivery with id: " + proofOfDeliveryId);
+      LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
       return new ResponseEntity<ProofOfDelivery>(proofOfDeliveryToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating proofOfDelivery with id: "
-                  + proofOfDeliveryId, ex.getMessage());
+            new ErrorResponse("An error occurred while saving proofOfDelivery with id: "
+                  + proofOfDeliveryToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

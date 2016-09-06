@@ -78,24 +78,25 @@ public class ProgramProductController extends BaseController {
   @RequestMapping(value = "/programProducts/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProgramProduct(@RequestBody ProgramProduct programProduct,
                                                  @PathVariable("id") UUID programProductId) {
+
+    ProgramProduct programProductToUpdate = programProductRepository.findOne(programProductId);
     try {
-      LOGGER.debug("Updating programProduct with id: " + programProductId);
-
-      ProgramProduct programProductToUpdate = programProductRepository.findOne(programProductId);
-
       if ( programProductToUpdate == null) {
         programProductToUpdate = new ProgramProduct();
+        LOGGER.info("Creating new programProduct");
+      } else {
+        LOGGER.debug("Updating programProduct with id: " + programProductId);
       }
 
       programProductToUpdate.updateFrom(programProduct);
       programProductToUpdate = programProductRepository.save(programProductToUpdate);
 
-      LOGGER.debug("Updated programProduct with id: " + programProductId);
+      LOGGER.debug("Saved programProduct with id: " + programProductToUpdate.getId());
       return new ResponseEntity<ProgramProduct>(programProductToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating programProduct with id: "
-                  + programProductId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving programProduct with id: "
+                  + programProductToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

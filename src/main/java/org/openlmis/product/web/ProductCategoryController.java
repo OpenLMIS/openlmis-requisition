@@ -78,25 +78,26 @@ public class ProductCategoryController extends BaseController {
   @RequestMapping(value = "/productCategories/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProductCategory(@RequestBody ProductCategory productCategory,
                                        @PathVariable("id") UUID productCategoryId) {
+
+    ProductCategory productCategoryToUpdate =
+          productCategoryRepository.findOne(productCategoryId);
     try {
-      LOGGER.debug("Updating productCategory with id: " + productCategoryId);
-
-      ProductCategory productCategoryToUpdate =
-            productCategoryRepository.findOne(productCategoryId);
-
       if (productCategoryToUpdate == null) {
         productCategoryToUpdate = new ProductCategory();
+        LOGGER.info("Creating new productCategory");
+      } else {
+        LOGGER.debug("Updating productCategory with id: " + productCategoryId);
       }
 
       productCategoryToUpdate.updateFrom(productCategory);
       productCategoryToUpdate = productCategoryRepository.save(productCategoryToUpdate);
 
-      LOGGER.debug("Updated productCategory with id: " + productCategoryId);
+      LOGGER.debug("Saved productCategory with id: " + productCategoryToUpdate.getId());
       return new ResponseEntity<ProductCategory>(productCategoryToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating productCategory with id: "
-                  + productCategoryId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving productCategory with id: "
+                  + productCategoryToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

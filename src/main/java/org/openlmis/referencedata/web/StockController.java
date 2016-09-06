@@ -78,24 +78,25 @@ public class StockController extends BaseController {
   @RequestMapping(value = "/stocks/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateStock(@RequestBody Stock stock,
                                        @PathVariable("id") UUID stockId) {
+
+    Stock stockToUpdate = stockRepository.findOne(stockId);
     try {
-      LOGGER.debug("Updating stock with id: " + stockId);
-
-      Stock stockToUpdate = stockRepository.findOne(stockId);
-
       if (stockToUpdate == null) {
         stockToUpdate = new Stock();
+        LOGGER.info("Creating new stock");
+      } else {
+        LOGGER.debug("Updating stock with id: " + stockId);
       }
 
       stockToUpdate.updateFrom(stock);
       stockToUpdate = stockRepository.save(stockToUpdate);
 
-      LOGGER.debug("Updated stock with id: " + stockId);
+      LOGGER.debug("Saved stock with id: " + stockToUpdate.getId());
       return new ResponseEntity<Stock>(stockToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating stock with id: "
-                  + stockId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving stock with id: "
+                  + stockToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

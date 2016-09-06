@@ -96,26 +96,27 @@ public class RequisitionGroupProgramScheduleController extends BaseController {
   public ResponseEntity<?> updateRequisitionGroupProgramSchedule(
         @RequestBody RequisitionGroupProgramSchedule reqGroupProgSchedule,
         @PathVariable("id") UUID requisitionId) {
+
+    RequisitionGroupProgramSchedule reqGroupProgScheduleToUpdate =
+          repository.findOne(requisitionId);
     try {
-      LOGGER.debug("Updating requisitionGPS with id: " + requisitionId);
-
-      RequisitionGroupProgramSchedule reqGroupProgScheduleToUpdate =
-            repository.findOne(requisitionId);
-
       if (reqGroupProgScheduleToUpdate == null) {
         reqGroupProgScheduleToUpdate = new RequisitionGroupProgramSchedule();
+        LOGGER.info("Creating new requisitionGroupProgramSchedule");
+      } else {
+        LOGGER.debug("Updating requisitionGPS with id: " + requisitionId);
       }
 
       reqGroupProgScheduleToUpdate.updateFrom(reqGroupProgSchedule);
       reqGroupProgScheduleToUpdate = repository.save(reqGroupProgScheduleToUpdate);
 
-      LOGGER.debug("Updated requisitionGPS with id: " + requisitionId);
+      LOGGER.debug("Saved requisitionGPS with id: " + reqGroupProgScheduleToUpdate.getId());
       return new ResponseEntity<RequisitionGroupProgramSchedule>(
             reqGroupProgScheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating"
-                  + "requisitionGroupProgramSchedule with id: " + requisitionId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving requisitionGroupProgramSchedule"
+                  + " with id: " + reqGroupProgScheduleToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

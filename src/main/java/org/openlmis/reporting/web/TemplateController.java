@@ -80,24 +80,25 @@ public class TemplateController extends BaseController {
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateTemplate(@RequestBody Template template,
                                           @PathVariable("id") UUID templateId) {
+
+    Template templateToUpdate = templateRepository.findOne(templateId);
     try {
-      LOGGER.debug("Updating template with id: " + templateId);
-
-      Template templateToUpdate = templateRepository.findOne(templateId);
-
       if (templateToUpdate == null) {
         templateToUpdate = new Template();
+        LOGGER.info("Creating new template");
+      } else {
+        LOGGER.debug("Updating template with id: " + templateId);
       }
 
       templateToUpdate.updateFrom(template);
       templateToUpdate = templateRepository.save(templateToUpdate);
 
-      LOGGER.debug("Updated template with id: " + templateId);
+      LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
       return new ResponseEntity<Template>(templateToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating template with id: "
-                  + templateId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving template with id: "
+                  + templateToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

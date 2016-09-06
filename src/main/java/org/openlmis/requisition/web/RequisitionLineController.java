@@ -81,17 +81,19 @@ public class RequisitionLineController extends BaseController {
   @RequestMapping(value = "/requisitionLines/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionLines(@RequestBody RequisitionLine requisitionLine,
                                        @PathVariable("id") UUID requisitionLineId) {
+
+    RequisitionLine requisitionLineToUpdate =
+          requisitionLineRepository.findOne(requisitionLineId);
     try {
-      LOGGER.debug("Updating requisitionLine with id: " + requisitionLineId);
-
-      RequisitionLine requisitionLineToUpdate =
-            requisitionLineRepository.findOne(requisitionLineId);
-
       if (requisitionLineToUpdate == null) {
         requisitionLineToUpdate = new RequisitionLine();
+        LOGGER.info("Creating new requisitionLine");
         requisitionLineToUpdate.updateFrom(requisitionLine);
         requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
       } else {
+
+        LOGGER.debug("Updating requisitionLine with id: " + requisitionLineId);
+
         if (requisitionLineToUpdate.getRequisition().getStatus() == RequisitionStatus.INITIATED
               || requisitionLineToUpdate.getRequisition().getStatus()
               == RequisitionStatus.SUBMITTED) {
@@ -104,12 +106,12 @@ public class RequisitionLineController extends BaseController {
           requisitionLineToUpdate = requisitionLineRepository.save(requisitionLineToUpdate);
         }
       }
-      LOGGER.debug("Updated requisitionLine with id: " + requisitionLineId);
+      LOGGER.debug("Saved requisitionLine with id: " + requisitionLineToUpdate.getId());
       return new ResponseEntity<RequisitionLine>(requisitionLineToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisitionLine with id: "
-                  + requisitionLineId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving requisitionLine with id: "
+                  + requisitionLineToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

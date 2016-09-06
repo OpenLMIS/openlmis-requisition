@@ -89,25 +89,26 @@ public class RequisitionGroupController extends BaseController {
   @RequestMapping(value = "/requisitionGroups/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionGroup(@RequestBody RequisitionGroup requisitionGroup,
                                                  @PathVariable("id") UUID requisitionGroupId) {
+
+    RequisitionGroup requisitionGroupToUpdate =
+          requisitionGroupRepository.findOne(requisitionGroupId);
     try {
-      LOGGER.debug("Updating requisitionGroup with id: " + requisitionGroupId);
-
-      RequisitionGroup requisitionGroupToUpdate =
-            requisitionGroupRepository.findOne(requisitionGroupId);
-
       if (requisitionGroupToUpdate == null) {
         requisitionGroupToUpdate = new RequisitionGroup();
+        LOGGER.info("Creating new requisitionGroup");
+      } else {
+        LOGGER.debug("Updating requisitionGroup with id: " + requisitionGroupId);
       }
 
       requisitionGroupToUpdate.updateFrom(requisitionGroup);
       requisitionGroupToUpdate = requisitionGroupRepository.save(requisitionGroupToUpdate);
 
-      LOGGER.debug("Updated requisitionGroup with id: " + requisitionGroupId);
+      LOGGER.debug("Saved requisitionGroup with id: " + requisitionGroupToUpdate.getId());
       return new ResponseEntity<RequisitionGroup>(requisitionGroupToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisitionGroup with id: "
-                  + requisitionGroupId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving requisitionGroup with id: "
+                  + requisitionGroupToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

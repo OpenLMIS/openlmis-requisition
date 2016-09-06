@@ -77,27 +77,28 @@ public class FacilityTypeApprovedProductController extends BaseController {
   public ResponseEntity<?> updateFacilityTypeApprovedProduct(
         @RequestBody FacilityTypeApprovedProduct facilityTypeApprovedProduct,
         @PathVariable("id") UUID facilityTypeApprovedProductId) {
+
+    FacilityTypeApprovedProduct facilityToUpdate =
+          repository.findOne(facilityTypeApprovedProductId);
     try {
-      LOGGER.debug("Updating facilityTypeApprovedProduct with id: "
-            + facilityTypeApprovedProductId);
-
-      FacilityTypeApprovedProduct facilityToUpdate =
-            repository.findOne(facilityTypeApprovedProductId);
-
       if (facilityToUpdate == null) {
         facilityToUpdate = new FacilityTypeApprovedProduct();
+        LOGGER.info("Creating new facilityTypeApprovedProduct");
+      } else {
+        LOGGER.debug("Updating facilityTypeApprovedProduct with id: "
+              + facilityTypeApprovedProductId);
       }
 
       facilityToUpdate.updateFrom(facilityTypeApprovedProduct);
       facilityToUpdate = repository.save(facilityToUpdate);
 
-      LOGGER.debug("Updated facilityTypeApprovedProduct with id: "
-            + facilityTypeApprovedProductId);
+      LOGGER.debug("Saved facilityTypeApprovedProduct with id: "
+            + facilityToUpdate.getId());
       return new ResponseEntity<FacilityTypeApprovedProduct>(facilityToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating facilityTypeApprovedProduct"
-                  + "with id: " + facilityTypeApprovedProductId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving facilityTypeApprovedProduct"
+                  + "with id: " + facilityToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

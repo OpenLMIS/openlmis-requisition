@@ -84,25 +84,26 @@ public class RequisitionTemplateController extends BaseController {
   public ResponseEntity<?> updateRequisitionTemplate(
         @RequestBody RequisitionTemplate requisitionTemplate,
         @PathVariable("id") UUID requisitionTemplateId) {
+
+    RequisitionTemplate requisitionTemplateToUpdate =
+          requisitionTemplateRepository.findOne(requisitionTemplateId);
     try {
-      LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
-
-      RequisitionTemplate requisitionTemplateToUpdate =
-            requisitionTemplateRepository.findOne(requisitionTemplateId);
-
       if (requisitionTemplateToUpdate == null) {
         requisitionTemplateToUpdate = new RequisitionTemplate();
+        LOGGER.info("Creating new requisitionTemplate");
+      } else {
+        LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
       }
 
       requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
       requisitionTemplateToUpdate = requisitionTemplateRepository.save(requisitionTemplateToUpdate);
 
-      LOGGER.debug("Updated requisitionTemplate with id: " + requisitionTemplateId);
+      LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
       return new ResponseEntity<RequisitionTemplate>(requisitionTemplateToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating requisitionTemplate with id: "
-                  + requisitionTemplateId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving requisitionTemplate with id: "
+                  + requisitionTemplateToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

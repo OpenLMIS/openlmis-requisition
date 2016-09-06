@@ -112,24 +112,25 @@ public class ProgramController extends BaseController {
   @RequestMapping(value = "/programs/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProgram(@RequestBody Program program,
                                                     @PathVariable("id") UUID programId) {
+
+    Program programToUpdate = programRepository.findOne(programId);
     try {
-      LOGGER.debug("Updating program with id: " + programId);
-
-      Program programToUpdate = programRepository.findOne(programId);
-
       if (programToUpdate == null) {
         programToUpdate = new Program();
+        LOGGER.info("Creating new program");
+      } else {
+        LOGGER.debug("Updating program with id: " + programId);
       }
 
       programToUpdate.updateFrom(program);
       programToUpdate = programRepository.save(programToUpdate);
 
-      LOGGER.debug("Updated program with id: " + programId);
+      LOGGER.debug("Saved program with id: " + programToUpdate.getId());
       return new ResponseEntity<Program>(programToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating program with id: "
-                  + programId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving program with id: "
+                  + programToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

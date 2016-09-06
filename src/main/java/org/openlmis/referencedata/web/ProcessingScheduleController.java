@@ -74,24 +74,25 @@ public class ProcessingScheduleController extends BaseController {
   @RequestMapping(value = "/processingSchedules/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateProcessingSchedule(@RequestBody ProcessingSchedule schedule,
                                        @PathVariable("id") UUID scheduleId) {
+
+    ProcessingSchedule scheduleToUpdate = scheduleRepository.findOne(scheduleId);
     try {
-      LOGGER.debug("Updating processingSchedule with id: " + scheduleId);
-
-      ProcessingSchedule scheduleToUpdate = scheduleRepository.findOne(scheduleId);
-
       if (scheduleToUpdate == null) {
         scheduleToUpdate = new ProcessingSchedule();
+        LOGGER.info("Creating new processingSchedule");
+      } else {
+        LOGGER.debug("Updating processingSchedule with id: " + scheduleId);
       }
 
       scheduleToUpdate.updateFrom(schedule);
       scheduleToUpdate = scheduleRepository.save(scheduleToUpdate);
 
-      LOGGER.debug("Updated processingSchedule with id: " + scheduleId);
+      LOGGER.debug("Saved processingSchedule with id: " + scheduleToUpdate.getId());
       return new ResponseEntity<ProcessingSchedule>(scheduleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating processingSchedule with id: "
-                  + scheduleId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving processingSchedule with id: "
+                  + scheduleToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

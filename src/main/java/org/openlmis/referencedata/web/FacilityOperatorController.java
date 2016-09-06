@@ -73,25 +73,26 @@ public class FacilityOperatorController extends BaseController {
   @RequestMapping(value = "/facilityOperators/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateFacilityOperators(@RequestBody FacilityOperator facilityOperator,
                                        @PathVariable("id") UUID facilityOperatorId) {
+
+    FacilityOperator facilityOperatorToUpdate =
+          facilityOperatorRepository.findOne(facilityOperatorId);
     try {
-      LOGGER.debug("Updating facility operator with id: " + facilityOperatorId);
-
-      FacilityOperator facilityOperatorToUpdate =
-            facilityOperatorRepository.findOne(facilityOperatorId);
-
       if (facilityOperatorToUpdate == null) {
         facilityOperatorToUpdate = new FacilityOperator();
+        LOGGER.info("Creating new facilityOperator");
+      } else {
+        LOGGER.debug("Updating facility operator with id: " + facilityOperatorId);
       }
 
       facilityOperatorToUpdate.updateFrom(facilityOperator);
       facilityOperatorToUpdate = facilityOperatorRepository.save(facilityOperatorToUpdate);
 
-      LOGGER.debug("Updated facility operator with id: " + facilityOperatorId);
+      LOGGER.debug("Saved facility operator with id: " + facilityOperatorToUpdate.getId());
       return new ResponseEntity<FacilityOperator>(facilityOperatorToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating facilityOperator with id: "
-                  + facilityOperatorId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving facilityOperator with id: "
+                  + facilityOperatorToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

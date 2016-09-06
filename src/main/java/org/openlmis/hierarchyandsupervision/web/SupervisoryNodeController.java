@@ -88,25 +88,26 @@ public class SupervisoryNodeController extends BaseController {
   @RequestMapping(value = "/supervisoryNodes/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateSupervisoryNode(@RequestBody SupervisoryNode supervisoryNode,
                                        @PathVariable("id") UUID supervisoryNodeId) {
+
+    SupervisoryNode supervisoryNodeToUpdate =
+          supervisoryNodeRepository.findOne(supervisoryNodeId);
     try {
-      LOGGER.debug("Updating supervisoryNode with id: " + supervisoryNodeId);
-
-      SupervisoryNode supervisoryNodeToUpdate =
-            supervisoryNodeRepository.findOne(supervisoryNodeId);
-
       if (supervisoryNodeToUpdate == null) {
         supervisoryNodeToUpdate = new SupervisoryNode();
+        LOGGER.info("Creating new supervisoryNode");
+      } else {
+        LOGGER.debug("Updating supervisoryNode with id: " + supervisoryNodeId);
       }
 
       supervisoryNodeToUpdate.updateFrom(supervisoryNode);
       supervisoryNodeToUpdate = supervisoryNodeRepository.save(supervisoryNodeToUpdate);
 
-      LOGGER.debug("Updated supervisoryNode with id: " + supervisoryNodeId);
+      LOGGER.debug("Saved supervisoryNode with id: " + supervisoryNodeToUpdate.getId());
       return new ResponseEntity<SupervisoryNode>(supervisoryNodeToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating supervisoryNode with id: "
-                  + supervisoryNodeId, ex.getMessage());
+            new ErrorResponse("An error occurred while saving supervisoryNode with id: "
+                  + supervisoryNodeToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

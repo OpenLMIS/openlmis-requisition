@@ -90,24 +90,25 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateOrder(@RequestBody Order order,
                                        @PathVariable("id") UUID orderId) {
+
+    Order orderToUpdate = orderRepository.findOne(orderId);
     try {
-      LOGGER.debug("Updating order with id: " + orderId);
-
-      Order orderToUpdate = orderRepository.findOne(orderId);
-
       if (orderToUpdate == null) {
         orderToUpdate = new Order();
+        LOGGER.info("Creating new order");
+      } else {
+        LOGGER.debug("Updating order with id: " + orderId);
       }
 
       orderToUpdate.updateFrom(order);
       orderToUpdate = orderRepository.save(orderToUpdate);
 
-      LOGGER.debug("Updated order with id: " + orderId);
+      LOGGER.debug("Saved order with id: " + orderToUpdate.getId());
       return new ResponseEntity<Order>(orderToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while updating order with id: "
-                  + orderId, ex.getMessage());
+            new ErrorResponse("An error occurred while saving order with id: "
+                  + orderToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

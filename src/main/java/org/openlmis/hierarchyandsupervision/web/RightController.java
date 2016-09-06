@@ -72,24 +72,25 @@ public class RightController extends BaseController {
   @RequestMapping(value = "/rights/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRight(@RequestBody Right right,
                                       @PathVariable("id") UUID rightId) {
+
+    Right rightToUpdate = rightRepository.findOne(rightId);
     try {
-      LOGGER.debug("Updating right with id: " + rightId);
-
-      Right rightToUpdate = rightRepository.findOne(rightId);
-
       if (rightToUpdate == null) {
         rightToUpdate = new Right();
+        LOGGER.info("Creating new right");
+      } else {
+        LOGGER.debug("Updating right with id: " + rightId);
       }
 
       rightToUpdate.updateFrom(right);
       rightToUpdate = rightRepository.save(rightToUpdate);
 
-      LOGGER.debug("Updated right with id: " + rightId);
+      LOGGER.debug("Saved right with id: " + rightToUpdate.getId());
       return new ResponseEntity<Right>(rightToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating right with id: "
-                  + rightId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving right with id: "
+                  + rightToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

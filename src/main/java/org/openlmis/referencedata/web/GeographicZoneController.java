@@ -71,24 +71,25 @@ public class GeographicZoneController extends BaseController {
   @RequestMapping(value = "/geographicZones/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateGeographicZone(@RequestBody GeographicZone geographicZone,
                                                  @PathVariable("id") UUID geographicZoneId) {
+
+    GeographicZone geographicZoneToUpdate = geographicZoneRepository.findOne(geographicZoneId);
     try {
-      LOGGER.debug("Updating geographicZone with id: " + geographicZoneId);
-
-      GeographicZone geographicZoneToUpdate = geographicZoneRepository.findOne(geographicZoneId);
-
       if (geographicZoneToUpdate == null) {
         geographicZoneToUpdate = new GeographicZone();
+        LOGGER.info("Creating new geographicZone");
+      } else {
+        LOGGER.debug("Updating geographicZone with id: " + geographicZoneId);
       }
 
       geographicZoneToUpdate.updateFrom(geographicZone);
       geographicZoneToUpdate = geographicZoneRepository.save(geographicZoneToUpdate);
 
-      LOGGER.debug("Updated geographicZone with id: " + geographicZoneId);
+      LOGGER.debug("Saved geographicZone with id: " + geographicZoneToUpdate.getId());
       return new ResponseEntity<GeographicZone>(geographicZoneToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating geographicZone with id: "
-                  + geographicZoneId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving geographicZone with id: "
+                  + geographicZoneToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }

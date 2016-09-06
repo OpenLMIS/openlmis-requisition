@@ -72,24 +72,25 @@ public class RoleController extends BaseController {
   @RequestMapping(value = "/roles/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRole(@RequestBody Role role,
                                             @PathVariable("id") UUID roleId) {
+
+    Role roleToUpdate = roleRepository.findOne(roleId);
     try {
-      LOGGER.debug("Updating role with id: " + roleId);
-
-      Role roleToUpdate = roleRepository.findOne(roleId);
-
       if (roleToUpdate == null) {
         roleToUpdate = new Role();
+        LOGGER.info("Creating new role");
+      } else {
+        LOGGER.debug("Updating role with id: " + roleId);
       }
 
       roleToUpdate.updateFrom(role);
       roleToUpdate = roleRepository.save(roleToUpdate);
 
-      LOGGER.debug("Updated role with id: " + roleId);
+      LOGGER.debug("Saved role with id: " + roleToUpdate.getId());
       return new ResponseEntity<Role>(roleToUpdate, HttpStatus.OK);
     } catch (DataIntegrityViolationException ex) {
       ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while updating role with id: "
-                  + roleId, ex.getMessage());
+            new ErrorResponse("An error accurred while saving role with id: "
+                  + roleToUpdate.getId(), ex.getMessage());
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
