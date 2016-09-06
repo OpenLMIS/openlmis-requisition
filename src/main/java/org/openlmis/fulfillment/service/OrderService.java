@@ -12,8 +12,10 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.csv.generator.CsvGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
 import org.openlmis.hierarchyandsupervision.domain.User;
@@ -65,6 +67,9 @@ public class OrderService {
 
   @Autowired
   private OrderRepository orderRepository;
+
+  @Autowired
+  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
     "productName", "productCode", "orderedQuantity", "filledQuantity"};
@@ -203,7 +208,12 @@ public class OrderService {
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
       order.setProgram(supplyLine.getProgram());
 
-      order.setOrderCode(getOrderCodeFor(requisition, order.getProgram()));
+      OrderNumberConfiguration orderNumberConfiguration =
+          orderNumberConfigurationRepository.findAll().iterator().next();
+
+      order.setOrderCode(orderNumberConfiguration.generateOrderNumber(
+          requisition.getId(), order.getProgram().getCode(), requisition.getEmergency()));
+
       order.setQuotedCost(BigDecimal.ZERO);
 
       orderRepository.save(order);
@@ -222,9 +232,5 @@ public class OrderService {
       convertedOrders.add(order);
     }
     return convertedOrders;
-  }
-
-  private String getOrderCodeFor(Requisition requisition, Program program) {
-    return program.getCode() + requisition.getId() + (requisition.getEmergency() ? "E" : "R");
   }
 }
