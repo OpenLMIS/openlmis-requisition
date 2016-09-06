@@ -1,10 +1,12 @@
 package org.openlmis.fulfillment.web;
 
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.utils.OrderCsvHelper;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.referencedata.domain.Facility;
@@ -26,13 +28,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class OrderController extends BaseController {
@@ -44,6 +44,12 @@ public class OrderController extends BaseController {
 
   @Autowired
   private OrderService orderService;
+
+  @Autowired
+  private OrderCsvHelper csvHelper;
+
+  @Autowired
+  private OrderFileTemplateService orderFileTemplateService;
 
   /**
    * Allows creating new orders.
@@ -231,11 +237,8 @@ public class OrderController extends BaseController {
       response.setContentType("text/csv");
       response.addHeader("Content-Disposition",
               "attachment; filename=order" + order.getOrderCode() + ".csv");
-      String csvContent = orderService.orderToCsv(order, columns);
       try {
-        InputStream input = new ByteArrayInputStream(csvContent.getBytes(StandardCharsets.UTF_8));
-        IOUtils.copy(input, response.getOutputStream());
-        response.flushBuffer();
+        orderService.orderToCsv(order, columns, response.getWriter());
       } catch (IOException ex) {
         LOGGER.debug("Error writing csv file to output stream.", ex);
       }
@@ -257,5 +260,50 @@ public class OrderController extends BaseController {
     }
     orderService.convertToOrder(requisitionList, userId);
     return new ResponseEntity<>(HttpStatus.CREATED);
+  }
+
+  /**
+   * Exporting order to csv.
+   *
+   * @param orderId UUID of order to print
+   * @param response HttpServletResponse object
+   */
+  @RequestMapping(value = "/orders/{id}/csv", method = RequestMethod.GET)
+  @ResponseBody
+  public void exportToCsv(@PathVariable("id") UUID orderId, HttpServletResponse response) {
+    Order order = orderRepository.findOne(orderId);
+    OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
+
+    try {
+      if (order == null) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");
+        return;
+      }
+
+      if (orderFileTemplate == null) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            "Could not export Order, because Order Template File not found");
+        return;
+      }
+    } catch (IOException ex) {
+      LOGGER.info("Error sending error message to client.", ex);
+      return;
+    }
+
+    response.setContentType("text/csv");
+    response.addHeader("Content-Disposition", "attachment; filename="
+        + orderFileTemplate.getFilePrefix() + order.getOrderCode() + ".csv");
+
+    try {
+      csvHelper.writeCsvFile(order, orderFileTemplate, response.getWriter());
+    } catch (IOException ex) {
+      try {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            "Error occurred while exporting order to csv.");
+        LOGGER.debug("Error occurred while exporting order to csv", ex);
+      } catch (IOException exception) {
+        LOGGER.info("Error sending error message to client.", exception);
+      }
+    }
   }
 }

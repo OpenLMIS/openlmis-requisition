@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.service;
 
+import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -9,7 +11,6 @@ import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import org.openlmis.csv.generator.CsvGenerator;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -32,11 +33,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.supercsv.io.CsvMapWriter;
+import org.supercsv.io.ICsvMapWriter;
+import org.supercsv.prefs.CsvPreference;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -48,7 +54,7 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
-  Logger logger = LoggerFactory.getLogger(OrderService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
   @Autowired
   private RequisitionService requisitionService;
@@ -90,20 +96,30 @@ public class OrderService {
   }
 
   /**
-   * Changes order to CSV formatted String.
+   * Changes order to CSV formatted file.
    * @param order Order type object to be transformed into CSV
    * @param chosenColumns String array containing names of columns to be taken from order
-   * @return CSV formatted String with an order
    */
-  public String orderToCsv(Order order, String[] chosenColumns) {
+  public void orderToCsv(Order order, String[] chosenColumns, Writer writer) {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
-      CsvGenerator generator = new CsvGenerator();
 
-      return generator.toCsv(rows, chosenColumns);
+      if (!rows.isEmpty()) {
+        ICsvMapWriter mapWriter = null;
+        try {
+          mapWriter = new CsvMapWriter(writer, CsvPreference.STANDARD_PREFERENCE);
+          mapWriter.writeHeader(chosenColumns);
+
+          for (Map<String, Object> row : rows) {
+            mapWriter.write(row, chosenColumns);
+          }
+        } catch (IOException ex) {
+          LOGGER.debug(ex.getMessage(), ex);
+        } finally {
+          closeQuietly(mapWriter);
+        }
+      }
     }
-
-    return null;
   }
 
   /**
@@ -147,11 +163,11 @@ public class OrderService {
       exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
       exporter.exportReport();
     } catch (JRException ex) {
-      logger.debug("Error compiling jasper template.", ex);
+      LOGGER.debug("Error compiling jasper template.", ex);
     } catch (FileNotFoundException ex) {
-      logger.debug("Error reading from file.", ex);
+      LOGGER.debug("Error reading from file.", ex);
     } catch (NullPointerException ex) {
-      logger.debug("File does not exist." , ex);
+      LOGGER.debug("File does not exist." , ex);
     }
   }
 

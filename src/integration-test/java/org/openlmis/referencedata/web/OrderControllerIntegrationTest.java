@@ -1,5 +1,10 @@
 package org.openlmis.referencedata.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +40,7 @@ import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,16 +49,12 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -173,27 +175,27 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Facility facility2 = addFacility("facility2", "F2", null, facilityType2,
             geographicZone2, true, false);
 
+    ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
+
+    ProductCategory productCategory4 = addProductCategory("PCCode2", "PCName2", 2);
+
+    Product product1 = addProduct("Product1", "P1", "pill", 1, 10, 10, false, true, false, false,
+        productCategory3);
+
+    Product product2 = addProduct("Product2", "P2", "pill", 2, 20, 20, true, true, false, false,
+        productCategory4);
+
     Requisition requisition1 = addRequisition(program1, facility1, period1,
-            RequisitionStatus.RELEASED, null);
+            RequisitionStatus.RELEASED, null, product1);
 
     Requisition requisition2 = addRequisition(program2, facility1, period2,
-            RequisitionStatus.RELEASED, null);
+            RequisitionStatus.RELEASED, null, product2);
 
     secondOrder = addOrder(requisition1, "O2", program1, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
     thirdOrder = addOrder(requisition2, "O3", program2, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(200));
-
-    ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
-
-    ProductCategory productCategory4 = addProductCategory("PCCode2", "PCName2", 2);
-
-    Product product1 = addProduct("Product1", "P1", "pill", 1, 10, 10, false, true, false, false,
-            productCategory3);
-
-    Product product2 = addProduct("Product2", "P2", "pill", 2, 20, 20, true, true, false, false,
-            productCategory4);
 
     addOrderLine(secondOrder, product1, 35L, 50L);
 
@@ -230,7 +232,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             LocalDate.of(2015, Month.DECEMBER, 31));
 
     requisition = addRequisition(program, supplyingFacility, period,
-            RequisitionStatus.APPROVED, supervisoryNode);
+            RequisitionStatus.APPROVED, supervisoryNode, product1);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
   }
@@ -310,7 +312,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Requisition addRequisition(Program program, Facility facility,
                                      ProcessingPeriod processingPeriod,
                                      RequisitionStatus requisitionStatus,
-                                     SupervisoryNode supervisoryNode) {
+                                     SupervisoryNode supervisoryNode,
+                                     Product product) {
     Requisition requisition = new Requisition();
     requisition.setProgram(program);
     requisition.setFacility(facility);
@@ -318,6 +321,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setStatus(requisitionStatus);
     requisition.setEmergency(false);
     requisition.setSupervisoryNode(supervisoryNode);
+
+    RequisitionLine requisitionLine = new RequisitionLine();
+    requisitionLine.setRequisition(requisition);
+    requisitionLine.setProduct(product);
+    requisitionLine.setRequestedQuantity(3);
+    requisitionLine.setApprovedQuantity(3);
+
+    requisition.setRequisitionLines(Collections.singletonList(requisitionLine));
+
     return requisitionRepository.save(requisition);
   }
 
@@ -670,5 +682,36 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldExportOrderToCsv() {
+    String csvContent = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", secondOrder.getId())
+        .when()
+        .get("/api/orders/{id}/csv")
+        .then()
+        .statusCode(200)
+        .extract().body().asString();
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertTrue(csvContent.startsWith("Order number,Facility code,Product code,Product name,"
+        + "Approved quantity,Period,Order date"));
+
+    String period = secondOrder.getRequisition().getProcessingPeriod().getStartDate().format(
+        DateTimeFormatter.ofPattern("MM/yy"));
+    String orderDate = secondOrder.getCreatedDate().format(
+        DateTimeFormatter.ofPattern("dd/MM/yy"));
+
+    for (RequisitionLine line : secondOrder.getRequisition().getRequisitionLines()) {
+      assertTrue(csvContent.contains(secondOrder.getOrderCode()
+          + "," + secondOrder.getRequisition().getFacility().getCode()
+          + "," + line.getProduct().getCode()
+          + "," + line.getProduct().getPrimaryName()
+          + "," + line.getApprovedQuantity()
+          + "," + period
+          + "," + orderDate));
+    }
   }
 }

@@ -527,6 +527,37 @@ schemas:
           }
       }
 
+  - orderFileTemplate: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "OrderFileTemplate",
+          "description": "A single orderFileTemplate",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "filePrefix": { "type": "string", "required": false, "title": "filePrefix" },
+              "headerInFile": { "type": "boolean", "required": false, "title": "headerInFile" },
+              "orderFileColumns": { "type": "array", "required": false, "title": "orderFileColumns", "items": { "type": "object", "$ref": "#/schemas/orderFileColumn" }, "uniqueItems": false }
+          }
+      }
+
+  - orderFileColumn: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "OrderFileColumn",
+          "description": "A single orderFileColumn",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "openLmisField": { "type": "boolean", "required": false, "title": "openLmisField" },
+              "dataFieldLabel": { "type": "string", "required": false, "title": "dataFieldLabel" },
+              "columnLabel": { "type": "string", "required": false, "title": "columnLabel" },
+              "include": { "type": "boolean", "required": false, "title": "include" },
+              "position": { "type": "integer", "required": false, "title": "position" },
+              "format": { "type": "string", "required": false, "title": "format" },
+              "nested": { "type": "string", "required": false, "title": "nested" },
+              "keyPath": { "type": "string", "required": false, "title": "keyPath" }
+          }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -679,25 +710,26 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-    /csv/{id}:
-        uriParameters:
-            id:
-                displayName: Order id
-                type: string
-        get:
-            is: [ secured ]
-            description: Get CSV from Order.
-            responses:
-              200:
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
-              400:
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
+        /csv:
+            get:
+                is: [ secured ]
+                description: Export Order to csv.
+                responses:
+                  200:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                      Content-Disposition:
+                    body:
+                      text/csv:
+                  400:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                  500:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
 
     /search:
             get:
@@ -3867,3 +3899,38 @@ resourceTypes:
                      headers:
                        X-Content-Type-Options:
                        X-XSS-Protection:
+
+/orderFileTemplates:
+    displayName: OrderFileTemplate
+    get:
+        is: [ secured ]
+        description: Get OrderFileTemplate.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Create or update orderFileTemplate.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
