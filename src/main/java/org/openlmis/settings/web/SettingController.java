@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class SettingController extends BaseController {
 
   @Autowired
-  ConfigurationSettingService configurationSettingService;
+  private ConfigurationSettingService configurationSettingService;
 
   /**
    * Returns setting with given key.

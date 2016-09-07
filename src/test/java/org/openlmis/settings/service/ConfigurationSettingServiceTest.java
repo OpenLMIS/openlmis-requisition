@@ -10,7 +10,7 @@ import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -32,7 +32,7 @@ public class ConfigurationSettingServiceTest {
 
   @Test
   public void shouldGetConfigurationSettingByKeyIfKeyExists() throws ConfigurationSettingException {
-    assertTrue(configurationSettingService.getByKey("key").equals(configurationSetting));
+    assertEquals(configurationSettingService.getByKey("key"), configurationSetting);
   }
 
   @Test(expected = ConfigurationSettingException.class)
@@ -43,7 +43,7 @@ public class ConfigurationSettingServiceTest {
 
   @Test
   public void shouldGetValueIfKeyExists() throws ConfigurationSettingException {
-    assertTrue(configurationSettingService.getStringValue("key").equals("value"));
+    assertEquals(configurationSettingService.getStringValue("key"), "value");
   }
 
   @Test(expected = ConfigurationSettingException.class)
@@ -54,7 +54,7 @@ public class ConfigurationSettingServiceTest {
   @Test
   public void shouldCatchExceptionAndReturnFalseIfKeyDoesNotExists()
           throws ConfigurationSettingException {
-    assertTrue(configurationSettingService.getBoolValue("testEmpty").equals(Boolean.FALSE));
+    assertEquals(configurationSettingService.getBoolValue("testEmpty"), Boolean.FALSE);
   }
 
   @Test
@@ -65,7 +65,7 @@ public class ConfigurationSettingServiceTest {
     when(configurationSettingRepository
             .findOne(configurationSetting.getKey()))
             .thenReturn(configurationSetting);
-    assertTrue(configurationSettingService.getBoolValue("testTrue").equals(Boolean.TRUE));
+    assertEquals(configurationSettingService.getBoolValue("testTrue"), Boolean.TRUE);
   }
 
   @Test
@@ -76,7 +76,7 @@ public class ConfigurationSettingServiceTest {
     when(configurationSettingRepository
             .findOne(configurationSetting.getKey()))
             .thenReturn(configurationSetting);
-    assertTrue(configurationSettingService.getBoolValue("testFalse").equals(Boolean.FALSE));
+    assertEquals(configurationSettingService.getBoolValue("testFalse"), Boolean.FALSE);
   }
 
   private void generateInstances() {

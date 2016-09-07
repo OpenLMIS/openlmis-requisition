@@ -24,7 +24,7 @@ public class SettingControllerIntegrationTest extends BaseWebIntegrationTest {
   private ConfigurationSetting setting = new ConfigurationSetting();
 
   @Autowired
-  ConfigurationSettingRepository configurationSettingRepository;
+  private ConfigurationSettingRepository configurationSettingRepository;
 
   @Before
   public void setUp() {
