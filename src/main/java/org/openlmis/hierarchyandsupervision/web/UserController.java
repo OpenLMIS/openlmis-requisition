@@ -8,6 +8,7 @@ import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
 import org.openlmis.hierarchyandsupervision.utils.PasswordChangeRequest;
 import org.openlmis.hierarchyandsupervision.utils.PasswordResetRequest;
 import org.openlmis.referencedata.domain.Facility;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.referencedata.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +46,16 @@ public class UserController extends BaseController {
   private UserService userService;
 
   @Autowired
+  private ReferenceDataService referenceDataService;
+
+  @Autowired
   private UserRepository userRepository;
 
   @Autowired
   private Validator validator;
+
+  public UserController() {
+  }
 
   @InitBinder
   protected void initBinder(WebDataBinder binder) {
@@ -147,8 +154,11 @@ public class UserController extends BaseController {
    * @return User.
    */
   @RequestMapping(value = "/users/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getUser(@PathVariable("id") UUID userId) {
-    User user = userRepository.findOne(userId);
+  public ResponseEntity<?> getUser(@PathVariable("id") UUID userId, OAuth2Authentication auth) {
+    //User user = userRepository.findOne(userId);
+    OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auth.getDetails();
+    String token = details.getTokenValue();
+    User user = (User) referenceDataService.getReferenceDataObjectJson(userId, token);
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
