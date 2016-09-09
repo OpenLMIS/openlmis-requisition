@@ -10,8 +10,6 @@ import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.repository.ProductRepository;
 import org.openlmis.referencedata.domain.Facility;
@@ -19,6 +17,8 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
+import org.openlmis.requisition.dto.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -46,9 +46,6 @@ public class OrderLineRepositoryIntegrationTest {
   private ProgramRepository programRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private FacilityRepository facilityRepository;
 
   @Autowired
@@ -59,6 +56,9 @@ public class OrderLineRepositoryIntegrationTest {
 
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   private Order order = new Order();
   private Product product = new Product();
@@ -93,8 +93,9 @@ public class OrderLineRepositoryIntegrationTest {
     program.setCode(orderLine);
     programRepository.save(program);
 
-    Assert.assertEquals(1, userRepository.count());
-    User user = userRepository.findAll().iterator().next();
+    UserDto[] allUsers = referenceDataService.findAllUsers();
+    Assert.assertEquals(1, allUsers.length);
+    UserDto user = allUsers[0];
 
     order.setOrderCode(orderLine);
     order.setQuotedCost(new BigDecimal("1.29"));

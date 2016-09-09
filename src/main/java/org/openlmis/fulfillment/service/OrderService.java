@@ -18,13 +18,13 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.Logger;
@@ -60,9 +60,6 @@ public class OrderService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private OrderLineRepository orderLineRepository;
 
   @Autowired
@@ -70,6 +67,9 @@ public class OrderService {
 
   @Autowired
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
     "productName", "productCode", "orderedQuantity", "filledQuantity"};
@@ -186,7 +186,7 @@ public class OrderService {
    */
   @Transactional
   public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
-    User user = userRepository.findOne(userId);
+    UserDto user = referenceDataService.findOneUser(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
     List<Order> convertedOrders = new ArrayList<>();
 

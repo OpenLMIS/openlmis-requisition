@@ -9,8 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.view.View;
 
 import javax.persistence.Convert;
@@ -39,7 +39,7 @@ public class Comment extends BaseEntity {
   @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
-  private User author;
+  private UserDto author;
 
   @JsonView(View.BasicInformation.class)
   @Getter

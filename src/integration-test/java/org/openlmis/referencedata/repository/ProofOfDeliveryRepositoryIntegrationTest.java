@@ -8,13 +8,13 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
+import org.openlmis.requisition.dto.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -35,9 +35,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   private ProgramRepository programRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private GeographicLevelRepository geographicLevelRepository;
 
   @Autowired
@@ -45,6 +42,9 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   private static final String CODE = "ProofOfDeliveryRepositoryIntegrationTest";
 
@@ -84,8 +84,9 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     program.setCode(CODE);
     programRepository.save(program);
 
-    Assert.assertEquals(1, userRepository.count());
-    User user = userRepository.findAll().iterator().next();
+    UserDto[] allUsers = referenceDataService.findAllUsers();
+    Assert.assertEquals(1, allUsers.length);
+    UserDto user = allUsers[0];
 
     order.setOrderCode(CODE);
     order.setQuotedCost(new BigDecimal("1.29"));

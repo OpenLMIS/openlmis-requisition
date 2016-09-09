@@ -1,6 +1,8 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -9,9 +11,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -30,8 +30,10 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -43,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -80,9 +81,6 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   private ProgramRepository programRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
@@ -97,14 +95,18 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
+  @Autowired
+  private ReferenceDataService referenceDataService;
+
   private OrderLine orderLine = new OrderLine();
   private Order order = new Order();
-  private User user;
+  private UserDto user;
 
   @Before
   public void setUp() {
-    assertEquals(1, userRepository.count());
-    user = userRepository.findOne(INITIAL_USER_ID);
+    UserDto[] allUsers = referenceDataService.findAllUsers();
+    Assert.assertEquals(1, allUsers.length);
+    user = referenceDataService.findOneUser(INITIAL_USER_ID);
 
     ProductCategory productCategory = new ProductCategory();
     productCategory.setCode("PC");

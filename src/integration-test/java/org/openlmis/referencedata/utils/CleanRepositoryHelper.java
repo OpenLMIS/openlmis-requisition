@@ -4,15 +4,15 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupProgramScheduleRepository;
 import org.openlmis.hierarchyandsupervision.repository.RequisitionGroupRepository;
 import org.openlmis.hierarchyandsupervision.repository.RightRepository;
 import org.openlmis.hierarchyandsupervision.repository.RoleRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.repository.ProductCategoryRepository;
 import org.openlmis.product.repository.ProductRepository;
+import org.openlmis.referencedata.service.ReferenceDataService;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.referencedata.repository.FacilityOperatorRepository;
 import org.openlmis.referencedata.repository.FacilityRepository;
@@ -120,9 +120,6 @@ public class CleanRepositoryHelper {
   private SupervisoryNodeRepository supervisoryNodeRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private StockRepository stockRepository;
 
   @Autowired
@@ -136,6 +133,9 @@ public class CleanRepositoryHelper {
 
   @Autowired
   private RightRepository rightRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   /**
    * Delete all entities from most of repositories.
@@ -176,13 +176,13 @@ public class CleanRepositoryHelper {
   }
 
   private void deleteAllUsersExceptAdmin() {
-    User initialUser = userRepository.findOne(INITIAL_USER_ID);
+    UserDto initialUser = referenceDataService.findOneUser(INITIAL_USER_ID);
     initialUser.setHomeFacility(null);
     initialUser.setSupervisedNode(null);
-    userRepository.save(initialUser);
-    for (User user : userRepository.findAll()) {
+    referenceDataService.saveUser(initialUser);
+    for (UserDto user : referenceDataService.findAllUsers()) {
       if (!user.getId().equals(INITIAL_USER_ID)) {
-        userRepository.delete(user);
+        referenceDataService.deleteUser(user.getId());
       }
     }
   }

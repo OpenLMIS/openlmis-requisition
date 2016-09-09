@@ -1,14 +1,14 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -37,9 +37,6 @@ public class RequisitionService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private RequisitionLineService requisitionLineService;
 
   @Autowired
@@ -47,6 +44,9 @@ public class RequisitionService {
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -190,7 +190,7 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    User user = userRepository.findOne(userId);
+    UserDto user = referenceDataService.findOneUser(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     if (user.getSupervisedNode() != null) {
       requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));

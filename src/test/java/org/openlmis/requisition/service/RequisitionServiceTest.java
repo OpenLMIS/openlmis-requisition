@@ -7,14 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -40,7 +40,7 @@ public class RequisitionServiceTest {
   private Requisition requisition;
 
   @Mock
-  private UserRepository userRepository;
+  private ReferenceDataService referenceDataService;
 
   @Mock
   private RequisitionLineService requisitionLineService;
@@ -156,7 +156,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
     SupervisoryNode supervisoryNode = mock(SupervisoryNode.class);
-    User user = mock(User.class);
+    UserDto user = mock(UserDto.class);
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode);
@@ -164,8 +164,7 @@ public class RequisitionServiceTest {
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
     when(user.getSupervisedNode()).thenReturn(supervisoryNode);
-    when(userRepository
-            .findOne(userId))
+    when(referenceDataService.findOneUser(userId))
             .thenReturn(user);
     when(requisitionRepository
             .searchRequisitions(null, null, null, null, null, supervisoryNode, null))

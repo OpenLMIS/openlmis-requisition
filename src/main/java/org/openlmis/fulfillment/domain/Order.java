@@ -10,11 +10,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.UserDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -56,7 +56,7 @@ public class Order extends BaseEntity {
   @JoinColumn(name = "createdById", nullable = false)
   @Getter
   @Setter
-  private User createdBy;
+  private UserDto createdBy;
 
   @ManyToOne
   @JoinColumn(name = "programId", nullable = false)

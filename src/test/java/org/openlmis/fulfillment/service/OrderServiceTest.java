@@ -15,17 +15,17 @@ import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
 import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 
@@ -65,9 +65,6 @@ public class OrderServiceTest {
   private OrderRepository orderRepository;
 
   @Mock
-  private UserRepository userRepository;
-
-  @Mock
   private RequisitionRepository requisitionRepository;
 
   @Mock
@@ -81,6 +78,9 @@ public class OrderServiceTest {
 
   @Mock
   private Program program;
+
+  @Mock
+  private ReferenceDataService referenceDataService;
 
   @InjectMocks
   private OrderService orderService;
@@ -99,10 +99,10 @@ public class OrderServiceTest {
 
   @Test
   public void shouldConvertRequisitionsToOrders() {
-    User user = mock(User.class);
+    UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
-    when(userRepository.findOne(userId)).thenReturn(user);
+    when(referenceDataService.findOneUser(userId)).thenReturn(user);
 
     for (int i = 0; i < requisitions.size(); i++) {
       when(requisitionRepository
@@ -248,7 +248,7 @@ public class OrderServiceTest {
     Order order = new Order();
     order.setProgram(program);
     order.setCreatedDate(LocalDateTime.now().plusDays(instanceNumber));
-    order.setCreatedBy(mock(User.class));
+    order.setCreatedBy(mock(UserDto.class));
     order.setReceivingFacility(mock(Facility.class));
     order.setSupplyingFacility(mock(Facility.class));
     order.setRequestingFacility(mock(Facility.class));

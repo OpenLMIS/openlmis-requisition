@@ -8,13 +8,13 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.product.domain.Product;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.dto.UserDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,7 +26,7 @@ public class CsvGeneratorTest {
 
   private Facility facility = new Facility();
   private Program program = new Program();
-  private User user = new User();
+  private UserDto user = new UserDto();
 
   @Before
   public void setUp() {

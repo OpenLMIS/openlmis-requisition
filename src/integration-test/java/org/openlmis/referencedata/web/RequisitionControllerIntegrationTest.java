@@ -4,9 +4,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -25,10 +23,12 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -110,13 +110,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private CommentRepository commentRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
   private SupervisoryNodeRepository supervisoryNodeRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
@@ -125,7 +125,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Program program = new Program();
   private Facility facility = new Facility();
   private SupervisoryNode supervisoryNode = new SupervisoryNode();
-  private User user;
+  private UserDto user;
   private LocalDateTime localDateTime = LocalDateTime.now();
 
   @Before
@@ -206,7 +206,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
-    user = userRepository.findOne(INITIAL_USER_ID);
+    user = referenceDataService.findOneUser(INITIAL_USER_ID);
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
@@ -721,8 +721,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    user.setSupervisedNode(supervisoryNode);
-    userRepository.save(user);
+    user.setSupervisedNode(supervisoryNode.getId());
+    referenceDataService.saveUser(user);
 
     Requisition[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -742,7 +742,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
     }
     user.setSupervisedNode(null);
-    userRepository.save(user);
+    referenceDataService.saveUser(user);
   }
 
   @Test
@@ -1090,7 +1090,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return requisitionRepository.save(requisition);
   }
 
-  private Comment createComment(User author, Requisition req, String commentText) {
+  private Comment createComment(UserDto author, Requisition req, String commentText) {
     Comment comment = new Comment();
     comment.setAuthor(author);
     comment.setRequisition(req);

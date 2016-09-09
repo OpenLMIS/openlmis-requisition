@@ -14,8 +14,6 @@ import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -25,6 +23,8 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
+import org.openlmis.requisition.dto.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -57,9 +57,6 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
   private ProgramRepository programRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private FacilityRepository facilityRepository;
 
   @Autowired
@@ -73,6 +70,9 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
 
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   private static final String CODE = "ProofOfDeliveryLineRepositoryIntegrationTest";
 
@@ -110,8 +110,9 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     program.setCode(CODE);
     programRepository.save(program);
 
-    Assert.assertEquals(1, userRepository.count());
-    User user = userRepository.findAll().iterator().next();
+    UserDto[] allUsers = referenceDataService.findAllUsers();
+    Assert.assertEquals(1, allUsers.length);
+    UserDto user = allUsers[0];
 
     Order order = new Order();
     order.setOrderCode(CODE);

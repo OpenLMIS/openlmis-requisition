@@ -6,18 +6,19 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.service.ReferenceDataService;
+import org.openlmis.requisition.dto.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
@@ -27,9 +28,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Autowired
   private ProgramRepository programRepository;
-
-  @Autowired
-  private UserRepository userRepository;
 
   @Autowired
   private FacilityRepository facilityRepository;
@@ -42,6 +40,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Autowired
   private FacilityTypeRepository facilityTypeRepository;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   private List<Order> orders;
 
@@ -183,18 +184,19 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     return facilityType;
   }
 
-  private User generateUser() {
-    User user = new User();
+  private UserDto generateUser() {
+    UserDto user = new UserDto();
     Integer instanceNumber = this.getNextInstanceNumber();
     user.setFirstName("Ala" + instanceNumber);
     user.setLastName("ma" + instanceNumber);
     user.setUsername("kota" + instanceNumber);
     user.setEmail(instanceNumber + "@mail.com");
     user.setTimezone("UTC");
-    user.setHomeFacility(generateFacility());
+    //Fix below after added facility
+    user.setHomeFacility(UUID.randomUUID());
     user.setVerified(true);
     user.setActive(true);
-    userRepository.save(user);
+    referenceDataService.saveUser(user);
     return user;
   }
 }

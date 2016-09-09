@@ -1,6 +1,8 @@
 package org.openlmis.referencedata.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -12,10 +14,8 @@ import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
 import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
 import org.openlmis.product.domain.Product;
 import org.openlmis.product.domain.ProductCategory;
 import org.openlmis.product.repository.ProductCategoryRepository;
@@ -34,8 +34,10 @@ import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
 import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
 import org.openlmis.referencedata.repository.ProgramRepository;
+import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -95,9 +97,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private ProgramRepository programRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
@@ -115,12 +114,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
+  @Autowired
+  private ReferenceDataService referenceDataService;
+
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
   private Requisition requisition;
   private SupplyLine supplyLine;
-  private User user;
+  private UserDto user;
 
   @Before
   public void setUp() {
@@ -135,8 +137,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Program program = addProgram("programCode");
 
-    assertEquals(1, userRepository.count());
-    user = userRepository.findOne(INITIAL_USER_ID);
+    UserDto[] allUsers = referenceDataService.findAllUsers();
+    Assert.assertEquals(1, allUsers.length);
+    user = referenceDataService.findOneUser(INITIAL_USER_ID);
 
     firstOrder = addOrder(null, "orderCode", program, user, facility, facility, facility,
             OrderStatus.ORDERED, new BigDecimal("1.29"));
@@ -255,7 +258,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return programRepository.save(program);
   }
 
-  private Order addOrder(Requisition requisition, String orderCode, Program program, User user,
+  private Order addOrder(Requisition requisition, String orderCode, Program program, UserDto user,
                          Facility requestingFacility, Facility receivingFacility,
                          Facility supplyingFacility, OrderStatus orderStatus, BigDecimal cost) {
     Order order = new Order();
