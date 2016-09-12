@@ -1,6 +1,9 @@
 package org.openlmis.requisition.dto;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
+import org.openlmis.referencedata.domain.BaseEntity;
 
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -8,13 +11,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
+@Table(name = "user_dto", schema = "referencedata")
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
-
-  @Getter
-  @Setter
-  private UUID id;
+public class UserDto extends BaseEntity {
 
   @Getter
   @Setter
