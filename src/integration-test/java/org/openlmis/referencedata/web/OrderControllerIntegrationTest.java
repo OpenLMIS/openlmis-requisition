@@ -42,6 +42,7 @@ import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -117,6 +118,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private SupplyLineRepository supplyLineRepository;
 
+  @Autowired
+  private RequisitionLineRepository requisitionLineRepository;
+
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
@@ -177,25 +181,28 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     ProductCategory productCategory3 = addProductCategory("PCCode1", "PCName1", 1);
 
-    ProductCategory productCategory4 = addProductCategory("PCCode2", "PCName2", 2);
-
     Product product1 = addProduct("Product1", "P1", "pill", 1, 10, 10, false, true, false, false,
         productCategory3);
 
-    Product product2 = addProduct("Product2", "P2", "pill", 2, 20, 20, true, true, false, false,
-        productCategory4);
-
     Requisition requisition1 = addRequisition(program1, facility1, period1,
-            RequisitionStatus.RELEASED, null, product1);
+            RequisitionStatus.RELEASED, null);
+
+    addRequisitionLine(requisition1, product1);
+    requisition1 = requisitionRepository.findOne(requisition1.getId());
 
     Requisition requisition2 = addRequisition(program2, facility1, period2,
-            RequisitionStatus.RELEASED, null, product2);
+            RequisitionStatus.RELEASED, null);
 
     secondOrder = addOrder(requisition1, "O2", program1, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
     thirdOrder = addOrder(requisition2, "O3", program2, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(200));
+
+    ProductCategory productCategory4 = addProductCategory("PCCode2", "PCName2", 2);
+
+    Product product2 = addProduct("Product2", "P2", "pill", 2, 20, 20, true, true, false, false,
+        productCategory4);
 
     addOrderLine(secondOrder, product1, 35L, 50L);
 
@@ -232,7 +239,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             LocalDate.of(2015, Month.DECEMBER, 31));
 
     requisition = addRequisition(program, supplyingFacility, period,
-            RequisitionStatus.APPROVED, supervisoryNode, product1);
+            RequisitionStatus.APPROVED, supervisoryNode);
 
     supplyLine = addSupplyLine(supervisoryNode, program, supplyingFacility);
   }
@@ -312,8 +319,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Requisition addRequisition(Program program, Facility facility,
                                      ProcessingPeriod processingPeriod,
                                      RequisitionStatus requisitionStatus,
-                                     SupervisoryNode supervisoryNode,
-                                     Product product) {
+                                     SupervisoryNode supervisoryNode) {
     Requisition requisition = new Requisition();
     requisition.setProgram(program);
     requisition.setFacility(facility);
@@ -322,15 +328,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setEmergency(false);
     requisition.setSupervisoryNode(supervisoryNode);
 
+    return requisitionRepository.save(requisition);
+  }
+
+  private RequisitionLine addRequisitionLine(Requisition requisition, Product product) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequisition(requisition);
     requisitionLine.setProduct(product);
     requisitionLine.setRequestedQuantity(3);
     requisitionLine.setApprovedQuantity(3);
 
-    requisition.setRequisitionLines(Collections.singletonList(requisitionLine));
-
-    return requisitionRepository.save(requisition);
+    return requisitionLineRepository.save(requisitionLine);
   }
 
   private OrderLine addOrderLine(Order order, Product product, Long filledQuantity,
