@@ -52,7 +52,7 @@ public class JasperReportsViewFactory {
   }
 
   /**
-   * Set exporter parameters in jasper view.
+   * Set export parameters in jasper view.
    */
   private void setExportParams(JasperReportsMultiFormatView jasperView) {
     Map<JRExporterParameter, Object> reportFormatMap = new HashMap<>();

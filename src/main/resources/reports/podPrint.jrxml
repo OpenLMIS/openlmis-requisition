@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-18T11:24:49 -->
+<!-- 2016-09-05T14:40:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
@@ -108,7 +108,7 @@
 	<field name="totalquantityreturned" class="java.math.BigDecimal"/>
 	<field name="totalquantityshipped" class="java.math.BigDecimal"/>
 	<field name="totalquantityreceived" class="java.math.BigDecimal"/>
-	<field name="receiveddate" class="java.sql.Timestamp"/>
+	<field name="receiveddate" class="java.sql.Date"/>
 	<field name="receivedby" class="java.lang.String"/>
 	<field name="deliveredby" class="java.lang.String"/>
 	<field name="ordercode" class="java.lang.String"/>
@@ -136,35 +136,35 @@
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label.order.no}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.order-no}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement x="27" y="30" width="72" height="10" uuid="290c6493-c0dd-41f4-b251-01f05f2ae792"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label.facility.reportingPeriod}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.facility.reporting-period}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement x="308" y="11" width="82" height="10" uuid="7c75268c-c1bf-4645-ad2d-6244c73ce77b"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label.facility}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.facility}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement x="308" y="30" width="82" height="10" uuid="2b080c4f-486c-46c4-ae16-8411f352b0ea"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label.supplying.depot}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.supplying-depot}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement x="603" y="11" width="72" height="10" uuid="bada7198-edba-4884-b45d-23fd4e1c18f3"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{header.order.date}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.order-date}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="115" y="11" width="115" height="10" uuid="219fe371-17e1-4ab4-acfb-8e262215827d"/>
@@ -223,7 +223,7 @@
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{header.template.type}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.type}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="690" y="30" width="123" height="10" uuid="eae60c5b-ba1a-4dbc-a680-158271d559e5"/>
@@ -289,7 +289,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="14" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{label.proof.of.delivery.for},$F{program},$F{facility},$F{supplyingdepot})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{requisition.print.proof-of-delivery.label.proof-of-delivery-for},$F{program},$F{facility},$F{supplyingdepot})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy">
 				<reportElement positionType="Float" x="768" y="10" width="57" height="30" uuid="2dd094dc-e4b5-43c0-89ab-02f2dda79bb5">
@@ -303,7 +303,7 @@
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement mode="Transparent" x="11" y="4" width="815" height="46" uuid="fadb0c71-bb5d-4dd3-8ec0-7188f5893e33"/>
+				<reportElement positionType="Float" mode="Transparent" x="11" y="4" width="815" height="46" uuid="fadb0c71-bb5d-4dd3-8ec0-7188f5893e33"/>
 				<graphicElement>
 					<pen lineWidth="0.0"/>
 				</graphicElement>
@@ -338,7 +338,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{label.page.of}, $V{PAGE_NUMBER})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{requisition.print.proof-of-delivery.label.page-of}, $V{PAGE_NUMBER})]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="809" y="4" width="19" height="11" uuid="477ffc9d-22bf-46f5-bbf9-a5527705d801"/>
@@ -371,7 +371,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.summary}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.label.summary}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement positionType="FixRelativeToBottom" stretchType="RelativeToTallestObject" mode="Opaque" x="11" y="70" width="79" height="30" backcolor="#EEEDF0" uuid="6fe8bbad-bec4-4b6a-8dee-bd742234878d"/>
@@ -384,7 +384,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.total.shipped.packs}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.total-shipped-packs}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="170" y="70" width="80" height="30" backcolor="#EEEDF0" uuid="b61f59bb-8282-415f-9c54-3ba0037dfbcd"/>
@@ -397,7 +397,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.total.received.packs} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.total-received-packs} + ""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="330" y="70" width="80" height="30" backcolor="#EEEDF0" uuid="24a5d952-8d52-4f23-9e1f-cb501f4287e1"/>
@@ -410,21 +410,21 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.total.returned.packs} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.total-returned-packs} + ""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="10" y="161" width="70" height="10" uuid="cb6c632b-8962-4279-9e11-8a432990a0ed"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.receivedBy}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.label.received-by}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="10" y="140" width="70" height="10" uuid="ae896831-5346-451d-89e8-d6de02eda420"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.deliveredBy}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.label.delivered-by}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="" stretchType="RelativeToTallestObject" mode="Opaque" x="90" y="70" width="80" height="30" backcolor="#EEEDF0" uuid="827c0b6f-da7d-4f20-91db-4045e7c9608f"/>
@@ -471,7 +471,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.receivedDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.label.received-date}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="460" y="153" width="15" height="10" uuid="2794c49c-5172-4d3c-8acd-ec1e3b1410f5"/>

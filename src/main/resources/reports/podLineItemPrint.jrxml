@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-18T11:13:34 -->
+<!-- 2016-09-05T14:46:01 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="845" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -70,7 +70,7 @@
              FROM requisition.proof_of_delivery_lines podl
              INNER JOIN  requisition.order_lines ol on  podl.orderlineid = ol.id
              INNER JOIN  referencedata.products prod on prod.id = ol.productid 
-             INNER JOIN  referencedata.program_categories prodc on prodc.id =   prod.productcategoryid 
+             INNER JOIN  referencedata.product_categories prodc on prodc.id =   prod.productcategoryid
              WHERE  podl.proofofdeliveryid  = $P!{pod_id} 
              ORDER BY prod.primaryname, LOWER(prod.primaryname), prod.primaryname NULLS LAST, LOWER(prod.primaryname)]]>
 	</queryString>
@@ -117,7 +117,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label.default.category}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.label.category}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -133,7 +133,7 @@
 					<font size="14" isBold="true"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.pod.products}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.label.products}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -161,7 +161,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.product.code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.product-code}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="281" y="0" width="56" height="28" uuid="7a2bce85-864e-42e7-9581-125974028476"/>
@@ -176,7 +176,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.unit.of.issue}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.unit-of-issue}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="337" y="0" width="50" height="28" uuid="0a3d67e1-d00c-4d03-960b-774f50e2e583"/>
@@ -191,7 +191,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.packs.to.ship}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.packs-to-ship}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="387" y="0" width="50" height="28" uuid="715dcbae-dc74-4fa2-b7b4-b30a376656ba"/>
@@ -206,7 +206,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.quantity.shipped}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.quantity-shipped}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="437" y="0" width="50" height="28" uuid="10a02754-cce1-4337-a1d1-003a31f7a8ed"/>
@@ -221,7 +221,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.quantity.received}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.quantity-received}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="487" y="0" width="50" height="28" uuid="ef159a2f-33d9-42ba-9b59-6670c74bd785"/>
@@ -236,7 +236,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.quantity.returned}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.quantity-returned}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="585" y="0" width="243" height="28" uuid="ec4880d9-5932-4b50-9a5d-16077645a53c"/>
@@ -251,7 +251,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.notes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.notes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="13" y="0" width="50" height="28" uuid="5a7f10ba-925c-4ca7-b48a-4feb4161ed64"/>
@@ -266,7 +266,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.full.supply}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.full-supply}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" mode="Transparent" x="113" y="0" width="168" height="28" forecolor="#000000" backcolor="#FFFFFF" uuid="9a07393f-5522-4bce-9f72-d87cd57c5a0d"/>
@@ -281,7 +281,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single" leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.product.name}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.product-name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" x="537" y="0" width="48" height="28" uuid="a3153510-d287-46ad-835a-df817aa47786"/>
@@ -296,7 +296,7 @@
 					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{header.replaced.product.code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{requisition.print.proof-of-delivery.header.replaced-product-code}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>

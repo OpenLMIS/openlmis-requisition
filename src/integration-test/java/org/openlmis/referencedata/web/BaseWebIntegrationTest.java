@@ -33,7 +33,7 @@ public abstract class BaseWebIntegrationTest {
 
   protected RestAssuredClient restAssured;
 
-  private static final RamlDefinition ramlDefinition =
+  protected static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
 
   private static final String BASE_URL = System.getenv("BASE_URL");

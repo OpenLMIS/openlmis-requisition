@@ -1,5 +1,7 @@
 package org.openlmis.reporting.service;
 
+import static java.io.File.createTempFile;
+import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import net.sf.jasperreports.engine.JRException;
@@ -16,8 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
@@ -41,10 +46,22 @@ public class TemplateService {
    */
   public void validateFileAndInsertTemplate(Template template, MultipartFile file)
       throws ReportingException {
-
     throwIfTemplateWithSameNameAlreadyExists(template.getName());
     validateFile(template, file);
+    saveWithParameters(template);
+  }
 
+  /**
+   * Validate ".jrmxl" file and insert if template not exist.
+   * If this name of template already exist, remove older template and insert new.
+   */
+  public void validateFileAndSaveTemplate(Template template, MultipartFile file)
+      throws ReportingException {
+    Template templateTmp = templateRepository.findByName(template.getName());
+    if (templateTmp != null) {
+      templateRepository.delete(templateTmp.getId());
+    }
+    validateFile(template, file);
     saveWithParameters(template);
   }
 
@@ -57,6 +74,18 @@ public class TemplateService {
       parameter.setTemplate(template);
       parameter = templateParameterRepository.save(parameter);
     }
+  }
+
+  /**
+   * Convert template from ".jasper" format in database to ".jrxml"(extension) format.
+   */
+  public File convertJasperToXml(Template template) throws IOException, JRException {
+    InputStream inputStream = new ByteArrayInputStream(template.getData());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    JasperCompileManager.writeReportToXmlStream(inputStream, outputStream);
+    File xmlReport =  createTempFile(template.getName(), ".jrxml");
+    writeByteArrayToFile(xmlReport, outputStream.toByteArray());
+    return xmlReport;
   }
 
   /**
@@ -95,7 +124,7 @@ public class TemplateService {
   }
 
   /**
-   * Create new parameter of report which is not defined in Jasper system.
+   * Create new report parameter of report which is not defined in Jasper system.
    */
   private TemplateParameter createParameter(JRParameter jrParameter) throws ReportingException {
     String[] propertyNames = jrParameter.getPropertiesMap().getPropertyNames();

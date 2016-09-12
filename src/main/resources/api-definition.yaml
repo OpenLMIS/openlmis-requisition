@@ -3934,3 +3934,44 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+
+/proofOfDeliveryTemplates:
+    displayName: Proof of delivery report template.
+    post:
+          is: [ secured ]
+          description: Save Proof Of Delivery report template in database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    file:
+                         displayName: Template with ".jrxml" format
+                         type: file
+                         required: false
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+    get:
+          is: [ secured ]
+          description: Download Proof Of Delivery report template with jrxml format.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/xml:
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
