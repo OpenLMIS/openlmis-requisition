@@ -8,12 +8,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.token.DefaultAccessTokenRequest;
+import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -105,23 +111,27 @@ public class  ReferenceDataService {
     restTemplate.exchange(url, HttpMethod.DELETE, null, UserDto.class);
   }
 
-  private String obtainAccessToken() {
-    String url = "http://localhost:8081/oauth/token";
+  /**
+   * This method currently shouldnt be public wtf.
+   * @return current token.
+   */
+  public String obtainAccessToken() {
+    ResourceOwnerPasswordResourceDetails resource = new ResourceOwnerPasswordResourceDetails();
+    List scopes = new ArrayList<String>(2);
+    scopes.add("write");
+    scopes.add("read");
+    resource.setAccessTokenUri("auth:8080/oauth/token");
+    resource.setClientId("trusted-client");
+    resource.setClientSecret("secret");
+    resource.setGrantType("password");
+    resource.setScope(scopes);
 
-    RestTemplate restTemplate = new RestTemplate();
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("grant_type", "password");
-    params.put("username", "admin");
-    params.put("password", "password");
+    resource.setUsername("admin");
+    resource.setPassword("password");
 
-    HttpEntity entity = new HttpEntity(createHeaders("trusted-client", "secret"));
-
-    ResponseEntity<UUID> responseEntity = restTemplate
-        .exchange(url, HttpMethod.GET, entity, UUID.class, params);
-
-    String token = responseEntity.getBody().toString();
-
-    return token;
+    OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(
+        resource, new DefaultOAuth2ClientContext(new DefaultAccessTokenRequest()));
+    return restTemplate.getAccessToken().toString();
   }
 
   private HttpHeaders createHeaders(String username, String password ) {

@@ -205,7 +205,7 @@ public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegra
     order.setQuotedCost(new BigDecimal("10.00"));
     order.setStatus(OrderStatus.ORDERED);
     order.setProgram(program);
-    order.setCreatedBy(user);
+    order.setCreatedById(user.getId());
     order.setRequestingFacility(facility);
     order.setReceivingFacility(facility);
     order.setSupplyingFacility(facility);

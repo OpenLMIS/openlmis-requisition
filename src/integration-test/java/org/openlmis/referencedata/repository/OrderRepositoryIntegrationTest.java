@@ -57,7 +57,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(generateProgram());
-    order.setCreatedBy(generateUser());
+    order.setCreatedById(UUID.randomUUID());
     order.setRequestingFacility(generateFacility());
     order.setReceivingFacility(generateFacility());
     order.setSupplyingFacility(generateFacility());
@@ -130,7 +130,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     clonedOrder.setOrderCode(order.getOrderCode() + instanceNumber);
     clonedOrder.setQuotedCost(order.getQuotedCost());
     clonedOrder.setStatus(order.getStatus());
-    clonedOrder.setCreatedBy(order.getCreatedBy());
+    clonedOrder.setCreatedById(order.getCreatedById());
     clonedOrder.setCreatedDate(order.getCreatedDate());
     repository.save(clonedOrder);
     return  clonedOrder;

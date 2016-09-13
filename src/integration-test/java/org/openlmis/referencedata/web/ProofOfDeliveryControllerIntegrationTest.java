@@ -211,7 +211,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     Order order = new Order();
     order.setStatus(OrderStatus.SHIPPED);
     order.setCreatedDate(LocalDateTime.now());
-    order.setCreatedBy(user);
+    order.setCreatedById(user.getId());
     order.setOrderCode("O1");
     order.setProgram(program);
     order.setQuotedCost(new BigDecimal(100));

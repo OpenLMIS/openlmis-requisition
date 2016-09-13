@@ -267,7 +267,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setQuotedCost(cost);
     order.setStatus(orderStatus);
     order.setProgram(program);
-    order.setCreatedBy(user);
+    order.setCreatedById(user.getId());
     order.setRequestingFacility(requestingFacility);
     order.setReceivingFacility(receivingFacility);
     order.setSupplyingFacility(supplyingFacility);
@@ -451,7 +451,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, orderRepository.count());
     Order order = orderRepository.findAll().iterator().next();
 
-    assertEquals(user.getId(), order.getCreatedBy().getId());
+    assertEquals(user.getId(), order.getCreatedById());
     assertEquals(OrderStatus.ORDERED, order.getStatus());
     assertEquals(order.getRequisition().getId(), requisition.getId());
     assertEquals(order.getReceivingFacility().getId(), requisition.getFacility().getId());

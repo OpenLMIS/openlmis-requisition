@@ -5,19 +5,19 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.view.View;
 
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
@@ -34,12 +34,11 @@ public class Comment extends BaseEntity {
   @Setter
   private Requisition requisition;
 
-  @OneToOne
   @JoinColumn(name = "authorId", nullable = false)
   @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
-  private UserDto author;
+  private UUID authorId;
 
   @JsonView(View.BasicInformation.class)
   @Getter
@@ -66,7 +65,7 @@ public class Comment extends BaseEntity {
    */
   public void updateFrom(Comment comment) {
     this.requisition = comment.getRequisition();
-    this.author = comment.getAuthor();
+    this.authorId = comment.getAuthorId();
     this.body = comment.getBody();
   }
 }

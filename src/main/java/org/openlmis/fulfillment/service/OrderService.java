@@ -194,7 +194,7 @@ public class OrderService {
       requisition = requisitionRepository.findOne(requisition.getId());
 
       Order order = new Order();
-      order.setCreatedBy(user);
+      order.setCreatedById(user.getId());
       order.setRequisition(requisition);
       order.setStatus(OrderStatus.ORDERED);
 

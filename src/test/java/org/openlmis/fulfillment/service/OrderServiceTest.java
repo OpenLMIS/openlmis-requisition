@@ -248,7 +248,7 @@ public class OrderServiceTest {
     Order order = new Order();
     order.setProgram(program);
     order.setCreatedDate(LocalDateTime.now().plusDays(instanceNumber));
-    order.setCreatedBy(mock(UserDto.class));
+    order.setCreatedById(UUID.randomUUID());
     order.setReceivingFacility(mock(Facility.class));
     order.setSupplyingFacility(mock(Facility.class));
     order.setRequestingFacility(mock(Facility.class));

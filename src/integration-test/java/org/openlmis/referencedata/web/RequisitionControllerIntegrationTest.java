@@ -817,7 +817,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     Comment comment = new Comment();
     comment.setBody(COMMENT_TEXT);
-    comment.setAuthor(user);
+    comment.setAuthorId(user.getId());
     comment.setRequisition(requisition);
 
     Comment response = restAssured.given()
@@ -1092,7 +1092,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private Comment createComment(UserDto author, Requisition req, String commentText) {
     Comment comment = new Comment();
-    comment.setAuthor(author);
+    comment.setAuthorId(author.getId());
     comment.setRequisition(req);
     comment.setBody(commentText);
     commentRepository.save(comment);

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +16,6 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.UserDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -52,11 +53,10 @@ public class Order extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @ManyToOne
   @JoinColumn(name = "createdById", nullable = false)
   @Getter
   @Setter
-  private UserDto createdBy;
+  private UUID createdById;
 
   @ManyToOne
   @JoinColumn(name = "programId", nullable = false)
@@ -123,7 +123,7 @@ public class Order extends BaseEntity {
    */
   public void updateFrom(Order order) {
     this.requisition = order.requisition;
-    this.createdBy = order.createdBy;
+    this.createdById = order.createdById;
     this.program = order.program;
     this.requestingFacility = order.requestingFacility;
     this.receivingFacility = order.receivingFacility;

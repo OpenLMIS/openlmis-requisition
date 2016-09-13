@@ -88,7 +88,7 @@ public class CsvGeneratorTest {
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(program);
-    order.setCreatedBy(user);
+    order.setCreatedById(user.getId());
     order.setRequestingFacility(facility);
     order.setReceivingFacility(facility);
     order.setSupplyingFacility(facility);
