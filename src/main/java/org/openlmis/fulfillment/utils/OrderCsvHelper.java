@@ -123,6 +123,6 @@ public class OrderCsvHelper {
         columnValue = lineItemContext.getValue(orderFileColumn.getKeyPath());
         break;
     }
-    return columnValue;
+    return columnValue == null ? "" : columnValue;
   }
 }
