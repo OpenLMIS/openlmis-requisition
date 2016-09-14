@@ -37,7 +37,7 @@ public class OrderFileColumn extends BaseEntity {
   @Setter
   private Boolean include;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   @Getter
   @Setter
   private Integer position;
