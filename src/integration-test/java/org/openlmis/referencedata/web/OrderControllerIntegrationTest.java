@@ -10,10 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
-import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
-import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
@@ -84,9 +82,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private OrderLineRepository orderLineRepository;
-
-  @Autowired
-  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -451,9 +446,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration("prefix", true, true, true);
-    orderNumberConfigurationRepository.save(orderNumberConfiguration);
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
