@@ -14,6 +14,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Iterator;
 
 @Controller
 public class OrderNumberConfigurationController extends BaseController {
@@ -41,5 +44,22 @@ public class OrderNumberConfigurationController extends BaseController {
       LOGGER.error(errorResponse.getMessage(), ex);
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
+  }
+
+  /**
+   * Get orderNumberConfiguration.
+   *
+   * @return OrderNumberConfiguration.
+   */
+  @RequestMapping(value = "/orderNumberConfigurations", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<OrderNumberConfiguration> getOrderFileTemplate() {
+    Iterator<OrderNumberConfiguration> it = orderNumberConfigurationRepository.findAll().iterator();
+
+    if (!it.hasNext()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    return new ResponseEntity<>(it.next(), HttpStatus.OK);
   }
 }

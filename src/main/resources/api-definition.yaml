@@ -1918,7 +1918,23 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+
 /orderNumberConfigurations:
+    displayName: OrderNumberConfiguration
+    get:
+        is: [ secured ]
+        description: Get OrderNumberConfiguration.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     post:
         is: [ secured ]
         description: Create or Update OrderNumberConfiguration.
@@ -1935,6 +1951,7 @@ resourceTypes:
             headers:
               X-Content-Type-Options:
               X-XSS-Protection:
+
 /processingSchedules:
     displayName: Processing Schedule
     get:
