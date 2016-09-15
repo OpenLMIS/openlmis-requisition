@@ -12,7 +12,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +43,6 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   /**
    * Initiated given requisition if possible.

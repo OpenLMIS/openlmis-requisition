@@ -1496,7 +1496,7 @@ resourceTypes:
                           X-Content-Type-Options:
                           X-XSS-Protection:
                         body:
-                          application/json:
+                          text/plain:
                     "404":
                         headers:
                           X-Content-Type-Options:
