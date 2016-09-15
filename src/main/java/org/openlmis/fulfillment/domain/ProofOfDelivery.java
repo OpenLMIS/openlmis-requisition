@@ -8,7 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.requisition.domain.BaseEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

@@ -3,7 +3,7 @@ package org.openlmis.requisition.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.referencedata.domain.BaseEntity;
+
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 

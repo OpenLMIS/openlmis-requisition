@@ -6,12 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
-import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.view.View;
 
 import javax.persistence.Convert;
@@ -34,11 +33,9 @@ public class Comment extends BaseEntity {
   @Setter
   private Requisition requisition;
 
-  @JoinColumn(name = "authorId", nullable = false)
-  @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
-  private UUID authorId;
+  private UserDto authorId;
 
   @JsonView(View.BasicInformation.class)
   @Getter

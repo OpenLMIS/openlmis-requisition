@@ -1,7 +1,6 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.referencedata.utils.ErrorResponse;
-import org.openlmis.referencedata.web.BaseController;
+import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;

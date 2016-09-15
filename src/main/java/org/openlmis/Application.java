@@ -1,6 +1,6 @@
 package org.openlmis;
 
-import org.openlmis.referencedata.i18n.ExposedMessageSourceImpl;
+import org.openlmis.requisition.i18n.ExposedMessageSourceImpl;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

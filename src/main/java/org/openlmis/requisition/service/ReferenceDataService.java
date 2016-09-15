@@ -11,9 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +26,25 @@ public class  ReferenceDataService {
   private static final String USERS_URL = "/users/";
   private static final String SUPPLY_LINES_URL = "/supplyLines/";
   private static final String PERIODS_URL = "/processingPeriods/";
+
+  /**
+   * Method returning a reference data objects.
+   *
+   * @return Reference data object.
+   */
+  public List<UserDto>  findAllUsers() {
+    String url = BASE_URL + USERS_URL;
+
+    RestTemplate restTemplate = new RestTemplate();
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("access_token", obtainAccessToken());
+
+    ResponseEntity<List<UserDto>> response = restTemplate.exchange(url, HttpMethod.GET,
+        null, new ParameterizedTypeReference<List<UserDto>>() {}, params);
+
+    List<UserDto> result = response.getBody();
+    return result;
+  }
 
   /**
    * Method returning a reference data object.
@@ -49,10 +66,10 @@ public class  ReferenceDataService {
   }
 
   /**
-   *
-   * @param programId
-   * @param supervisoryNodeId
-   * @return
+   * Return SupplyLines depending on program and supervisoryNode.
+   * @param programId UUID of program
+   * @param supervisoryNodeId UUID of supervisoryNode
+   * @return Requesting SupplyLines.
    */
   public List<SupplyLineDto> searchSupplyLines(UUID programId, UUID supervisoryNodeId) {
     String url = BASE_URL + SUPPLY_LINES_URL + "searchByUUID";
@@ -67,12 +84,13 @@ public class  ReferenceDataService {
   }
 
   /**
-   *
-   * @param processingScheduleId
-   * @param startDate
-   * @return
+   * Return ProcessingPeriods depending on ProcessingSchedule and StartDate.
+   * @param processingScheduleId UUID of ProcessingSchedule.
+   * @param startDate ProcessingPeriod StartDate.
+   * @return Requesting ProcessingPeriods.
    */
-  public Iterable<ProcessingPeriodDto> searchPeriods(UUID processingScheduleId, LocalDate startDate) {
+  public Iterable<ProcessingPeriodDto> searchPeriods(UUID processingScheduleId,
+                                                     LocalDate startDate) {
     String url = BASE_URL + PERIODS_URL + "searchByUUIDAndDate";
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
@@ -84,11 +102,7 @@ public class  ReferenceDataService {
     return result;
   }
 
-  /**
-   * This method currently shouldnt be public wtf.
-   * @return current token.
-   */
-  public String obtainAccessToken() {
+  private String obtainAccessToken() {
     RestTemplate restTemplate = new RestTemplate();
 
     String plainCreds = "trusted-client:secret";

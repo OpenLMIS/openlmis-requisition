@@ -1,7 +1,6 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.referencedata.utils.ErrorResponse;
-import org.openlmis.referencedata.web.BaseController;
+import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -182,7 +181,8 @@ public class RequisitionController extends BaseController {
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
-      @RequestParam(value = "processingPeriod", required = false) ProcessingPeriodDto processingPeriod,
+      @RequestParam(value = "processingPeriod", required = false)
+          ProcessingPeriodDto processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) SupervisoryNodeDto supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
               RequisitionStatus requisitionStatus) {

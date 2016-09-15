@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.dto.ProductDto;
 
 import javax.persistence.CascadeType;

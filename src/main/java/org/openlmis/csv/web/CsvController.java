@@ -3,7 +3,7 @@ package org.openlmis.csv.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.referencedata.web.BaseController;
+import org.openlmis.requisition.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

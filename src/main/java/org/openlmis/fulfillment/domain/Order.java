@@ -7,15 +7,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
-import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.UserDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -53,10 +53,9 @@ public class Order extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @JoinColumn(name = "createdById", nullable = false)
   @Getter
   @Setter
-  private UUID createdById;
+  private UserDto createdById;
 
   @ManyToOne
   @JoinColumn(name = "programId", nullable = false)

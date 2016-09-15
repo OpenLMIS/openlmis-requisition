@@ -190,7 +190,7 @@ public class OrderService {
       requisition = requisitionRepository.findOne(requisition.getId());
 
       Order order = new Order();
-      order.setCreatedById(user.getId());
+      order.setCreatedById(user);
       order.setRequisition(requisition);
       order.setStatus(OrderStatus.ORDERED);
 
@@ -198,7 +198,8 @@ public class OrderService {
       order.setRequestingFacility(requisition.getFacility());
 
       List<SupplyLineDto> supplyLines = referenceDataService
-          .searchSupplyLines(requisition.getProgram().getId(), requisition.getSupervisoryNode().getId());
+          .searchSupplyLines(requisition.getProgram().getId(),
+              requisition.getSupervisoryNode().getId());
       SupplyLineDto supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());

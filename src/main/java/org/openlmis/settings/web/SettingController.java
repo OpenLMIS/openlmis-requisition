@@ -1,6 +1,6 @@
 package org.openlmis.settings.web;
 
-import org.openlmis.referencedata.web.BaseController;
+import org.openlmis.requisition.web.BaseController;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;

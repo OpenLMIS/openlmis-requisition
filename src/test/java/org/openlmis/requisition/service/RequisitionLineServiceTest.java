@@ -6,17 +6,16 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.service.ProcessingPeriodService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 
@@ -58,10 +57,10 @@ public class RequisitionLineServiceTest {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Mock
-  private Program program;
+  private ProgramDto program;
 
   @Mock
-  private ProcessingPeriod period;
+  private ProcessingPeriodDto period;
 
   @InjectMocks
   private RequisitionLineService requisitionLineService;
@@ -171,17 +170,17 @@ public class RequisitionLineServiceTest {
   }
 
   private void generateInstances() {
-    requisition = createTestRequisition(mock(Facility.class), period, program,
+    requisition = createTestRequisition(mock(FacilityDto.class), period, program,
         RequisitionStatus.INITIATED);
-    requisitionLine = createTestRequisitionLine(mock(Product.class), 10, 20, requisition);
+    requisitionLine = createTestRequisitionLine(mock(ProductDto.class), 10, 20, requisition);
 
     requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
     requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
   }
 
-  private Requisition createTestRequisition(Facility facility, ProcessingPeriod period,
-                                            Program program,
+  private Requisition createTestRequisition(FacilityDto facility, ProcessingPeriodDto period,
+                                            ProgramDto program,
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
@@ -192,7 +191,7 @@ public class RequisitionLineServiceTest {
     return requisition;
   }
 
-  private RequisitionLine createTestRequisitionLine(Product product, Integer quantityRequested,
+  private RequisitionLine createTestRequisitionLine(ProductDto product, Integer quantityRequested,
                                                     Integer stockInHand, Requisition requisition) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setId(UUID.randomUUID());

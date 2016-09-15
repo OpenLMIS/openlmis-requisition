@@ -45,7 +45,7 @@ public class RequisitionCommentService {
 
 
     UserDto user = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    comment.setAuthorId(user.getId());
+    comment.setAuthorId(user);
     comment.setRequisition(requisition);
 
     commentRepository.save(comment);
