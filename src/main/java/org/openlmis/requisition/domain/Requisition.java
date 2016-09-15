@@ -15,6 +15,10 @@ import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.referencedata.domain.Facility;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
 import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.exception.RequisitionException;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,8 +32,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "requisitions")
@@ -115,5 +117,39 @@ public class Requisition extends BaseEntity {
     this.processingPeriod = requisition.getProcessingPeriod();
     this.emergency = requisition.getEmergency();
     this.supervisoryNode = requisition.getSupervisoryNode();
+  }
+
+  /**
+   * Submits given requisition.
+   */
+  public void submit() throws RequisitionException {
+    if (!RequisitionStatus.INITIATED.equals(status)) {
+      throw new RequisitionException("Cannot submit requisition: " + getId()
+          + ", requisition must have status 'INITIATED' to be submitted.");
+    }
+
+    status = RequisitionStatus.SUBMITTED;
+    calculateStockOnHand();
+  }
+
+  /**
+   * Authorize given Requisition.
+   */
+  public void authorize() throws RequisitionException {
+    if (!RequisitionStatus.SUBMITTED.equals(status)) {
+      throw new RequisitionException("Cannot authorize requisition: " + getId()
+          + ", requisition must have status 'SUBMITTED' to be authorized.");
+    }
+
+    status = RequisitionStatus.AUTHORIZED;
+    calculateStockOnHand();
+  }
+
+  private void calculateStockOnHand() {
+    if (requisitionLines != null) {
+      for (RequisitionLine requisitionLine : requisitionLines) {
+        requisitionLine.calculateStockOnHand();
+      }
+    }
   }
 }

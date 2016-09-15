@@ -1,5 +1,7 @@
 package org.openlmis.requisition.web;
 
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
 import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
@@ -35,14 +37,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import javax.validation.Valid;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -92,17 +93,36 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> submitRequisition(@RequestBody @Valid Requisition requisition,
                                              BindingResult bindingResult,
                                              @PathVariable("id") UUID requisitionId) {
-    if (!bindingResult.hasErrors()) {
-      try {
-        requisition = requisitionService.submitRequisition(requisition);
-      } catch (RequisitionException ex) {
-        LOGGER.debug(ex.getMessage(), ex);
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-      }
-      return new ResponseEntity<Object>(requisition, HttpStatus.OK);
-    } else {
-      return new ResponseEntity(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+
+    Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
+
+    if (savedRequisition == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      LOGGER.debug("Submitting a requisition with id " + requisition.getId());
+      requisition.submit();
+      requisitionRepository.save(requisition);
+      LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
+    } catch (RequisitionException ex) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("An error occurred while submitting requisition with id: "
+              + requisition.getId(), ex.getMessage());
+      LOGGER.debug(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    } catch (DataIntegrityViolationException ex) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("An error occurred while saving requisition with id: "
+              + requisition.getId(), ex.getMessage());
+      LOGGER.debug(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    return new ResponseEntity<Object>(requisition, HttpStatus.OK);
   }
 
   /**
@@ -286,27 +306,49 @@ public class RequisitionController extends BaseController {
   /**
    * Authorize given requisition.
    *
-   * @param requisitionDto Requisition object to be authorized.
+   * @param requisition Requisition object to be authorized.
    * @param bindingResult Object used for validation.
    * @param requisitionId UUID of Requisition to authorize.
    * @return ResponseEntity with authorized Requisition if authorization was successful.
    */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
-  public ResponseEntity<?> authorizeRequisition(@RequestBody Requisition requisitionDto,
+  public ResponseEntity<?> authorizeRequisition(@RequestBody @Valid Requisition requisition,
                                                 BindingResult bindingResult,
                                                 @PathVariable("id") UUID requisitionId) {
 
-    if (requisitionId == null) {
+    if (configurationSettingService.getBoolValue("skipAuthorization")) {
+      return new ResponseEntity<>("Requisition authorization is configured to be skipped",
+          HttpStatus.BAD_REQUEST);
+    }
+
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
+
+    Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
+
+    if (savedRequisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
     try {
-      requisitionDto = requisitionService.authorize(requisitionId, requisitionDto,
-          bindingResult.hasErrors());
+      requisition.authorize();
+      requisitionRepository.save(requisition);
       LOGGER.info("Requisition: " +  requisitionId + " authorized.");
     } catch (RequisitionException ex) {
-      LOGGER.debug(ex.getMessage(), ex);
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      ErrorResponse errorResponse =
+          new ErrorResponse("An error occurred while authorizing requisition with id: "
+              + requisition.getId(), ex.getMessage());
+      LOGGER.debug(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    } catch (DataIntegrityViolationException ex) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("An error occurred while saving requisition with id: "
+              + requisition.getId(), ex.getMessage());
+      LOGGER.debug(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<>(requisitionDto, HttpStatus.OK);
+
+    return new ResponseEntity<>(requisition, HttpStatus.OK);
   }
 }

@@ -1,5 +1,11 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,13 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -199,42 +198,6 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenInitiatingAlreadyExistingRequisition()
           throws RequisitionException {
     requisitionService.initiateRequisition(requisition);
-  }
-
-  @Test
-  public void shouldAuthorizeRequisitionIfItIsSubmitted() throws RequisitionException {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionService.authorize(requisition.getId(), requisition, false);
-
-    assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
-    verify(requisitionRepository).save(requisition);
-  }
-
-  @Test(expected = RequisitionException.class)
-  public void shouldThrowExceptionIfAuthorizationIsConfiguredToBeSkipped()
-      throws RequisitionException {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-    when(configurationSettingService
-            .getBoolValue("skipAuthorization"))
-            .thenReturn(true);
-    requisitionService.authorize(requisition.getId(), requisition, false);
-  }
-
-  @Test(expected = RequisitionException.class)
-  public void shouldThrowExceptionWhenAuthorizingInitiatedRequisition()
-      throws RequisitionException {
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisitionService.authorize(requisition.getId(), requisition, false);
-  }
-
-  @Test(expected = RequisitionException.class)
-  public void shouldThrowExceptionWhenAuthorizingNotExistingRequisition()
-      throws RequisitionException {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-    when(requisitionRepository
-            .findOne(requisition.getId()))
-            .thenReturn(null);
-    requisitionService.authorize(requisition.getId(), requisition, false);
   }
 
   @Test
