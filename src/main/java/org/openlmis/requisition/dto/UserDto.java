@@ -1,7 +1,5 @@
 package org.openlmis.requisition.dto;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -54,10 +52,8 @@ public class UserDto {
   @Getter
   private UUID roleAssignments;
 
-  public SupervisoryNode getSupervisedNode() {
+  public SupervisoryNodeDto getSupervisedNode() {
+    //TODO in Sprint 9
     return null;
   }
-
-
-
 }

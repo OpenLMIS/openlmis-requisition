@@ -4,7 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.utils.ReportUtils;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
+import org.openlmis.referencedata.utils.ErrorResponse;
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.JasperReportsViewFactory;

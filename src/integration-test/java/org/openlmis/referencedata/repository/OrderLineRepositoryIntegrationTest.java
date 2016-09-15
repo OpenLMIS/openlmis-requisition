@@ -34,31 +34,11 @@ public class OrderLineRepositoryIntegrationTest {
   private static final String orderLine = "OrderLineRepositoryIntegrationTest";
 
   @Autowired
-  private ProductRepository productRepository;
-
-  @Autowired
   private OrderRepository orderRepository;
 
   @Autowired
   private OrderLineRepository orderLineRepository;
 
-  @Autowired
-  private ProgramRepository programRepository;
-
-  @Autowired
-  private FacilityRepository facilityRepository;
-
-  @Autowired
-  private GeographicLevelRepository geographicLevelRepository;
-
-  @Autowired
-  private GeographicZoneRepository geographicZoneRepository;
-
-  @Autowired
-  private FacilityTypeRepository facilityTypeRepository;
-
-  @Autowired
-  private ReferenceDataService referenceDataService;
 
   private Order order = new Order();
   private Product product = new Product();

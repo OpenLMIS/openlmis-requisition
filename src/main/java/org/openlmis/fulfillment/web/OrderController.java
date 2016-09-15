@@ -5,11 +5,11 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.utils.ErrorResponse;
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,9 +165,9 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   public ResponseEntity<Iterable<Order>> searchOrders(
-          @RequestParam(value = "supplyingFacility", required = true) Facility supplyingFacility,
-          @RequestParam(value = "requestingFacility", required = false) Facility requestingFacility,
-          @RequestParam(value = "program", required = false) Program program) {
+          @RequestParam(value = "supplyingFacility", required = true) FacilityDto supplyingFacility,
+          @RequestParam(value = "requestingFacility", required = false) FacilityDto requestingFacility,
+          @RequestParam(value = "program", required = false) ProgramDto program) {
 
     List<Order> result = orderService.searchOrders(supplyingFacility, requestingFacility, program);
 

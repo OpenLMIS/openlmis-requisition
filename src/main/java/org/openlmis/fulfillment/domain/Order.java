@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -62,25 +62,25 @@ public class Order extends BaseEntity {
   @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
-  private Program program;
+  private ProgramDto program;
 
   @ManyToOne
   @JoinColumn(name = "requestingFacilityId", nullable = false)
   @Getter
   @Setter
-  private Facility requestingFacility;
+  private FacilityDto requestingFacility;
 
   @ManyToOne
   @JoinColumn(name = "receivingFacilityId", nullable = false)
   @Getter
   @Setter
-  private Facility receivingFacility;
+  private FacilityDto receivingFacility;
 
   @ManyToOne
   @JoinColumn(name = "supplyingFacilityId", nullable = false)
   @Getter
   @Setter
-  private Facility supplyingFacility;
+  private FacilityDto supplyingFacility;
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter

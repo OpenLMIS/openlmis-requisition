@@ -1,13 +1,13 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.referencedata.utils.ErrorResponse;
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -176,14 +176,14 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitions(
-      @RequestParam(value = "facility", required = false) Facility facility,
-      @RequestParam(value = "program", required = false) Program program,
+      @RequestParam(value = "facility", required = false) FacilityDto facility,
+      @RequestParam(value = "program", required = false) ProgramDto program,
       @RequestParam(value = "createdDateFrom", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
-      @RequestParam(value = "processingPeriod", required = false) ProcessingPeriod processingPeriod,
-      @RequestParam(value = "supervisoryNode", required = false) SupervisoryNode supervisoryNode,
+      @RequestParam(value = "processingPeriod", required = false) ProcessingPeriodDto processingPeriod,
+      @RequestParam(value = "supervisoryNode", required = false) SupervisoryNodeDto supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
               RequisitionStatus requisitionStatus) {
 

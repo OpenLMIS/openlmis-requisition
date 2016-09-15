@@ -17,15 +17,14 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.ReferenceDataService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +53,6 @@ public class OrderService {
   private RequisitionService requisitionService;
 
   @Autowired
-  private SupplyLineService supplyLineService;
-
-  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
@@ -81,8 +77,8 @@ public class OrderService {
    * @param program program of searched Orders.
    * @return ist of Orders with matched parameters.
    */
-  public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
-                                  Program program) {
+  public List<Order> searchOrders(FacilityDto supplyingFacility, FacilityDto requestingFacility,
+                                  ProgramDto program) {
     return orderRepository.searchOrders(
             supplyingFacility,
             requestingFacility,
@@ -186,7 +182,7 @@ public class OrderService {
    */
   @Transactional
   public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
-    UserDto user = referenceDataService.findOneUser(userId);
+    UserDto user = referenceDataService.findUser(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
     List<Order> convertedOrders = new ArrayList<>();
 
@@ -201,9 +197,9 @@ public class OrderService {
       order.setReceivingFacility(requisition.getFacility());
       order.setRequestingFacility(requisition.getFacility());
 
-      List<SupplyLine> supplyLines = supplyLineService
-          .searchSupplyLines(requisition.getProgram(), requisition.getSupervisoryNode());
-      SupplyLine supplyLine = supplyLines.get(0);
+      List<SupplyLineDto> supplyLines = referenceDataService
+          .searchSupplyLines(requisition.getProgram().getId(), requisition.getSupervisoryNode().getId());
+      SupplyLineDto supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
       order.setProgram(supplyLine.getProgram());

@@ -1,12 +1,11 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.service.ProcessingPeriodService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +20,13 @@ public class RequisitionLineService {
   private RequisitionLineRepository requisitionLineRepository;
 
   @Autowired
-  private ProcessingPeriodService periodService;
-
-  @Autowired
   private RequisitionService requisitionService;
 
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
+
+  @Autowired
+  private ReferenceDataService referenceDataService;
 
   /**
    * Saves given RequisitionLine if possible.
@@ -64,7 +63,7 @@ public class RequisitionLineService {
    * @param product product of searched requisition lines.
    * @return list of requisition lines with matched parameters.
    */
-  public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
+  public List<RequisitionLine> searchRequisitionLines(Requisition requisition, ProductDto product) {
     return requisitionLineRepository.searchRequisitionLines(requisition, product);
   }
 
@@ -88,7 +87,7 @@ public class RequisitionLineService {
 
   private void initiateBeginningBalance(Requisition requisition,
                                         RequisitionTemplate requisitionTemplate) {
-    Iterable<ProcessingPeriod> previousPeriods = periodService.searchPeriods(
+    Iterable<ProcessingPeriodDto> previousPeriods = referenceDataService.searchPeriods(
         requisition.getProcessingPeriod().getProcessingSchedule(),
         requisition.getProcessingPeriod().getStartDate());
 
@@ -128,7 +127,7 @@ public class RequisitionLineService {
   }
 
   private void resetBeginningBalance(Requisition requisition, RequisitionLine requisitionLine) {
-    Iterable<ProcessingPeriod> previousPeriods = periodService.searchPeriods(
+    Iterable<ProcessingPeriodDto> previousPeriods = referenceDataService.searchPeriods(
         requisitionLine.getRequisition().getProcessingPeriod().getProcessingSchedule(),
         requisitionLine.getRequisition().getProcessingPeriod().getStartDate());
 

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import javax.persistence.Column;
@@ -27,7 +27,7 @@ public class RequisitionTemplate extends BaseEntity {
   @JoinColumn(name = "programId", nullable = false, unique = true)
   @Getter
   @Setter
-  private Program program;
+  private ProgramDto program;
 
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")

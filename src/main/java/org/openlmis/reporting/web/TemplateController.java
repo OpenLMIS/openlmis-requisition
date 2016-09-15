@@ -1,7 +1,7 @@
 package org.openlmis.reporting.web;
 
 import org.apache.log4j.Logger;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
+import org.openlmis.referencedata.utils.ErrorResponse;
 import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;

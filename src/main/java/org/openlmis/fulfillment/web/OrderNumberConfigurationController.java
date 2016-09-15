@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
+import org.openlmis.referencedata.utils.ErrorResponse;
 import org.openlmis.referencedata.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

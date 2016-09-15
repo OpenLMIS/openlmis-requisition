@@ -2,8 +2,8 @@ package org.openlmis.fulfillment.repository.custom.impl;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -25,8 +25,8 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @param program program of searched Orders.
    * @return List of Orders with matched parameters.
    */
-  public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
-                                  Program program) {
+  public List<Order> searchOrders(FacilityDto supplyingFacility, FacilityDto requestingFacility,
+                                  ProgramDto program) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
     Root<Order> root = query.from(Order.class);

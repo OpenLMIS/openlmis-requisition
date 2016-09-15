@@ -164,7 +164,7 @@ public class RequisitionServiceTest {
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
     when(user.getSupervisedNode()).thenReturn(supervisoryNode);
-    when(referenceDataService.findOneUser(userId))
+    when(referenceDataService.findUser(userId))
             .thenReturn(user);
     when(requisitionRepository
             .searchRequisitions(null, null, null, null, null, supervisoryNode, null))

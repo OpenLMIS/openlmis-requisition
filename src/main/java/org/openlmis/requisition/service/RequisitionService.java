@@ -1,13 +1,12 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
@@ -175,11 +174,11 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of provided parameters.
    */
-  public List<Requisition> searchRequisitions(Facility facility, Program program,
+  public List<Requisition> searchRequisitions(FacilityDto facility, ProgramDto program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
-                                              ProcessingPeriod processingPeriod,
-                                              SupervisoryNode supervisoryNode,
+                                              ProcessingPeriodDto processingPeriod,
+                                              SupervisoryNodeDto supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
     return requisitionRepository.searchRequisitions(
             facility, program, createdDateFrom,
@@ -190,7 +189,7 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    UserDto user = referenceDataService.findOneUser(userId);
+    UserDto user = referenceDataService.findUser(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     if (user.getSupervisedNode() != null) {
       requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));
@@ -201,15 +200,15 @@ public class RequisitionService {
   /**
    * Get authorized requisitions supervised by specified Node.
    */
-  public List<Requisition> getAuthorizedRequisitions(SupervisoryNode supervisoryNode) {
+  public List<Requisition> getAuthorizedRequisitions(SupervisoryNodeDto supervisoryNode) {
     List<Requisition> requisitions = new ArrayList<>();
-    Set<SupervisoryNode> supervisoryNodes = supervisoryNode.getChildNodes();
+    Set<SupervisoryNodeDto> supervisoryNodes = supervisoryNode.getChildNodes();
     if (supervisoryNodes == null) {
       supervisoryNodes = new HashSet<>();
     }
     supervisoryNodes.add(supervisoryNode);
 
-    for (SupervisoryNode supNode : supervisoryNodes) {
+    for (SupervisoryNodeDto supNode : supervisoryNodes) {
       List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
       if (reqList != null) {
         for (Requisition req : reqList) {

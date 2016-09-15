@@ -1,8 +1,8 @@
 package org.openlmis.requisition.repository.custom.impl;
 
-import org.openlmis.product.domain.Product;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.repository.custom.RequisitionLineRepositoryCustom;
 
 import javax.persistence.EntityManager;
@@ -24,7 +24,7 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
    * @param product product of searched requisition lines.
    * @return list of requisition lines with matched parameters.
    */
-  public List<RequisitionLine> searchRequisitionLines(Requisition requisition, Product product) {
+  public List<RequisitionLine> searchRequisitionLines(Requisition requisition, ProductDto product) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<RequisitionLine> query = builder.createQuery(RequisitionLine.class);
     Root<RequisitionLine> root = query.from(RequisitionLine.class);

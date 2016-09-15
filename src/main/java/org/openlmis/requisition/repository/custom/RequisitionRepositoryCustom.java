@@ -1,21 +1,21 @@
 package org.openlmis.requisition.repository.custom;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RequisitionRepositoryCustom {
 
-  List<Requisition> searchRequisitions(Facility facility, Program program,
+  List<Requisition> searchRequisitions(FacilityDto facility, ProgramDto program,
                                        LocalDateTime createdDateFrom,
                                        LocalDateTime createdDateTo,
-                                       ProcessingPeriod processingPeriod,
-                                       SupervisoryNode supervisoryNode,
+                                       ProcessingPeriodDto processingPeriod,
+                                       SupervisoryNodeDto supervisoryNode,
                                        RequisitionStatus requisitionStatus);
 }
