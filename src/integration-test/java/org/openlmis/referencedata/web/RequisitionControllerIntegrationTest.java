@@ -1,6 +1,14 @@
 package org.openlmis.referencedata.web;
 
+import static java.lang.String.valueOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
@@ -16,15 +24,15 @@ import org.openlmis.referencedata.domain.FacilityType;
 import org.openlmis.referencedata.domain.GeographicLevel;
 import org.openlmis.referencedata.domain.GeographicZone;
 import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.domain.ProcessingSchedule;
+import org.openlmis.referencedata.domain.Program;
 import org.openlmis.referencedata.repository.FacilityRepository;
 import org.openlmis.referencedata.repository.FacilityTypeRepository;
 import org.openlmis.referencedata.repository.GeographicLevelRepository;
 import org.openlmis.referencedata.repository.GeographicZoneRepository;
 import org.openlmis.referencedata.repository.ProcessingPeriodRepository;
-import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.referencedata.repository.ProcessingScheduleRepository;
+import org.openlmis.referencedata.repository.ProgramRepository;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
@@ -41,14 +49,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -72,6 +76,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String COMMENT_TEXT = "OpenLMIS";
   private static final String COMMENT = "Comment";
+  private static final String APPROVED_REQUISITIONS_SEARCH_URL = RESOURCE_URL + "/approved/search";
 
   @Autowired
   private ProductRepository productRepository;
@@ -127,6 +132,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private SupervisoryNode supervisoryNode = new SupervisoryNode();
   private User user;
   private LocalDateTime localDateTime = LocalDateTime.now();
+
+  private AtomicInteger instanceNumber = new AtomicInteger(0);
+
+  private int getNextInstanceNumber() {
+    return this.instanceNumber.incrementAndGet();
+  }
 
   @Before
   public void setUp() {
@@ -1097,5 +1108,208 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     comment.setBody(commentText);
     commentRepository.save(comment);
     return comment;
+  }
+
+  private void generateRequisition(RequisitionStatus requisitionStatus, Facility facility) {
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(generatePeriod());
+    requisition.setProgram(generateProgram());
+    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setStatus(requisitionStatus);
+    requisition.setEmergency(true);
+    requisitionRepository.save(requisition);
+  }
+
+  private ProcessingPeriod generatePeriod() {
+    ProcessingPeriod period = new ProcessingPeriod();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    period.setName("PeriodName" + instanceNumber);
+    period.setDescription("PeriodDescription" + instanceNumber);
+    period.setEndDate(LocalDate.now().plusDays(instanceNumber % 28));
+    period.setStartDate(LocalDate.now().minusDays(instanceNumber % 28));
+    period.setProcessingSchedule(generateSchedule());
+    periodRepository.save(period);
+    return period;
+  }
+
+  private ProcessingSchedule generateSchedule() {
+    ProcessingSchedule schedule = new ProcessingSchedule();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    schedule.setCode("ScheduleCode" + instanceNumber);
+    schedule.setName("ScheduleName" + instanceNumber);
+    schedule.setModifiedDate(LocalDateTime.now().minusDays(instanceNumber % 28));
+    scheduleRepository.save(schedule);
+    return schedule;
+  }
+
+  private Program generateProgram() {
+    Program program = new Program();
+    Integer instanceNumber = this.getNextInstanceNumber();
+    program.setCode("ProgramCode" + instanceNumber);
+    program.setName("ProgramName" + instanceNumber);
+    program.setPeriodsSkippable(false);
+    programRepository.save(program);
+    return program;
+  }
+
+  private Facility generateFacility(String name) {
+    Integer instanceNumber = this.getNextInstanceNumber();
+    GeographicZone geographicZone = generateGeographicZone();
+    FacilityType facilityType = generateFacilityType();
+    Facility facility = new Facility();
+    facility.setType(facilityType);
+    facility.setGeographicZone(geographicZone);
+    facility.setCode("FacilityCode" + instanceNumber);
+    facility.setName(name);
+    facility.setDescription("FacilityDescription" + instanceNumber);
+    facility.setActive(true);
+    facility.setEnabled(true);
+    facilityRepository.save(facility);
+    return facility;
+  }
+
+  private GeographicLevel generateGeographicLevel() {
+    GeographicLevel geographicLevel = new GeographicLevel();
+    geographicLevel.setCode("GeographicLevel" + this.getNextInstanceNumber());
+    geographicLevel.setLevelNumber(1);
+    geographicLevelRepository.save(geographicLevel);
+    return geographicLevel;
+  }
+
+  private GeographicZone generateGeographicZone() {
+    GeographicZone geographicZone = new GeographicZone();
+    geographicZone.setCode("GeographicZone" + this.getNextInstanceNumber());
+    geographicZone.setLevel(generateGeographicLevel());
+    geographicZoneRepository.save(geographicZone);
+    return geographicZone;
+  }
+
+  private FacilityType generateFacilityType() {
+    FacilityType facilityType = new FacilityType();
+    facilityType.setCode("FacilityType" + this.getNextInstanceNumber());
+    facilityTypeRepository.save(facilityType);
+    return facilityType;
+  }
+
+  private void generateRequisitions() {
+    for (int i = 0; i < 4; i++) {
+      Facility facility1 = generateFacility("FacilityNameA");
+      Facility facility2 = generateFacility("FacilityName" + valueOf(i));
+      generateRequisition(RequisitionStatus.APPROVED, facility2);
+      generateRequisition(RequisitionStatus.SUBMITTED, facility1);
+      for (int j = 0; j < 4; j++) {
+        generateRequisition(RequisitionStatus.APPROVED, facility1);
+      }
+    }
+  }
+
+  @Test
+  public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
+    generateRequisitions();
+    Integer pageSize = 10;
+    String filterValue = "facilityNameA";
+
+    Requisition[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("filterValue", filterValue)
+        .queryParam("filterBy", "facilityName")
+        .queryParam("sortBy", "facilityCode")
+        .queryParam("descending", Boolean.FALSE.toString())
+        .queryParam("pageNumber", valueOf(2))
+        .queryParam("pageSize", valueOf(pageSize))
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(APPROVED_REQUISITIONS_SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Requisition[].class);
+
+    List<Requisition> requisitions = Arrays.asList(response);
+    Iterator<Requisition> requisitionIterator = requisitions.iterator();
+
+    Assert.assertTrue(requisitions.size() <= pageSize);
+    Requisition requisition1 = null;
+    if (requisitionIterator.hasNext()) {
+      requisition1 = requisitionIterator.next();
+    }
+    Requisition requisition2;
+    while (requisitionIterator.hasNext()) {
+      requisition2 = requisitionIterator.next();
+
+      RequisitionStatus requisitionStatus = requisition1.getStatus();
+      Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
+
+      String facilityName = requisition1.getFacility().getName();
+      Assert.assertTrue(facilityName.contains(filterValue));
+
+      String facilityCode1 = requisition1.getFacility().getCode();
+      String facilityCode2 = requisition2.getFacility().getCode();
+      Assert.assertTrue(facilityCode1.compareTo(facilityCode2) <= 0);
+
+      if (facilityCode1.equals(facilityCode2)) {
+        LocalDateTime modifiedDate1 =
+            requisition1.getProcessingPeriod().getProcessingSchedule().getModifiedDate();
+        LocalDateTime modifiedDate2 =
+            requisition2.getProcessingPeriod().getProcessingSchedule().getModifiedDate();
+        Assert.assertTrue(modifiedDate1.isAfter(modifiedDate2));
+      }
+      requisition1 = requisition2;
+    }
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
+    generateRequisitions();
+    Integer pageSize = 20;
+    String filterValue = "1";
+
+    Requisition[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("filterValue", filterValue)
+        .queryParam("filterBy", "facilityCode")
+        .queryParam("sortBy", "programName")
+        .queryParam("descending", Boolean.TRUE.toString())
+        .queryParam("pageNumber", valueOf(1))
+        .queryParam("pageSize", valueOf(pageSize))
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(APPROVED_REQUISITIONS_SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Requisition[].class);
+
+    List<Requisition> requisitions = Arrays.asList(response);
+    Iterator<Requisition> requisitionIterator = requisitions.iterator();
+
+    Assert.assertTrue(requisitions.size() <= pageSize);
+    Requisition requisition1 = null;
+    if (requisitionIterator.hasNext()) {
+      requisition1 = requisitionIterator.next();
+    }
+    Requisition requisition2;
+    while (requisitionIterator.hasNext()) {
+      requisition2 = requisitionIterator.next();
+
+      RequisitionStatus requisitionStatus = requisition1.getStatus();
+      Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
+
+      String facilityCode = requisition1.getFacility().getCode();
+      Assert.assertTrue(facilityCode.contains(filterValue));
+
+      String programName1 = requisition1.getProgram().getName();
+      String programName2 = requisition2.getProgram().getName();
+      Assert.assertTrue(programName1.compareTo(programName2) >= 0);
+
+      if (programName1.equals(programName2)) {
+        LocalDate endDate1 = requisition1.getProcessingPeriod().getEndDate();
+        LocalDate endDate2 = requisition2.getProcessingPeriod().getEndDate();
+        Assert.assertTrue(endDate1.isAfter(endDate2));
+      }
+      requisition1 = requisition2;
+    }
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

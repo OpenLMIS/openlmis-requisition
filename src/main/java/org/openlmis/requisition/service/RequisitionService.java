@@ -223,4 +223,23 @@ public class RequisitionService {
     }
   }
 
+  /**
+   * Get approved requisitions matching all of provided parameters.
+   *
+   * @param filterValue Value to be used to filter.
+   * @param filterBy Field used to filter: "programName", "facilityCode", "facilityName" or "all".
+   * @param sortBy Field used to sort: "programName", "facilityCode" or "facilityName".
+   * @param descending Descending direction for sort.
+   * @param pageNumber Page number to return.
+   * @param pageSize Quantity for one page.
+   *
+   * @return List of requisitions.
+   */
+  public List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+      String filterValue, String filterBy, String sortBy, Boolean descending,
+      Integer pageNumber, Integer pageSize) {
+
+    return requisitionRepository.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+  }
 }

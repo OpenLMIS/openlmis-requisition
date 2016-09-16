@@ -351,4 +351,37 @@ public class RequisitionController extends BaseController {
 
     return new ResponseEntity<>(requisition, HttpStatus.OK);
   }
+
+  /**
+   * Get approved requisitions matching all of provided parameters.
+   *
+   * @param filterValue Value to be used to filter.
+   * @param filterBy Field used to filter: "programName", "facilityCode", "facilityName" or "all".
+   * @param sortBy Field used to sort: "programName", "facilityCode" or "facilityName".
+   * @param descending Descending direction for sort.
+   * @param pageNumber Page number to return.
+   * @param pageSize Quantity for one page.
+   *
+   * @return ResponseEntity with list of approved requisitions.
+   */
+  @RequestMapping(value = "/requisitions/approved/search", method = RequestMethod.GET)
+  public ResponseEntity<?> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+      @RequestParam String filterValue,
+      @RequestParam String filterBy,
+      @RequestParam String sortBy,
+      @RequestParam Boolean descending,
+      @RequestParam Integer pageNumber,
+      @RequestParam Integer pageSize) {
+
+    // TODO Add filtering about available Requisition for user
+    // (If Reference Data Service - EBAC will be finished)
+    // TODO Add available supplying depot and filtering about this
+    // (If OLMIS-227 will be finished)
+
+    List<Requisition> approvedRequisitionList =
+        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+            filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+
+    return new ResponseEntity<>(approvedRequisitionList, HttpStatus.OK);
+  }
 }

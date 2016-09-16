@@ -18,4 +18,8 @@ public interface RequisitionRepositoryCustom {
                                        ProcessingPeriod processingPeriod,
                                        SupervisoryNode supervisoryNode,
                                        RequisitionStatus requisitionStatus);
+
+  List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+      String filterValue, String filterBy, String sortBy, Boolean descending,
+      Integer pageNumber, Integer pageSize);
 }
