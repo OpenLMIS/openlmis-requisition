@@ -30,6 +30,7 @@ public class UserDto {
   @Setter
   private String email;
 
+  @Getter
   @Setter
   private UUID supervisedNode;
 
@@ -52,8 +53,4 @@ public class UserDto {
   @Getter
   private UUID roleAssignments;
 
-  public SupervisoryNodeDto getSupervisedNode() {
-    //TODO in Sprint 9
-    return null;
-  }
 }

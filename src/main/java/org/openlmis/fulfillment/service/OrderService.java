@@ -89,8 +89,8 @@ public class OrderService {
    * @param program program of searched Orders.
    * @return ist of Orders with matched parameters.
    */
-  public List<Order> searchOrders(FacilityDto supplyingFacility, FacilityDto requestingFacility,
-                                  ProgramDto program) {
+  public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
+                                  UUID program) {
     return orderRepository.searchOrders(
             supplyingFacility,
             requestingFacility,
@@ -168,7 +168,7 @@ public class OrderService {
     List<OrderLine> orderLines = order.getOrderLines();
     String orderNum = order.getOrderCode();
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
-            order.getRequestingFacility().getId());
+            order.getRequestingFacility());
     String facilityCode = requestingFacility.getCode();
     LocalDateTime createdDate = order.getCreatedDate();
 
@@ -218,13 +218,13 @@ public class OrderService {
               requisition.getSupervisoryNode().getId());
       SupplyLineDto supplyLine = supplyLines.get(0);
 
-      order.setSupplyingFacility(supplyLine.getSupplyingFacility().getId());
-      order.setProgram(supplyLine.getProgram().getId());
+      order.setSupplyingFacility(supplyLine.getSupplyingFacility());
+      order.setProgram(supplyLine.getProgram());
 
       OrderNumberConfiguration orderNumberConfiguration =
           orderNumberConfigurationRepository.findAll().iterator().next();
 
-      ProgramDto program = programReferenceDataService.findOne(order.getProgram().getId());
+      ProgramDto program = programReferenceDataService.findOne(order.getProgram());
 
       order.setOrderCode(orderNumberConfiguration.generateOrderNumber(
           requisition.getId(), program.getCode(), requisition.getEmergency()));

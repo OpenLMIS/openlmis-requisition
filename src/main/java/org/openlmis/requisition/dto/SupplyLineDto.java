@@ -10,6 +10,7 @@ public class SupplyLineDto {
   @Setter
   private UUID id;
 
+  @Getter
   @Setter
   private UUID supervisoryNode;
 
@@ -17,24 +18,12 @@ public class SupplyLineDto {
   @Setter
   private String description;
 
+  @Getter
   @Setter
   private UUID program;
 
+  @Getter
   @Setter
   private UUID supplyingFacility;
 
-  public SupervisoryNodeDto getSupervisoryNode() {
-    //TODO in Sprint 9
-    return null;
-  }
-
-  public ProgramDto getProgram() {
-    //TODO in Sprint 9
-    return null;
-  }
-
-  public FacilityDto getSupplyingFacility() {
-    //TODO in Sprint 9
-    return null;
-  }
 }

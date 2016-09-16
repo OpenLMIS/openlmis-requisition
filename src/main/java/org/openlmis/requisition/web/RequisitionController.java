@@ -1,18 +1,14 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,15 +171,15 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitions(
-      @RequestParam(value = "facility", required = false) FacilityDto facility,
-      @RequestParam(value = "program", required = false) ProgramDto program,
+      @RequestParam(value = "facility", required = false) UUID facility,
+      @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "createdDateFrom", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
       @RequestParam(value = "processingPeriod", required = false)
-          ProcessingPeriodDto processingPeriod,
-      @RequestParam(value = "supervisoryNode", required = false) SupervisoryNodeDto supervisoryNode,
+          UUID processingPeriod,
+      @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
               RequisitionStatus requisitionStatus) {
 

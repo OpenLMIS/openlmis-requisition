@@ -1,6 +1,5 @@
 package org.openlmis.requisition.repository;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,13 +9,16 @@ import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.requisition.dto.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.UUID;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -31,77 +33,35 @@ public class OrderLineRepositoryIntegrationTest {
   @Autowired
   private OrderLineRepository orderLineRepository;
 
-
   private Order order = new Order();
-  private Product product = new Product();
+  private UUID userId = UUID.randomUUID();
+  private UUID programId = UUID.randomUUID();
+  private UUID requestingFacilityId = UUID.randomUUID();
+  private UUID receivingFacilityId = UUID.randomUUID();
+  private UUID supplyingFacilityId = UUID.randomUUID();
 
   @Before
   public void setUp() {
-    FacilityType facilityType = new FacilityType();
-    facilityType.setCode(orderLine);
-    facilityTypeRepository.save(facilityType);
-
-    GeographicLevel level = new GeographicLevel();
-    level.setCode(orderLine);
-    level.setLevelNumber(1);
-    geographicLevelRepository.save(level);
-
-    GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode(orderLine);
-    geographicZone.setLevel(level);
-    geographicZoneRepository.save(geographicZone);
-
-    Facility facility = new Facility();
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
-    facility.setCode(orderLine);
-    facility.setName(orderLine);
-    facility.setDescription("Test facility");
-    facility.setActive(true);
-    facility.setEnabled(true);
-    facilityRepository.save(facility);
-
-    Program program = new Program();
-    program.setCode(orderLine);
-    programRepository.save(program);
-
-    UserDto[] allUsers = referenceDataService.findAllUsers();
-    Assert.assertEquals(1, allUsers.length);
-    UserDto user = allUsers[0];
-
     order.setOrderCode(orderLine);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
-    order.setProgram(program);
-    order.setCreatedById(user.getId());
-    order.setRequestingFacility(facility);
-    order.setReceivingFacility(facility);
-    order.setSupplyingFacility(facility);
+    order.setProgram(programId);
+    order.setCreatedById(userId);
+    order.setRequestingFacility(requestingFacilityId);
+    order.setReceivingFacility(receivingFacilityId);
+    order.setSupplyingFacility(supplyingFacilityId);
     orderRepository.save(order);
-
-    product.setCode(orderLine);
-    product.setPrimaryName("Product");
-    product.setDispensingUnit("unit");
-    product.setDosesPerDispensingUnit(10);
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setRoundToZero(false);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
-    productRepository.save(product);
   }
 
   @Test
   public void testCreate() {
     OrderLine orderLine = new OrderLine();
     orderLine.setOrder(order);
-    orderLine.setProduct(product);
     orderLine.setOrderedQuantity(5L);
 
-    Assert.assertNull(orderLine.getId());
+    assertNull(orderLine.getId());
 
     orderLine = orderLineRepository.save(orderLine);
-    Assert.assertNotNull(orderLine.getId());
+    assertNotNull(orderLine.getId());
   }
 }

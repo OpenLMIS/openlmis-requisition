@@ -16,7 +16,6 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -35,7 +34,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.inject.Inject;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
@@ -62,10 +60,10 @@ public class RequisitionLineServiceTest {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Mock
-  private ProgramDto program;
+  private UUID program;
 
   @Mock
-  private ProcessingPeriodDto period;
+  private UUID period;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -184,17 +182,17 @@ public class RequisitionLineServiceTest {
 
     requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
     requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(program.getId());
+    requisitionTemplate.setProgram(program);
   }
 
-  private Requisition createTestRequisition(FacilityDto facility, ProcessingPeriodDto period,
-                                            ProgramDto program,
+  private Requisition createTestRequisition(UUID facility, UUID period,
+                                            UUID program,
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(facility.getId());
-    requisition.setProcessingPeriod(period.getId());
-    requisition.setProgram(program.getId());
+    requisition.setFacility(facility);
+    requisition.setProcessingPeriod(period);
+    requisition.setProgram(program);
     requisition.setStatus(requisitionStatus);
     return requisition;
   }

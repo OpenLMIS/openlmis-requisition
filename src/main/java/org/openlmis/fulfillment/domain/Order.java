@@ -52,18 +52,23 @@ public class Order extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
+  @Getter
   @Setter
   private UUID createdById;
 
+  @Getter
   @Setter
   private UUID program;
 
+  @Getter
   @Setter
   private UUID requestingFacility;
 
+  @Getter
   @Setter
   private UUID receivingFacility;
 
+  @Getter
   @Setter
   private UUID supplyingFacility;
 
@@ -116,30 +121,5 @@ public class Order extends BaseEntity {
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;
-  }
-
-  public UserDto getCreatedById() {
-    //TODO in Sprint 9
-    return null;
-  }
-
-  public ProgramDto getProgram() {
-    //TODO in Sprint 9
-    return null;
-  }
-
-  public FacilityDto getRequestingFacility() {
-    //TODO in Sprint 9
-    return null;
-  }
-
-  public FacilityDto getReceivingFacility() {
-    //TODO in Sprint 9
-    return null;
-  }
-
-  public FacilityDto getSupplyingFacility() {
-    //TODO in Sprint 9
-    return null;
   }
 }

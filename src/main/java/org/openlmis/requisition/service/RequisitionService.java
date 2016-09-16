@@ -3,8 +3,6 @@ package org.openlmis.requisition.service;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -180,11 +178,11 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of provided parameters.
    */
-  public List<Requisition> searchRequisitions(FacilityDto facility, ProgramDto program,
+  public List<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
-                                              ProcessingPeriodDto processingPeriod,
-                                              SupervisoryNodeDto supervisoryNode,
+                                              UUID processingPeriod,
+                                              UUID supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
     return requisitionRepository.searchRequisitions(
             facility, program, createdDateFrom,
@@ -215,7 +213,7 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNodeDto supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
+      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode.getId(), null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

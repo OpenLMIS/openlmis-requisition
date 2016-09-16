@@ -3,23 +3,14 @@ package org.openlmis.requisition.repository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.repository.SupervisoryNodeRepository;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.FacilityType;
-import org.openlmis.referencedata.domain.GeographicLevel;
-import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.domain.ProcessingSchedule;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -27,30 +18,6 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private RequisitionRepository repository;
-
-  @Autowired
-  private SupervisoryNodeRepository supervisoryNodeRepository;
-
-  @Autowired
-  private ProgramRepository programRepository;
-
-  @Autowired
-  private FacilityRepository facilityRepository;
-
-  @Autowired
-  private ProcessingPeriodRepository periodRepository;
-
-  @Autowired
-  private ProcessingScheduleRepository scheduleRepository;
-
-  @Autowired
-  private GeographicLevelRepository geographicLevelRepository;
-
-  @Autowired
-  private GeographicZoneRepository geographicZoneRepository;
-
-  @Autowired
-  private FacilityTypeRepository facilityTypeRepository;
 
   private List<Requisition> requisitions;
 
@@ -60,12 +27,12 @@ public class RequisitionRepositoryIntegrationTest
 
   Requisition generateInstance() {
     Requisition requisition = new Requisition();
-    requisition.setProgram(generateProgram());
-    requisition.setFacility(generateFacility());
-    requisition.setProcessingPeriod(generatePeriod());
+    requisition.setProgram(UUID.randomUUID());
+    requisition.setFacility(UUID.randomUUID());
+    requisition.setProcessingPeriod(UUID.randomUUID());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
-    requisition.setSupervisoryNode(generateSupervisoryNode());
+    requisition.setSupervisoryNode(UUID.randomUUID());
     return requisition;
   }
 
@@ -99,17 +66,17 @@ public class RequisitionRepositoryIntegrationTest
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       Assert.assertEquals(
-              receivedRequisition.getProgram().getId(),
-              requisitions.get(0).getProgram().getId());
+              receivedRequisition.getProgram(),
+              requisitions.get(0).getProgram());
       Assert.assertEquals(
-              receivedRequisition.getProcessingPeriod().getId(),
-              requisitions.get(0).getProcessingPeriod().getId());
+              receivedRequisition.getProcessingPeriod(),
+              requisitions.get(0).getProcessingPeriod());
       Assert.assertEquals(
-              receivedRequisition.getFacility().getId(),
-              requisitions.get(0).getFacility().getId());
+              receivedRequisition.getFacility(),
+              requisitions.get(0).getFacility());
       Assert.assertEquals(
-              receivedRequisition.getSupervisoryNode().getId(),
-              requisitions.get(0).getSupervisoryNode().getId());
+              receivedRequisition.getSupervisoryNode(),
+              requisitions.get(0).getSupervisoryNode());
       Assert.assertEquals(
               receivedRequisition.getStatus(),
               requisitions.get(0).getStatus());
@@ -140,11 +107,11 @@ public class RequisitionRepositoryIntegrationTest
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       Assert.assertEquals(
-              receivedRequisition.getProgram().getId(),
-              requisitions.get(0).getProgram().getId());
+              receivedRequisition.getProgram(),
+              requisitions.get(0).getProgram());
       Assert.assertEquals(
-              receivedRequisition.getFacility().getId(),
-              requisitions.get(0).getFacility().getId());
+              receivedRequisition.getFacility(),
+              requisitions.get(0).getFacility());
     }
   }
 
@@ -154,80 +121,5 @@ public class RequisitionRepositoryIntegrationTest
             null, null, null, null, null, null, null);
 
     Assert.assertEquals(5, receivedRequisitions.size());
-  }
-
-  private SupervisoryNode generateSupervisoryNode() {
-    SupervisoryNode supervisoryNode = new SupervisoryNode();
-    supervisoryNode.setCode("code" + this.getNextInstanceNumber());
-    supervisoryNode.setFacility(generateFacility());
-    supervisoryNodeRepository.save(supervisoryNode);
-    return supervisoryNode;
-  }
-
-  private Program generateProgram() {
-    Program program = new Program();
-    program.setCode("Program" + this.getNextInstanceNumber());
-    program.setPeriodsSkippable(false);
-    programRepository.save(program);
-    return program;
-  }
-
-  private ProcessingPeriod generatePeriod() {
-    ProcessingPeriod period = new ProcessingPeriod();
-    Integer instanceNumber = this.getNextInstanceNumber();
-    period.setName("PeriodName" + instanceNumber);
-    period.setDescription("PeriodDescription" + instanceNumber);
-    period.setEndDate(LocalDate.now().plusDays(instanceNumber));
-    period.setStartDate(LocalDate.now().minusDays(instanceNumber));
-    period.setProcessingSchedule(generateSchedule());
-    periodRepository.save(period);
-    return period;
-  }
-
-  private ProcessingSchedule generateSchedule() {
-    ProcessingSchedule schedule = new ProcessingSchedule();
-    schedule.setCode("Schedule" + this.getNextInstanceNumber());
-    schedule.setName("name" + this.getNextInstanceNumber());
-    scheduleRepository.save(schedule);
-    return schedule;
-  }
-
-  private Facility generateFacility() {
-    Integer instanceNumber = this.getNextInstanceNumber();
-    GeographicZone geographicZone = generateGeographicZone();
-    FacilityType facilityType = generateFacilityType();
-    Facility facility = new Facility();
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
-    facility.setCode("Facility" + instanceNumber);
-    facility.setName("FacilityName" + instanceNumber);
-    facility.setDescription("FacilityDescription" + instanceNumber);
-    facility.setActive(true);
-    facility.setEnabled(true);
-    facilityRepository.save(facility);
-    return facility;
-  }
-
-  private GeographicLevel generateGeographicLevel() {
-    GeographicLevel geographicLevel = new GeographicLevel();
-    geographicLevel.setCode("GeographicLevel" + this.getNextInstanceNumber());
-    geographicLevel.setLevelNumber(1);
-    geographicLevelRepository.save(geographicLevel);
-    return geographicLevel;
-  }
-
-  private GeographicZone generateGeographicZone() {
-    GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("GeographicZone" + this.getNextInstanceNumber());
-    geographicZone.setLevel(generateGeographicLevel());
-    geographicZoneRepository.save(geographicZone);
-    return geographicZone;
-  }
-
-  private FacilityType generateFacilityType() {
-    FacilityType facilityType = new FacilityType();
-    facilityType.setCode("FacilityType" + this.getNextInstanceNumber());
-    facilityTypeRepository.save(facilityType);
-    return facilityType;
   }
 }

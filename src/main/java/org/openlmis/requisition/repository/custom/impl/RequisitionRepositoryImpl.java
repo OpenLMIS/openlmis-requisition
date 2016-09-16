@@ -2,10 +2,6 @@ package org.openlmis.requisition.repository.custom.impl;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 
 import javax.persistence.EntityManager;
@@ -16,6 +12,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -33,11 +30,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param requisitionStatus status of searched Requisitions.
    * @return list of Requisitions with matched parameters.
    */
-  public List<Requisition> searchRequisitions(FacilityDto facility, ProgramDto program,
+  public List<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
-                                              ProcessingPeriodDto processingPeriod,
-                                              SupervisoryNodeDto supervisoryNode,
+                                              UUID processingPeriod,
+                                              UUID supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);

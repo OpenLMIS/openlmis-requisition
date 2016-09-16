@@ -186,7 +186,7 @@ public class OrderServiceTest {
   @Test
   public void shouldConvertOrderToCsvIfItExists() throws IOException, URISyntaxException {
     Order order = orders.get(0);
-    when(order.getRequestingFacility().getCode()).thenReturn("FacilityCode");
+    when(order.getRequestingFacility()).thenReturn(UUID.randomUUID());
 
     //Creation date has to be static cuz we read expected csv from file
     ZonedDateTime zdt = ZonedDateTime.parse("2016-08-27T11:30Z");
