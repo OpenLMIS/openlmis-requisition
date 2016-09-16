@@ -92,9 +92,9 @@ public class OrderService {
   public List<Order> searchOrders(FacilityDto supplyingFacility, FacilityDto requestingFacility,
                                   ProgramDto program) {
     return orderRepository.searchOrders(
-            supplyingFacility,
-            requestingFacility,
-            program);
+            supplyingFacility.getId(),
+            requestingFacility.getId(),
+            program.getId());
   }
 
   /**

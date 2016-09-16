@@ -25,6 +25,7 @@ import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
@@ -87,7 +88,7 @@ public class OrderServiceTest {
 
   private List<Order> orders;
   private List<Requisition> requisitions;
-  private List<SupplyLine> supplyLines;
+  private List<SupplyLineDto> supplyLines;
 
   @Before
   public void setUp() {

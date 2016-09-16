@@ -1,13 +1,11 @@
 package org.openlmis.fulfillment.repository.custom;
 
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProgramDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface OrderRepositoryCustom {
 
-  List<Order> searchOrders(FacilityDto supplyingFacility, FacilityDto requestingFacility,
-                           ProgramDto program);
+  List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility, UUID program);
 }
