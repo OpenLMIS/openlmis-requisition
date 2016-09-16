@@ -18,11 +18,12 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 
@@ -76,8 +77,15 @@ public class OrderServiceTest {
   @Mock
   private ProgramDto program;
 
+  @Mock
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private FacilityReferenceDataService facilityReferenceDataService;
+
   @InjectMocks
   private OrderService orderService;
+
 
   private List<Order> orders;
   private List<Requisition> requisitions;
@@ -88,7 +96,9 @@ public class OrderServiceTest {
     orders = new ArrayList<>();
     requisitions = new ArrayList<>();
     supplyLines = new ArrayList<>();
+    generateMocks();
     generateInstances();
+
   }
 
   @Test
@@ -103,8 +113,8 @@ public class OrderServiceTest {
               .findOne(requisitions.get(i).getId()))
               .thenReturn(requisitions.get(i));
       when(supplyLineService.search(
-              requisitions.get(i).getProgram().getId(),
-              requisitions.get(i).getSupervisoryNode().getId()))
+              requisitions.get(i).getProgram(),
+              requisitions.get(i).getSupervisoryNode()))
               .thenReturn(Arrays.asList(supplyLines.get(i)));
     }
     OrderNumberConfiguration orderNumberConfiguration =
@@ -224,7 +234,7 @@ public class OrderServiceTest {
       SupplyLineDto supplyLine = generateSupplyLine(
               requisition.getProgram(),
               requisition.getSupervisoryNode(),
-              requisition.getSupervisoryNode().getFacility());
+              requisition.getSupervisoryNode());
       supplyLines.add(supplyLine);
     }
   }
@@ -279,11 +289,11 @@ public class OrderServiceTest {
   }
 
   private SupplyLineDto generateSupplyLine(
-      ProgramDto program, SupervisoryNodeDto supervisoryNode, FacilityDto facility) {
+      UUID program, UUID supervisoryNode, UUID facility) {
     SupplyLineDto supplyLine = new SupplyLineDto();
-    supplyLine.setProgram(program.getId());
-    supplyLine.setSupervisoryNode(supervisoryNode.getId());
-    supplyLine.setSupplyingFacility(facility.getId());
+    supplyLine.setProgram(program);
+    supplyLine.setSupervisoryNode(supervisoryNode);
+    supplyLine.setSupplyingFacility(facility);
     return supplyLine;
   }
 
@@ -293,5 +303,16 @@ public class OrderServiceTest {
         Thread.currentThread().getContextClassLoader().getResource("OrderServiceTest_expected.csv");
     byte[] encoded = Files.readAllBytes(Paths.get(url.getPath()));
     return new String(encoded, Charset.defaultCharset());
+  }
+
+  private void generateMocks() {
+    ProgramDto programDto = new ProgramDto();
+    programDto.setCode("programCode");
+    when(programReferenceDataService.findOne(any())).thenReturn(programDto);
+
+    FacilityDto facilityDto = new FacilityDto();
+    facilityDto.setCode("FacilityCode");
+    when(facilityReferenceDataService.findOne(any())).thenReturn(facilityDto);
+
   }
 }

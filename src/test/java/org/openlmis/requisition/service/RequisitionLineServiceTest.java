@@ -12,7 +12,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -59,11 +58,6 @@ public class RequisitionLineServiceTest {
   @Mock
   private RequisitionTemplateService requisitionTemplateService;
 
-  @Mock
-  private UUID program;
-
-  @Mock
-  private UUID period;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -71,8 +65,13 @@ public class RequisitionLineServiceTest {
   @InjectMocks
   private RequisitionLineService requisitionLineService;
 
+  private UUID program;
+  private UUID period;
+
   @Before
   public void setUp() {
+    program = UUID.randomUUID();
+    period = UUID.randomUUID();
     generateInstances();
     mockRepositories();
   }
@@ -176,7 +175,7 @@ public class RequisitionLineServiceTest {
   }
 
   private void generateInstances() {
-    requisition = createTestRequisition(mock(FacilityDto.class), period, program,
+    requisition = createTestRequisition(UUID.randomUUID(), period, program,
         RequisitionStatus.INITIATED);
     requisitionLine = createTestRequisitionLine(mock(ProductDto.class), 10, 20, requisition);
 
@@ -214,7 +213,7 @@ public class RequisitionLineServiceTest {
         .thenReturn(Arrays.asList(requisitionTemplate));
     when(periodService
         .search(any(), any()))
-        .thenReturn(Arrays.asList(period));
+        .thenReturn(Arrays.asList(new ProcessingPeriodDto()));
     when(requisitionService
         .searchRequisitions(requisition.getFacility(), requisition.getProgram(),
             null,null, period, null, null))
@@ -224,7 +223,7 @@ public class RequisitionLineServiceTest {
         .thenReturn(Arrays.asList(requisitionLine));
     when(programReferenceDataService
         .findOne(any()))
-        .thenReturn(program);
+        .thenReturn(new ProgramDto());
 
   }
 }

@@ -85,10 +85,6 @@ public class RequisitionLineService {
    * @return Returns Requisition with initiated RequisitionLines.
    */
   public Requisition initiateRequisitionLineFields(Requisition requisition) {
-<<<<<<< HEAD
-    ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgram().getId());
-=======
->>>>>>> origin/dev/olmis-763_referencedata
     List<RequisitionTemplate> requisitionTemplateList
         = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
 
@@ -104,7 +100,7 @@ public class RequisitionLineService {
                                         RequisitionTemplate requisitionTemplate) {
 
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-            requisition.getProcessingPeriod().getId());
+            requisition.getProcessingPeriod());
 
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
             period.getProcessingSchedule(),
@@ -116,13 +112,6 @@ public class RequisitionLineService {
       List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
 
-<<<<<<< HEAD
-      FacilityDto facility =
-          facilityReferenceDataService.findOne(requisition.getFacility().getId());
-      ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
-
-=======
->>>>>>> origin/dev/olmis-763_referencedata
       previousRequisition = requisitionService.searchRequisitions(
               requisition.getFacility(),
               requisition.getProgram(),
@@ -155,7 +144,7 @@ public class RequisitionLineService {
 
   private void resetBeginningBalance(Requisition requisition, RequisitionLine requisitionLine) {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-            requisitionLine.getRequisition().getProcessingPeriod().getId());
+            requisitionLine.getRequisition().getProcessingPeriod());
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
         period.getProcessingSchedule(),
         period.getStartDate());
@@ -165,12 +154,6 @@ public class RequisitionLineService {
       return;
     }
 
-<<<<<<< HEAD
-    FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility().getId());
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
-
-=======
->>>>>>> origin/dev/olmis-763_referencedata
     List<Requisition> previousRequisition =
             requisitionService.searchRequisitions(
                 requisition.getFacility(),

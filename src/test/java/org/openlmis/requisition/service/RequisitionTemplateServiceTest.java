@@ -31,11 +31,11 @@ public class RequisitionTemplateServiceTest {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
     when(requisitionTemplateRepository
-            .searchRequisitionTemplates(program))
+            .searchRequisitionTemplates(program.getId()))
             .thenReturn(Arrays.asList(requisitionTemplate));
 
     List<RequisitionTemplate> receivedRequisitionTemplates =
-            requisitionTemplateService.searchRequisitionTemplates(program);
+            requisitionTemplateService.searchRequisitionTemplates(program.getId());
 
     assertEquals(1, receivedRequisitionTemplates.size());
     assertEquals(requisitionTemplate, receivedRequisitionTemplates.get(0));

@@ -10,6 +10,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
@@ -49,6 +50,9 @@ public class RequisitionService {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -136,7 +140,7 @@ public class RequisitionService {
    */
   public Requisition skip(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
 
     if (requisition == null) {
       throw new RequisitionException("Skip failed - "
@@ -196,7 +200,7 @@ public class RequisitionService {
     UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     if (user.getSupervisedNode() != null) {
-      requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
     }
     return requisitionsForApproval;
   }

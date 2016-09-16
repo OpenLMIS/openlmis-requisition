@@ -177,13 +177,13 @@ public class OrderService {
 
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
-      row.put(DEFAULT_COLUMNS[2], orderNum);
+      /*row.put(DEFAULT_COLUMNS[2], orderNum);
       /**
       row.put(DEFAULT_COLUMNS[3], orderLine.getProduct().getPrimaryName());
       row.put(DEFAULT_COLUMNS[4], orderLine.getProduct().getCode());
        **/
-      row.put(DEFAULT_COLUMNS[5], orderLine.getOrderedQuantity());
-      row.put(DEFAULT_COLUMNS[6], orderLine.getFilledQuantity());
+      row.put(DEFAULT_COLUMNS[2], orderLine.getOrderedQuantity());
+      row.put(DEFAULT_COLUMNS[3], orderLine.getFilledQuantity());
 
       //products which have a final approved quantity of zero are omitted
       if (orderLine.getOrderedQuantity() > 0) {
@@ -210,12 +210,12 @@ public class OrderService {
       order.setRequisition(requisition);
       order.setStatus(OrderStatus.ORDERED);
 
-      order.setReceivingFacility(requisition.getFacility().getId());
-      order.setRequestingFacility(requisition.getFacility().getId());
+      order.setReceivingFacility(requisition.getFacility());
+      order.setRequestingFacility(requisition.getFacility());
 
       List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
-          .search(requisition.getProgram().getId(),
-              requisition.getSupervisoryNode().getId());
+          .search(requisition.getProgram(),
+              requisition.getSupervisoryNode());
       SupplyLineDto supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
