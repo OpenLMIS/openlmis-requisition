@@ -4,9 +4,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -54,10 +52,9 @@ public class RequisitionLineService {
     if (requisitionLine == null) {
       throw new RequisitionException("Requisition line does not exist");
     } else {
-      ProgramDto programDto = programReferenceDataService.findOne(
-              requisitionLine.getRequisition().getProgram().getId());
+
       List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService
-          .searchRequisitionTemplates(programDto);
+          .searchRequisitionTemplates(requisition.getProgram());
 
       RequisitionTemplateColumn requisitionTemplateColumn =
           requisitionTemplateList.get(0).getColumnsMap().get("beginningBalance");
@@ -88,9 +85,12 @@ public class RequisitionLineService {
    * @return Returns Requisition with initiated RequisitionLines.
    */
   public Requisition initiateRequisitionLineFields(Requisition requisition) {
+<<<<<<< HEAD
     ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgram().getId());
+=======
+>>>>>>> origin/dev/olmis-763_referencedata
     List<RequisitionTemplate> requisitionTemplateList
-        = requisitionTemplateService.searchRequisitionTemplates(programDto);
+        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
 
     if (!requisitionTemplateList.isEmpty()) {
       initiateBeginningBalance(requisition, requisitionTemplateList.get(0));
@@ -116,15 +116,18 @@ public class RequisitionLineService {
       List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
 
+<<<<<<< HEAD
       FacilityDto facility =
           facilityReferenceDataService.findOne(requisition.getFacility().getId());
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
 
+=======
+>>>>>>> origin/dev/olmis-763_referencedata
       previousRequisition = requisitionService.searchRequisitions(
-              facility,
-              program,
+              requisition.getFacility(),
+              requisition.getProgram(),
               null,null,
-              previousPeriods.iterator().next(),
+              previousPeriods.iterator().next().getId(),
               null,
               null);
       if (previousRequisition.size() == 0) {
@@ -162,16 +165,19 @@ public class RequisitionLineService {
       return;
     }
 
+<<<<<<< HEAD
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility().getId());
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
 
+=======
+>>>>>>> origin/dev/olmis-763_referencedata
     List<Requisition> previousRequisition =
             requisitionService.searchRequisitions(
-                facility,
-                program,
+                requisition.getFacility(),
+                requisition.getProgram(),
                 null,
                 null,
-                previousPeriods.iterator().next(),
+                previousPeriods.iterator().next().getId(),
                 null,
                 null);
 
