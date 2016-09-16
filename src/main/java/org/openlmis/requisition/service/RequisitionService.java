@@ -11,6 +11,8 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,10 @@ public class RequisitionService {
   private ConfigurationSettingService configurationSettingService;
 
   @Autowired
-  private ReferenceDataService referenceDataService;
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -133,6 +138,7 @@ public class RequisitionService {
    */
   public Requisition skip(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
 
     if (requisition == null) {
       throw new RequisitionException("Skip failed - "
@@ -140,7 +146,7 @@ public class RequisitionService {
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       throw new RequisitionException("Skip failed - "
           + REQUISITION_BAD_STATUS_MESSAGE);
-    } else if (!requisition.getProgram().getPeriodsSkippable()) {
+    } else if (!program.getPeriodsSkippable()) {
       throw new RequisitionException("Skip failed - "
               + "requisition program does not allow skipping");
     } else {
@@ -189,7 +195,7 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    UserDto user = referenceDataService.findUser(userId);
+    UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     if (user.getSupervisedNode() != null) {
       requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));

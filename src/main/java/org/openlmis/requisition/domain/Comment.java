@@ -5,12 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.view.View;
 
 import javax.persistence.Convert;
@@ -20,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "comments", schema = "referencedata")
@@ -35,7 +34,7 @@ public class Comment extends BaseEntity {
 
   @Getter
   @Setter
-  private UserDto authorId;
+  private UUID authorId;
 
   @JsonView(View.BasicInformation.class)
   @Getter

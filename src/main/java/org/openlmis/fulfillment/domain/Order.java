@@ -6,16 +6,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.UserDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -25,7 +21,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -33,6 +28,7 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -55,31 +51,23 @@ public class Order extends BaseEntity {
 
   @Getter
   @Setter
-  private UserDto createdById;
+  private UUID createdById;
 
-  @ManyToOne
-  @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
-  private ProgramDto program;
+  private UUID program;
 
-  @ManyToOne
-  @JoinColumn(name = "requestingFacilityId", nullable = false)
   @Getter
   @Setter
-  private FacilityDto requestingFacility;
+  private UUID requestingFacility;
 
-  @ManyToOne
-  @JoinColumn(name = "receivingFacilityId", nullable = false)
   @Getter
   @Setter
-  private FacilityDto receivingFacility;
+  private UUID receivingFacility;
 
-  @ManyToOne
-  @JoinColumn(name = "supplyingFacilityId", nullable = false)
   @Getter
   @Setter
-  private FacilityDto supplyingFacility;
+  private UUID supplyingFacility;
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter

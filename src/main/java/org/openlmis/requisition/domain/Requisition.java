@@ -10,10 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,13 +18,12 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisitions")
@@ -62,23 +57,17 @@ public class Requisition extends BaseEntity {
   @Getter
   private List<Comment> comments;
 
-  @ManyToOne
-  @JoinColumn(name = "facilityId", nullable = false)
   @Getter
   @Setter
-  private FacilityDto facility;
+  private UUID facility;
 
-  @ManyToOne
-  @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
-  private ProgramDto program;
+  private UUID program;
 
-  @ManyToOne
-  @JoinColumn(name = "processingPeriodId", nullable = false)
   @Getter
   @Setter
-  private ProcessingPeriodDto processingPeriod;
+  private UUID processingPeriod;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -91,11 +80,9 @@ public class Requisition extends BaseEntity {
   @Setter
   private Boolean emergency;
 
-  @ManyToOne
-  @JoinColumn(name = "supervisoryNodeId")
   @Getter
   @Setter
-  private SupervisoryNodeDto supervisoryNode;
+  private UUID supervisoryNode;
 
   @PrePersist
   private void prePersist() {

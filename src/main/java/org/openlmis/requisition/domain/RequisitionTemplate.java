@@ -3,31 +3,26 @@ package org.openlmis.requisition.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
-  @OneToOne
-  @JoinColumn(name = "programId", nullable = false, unique = true)
   @Getter
   @Setter
-  private ProgramDto program;
+  private UUID program;
 
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")

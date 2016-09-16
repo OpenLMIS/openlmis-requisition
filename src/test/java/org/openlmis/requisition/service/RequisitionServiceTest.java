@@ -40,9 +40,6 @@ public class RequisitionServiceTest {
   private Requisition requisition;
 
   @Mock
-  private ReferenceDataService referenceDataService;
-
-  @Mock
   private RequisitionLineService requisitionLineService;
 
   @Mock

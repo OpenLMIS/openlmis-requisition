@@ -24,8 +24,11 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.ReferenceDataService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +68,16 @@ public class OrderService {
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Autowired
-  private ReferenceDataService referenceDataService;
+  private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
     "productName", "productCode", "orderedQuantity", "filledQuantity"};
@@ -155,7 +167,9 @@ public class OrderService {
     List<Map<String, Object>> rows = new ArrayList<>();
     List<OrderLine> orderLines = order.getOrderLines();
     String orderNum = order.getOrderCode();
-    String facilityCode = order.getRequestingFacility().getCode();
+    FacilityDto requestingFacility = facilityReferenceDataService.findOne(
+            order.getRequestingFacility());
+    String facilityCode = requestingFacility.getCode();
     LocalDateTime createdDate = order.getCreatedDate();
 
     for (OrderLine orderLine : orderLines) {
@@ -164,8 +178,10 @@ public class OrderService {
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
       row.put(DEFAULT_COLUMNS[2], orderNum);
+      /**
       row.put(DEFAULT_COLUMNS[3], orderLine.getProduct().getPrimaryName());
       row.put(DEFAULT_COLUMNS[4], orderLine.getProduct().getCode());
+       **/
       row.put(DEFAULT_COLUMNS[5], orderLine.getOrderedQuantity());
       row.put(DEFAULT_COLUMNS[6], orderLine.getFilledQuantity());
 
@@ -182,7 +198,7 @@ public class OrderService {
    */
   @Transactional
   public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
-    UserDto user = referenceDataService.findUser(userId);
+    UserDto user = userReferenceDataService.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
     List<Order> convertedOrders = new ArrayList<>();
 
@@ -190,26 +206,28 @@ public class OrderService {
       requisition = requisitionRepository.findOne(requisition.getId());
 
       Order order = new Order();
-      order.setCreatedById(user);
+      order.setCreatedById(user.getId());
       order.setRequisition(requisition);
       order.setStatus(OrderStatus.ORDERED);
 
       order.setReceivingFacility(requisition.getFacility());
       order.setRequestingFacility(requisition.getFacility());
 
-      List<SupplyLineDto> supplyLines = referenceDataService
-          .searchSupplyLines(requisition.getProgram().getId(),
-              requisition.getSupervisoryNode().getId());
+      List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
+          .search(requisition.getProgram(),
+              requisition.getSupervisoryNode());
       SupplyLineDto supplyLine = supplyLines.get(0);
 
-      order.setSupplyingFacility(supplyLine.getSupplyingFacility());
-      order.setProgram(supplyLine.getProgram());
+      order.setSupplyingFacility(supplyLine.getSupplyingFacility().getId());
+      order.setProgram(supplyLine.getProgram().getId());
 
       OrderNumberConfiguration orderNumberConfiguration =
           orderNumberConfigurationRepository.findAll().iterator().next();
 
+      ProgramDto program = programReferenceDataService.findOne(order.getProgram());
+
       order.setOrderCode(orderNumberConfiguration.generateOrderNumber(
-          requisition.getId(), order.getProgram().getCode(), requisition.getEmergency()));
+          requisition.getId(), program.getCode(), requisition.getEmergency()));
 
       order.setQuotedCost(BigDecimal.ZERO);
 

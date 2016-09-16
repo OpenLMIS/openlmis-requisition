@@ -1,7 +1,13 @@
 package org.openlmis.requisition.web;
 
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.service.ReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +24,29 @@ import java.util.List;
 public class DummyController extends BaseController {
 
   @Autowired
-  ReferenceDataService referenceDataService;
+  private UserReferenceDataService userReferenceDataService;
 
-  @RequestMapping(value = "/users", method = RequestMethod.GET)
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  /**
+   * Test endpoint.
+   *
+   * @return retrieved users
+   */
+  @RequestMapping(value = "/refdatausers", method = RequestMethod.GET)
   public ResponseEntity<?> getAllUsers() {
-    List<UserDto> users = referenceDataService.findAllUsers();
+    List<UserDto> users = userReferenceDataService.findAll("");
+    List<ProgramDto> programs = programReferenceDataService.findAll("");
+    List<FacilityDto> facilities = facilityReferenceDataService.findAll("");
+    List<ProcessingPeriodDto> periods = periodReferenceDataService.findAll("");
+
     return new ResponseEntity<>(users, HttpStatus.OK);
   }
 }

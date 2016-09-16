@@ -1,4 +1,4 @@
-package org.openlmis.requisition.service;
+package org.openlmis.requisition.service.referencedata;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.core.ParameterizedTypeReference;
