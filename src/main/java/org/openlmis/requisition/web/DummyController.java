@@ -42,12 +42,12 @@ public class DummyController extends BaseController {
    *
    * @return retrieved users
    */
-  @RequestMapping(value = "/refdatausers", method = RequestMethod.GET)
+  @RequestMapping(value = "/refdatatest", method = RequestMethod.GET)
   public ResponseEntity<?> getAllUsers() {
-    List<UserDto> users = userReferenceDataService.findAll("");
-    List<ProgramDto> programs = programReferenceDataService.findAll("");
-    List<FacilityDto> facilities = facilityReferenceDataService.findAll("");
-    List<ProcessingPeriodDto> periods = periodReferenceDataService.findAll("");
+    List<UserDto> users = userReferenceDataService.findAll();
+    List<ProgramDto> programs = programReferenceDataService.findAll();
+    List<FacilityDto> facilities = facilityReferenceDataService.findAll();
+    List<ProcessingPeriodDto> periods = periodReferenceDataService.findAll();
 
     Map<String, List<?>> response = new HashMap<>();
     response.put("Users", users);

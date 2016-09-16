@@ -36,6 +36,10 @@ public abstract class BaseReferenceDataService<T> {
     return object;
   }
 
+  public List<T> findAll() {
+    return findAll("", new HashMap<>());
+  }
+
   public List<T> findAll(String resourceUrl) {
     return findAll(resourceUrl, new HashMap<>());
   }
