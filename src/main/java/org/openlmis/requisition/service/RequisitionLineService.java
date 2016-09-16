@@ -4,9 +4,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -54,10 +52,8 @@ public class RequisitionLineService {
     if (requisitionLine == null) {
       throw new RequisitionException("Requisition line does not exist");
     } else {
-      ProgramDto programDto = programReferenceDataService.findOne(
-              requisitionLine.getRequisition().getProgram());
       List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService
-          .searchRequisitionTemplates(programDto);
+          .searchRequisitionTemplates(requisition.getProgram());
 
       RequisitionTemplateColumn requisitionTemplateColumn =
           requisitionTemplateList.get(0).getColumnsMap().get("beginningBalance");
@@ -88,9 +84,8 @@ public class RequisitionLineService {
    * @return Returns Requisition with initiated RequisitionLines.
    */
   public Requisition initiateRequisitionLineFields(Requisition requisition) {
-    ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgram());
     List<RequisitionTemplate> requisitionTemplateList
-        = requisitionTemplateService.searchRequisitionTemplates(programDto);
+        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
 
     if (!requisitionTemplateList.isEmpty()) {
       initiateBeginningBalance(requisition, requisitionTemplateList.get(0));
@@ -116,14 +111,11 @@ public class RequisitionLineService {
       List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
 
-      FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility());
-      ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
-
       previousRequisition = requisitionService.searchRequisitions(
-              facility,
-              program,
+              requisition.getFacility(),
+              requisition.getProgram(),
               null,null,
-              previousPeriods.iterator().next(),
+              previousPeriods.iterator().next().getId(),
               null,
               null);
       if (previousRequisition.size() == 0) {
@@ -161,16 +153,13 @@ public class RequisitionLineService {
       return;
     }
 
-    FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility());
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
-
     List<Requisition> previousRequisition =
             requisitionService.searchRequisitions(
-                facility,
-                program,
+                requisition.getFacility(),
+                requisition.getProgram(),
                 null,
                 null,
-                previousPeriods.iterator().next(),
+                previousPeriods.iterator().next().getId(),
                 null,
                 null);
 
