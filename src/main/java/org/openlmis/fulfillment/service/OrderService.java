@@ -168,7 +168,7 @@ public class OrderService {
     List<OrderLine> orderLines = order.getOrderLines();
     String orderNum = order.getOrderCode();
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
-            order.getRequestingFacility());
+            order.getRequestingFacility().getId());
     String facilityCode = requestingFacility.getCode();
     LocalDateTime createdDate = order.getCreatedDate();
 
@@ -210,12 +210,12 @@ public class OrderService {
       order.setRequisition(requisition);
       order.setStatus(OrderStatus.ORDERED);
 
-      order.setReceivingFacility(requisition.getFacility());
-      order.setRequestingFacility(requisition.getFacility());
+      order.setReceivingFacility(requisition.getFacility().getId());
+      order.setRequestingFacility(requisition.getFacility().getId());
 
       List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
-          .search(requisition.getProgram(),
-              requisition.getSupervisoryNode());
+          .search(requisition.getProgram().getId(),
+              requisition.getSupervisoryNode().getId());
       SupplyLineDto supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility().getId());
@@ -224,7 +224,7 @@ public class OrderService {
       OrderNumberConfiguration orderNumberConfiguration =
           orderNumberConfigurationRepository.findAll().iterator().next();
 
-      ProgramDto program = programReferenceDataService.findOne(order.getProgram());
+      ProgramDto program = programReferenceDataService.findOne(order.getProgram().getId());
 
       order.setOrderCode(orderNumberConfiguration.generateOrderNumber(
           requisition.getId(), program.getCode(), requisition.getEmergency()));

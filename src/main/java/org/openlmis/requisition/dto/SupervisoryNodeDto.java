@@ -23,15 +23,12 @@ public class SupervisoryNodeDto {
   @Setter
   private String decsription;
 
-  @Getter
   @Setter
   private UUID facility;
 
-  @Getter
   @Setter
   private UUID parentNode;
 
-  @Getter
   @Setter
   private UUID requisitionGroup;
 
@@ -39,6 +36,16 @@ public class SupervisoryNodeDto {
   private UUID childNodes;
 
   public Set<SupervisoryNodeDto> getChildNodes() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public FacilityDto getFacility() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public SupervisoryNodeDto getParentNode() {
     //TODO in Sprint 9
     return null;
   }

@@ -13,21 +13,18 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.SupplyLine;
-import org.openlmis.hierarchyandsupervision.repository.SupplyLineRepository;
-import org.openlmis.hierarchyandsupervision.service.SupplyLineService;
-import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -59,7 +56,10 @@ public class OrderServiceTest {
   private RequisitionService requisitionService;
 
   @Mock
-  private SupplyLineService supplyLineService;
+  private SupplyLineReferenceDataService supplyLineService;
+
+  @Mock
+  private UserReferenceDataService userService;
 
   @Mock
   private OrderRepository orderRepository;
@@ -74,20 +74,14 @@ public class OrderServiceTest {
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Mock
-  private SupplyLineRepository supplyLineRepository;
-
-  @Mock
-  private Program program;
-
-  @Mock
-  private ReferenceDataService referenceDataService;
+  private ProgramDto program;
 
   @InjectMocks
   private OrderService orderService;
 
   private List<Order> orders;
   private List<Requisition> requisitions;
-  private List<SupplyLine> supplyLines;
+  private List<SupplyLineDto> supplyLines;
 
   @Before
   public void setUp() {
@@ -102,15 +96,15 @@ public class OrderServiceTest {
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
-    when(referenceDataService.findOneUser(userId)).thenReturn(user);
+    when(userService.findOne(userId)).thenReturn(user);
 
     for (int i = 0; i < requisitions.size(); i++) {
       when(requisitionRepository
               .findOne(requisitions.get(i).getId()))
               .thenReturn(requisitions.get(i));
-      when(supplyLineService.searchSupplyLines(
-              requisitions.get(i).getProgram(),
-              requisitions.get(i).getSupervisoryNode()))
+      when(supplyLineService.search(
+              requisitions.get(i).getProgram().getId(),
+              requisitions.get(i).getSupervisoryNode().getId()))
               .thenReturn(Arrays.asList(supplyLines.get(i)));
     }
     OrderNumberConfiguration orderNumberConfiguration =
@@ -153,11 +147,11 @@ public class OrderServiceTest {
       RequisitionLine requisitionLine = requisition.getRequisitionLines().iterator().next();
       assertEquals(requisitionLine.getRequestedQuantity().longValue(),
               orderLine.getOrderedQuantity().longValue());
-      assertEquals(requisitionLine.getProduct().getId(), orderLine.getProduct().getId());
+      assertEquals(requisitionLine.getProduct(), orderLine.getProduct());
     }
 
     verify(requisitionRepository, atLeastOnce()).findOne(anyObject());
-    verify(supplyLineService, atLeastOnce()).searchSupplyLines(anyObject(), anyObject());
+    verify(supplyLineService, atLeastOnce()).search(anyObject(), anyObject());
     verify(orderRepository, atLeastOnce()).save(any(Order.class));
   }
 
@@ -193,8 +187,6 @@ public class OrderServiceTest {
   public void shouldConvertOrderToCsvIfItExists() throws IOException, URISyntaxException {
     Order order = orders.get(0);
     when(order.getRequestingFacility().getCode()).thenReturn("FacilityCode");
-    when(order.getOrderLines().get(0).getProduct().getPrimaryName()).thenReturn("product");
-    when(order.getOrderLines().get(0).getProduct().getCode()).thenReturn("productCode");
 
     //Creation date has to be static cuz we read expected csv from file
     ZonedDateTime zdt = ZonedDateTime.parse("2016-08-27T11:30Z");
@@ -229,7 +221,7 @@ public class OrderServiceTest {
 
   private void generateSupplyLines() {
     for (Requisition requisition : requisitions) {
-      SupplyLine supplyLine = generateSupplyLine(
+      SupplyLineDto supplyLine = generateSupplyLine(
               requisition.getProgram(),
               requisition.getSupervisoryNode(),
               requisition.getSupervisoryNode().getFacility());
@@ -246,12 +238,9 @@ public class OrderServiceTest {
 
   private Order generateOrder(int instanceNumber) {
     Order order = new Order();
-    order.setProgram(program);
+    order.setProgram(program.getId());
     order.setCreatedDate(LocalDateTime.now().plusDays(instanceNumber));
     order.setCreatedById(UUID.randomUUID());
-    order.setReceivingFacility(mock(Facility.class));
-    order.setSupplyingFacility(mock(Facility.class));
-    order.setRequestingFacility(mock(Facility.class));
     order.setQuotedCost(BigDecimal.valueOf(1));
     order.setOrderCode("OrderCode" + instanceNumber);
     order.setStatus(OrderStatus.ORDERED);
@@ -264,12 +253,9 @@ public class OrderServiceTest {
   private Requisition generateRequisition() {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(mock(Facility.class));
-    requisition.setProcessingPeriod(mock(ProcessingPeriod.class));
-    requisition.setProgram(program);
+    requisition.setProgram(program.getId());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupervisoryNode(mock(SupervisoryNode.class));
     requisition.setEmergency(true);
     List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(generateRequisitionLine());
@@ -283,23 +269,21 @@ public class OrderServiceTest {
     orderLine.setFilledQuantity(1000L);
     orderLine.setOrder(order);
     orderLine.setOrderedQuantity(1000L);
-    orderLine.setProduct(mock(Product.class));
     return orderLine;
   }
 
   private RequisitionLine generateRequisitionLine() {
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(mock(Product.class));
     requisitionLine.setRequestedQuantity(1000);
     return requisitionLine;
   }
 
-  private SupplyLine generateSupplyLine(
-          Program program, SupervisoryNode supervisoryNode, Facility facility) {
-    SupplyLine supplyLine = new SupplyLine();
-    supplyLine.setProgram(program);
-    supplyLine.setSupervisoryNode(supervisoryNode);
-    supplyLine.setSupplyingFacility(facility);
+  private SupplyLineDto generateSupplyLine(
+      ProgramDto program, SupervisoryNodeDto supervisoryNode, FacilityDto facility) {
+    SupplyLineDto supplyLine = new SupplyLineDto();
+    supplyLine.setProgram(program.getId());
+    supplyLine.setSupervisoryNode(supervisoryNode.getId());
+    supplyLine.setSupplyingFacility(facility.getId());
     return supplyLine;
   }
 

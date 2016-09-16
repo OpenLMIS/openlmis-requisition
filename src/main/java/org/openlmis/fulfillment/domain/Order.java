@@ -12,6 +12,9 @@ import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.UserDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -49,23 +52,18 @@ public class Order extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @Getter
   @Setter
   private UUID createdById;
 
-  @Getter
   @Setter
   private UUID program;
 
-  @Getter
   @Setter
   private UUID requestingFacility;
 
-  @Getter
   @Setter
   private UUID receivingFacility;
 
-  @Getter
   @Setter
   private UUID supplyingFacility;
 
@@ -118,5 +116,30 @@ public class Order extends BaseEntity {
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;
+  }
+
+  public UserDto getCreatedById() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public ProgramDto getProgram() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public FacilityDto getRequestingFacility() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public FacilityDto getReceivingFacility() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public FacilityDto getSupplyingFacility() {
+    //TODO in Sprint 9
+    return null;
   }
 }

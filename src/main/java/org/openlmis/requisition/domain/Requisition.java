@@ -10,6 +10,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -57,15 +61,12 @@ public class Requisition extends BaseEntity {
   @Getter
   private List<Comment> comments;
 
-  @Getter
   @Setter
   private UUID facility;
 
-  @Getter
   @Setter
   private UUID program;
 
-  @Getter
   @Setter
   private UUID processingPeriod;
 
@@ -80,7 +81,6 @@ public class Requisition extends BaseEntity {
   @Setter
   private Boolean emergency;
 
-  @Getter
   @Setter
   private UUID supervisoryNode;
 
@@ -96,10 +96,30 @@ public class Requisition extends BaseEntity {
    */
   public void updateFrom(Requisition requisition) {
     this.comments = requisition.getComments();
-    this.facility = requisition.getFacility();
-    this.program = requisition.getProgram();
-    this.processingPeriod = requisition.getProcessingPeriod();
+    this.facility = requisition.getFacility().getId();
+    this.program = requisition.getProgram().getId();
+    this.processingPeriod = requisition.getProcessingPeriod().getId();
     this.emergency = requisition.getEmergency();
-    this.supervisoryNode = requisition.getSupervisoryNode();
+    this.supervisoryNode = requisition.getSupervisoryNode().getId();
+  }
+
+  public FacilityDto getFacility() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public ProgramDto getProgram() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public ProcessingPeriodDto getProcessingPeriod() {
+    //TODO in Sprint 9
+    return null;
+  }
+
+  public SupervisoryNodeDto getSupervisoryNode() {
+    //TODO in Sprint 9
+    return null;
   }
 }

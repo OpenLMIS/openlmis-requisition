@@ -6,18 +6,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.service.ReferenceDataService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
 import java.time.LocalDateTime;
@@ -50,6 +47,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionRepository requisitionRepository;
+
+  @Mock
+  private UserReferenceDataService userReferenceDataService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -134,10 +134,10 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
-    SupervisoryNode supervisoryNode = mock(SupervisoryNode.class);
+    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setSupervisoryNode(supervisoryNode.getId());
 
     when(requisitionRepository
         .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
@@ -152,16 +152,16 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
-    SupervisoryNode supervisoryNode = mock(SupervisoryNode.class);
+    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
     UserDto user = mock(UserDto.class);
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setSupervisoryNode(supervisoryNode.getId());
 
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
     when(user.getSupervisedNode()).thenReturn(supervisoryNode);
-    when(referenceDataService.findUser(userId))
+    when(userReferenceDataService.findOne(userId))
             .thenReturn(user);
     when(requisitionRepository
             .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
@@ -289,12 +289,8 @@ public class RequisitionServiceTest {
   private Requisition generateRequisition() {
     requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(mock(Facility.class));
-    requisition.setProcessingPeriod(mock(ProcessingPeriod.class));
-    requisition.setProgram(mock(Program.class));
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupervisoryNode(mock(SupervisoryNode.class));
     List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(mock(RequisitionLine.class));
     requisition.setRequisitionLines(requisitionLines);

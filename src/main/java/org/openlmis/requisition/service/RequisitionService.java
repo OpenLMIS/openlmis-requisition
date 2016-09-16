@@ -138,7 +138,7 @@ public class RequisitionService {
    */
   public Requisition skip(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
 
     if (requisition == null) {
       throw new RequisitionException("Skip failed - "

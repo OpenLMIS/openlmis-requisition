@@ -55,7 +55,7 @@ public class RequisitionLineService {
       throw new RequisitionException("Requisition line does not exist");
     } else {
       ProgramDto programDto = programReferenceDataService.findOne(
-              requisitionLine.getRequisition().getProgram());
+              requisitionLine.getRequisition().getProgram().getId());
       List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService
           .searchRequisitionTemplates(programDto);
 
@@ -88,7 +88,7 @@ public class RequisitionLineService {
    * @return Returns Requisition with initiated RequisitionLines.
    */
   public Requisition initiateRequisitionLineFields(Requisition requisition) {
-    ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgram());
+    ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgram().getId());
     List<RequisitionTemplate> requisitionTemplateList
         = requisitionTemplateService.searchRequisitionTemplates(programDto);
 
@@ -104,7 +104,7 @@ public class RequisitionLineService {
                                         RequisitionTemplate requisitionTemplate) {
 
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-            requisition.getProcessingPeriod());
+            requisition.getProcessingPeriod().getId());
 
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
             period.getProcessingSchedule(),
@@ -116,8 +116,9 @@ public class RequisitionLineService {
       List<Requisition> previousRequisition;
       List<RequisitionLine> previousRequisitionLine;
 
-      FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility());
-      ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
+      FacilityDto facility =
+          facilityReferenceDataService.findOne(requisition.getFacility().getId());
+      ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
 
       previousRequisition = requisitionService.searchRequisitions(
               facility,
@@ -151,7 +152,7 @@ public class RequisitionLineService {
 
   private void resetBeginningBalance(Requisition requisition, RequisitionLine requisitionLine) {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-            requisitionLine.getRequisition().getProcessingPeriod());
+            requisitionLine.getRequisition().getProcessingPeriod().getId());
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
         period.getProcessingSchedule(),
         period.getStartDate());
@@ -161,8 +162,8 @@ public class RequisitionLineService {
       return;
     }
 
-    FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility());
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
+    FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacility().getId());
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram().getId());
 
     List<Requisition> previousRequisition =
             requisitionService.searchRequisitions(

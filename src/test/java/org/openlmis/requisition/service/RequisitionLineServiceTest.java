@@ -16,8 +16,11 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +34,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import javax.inject.Inject;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
@@ -48,7 +53,7 @@ public class RequisitionLineServiceTest {
   private RequisitionLineRepository requisitionLineRepository;
 
   @Mock
-  private ProcessingPeriodService periodService;
+  private PeriodReferenceDataService periodService;
 
   @Mock
   private RequisitionService requisitionService;
@@ -61,6 +66,9 @@ public class RequisitionLineServiceTest {
 
   @Mock
   private ProcessingPeriodDto period;
+
+  @Mock
+  private ProgramReferenceDataService programReferenceDataService;
 
   @InjectMocks
   private RequisitionLineService requisitionLineService;
@@ -176,7 +184,7 @@ public class RequisitionLineServiceTest {
 
     requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
     requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(program);
+    requisitionTemplate.setProgram(program.getId());
   }
 
   private Requisition createTestRequisition(FacilityDto facility, ProcessingPeriodDto period,
@@ -184,9 +192,9 @@ public class RequisitionLineServiceTest {
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
+    requisition.setFacility(facility.getId());
+    requisition.setProcessingPeriod(period.getId());
+    requisition.setProgram(program.getId());
     requisition.setStatus(requisitionStatus);
     return requisition;
   }
@@ -195,7 +203,7 @@ public class RequisitionLineServiceTest {
                                                     Integer stockInHand, Requisition requisition) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setId(UUID.randomUUID());
-    requisitionLine.setProduct(product);
+    requisitionLine.setProduct(product.getId());
     requisitionLine.setRequestedQuantity(quantityRequested);
     requisitionLine.setStockInHand(stockInHand);
     requisitionLine.setRequisition(requisition);
@@ -207,7 +215,7 @@ public class RequisitionLineServiceTest {
         .searchRequisitionTemplates(program))
         .thenReturn(Arrays.asList(requisitionTemplate));
     when(periodService
-        .searchPeriods(any(), any()))
+        .search(any(), any()))
         .thenReturn(Arrays.asList(period));
     when(requisitionService
         .searchRequisitions(requisition.getFacility(), requisition.getProgram(),
@@ -216,5 +224,9 @@ public class RequisitionLineServiceTest {
     when(requisitionLineRepository
         .searchRequisitionLines(eq(requisition), any()))
         .thenReturn(Arrays.asList(requisitionLine));
+    when(programReferenceDataService
+        .findOne(any()))
+        .thenReturn(program);
+
   }
 }

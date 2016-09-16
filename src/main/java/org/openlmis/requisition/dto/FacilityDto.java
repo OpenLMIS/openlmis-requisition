@@ -11,7 +11,7 @@ public class FacilityDto {
   private UUID id;
   private String code;
   private String name;
-  private String decsription;
+  private String description;
   private Boolean active;
   private Date goLiveDate;
   private Date goDownDate;

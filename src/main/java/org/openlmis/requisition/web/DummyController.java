@@ -15,7 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DummyController just for showcase.
@@ -47,6 +49,12 @@ public class DummyController extends BaseController {
     List<FacilityDto> facilities = facilityReferenceDataService.findAll("");
     List<ProcessingPeriodDto> periods = periodReferenceDataService.findAll("");
 
-    return new ResponseEntity<>(users, HttpStatus.OK);
+    Map<String, List<?>> response = new HashMap<>();
+    response.put("Users", users);
+    response.put("Programs", programs);
+    response.put("Facilities", facilities);
+    response.put("Periods", periods);
+
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

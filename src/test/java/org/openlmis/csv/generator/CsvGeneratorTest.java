@@ -8,12 +8,9 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.FacilityType;
-import org.openlmis.referencedata.domain.GeographicLevel;
-import org.openlmis.referencedata.domain.GeographicZone;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 
 import java.math.BigDecimal;
@@ -22,27 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 public class CsvGeneratorTest {
 
-  private Facility facility = new Facility();
-  private Program program = new Program();
+  private FacilityDto facility = new FacilityDto();
+  private ProgramDto program = new ProgramDto();
   private UserDto user = new UserDto();
 
   @Before
   public void setUp() {
-    FacilityType facilityType = new FacilityType();
-    facilityType.setCode("10");
 
-    GeographicLevel level = new GeographicLevel();
-    level.setCode("20");
-    level.setLevelNumber(1);
-
-    GeographicZone geographicZone = new GeographicZone();
-    geographicZone.setCode("1u1u1u1");
-    geographicZone.setLevel(level);
-
-    facility.setType(facilityType);
-    facility.setGeographicZone(geographicZone);
     facility.setCode("Example fCode");
     facility.setName("Example fName");
     facility.setDescription("Example fDescr");
@@ -87,11 +73,11 @@ public class CsvGeneratorTest {
     order.setOrderCode("1t1t1t");
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
-    order.setProgram(program);
+    order.setProgram(program.getId());
     order.setCreatedById(user.getId());
-    order.setRequestingFacility(facility);
-    order.setReceivingFacility(facility);
-    order.setSupplyingFacility(facility);
+    order.setRequestingFacility(facility.getId());
+    order.setReceivingFacility(facility.getId());
+    order.setSupplyingFacility(facility.getId());
     LocalDateTime date = LocalDateTime.parse("1410-07-15T10:11:30");
     order.setCreatedDate(date);
 
@@ -109,11 +95,11 @@ public class CsvGeneratorTest {
 
   private OrderLine generateOrderLine(String prodName, String prodCode, long orderQ) {
     OrderLine example = new OrderLine();
-    Product prod = new Product();
+    ProductDto prod = new ProductDto();
     prod.setCode(prodCode);
     prod.setPrimaryName(prodName);
     example.setOrderedQuantity(orderQ);
-    example.setProduct(prod);
+    example.setProduct(prod.getId());
 
     return example;
   }
