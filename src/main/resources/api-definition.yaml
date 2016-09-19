@@ -1306,13 +1306,8 @@ resourceTypes:
               X-Content-Type-Options:
               X-XSS-Protection:
 
-<<<<<<< HEAD
 /proofOfDeliveries:
     displayName: Proof Of Delivery
-=======
-/processingSchedules:
-    displayName: Processing Schedule
->>>>>>> origin/master
     get:
         is: [ secured ]
         description: Get all proofOfDeliveries.
@@ -1711,4 +1706,3 @@ resourceTypes:
                   headers:
                     X-Content-Type-Options:
                     X-XSS-Protection:
->>>>>>> origin/master

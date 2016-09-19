@@ -12,9 +12,6 @@ import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.UserDto;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

@@ -179,10 +179,11 @@ public class OrderService {
     }
   }
 
+  // TODO: OLMIS-763 May need to use reference data service
   private List<Map<String, Object>> orderToRows(Order order) {
     List<Map<String, Object>> rows = new ArrayList<>();
     List<OrderLine> orderLines = order.getOrderLines();
-    String orderNum = order.getOrderCode();
+    // String orderNum = order.getOrderCode();
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
             order.getRequestingFacility());
     String facilityCode = requestingFacility.getCode();

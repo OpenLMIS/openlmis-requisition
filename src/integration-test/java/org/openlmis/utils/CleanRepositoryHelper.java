@@ -10,7 +10,6 @@ import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,10 +55,6 @@ public class CleanRepositoryHelper {
 
   @Autowired
   private TemplateRepository templateRepository;
-
-  @Autowired
-  private UserReferenceDataService referenceDataService;
-
 
   /**
    * Delete all entities from most of repositories.

@@ -12,7 +12,6 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +40,6 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -175,7 +171,8 @@ public class RequisitionService {
     UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     if (user.getSupervisedNode() != null) {
-      requisitionsForApproval.addAll(getAuthorizedRequisitions(supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(
+              supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
     }
     return requisitionsForApproval;
   }
@@ -192,7 +189,8 @@ public class RequisitionService {
     supervisoryNodes.add(supervisoryNode);
 
     for (SupervisoryNodeDto supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode.getId(), null);
+      List<Requisition> reqList = searchRequisitions(
+              null, null, null, null, null, supNode.getId(), null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

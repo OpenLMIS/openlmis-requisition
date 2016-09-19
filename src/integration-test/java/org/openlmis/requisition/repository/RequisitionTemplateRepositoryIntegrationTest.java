@@ -23,8 +23,6 @@ import static org.junit.Assert.assertEquals;
 public class RequisitionTemplateRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RequisitionTemplate> {
 
-  private static final String REQUISITION_TEMPLATE_REPOSITORY =
-          "RequisitionTemplateRepositoryIntegrationTest";
   private static final String COLUMN_KEY = "columnKey";
   private static final SourceType SOURCE = SourceType.CALCULATED;
 

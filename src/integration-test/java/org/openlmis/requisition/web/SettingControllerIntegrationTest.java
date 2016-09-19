@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-
 @SuppressWarnings("PMD.TooManyMethods")
 public class SettingControllerIntegrationTest extends BaseWebIntegrationTest {
 

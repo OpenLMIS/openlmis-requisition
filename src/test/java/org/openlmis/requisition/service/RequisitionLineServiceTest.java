@@ -13,7 +13,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
@@ -30,7 +29,6 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -48,9 +46,6 @@ public class RequisitionLineServiceTest {
 
   @Mock
   private RequisitionLineRepository requisitionLineRepository;
-
-  @Mock
-  private PeriodReferenceDataService periodService;
 
   @Mock
   private RequisitionService requisitionService;

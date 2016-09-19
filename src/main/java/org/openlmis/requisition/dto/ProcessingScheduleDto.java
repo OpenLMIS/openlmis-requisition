@@ -9,19 +9,19 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ProcessingScheduleDto {
 
-    @Getter
-    @Setter
-    private String code;
+  @Getter
+  @Setter
+  private String code;
 
-    @Getter
-    @Setter
-    private String description;
+  @Getter
+  @Setter
+  private String description;
 
-    @Getter
-    @Setter
-    private LocalDateTime modifiedDate;
+  @Getter
+  @Setter
+  private LocalDateTime modifiedDate;
 
-    @Getter
-    @Setter
-    private String name;
+  @Getter
+  @Setter
+  private String name;
 }
