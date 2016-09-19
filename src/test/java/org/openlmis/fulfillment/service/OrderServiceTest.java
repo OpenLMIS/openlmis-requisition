@@ -28,6 +28,7 @@ import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataSer
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -210,8 +211,10 @@ public class OrderServiceTest {
     header.add(OrderService.DEFAULT_COLUMNS[4]);
     header.add(OrderService.DEFAULT_COLUMNS[5]);
 
-    String received = orderService.orderToCsv(
-        order, header.toArray(new String[0])).replace("\r\n","\n");
+    StringWriter writer = new StringWriter();
+    orderService.orderToCsv(order, header.toArray(new String[0]), writer);
+
+    String received = writer.toString().replace("\r\n","\n");
     String expected = prepareExpectedCsvOutput(order, header);
     assertEquals(expected, received);
   }

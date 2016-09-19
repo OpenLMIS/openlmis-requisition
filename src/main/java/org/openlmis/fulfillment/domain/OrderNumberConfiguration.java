@@ -7,15 +7,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.domain.BaseEntity;
 
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "orderNumberConfiguration")
+@Table(name = "order_number_configurations")
 @EqualsAndHashCode(callSuper = false)
 public class OrderNumberConfiguration extends BaseEntity {
 
@@ -26,17 +27,17 @@ public class OrderNumberConfiguration extends BaseEntity {
 
   @Getter
   @Setter
-  @Column
+  @Column(nullable = false)
   private Boolean includeOrderNumberPrefix;
 
   @Getter
   @Setter
-  @Column
+  @Column(nullable = false)
   private Boolean includeProgramCode;
 
   @Getter
   @Setter
-  @Column
+  @Column(nullable = false)
   private Boolean includeRequisitionTypeSuffix;
 
   /**

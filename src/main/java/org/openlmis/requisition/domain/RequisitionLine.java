@@ -91,4 +91,12 @@ public class RequisitionLine extends BaseEntity {
     this.totalReceivedQuantity = requisitionLine.getTotalReceivedQuantity();
 
   }
+
+  /**
+   * Calculate StockOnHand field value.
+   */
+  void calculateStockOnHand() {
+    stockOnHand = beginningBalance + totalReceivedQuantity
+        + totalLossesAndAdjustments - totalConsumedQuantity;
+  }
 }

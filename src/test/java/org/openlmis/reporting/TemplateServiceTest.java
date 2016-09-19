@@ -64,7 +64,7 @@ public class TemplateServiceTest {
   private static final String PARAM_DISPLAY_NAME = "Param Display Name";
 
   @Test
-  public void testShouldThrowErrorIfFileNotOfTypeJasperXml() throws Exception {
+  public void shouldThrowErrorIfFileNotOfTypeJasperXml() throws Exception {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage("Report template error: type of file.");
 
@@ -73,7 +73,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldThrowErrorIfFileEmpty() throws Exception {
+  public void shouldThrowErrorIfFileEmpty() throws Exception {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage("Report template error: empty file.");
     MockMultipartFile file = new MockMultipartFile(
@@ -83,7 +83,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldThrowErrorIfFileNotPresent() throws Exception {
+  public void shouldThrowErrorIfFileNotPresent() throws Exception {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage("Report template error: missing file.");
 
@@ -91,7 +91,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldThrowErrorIfFileIsInvalid() throws Exception {
+  public void shouldThrowErrorIfFileIsInvalid() throws Exception {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage("Report template error: file invalid.");
 
@@ -100,7 +100,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldThrowErrorIfTemplateNameAlreadyExists() throws Exception {
+  public void shouldThrowErrorIfTemplateNameAlreadyExists() throws Exception {
     Template template = new Template();
     template.setName("Name");
     expectedException.expect(ReportingException.class);
@@ -111,7 +111,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldThrowErrorIfDisplayNameOfParameterIsMissing() throws Exception {
+  public void shouldThrowErrorIfDisplayNameOfParameterIsMissing() throws Exception {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage("Report template error: parameter displayName missing.");
     MultipartFile file = mock(MultipartFile.class);
@@ -140,7 +140,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldThrowErrorIfThereAreExtraParameterProperties() throws Exception {
+  public void shouldThrowErrorIfThereAreExtraParameterProperties() throws Exception {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage("Report template error: extra properties.");
     MultipartFile file = mock(MultipartFile.class);
@@ -167,7 +167,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldValidateFileAndSetData() throws Exception {
+  public void shouldValidateFileAndSetData() throws Exception {
     MultipartFile file = mock(MultipartFile.class);
     when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
 
@@ -222,7 +222,7 @@ public class TemplateServiceTest {
   }
 
   @Test
-  public void testShouldValidateFileAndSetDataIfDefaultValueExpressionIsNull() throws Exception {
+  public void shouldValidateFileAndSetDataIfDefaultValueExpressionIsNull() throws Exception {
     MultipartFile file = mock(MultipartFile.class);
     when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
 

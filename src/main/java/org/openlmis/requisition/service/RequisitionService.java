@@ -85,31 +85,6 @@ public class RequisitionService {
   }
 
   /**
-   * Submits given requisition if it exists and has status INITIATED.
-   *
-   * @param requisition Requisition to be submitted.
-   * @return Submitted requisition.
-   * @throws RequisitionException Exception thrown when it is not possible to submit a requisition.
-   */
-  public Requisition submitRequisition(Requisition requisition) throws RequisitionException {
-
-    Requisition initiatedRequisition = requisitionRepository.findOne(requisition.getId());
-
-    if (initiatedRequisition == null) {
-      throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisition.getId());
-    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-      throw new RequisitionException("Cannot submit requisition: "
-          + requisition.getId() + ". Requisition must have status 'INITIATED' to be submitted.");
-    } else {
-      LOGGER.debug("Submitting a requisition with id " + requisition.getId());
-      requisition.setStatus(RequisitionStatus.SUBMITTED);
-      requisitionRepository.save(requisition);
-      LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
-      return requisition;
-    }
-  }
-
-  /**
    * Delete given Requisition if possible.
    *
    * @param requisitionId UUID of Requisition to be deleted.
@@ -231,36 +206,6 @@ public class RequisitionService {
   }
 
   /**
-   * Authorize given Requisition if possible.
-   *
-   * @param requisitionId UUID of Requisition to be authorized.
-   * @param requisitionDto Requisition object to be authorized.
-   * @param validationErrors Boolean which contains information if given object is valid.
-   * @return Authorized requisition.
-   * @throws RequisitionException Exception thrown when
-   *      it is not possible to authorize a requisition.
-   */
-  public Requisition authorize(UUID requisitionId, Requisition requisitionDto,
-                               boolean validationErrors) throws RequisitionException {
-    if (configurationSettingService.getBoolValue("skipAuthorization")) {
-      throw new RequisitionException("Requisition authorization is configured to be skipped");
-    }
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
-    } else if (requisition.getStatus() != RequisitionStatus.SUBMITTED) {
-      throw new RequisitionException("Cannot authorize requisition: " + requisitionId
-        + " . Requisition must have submitted status to be authorized");
-    } else if (requisitionDto == null || validationErrors) {
-      throw new RequisitionException("Requisition object is not valid.");
-    } else {
-      requisitionDto.setStatus(RequisitionStatus.AUTHORIZED);
-      return requisitionRepository.save(requisitionDto);
-    }
-  }
-
-
-  /**
    * Releases the list of given requisitions as order.
    *
    * @param requisitionList list of requisitions to be released as order
@@ -289,4 +234,23 @@ public class RequisitionService {
     }
   }
 
+  /**
+   * Get approved requisitions matching all of provided parameters.
+   *
+   * @param filterValue Value to be used to filter.
+   * @param filterBy Field used to filter: "programName", "facilityCode", "facilityName" or "all".
+   * @param sortBy Field used to sort: "programName", "facilityCode" or "facilityName".
+   * @param descending Descending direction for sort.
+   * @param pageNumber Page number to return.
+   * @param pageSize Quantity for one page.
+   *
+   * @return List of requisitions.
+   */
+  public List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+      String filterValue, String filterBy, String sortBy, Boolean descending,
+      Integer pageNumber, Integer pageSize) {
+
+    return requisitionRepository.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+  }
 }

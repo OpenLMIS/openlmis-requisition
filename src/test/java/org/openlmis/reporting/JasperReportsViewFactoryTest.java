@@ -80,7 +80,7 @@ public class JasperReportsViewFactoryTest {
   }
 
   @Test
-  public void testShouldGetRequestedViewAndSetDataSourceAndWebContextInJasperView()
+  public void shouldGetRequestedViewAndSetDataSourceAndWebContextInJasperView()
       throws Exception {
     whenNew(JasperReportsMultiFormatView.class).withNoArguments().thenReturn(jasperReportsView);
     when(objectInputStream.readObject()).thenReturn(jasperReport);
@@ -97,7 +97,7 @@ public class JasperReportsViewFactoryTest {
   }
 
   @Test
-  public void testShouldAddExportParamToGetRidOfImageInHtmlReport() throws Exception {
+  public void shouldAddExportParamToGetRidOfImageInHtmlReport() throws Exception {
     whenNew(JasperReportsMultiFormatView.class).withNoArguments().thenReturn(jasperReportsView);
     when(objectInputStream.readObject()).thenReturn(jasperReport);
     when(byteArrayOutputStream.toByteArray()).thenReturn(reportByteData);

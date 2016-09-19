@@ -15,4 +15,8 @@ public interface RequisitionRepositoryCustom {
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
                                        RequisitionStatus requisitionStatus);
+
+  List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+      String filterValue, String filterBy, String sortBy, Boolean descending,
+      Integer pageNumber, Integer pageSize);
 }
