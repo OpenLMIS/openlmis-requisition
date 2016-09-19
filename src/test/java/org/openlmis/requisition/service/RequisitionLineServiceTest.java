@@ -62,6 +62,9 @@ public class RequisitionLineServiceTest {
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
 
+  @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
+
   @InjectMocks
   private RequisitionLineService requisitionLineService;
 
@@ -177,7 +180,7 @@ public class RequisitionLineServiceTest {
   private void generateInstances() {
     requisition = createTestRequisition(UUID.randomUUID(), period, program,
         RequisitionStatus.INITIATED);
-    requisitionLine = createTestRequisitionLine(mock(ProductDto.class), 10, 20, requisition);
+    requisitionLine = createTestRequisitionLine(UUID.randomUUID(), 10, 20, requisition);
 
     requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
     requisitionTemplate = new RequisitionTemplate();
@@ -196,11 +199,11 @@ public class RequisitionLineServiceTest {
     return requisition;
   }
 
-  private RequisitionLine createTestRequisitionLine(ProductDto product, Integer quantityRequested,
+  private RequisitionLine createTestRequisitionLine(UUID product, Integer quantityRequested,
                                                     Integer stockInHand, Requisition requisition) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setId(UUID.randomUUID());
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setProduct(product);
     requisitionLine.setRequestedQuantity(quantityRequested);
     requisitionLine.setStockInHand(stockInHand);
     requisitionLine.setRequisition(requisition);
@@ -211,12 +214,12 @@ public class RequisitionLineServiceTest {
     when(requisitionTemplateService
         .searchRequisitionTemplates(program))
         .thenReturn(Arrays.asList(requisitionTemplate));
-    when(periodService
+    when(periodReferenceDataService
         .search(any(), any()))
         .thenReturn(Arrays.asList(new ProcessingPeriodDto()));
     when(requisitionService
-        .searchRequisitions(requisition.getFacility(), requisition.getProgram(),
-            null,null, period, null, null))
+        .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
+            eq(null), eq(null), any(), eq(null), eq(null)))
         .thenReturn(Arrays.asList(requisition));
     when(requisitionLineRepository
         .searchRequisitionLines(eq(requisition), any()))
@@ -224,6 +227,8 @@ public class RequisitionLineServiceTest {
     when(programReferenceDataService
         .findOne(any()))
         .thenReturn(new ProgramDto());
-
+    when(periodReferenceDataService
+        .findOne(any()))
+        .thenReturn(new ProcessingPeriodDto());
   }
 }
