@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.service;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.dto.ProgramDto;
 
 import java.util.UUID;
 
@@ -19,7 +19,7 @@ public class OrderNumberConfigurationTest {
   @Test
   public void shouldGenerateOrderNumber() {
     UUID uuid = UUID.fromString(UUID_STRING);
-    Program program = new Program();
+    ProgramDto program = new ProgramDto();
     program.setCode(PROGRAM_CODE);
 
     OrderNumberConfiguration orderNumberConfiguration =

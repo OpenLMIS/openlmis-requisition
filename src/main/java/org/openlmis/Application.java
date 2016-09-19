@@ -1,7 +1,6 @@
 package org.openlmis;
 
-import org.openlmis.referencedata.i18n.ExposedMessageSourceImpl;
-import org.openlmis.referencedata.validate.ProcessingPeriodValidator;
+import org.openlmis.requisition.i18n.ExposedMessageSourceImpl;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -45,16 +44,6 @@ public class Application {
     messageSource.setDefaultEncoding("UTF-8");
     messageSource.setUseCodeAsDefaultMessage(true);
     return messageSource;
-  }
-
-  @Bean
-  public ProcessingPeriodValidator beforeCreatePeriodValidator() {
-    return new ProcessingPeriodValidator();
-  }
-
-  @Bean
-  public ProcessingPeriodValidator beforeSavePeriodValidator() {
-    return new ProcessingPeriodValidator();
   }
 
   @Bean

@@ -6,19 +6,18 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.service.ProcessingPeriodService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,8 +29,8 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
@@ -49,25 +48,28 @@ public class RequisitionLineServiceTest {
   private RequisitionLineRepository requisitionLineRepository;
 
   @Mock
-  private ProcessingPeriodService periodService;
-
-  @Mock
   private RequisitionService requisitionService;
 
   @Mock
   private RequisitionTemplateService requisitionTemplateService;
 
-  @Mock
-  private Program program;
 
   @Mock
-  private ProcessingPeriod period;
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
 
   @InjectMocks
   private RequisitionLineService requisitionLineService;
 
+  private UUID program;
+  private UUID period;
+
   @Before
   public void setUp() {
+    program = UUID.randomUUID();
+    period = UUID.randomUUID();
     generateInstances();
     mockRepositories();
   }
@@ -171,17 +173,17 @@ public class RequisitionLineServiceTest {
   }
 
   private void generateInstances() {
-    requisition = createTestRequisition(mock(Facility.class), period, program,
+    requisition = createTestRequisition(UUID.randomUUID(), period, program,
         RequisitionStatus.INITIATED);
-    requisitionLine = createTestRequisitionLine(mock(Product.class), 10, 20, requisition);
+    requisitionLine = createTestRequisitionLine(UUID.randomUUID(), 10, 20, requisition);
 
     requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
     requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
   }
 
-  private Requisition createTestRequisition(Facility facility, ProcessingPeriod period,
-                                            Program program,
+  private Requisition createTestRequisition(UUID facility, UUID period,
+                                            UUID program,
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
@@ -192,7 +194,7 @@ public class RequisitionLineServiceTest {
     return requisition;
   }
 
-  private RequisitionLine createTestRequisitionLine(Product product, Integer quantityRequested,
+  private RequisitionLine createTestRequisitionLine(UUID product, Integer quantityRequested,
                                                     Integer stockInHand, Requisition requisition) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setId(UUID.randomUUID());
@@ -207,15 +209,21 @@ public class RequisitionLineServiceTest {
     when(requisitionTemplateService
         .searchRequisitionTemplates(program))
         .thenReturn(Arrays.asList(requisitionTemplate));
-    when(periodService
-        .searchPeriods(any(), any()))
-        .thenReturn(Arrays.asList(period));
+    when(periodReferenceDataService
+        .search(any(), any()))
+        .thenReturn(Arrays.asList(new ProcessingPeriodDto()));
     when(requisitionService
-        .searchRequisitions(requisition.getFacility(), requisition.getProgram(),
-            null,null, period, null, null))
+        .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
+            eq(null), eq(null), any(), eq(null), eq(null)))
         .thenReturn(Arrays.asList(requisition));
     when(requisitionLineRepository
         .searchRequisitionLines(eq(requisition), any()))
         .thenReturn(Arrays.asList(requisitionLine));
+    when(programReferenceDataService
+        .findOne(any()))
+        .thenReturn(new ProgramDto());
+    when(periodReferenceDataService
+        .findOne(any()))
+        .thenReturn(new ProcessingPeriodDto());
   }
 }

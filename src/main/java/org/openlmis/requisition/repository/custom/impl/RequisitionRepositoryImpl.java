@@ -1,18 +1,12 @@
 package org.openlmis.requisition.repository.custom.impl;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.ProcessingSchedule;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -23,6 +17,11 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -40,11 +39,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param requisitionStatus status of searched Requisitions.
    * @return list of Requisitions with matched parameters.
    */
-  public List<Requisition> searchRequisitions(Facility facility, Program program,
+  public List<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
-                                              ProcessingPeriod processingPeriod,
-                                              SupervisoryNode supervisoryNode,
+                                              UUID processingPeriod,
+                                              UUID supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
@@ -98,16 +97,18 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize) {
 
+    //TODO: OLMIS-763 May need changes to work
+
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
 
     Root<Requisition> root = criteriaQuery.from(Requisition.class);
 
-    Path<Facility> facility = root.get("facility");
+    Path<FacilityDto> facility = root.get("facility");
     Path<String> facilityCode = facility.get("code");
     Path<String> facilityName = facility.get("name");
 
-    Path<Program> program = root.get("program");
+    Path<ProgramDto> program = root.get("program");
     Path<String> programName = program.get("name");
 
     Predicate predicate = setFiltering(filterValue, filterBy, builder, root, facilityCode,
@@ -154,9 +155,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                  Path root, Path programName, Path facilityCode,
                                  Path facilityName) {
 
-    Path<ProcessingPeriod> rootProcesingPeriod = root.get("processingPeriod");
+    //TODO: OLMIS-763 May need changes to work
+
+    Path<ProcessingPeriodDto> rootProcesingPeriod = root.get("processingPeriod");
     Path<LocalDate> rootProcesingPeriodEndDate = rootProcesingPeriod.get("endDate");
-    Path<ProcessingSchedule> rootProcesingPeriodProcessingSchedule =
+    Path<ProcessingScheduleDto> rootProcesingPeriodProcessingSchedule =
         rootProcesingPeriod.get("processingSchedule");
     Path<LocalDateTime> rootProcesingPeriodProcesingScheduleModifiedDate =
         rootProcesingPeriodProcessingSchedule.get("modifiedDate");

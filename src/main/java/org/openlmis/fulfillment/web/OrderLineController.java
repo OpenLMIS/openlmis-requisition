@@ -2,8 +2,8 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderLine;
 import org.openlmis.fulfillment.repository.OrderLineRepository;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.referencedata.web.BaseController;
+import org.openlmis.requisition.web.BaseController;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

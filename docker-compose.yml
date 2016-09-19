@@ -21,6 +21,7 @@ services:
       - nginx-proxy
       - registrator
       - notification
+      - referencedata
     env_file: .env
     environment:
       - VIRTUAL_HOST=localhost
@@ -56,4 +57,9 @@ services:
     image: openlmis/notification
     ports:
     - "8082:8080"
+    env_file: .env
+  referencedata:
+    image: openlmis/referencedata
+    ports:
+    - "8083:8080"
     env_file: .env

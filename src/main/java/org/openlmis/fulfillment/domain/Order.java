@@ -10,10 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
 
 import javax.persistence.CascadeType;
@@ -24,7 +21,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -32,6 +28,7 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -52,35 +49,25 @@ public class Order extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
-  @ManyToOne
-  @JoinColumn(name = "createdById", nullable = false)
   @Getter
   @Setter
-  private User createdBy;
+  private UUID createdById;
 
-  @ManyToOne
-  @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
-  private Program program;
+  private UUID program;
 
-  @ManyToOne
-  @JoinColumn(name = "requestingFacilityId", nullable = false)
   @Getter
   @Setter
-  private Facility requestingFacility;
+  private UUID requestingFacility;
 
-  @ManyToOne
-  @JoinColumn(name = "receivingFacilityId", nullable = false)
   @Getter
   @Setter
-  private Facility receivingFacility;
+  private UUID receivingFacility;
 
-  @ManyToOne
-  @JoinColumn(name = "supplyingFacilityId", nullable = false)
   @Getter
   @Setter
-  private Facility supplyingFacility;
+  private UUID supplyingFacility;
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
@@ -123,7 +110,7 @@ public class Order extends BaseEntity {
    */
   public void updateFrom(Order order) {
     this.requisition = order.requisition;
-    this.createdBy = order.createdBy;
+    this.createdById = order.createdById;
     this.program = order.program;
     this.requestingFacility = order.requestingFacility;
     this.receivingFacility = order.receivingFacility;

@@ -10,11 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.exception.RequisitionException;
 
 import java.time.LocalDateTime;
@@ -27,11 +22,10 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisitions")
@@ -65,23 +59,17 @@ public class Requisition extends BaseEntity {
   @Getter
   private List<Comment> comments;
 
-  @ManyToOne
-  @JoinColumn(name = "facilityId", nullable = false)
   @Getter
   @Setter
-  private Facility facility;
+  private UUID facility;
 
-  @ManyToOne
-  @JoinColumn(name = "programId", nullable = false)
   @Getter
   @Setter
-  private Program program;
+  private UUID program;
 
-  @ManyToOne
-  @JoinColumn(name = "processingPeriodId", nullable = false)
   @Getter
   @Setter
-  private ProcessingPeriod processingPeriod;
+  private UUID processingPeriod;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -94,11 +82,9 @@ public class Requisition extends BaseEntity {
   @Setter
   private Boolean emergency;
 
-  @ManyToOne
-  @JoinColumn(name = "supervisoryNodeId")
   @Getter
   @Setter
-  private SupervisoryNode supervisoryNode;
+  private UUID supervisoryNode;
 
   @PrePersist
   private void prePersist() {

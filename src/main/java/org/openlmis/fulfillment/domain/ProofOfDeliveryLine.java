@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.domain;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.referencedata.domain.BaseEntity;
+import org.openlmis.requisition.domain.BaseEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

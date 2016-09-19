@@ -2,8 +2,6 @@ package org.openlmis.fulfillment.repository.custom.impl;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -12,6 +10,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderRepositoryImpl implements OrderRepositoryCustom {
 
@@ -25,8 +24,8 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @param program program of searched Orders.
    * @return List of Orders with matched parameters.
    */
-  public List<Order> searchOrders(Facility supplyingFacility, Facility requestingFacility,
-                                  Program program) {
+  public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
+                                  UUID program) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
     Root<Order> root = query.from(Order.class);

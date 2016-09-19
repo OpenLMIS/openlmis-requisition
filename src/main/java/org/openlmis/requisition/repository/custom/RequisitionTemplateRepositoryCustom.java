@@ -1,11 +1,11 @@
 package org.openlmis.requisition.repository.custom;
 
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface RequisitionTemplateRepositoryCustom {
 
-  List<RequisitionTemplate> searchRequisitionTemplates(Program program);
+  List<RequisitionTemplate> searchRequisitionTemplates(UUID program);
 }

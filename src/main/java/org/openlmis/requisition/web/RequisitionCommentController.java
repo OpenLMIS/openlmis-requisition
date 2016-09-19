@@ -1,6 +1,5 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;

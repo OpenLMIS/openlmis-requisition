@@ -6,13 +6,11 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.utils.ErrorResponse;
+import org.openlmis.requisition.web.BaseController;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.UserDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,9 +169,10 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   public ResponseEntity<Iterable<Order>> searchOrders(
-          @RequestParam(value = "supplyingFacility", required = true) Facility supplyingFacility,
-          @RequestParam(value = "requestingFacility", required = false) Facility requestingFacility,
-          @RequestParam(value = "program", required = false) Program program) {
+          @RequestParam(value = "supplyingFacility", required = true) UUID supplyingFacility,
+          @RequestParam(value = "requestingFacility", required = false)
+              UUID requestingFacility,
+          @RequestParam(value = "program", required = false) UUID program) {
 
     List<Order> result = orderService.searchOrders(supplyingFacility, requestingFacility, program);
 
@@ -256,7 +255,7 @@ public class OrderController extends BaseController {
                                           OAuth2Authentication auth) {
     UUID userId = null;
     if (auth != null && auth.getPrincipal() != null) {
-      userId = ((User) auth.getPrincipal()).getId();
+      userId = ((UserDto) auth.getPrincipal()).getId();
     }
     orderService.convertToOrder(requisitionList, userId);
     return new ResponseEntity<>(HttpStatus.CREATED);

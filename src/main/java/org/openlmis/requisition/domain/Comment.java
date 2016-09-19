@@ -9,18 +9,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.referencedata.domain.BaseEntity;
 import org.openlmis.view.View;
 
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "comments", schema = "referencedata")
@@ -34,12 +32,9 @@ public class Comment extends BaseEntity {
   @Setter
   private Requisition requisition;
 
-  @OneToOne
-  @JoinColumn(name = "authorId", nullable = false)
-  @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
-  private User author;
+  private UUID authorId;
 
   @JsonView(View.BasicInformation.class)
   @Getter
@@ -66,7 +61,7 @@ public class Comment extends BaseEntity {
    */
   public void updateFrom(Comment comment) {
     this.requisition = comment.getRequisition();
-    this.author = comment.getAuthor();
+    this.authorId = comment.getAuthorId();
     this.body = comment.getBody();
   }
 }

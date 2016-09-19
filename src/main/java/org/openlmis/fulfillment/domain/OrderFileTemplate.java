@@ -6,9 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.referencedata.domain.BaseEntity;
-
-import java.util.List;
+import org.openlmis.requisition.domain.BaseEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,6 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import java.util.List;
 
 @Entity
 @Table(name = "order_file_templates")

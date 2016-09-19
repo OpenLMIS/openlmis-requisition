@@ -2,20 +2,15 @@ package org.openlmis.requisition.web;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -196,14 +191,15 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitions(
-      @RequestParam(value = "facility", required = false) Facility facility,
-      @RequestParam(value = "program", required = false) Program program,
+      @RequestParam(value = "facility", required = false) UUID facility,
+      @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "createdDateFrom", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
-      @RequestParam(value = "processingPeriod", required = false) ProcessingPeriod processingPeriod,
-      @RequestParam(value = "supervisoryNode", required = false) SupervisoryNode supervisoryNode,
+      @RequestParam(value = "processingPeriod", required = false)
+          UUID processingPeriod,
+      @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
               RequisitionStatus requisitionStatus) {
 
@@ -270,7 +266,7 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
   public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
-    User user = (User) auth.getPrincipal();
+    UserDto user = (UserDto) auth.getPrincipal();
     List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }

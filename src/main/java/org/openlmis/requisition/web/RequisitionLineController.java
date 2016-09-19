@@ -1,13 +1,11 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.product.domain.Product;
-import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.RequisitionLineService;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,7 +166,7 @@ public class RequisitionLineController extends BaseController {
   @RequestMapping(value = "/requisitionLines/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitionLines(
       @RequestParam(value = "requisition", required = true) Requisition requisition,
-      @RequestParam(value = "product", required = true) Product product) {
+      @RequestParam(value = "product", required = true) UUID product) {
     List<RequisitionLine> result = requisitionLineService
         .searchRequisitionLines(requisition, product);
 

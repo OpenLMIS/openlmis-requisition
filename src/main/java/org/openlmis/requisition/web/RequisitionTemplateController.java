@@ -1,12 +1,9 @@
 package org.openlmis.requisition.web;
 
-
-import org.openlmis.hierarchyandsupervision.utils.ErrorResponse;
-import org.openlmis.referencedata.domain.Program;
-import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,7 +158,7 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitionTemplates(
-      @RequestParam(value = "program", required = false) Program program) {
+      @RequestParam(value = "program", required = false) UUID program) {
     List<RequisitionTemplate> result
         = requisitionTemplateService.searchRequisitionTemplates(program);
 

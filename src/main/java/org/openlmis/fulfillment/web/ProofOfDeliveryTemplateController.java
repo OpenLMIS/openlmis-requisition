@@ -3,10 +3,10 @@ package org.openlmis.fulfillment.web;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.openlmis.referencedata.web.BaseController;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.TemplateService;
+import org.openlmis.requisition.web.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +17,12 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class ProofOfDeliveryTemplateController extends BaseController {

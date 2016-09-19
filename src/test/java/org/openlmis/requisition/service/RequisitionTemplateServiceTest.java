@@ -5,8 +5,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 
 import java.util.Arrays;
@@ -27,15 +27,15 @@ public class RequisitionTemplateServiceTest {
 
   @Test
   public void shouldFindRequisitionTemplateIfItExists() {
-    Program program = mock(Program.class);
+    ProgramDto program = mock(ProgramDto.class);
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
     when(requisitionTemplateRepository
-            .searchRequisitionTemplates(program))
+            .searchRequisitionTemplates(program.getId()))
             .thenReturn(Arrays.asList(requisitionTemplate));
 
     List<RequisitionTemplate> receivedRequisitionTemplates =
-            requisitionTemplateService.searchRequisitionTemplates(program);
+            requisitionTemplateService.searchRequisitionTemplates(program.getId());
 
     assertEquals(1, receivedRequisitionTemplates.size());
     assertEquals(requisitionTemplate, receivedRequisitionTemplates.get(0));

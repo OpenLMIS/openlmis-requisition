@@ -1,17 +1,17 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.hierarchyandsupervision.domain.SupervisoryNode;
-import org.openlmis.hierarchyandsupervision.domain.User;
-import org.openlmis.hierarchyandsupervision.repository.UserRepository;
-import org.openlmis.referencedata.domain.Facility;
-import org.openlmis.referencedata.domain.ProcessingPeriod;
-import org.openlmis.referencedata.domain.Program;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +36,19 @@ public class RequisitionService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private RequisitionLineService requisitionLineService;
 
   @Autowired
   private RequisitionLineRepository requisitionLineRepository;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -105,6 +111,7 @@ public class RequisitionService {
    */
   public Requisition skip(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
 
     if (requisition == null) {
       throw new RequisitionException("Skip failed - "
@@ -112,7 +119,7 @@ public class RequisitionService {
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
       throw new RequisitionException("Skip failed - "
           + REQUISITION_BAD_STATUS_MESSAGE);
-    } else if (!requisition.getProgram().getPeriodsSkippable()) {
+    } else if (!program.getPeriodsSkippable()) {
       throw new RequisitionException("Skip failed - "
               + "requisition program does not allow skipping");
     } else {
@@ -146,11 +153,11 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of provided parameters.
    */
-  public List<Requisition> searchRequisitions(Facility facility, Program program,
+  public List<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
-                                              ProcessingPeriod processingPeriod,
-                                              SupervisoryNode supervisoryNode,
+                                              UUID processingPeriod,
+                                              UUID supervisoryNode,
                                               RequisitionStatus requisitionStatus) {
     return requisitionRepository.searchRequisitions(
             facility, program, createdDateFrom,
@@ -161,10 +168,11 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    User user = userRepository.findOne(userId);
+    UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     if (user.getSupervisedNode() != null) {
-      requisitionsForApproval.addAll(getAuthorizedRequisitions(user.getSupervisedNode()));
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(
+              supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
     }
     return requisitionsForApproval;
   }
@@ -172,16 +180,17 @@ public class RequisitionService {
   /**
    * Get authorized requisitions supervised by specified Node.
    */
-  public List<Requisition> getAuthorizedRequisitions(SupervisoryNode supervisoryNode) {
+  public List<Requisition> getAuthorizedRequisitions(SupervisoryNodeDto supervisoryNode) {
     List<Requisition> requisitions = new ArrayList<>();
-    Set<SupervisoryNode> supervisoryNodes = supervisoryNode.getChildNodes();
+    Set<SupervisoryNodeDto> supervisoryNodes = supervisoryNode.getChildNodes();
     if (supervisoryNodes == null) {
       supervisoryNodes = new HashSet<>();
     }
     supervisoryNodes.add(supervisoryNode);
 
-    for (SupervisoryNode supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(null, null, null, null, null, supNode, null);
+    for (SupervisoryNodeDto supNode : supervisoryNodes) {
+      List<Requisition> reqList = searchRequisitions(
+              null, null, null, null, null, supNode.getId(), null);
       if (reqList != null) {
         for (Requisition req : reqList) {
           if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

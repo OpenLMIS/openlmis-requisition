@@ -1,8 +1,8 @@
 package org.openlmis.requisition.service;
 
-import org.openlmis.hierarchyandsupervision.domain.User;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.CommentRepository;
@@ -44,8 +44,8 @@ public class RequisitionCommentService {
     Requisition requisition = findRequisition(requisitionId);
 
 
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    comment.setAuthor(user);
+    UserDto user = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    comment.setAuthorId(user.getId());
     comment.setRequisition(requisition);
 
     commentRepository.save(comment);

@@ -8,8 +8,8 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.referencedata.domain.BaseEntity;
-import org.openlmis.referencedata.utils.LocalDatePersistenceConverter;
+import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.utils.LocalDatePersistenceConverter;
 
 import java.time.LocalDate;
 import java.util.List;
