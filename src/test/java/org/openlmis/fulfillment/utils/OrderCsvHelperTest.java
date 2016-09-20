@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.utils;
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
@@ -27,15 +27,19 @@ public class OrderCsvHelperTest {
 
   private static final String ORDER_NUMBER = "Order number";
   private static final String PRODUCT_CODE = "Product code";
-  private static final String PRODUCT_NAME = "Product name";
   private static final String APPROVED_QUANTITY = "Approved quantity";
   private static final String PERIOD = "Period";
   private static final String ORDER_DATE = "Order date";
 
+  private Order order;
+
+  @Before
+  public void setUp() {
+    order = createOrder();
+  }
+
   @Test
   public void shouldIncludeHeadersIfRequired() throws IOException {
-    Order order = createOrder();
-
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "", ORDER_NUMBER, true, 1, null,
         ORDER, "orderCode", null));
@@ -51,72 +55,65 @@ public class OrderCsvHelperTest {
   }
 
   @Test
-  @Ignore
   public void shouldExportOrderFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null));
     orderFileColumns.add(new OrderFileColumn(true, "label.period", PERIOD,
-        true, 2, null, ORDER, "requisition/processingPeriod/name", null));
+        true, 2, null, ORDER, "requisition/processingPeriod", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
-    String csv = writeCsvFile(createOrder(), orderFileTemplate);
-    assertTrue(csv.startsWith("code,periodName"));
+    String csv = writeCsvFile(order, orderFileTemplate);
+    assertTrue(csv.startsWith("code," + order.getRequisition().getProcessingPeriod()));
   }
 
   @Test
-  @Ignore
   public void shouldExportRequisitionLineFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
-        true, 1, null, LINE_ITEM, "product/code", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.product.name", PRODUCT_NAME,
-        true, 2, null, LINE_ITEM, "product/primaryName", null));
+        true, 1, null, LINE_ITEM, "product", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.quantity.approved", APPROVED_QUANTITY,
         true, 3, null, LINE_ITEM, "approvedQuantity", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
-    String csv = writeCsvFile(createOrder(), orderFileTemplate);
-    assertTrue(csv.startsWith("productCode,productName,1"));
+    String csv = writeCsvFile(order, orderFileTemplate);
+    assertTrue(csv.startsWith(order.getRequisition().getRequisitionLines().get(0).getProduct()
+        + ",1"));
   }
 
   @Test
-  @Ignore
   public void shouldExportOnlyIncludedColumns() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
-        false, 2, null, LINE_ITEM, "product/code", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.product.name", PRODUCT_NAME,
-        true, 3, null, LINE_ITEM, "product/primaryName", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.quantity.approved", APPROVED_QUANTITY,
+        true, 2, null, LINE_ITEM, "product", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.approved.quantity", APPROVED_QUANTITY,
         false, 4, null, LINE_ITEM, "approvedQuantity", null));
     orderFileColumns.add(new OrderFileColumn(true, "label.period", PERIOD,
-        true, 5, "MM/yy", ORDER, "requisition/processingPeriod/startDate", null));
+        true, 5, "MM/yy", ORDER, "requisition/processingPeriod", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
         false, 6, "dd/MM/yy", ORDER, "createdDate", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", true, orderFileColumns);
 
-    String csv = writeCsvFile(createOrder(), orderFileTemplate);
-    assertTrue(csv.startsWith(ORDER_NUMBER + "," + PRODUCT_NAME + "," + PERIOD));
+    String csv = writeCsvFile(order, orderFileTemplate);
+    assertTrue(csv.startsWith(ORDER_NUMBER + "," + PRODUCT_CODE + "," + PERIOD));
   }
 
   @Test
-  @Ignore
   public void shouldFormatDates() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
-    orderFileColumns.add(new OrderFileColumn(true, "label.period", PERIOD,
-        true, 1, "MM/yy", ORDER, "requisition/processingPeriod/startDate", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
+        true, 1, "MM/yy", ORDER, "createdDate", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
         true, 2, "dd/MM/yy", ORDER, "createdDate", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
-    String csv = writeCsvFile(createOrder(), orderFileTemplate);
+    String csv = writeCsvFile(order, orderFileTemplate);
     assertTrue(csv.startsWith("01/16,01/01/16"));
   }
 
@@ -131,7 +128,6 @@ public class OrderCsvHelperTest {
   }
 
   private Order createOrder() {
-
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setProduct(UUID.randomUUID());
     requisitionLine.setApprovedQuantity(1);

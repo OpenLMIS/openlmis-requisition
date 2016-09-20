@@ -111,21 +111,23 @@ public class RequisitionService {
    */
   public Requisition skip(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
 
     if (requisition == null) {
       throw new RequisitionException("Skip failed - "
           + REQUISITION_NULL_MESSAGE);
-    } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-      throw new RequisitionException("Skip failed - "
-          + REQUISITION_BAD_STATUS_MESSAGE);
-    } else if (!program.getPeriodsSkippable()) {
-      throw new RequisitionException("Skip failed - "
-              + "requisition program does not allow skipping");
     } else {
-      LOGGER.info("Requisition skipped");
-      requisition.setStatus(RequisitionStatus.SKIPPED);
-      return requisitionRepository.save(requisition);
+      ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
+      if (requisition.getStatus() != RequisitionStatus.INITIATED) {
+        throw new RequisitionException("Skip failed - "
+            + REQUISITION_BAD_STATUS_MESSAGE);
+      } else if (!program.getPeriodsSkippable()) {
+        throw new RequisitionException("Skip failed - "
+            + "requisition program does not allow skipping");
+      } else {
+        LOGGER.info("Requisition skipped");
+        requisition.setStatus(RequisitionStatus.SKIPPED);
+        return requisitionRepository.save(requisition);
+      }
     }
   }
 
