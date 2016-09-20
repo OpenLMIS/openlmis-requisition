@@ -4,6 +4,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
