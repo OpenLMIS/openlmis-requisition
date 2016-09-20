@@ -1,7 +1,6 @@
 package org.openlmis.requisition.service;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -10,11 +9,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
@@ -27,6 +29,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +38,12 @@ import static org.mockito.Mockito.when;
 public class RequisitionServiceTest {
 
   private Requisition requisition;
+
+  @Mock
+  private ProgramDto program;
+
+  @Mock
+  private  SupervisoryNodeDto supervisoryNode;
 
   @Mock
   private RequisitionLineService requisitionLineService;
@@ -50,6 +59,12 @@ public class RequisitionServiceTest {
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -87,24 +102,21 @@ public class RequisitionServiceTest {
   }
   
   @Test
-  @Ignore
   public void shouldSkipRequisitionIfItIsValid() throws RequisitionException {
-    //when(requisition.getProgram().getPeriodsSkippable()).thenReturn(true);
+    when(program.getPeriodsSkippable()).thenReturn(true);
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
 
     assertEquals(skippedRequisition.getStatus(), RequisitionStatus.SKIPPED);
   }
 
   @Test(expected = RequisitionException.class)
-  @Ignore
   public void shouldThrowExceptionWhenSkippingNotSkippableProgram()
           throws RequisitionException {
-    //when(requisition.getProgram().getPeriodsSkippable()).thenReturn(false);
+    when(program.getPeriodsSkippable()).thenReturn(false);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = RequisitionException.class)
-  @Ignore
   public void shouldThrowExceptionWhenSkippingNotExistingRequisition()
           throws RequisitionException {
     when(requisitionRepository
@@ -136,16 +148,14 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  @Ignore
   public void shouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisition.setSupervisoryNode(supervisoryNode.getId());
 
-    /*when(requisitionRepository
-        .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
-        .thenReturn(Arrays.asList(requisition));*/
+    when(requisitionRepository
+        .searchRequisitions(null, null, null, null, null, supervisoryNode.getId(), null))
+        .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getAuthorizedRequisitions(supervisoryNode);
@@ -155,25 +165,25 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  @Ignore
   public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
+
     UserDto user = mock(UserDto.class);
-
+    UUID supervisoryNodeId = UUID.randomUUID();
+    requisition.setSupervisoryNode(supervisoryNodeId);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setSupervisoryNode(supervisoryNode.getId());
 
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
-    /*when(user.getSupervisedNode()).thenReturn(supervisoryNode);
-    when(userReferenceDataService.findOne(userId))
+    when(user.getSupervisedNode()).thenReturn(supervisoryNodeId);
+    when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);
+    when(userReferenceDataService.findOne(user.getId()))
             .thenReturn(user);
+    when(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
+            .thenReturn(supervisoryNode);
     when(requisitionRepository
-            .searchRequisitions(null, null, null, null, null, supervisoryNode, null))
-            .thenReturn(Arrays.asList(requisition));*/
+            .searchRequisitions(null, null, null, null, null, supervisoryNodeId, null))
+            .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId);
+        requisitionService.getRequisitionsForApproval(user.getId());
 
     assertEquals(1, requisitionsForApproval.size());
     assertEquals(requisitionsForApproval.get(0), requisition);
@@ -273,5 +283,8 @@ public class RequisitionServiceTest {
     when(requisitionRepository
             .save(requisition))
             .thenReturn(requisition);
+    when(programReferenceDataService
+        .findOne(any()))
+        .thenReturn(program);
   }
 }
