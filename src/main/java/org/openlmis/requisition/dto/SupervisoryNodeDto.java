@@ -21,7 +21,7 @@ public class SupervisoryNodeDto {
 
   @Getter
   @Setter
-  private String decsription;
+  private String description;
 
   @Setter
   private UUID facility;

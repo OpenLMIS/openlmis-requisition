@@ -11,7 +11,7 @@ public class ProcessingPeriodDto {
   private UUID id;
   private UUID processingSchedule;
   private String name;
-  private String descritpion;
+  private String description;
   private LocalDate startDate;
   private LocalDate endDate;
 }

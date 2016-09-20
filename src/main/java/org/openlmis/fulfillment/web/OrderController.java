@@ -6,6 +6,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.web.BaseController;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +29,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
@@ -48,6 +52,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   /**
    * Allows creating new orders.
@@ -254,8 +261,17 @@ public class OrderController extends BaseController {
   public ResponseEntity<?> convertToOrder(@RequestBody List<Requisition> requisitionList,
                                           OAuth2Authentication auth) {
     UUID userId = null;
+
     if (auth != null && auth.getPrincipal() != null) {
-      userId = ((UserDto) auth.getPrincipal()).getId();
+      String username =
+          (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+      Map<String, Object> parameters = new HashMap<>();
+      parameters.put("username", username);
+
+      List<UserDto> users = userReferenceDataService.findAll("search", parameters);
+
+      userId = users.get(0).getId();
     }
     orderService.convertToOrder(requisitionList, userId);
     return new ResponseEntity<>(HttpStatus.CREATED);

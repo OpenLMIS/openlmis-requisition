@@ -1,5 +1,6 @@
 package org.openlmis.requisition.dto;
 
+import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -51,6 +52,7 @@ public class UserDto {
   private boolean active;
 
   @Getter
-  private UUID roleAssignments;
+  @Setter
+  private Set<UUID> roleAssignments;
 
 }

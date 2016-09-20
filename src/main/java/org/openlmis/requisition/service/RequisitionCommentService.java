@@ -7,13 +7,16 @@ import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -31,6 +34,9 @@ public class RequisitionCommentService {
   @Autowired
   private CommentRepository commentRepository;
 
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
   /**
    * Inserts a new comment and ties it with a requisition.
    * @param requisitionId the id of the requisition
@@ -43,9 +49,12 @@ public class RequisitionCommentService {
           throws RequisitionNotFoundException {
     Requisition requisition = findRequisition(requisitionId);
 
-
-    UserDto user = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    comment.setAuthorId(user.getId());
+    String userName =
+        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("username", userName);
+    List<UserDto> users = userReferenceDataService.findAll("search", parameters);
+    comment.setAuthorId(users.get(0).getId());
     comment.setRequisition(requisition);
 
     commentRepository.save(comment);

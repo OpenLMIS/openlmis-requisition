@@ -55,6 +55,7 @@ public abstract class BaseReferenceDataService<T> {
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
+    params.put("access_token", obtainAccessToken());
     ResponseEntity<List<T>> response = restTemplate.exchange(url, HttpMethod.GET,
         null, new ParameterizedTypeReference<List<T>>() {}, params);
     List<T> result = response.getBody();
