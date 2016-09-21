@@ -15,7 +15,8 @@ def ramlHtmlToCopy = copySpec {
 
 task copyRaml(type:Copy) {
     with ramlToCopy
-    into 'src/main/resources'
+//    into 'src/main/resources'
+    into 'build/resources/main'
 }
 
 // Generate live documentation
