@@ -20,12 +20,31 @@ one](https://github.com/OpenLMIS/openlmis-config/blob/master/.env). e.g.
  curl -LO https://raw.githubusercontent.com/OpenLMIS/openlmis-config/master/.env
  ```
 3. Develop w/ Docker by running `docker-compose run --service-ports requisition`.
-See [Developing w/ Docker](#devdocker).
-4. You should now be in an interactive shell inside the newly created development 
-environment, start the Service with: `gradle bootRun`
-5. Go to `http://<yourDockerIPAddress>:8080/` to see the service name 
-and version. Note that you can determine yourDockerIPAddress by running `docker-machine ip`.
-6. Go to `http://<yourDockerIPAddress>:8080/api/` to see the APIs.
+See [Developing w/ Docker](#devdocker). You should now be in an interactive shell inside
+the newly created development environment.
+4. Run `gradle build` to build. After the build steps finish, you should see 'Build Successful'.
+5. Start the service with `gradle bootRun`. Once it is running, you should see
+'Started Application in NN seconds'. Your console will not return to a prompt as long as
+the service is running. The service may write errors and other output to your console.
+6. You must authenticate to get a valid `access_token` before you can use the service.
+Follow the [Security](https://github.com/OpenLMIS/openlmis-example/blob/master/README.md#security)
+instructions to generate a POST request to the authorization server at `http://localhost:8081/`.
+You can use a tool like [Postman](https://www.getpostman.com/) to generate the POST.
+The authorization server will return an `access_token` which you must save for use on requests to
+this OpenLMIS service. The token will expire with age, so be ready to do this step often.
+7. Go to `http://localhost:8080/?access_token=<yourAccessToken>` to see the service name and version.
+Note: If localhost does not work, the docker container with the service running might not be
+bridged to your host workstation. In that case, you can determine your Docker IP address by
+running `docker-machine ip` and then visit `http://<yourDockerIPAddress>:8080/`.
+8. Go to `http://localhost:8080/index.html?access_token=<yourAccessToken>` to see the Swagger UI showing the API endpoints.
+(Click 'default' to expand the list.)
+9. Use URLs of the form `http://localhost:8080/api/*?access_token=<yourAccessToken>` to hit
+the APIs directly.
+
+## Stopping the Service
+To stop the service (when it is running with `gradle bootRun`) use Control-C.
+
+To clean up unwanted Docker containers, see the [Docker Cheat Sheet](https://openlmis.atlassian.net/wiki/display/OP/Docker+Cheat+Sheet#DockerCheatSheet-Cleaningup:).
 
 ## API Definition and Testing
 See the API Definition and Testing section in the Example Service README at
