@@ -1,13 +1,13 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -36,10 +36,10 @@ public class RequisitionService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private RequisitionLineService requisitionLineService;
+  private RequisitionLineItemService requisitionLineItemService;
 
   @Autowired
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -66,10 +66,10 @@ public class RequisitionService {
     } else if (requisitionRepository.findOne(requisitionDto.getId()) == null) {
 
       requisitionDto.setStatus(RequisitionStatus.INITIATED);
-      requisitionLineService.initiateRequisitionLineFields(requisitionDto);
+      requisitionLineItemService.initiateRequisitionLineItemFields(requisitionDto);
 
-      requisitionDto.getRequisitionLines().forEach(
-          requisitionLine -> requisitionLineRepository.save(requisitionLine));
+      requisitionDto.getRequisitionLineItems().forEach(
+          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
       requisitionRepository.save(requisitionDto);
 
     } else {
@@ -223,9 +223,9 @@ public class RequisitionService {
 
   private Requisition save(Requisition requisition) throws RequisitionException {
     if (requisition != null) {
-      if (requisition.getRequisitionLines() != null) {
-        for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
-          requisitionLineService.save(requisition,requisitionLine);
+      if (requisition.getRequisitionLineItems() != null) {
+        for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
+          requisitionLineItemService.save(requisition, requisitionLineItem);
         }
       }
       return requisitionRepository.save(requisition);

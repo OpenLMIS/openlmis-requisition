@@ -1,13 +1,16 @@
 package org.openlmis.requisition.repository;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -17,21 +20,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @Transactional
-public class OrderLineRepositoryIntegrationTest {
+public class OrderLineItemRepositoryIntegrationTest {
 
-  private static final String orderLine = "OrderLineRepositoryIntegrationTest";
+  private static final String ORDER_LINE_ITEM_REPOSITORY_INTEGRATION_TEST
+      = "OrderLineItemRepositoryIntegrationTest";
 
   @Autowired
   private OrderRepository orderRepository;
 
   @Autowired
-  private OrderLineRepository orderLineRepository;
+  private OrderLineItemRepository orderLineItemRepository;
 
   private Order order = new Order();
   private UUID userId = UUID.randomUUID();
@@ -42,7 +43,7 @@ public class OrderLineRepositoryIntegrationTest {
 
   @Before
   public void setUp() {
-    order.setOrderCode(orderLine);
+    order.setOrderCode(ORDER_LINE_ITEM_REPOSITORY_INTEGRATION_TEST);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgram(programId);
@@ -55,13 +56,13 @@ public class OrderLineRepositoryIntegrationTest {
 
   @Test
   public void testCreate() {
-    OrderLine orderLine = new OrderLine();
-    orderLine.setOrder(order);
-    orderLine.setOrderedQuantity(5L);
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setOrder(order);
+    orderLineItem.setOrderedQuantity(5L);
 
-    assertNull(orderLine.getId());
+    assertNull(orderLineItem.getId());
 
-    orderLine = orderLineRepository.save(orderLine);
-    assertNotNull(orderLine.getId());
+    orderLineItem = orderLineItemRepository.save(orderLineItem);
+    assertNotNull(orderLineItem.getId());
   }
 }

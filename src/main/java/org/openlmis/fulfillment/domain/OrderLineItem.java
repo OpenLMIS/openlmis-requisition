@@ -5,18 +5,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.domain.BaseEntity;
 
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @Entity
-@Table(name = "order_lines")
+@Table(name = "order_line_items")
 @NoArgsConstructor
-public class OrderLine extends BaseEntity {
+public class OrderLineItem extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderId", nullable = false)
@@ -39,14 +40,14 @@ public class OrderLine extends BaseEntity {
   private Long filledQuantity;
 
   /**
-   * Copy values of attributes into new or updated OrderLine.
+   * Copy values of attributes into new or updated OrderLineItem.
    *
-   * @param orderLine OrderLine with new values.
+   * @param orderLineItem OrderLineItem with new values.
    */
-  public void updateFrom(OrderLine orderLine) {
-    this.order = orderLine.getOrder();
-    this.product = orderLine.getProduct();
-    this.orderedQuantity = orderLine.getOrderedQuantity();
-    this.filledQuantity = orderLine.getFilledQuantity();
+  public void updateFrom(OrderLineItem orderLineItem) {
+    this.order = orderLineItem.getOrder();
+    this.product = orderLineItem.getProduct();
+    this.orderedQuantity = orderLineItem.getOrderedQuantity();
+    this.filledQuantity = orderLineItem.getFilledQuantity();
   }
 }

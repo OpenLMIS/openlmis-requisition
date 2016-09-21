@@ -1,12 +1,12 @@
 package org.openlmis.fulfillment.repository.custom.impl;
 
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-public class OrderLineRepositoryImpl {
+public class OrderLineItemRepositoryImpl {
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -15,9 +15,9 @@ public class OrderLineRepositoryImpl {
    * Method deletes given order line.
    * @param entity entity to be deleted.
    */
-  public void delete(OrderLine entity) {
+  public void delete(OrderLineItem entity) {
     Order order = entity.getOrder();
-    order.getOrderLines().remove(entity);
+    order.getOrderLineItems().remove(entity);
     entityManager.merge(order);
   }
 }

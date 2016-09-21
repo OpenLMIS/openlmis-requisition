@@ -1,12 +1,15 @@
 package org.openlmis.fulfillment.utils;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -16,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class OrderCsvHelperTest {
 
@@ -69,7 +69,7 @@ public class OrderCsvHelperTest {
   }
 
   @Test
-  public void shouldExportRequisitionLineFields() throws IOException {
+  public void shouldExportRequisitionLineItemFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
         true, 1, null, LINE_ITEM, "product", null));
@@ -79,7 +79,7 @@ public class OrderCsvHelperTest {
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith(order.getRequisition().getRequisitionLines().get(0).getProduct()
+    assertTrue(csv.startsWith(order.getRequisition().getRequisitionLineItems().get(0).getProduct()
         + ",1"));
   }
 
@@ -128,12 +128,12 @@ public class OrderCsvHelperTest {
   }
 
   private Order createOrder() {
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(UUID.randomUUID());
-    requisitionLine.setApprovedQuantity(1);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setProduct(UUID.randomUUID());
+    requisitionLineItem.setApprovedQuantity(1);
 
     Requisition requisition = new Requisition();
-    requisition.setRequisitionLines(Collections.singletonList(requisitionLine));
+    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setProcessingPeriod(UUID.randomUUID());
 
     Order order = new Order();

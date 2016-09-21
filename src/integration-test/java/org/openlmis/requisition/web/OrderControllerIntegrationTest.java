@@ -10,14 +10,14 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -59,7 +59,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
 
   @Autowired
-  private OrderLineRepository orderLineRepository;
+  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -67,7 +67,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private RequisitionRepository requisitionRepository;
   @Autowired
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -82,7 +82,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Requisition requisition1 = addRequisition(program1, facility1, period1,
             RequisitionStatus.RELEASED, null);
 
-    addRequisitionLine(requisition1, product1);
+    addRequisitionLineItem(requisition1, product1);
     requisition1 = requisitionRepository.findOne(requisition1.getId());
 
     Requisition requisition2 = addRequisition(program2, facility1, period2,
@@ -94,19 +94,19 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     thirdOrder = addOrder(requisition2, "O3", program2, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(200));
 
-    addOrderLine(secondOrder, product1, 35L, 50L);
+    addOrderLineItem(secondOrder, product1, 35L, 50L);
 
-    addOrderLine(secondOrder, product2, 10L, 15L);
+    addOrderLineItem(secondOrder, product2, 10L, 15L);
 
-    addOrderLine(thirdOrder, product1, 50L, 50L);
+    addOrderLineItem(thirdOrder, product1, 50L, 50L);
 
-    addOrderLine(thirdOrder, product2, 5L, 10L);
+    addOrderLineItem(thirdOrder, product2, 5L, 10L);
 
-    OrderLine orderLine = addOrderLine(firstOrder, product1, 35L, 50L);
+    OrderLineItem orderLineItem = addOrderLineItem(firstOrder, product1, 35L, 50L);
 
-    List<OrderLine> orderLines = new ArrayList<>();
-    orderLines.add(orderLine);
-    firstOrder.setOrderLines(orderLines);
+    List<OrderLineItem> orderLineItems = new ArrayList<>();
+    orderLineItems.add(orderLineItem);
+    firstOrder.setOrderLineItems(orderLineItems);
 
     firstOrder = orderRepository.save(firstOrder);
 
@@ -145,24 +145,24 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return requisitionRepository.save(requisition);
   }
 
-  private RequisitionLine addRequisitionLine(Requisition requisition, UUID product) {
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequisition(requisition);
-    requisitionLine.setProduct(product);
-    requisitionLine.setRequestedQuantity(3);
-    requisitionLine.setApprovedQuantity(3);
+  private RequisitionLineItem addRequisitionLineItem(Requisition requisition, UUID product) {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setProduct(product);
+    requisitionLineItem.setRequestedQuantity(3);
+    requisitionLineItem.setApprovedQuantity(3);
 
-    return requisitionLineRepository.save(requisitionLine);
+    return requisitionLineItemRepository.save(requisitionLineItem);
   }
 
-  private OrderLine addOrderLine(Order order, UUID product, Long filledQuantity,
+  private OrderLineItem addOrderLineItem(Order order, UUID product, Long filledQuantity,
                                  Long orderedQuantity) {
-    OrderLine orderLine = new OrderLine();
-    orderLine.setOrder(order);
-    orderLine.setProduct(product);
-    orderLine.setOrderedQuantity(orderedQuantity);
-    orderLine.setFilledQuantity(filledQuantity);
-    return orderLineRepository.save(orderLine);
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setOrder(order);
+    orderLineItem.setProduct(product);
+    orderLineItem.setOrderedQuantity(orderedQuantity);
+    orderLineItem.setFilledQuantity(filledQuantity);
+    return orderLineItemRepository.save(orderLineItem);
   }
 
   @Test
@@ -197,7 +197,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
-    //for (OrderLine o : orderRepository.findOne(secondOrder.getId()).getOrderLines()) {
+    //for (OrderLineItem o : orderRepository.findOne(secondOrder.getId()).getOrderLineItems()) {
     //      assertTrue(csvContent.contains(o.getProduct().getPrimaryName()
     //              + "," + o.getFilledQuantity()
     //              + "," + o.getOrderedQuantity()));
@@ -353,7 +353,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldCreateOrder() {
 
-    firstOrder.getOrderLines().clear();
+    firstOrder.getOrderLineItems().clear();
     orderRepository.delete(firstOrder);
 
     restAssured.given()
@@ -480,12 +480,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     String orderDate = secondOrder.getCreatedDate().format(
         DateTimeFormatter.ofPattern("dd/MM/yy"));
 
-    for (RequisitionLine line : secondOrder.getRequisition().getRequisitionLines()) {
+    for (RequisitionLineItem lineItem : secondOrder.getRequisition().getRequisitionLineItems()) {
       assertTrue(csvContent.contains(secondOrder.getOrderCode()
           + "," + secondOrder.getRequisition().getFacility().getCode()
-          + "," + line.getProduct().getCode()
-          + "," + line.getProduct().getPrimaryName()
-          + "," + line.getApprovedQuantity()
+          + "," + lineItem.getProduct().getCode()
+          + "," + lineItem.getProduct().getPrimaryName()
+          + "," + lineItem.getApprovedQuantity()
           + "," + period
           + "," + orderDate));
     }
