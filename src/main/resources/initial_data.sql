@@ -1,7 +1,3 @@
-
-INSERT INTO referencedata.users (id, username, firstName, lastName, email, timezone)
-VALUES ('35316636-6264-6331-2d34-3933322d3462', 'admin', 'Admin', 'User', 'example@mail.com', 'UTC');
-
 INSERT INTO requisition.order_file_templates (id, filePrefix, headerInFile)
 VALUES ('457ed5b0-80d7-4cb6-af54-e3f6138c8128', 'O', true);
 
