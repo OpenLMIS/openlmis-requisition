@@ -2,9 +2,7 @@ package org.openlmis.requisition.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLine;
@@ -19,9 +17,7 @@ import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -30,14 +26,12 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-@Ignore
 public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderLines";
@@ -54,18 +48,11 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
-
   private OrderLine orderLine = new OrderLine();
   private Order order = new Order();
-  private UserDto user;
 
   @Before
   public void setUp() {
-    List<UserDto> allUsers = userReferenceDataService.findAll();
-    Assert.assertEquals(1, allUsers.size());
-    user = userReferenceDataService.findOne(INITIAL_USER_ID);
 
     ProductDto product = new ProductDto();
     product.setId(UUID.randomUUID());
@@ -126,7 +113,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setQuotedCost(new BigDecimal("10.00"));
     order.setStatus(OrderStatus.ORDERED);
     order.setProgram(program.getId());
-    order.setCreatedById(user.getId());
+    order.setCreatedById(UUID.randomUUID());
     order.setRequestingFacility(facility.getId());
     order.setReceivingFacility(facility.getId());
     order.setSupplyingFacility(facility.getId());
