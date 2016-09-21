@@ -2,7 +2,6 @@ package org.openlmis.requisition.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,9 +23,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
@@ -41,14 +38,12 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -75,10 +70,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-  @Autowired
-  UserReferenceDataService userReferenceDataService;
-
-  private UserDto user;
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryLine proofOfDeliveryLine = new ProofOfDeliveryLine();
 
@@ -87,9 +78,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
    */
   @Before
   public void setUp() {
-    List<UserDto> allUsers = userReferenceDataService.findAll();
-    Assert.assertEquals(1, allUsers.size());
-    user = userReferenceDataService.findOne(INITIAL_USER_ID);
 
     ProductDto product = new ProductDto();
     product.setId(UUID.randomUUID());
@@ -139,7 +127,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     Order order = new Order();
     order.setStatus(OrderStatus.SHIPPED);
     order.setCreatedDate(LocalDateTime.now());
-    order.setCreatedById(user.getId());
+    order.setCreatedById(UUID.randomUUID());
     order.setOrderCode("O1");
     order.setProgram(program.getId());
     order.setQuotedCost(new BigDecimal(100));

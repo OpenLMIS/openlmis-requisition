@@ -24,7 +24,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -75,9 +73,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
-
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
 
   private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
@@ -143,7 +138,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
-    user = userReferenceDataService.findOne(INITIAL_USER_ID);
+    user = new UserDto();
+    user.setId(INITIAL_USER_ID);
+    user.setUsername("admin");
+    user.setVerified(true);
 
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
