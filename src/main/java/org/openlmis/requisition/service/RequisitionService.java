@@ -142,13 +142,15 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
-    } else if (requisition.getStatus() != RequisitionStatus.AUTHORIZED) {
-      throw new RequisitionException("Cannot reject requisition: " + requisitionId
-          + " .Requisition must be waiting for approval to be rejected");
-    } else {
+    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+            || (requisition.getStatus() != RequisitionStatus.SUBMITTED
+            && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
+    } else {
+      throw new RequisitionException("Cannot reject requisition: " + requisitionId
+              + " .Requisition must be waiting for approval to be rejected");
     }
   }
 
@@ -211,12 +213,18 @@ public class RequisitionService {
    * @param requisitionList list of requisitions to be released as order
    * @return list of released requisitions
    */
-  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList)
+          throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
-      loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-      releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
+      if (RequisitionStatus.APPROVED.equals(loadedRequisition.getStatus())) {
+        loadedRequisition.setStatus(RequisitionStatus.RELEASED);
+        releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
+      } else {
+        throw new RequisitionException("Can not release requisition:" + loadedRequisition.getId()
+                + " as order. Requisition must be approved.");
+      }
     }
     return releasedRequisitions;
   }

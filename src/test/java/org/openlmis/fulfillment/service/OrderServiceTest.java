@@ -28,6 +28,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -103,7 +104,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldConvertRequisitionsToOrders() {
+  public void shouldConvertRequisitionsToOrders() throws RequisitionException {
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);

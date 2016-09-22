@@ -213,7 +213,8 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldReleaseRequisitionsAsOrder() {
+  public void shouldReleaseRequisitionsAsOrder() throws RequisitionException {
+    requisition.setStatus(RequisitionStatus.APPROVED);
     List<Requisition> requisitions = Arrays.asList(requisition);
     List<Requisition> expectedRequisitions = requisitionService
         .releaseRequisitionsAsOrder(requisitions);
