@@ -4,7 +4,7 @@ services:
   requisition:
     image: openlmis/requisition
     ports:
-      - "8080"
+      - "8080:8080"
     links:
       - db
       - log
