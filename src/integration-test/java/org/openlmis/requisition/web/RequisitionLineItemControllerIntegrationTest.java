@@ -1,16 +1,21 @@
 package org.openlmis.requisition.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,15 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionLineControllerIntegrationTest extends BaseWebIntegrationTest {
+public class RequisitionLineItemControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/requisitionLines";
+  private static final String RESOURCE_URL = "/api/requisitionLineItems";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ACCESS_TOKEN = "access_token";
@@ -42,12 +42,12 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
 
-  private RequisitionLine requisitionLine = new RequisitionLine();
+  private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
   private ProductDto product = new ProductDto();
@@ -56,12 +56,12 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
 
   @Before
   public void setUp() {
-    requisitionLine = generateRequisitionLine();
+    requisitionLineItem = generateRequisitionLineItem();
   }
 
   @Test
-  public void shouldFindRequisitionLines() {
-    RequisitionLine[] response = restAssured.given()
+  public void shouldFindRequisitionLineItems() {
+    RequisitionLineItem[] response = restAssured.given()
         .queryParam(REQUISITION, requisition.getId())
         .queryParam(PRODUCT, product.getId())
         .queryParam(ACCESS_TOKEN, getToken())
@@ -69,41 +69,41 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionLine[].class);
+        .extract().as(RequisitionLineItem[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, response.length);
-    for ( RequisitionLine responseRequisitionLine : response ) {
+    for ( RequisitionLineItem responseRequisitionLineItem : response ) {
       assertEquals(
           requisition.getId(),
-          responseRequisitionLine.getRequisition().getId());
+          responseRequisitionLineItem.getRequisition().getId());
       assertEquals(
           product.getId(),
-          responseRequisitionLine.getProduct());
+          responseRequisitionLineItem.getProduct());
       assertEquals(
           BEGINNING_BALANCE,
-          responseRequisitionLine.getBeginningBalance());
+          responseRequisitionLineItem.getBeginningBalance());
       assertEquals(
           TOTAL_RECEIVED_QUANTITY,
-          responseRequisitionLine.getTotalReceivedQuantity());
+          responseRequisitionLineItem.getTotalReceivedQuantity());
       assertEquals(
           TOTAL_LOSSES_AND_ADJUSTMENTS,
-          responseRequisitionLine.getTotalLossesAndAdjustments());
+          responseRequisitionLineItem.getTotalLossesAndAdjustments());
       assertEquals(
-          requisitionLine.getId(),
-          responseRequisitionLine.getId());
+          requisitionLineItem.getId(),
+          responseRequisitionLineItem.getId());
     }
   }
 
   @Test
-  public void shouldCreateRequisitionLine() {
+  public void shouldCreateRequisitionLineItem() {
 
-    requisitionLineRepository.delete(requisitionLine);
+    requisitionLineItemRepository.delete(requisitionLineItem);
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(requisitionLine)
+          .body(requisitionLineItem)
           .when()
           .post(RESOURCE_URL)
           .then()
@@ -113,68 +113,68 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldUpdateRequisitionLine() {
+  public void shouldUpdateRequisitionLineItem() {
 
-    requisitionLine.setBeginningBalance(1);
+    requisitionLineItem.setBeginningBalance(1);
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
-          .body(requisitionLine)
+          .pathParam("id", requisitionLineItem.getId())
+          .body(requisitionLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
     assertTrue(response.getBeginningBalance().equals(1));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldGetAllRequisitionLines() {
+  public void shouldGetAllRequisitionLineItems() {
 
-    RequisitionLine[] response = restAssured.given()
+    RequisitionLineItem[] response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .when()
           .get(RESOURCE_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine[].class);
+          .extract().as(RequisitionLineItem[].class);
 
-    Iterable<RequisitionLine> requisitionLines = Arrays.asList(response);
-    assertTrue(requisitionLines.iterator().hasNext());
+    Iterable<RequisitionLineItem> requisitionLineItems = Arrays.asList(response);
+    assertTrue(requisitionLineItems.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldGetChosenRequisitionLine() {
+  public void shouldGetChosenRequisitionLineItem() {
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
+          .pathParam("id", requisitionLineItem.getId())
           .when()
           .get(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
-    assertTrue(requisitionLineRepository.exists(response.getId()));
+    assertTrue(requisitionLineItemRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotGetNonexistentRequisitionLine() {
+  public void shouldNotGetNonexistentRequisitionLineItem() {
 
-    requisitionLineRepository.delete(requisitionLine);
+    requisitionLineItemRepository.delete(requisitionLineItem);
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
+          .pathParam("id", requisitionLineItem.getId())
           .when()
           .get(ID_URL)
           .then()
@@ -184,30 +184,30 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldDeleteRequisitionLine() {
+  public void shouldDeleteRequisitionLineItem() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
+          .pathParam("id", requisitionLineItem.getId())
           .when()
           .delete(ID_URL)
           .then()
           .statusCode(204);
 
-    assertFalse(requisitionLineRepository.exists(requisitionLine.getId()));
+    assertFalse(requisitionLineItemRepository.exists(requisitionLineItem.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotDeleteNonexistentRequisitionLine() {
+  public void shouldNotDeleteNonexistentRequisitionLineItem() {
 
-    requisitionLineRepository.delete(requisitionLine);
+    requisitionLineItemRepository.delete(requisitionLineItem);
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
+          .pathParam("id", requisitionLineItem.getId())
           .when()
           .delete(ID_URL)
           .then()
@@ -217,89 +217,89 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateNewRequisitionLineIfDoesNotExist() {
+  public void shouldCreateNewRequisitionLineItemIfDoesNotExist() {
 
-    requisitionLineRepository.delete(requisitionLine);
-    requisitionLine.setBeginningBalance(1);
+    requisitionLineItemRepository.delete(requisitionLineItem);
+    requisitionLineItem.setBeginningBalance(1);
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", ID)
-          .body(requisitionLine)
+          .body(requisitionLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
     assertTrue(response.getBeginningBalance().equals(1));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldUpdateRequisitionLineIfStatusIsInitiated() {
+  public void shouldUpdateRequisitionLineItemIfStatusIsInitiated() {
 
-    requisitionLine.setBeginningBalance(1);
+    requisitionLineItem.setBeginningBalance(1);
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
-          .body(requisitionLine)
+          .pathParam("id", requisitionLineItem.getId())
+          .body(requisitionLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
     assertTrue(response.getBeginningBalance().equals(1));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldUpdateRequisitionLineIfStatusIsSubmitted() {
+  public void shouldUpdateRequisitionLineItemIfStatusIsSubmitted() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
-    requisitionLineRepository.save(requisitionLine);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    requisitionLine.setBeginningBalance(1);
+    requisitionLineItem.setBeginningBalance(1);
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
-          .body(requisitionLine)
+          .pathParam("id", requisitionLineItem.getId())
+          .body(requisitionLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
     assertTrue(response.getBeginningBalance().equals(1));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotUpdateRequisitionLineIfStatusIsAuthorized() {
+  public void shouldNotUpdateRequisitionLineItemIfStatusIsAuthorized() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
-    requisitionLineRepository.save(requisitionLine);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    requisitionLine.setBeginningBalance(1);
+    requisitionLineItem.setBeginningBalance(1);
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
-          .body(requisitionLine)
+          .pathParam("id", requisitionLineItem.getId())
+          .body(requisitionLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
     assertFalse(response.getBeginningBalance().equals(1));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -310,28 +310,28 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
-    requisitionLineRepository.save(requisitionLine);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    requisitionLine.setApprovedQuantity(1);
-    requisitionLine.setRemarks("test");
+    requisitionLineItem.setApprovedQuantity(1);
+    requisitionLineItem.setRemarks("test");
 
-    RequisitionLine response = restAssured.given()
+    RequisitionLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", requisitionLine.getId())
-          .body(requisitionLine)
+          .pathParam("id", requisitionLineItem.getId())
+          .body(requisitionLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(RequisitionLine.class);
+          .extract().as(RequisitionLineItem.class);
 
     assertTrue(response.getApprovedQuantity().equals(1));
     assertEquals(response.getRemarks(), "test");
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private RequisitionLine generateRequisitionLine() {
+  private RequisitionLineItem generateRequisitionLineItem() {
 
     product.setId(UUID.randomUUID());
     product.setCode(TEST_CODE);
@@ -360,23 +360,23 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
 
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setRequisition(requisition);
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setBeginningBalance(BEGINNING_BALANCE);
-    requisitionLine.setTotalReceivedQuantity(TOTAL_RECEIVED_QUANTITY);
-    requisitionLine.setTotalLossesAndAdjustments(TOTAL_LOSSES_AND_ADJUSTMENTS);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setBeginningBalance(BEGINNING_BALANCE);
+    requisitionLineItem.setTotalReceivedQuantity(TOTAL_RECEIVED_QUANTITY);
+    requisitionLineItem.setTotalLossesAndAdjustments(TOTAL_LOSSES_AND_ADJUSTMENTS);
 
     requisition.setFacility(facility.getId());
     requisition.setProcessingPeriod(period.getId());
     requisition.setProgram(program.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setRequisitionLines(new ArrayList<>());
-    requisition.getRequisitionLines().add(requisitionLine);
+    requisition.setRequisitionLineItems(new ArrayList<>());
+    requisition.getRequisitionLineItems().add(requisitionLineItem);
     requisition = requisitionRepository.save(requisition);
 
-    return requisitionLine;
+    return requisitionLineItem;
   }
 }

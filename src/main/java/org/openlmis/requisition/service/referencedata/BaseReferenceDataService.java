@@ -1,6 +1,7 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +17,12 @@ import java.util.UUID;
 public abstract class BaseReferenceDataService<T> {
 
   private static final String BASE_URL = "http://referencedata:8080/api";
+
+  @Value("${auth.server.clientId}")
+  private String clientId;
+
+  @Value("${auth.server.clientSecret}")
+  private String clientSecret;
 
   /**
    * Return one object from Reference data service.
@@ -56,8 +63,10 @@ public abstract class BaseReferenceDataService<T> {
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
     params.put("access_token", obtainAccessToken());
+
     ResponseEntity<List<T>> response = restTemplate.exchange(url, HttpMethod.GET,
         null, new ParameterizedTypeReference<List<T>>() {}, params);
+    
     List<T> result = response.getBody();
     return result;
   }
@@ -69,7 +78,7 @@ public abstract class BaseReferenceDataService<T> {
   private String obtainAccessToken() {
     RestTemplate restTemplate = new RestTemplate();
 
-    String plainCreds = "trusted-client:secret";
+    String plainCreds = clientId + ":" + clientSecret;
     byte[] plainCredsBytes = plainCreds.getBytes();
     byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
     String base64Creds = new String(base64CredsBytes);
@@ -79,7 +88,7 @@ public abstract class BaseReferenceDataService<T> {
 
     HttpEntity<String> request = new HttpEntity<>(headers);
     ResponseEntity<?> response = restTemplate.exchange(
-        "http://auth:8080/oauth/token?grant_type=password&username=admin&password=password",
+        "http://auth:8080/oauth/token?grant_type=client_credentials",
         HttpMethod.POST, request, Object.class);
 
     return ((Map<String, String>) response.getBody()).get("access_token");

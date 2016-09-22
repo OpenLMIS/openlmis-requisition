@@ -8,7 +8,7 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -37,7 +37,8 @@ public class OrderCsvHelper {
       writeHeader(orderFileColumns, writer);
     }
 
-    writeLineItems(order, order.getRequisition().getRequisitionLines(), orderFileColumns, writer);
+    writeLineItems(order, order.getRequisition().getRequisitionLineItems(),
+        orderFileColumns, writer);
   }
 
   private void removeExcludedColumns(List<OrderFileColumn> orderFileColumns) {
@@ -65,21 +66,21 @@ public class OrderCsvHelper {
     }
   }
 
-  private void writeLineItems(Order order, List<RequisitionLine> requisitionLines,
+  private void writeLineItems(Order order, List<RequisitionLineItem> requisitionLineItems,
                               List<OrderFileColumn> orderFileColumns, Writer writer)
       throws IOException {
     int counter = 1;
-    for (RequisitionLine requisitionLine : requisitionLines) {
-      writeCsvLineItem(order, requisitionLine, orderFileColumns, writer, counter++);
+    for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
+      writeCsvLineItem(order, requisitionLineItem, orderFileColumns, writer, counter++);
       writer.write(LINE_SEPARATOR);
     }
   }
 
-  private void writeCsvLineItem(Order order, RequisitionLine requisitionLine,
+  private void writeCsvLineItem(Order order, RequisitionLineItem requisitionLineItem,
                                 List<OrderFileColumn> orderFileColumns, Writer writer, int counter)
       throws IOException {
     JXPathContext orderContext = JXPathContext.newContext(order);
-    JXPathContext lineItemContext = JXPathContext.newContext(requisitionLine);
+    JXPathContext lineItemContext = JXPathContext.newContext(requisitionLineItem);
     for (OrderFileColumn orderFileColumn : orderFileColumns) {
       if (orderFileColumn.getNested() == null || orderFileColumn.getNested().isEmpty()) {
         if (orderFileColumns.indexOf(orderFileColumn) < orderFileColumns.size() - 1) {

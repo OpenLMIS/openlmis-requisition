@@ -39,7 +39,8 @@ public class RequisitionRepositoryIntegrationTest
   @Before
   public void setUp() {
     requisitions = new ArrayList<>();
-    for (int requisitionLinesCount = 0; requisitionLinesCount < 5; requisitionLinesCount++) {
+    for (int requisitionLineItemsCount = 0; requisitionLineItemsCount < 5;
+         requisitionLineItemsCount++) {
       requisitions.add(repository.save(generateInstance()));
     }
   }

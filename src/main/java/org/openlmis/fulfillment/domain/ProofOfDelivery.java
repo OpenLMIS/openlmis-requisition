@@ -45,7 +45,7 @@ public class ProofOfDelivery extends BaseEntity {
       orphanRemoval = true)
   @Getter
   @Setter
-  private List<ProofOfDeliveryLine> proofOfDeliveryLineItems;
+  private List<ProofOfDeliveryLineItem> proofOfDeliveryLineItems;
 
   @Getter
   @Setter

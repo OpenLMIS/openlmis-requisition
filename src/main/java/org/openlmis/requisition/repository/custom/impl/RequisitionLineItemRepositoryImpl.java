@@ -1,8 +1,11 @@
 package org.openlmis.requisition.repository.custom.impl;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
-import org.openlmis.requisition.repository.custom.RequisitionLineRepositoryCustom;
+import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.repository.custom.RequisitionLineItemRepositoryCustom;
+
+import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -10,10 +13,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.List;
-import java.util.UUID;
 
-public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryCustom {
+public class RequisitionLineItemRepositoryImpl implements RequisitionLineItemRepositoryCustom {
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -24,10 +25,11 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
    * @param product product of searched requisition lines.
    * @return list of requisition lines with matched parameters.
    */
-  public List<RequisitionLine> searchRequisitionLines(Requisition requisition, UUID product) {
+  public List<RequisitionLineItem> searchRequisitionLineItems(Requisition requisition,
+                                                              UUID product) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<RequisitionLine> query = builder.createQuery(RequisitionLine.class);
-    Root<RequisitionLine> root = query.from(RequisitionLine.class);
+    CriteriaQuery<RequisitionLineItem> query = builder.createQuery(RequisitionLineItem.class);
+    Root<RequisitionLineItem> root = query.from(RequisitionLineItem.class);
     Predicate predicate = builder.conjunction();
 
     if (requisition != null) {
@@ -51,9 +53,9 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
    * Method deletes given requisition line.
    * @param entity entity to be deleted.
    */
-  public void delete(RequisitionLine entity) {
+  public void delete(RequisitionLineItem entity) {
     Requisition requisition = entity.getRequisition();
-    requisition.getRequisitionLines().remove(entity);
+    requisition.getRequisitionLineItems().remove(entity);
     entityManager.merge(requisition);
   }
 }
