@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class SettingControllerIntegrationTest extends BaseWebIntegrationTest {
 

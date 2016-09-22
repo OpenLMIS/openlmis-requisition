@@ -1,19 +1,19 @@
 version: "2"
 services:
+
   requisition:
     image: openlmis/requisition
     links:
       - db
       - log
     env_file: .env
-    environment:
-      - VIRTUAL_HOST=localhost
-      - VIRTUAL_PORT=8080
+
   db:
     image: openlmis/postgres
-    env_file: .env
     ports:
       - "8765:5432"
+    env_file: .env
+
   log:
     image: openlmis/rsyslog
     volumes:

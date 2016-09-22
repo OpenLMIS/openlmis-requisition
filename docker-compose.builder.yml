@@ -1,12 +1,11 @@
 version: "2"
 services:
+
   builder:
     image: openlmis/dev
     links:
       - db
       - log
-      - auth
-      - notification
     volumes:
       - '.:/app'
     command:
@@ -14,6 +13,7 @@ services:
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
     env_file: .env
+
   sonar:
     image: openlmis/dev
     volumes:
@@ -25,19 +25,16 @@ services:
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false $SONAR_LOGIN $SONAR_PASSWORD'
     env_file: .env
+
   image:
     build: .
     image: openlmis/requisition
+
   db:
     image: openlmis/postgres
     env_file: .env
+
   log:
     image: openlmis/rsyslog
     volumes:
       - '../logs/requisition:/var/log'
-  auth:
-    image: openlmis/auth
-    env_file: .env
-  notification:
-    image: openlmis/notification
-    env_file: .env
