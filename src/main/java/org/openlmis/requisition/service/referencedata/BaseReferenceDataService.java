@@ -9,8 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,11 +43,11 @@ public abstract class BaseReferenceDataService<T> {
     return object;
   }
 
-  public List<T> findAll() {
+  public Collection<T> findAll() {
     return findAll("", new HashMap<>());
   }
 
-  public List<T> findAll(String resourceUrl) {
+  public Collection<T> findAll(String resourceUrl) {
     return findAll(resourceUrl, new HashMap<>());
   }
 
@@ -57,17 +57,17 @@ public abstract class BaseReferenceDataService<T> {
    * @param parameters Map of query parameters.
    * @return all reference data T objects.
    */
-  public List<T> findAll(String resourceUrl, Map<String, Object> parameters) {
+  public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
     String url = BASE_URL + getUrl() + resourceUrl;
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
     params.put("access_token", obtainAccessToken());
 
-    ResponseEntity<List<T>> response = restTemplate.exchange(url, HttpMethod.GET,
-        null, new ParameterizedTypeReference<List<T>>() {}, params);
-
-    List<T> result = response.getBody();
+    ResponseEntity<Collection<T>> response = restTemplate.exchange(url, HttpMethod.GET,
+        null, new ParameterizedTypeReference<Collection<T>>() {}, params);
+    
+    Collection<T> result = response.getBody();
     return result;
   }
 

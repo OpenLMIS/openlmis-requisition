@@ -14,6 +14,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -25,7 +26,6 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @Entity
 @Table(name = "requisitions")
@@ -49,8 +49,8 @@ public class Requisition extends BaseEntity {
   @Setter
   @JsonIdentityInfo(
       generator = ObjectIdGenerators.IntSequenceGenerator.class,
-      property = "requisitionLinesId")
-  private List<RequisitionLine> requisitionLines;
+      property = "requisitionLineItemsId")
+  private List<RequisitionLineItem> requisitionLineItems;
 
   @JsonIdentityInfo(
       generator = ObjectIdGenerators.IntSequenceGenerator.class,
@@ -132,9 +132,9 @@ public class Requisition extends BaseEntity {
   }
 
   private void calculateStockOnHand() {
-    if (requisitionLines != null) {
-      for (RequisitionLine requisitionLine : requisitionLines) {
-        requisitionLine.calculateStockOnHand();
+    if (requisitionLineItems != null) {
+      for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
+        requisitionLineItem.calculateStockOnHand();
       }
     }
   }

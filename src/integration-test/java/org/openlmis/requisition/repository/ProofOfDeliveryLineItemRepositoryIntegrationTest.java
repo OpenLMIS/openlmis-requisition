@@ -6,13 +6,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.Application;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLine;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -26,10 +26,10 @@ import java.util.UUID;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @Transactional
-public class ProofOfDeliveryLineRepositoryIntegrationTest {
+public class ProofOfDeliveryLineItemRepositoryIntegrationTest {
 
   @Autowired
-  private OrderLineRepository orderLineRepository;
+  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -38,11 +38,11 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Autowired
-  private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
+  private ProofOfDeliveryLineItemRepository proofOfDeliveryLineItemRepository;
 
-  private static final String CODE = "ProofOfDeliveryLineRepositoryIntegrationTest";
+  private static final String CODE = "ProofOfDeliveryLineItemRepositoryIntegrationTest";
 
-  private OrderLine orderLine = new OrderLine();
+  private OrderLineItem orderLineItem = new OrderLineItem();
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
 
@@ -59,11 +59,11 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     order.setSupplyingFacility(UUID.randomUUID());
     orderRepository.save(order);
 
-    orderLine.setOrder(order);
-    orderLine.setOrderableProduct(UUID.randomUUID());
-    orderLine.setOrderedQuantity(5L);
-    orderLine.setFilledQuantity(5L);
-    orderLineRepository.save(orderLine);
+    orderLineItem.setOrder(order);
+    orderLineItem.setOrderableProduct(UUID.randomUUID());
+    orderLineItem.setOrderedQuantity(5L);
+    orderLineItem.setFilledQuantity(5L);
+    orderLineItemRepository.save(orderLineItem);
 
     proofOfDelivery.setOrder(order);
     proofOfDelivery.setDeliveredBy(CODE);
@@ -74,14 +74,14 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
 
   @Test
   public void testCreate() {
-    ProofOfDeliveryLine proofOfDeliveryLine = new ProofOfDeliveryLine();
-    proofOfDeliveryLine.setOrderLine(orderLine);
-    proofOfDeliveryLine.setProofOfDelivery(proofOfDelivery);
+    ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
+    proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);
+    proofOfDeliveryLineItem.setProofOfDelivery(proofOfDelivery);
 
-    Assert.assertNull(proofOfDeliveryLine.getId());
+    Assert.assertNull(proofOfDeliveryLineItem.getId());
 
-    proofOfDeliveryLine =
-        proofOfDeliveryLineRepository.save(proofOfDeliveryLine);
-    Assert.assertNotNull(proofOfDeliveryLine.getId());
+    proofOfDeliveryLineItem =
+        proofOfDeliveryLineItemRepository.save(proofOfDeliveryLineItem);
+    Assert.assertNotNull(proofOfDeliveryLineItem.getId());
   }
 }

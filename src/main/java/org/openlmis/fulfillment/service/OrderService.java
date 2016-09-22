@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.service;
 
+import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -10,18 +12,19 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -51,8 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
-
 @Service
 public class OrderService {
 
@@ -65,7 +66,7 @@ public class OrderService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private OrderLineRepository orderLineRepository;
+  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -181,14 +182,16 @@ public class OrderService {
 
   private List<Map<String, Object>> orderToRows(Order order) {
     List<Map<String, Object>> rows = new ArrayList<>();
-    List<OrderLine> orderLines = order.getOrderLines();
+
+    List<OrderLineItem> orderLineItems = order.getOrderLineItems();
     String orderNum = order.getOrderCode();
+
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
             order.getRequestingFacility());
     String facilityCode = requestingFacility.getCode();
     LocalDateTime createdDate = order.getCreatedDate();
 
-    for (OrderLine orderLine : orderLines) {
+    for (OrderLineItem orderLineItem : orderLineItems) {
       Map<String, Object> row = new HashMap<>();
 
       row.put(DEFAULT_COLUMNS[0], facilityCode);
@@ -198,14 +201,14 @@ public class OrderService {
       //TODO When it's clear what to do about lack of PrimaryName
       //TODO and different Code format in OrerableProduct
       //TODO OrderableProduct should be retrieved from OrderableProductReferenceDataService
-      //row.put(DEFAULT_COLUMNS[3], orderLine.getOrderableProduct().getPrimaryName());
-      //row.put(DEFAULT_COLUMNS[4], orderLine.getOrderableProduct().getCode());
+      //row.put(DEFAULT_COLUMNS[3], orderLineItem.getOrderableProduct().getPrimaryName());
+      //row.put(DEFAULT_COLUMNS[4], orderLineItem.getOrderableProduct().getCode());
 
-      row.put(DEFAULT_COLUMNS[2], orderLine.getOrderedQuantity());
-      row.put(DEFAULT_COLUMNS[3], orderLine.getFilledQuantity());
+      row.put(DEFAULT_COLUMNS[2], orderLineItem.getOrderedQuantity());
+      row.put(DEFAULT_COLUMNS[3], orderLineItem.getFilledQuantity());
 
       //products which have a final approved quantity of zero are omitted
-      if (orderLine.getOrderedQuantity() > 0) {
+      if (orderLineItem.getOrderedQuantity() > 0) {
         rows.add(row);
       }
     }
@@ -216,7 +219,8 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
+  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId)
+          throws RequisitionException {
     UserDto user = userReferenceDataService.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
     List<Order> convertedOrders = new ArrayList<>();
@@ -232,9 +236,10 @@ public class OrderService {
       order.setReceivingFacility(requisition.getFacility());
       order.setRequestingFacility(requisition.getFacility());
 
-      List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
+      List<SupplyLineDto> supplyLines =
+          new ArrayList<>(supplyLineReferenceDataService
           .search(requisition.getProgram(),
-              requisition.getSupervisoryNode());
+              requisition.getSupervisoryNode()));
       SupplyLineDto supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
@@ -252,17 +257,17 @@ public class OrderService {
 
       orderRepository.save(order);
 
-      List<OrderLine> orderLines = new ArrayList<>();
-      for (RequisitionLine rl : requisition.getRequisitionLines()) {
-        OrderLine orderLine = new OrderLine();
-        orderLine.setOrder(order);
-        orderLine.setOrderableProduct(rl.getOrderableProduct());
-        orderLine.setFilledQuantity(0L);
-        orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
-        orderLines.add(orderLine);
-        orderLineRepository.save(orderLine);
+      List<OrderLineItem> orderLineItems = new ArrayList<>();
+      for (RequisitionLineItem rl : requisition.getRequisitionLineItems()) {
+        OrderLineItem orderLineItem = new OrderLineItem();
+        orderLineItem.setOrder(order);
+        orderLineItem.setOrderableProduct(rl.getOrderableProduct());
+        orderLineItem.setFilledQuantity(0L);
+        orderLineItem.setOrderedQuantity(rl.getRequestedQuantity().longValue());
+        orderLineItems.add(orderLineItem);
+        orderLineItemRepository.save(orderLineItem);
       }
-      order.setOrderLines(orderLines);
+      order.setOrderLineItems(orderLineItems);
       convertedOrders.add(order);
     }
     return convertedOrders;

@@ -1,5 +1,13 @@
 package org.openlmis.fulfillment.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,19 +15,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -42,14 +51,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
@@ -70,7 +71,7 @@ public class OrderServiceTest {
   private RequisitionRepository requisitionRepository;
 
   @Mock
-  private OrderLineRepository orderLineRepository;
+  private OrderLineItemRepository orderLineItemRepository;
 
   @Mock
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
@@ -103,7 +104,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldConvertRequisitionsToOrders() {
+  public void shouldConvertRequisitionsToOrders() throws RequisitionException {
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
@@ -151,14 +152,15 @@ public class OrderServiceTest {
       assertEquals(
               order.getSupplyingFacility(),
               supplyLines.get(orders.indexOf(order)).getSupplyingFacility());
-      assertEquals(1, order.getOrderLines().size());
-      assertEquals(1, requisition.getRequisitionLines().size());
+      assertEquals(1, order.getOrderLineItems().size());
+      assertEquals(1, requisition.getRequisitionLineItems().size());
 
-      OrderLine orderLine = order.getOrderLines().iterator().next();
-      RequisitionLine requisitionLine = requisition.getRequisitionLines().iterator().next();
-      assertEquals(requisitionLine.getRequestedQuantity().longValue(),
-              orderLine.getOrderedQuantity().longValue());
-      assertEquals(requisitionLine.getOrderableProduct(), orderLine.getOrderableProduct());
+      OrderLineItem orderLineItem = order.getOrderLineItems().iterator().next();
+      RequisitionLineItem requisitionLineItem =
+          requisition.getRequisitionLineItems().iterator().next();
+      assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
+              orderLineItem.getOrderedQuantity().longValue());
+      assertEquals(requisitionLineItem.getOrderableProduct(), orderLineItem.getOrderableProduct());
     }
 
     verify(requisitionRepository, atLeastOnce()).findOne(anyObject());
@@ -257,9 +259,9 @@ public class OrderServiceTest {
     order.setQuotedCost(BigDecimal.valueOf(1));
     order.setOrderCode("OrderCode" + instanceNumber);
     order.setStatus(OrderStatus.ORDERED);
-    List<OrderLine> orderLines = new ArrayList<>();
-    orderLines.add(generateOrderLine(order));
-    order.setOrderLines(orderLines);
+    List<OrderLineItem> orderLineItems = new ArrayList<>();
+    orderLineItems.add(generateOrderLineItem(order));
+    order.setOrderLineItems(orderLineItems);
     return order;
   }
 
@@ -270,25 +272,25 @@ public class OrderServiceTest {
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setEmergency(true);
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(generateRequisitionLine());
-    requisition.setRequisitionLines(requisitionLines);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(generateRequisitionLineItem());
+    requisition.setRequisitionLineItems(requisitionLineItems);
     return requisition;
   }
 
-  private OrderLine generateOrderLine(Order order) {
-    OrderLine orderLine = new OrderLine();
-    orderLine.setId(UUID.randomUUID());
-    orderLine.setFilledQuantity(1000L);
-    orderLine.setOrder(order);
-    orderLine.setOrderedQuantity(1000L);
-    return orderLine;
+  private OrderLineItem generateOrderLineItem(Order order) {
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setId(UUID.randomUUID());
+    orderLineItem.setFilledQuantity(1000L);
+    orderLineItem.setOrder(order);
+    orderLineItem.setOrderedQuantity(1000L);
+    return orderLineItem;
   }
 
-  private RequisitionLine generateRequisitionLine() {
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1000);
-    return requisitionLine;
+  private RequisitionLineItem generateRequisitionLineItem() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1000);
+    return requisitionLineItem;
   }
 
   private SupplyLineDto generateSupplyLine(

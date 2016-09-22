@@ -1,5 +1,10 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
@@ -16,7 +21,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
@@ -27,26 +32,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
-public class RequisitionLineServiceTest {
+public class RequisitionLineItemServiceTest {
 
   private static final String BEGINNING_BALANCE_FIELD = "beginningBalance";
   private static final String TOTAL_QUANTITY_RECEIVED_FIELD = "totalQuantityReceived";
   private static final SourceType SOURCE = SourceType.CALCULATED;
 
   private Requisition requisition;
-  private RequisitionLine requisitionLine;
+  private RequisitionLineItem requisitionLineItem;
   private RequisitionTemplate requisitionTemplate;
 
   @Mock
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Mock
   private RequisitionService requisitionService;
@@ -65,7 +65,7 @@ public class RequisitionLineServiceTest {
   private ProcessingPeriodDto periodDto;
 
   @InjectMocks
-  private RequisitionLineService requisitionLineService;
+  private RequisitionLineItemService requisitionLineItemService;
 
   private UUID program;
   private UUID period;
@@ -79,7 +79,7 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void shouldInitiateRequisitionLineFieldsIfValidRequisitionProvided() {
+  public void shouldInitiateRequisitionLineItemFieldsIfValidRequisitionProvided() {
     final Integer expectedBeginningBalance = 20;
     final Integer expectedTotalReceivedQuantity = 0;
 
@@ -90,18 +90,19 @@ public class RequisitionLineServiceTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    Requisition requisitionWithInitiatedLines = requisitionLineService
-        .initiateRequisitionLineFields(requisition);
+    Requisition requisitionWithInitiatedLines = requisitionLineItemService
+        .initiateRequisitionLineItemFields(requisition);
 
-    RequisitionLine requisitionLine = requisitionWithInitiatedLines
-        .getRequisitionLines().iterator().next();
+    RequisitionLineItem requisitionLineItem = requisitionWithInitiatedLines
+        .getRequisitionLineItems().iterator().next();
 
-    assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
-    assertEquals(expectedTotalReceivedQuantity, requisitionLine.getTotalReceivedQuantity());
+    assertEquals(expectedBeginningBalance, requisitionLineItem.getBeginningBalance());
+    assertEquals(expectedTotalReceivedQuantity, requisitionLineItem.getTotalReceivedQuantity());
   }
 
   @Test
-  public void shouldResetBeginningBalanceWhenSavingRequisitionLine() throws RequisitionException {
+  public void shouldResetBeginningBalanceWhenSavingRequisitionLineItem()
+      throws RequisitionException {
     final Integer expectedBeginningBalance = 20;
 
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
@@ -111,11 +112,11 @@ public class RequisitionLineServiceTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    requisitionLine.setBeginningBalance(222);
+    requisitionLineItem.setBeginningBalance(222);
 
-    requisitionLineService.save(requisition, requisitionLine);
+    requisitionLineItemService.save(requisition, requisitionLineItem);
 
-    assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
+    assertEquals(expectedBeginningBalance, requisitionLineItem.getBeginningBalance());
   }
 
   @Test
@@ -129,13 +130,13 @@ public class RequisitionLineServiceTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    Requisition requisitionWithInitiatedLines = requisitionLineService
-        .initiateRequisitionLineFields(requisition);
+    Requisition requisitionWithInitiatedLines = requisitionLineItemService
+        .initiateRequisitionLineItemFields(requisition);
 
-    RequisitionLine requisitionLine = requisitionWithInitiatedLines
-        .getRequisitionLines().iterator().next();
+    RequisitionLineItem requisitionLineItem = requisitionWithInitiatedLines
+        .getRequisitionLineItems().iterator().next();
 
-    assertEquals(expectedBeginningBalance, requisitionLine.getBeginningBalance());
+    assertEquals(expectedBeginningBalance, requisitionLineItem.getBeginningBalance());
   }
 
   @Test
@@ -151,7 +152,7 @@ public class RequisitionLineServiceTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    requisitionLineService.initiateRequisitionLineFields(requisition);
+    requisitionLineItemService.initiateRequisitionLineItemFields(requisition);
 
     List<RequisitionTemplate> requisitionTemplateList
         = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
@@ -168,20 +169,21 @@ public class RequisitionLineServiceTest {
   }
 
   @Test
-  public void shouldFindRequisitionLineIfItExists() {
-    List<RequisitionLine> receivedRequisitionLines = requisitionLineService.searchRequisitionLines(
+  public void shouldFindRequisitionLineItemIfItExists() {
+    List<RequisitionLineItem> receivedRequisitionLineItems =
+        requisitionLineItemService.searchRequisitionLineItems(
         requisition, null);
 
-    assertEquals(1, receivedRequisitionLines.size());
-    assertEquals(requisitionLine, receivedRequisitionLines.get(0));
+    assertEquals(1, receivedRequisitionLineItems.size());
+    assertEquals(requisitionLineItem, receivedRequisitionLineItems.get(0));
   }
 
   private void generateInstances() {
     requisition = createTestRequisition(UUID.randomUUID(), period, program,
         RequisitionStatus.INITIATED);
-    requisitionLine = createTestRequisitionLine(UUID.randomUUID(), 10, 20, requisition);
+    requisitionLineItem = createTestRequisitionLineItem(UUID.randomUUID(), 10, 20, requisition);
 
-    requisition.setRequisitionLines(new ArrayList<>(Arrays.asList(requisitionLine)));
+    requisition.setRequisitionLineItems(new ArrayList<>(Arrays.asList(requisitionLineItem)));
     requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgram(program);
   }
@@ -198,15 +200,16 @@ public class RequisitionLineServiceTest {
     return requisition;
   }
 
-  private RequisitionLine createTestRequisitionLine(UUID product, Integer quantityRequested,
-                                                    Integer stockInHand, Requisition requisition) {
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setId(UUID.randomUUID());
-    requisitionLine.setOrderableProduct(product);
-    requisitionLine.setRequestedQuantity(quantityRequested);
-    requisitionLine.setStockInHand(stockInHand);
-    requisitionLine.setRequisition(requisition);
-    return requisitionLine;
+  private RequisitionLineItem createTestRequisitionLineItem(UUID product, Integer quantityRequested,
+                                                            Integer stockInHand,
+                                                            Requisition requisition) {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setId(UUID.randomUUID());
+    requisitionLineItem.setOrderableProduct(product);
+    requisitionLineItem.setRequestedQuantity(quantityRequested);
+    requisitionLineItem.setStockInHand(stockInHand);
+    requisitionLineItem.setRequisition(requisition);
+    return requisitionLineItem;
   }
 
   private void mockRepositories() {
@@ -220,9 +223,9 @@ public class RequisitionLineServiceTest {
         .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
             eq(null), eq(null), any(), eq(null), eq(null)))
         .thenReturn(Arrays.asList(requisition));
-    when(requisitionLineRepository
-        .searchRequisitionLines(eq(requisition), any()))
-        .thenReturn(Arrays.asList(requisitionLine));
+    when(requisitionLineItemRepository
+        .searchRequisitionLineItems(eq(requisition), any()))
+        .thenReturn(Arrays.asList(requisitionLineItem));
     when(programReferenceDataService
         .findOne(any()))
         .thenReturn(new ProgramDto());

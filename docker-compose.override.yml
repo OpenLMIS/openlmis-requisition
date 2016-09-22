@@ -1,5 +1,6 @@
 version: "2"
 services:
+
   requisition:
     image: openlmis/dev
     ports:
@@ -11,6 +12,7 @@ services:
   db:
     ports:
       - "5432"
+
 volumes:
   gradlecache:
     external: false

@@ -4,8 +4,8 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,7 +28,7 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
    * @param startDate the start date (only include periods past this date)
    * @return A list of periods matching search criteria
    */
-  public List<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate startDate) {
+  public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate startDate) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("processingScheduleId", processingScheduleId);
     parameters.put("startDate", startDate);

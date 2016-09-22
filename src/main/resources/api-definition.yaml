@@ -40,15 +40,15 @@ schemas:
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
               "status": { "type": "object", "$ref": "#/schemas/orderStatus", "required": true, "title": "status" },
               "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
-              "orderLines": { "type": "array", "required": false, "title": "orderLines", "items": { "type": "object", "$ref": "#/schemas/orderLine" }, "uniqueItems": false }
+              "orderLineItems": { "type": "array", "required": false, "title": "orderLineItems", "items": { "type": "object", "$ref": "#/schemas/orderLineItem" }, "uniqueItems": false }
           }
       }
 
-  - orderLine: |
+  - orderLineItem: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "OrderLine",
-          "description": "A single orderLine",
+          "title": "OrderLineItem",
+          "description": "A single orderLineItem",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
@@ -73,15 +73,15 @@ schemas:
               "remarks": { "type": "string", "required": false, "title": "remarks" },
               "emergency": { "type": "boolean", "required": false, "title": "emergency" },
               "supervisoryNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": false, "title": "supervisoryNode" },
-              "requisitionLines": { "type": "array", "required": false, "title": "requisitionLines", "items": { "type": "object", "$ref":"#/schemas/requisitionLine" }, "uniqueItems": false }
+              "requisitionLineItems": { "type": "array", "required": false, "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false }
           }
       }
 
-  - requisitionLine: |
+  - requisitionLineItem: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "RequisitionLine",
-          "description": "A single requisitionLine",
+          "title": "RequisitionLineItem",
+          "description": "A single requisitionLineItem",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
@@ -135,7 +135,7 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "order": { "type": "object", "$ref": "#/schemas/order", "required": true },
-              "proofOfDeliveryLineItems": { "type": "array", "required": false, "title": "proofOfDeliveryLineItems", "items": { "type": "object", "$ref": "#/schemas/proofOfDeliveryLine" }, "uniqueItems": false },
+              "proofOfDeliveryLineItems": { "type": "array", "required": false, "title": "proofOfDeliveryLineItems", "items": { "type": "object", "$ref": "#/schemas/proofOfDeliveryLineItem" }, "uniqueItems": false },
               "totalShippedPacks": { "type": "integer", "required": false, "title": "totalShippedPacks" },
               "totalReceivedPacks": { "type": "integer", "required": false, "title": "totalReceivedPacks" },
               "totalReturnedPacks": { "type": "integer", "required": false, "title": "totalReturnedPacks" },
@@ -145,14 +145,14 @@ schemas:
           }
       }
 
-  - proofOfDeliveryLine: |
+  - proofOfDeliveryLineItem: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "ProofOfDeliveryLine",
-          "description": "A single proofOfDeliveryLine",
+          "title": "ProofOfDeliveryLineItem",
+          "description": "A single proofOfDeliveryLineItem",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "orderLine": { "type": "object", "$ref": "#/schemas/orderLine", "required": true },
+              "orderLineItem": { "type": "object", "$ref": "#/schemas/orderLineItem", "required": true },
               "proofOfDelivery": { "type": "object", "$ref": "#/schemas/proofOfDelivery", "required": true },
               "packToShip": { "type": "integer", "required": false, "title": "packToShip" },
               "quantityShipped": { "type": "integer", "required": false, "title": "quantityShipped" },
@@ -536,11 +536,11 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-/orderLines:
+/orderLineItems:
     displayName: Order Lines
     get:
         is: [ secured ]
-        description: Get all orderLines.
+        description: Get all orderLineItems.
         responses:
             "200":
                 headers:
@@ -554,7 +554,7 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates new orderLine.
+        description: Creates new orderLineItem.
         body:
             application/json:
         responses:
@@ -579,7 +579,7 @@ resourceTypes:
                 repeat: false
         delete:
             is: [ secured ]
-            description: Delete chosen orderLine.
+            description: Delete chosen orderLineItem.
             responses:
                 "204":
                     headers:
@@ -595,7 +595,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get chosen orderLine.
+            description: Get chosen orderLineItem.
             responses:
                 "200":
                     headers:
@@ -609,7 +609,7 @@ resourceTypes:
                       X-XSS-Protection:
         put:
             is: [ secured ]
-            description: Update existing orderLine.
+            description: Update existing orderLineItem.
             body:
                 application/json:
             responses:
@@ -950,8 +950,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
                 "409":
                     headers:
                       X-Content-Type-Options:
@@ -1039,11 +1037,11 @@ resourceTypes:
                           X-Content-Type-Options:
                           X-XSS-Protection:
 
-/requisitionLines:
+/requisitionLineItems:
     displayName: Requisition Lines
     get:
         is: [ secured ]
-        description: Get all requisitionLines.
+        description: Get all requisitionLineItems.
         responses:
             "200":
                 headers:
@@ -1057,7 +1055,7 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates new requisitionLine.
+        description: Creates new requisitionLineItem.
         body:
             application/json:
         responses:
@@ -1082,7 +1080,7 @@ resourceTypes:
                 repeat: false
         delete:
             is: [ secured ]
-            description: Delete chosen requisitionLine.
+            description: Delete chosen requisitionLineItem.
             responses:
                 "204":
                     headers:
@@ -1098,7 +1096,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get chosen requisitionLine.
+            description: Get chosen requisitionLineItem.
             responses:
                 "200":
                     headers:
@@ -1112,7 +1110,7 @@ resourceTypes:
                       X-XSS-Protection:
         put:
             is: [ secured ]
-            description: Update existing requisitionLine.
+            description: Update existing requisitionLineItem.
             body:
                 application/json:
             responses:
@@ -1129,7 +1127,7 @@ resourceTypes:
     /search:
         get:
             is: [ secured ]
-            description: Find requisitionLines with matched parameters.
+            description: Find requisitionLineItems with matched parameters.
             queryParameters:
                 requisition:
                     displayName: requisition
@@ -1419,11 +1417,11 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-/proofOfDeliveryLines:
+/proofOfDeliveryLineItems:
     displayName: Proof Of Delivery Lines
     get:
         is: [ secured ]
-        description: Get all proofOfDeliveryLines.
+        description: Get all proofOfDeliveryLineItems.
         responses:
             "200":
                 headers:
@@ -1437,7 +1435,7 @@ resourceTypes:
                   X-XSS-Protection:
     post:
         is: [ secured ]
-        description: Creates new proofOfDeliveryLine.
+        description: Creates new proofOfDeliveryLineItem.
         body:
             application/json:
         responses:
@@ -1462,7 +1460,7 @@ resourceTypes:
                 repeat: false
         delete:
             is: [ secured ]
-            description: Delete chosen proofOfDeliveryLine.
+            description: Delete chosen proofOfDeliveryLineItem.
             responses:
                 "204":
                     headers:
@@ -1478,7 +1476,7 @@ resourceTypes:
                       X-XSS-Protection:
         get:
             is: [ secured ]
-            description: Get chosen proofOfDeliveryLine.
+            description: Get chosen proofOfDeliveryLineItem.
             responses:
                 "200":
                     headers:
@@ -1492,7 +1490,7 @@ resourceTypes:
                       X-XSS-Protection:
         put:
             is: [ secured ]
-            description: Update existing proofOfDeliveryLine.
+            description: Update existing proofOfDeliveryLineItem.
             body:
                 application/json:
             responses:

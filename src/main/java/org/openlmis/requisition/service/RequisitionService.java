@@ -1,12 +1,12 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.slf4j.Logger;
@@ -33,10 +33,10 @@ public class RequisitionService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private RequisitionLineService requisitionLineService;
+  private RequisitionLineItemService requisitionLineItemService;
 
   @Autowired
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -57,10 +57,10 @@ public class RequisitionService {
     } else if (requisitionRepository.findOne(requisitionDto.getId()) == null) {
 
       requisitionDto.setStatus(RequisitionStatus.INITIATED);
-      requisitionLineService.initiateRequisitionLineFields(requisitionDto);
+      requisitionLineItemService.initiateRequisitionLineItemFields(requisitionDto);
 
-      requisitionDto.getRequisitionLines().forEach(
-          requisitionLine -> requisitionLineRepository.save(requisitionLine));
+      requisitionDto.getRequisitionLineItems().forEach(
+          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
       requisitionRepository.save(requisitionDto);
 
     } else {
@@ -133,13 +133,15 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
-    } else if (requisition.getStatus() != RequisitionStatus.AUTHORIZED) {
-      throw new RequisitionException("Cannot reject requisition: " + requisitionId
-          + " .Requisition must be waiting for approval to be rejected");
-    } else {
+    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+            || (requisition.getStatus() != RequisitionStatus.SUBMITTED
+            && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
+    } else {
+      throw new RequisitionException("Cannot reject requisition: " + requisitionId
+              + " .Requisition must be waiting for approval to be rejected");
     }
   }
 
@@ -203,21 +205,27 @@ public class RequisitionService {
    * @param requisitionList list of requisitions to be released as order
    * @return list of released requisitions
    */
-  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList)
+          throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
-      loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-      releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
+      if (RequisitionStatus.APPROVED.equals(loadedRequisition.getStatus())) {
+        loadedRequisition.setStatus(RequisitionStatus.RELEASED);
+        releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
+      } else {
+        throw new RequisitionException("Can not release requisition:" + loadedRequisition.getId()
+                + " as order. Requisition must be approved.");
+      }
     }
     return releasedRequisitions;
   }
 
   private Requisition save(Requisition requisition) throws RequisitionException {
     if (requisition != null) {
-      if (requisition.getRequisitionLines() != null) {
-        for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
-          requisitionLineService.save(requisition,requisitionLine);
+      if (requisition.getRequisitionLineItems() != null) {
+        for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
+          requisitionLineItemService.save(requisition, requisitionLineItem);
         }
       }
       return requisitionRepository.save(requisition);

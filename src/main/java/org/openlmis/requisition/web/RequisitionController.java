@@ -8,6 +8,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ErrorResponse;
@@ -19,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -266,8 +272,13 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
   public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
-    UserDto user = (UserDto) auth.getPrincipal();
-    List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
+    String userName =
+        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("username", userName);
+    List<UserDto> users = new ArrayList<>(userReferenceDataService.findAll("search", parameters));
+    List<Requisition> requisitions =
+        requisitionService.getRequisitionsForApproval(users.get(0).getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
