@@ -29,6 +29,7 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String ID_COMMENT_URL = RESOURCE_URL + "/comments/{id}";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  //private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
+  private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitions-for-approval";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String COMMENT_TEXT = "OpenLMIS";
   private static final String COMMENT = "Comment";
@@ -91,7 +92,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
+    user = new UserDto();
+    user.setId(INITIAL_USER_ID);
+    user.setUsername("admin");
+    user.setFirstName("Admin");
+    user.setLastName("User");
+    user.setEmail("example@mail.com");
+    user.setTimezone("UTC");
+
     product.setId(UUID.randomUUID());
     product.setCode(REQUISITION_REPOSITORY_NAME);
     product.setPrimaryName(REQUISITION_REPOSITORY_NAME);
@@ -138,15 +147,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<RequisitionLine> requisitionLines = new ArrayList<>();
     requisitionLines.add(requisitionLine);
 
-    user = new UserDto();
-    user.setId(INITIAL_USER_ID);
-    user.setUsername("admin");
-    user.setVerified(true);
-
     requisition.setRequisitionLines(requisitionLines);
     requisition = requisitionRepository.save(requisition);
     requisitionRepository.save(requisition);
+
   }
+
 
   @Test
   public void shouldFindRequisitions() {
@@ -646,7 +652,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals("Second comment", commentList.get(1).getBody());
   }
 
-  /*
+
+  @Ignore
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
     requisition.setSupervisoryNode(supervisoryNode.getId());
@@ -654,7 +661,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     user.setSupervisedNode(supervisoryNode.getId());
-    referenceDataService.saveUser(user);
 
     Requisition[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -674,8 +680,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
     }
     user.setSupervisedNode(null);
-    referenceDataService.saveUser(user);
-  }*/
+  }
 
   @Ignore
   @Test
@@ -811,7 +816,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore
   @Test
   public void shouldNotDeleteNonexistentComment() {
 
@@ -1058,8 +1062,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
   }
 
-  /*
-  @Test
+  //TODO: Below tests wait for fixing a searchApprovedRequisitionsWithSortAndFilterAndPaging method
+  /*@Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 10;
@@ -1095,7 +1099,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       RequisitionStatus requisitionStatus = requisition1.getStatus();
       Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
 
-      String facilityName = requisition1.getFacility().getName();
+      UUID facility = requisition1.getFacility();
       Assert.assertTrue(facilityName.contains(filterValue));
 
       String facilityCode1 = requisition1.getFacility().getCode();

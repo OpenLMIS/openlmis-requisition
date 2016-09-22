@@ -182,8 +182,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
-  @Test
   @Ignore
+  @Test
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
             .queryParam("format", "csv")
@@ -197,11 +197,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
-    //for (OrderLine o : orderRepository.findOne(secondOrder.getId()).getOrderLines()) {
-    //      assertTrue(csvContent.contains(o.getProduct().getPrimaryName()
-    //              + "," + o.getFilledQuantity()
-    //              + "," + o.getOrderedQuantity()));
-    //}
   }
 
   @Ignore

@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -269,7 +270,8 @@ public class OrderController extends BaseController {
       Map<String, Object> parameters = new HashMap<>();
       parameters.put("username", username);
 
-      List<UserDto> users = userReferenceDataService.findAll("search", parameters);
+      List<UserDto> users =
+          new ArrayList<>(userReferenceDataService.findAll("search", parameters));
 
       userId = users.get(0).getId();
     }

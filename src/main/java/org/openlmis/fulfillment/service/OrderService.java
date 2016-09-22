@@ -230,9 +230,10 @@ public class OrderService {
       order.setReceivingFacility(requisition.getFacility());
       order.setRequestingFacility(requisition.getFacility());
 
-      List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
+      List<SupplyLineDto> supplyLines =
+          new ArrayList<>(supplyLineReferenceDataService
           .search(requisition.getProgram(),
-              requisition.getSupervisoryNode());
+              requisition.getSupervisoryNode()));
       SupplyLineDto supplyLine = supplyLines.get(0);
 
       order.setSupplyingFacility(supplyLine.getSupplyingFacility());
