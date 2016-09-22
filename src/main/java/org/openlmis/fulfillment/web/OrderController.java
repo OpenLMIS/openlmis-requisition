@@ -6,6 +6,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.web.BaseController;
@@ -273,7 +274,12 @@ public class OrderController extends BaseController {
 
       userId = users.get(0).getId();
     }
-    orderService.convertToOrder(requisitionList, userId);
+    try {
+      orderService.convertToOrder(requisitionList, userId);
+    } catch (RequisitionException ex) {
+      LOGGER.debug(ex.getMessage(), ex);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 

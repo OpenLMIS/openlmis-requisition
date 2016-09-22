@@ -22,6 +22,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -214,7 +215,8 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId) {
+  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId)
+          throws RequisitionException {
     UserDto user = userReferenceDataService.findOne(userId);
     requisitionService.releaseRequisitionsAsOrder(requisitionList);
     List<Order> convertedOrders = new ArrayList<>();
