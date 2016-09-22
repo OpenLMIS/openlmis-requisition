@@ -13,7 +13,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLine;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -22,7 +22,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -43,7 +43,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
-  private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLines\" : ";
+  private static final String EXPECTED_MESSAGE_FIRST_PART = "{\n  \"requisitionLineItems\" : ";
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String INSERT_COMMENT = RESOURCE_URL + "/{id}/comments";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
@@ -64,7 +64,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   // RESOURCE_URL + "/approved/search";
 
   @Autowired
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -75,7 +75,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
 
-  private RequisitionLine requisitionLine = new RequisitionLine();
+  private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
   private ProductDto product = new ProductDto();
@@ -135,19 +135,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     configureRequisition(requisition);
 
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setBeginningBalance(1);
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
     requisitionRepository.save(requisition);
 
@@ -217,7 +217,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullRequisitionLines() {
+  public void shouldNotSubmitRequisitionWithNullRequisitionLineItems() {
 
     requisition = configureRequisition(new Requisition());
 
@@ -233,28 +233,28 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A requisitionLines must be entered prior to submission of a requisition.\"\n}";
+            + "\"A requisitionLineItems must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullQuantityInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setBeginningBalance(1);
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -276,21 +276,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullBeginningBalanceInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -312,22 +312,22 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNegativeBeginningBalanceInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setBeginningBalance(-1);
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setBeginningBalance(-1);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -349,20 +349,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullTotalReceivedQuantityInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -385,22 +385,22 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNegativeTotalReceivedQuantityInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setBeginningBalance(1);
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setStockOnHand(1);
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setTotalReceivedQuantity(-1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setTotalReceivedQuantity(-1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -422,21 +422,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullStockHandInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullStockHandInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setBeginningBalance(1);
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setTotalConsumedQuantity(1);
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -458,21 +458,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullConsumedQuantityInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setBeginningBalance(1);
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setTotalReceivedQuantity(1);
-    requisitionLine.setTotalLossesAndAdjustments(1);
-    requisitionLine.setStockOnHand(1);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     String response = restAssured.given()
@@ -495,21 +495,21 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitRequisitionWithNullAttributesInRequisitionLine() {
+  public void shouldNotSubmitRequisitionWithNullAttributesInRequisitionLineItem() {
 
-    RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(product.getId());
-    requisitionLine.setStockOnHand(null);
-    requisitionLine.setTotalConsumedQuantity(null);
-    requisitionLine.setBeginningBalance(null);
-    requisitionLine.setTotalReceivedQuantity(null);
-    requisitionLine.setTotalLossesAndAdjustments(null);
-    requisitionLineRepository.save(requisitionLine);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setStockOnHand(null);
+    requisitionLineItem.setTotalConsumedQuantity(null);
+    requisitionLineItem.setBeginningBalance(null);
+    requisitionLineItem.setTotalReceivedQuantity(null);
+    requisitionLineItem.setTotalLossesAndAdjustments(null);
+    requisitionLineItemRepository.save(requisitionLineItem);
 
-    List<RequisitionLine> requisitionLines = new ArrayList<>();
-    requisitionLines.add(requisitionLine);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
 
-    requisition.setRequisitionLines(requisitionLines);
+    requisition.setRequisitionLineItems(requisitionLineItems);
     requisition = requisitionRepository.save(requisition);
 
     restAssured.given()

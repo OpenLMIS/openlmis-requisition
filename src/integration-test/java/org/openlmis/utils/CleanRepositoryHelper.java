@@ -1,13 +1,13 @@
 package org.openlmis.utils;
 
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryLineRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.reporting.repository.TemplateParameterRepository;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.requisition.repository.CommentRepository;
-import org.openlmis.requisition.repository.RequisitionLineRepository;
+import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -24,7 +24,7 @@ public class CleanRepositoryHelper {
       UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
   @Autowired
-  private RequisitionLineRepository requisitionLineRepository;
+  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -39,13 +39,13 @@ public class CleanRepositoryHelper {
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
-  private OrderLineRepository orderLineRepository;
+  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private OrderRepository orderRepository;
 
   @Autowired
-  private ProofOfDeliveryLineRepository proofOfDeliveryLineRepository;
+  private ProofOfDeliveryLineItemRepository proofOfDeliveryLineItemRepository;
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
@@ -63,12 +63,12 @@ public class CleanRepositoryHelper {
   public void cleanAll() {
     templateParameterRepository.deleteAll();
     templateRepository.deleteAll();
-    proofOfDeliveryLineRepository.deleteAll();
+    proofOfDeliveryLineItemRepository.deleteAll();
     proofOfDeliveryRepository.deleteAll();
     configurationSettingRepository.deleteAll();
     commentRepository.deleteAll();
-    orderLineRepository.deleteAll();
-    requisitionLineRepository.deleteAll();
+    orderLineItemRepository.deleteAll();
+    requisitionLineItemRepository.deleteAll();
     requisitionRepository.deleteAll();
     requisitionTemplateRepository.deleteAll();
     orderRepository.deleteAll();
