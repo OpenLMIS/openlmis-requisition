@@ -1,15 +1,16 @@
 package org.openlmis.requisition.dto;
 
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+import java.util.UUID;
+
 @Getter
 @Setter
-public class SupplyLineDto {
+public class RoleDto {
   private UUID id;
-  private UUID supervisoryNode;
+  private String name;
   private String description;
-  private UUID program;
-  private UUID supplyingFacility;
+  private Set<RightDto> rights;
 }

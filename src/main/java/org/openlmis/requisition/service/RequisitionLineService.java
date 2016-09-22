@@ -5,6 +5,7 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -94,8 +95,9 @@ public class RequisitionLineService {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
             requisition.getProcessingPeriod());
 
+    ProcessingScheduleDto schedule = period.getProcessingSchedule();
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-            period.getProcessingSchedule(),
+            schedule.getId(),
             period.getStartDate());
 
     if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
@@ -116,7 +118,7 @@ public class RequisitionLineService {
       }
       for (RequisitionLine requisitionLine : requisition.getRequisitionLines()) {
         previousRequisitionLine = searchRequisitionLines(
-            previousRequisition.get(0), requisitionLine.getProduct());
+            previousRequisition.get(0), requisitionLine.getOrderableProduct());
 
         if (requisitionLine.getBeginningBalance() == null) {
           if (previousRequisitionLine != null
@@ -138,7 +140,7 @@ public class RequisitionLineService {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
             requisitionLine.getRequisition().getProcessingPeriod());
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-        period.getProcessingSchedule(),
+        period.getProcessingSchedule().getId(),
         period.getStartDate());
 
     if (!previousPeriods.iterator().hasNext()) {
@@ -163,7 +165,7 @@ public class RequisitionLineService {
 
     List<RequisitionLine> previousRequisitionLine;
     previousRequisitionLine = searchRequisitionLines(
-        previousRequisition.get(0), requisitionLine.getProduct());
+        previousRequisition.get(0), requisitionLine.getOrderableProduct());
 
     if (previousRequisitionLine == null) {
       requisitionLine.setBeginningBalance(0);

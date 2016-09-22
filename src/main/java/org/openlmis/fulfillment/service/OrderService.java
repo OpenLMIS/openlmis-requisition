@@ -179,11 +179,10 @@ public class OrderService {
     }
   }
 
-  // TODO: OLMIS-763 May need to use reference data service
   private List<Map<String, Object>> orderToRows(Order order) {
     List<Map<String, Object>> rows = new ArrayList<>();
     List<OrderLine> orderLines = order.getOrderLines();
-    // String orderNum = order.getOrderCode();
+    String orderNum = order.getOrderCode();
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
             order.getRequestingFacility());
     String facilityCode = requestingFacility.getCode();
@@ -194,11 +193,14 @@ public class OrderService {
 
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
-      /*row.put(DEFAULT_COLUMNS[2], orderNum);
-      /**
-      row.put(DEFAULT_COLUMNS[3], orderLine.getProduct().getPrimaryName());
-      row.put(DEFAULT_COLUMNS[4], orderLine.getProduct().getCode());
-       **/
+      row.put(DEFAULT_COLUMNS[2], orderNum);
+
+      //TODO When it's clear what to do about lack of PrimaryName
+      //TODO and different Code format in OrerableProduct
+      //TODO OrderableProduct should be retrieved from OrderableProductReferenceDataService
+      //row.put(DEFAULT_COLUMNS[3], orderLine.getOrderableProduct().getPrimaryName());
+      //row.put(DEFAULT_COLUMNS[4], orderLine.getOrderableProduct().getCode());
+
       row.put(DEFAULT_COLUMNS[2], orderLine.getOrderedQuantity());
       row.put(DEFAULT_COLUMNS[3], orderLine.getFilledQuantity());
 
@@ -254,7 +256,7 @@ public class OrderService {
       for (RequisitionLine rl : requisition.getRequisitionLines()) {
         OrderLine orderLine = new OrderLine();
         orderLine.setOrder(order);
-        orderLine.setProduct(rl.getProduct());
+        orderLine.setOrderableProduct(rl.getOrderableProduct());
         orderLine.setFilledQuantity(0L);
         orderLine.setOrderedQuantity(rl.getRequestedQuantity().longValue());
         orderLines.add(orderLine);

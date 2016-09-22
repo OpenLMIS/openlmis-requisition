@@ -5,13 +5,10 @@ import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +40,6 @@ public class RequisitionService {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
-
-  @Autowired
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -170,12 +161,13 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    UserDto user = userReferenceDataService.findOne(userId);
+    //UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    if (user.getSupervisedNode() != null) {
+    //TODO When it is clear what to do with lack of SupervisoryNode in User
+    /*if (user.getSupervisedNode() != null) {
       requisitionsForApproval.addAll(getAuthorizedRequisitions(
               supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
-    }
+    }*/
     return requisitionsForApproval;
   }
 

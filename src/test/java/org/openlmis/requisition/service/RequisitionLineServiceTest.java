@@ -13,6 +13,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
@@ -59,6 +60,9 @@ public class RequisitionLineServiceTest {
 
   @Mock
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  private ProcessingPeriodDto periodDto;
 
   @InjectMocks
   private RequisitionLineService requisitionLineService;
@@ -198,7 +202,7 @@ public class RequisitionLineServiceTest {
                                                     Integer stockInHand, Requisition requisition) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setId(UUID.randomUUID());
-    requisitionLine.setProduct(product);
+    requisitionLine.setOrderableProduct(product);
     requisitionLine.setRequestedQuantity(quantityRequested);
     requisitionLine.setStockInHand(stockInHand);
     requisitionLine.setRequisition(requisition);
@@ -211,7 +215,7 @@ public class RequisitionLineServiceTest {
         .thenReturn(Arrays.asList(requisitionTemplate));
     when(periodReferenceDataService
         .search(any(), any()))
-        .thenReturn(Arrays.asList(new ProcessingPeriodDto()));
+        .thenReturn(Arrays.asList(periodDto));
     when(requisitionService
         .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
             eq(null), eq(null), any(), eq(null), eq(null)))
@@ -224,6 +228,8 @@ public class RequisitionLineServiceTest {
         .thenReturn(new ProgramDto());
     when(periodReferenceDataService
         .findOne(any()))
-        .thenReturn(new ProcessingPeriodDto());
+        .thenReturn(periodDto);
+    when(periodDto.getProcessingSchedule())
+        .thenReturn(new ProcessingScheduleDto());
   }
 }

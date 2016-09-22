@@ -66,7 +66,7 @@ public abstract class BaseReferenceDataService<T> {
 
     ResponseEntity<List<T>> response = restTemplate.exchange(url, HttpMethod.GET,
         null, new ParameterizedTypeReference<List<T>>() {}, params);
-    
+
     List<T> result = response.getBody();
     return result;
   }

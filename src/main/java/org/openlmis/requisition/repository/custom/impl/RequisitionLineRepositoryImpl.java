@@ -40,7 +40,7 @@ public class RequisitionLineRepositoryImpl implements RequisitionLineRepositoryC
       predicate = builder.and(
               predicate,
               builder.equal(
-                      root.get("product"), product));
+                      root.get("orderableProduct"), product));
     }
 
     query.where(predicate);

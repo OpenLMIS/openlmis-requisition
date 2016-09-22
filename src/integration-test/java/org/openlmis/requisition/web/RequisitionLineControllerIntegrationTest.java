@@ -7,8 +7,9 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.RequisitionLineRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -50,7 +51,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
-  private ProductDto product = new ProductDto();
+  private OrderableProductDto product = new OrderableProductDto();
   private ProgramDto program = new ProgramDto();
   private FacilityDto facility = new FacilityDto();
 
@@ -79,7 +80,7 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
           responseRequisitionLine.getRequisition().getId());
       assertEquals(
           product.getId(),
-          responseRequisitionLine.getProduct());
+          responseRequisitionLine.getOrderableProduct());
       assertEquals(
           BEGINNING_BALANCE,
           responseRequisitionLine.getBeginningBalance());
@@ -334,14 +335,6 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
   private RequisitionLine generateRequisitionLine() {
 
     product.setId(UUID.randomUUID());
-    product.setCode(TEST_CODE);
-    product.setPrimaryName(TEST_NAME);
-    product.setDispensingUnit("Unit");
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
 
     program.setId(UUID.randomUUID());
     program.setCode(TEST_CODE);
@@ -355,12 +348,12 @@ public class RequisitionLineControllerIntegrationTest extends BaseWebIntegration
 
     period.setId(UUID.randomUUID());
     period.setName(TEST_NAME);
-    period.setProcessingSchedule(UUID.randomUUID());
+    period.setProcessingSchedule(new ProcessingScheduleDto());
     period.setDescription("Description");
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
 
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setRequisition(requisition);
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setStockOnHand(1);

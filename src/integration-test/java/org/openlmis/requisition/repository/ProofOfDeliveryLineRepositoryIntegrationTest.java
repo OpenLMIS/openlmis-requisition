@@ -60,7 +60,7 @@ public class ProofOfDeliveryLineRepositoryIntegrationTest {
     orderRepository.save(order);
 
     orderLine.setOrder(order);
-    orderLine.setProduct(UUID.randomUUID());
+    orderLine.setOrderableProduct(UUID.randomUUID());
     orderLine.setOrderedQuantity(5L);
     orderLine.setFilledQuantity(5L);
     orderLineRepository.save(orderLine);

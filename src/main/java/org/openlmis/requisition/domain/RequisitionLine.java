@@ -19,7 +19,7 @@ public class RequisitionLine extends BaseEntity {
 
   @Getter
   @Setter
-  private UUID product;
+  private UUID orderableProduct;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "requisitionId")
@@ -83,7 +83,7 @@ public class RequisitionLine extends BaseEntity {
    * @param  requisitionLine RequisitionLine with new values.
    */
   public void updateFrom(RequisitionLine requisitionLine) {
-    this.product = requisitionLine.getProduct();
+    this.orderableProduct = requisitionLine.getOrderableProduct();
     this.requisition = requisitionLine.getRequisition();
     this.stockInHand = requisitionLine.getStockInHand();
     this.stockOnHand = requisitionLine.getStockOnHand();

@@ -148,7 +148,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private RequisitionLine addRequisitionLine(Requisition requisition, UUID product) {
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequisition(requisition);
-    requisitionLine.setProduct(product);
+    requisitionLine.setOrderableProduct(product);
     requisitionLine.setRequestedQuantity(3);
     requisitionLine.setApprovedQuantity(3);
 
@@ -159,7 +159,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
                                  Long orderedQuantity) {
     OrderLine orderLine = new OrderLine();
     orderLine.setOrder(order);
-    orderLine.setProduct(product);
+    orderLine.setOrderableProduct(product);
     orderLine.setOrderedQuantity(orderedQuantity);
     orderLine.setFilledQuantity(filledQuantity);
     return orderLineRepository.save(orderLine);
@@ -198,7 +198,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
     //for (OrderLine o : orderRepository.findOne(secondOrder.getId()).getOrderLines()) {
-    //      assertTrue(csvContent.contains(o.getProduct().getPrimaryName()
+    //      assertTrue(csvContent.contains(o.getOrderableProduct().getPrimaryName()
     //              + "," + o.getFilledQuantity()
     //              + "," + o.getOrderedQuantity()));
     //}
@@ -483,8 +483,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     for (RequisitionLine line : secondOrder.getRequisition().getRequisitionLines()) {
       assertTrue(csvContent.contains(secondOrder.getOrderCode()
           + "," + secondOrder.getRequisition().getFacility().getCode()
-          + "," + line.getProduct().getCode()
-          + "," + line.getProduct().getPrimaryName()
+          + "," + line.getOrderableProduct().getCode()
+          + "," + line.getOrderableProduct().getPrimaryName()
           + "," + line.getApprovedQuantity()
           + "," + period
           + "," + orderDate));

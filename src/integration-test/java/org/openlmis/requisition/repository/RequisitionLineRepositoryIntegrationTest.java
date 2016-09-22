@@ -38,7 +38,7 @@ public class RequisitionLineRepositoryIntegrationTest
 
   RequisitionLine generateInstance() {
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(UUID.randomUUID());
+    requisitionLine.setOrderableProduct(UUID.randomUUID());
     requisitionLine.setRequisition(generateRequisition());
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setStockOnHand(1);
@@ -54,7 +54,7 @@ public class RequisitionLineRepositoryIntegrationTest
     RequisitionLine requisitionLine = cloneRequisitionLine(requisitionLines.get(0));
     List<RequisitionLine> receivedRequisitionLines = repository.searchRequisitionLines(
             requisitionLine.getRequisition(),
-            requisitionLine.getProduct());
+            requisitionLine.getOrderableProduct());
 
     Assert.assertEquals(2, receivedRequisitionLines.size());
     for (RequisitionLine receivedRequisitionLine : receivedRequisitionLines) {
@@ -62,8 +62,8 @@ public class RequisitionLineRepositoryIntegrationTest
               requisitionLine.getRequisition().getId(),
               receivedRequisitionLine.getRequisition().getId());
       Assert.assertEquals(
-              requisitionLine.getProduct(),
-              receivedRequisitionLine.getProduct());
+              requisitionLine.getOrderableProduct(),
+              receivedRequisitionLine.getOrderableProduct());
     }
   }
 
@@ -91,7 +91,7 @@ public class RequisitionLineRepositoryIntegrationTest
 
   private RequisitionLine cloneRequisitionLine(RequisitionLine requisitionLine) {
     RequisitionLine clonedRequisitionLine = new RequisitionLine();
-    clonedRequisitionLine.setProduct(requisitionLine.getProduct());
+    clonedRequisitionLine.setOrderableProduct(requisitionLine.getOrderableProduct());
     clonedRequisitionLine.setRequisition(requisitionLine.getRequisition());
     clonedRequisitionLine.setRequestedQuantity(requisitionLine.getRequestedQuantity());
     clonedRequisitionLine.setStockOnHand(requisitionLine.getStockOnHand());

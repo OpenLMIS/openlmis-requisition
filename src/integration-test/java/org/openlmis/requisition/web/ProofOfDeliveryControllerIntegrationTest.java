@@ -19,8 +19,9 @@ import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -79,16 +80,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Before
   public void setUp() {
 
-    ProductDto product = new ProductDto();
+    OrderableProductDto product = new OrderableProductDto();
     product.setId(UUID.randomUUID());
-    product.setPrimaryName("productName");
-    product.setCode("productCode");
-    product.setDispensingUnit("dispensingUnit");
-    product.setPackSize(10);
-    product.setPackRoundingThreshold(10);
-    product.setActive(true);
-    product.setFullSupply(false);
-    product.setTracer(false);
 
     FacilityDto facility = new FacilityDto();
     facility.setId(UUID.randomUUID());
@@ -102,7 +95,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     supervisoryNode.setId(UUID.randomUUID());
     supervisoryNode.setCode("NodeCode");
     supervisoryNode.setName("NodeName");
-    supervisoryNode.setFacility(facility.getId());
+    supervisoryNode.setFacility(facility);
 
     ProgramDto program = new ProgramDto();
     program.setId(UUID.randomUUID());
@@ -110,7 +103,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     ProcessingPeriodDto period = new ProcessingPeriodDto();
     period.setId(UUID.randomUUID());
-    period.setProcessingSchedule(UUID.randomUUID());
+    period.setProcessingSchedule(new ProcessingScheduleDto());
     period.setName("periodName");
     period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
@@ -138,7 +131,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     OrderLine orderLine = new OrderLine();
     orderLine.setOrder(order);
-    orderLine.setProduct(product.getId());
+    orderLine.setOrderableProduct(product.getId());
     orderLine.setOrderedQuantity(100L);
     orderLine.setFilledQuantity(100L);
     orderLineRepository.save(orderLine);

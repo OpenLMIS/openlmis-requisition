@@ -16,8 +16,9 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLine;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -77,7 +78,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private RequisitionLine requisitionLine = new RequisitionLine();
   private Requisition requisition = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
-  private ProductDto product = new ProductDto();
+  private OrderableProductDto product = new OrderableProductDto();
   private ProgramDto program = new ProgramDto();
   private FacilityDto facility = new FacilityDto();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
@@ -93,14 +94,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Before
   public void setUp() {
     product.setId(UUID.randomUUID());
-    product.setCode(REQUISITION_REPOSITORY_NAME);
-    product.setPrimaryName(REQUISITION_REPOSITORY_NAME);
-    product.setDispensingUnit(REQUISITION_REPOSITORY_NAME);
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
 
     program.setId(UUID.randomUUID());
     program.setCode(REQUISITION_REPOSITORY_NAME);
@@ -113,7 +106,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     period.setId(UUID.randomUUID());
     period.setName(REQUISITION_REPOSITORY_NAME);
-    period.setProcessingSchedule(UUID.randomUUID());
+    period.setProcessingSchedule(new ProcessingScheduleDto());
     period.setDescription(REQUISITION_REPOSITORY_NAME);
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
@@ -122,11 +115,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNode.setName("name");
     supervisoryNode.setCode("code");
     supervisoryNode.setDescription("description");
-    supervisoryNode.setFacility(facility.getId());
+    supervisoryNode.setFacility(facility);
 
     configureRequisition(requisition);
 
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setStockOnHand(1);
     requisitionLine.setTotalConsumedQuantity(1);
@@ -237,7 +230,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSubmitRequisitionWithNullQuantityInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setStockOnHand(1);
     requisitionLine.setTotalConsumedQuantity(1);
     requisitionLine.setBeginningBalance(1);
@@ -274,7 +267,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setStockOnHand(1);
     requisitionLine.setTotalConsumedQuantity(1);
     requisitionLine.setTotalReceivedQuantity(1);
@@ -311,7 +304,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setBeginningBalance(-1);
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setStockOnHand(1);
     requisitionLine.setTotalConsumedQuantity(1);
     requisitionLine.setTotalReceivedQuantity(1);
@@ -347,7 +340,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setStockOnHand(1);
     requisitionLine.setTotalConsumedQuantity(1);
     requisitionLine.setTotalLossesAndAdjustments(1);
@@ -384,7 +377,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setBeginningBalance(1);
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setStockOnHand(1);
     requisitionLine.setTotalConsumedQuantity(1);
     requisitionLine.setTotalReceivedQuantity(-1);
@@ -421,7 +414,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setBeginningBalance(1);
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setTotalConsumedQuantity(1);
     requisitionLine.setTotalReceivedQuantity(1);
     requisitionLine.setTotalLossesAndAdjustments(1);
@@ -457,7 +450,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLine requisitionLine = new RequisitionLine();
     requisitionLine.setRequestedQuantity(1);
     requisitionLine.setBeginningBalance(1);
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setTotalReceivedQuantity(1);
     requisitionLine.setTotalLossesAndAdjustments(1);
     requisitionLine.setStockOnHand(1);
@@ -492,7 +485,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSubmitRequisitionWithNullAttributesInRequisitionLine() {
 
     RequisitionLine requisitionLine = new RequisitionLine();
-    requisitionLine.setProduct(product.getId());
+    requisitionLine.setOrderableProduct(product.getId());
     requisitionLine.setStockOnHand(null);
     requisitionLine.setTotalConsumedQuantity(null);
     requisitionLine.setBeginningBalance(null);
