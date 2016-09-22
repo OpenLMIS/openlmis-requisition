@@ -4,18 +4,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @Entity
-@Table(name = "requisition_lines")
+@Table(name = "requisition_line_items")
 @NoArgsConstructor
-public class RequisitionLine extends BaseEntity {
+public class RequisitionLineItem extends BaseEntity {
 
   @Getter
   @Setter
@@ -78,17 +79,17 @@ public class RequisitionLine extends BaseEntity {
   private Integer approvedQuantity;
 
   /**
-   * Copy values of attributes into new or updated RequisitionLine.
+   * Copy values of attributes into new or updated RequisitionLineItem.
    *
-   * @param  requisitionLine RequisitionLine with new values.
+   * @param  requisitionLineItem RequisitionLine with new values.
    */
-  public void updateFrom(RequisitionLine requisitionLine) {
-    this.product = requisitionLine.getProduct();
-    this.requisition = requisitionLine.getRequisition();
-    this.stockInHand = requisitionLine.getStockInHand();
-    this.stockOnHand = requisitionLine.getStockOnHand();
-    this.beginningBalance = requisitionLine.getBeginningBalance();
-    this.totalReceivedQuantity = requisitionLine.getTotalReceivedQuantity();
+  public void updateFrom(RequisitionLineItem requisitionLineItem) {
+    this.product = requisitionLineItem.getProduct();
+    this.requisition = requisitionLineItem.getRequisition();
+    this.stockInHand = requisitionLineItem.getStockInHand();
+    this.stockOnHand = requisitionLineItem.getStockOnHand();
+    this.beginningBalance = requisitionLineItem.getBeginningBalance();
+    this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
 
   }
 

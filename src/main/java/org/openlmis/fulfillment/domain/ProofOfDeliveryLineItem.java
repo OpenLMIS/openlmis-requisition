@@ -13,14 +13,14 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "proof_of_delivery_lines")
-public class ProofOfDeliveryLine extends BaseEntity {
+@Table(name = "proof_of_delivery_line_items")
+public class ProofOfDeliveryLineItem extends BaseEntity {
 
   @OneToOne
-  @JoinColumn(name = "orderLineId", nullable = false)
+  @JoinColumn(name = "orderLineItemId", nullable = false)
   @Getter
   @Setter
-  private OrderLine orderLine;
+  private OrderLineItem orderLineItem;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "proofOfDeliveryId", nullable = false)
@@ -59,18 +59,18 @@ public class ProofOfDeliveryLine extends BaseEntity {
   private String notes;
 
   /**
-   * Copy values of attributes into new or updated ProofOfDeliveryLine.
+   * Copy values of attributes into new or updated ProofOfDeliveryLineItem.
    *
-   * @param proofOfDeliveryLine ProofOfDeliveryLine with new values.
+   * @param proofOfDeliveryLineItem ProofOfDeliveryLineItem with new values.
    */
-  public void updateFrom(ProofOfDeliveryLine proofOfDeliveryLine) {
-    this.orderLine = proofOfDeliveryLine.getOrderLine();
-    this.proofOfDelivery = proofOfDeliveryLine.getProofOfDelivery();
-    this.packToShip = proofOfDeliveryLine.getPackToShip();
-    this.quantityShipped = proofOfDeliveryLine.getQuantityShipped();
-    this.quantityReceived = proofOfDeliveryLine.getQuantityReceived();
-    this.quantityReturned = proofOfDeliveryLine.getQuantityReturned();
-    this.replacedProductCode = proofOfDeliveryLine.getReplacedProductCode();
-    this.notes = proofOfDeliveryLine.getNotes();
+  public void updateFrom(ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
+    this.orderLineItem = proofOfDeliveryLineItem.getOrderLineItem();
+    this.proofOfDelivery = proofOfDeliveryLineItem.getProofOfDelivery();
+    this.packToShip = proofOfDeliveryLineItem.getPackToShip();
+    this.quantityShipped = proofOfDeliveryLineItem.getQuantityShipped();
+    this.quantityReceived = proofOfDeliveryLineItem.getQuantityReceived();
+    this.quantityReturned = proofOfDeliveryLineItem.getQuantityReturned();
+    this.replacedProductCode = proofOfDeliveryLineItem.getReplacedProductCode();
+    this.notes = proofOfDeliveryLineItem.getNotes();
   }
 }

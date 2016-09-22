@@ -19,7 +19,7 @@ public class RequisitionTest {
   public void setUp() {
     requisition = new Requisition();
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setRequisitionLines(new ArrayList<>());
+    requisition.setRequisitionLineItems(new ArrayList<>());
   }
 
   @Test
@@ -37,15 +37,15 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateStockOnHandForRequisitionLinesWhenAuthorizing()
+  public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing()
       throws RequisitionException {
-    RequisitionLine requisitionLine = mock(RequisitionLine.class);
+    RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
 
-    requisition.setRequisitionLines(Collections.singletonList(requisitionLine));
+    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.authorize();
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
-    verify(requisitionLine).calculateStockOnHand();
+    verify(requisitionLineItem).calculateStockOnHand();
   }
 }

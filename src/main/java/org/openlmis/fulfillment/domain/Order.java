@@ -13,6 +13,11 @@ import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -25,10 +30,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -88,7 +89,7 @@ public class Order extends BaseEntity {
   // TODO: determine why it has to be set explicitly
   @JsonIdentityInfo(
       generator = ObjectIdGenerators.IntSequenceGenerator.class,
-      property = "orderLinesId")
+      property = "orderLineItemsId")
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -96,7 +97,7 @@ public class Order extends BaseEntity {
       orphanRemoval = true)
   @Getter
   @Setter
-  private List<OrderLine> orderLines;
+  private List<OrderLineItem> orderLineItems;
 
   @PrePersist
   private void prePersist() {

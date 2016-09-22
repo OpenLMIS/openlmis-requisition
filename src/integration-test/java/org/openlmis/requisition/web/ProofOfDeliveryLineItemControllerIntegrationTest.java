@@ -1,14 +1,22 @@
 package org.openlmis.requisition.web;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLine;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineRepository;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -28,29 +36,36 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+@SuppressWarnings("PMD.TooManyMethods")
+public class ProofOfDeliveryLineItemControllerIntegrationTest extends BaseWebIntegrationTest {
 
-public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
-
-  private static final String RESOURCE_URL = "/api/orderLines";
+  private static final String RESOURCE_URL = "/api/proofOfDeliveryLineItems";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
-
-  @Autowired
-  private OrderLineRepository orderLineRepository;
+  private static final String NOTES = "OpenLMIS";
 
   @Autowired
   private OrderRepository orderRepository;
 
   @Autowired
+  private OrderLineItemRepository orderLineItemRepository;
+
+  @Autowired
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Autowired
+  private ProofOfDeliveryLineItemRepository proofOfDeliveryLineItemRepository;
+
+  @Autowired
   private RequisitionRepository requisitionRepository;
 
-  private OrderLine orderLine = new OrderLine();
-  private Order order = new Order();
+  private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+  private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
 
+  /**
+   * Prepare the test environment.
+   */
   @Before
   public void setUp() {
 
@@ -74,7 +89,6 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     facility.setEnabled(true);
 
     SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
-    supervisoryNode.setId(UUID.randomUUID());
     supervisoryNode.setCode("NodeCode");
     supervisoryNode.setName("NodeName");
     supervisoryNode.setFacility(facility.getId());
@@ -84,6 +98,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     program.setCode("programCode");
 
     ProcessingScheduleDto schedule = new ProcessingScheduleDto();
+    schedule.setId(UUID.randomUUID());
     schedule.setCode("scheduleCode");
     schedule.setName("scheduleName");
 
@@ -103,11 +118,7 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setSupervisoryNode(supervisoryNode.getId());
     requisitionRepository.save(requisition);
 
-    orderLine.setOrder(order);
-    orderLine.setProduct(product.getId());
-    orderLine.setOrderedQuantity(100L);
-    orderLine.setFilledQuantity(100L);
-
+    Order order = new Order();
     order.setRequisition(requisition);
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
@@ -117,20 +128,129 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setRequestingFacility(facility.getId());
     order.setReceivingFacility(facility.getId());
     order.setSupplyingFacility(facility.getId());
-    order.setOrderLines(new ArrayList<>());
-    order.getOrderLines().add(orderLine);
     orderRepository.save(order);
+
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setOrder(order);
+    orderLineItem.setProduct(product.getId());
+    orderLineItem.setOrderedQuantity(100L);
+    orderLineItem.setFilledQuantity(100L);
+    orderLineItemRepository.save(orderLineItem);
+
+    proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);
+    proofOfDeliveryLineItem.setProofOfDelivery(proofOfDelivery);
+    proofOfDeliveryLineItem.setQuantityShipped(100L);
+    proofOfDeliveryLineItem.setQuantityReturned(100L);
+    proofOfDeliveryLineItem.setQuantityReceived(100L);
+    proofOfDeliveryLineItem.setPackToShip(100L);
+    proofOfDeliveryLineItem.setReplacedProductCode("replaced product code");
+    proofOfDeliveryLineItem.setNotes("Notes");
+
+    proofOfDelivery.setOrder(order);
+    proofOfDelivery.setTotalShippedPacks(100);
+    proofOfDelivery.setTotalReceivedPacks(100);
+    proofOfDelivery.setTotalReturnedPacks(10);
+    proofOfDelivery.setDeliveredBy("delivered by");
+    proofOfDelivery.setReceivedBy("received by");
+    proofOfDelivery.setReceivedDate(LocalDate.now());
+    proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
+    proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLineItem);
+    proofOfDeliveryRepository.save(proofOfDelivery);
   }
 
   @Test
-  public void shouldCreateOrder() {
-
-    orderLineRepository.delete(orderLine);
+  public void shouldDeleteProofOfDeliveryLineItem() {
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .body(orderLine)
+          .pathParam("id", proofOfDeliveryLineItem.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(204);
+
+    assertFalse(proofOfDeliveryLineItemRepository.exists(proofOfDeliveryLineItem.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteNonexistentProofOfDeliveryLineItem() {
+
+    proofOfDeliveryLineItemRepository.delete(proofOfDeliveryLineItem);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDeliveryLineItem.getId())
+          .when()
+          .delete(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllProofOfDeliveryLineItems() {
+
+    ProofOfDeliveryLineItem[] response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .when()
+          .get(RESOURCE_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDeliveryLineItem[].class);
+
+    Iterable<ProofOfDeliveryLineItem> proofOfDeliveryLineItems = Arrays.asList(response);
+    assertTrue(proofOfDeliveryLineItems.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenProofOfDeliveryLineItem() {
+
+    ProofOfDeliveryLineItem response = restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDeliveryLineItem.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(200)
+          .extract().as(ProofOfDeliveryLineItem.class);
+
+    assertTrue(proofOfDeliveryLineItemRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentProofOfDeliveryLineItem() {
+
+    proofOfDeliveryLineItemRepository.delete(proofOfDeliveryLineItem);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .pathParam("id", proofOfDeliveryLineItem.getId())
+          .when()
+          .get(ID_URL)
+          .then()
+          .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateProofOfDeliveryLineItem() {
+
+    proofOfDeliveryLineItemRepository.delete(proofOfDeliveryLineItem);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(proofOfDeliveryLineItem)
           .when()
           .post(RESOURCE_URL)
           .then()
@@ -140,127 +260,43 @@ public class OrderLineControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldGetAllOrders() {
+  public void shouldUpdateProofOfDeliveryLineItem() {
 
-    OrderLine[] response = restAssured.given()
+    proofOfDeliveryLineItem.setNotes(NOTES);
+
+    ProofOfDeliveryLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .when()
-          .get(RESOURCE_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(OrderLine[].class);
-
-    Iterable<OrderLine> orderLines = Arrays.asList(response);
-    assertTrue(orderLines.iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldUpdateOrderLine() {
-
-    orderLine.setOrderedQuantity(100L);
-
-    OrderLine response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", orderLine.getId())
-          .body(orderLine)
+          .pathParam("id", proofOfDeliveryLineItem.getId())
+          .body(proofOfDeliveryLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(OrderLine.class);
+          .extract().as(ProofOfDeliveryLineItem.class);
 
-    assertTrue(response.getOrderedQuantity().equals(100L));
+    assertEquals(response.getNotes(), NOTES);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldCreateNewOrderLineIfDoesNotExist() {
+  public void shouldCreateNewProofOfDeliveryLineItemIfDoesNotExist() {
 
-    orderLineRepository.delete(orderLine);
-    orderLine.setOrderedQuantity(100L);
+    proofOfDeliveryLineItemRepository.delete(proofOfDeliveryLineItem);
+    proofOfDeliveryLineItem.setNotes(NOTES);
 
-    OrderLine response = restAssured.given()
+    ProofOfDeliveryLineItem response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", ID)
-          .body(orderLine)
+          .body(proofOfDeliveryLineItem)
           .when()
           .put(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(OrderLine.class);
+          .extract().as(ProofOfDeliveryLineItem.class);
 
-    assertTrue(response.getOrderedQuantity().equals(100L));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetChosenOrderLine() {
-
-    OrderLine response = restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", orderLine.getId())
-          .when()
-          .get(ID_URL)
-          .then()
-          .statusCode(200)
-          .extract().as(OrderLine.class);
-
-    assertTrue(orderLineRepository.exists(response.getId()));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotGetNonexistentOrderLine() {
-
-    orderLineRepository.delete(orderLine);
-
-    restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", orderLine.getId())
-          .when()
-          .get(ID_URL)
-          .then()
-          .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldDeleteOrderLine() {
-
-    restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", orderLine.getId())
-          .when()
-          .delete(ID_URL)
-          .then()
-          .statusCode(204);
-
-    assertFalse(orderLineRepository.exists(orderLine.getId()));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotDeleteNonexistentOrderLine() {
-
-    orderLineRepository.delete(orderLine);
-
-    restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
-          .contentType(MediaType.APPLICATION_JSON_VALUE)
-          .pathParam("id", orderLine.getId())
-          .when()
-          .delete(ID_URL)
-          .then()
-          .statusCode(404);
-
+    assertEquals(response.getNotes(), NOTES);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
