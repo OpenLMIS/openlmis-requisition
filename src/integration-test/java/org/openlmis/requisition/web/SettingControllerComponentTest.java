@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class SettingControllerIntegrationTest extends BaseWebIntegrationTest {
+public class SettingControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "api/settings";
   private static final String KEY_URL = RESOURCE_URL + "/{key}";

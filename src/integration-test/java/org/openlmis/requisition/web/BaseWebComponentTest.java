@@ -27,7 +27,7 @@ import java.util.UUID;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
-public abstract class BaseWebIntegrationTest {
+public abstract class BaseWebComponentTest {
   protected static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
@@ -70,7 +70,7 @@ public abstract class BaseWebIntegrationTest {
   /**
    * Constructor for test.
    */
-  public BaseWebIntegrationTest() {
+  public BaseWebComponentTest() {
     RestAssured.baseURI = BASE_URL;
     restAssured = ramlDefinition.createRestAssured();
 

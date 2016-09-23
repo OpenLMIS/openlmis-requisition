@@ -20,12 +20,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+public class TemplateControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "/api/templates";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
-  private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
+  private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerComponentTest";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired

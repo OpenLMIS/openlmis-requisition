@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+public class RequisitionTemplateControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";

@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIntegrationTest {
+public class OrderNumberConfigurationControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "/api/orderNumberConfigurations";
 

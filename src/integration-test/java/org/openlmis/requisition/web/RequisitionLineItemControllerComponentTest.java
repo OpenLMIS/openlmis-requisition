@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionLineItemControllerIntegrationTest extends BaseWebIntegrationTest {
+public class RequisitionLineItemControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "/api/requisitionLineItems";
   private static final String ID_URL = RESOURCE_URL + "/{id}";

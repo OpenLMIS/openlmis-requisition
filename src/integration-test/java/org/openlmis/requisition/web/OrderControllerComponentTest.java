@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
+public class OrderControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";

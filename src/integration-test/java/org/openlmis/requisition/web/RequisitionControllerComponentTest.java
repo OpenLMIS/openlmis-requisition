@@ -46,7 +46,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
+public class RequisitionControllerComponentTest extends BaseWebComponentTest {
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";

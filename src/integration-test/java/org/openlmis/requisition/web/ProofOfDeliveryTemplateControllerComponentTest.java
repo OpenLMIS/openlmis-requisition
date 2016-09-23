@@ -14,7 +14,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.io.IOException;
 
-public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+public class ProofOfDeliveryTemplateControllerComponentTest extends BaseWebComponentTest {
 
   private static final String RESOURCE_URL = "/api/proofOfDeliveryTemplates";
   private static final String ACCESS_TOKEN = "access_token";
