@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -31,7 +30,9 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
@@ -149,40 +150,38 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  @Ignore
-  public void shouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
+  public void shouldGetAuthorizedRequisitions() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setSupervisoryNode(supervisoryNode.getId());
+    requisition.setProgram(program.getId());
 
     when(requisitionRepository
-        .searchRequisitions(null, null, null, null, null, supervisoryNode.getId(), null))
+        .searchRequisitions(null, program.getId(), null, null, null, null, null))
         .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> authorizedRequisitions =
-        requisitionService.getAuthorizedRequisitions(supervisoryNode);
+        requisitionService.getAuthorizedRequisitions(program);
     List<Requisition> expected = Arrays.asList(requisition);
 
     assertEquals(expected, authorizedRequisitions);
   }
 
   @Test
-  @Ignore
-  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
+  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedPrograms() {
 
-    UUID supervisoryNodeId = UUID.randomUUID();
-    requisition.setSupervisoryNode(supervisoryNodeId);
+    UUID programId = UUID.randomUUID();
+    requisition.setProgram(programId);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     UserDto user = mock(UserDto.class);
+    Set<ProgramDto> supervisedPrograms = new HashSet<ProgramDto>();
+    supervisedPrograms.add(program);
 
-    //when(user.getSupervisedNode()).thenReturn(supervisoryNodeId);
-    when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);
+    when(user.getSupervisedPrograms()).thenReturn(supervisedPrograms);
+    when(program.getId()).thenReturn(programId);
     when(userReferenceDataService.findOne(user.getId()))
             .thenReturn(user);
-    when(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
-            .thenReturn(supervisoryNode);
     when(requisitionRepository
-            .searchRequisitions(null, null, null, null, null, supervisoryNodeId, null))
+            .searchRequisitions(null, programId, null, null, null, null, null))
             .thenReturn(Arrays.asList(requisition));
 
     List<Requisition> requisitionsForApproval =

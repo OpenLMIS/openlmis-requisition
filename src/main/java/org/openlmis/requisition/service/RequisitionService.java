@@ -4,11 +4,12 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -40,6 +40,9 @@ public class RequisitionService {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -163,39 +166,29 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    //UserDto user = userReferenceDataService.findOne(userId);
+    UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    //TODO When it is clear what to do with lack of SupervisoryNode in User
-    /*if (user.getSupervisedNode() != null) {
-      requisitionsForApproval.addAll(getAuthorizedRequisitions(
-              supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
-    }*/
+    Set<ProgramDto> supervisedPrograms = user.getSupervisedPrograms();
+    for (ProgramDto program: supervisedPrograms) {
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(program));
+    }
     return requisitionsForApproval;
   }
 
   /**
-   * Get authorized requisitions supervised by specified Node.
+   * Get authorized requisitions for specified program.
    */
-  public List<Requisition> getAuthorizedRequisitions(SupervisoryNodeDto supervisoryNode) {
+  public List<Requisition> getAuthorizedRequisitions(ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
-    Set<SupervisoryNodeDto> supervisoryNodes = supervisoryNode.getChildNodes();
-    if (supervisoryNodes == null) {
-      supervisoryNodes = new HashSet<>();
-    }
-    supervisoryNodes.add(supervisoryNode);
-
-    for (SupervisoryNodeDto supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(
-              null, null, null, null, null, supNode.getId(), null);
-      if (reqList != null) {
-        for (Requisition req : reqList) {
-          if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
-            requisitions.add(req);
-          }
+    List<Requisition> reqList = searchRequisitions(null, program.getId(),
+        null, null, null, null, null);
+    if (reqList != null) {
+      for (Requisition req : reqList) {
+        if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
+          requisitions.add(req);
         }
       }
     }
-
     return requisitions;
   }
 
