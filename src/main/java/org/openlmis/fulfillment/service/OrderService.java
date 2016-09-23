@@ -28,6 +28,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -85,6 +86,9 @@ public class OrderService {
 
   @Autowired
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
     "productName", "productCode", "orderedQuantity", "filledQuantity"};
@@ -197,15 +201,12 @@ public class OrderService {
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
       row.put(DEFAULT_COLUMNS[2], orderNum);
-
-      //TODO When it's clear what to do about lack of PrimaryName
-      //TODO and different Code format in OrerableProduct
-      //TODO OrderableProduct should be retrieved from OrderableProductReferenceDataService
-      //row.put(DEFAULT_COLUMNS[3], orderLineItem.getOrderableProduct().getPrimaryName());
-      //row.put(DEFAULT_COLUMNS[4], orderLineItem.getOrderableProduct().getCode());
-
-      row.put(DEFAULT_COLUMNS[2], orderLineItem.getOrderedQuantity());
-      row.put(DEFAULT_COLUMNS[3], orderLineItem.getFilledQuantity());
+      //TODO: When it's clear where from get product primary Name
+      //row.put(DEFAULT_COLUMNS[3], "productPrimaryNameTODO");
+      row.put(DEFAULT_COLUMNS[4], orderableProductReferenceDataService
+          .findOne(orderLineItem.getOrderableProduct()).getCode().getCode());
+      row.put(DEFAULT_COLUMNS[5], orderLineItem.getOrderedQuantity());
+      row.put(DEFAULT_COLUMNS[6], orderLineItem.getFilledQuantity());
 
       //products which have a final approved quantity of zero are omitted
       if (orderLineItem.getOrderedQuantity() > 0) {

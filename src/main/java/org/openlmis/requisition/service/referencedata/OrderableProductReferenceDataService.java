@@ -4,7 +4,8 @@ import org.openlmis.requisition.dto.OrderableProductDto;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OrderableProductReferenceDataService extends BaseReferenceDataService {
+public class OrderableProductReferenceDataService
+    extends BaseReferenceDataService<OrderableProductDto> {
 
   @Override
   protected String getUrl() {

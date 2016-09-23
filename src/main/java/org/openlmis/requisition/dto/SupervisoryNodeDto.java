@@ -14,6 +14,5 @@ public class SupervisoryNodeDto {
   private String description;
   private FacilityDto facility;
   private SupervisoryNodeDto parentNode;
-  private UUID requisitionGroup; //TODO
   private Set<SupervisoryNodeDto> childNodes;
 }
