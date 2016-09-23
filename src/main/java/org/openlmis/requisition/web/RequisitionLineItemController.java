@@ -168,10 +168,10 @@ public class RequisitionLineItemController extends BaseController {
   }
 
   /**
-   * Returns all requisition lines with matched parameters.
-   * @param requisition requisition of searched requisition lines.
-   * @param product product of searched requisition lines.
-   * @return ResponseEntity with list of all requisition lines matching
+   * Returns all requisition line items with matched parameters.
+   * @param requisition requisition of searched requisition line items.
+   * @param product product of searched requisition line items.
+   * @return ResponseEntity with list of all requisition line items matching
    *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/requisitionLineItems/search", method = RequestMethod.GET)
