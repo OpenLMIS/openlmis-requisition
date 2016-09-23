@@ -21,6 +21,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -198,13 +199,14 @@ public class OrderService {
     for (OrderLineItem orderLineItem : orderLineItems) {
       Map<String, Object> row = new HashMap<>();
 
+      OrderableProductDto product = orderableProductReferenceDataService
+          .findOne(orderLineItem.getOrderableProduct());
+
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
       row.put(DEFAULT_COLUMNS[2], orderNum);
-      //TODO: When it's clear where from get product primary Name
-      //row.put(DEFAULT_COLUMNS[3], "productPrimaryNameTODO");
-      row.put(DEFAULT_COLUMNS[4], orderableProductReferenceDataService
-          .findOne(orderLineItem.getOrderableProduct()).getCode().getCode());
+      row.put(DEFAULT_COLUMNS[3], product.getName());
+      row.put(DEFAULT_COLUMNS[4], product.getProductCode());
       row.put(DEFAULT_COLUMNS[5], orderLineItem.getOrderedQuantity());
       row.put(DEFAULT_COLUMNS[6], orderLineItem.getFilledQuantity());
 

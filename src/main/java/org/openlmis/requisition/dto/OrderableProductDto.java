@@ -9,5 +9,6 @@ import java.util.UUID;
 @Setter
 public class OrderableProductDto {
   private UUID id;
-  private CodeDto code;
+  private String productCode;
+  private String name;
 }

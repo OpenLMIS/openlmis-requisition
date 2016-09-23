@@ -54,6 +54,14 @@ public class OrderFileColumn extends BaseEntity {
   @Setter
   private String keyPath;
 
+  @Getter
+  @Setter
+  private String related;
+
+  @Getter
+  @Setter
+  private String relatedKeyPath;
+
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderFileTemplateId", nullable = false)
   @Getter

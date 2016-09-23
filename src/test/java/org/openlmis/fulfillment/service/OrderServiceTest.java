@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -25,7 +24,6 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.CodeDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -61,9 +59,6 @@ public class OrderServiceTest {
 
   @Mock
   private OrderableProductDto orderableProductDto;
-
-  @Mock
-  private CodeDto codeDto;
 
   @Mock
   private RequisitionService requisitionService;
@@ -209,15 +204,13 @@ public class OrderServiceTest {
   }
 
   @Test
-  @Ignore
-  //TODO when OrderService is done (when it's clear where from get product primary Name)
   public void shouldConvertOrderToCsvIfItExists() throws IOException, URISyntaxException {
     Order order = orders.get(0);
     when(order.getRequestingFacility()).thenReturn(UUID.randomUUID());
     when(orderableProductReferenceDataService
         .findOne(any())).thenReturn(orderableProductDto);
-    when(orderableProductDto.getCode()).thenReturn(codeDto);
-    when(codeDto.getCode()).thenReturn("code");
+    when(orderableProductDto.getProductCode()).thenReturn("productCode");
+    when(orderableProductDto.getName()).thenReturn("product");
 
     //Creation date has to be static cuz we read expected csv from file
     ZonedDateTime zdt = ZonedDateTime.parse("2016-08-27T11:30Z");

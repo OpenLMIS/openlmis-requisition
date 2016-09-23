@@ -2,17 +2,30 @@ package org.openlmis.fulfillment.utils;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
@@ -20,10 +33,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
+@RunWith(MockitoJUnitRunner.class)
 public class OrderCsvHelperTest {
 
   private static final String ORDER = "order";
   private static final String LINE_ITEM = "lineItem";
+  private static final String ORDERABLE_PRODUCT = "orderableProduct";
 
   private static final String ORDER_NUMBER = "Order number";
   private static final String PRODUCT_CODE = "Product code";
@@ -31,18 +47,39 @@ public class OrderCsvHelperTest {
   private static final String PERIOD = "Period";
   private static final String ORDER_DATE = "Order date";
 
+  @Mock
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
+  @InjectMocks
+  private OrderCsvHelper orderCsvHelper;
+
   private Order order;
 
   @Before
   public void setUp() {
     order = createOrder();
+
+    UUID facilityId = order.getRequisition().getFacility();
+    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(createFacility());
+
+    UUID periodId = order.getRequisition().getProcessingPeriod();
+    when(periodReferenceDataService.findOne(periodId)).thenReturn(createPeriod());
+
+    UUID productId = order.getRequisition().getRequisitionLineItems().get(0).getOrderableProduct();
+    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(createProduct());
   }
 
   @Test
   public void shouldIncludeHeadersIfRequired() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "", ORDER_NUMBER, true, 1, null,
-        ORDER, "orderCode", null));
+        ORDER, "orderCode", null, null, null));
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", true, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
@@ -58,23 +95,23 @@ public class OrderCsvHelperTest {
   public void shouldExportOrderFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
-        true, 1, null, ORDER, "orderCode", null));
-    orderFileColumns.add(new OrderFileColumn(true, "label.period", PERIOD,
-        true, 2, null, ORDER, "requisition/processingPeriod", null));
+        true, 1, null, ORDER, "orderCode", null, null, null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.status", "Status",
+        true, 2, null, ORDER, "requisition/status", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("code," + order.getRequisition().getProcessingPeriod()));
+    assertTrue(csv.startsWith("code," + RequisitionStatus.SUBMITTED));
   }
 
   @Test
   public void shouldExportRequisitionLineItemFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
-    orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
-        true, 1, null, LINE_ITEM, "orderableProduct", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.orderableProduct", "Product",
+        true, 1, null, LINE_ITEM, ORDERABLE_PRODUCT, null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.quantity.approved", APPROVED_QUANTITY,
-        true, 3, null, LINE_ITEM, "approvedQuantity", null));
+        true, 2, null, LINE_ITEM, "approvedQuantity", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
@@ -89,29 +126,47 @@ public class OrderCsvHelperTest {
   public void shouldExportOnlyIncludedColumns() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
-        true, 1, null, ORDER, "orderCode", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.orderableProduct.code", PRODUCT_CODE,
-        true, 2, null, LINE_ITEM, "orderableProduct", null));
+        true, 1, null, ORDER, "orderCode", null, null, null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.orderableProduct", "Product",
+        true, 2, null, LINE_ITEM, ORDERABLE_PRODUCT, null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.approved.quantity", APPROVED_QUANTITY,
-        false, 4, null, LINE_ITEM, "approvedQuantity", null));
-    orderFileColumns.add(new OrderFileColumn(true, "label.period", PERIOD,
-        true, 5, "MM/yy", ORDER, "requisition/processingPeriod", null));
+        false, 3, null, LINE_ITEM, "approvedQuantity", null, null, null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.status", "Status",
+        true, 4, "MM/yy", ORDER, "requisition/status", null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
-        false, 6, "dd/MM/yy", ORDER, "createdDate", null));
+        false, 5, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", true, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith(ORDER_NUMBER + "," + PRODUCT_CODE + "," + PERIOD));
+    assertTrue(csv.startsWith(ORDER_NUMBER + ",Product,Status"));
+  }
+
+  @Test
+  public void shouldExportRelatedFields() throws IOException {
+    List<OrderFileColumn> orderFileColumns = new ArrayList<>();
+    orderFileColumns.add(new OrderFileColumn(true, "header.facility.code", "Facility code",
+        true, 1, null, ORDER, "requisition/facility", "Facility", "code", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
+        true, 2, null, LINE_ITEM, ORDERABLE_PRODUCT, "OrderableProduct", "productCode", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.product.name", "Product name",
+        true, 3, null, LINE_ITEM, ORDERABLE_PRODUCT, "OrderableProduct", "name", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 4,
+        "MM/yy", ORDER, "requisition/processingPeriod", "ProcessingPeriod", "startDate", null));
+
+    OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
+
+    String csv = writeCsvFile(order, orderFileTemplate);
+    assertTrue(csv.startsWith("facilityCode,productCode,productName,01/16"));
   }
 
   @Test
   public void shouldFormatDates() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
+    orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 1,
+        "MM/yy", ORDER, "requisition/processingPeriod", "ProcessingPeriod", "startDate", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
-        true, 1, "MM/yy", ORDER, "createdDate", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
-        true, 2, "dd/MM/yy", ORDER, "createdDate", null));
+        true, 2, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
@@ -123,8 +178,7 @@ public class OrderCsvHelperTest {
       throws IOException {
     StringWriter writer = new StringWriter();
 
-    OrderCsvHelper helper = new OrderCsvHelper();
-    helper.writeCsvFile(order, orderFileTemplate, writer);
+    orderCsvHelper.writeCsvFile(order, orderFileTemplate, writer);
 
     return writer.toString();
   }
@@ -135,8 +189,10 @@ public class OrderCsvHelperTest {
     requisitionLineItem.setApprovedQuantity(1);
 
     Requisition requisition = new Requisition();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setProcessingPeriod(UUID.randomUUID());
+    requisition.setFacility(UUID.randomUUID());
 
     Order order = new Order();
     order.setOrderCode("code");
@@ -144,5 +200,28 @@ public class OrderCsvHelperTest {
     order.setRequisition(requisition);
 
     return order;
+  }
+
+  private FacilityDto createFacility() {
+    FacilityDto facility = new FacilityDto();
+    facility.setCode("facilityCode");
+
+    return facility;
+  }
+
+  private ProcessingPeriodDto createPeriod() {
+    ProcessingPeriodDto period = new ProcessingPeriodDto();
+    period.setName("periodName");
+    period.setStartDate(LocalDate.of(2016, Month.JANUARY, 1));
+
+    return period;
+  }
+
+  private OrderableProductDto createProduct() {
+    OrderableProductDto product = new OrderableProductDto();
+    product.setProductCode("productCode");
+    product.setName("productName");
+
+    return product;
   }
 }
