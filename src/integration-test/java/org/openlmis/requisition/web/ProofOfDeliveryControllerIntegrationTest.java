@@ -4,7 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -35,6 +34,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -45,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 

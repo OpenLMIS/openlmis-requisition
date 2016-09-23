@@ -1,8 +1,11 @@
 package org.openlmis.requisition.web;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -10,15 +13,11 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 

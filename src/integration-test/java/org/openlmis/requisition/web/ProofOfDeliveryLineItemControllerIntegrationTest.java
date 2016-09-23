@@ -5,9 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -30,6 +28,8 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryLineItemControllerIntegrationTest extends BaseWebIntegrationTest {
 

@@ -1,20 +1,19 @@
 package org.openlmis.requisition.web;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-@Ignore
 public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/proofOfDeliveryTemplates";

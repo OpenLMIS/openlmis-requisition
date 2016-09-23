@@ -7,8 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -35,6 +33,8 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
