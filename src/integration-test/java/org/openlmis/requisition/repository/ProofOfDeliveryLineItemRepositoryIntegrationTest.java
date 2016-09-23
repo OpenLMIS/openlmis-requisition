@@ -60,7 +60,7 @@ public class ProofOfDeliveryLineItemRepositoryIntegrationTest {
     orderRepository.save(order);
 
     orderLineItem.setOrder(order);
-    orderLineItem.setProduct(UUID.randomUUID());
+    orderLineItem.setOrderableProduct(UUID.randomUUID());
     orderLineItem.setOrderedQuantity(5L);
     orderLineItem.setFilledQuantity(5L);
     orderLineItemRepository.save(orderLineItem);

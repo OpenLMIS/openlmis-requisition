@@ -180,11 +180,12 @@ public class OrderService {
     }
   }
 
-  // TODO: OLMIS-763 May need to use reference data service
   private List<Map<String, Object>> orderToRows(Order order) {
     List<Map<String, Object>> rows = new ArrayList<>();
+
     List<OrderLineItem> orderLineItems = order.getOrderLineItems();
-    // String orderNum = order.getOrderCode();
+    String orderNum = order.getOrderCode();
+
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
             order.getRequestingFacility());
     String facilityCode = requestingFacility.getCode();
@@ -195,11 +196,14 @@ public class OrderService {
 
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
-      /*row.put(DEFAULT_COLUMNS[2], orderNum);
-      /**
-      row.put(DEFAULT_COLUMNS[3], orderLineItem.getProduct().getPrimaryName());
-      row.put(DEFAULT_COLUMNS[4], orderLineItem.getProduct().getCode());
-       **/
+      row.put(DEFAULT_COLUMNS[2], orderNum);
+
+      //TODO When it's clear what to do about lack of PrimaryName
+      //TODO and different Code format in OrerableProduct
+      //TODO OrderableProduct should be retrieved from OrderableProductReferenceDataService
+      //row.put(DEFAULT_COLUMNS[3], orderLineItem.getOrderableProduct().getPrimaryName());
+      //row.put(DEFAULT_COLUMNS[4], orderLineItem.getOrderableProduct().getCode());
+
       row.put(DEFAULT_COLUMNS[2], orderLineItem.getOrderedQuantity());
       row.put(DEFAULT_COLUMNS[3], orderLineItem.getFilledQuantity());
 
@@ -257,7 +261,7 @@ public class OrderService {
       for (RequisitionLineItem rl : requisition.getRequisitionLineItems()) {
         OrderLineItem orderLineItem = new OrderLineItem();
         orderLineItem.setOrder(order);
-        orderLineItem.setProduct(rl.getProduct());
+        orderLineItem.setOrderableProduct(rl.getOrderableProduct());
         orderLineItem.setFilledQuantity(0L);
         orderLineItem.setOrderedQuantity(rl.getRequestedQuantity().longValue());
         orderLineItems.add(orderLineItem);

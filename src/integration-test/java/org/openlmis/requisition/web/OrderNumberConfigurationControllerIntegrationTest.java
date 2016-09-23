@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
@@ -12,7 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
 
-public class OrderNumberConfigurationControllerTest extends BaseWebIntegrationTest {
+@Ignore
+public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderNumberConfigurations";
 

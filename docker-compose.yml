@@ -1,65 +1,28 @@
 version: "2"
 services:
-  consul:
-    image: gliderlabs/consul-server
-    command: -server -bootstrap
-    ports:
-      - "8500:8500"
-  registrator:
-    image: gliderlabs/registrator
-    command: -internal consul://consul:8500
-    links:
-      - consul
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock
+
   requisition:
     image: openlmis/requisition
+    ports:
+      - "8080:8080"
     links:
       - db
       - log
-      - auth
-      - nginx-proxy
-      - registrator
-      - notification
-      - referencedata
     env_file: .env
-    environment:
-      - VIRTUAL_HOST=localhost
-      - VIRTUAL_PORT=8080
+
   db:
     image: openlmis/postgres
-    env_file: .env
     logging:
       driver: syslog
       options:
         syslog-address: "tcp://localhost:514"
         syslog-facility: "local1"
     depends_on: [log]
+    env_file: .env
+
   log:
     image: openlmis/rsyslog
-    volumes:
-      - '../logs/requisition:/var/log'
     ports:
       - "514:514"
-  auth:
-    image: openlmis/auth
-    ports:
-    - "8081:8080"
-    env_file: .env
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-  notification:
-    image: openlmis/notification
-    ports:
-    - "8082:8080"
-    env_file: .env
-  referencedata:
-    image: openlmis/referencedata
-    ports:
-    - "8083:8080"
-    env_file: .env
+      - '../logs/requisition:/var/log'

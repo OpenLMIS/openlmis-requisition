@@ -160,7 +160,7 @@ public class OrderServiceTest {
           requisition.getRequisitionLineItems().iterator().next();
       assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
               orderLineItem.getOrderedQuantity().longValue());
-      assertEquals(requisitionLineItem.getProduct(), orderLineItem.getProduct());
+      assertEquals(requisitionLineItem.getOrderableProduct(), orderLineItem.getOrderableProduct());
     }
 
     verify(requisitionRepository, atLeastOnce()).findOne(anyObject());

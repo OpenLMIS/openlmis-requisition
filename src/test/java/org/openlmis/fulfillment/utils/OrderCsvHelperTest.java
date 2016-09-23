@@ -72,14 +72,16 @@ public class OrderCsvHelperTest {
   public void shouldExportRequisitionLineItemFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
-        true, 1, null, LINE_ITEM, "product", null));
+        true, 1, null, LINE_ITEM, "orderableProduct", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.quantity.approved", APPROVED_QUANTITY,
         true, 3, null, LINE_ITEM, "approvedQuantity", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith(order.getRequisition().getRequisitionLineItems().get(0).getProduct()
+
+    assertTrue(csv.startsWith(order.getRequisition()
+        .getRequisitionLineItems().get(0).getOrderableProduct()
         + ",1"));
   }
 
@@ -88,8 +90,8 @@ public class OrderCsvHelperTest {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
-        true, 2, null, LINE_ITEM, "product", null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.orderableProduct.code", PRODUCT_CODE,
+        true, 2, null, LINE_ITEM, "orderableProduct", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.approved.quantity", APPROVED_QUANTITY,
         false, 4, null, LINE_ITEM, "approvedQuantity", null));
     orderFileColumns.add(new OrderFileColumn(true, "label.period", PERIOD,
@@ -129,7 +131,7 @@ public class OrderCsvHelperTest {
 
   private Order createOrder() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setProduct(UUID.randomUUID());
+    requisitionLineItem.setOrderableProduct(UUID.randomUUID());
     requisitionLineItem.setApprovedQuantity(1);
 
     Requisition requisition = new Requisition();
