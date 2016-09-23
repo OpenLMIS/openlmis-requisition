@@ -1,5 +1,6 @@
 package org.openlmis.requisition.web;
 
+import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -8,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,6 +27,9 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +40,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,8 +68,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String COMMENT_TEXT = "OpenLMIS";
   private static final String COMMENT = "Comment";
-  //private static final String APPROVED_REQUISITIONS_SEARCH_URL =
-  // RESOURCE_URL + "/approved/search";
+  private static final String APPROVED_REQUISITIONS_SEARCH_URL = RESOURCE_URL + "/approved/search";
 
   @Autowired
   private RequisitionLineItemRepository requisitionLineItemRepository;
@@ -76,6 +81,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -1056,8 +1070,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
   }
 
-  //TODO: Below tests wait for fixing a searchApprovedRequisitionsWithSortAndFilterAndPaging method
-  /*@Test
+  @Ignore
+  @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 10;
@@ -1093,18 +1107,32 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       RequisitionStatus requisitionStatus = requisition1.getStatus();
       Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
 
-      UUID facility = requisition1.getFacility();
-      Assert.assertTrue(facilityName.contains(filterValue));
+      UUID facility1Id = requisition1.getFacility();
+      FacilityDto facility1 = facilityReferenceDataService.findOne(facility1Id);
 
-      String facilityCode1 = requisition1.getFacility().getCode();
-      String facilityCode2 = requisition2.getFacility().getCode();
-      Assert.assertTrue(facilityCode1.compareTo(facilityCode2) <= 0);
+      UUID facility2Id = requisition1.getFacility();
+      FacilityDto facility2 = facilityReferenceDataService.findOne(facility2Id);
 
-      if (facilityCode1.equals(facilityCode2)) {
+      Assert.assertNotNull(facility1);
+      Assert.assertNotNull(facility2);
+      Assert.assertTrue(facility1.getName().contains(filterValue));
+
+      Assert.assertTrue(facility1.getCode()
+          .compareTo(facility2.getCode()) <= 0);
+
+      if (facility1.getCode().equals(facility2.getCode())) {
+        UUID processingPeriodId1 = requisition1.getProcessingPeriod();
+        ProcessingPeriodDto processingPeriodDto1 =
+            periodReferenceDataService.findOne(processingPeriodId1);
+
+        UUID processingPeriodId2 = requisition2.getProcessingPeriod();
+        ProcessingPeriodDto processingPeriodDto2 =
+            periodReferenceDataService.findOne(processingPeriodId2);
+
         LocalDateTime modifiedDate1 =
-            requisition1.getProcessingPeriod().getProcessingSchedule().getModifiedDate();
+            processingPeriodDto1.getProcessingSchedule().getModifiedDate();
         LocalDateTime modifiedDate2 =
-            requisition2.getProcessingPeriod().getProcessingSchedule().getModifiedDate();
+            processingPeriodDto2.getProcessingSchedule().getModifiedDate();
         Assert.assertTrue(modifiedDate1.isAfter(modifiedDate2));
       }
       requisition1 = requisition2;
@@ -1112,6 +1140,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();
@@ -1148,20 +1177,30 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       RequisitionStatus requisitionStatus = requisition1.getStatus();
       Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
 
-      String facilityCode = requisition1.getFacility().getCode();
+      UUID facilitId1 = requisition1.getFacility();
+      FacilityDto facility1 = facilityReferenceDataService.findOne(facilitId1);
+
+      String facilityCode = facility1.getCode();
       Assert.assertTrue(facilityCode.contains(filterValue));
 
-      String programName1 = requisition1.getProgram().getName();
-      String programName2 = requisition2.getProgram().getName();
-      Assert.assertTrue(programName1.compareTo(programName2) >= 0);
+      UUID programId1 = requisition1.getProgram();
+      ProgramDto program1 = programReferenceDataService.findOne(programId1);
 
-      if (programName1.equals(programName2)) {
-        LocalDate endDate1 = requisition1.getProcessingPeriod().getEndDate();
-        LocalDate endDate2 = requisition2.getProcessingPeriod().getEndDate();
-        Assert.assertTrue(endDate1.isAfter(endDate2));
+      UUID programId2 = requisition2.getProgram();
+      ProgramDto program2 = programReferenceDataService.findOne(programId2);
+
+      Assert.assertTrue(program1.getName().compareTo(program2.getName()) >= 0);
+
+      if (program1.getCode().equals(program2.getName())) {
+        UUID periodId1 = requisition1.getProcessingPeriod();
+        ProcessingPeriodDto period1 = periodReferenceDataService.findOne(periodId1);
+
+        UUID periodId2 = requisition2.getProcessingPeriod();
+        ProcessingPeriodDto period2 = periodReferenceDataService.findOne(periodId2);
+        Assert.assertTrue(period1.getEndDate().isAfter(period2.getEndDate()));
       }
       requisition1 = requisition2;
     }
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }*/
+  }
 }

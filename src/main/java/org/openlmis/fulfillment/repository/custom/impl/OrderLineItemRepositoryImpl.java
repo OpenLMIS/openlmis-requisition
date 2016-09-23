@@ -12,7 +12,7 @@ public class OrderLineItemRepositoryImpl {
   private EntityManager entityManager;
 
   /**
-   * Method deletes given order line.
+   * Method deletes given order line item.
    * @param entity entity to be deleted.
    */
   public void delete(OrderLineItem entity) {

@@ -81,7 +81,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Copy values of attributes into new or updated RequisitionLineItem.
    *
-   * @param  requisitionLineItem RequisitionLine with new values.
+   * @param  requisitionLineItem RequisitionLineItem with new values.
    */
   public void updateFrom(RequisitionLineItem requisitionLineItem) {
     this.orderableProduct = requisitionLineItem.getOrderableProduct();

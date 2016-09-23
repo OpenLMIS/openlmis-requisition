@@ -22,7 +22,7 @@ import java.util.UUID;
 
 /**
  * Service for managing requisition comments.
- * Comments are handled separately from requisition lines.
+ * Comments are handled separately from requisition line items.
  */
 @Service
 public class RequisitionCommentService {

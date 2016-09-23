@@ -35,7 +35,7 @@ public class RequisitionLineItemService {
    * Saves given RequisitionLineItem if possible.
    *
    * @param requisition Requisition which contains given RequisitionLineItem.
-   * @param requisitionLineItem Requisition Line to be saved.
+   * @param requisitionLineItem Requisition Line Item to be saved.
    * @return Saved RequisitionLineItem.
    * @throws RequisitionException Exception thrown when
    *      it is not possible to save given RequisitionLineItem.
@@ -44,7 +44,7 @@ public class RequisitionLineItemService {
                                   RequisitionLineItem requisitionLineItem)
       throws RequisitionException {
     if (requisitionLineItem == null) {
-      throw new RequisitionException("Requisition line does not exist");
+      throw new RequisitionException("Requisition line item does not exist");
     } else {
 
       List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService
@@ -63,10 +63,10 @@ public class RequisitionLineItemService {
   }
 
   /**
-   * Method returns all requisition lines with matched parameters.
-   * @param requisition requisition of searched requisition lines.
-   * @param product product of searched requisition lines.
-   * @return list of requisition lines with matched parameters.
+   * Method returns all requisition line items with matched parameters.
+   * @param requisition requisition of searched requisition line items.
+   * @param product product of searched requisition line items.
+   * @return list of requisition line items with matched parameters.
    */
   public List<RequisitionLineItem> searchRequisitionLineItems(
       Requisition requisition, UUID product) {
