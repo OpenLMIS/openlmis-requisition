@@ -16,8 +16,6 @@ import java.util.UUID;
 
 public abstract class BaseReferenceDataService<T> {
 
-  private static final String BASE_URL = "http://referencedata:8080/api";
-
   @Value("${auth.server.clientId}")
   private String clientId;
 
@@ -30,7 +28,7 @@ public abstract class BaseReferenceDataService<T> {
    * @return Requesting reference data object.
    */
   public T findOne(UUID id) {
-    String url = BASE_URL + getUrl() + id;
+    String url = getUrl() + id;
 
     RestTemplate restTemplate = new RestTemplate();
     Map<String, String> params = new HashMap<>();
@@ -58,7 +56,7 @@ public abstract class BaseReferenceDataService<T> {
    * @return all reference data T objects.
    */
   public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
-    String url = BASE_URL + getUrl() + resourceUrl;
+    String url = getUrl() + resourceUrl;
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);

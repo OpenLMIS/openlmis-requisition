@@ -13,7 +13,7 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
 
   @Override
   protected String getUrl() {
-    return "/supplyLines/";
+    return "http://referencedata:8080/api/supplyLines/";
   }
 
   @Override

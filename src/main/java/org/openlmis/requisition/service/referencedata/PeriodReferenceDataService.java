@@ -14,7 +14,7 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
 
   @Override
   protected String getUrl() {
-    return "/processingPeriods/";
+    return "http://referencedata:8080/api/processingPeriods/";
   }
 
   @Override
