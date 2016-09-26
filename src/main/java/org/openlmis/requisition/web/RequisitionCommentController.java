@@ -5,12 +5,8 @@ import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.service.RequisitionCommentService;
-import org.openlmis.utils.ErrorResponse;
 import org.openlmis.view.View;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -29,8 +25,6 @@ import java.util.UUID;
  */
 @Controller
 public class RequisitionCommentController extends BaseController {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionCommentController.class);
 
   @Autowired
   private RequisitionCommentService commentService;
@@ -102,16 +96,7 @@ public class RequisitionCommentController extends BaseController {
     if (comment == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        commentRepository.delete(comment);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-            "An error accurred while deleting requisitionTemplate with id: "
-                + commentId, ex.getMessage()
-        );
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      commentRepository.delete(comment);
     }
     return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
   }

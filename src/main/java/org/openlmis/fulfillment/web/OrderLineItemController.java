@@ -3,11 +3,9 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.requisition.web.BaseController;
-import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,18 +34,11 @@ public class OrderLineItemController extends BaseController {
    */
   @RequestMapping(value = "/orderLineItems", method = RequestMethod.POST)
   public ResponseEntity<?> createOrderLineItem(@RequestBody OrderLineItem orderLineItem) {
-    try {
-      LOGGER.debug("Creating new orderLineItem");
-      orderLineItem.setId(null);
-      OrderLineItem newOrderLineItem = orderLineItemRepository.save(orderLineItem);
-      LOGGER.debug("Creating new orderLineItem with id: " + orderLineItem.getId());
-      return new ResponseEntity<OrderLineItem>(newOrderLineItem, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving orderLineItem", ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    LOGGER.debug("Creating new orderLineItem");
+    orderLineItem.setId(null);
+    OrderLineItem newOrderLineItem = orderLineItemRepository.save(orderLineItem);
+    LOGGER.debug("Creating new orderLineItem with id: " + orderLineItem.getId());
+    return new ResponseEntity<OrderLineItem>(newOrderLineItem, HttpStatus.CREATED);
   }
 
   /**
@@ -74,26 +65,18 @@ public class OrderLineItemController extends BaseController {
                                        @PathVariable("id") UUID orderLineItemId) {
 
     OrderLineItem orderLineItemToUpdate = orderLineItemRepository.findOne(orderLineItemId);
-    try {
-      if (orderLineItemToUpdate == null) {
-        orderLineItemToUpdate = new OrderLineItem();
-        LOGGER.info("Creating new orderLineItem");
-      } else {
-        LOGGER.debug("Updating orderLineItem with id: " + orderLineItemId);
-      }
-
-      orderLineItemToUpdate.updateFrom(orderLineItem);
-      orderLineItemToUpdate = orderLineItemRepository.save(orderLineItemToUpdate);
-
-      LOGGER.debug("Saved orderLineItem with id: " + orderLineItemToUpdate.getId());
-      return new ResponseEntity<OrderLineItem>(orderLineItemToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving orderLineItem with id: "
-                  + orderLineItemToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (orderLineItemToUpdate == null) {
+      orderLineItemToUpdate = new OrderLineItem();
+      LOGGER.info("Creating new orderLineItem");
+    } else {
+      LOGGER.debug("Updating orderLineItem with id: " + orderLineItemId);
     }
+
+    orderLineItemToUpdate.updateFrom(orderLineItem);
+    orderLineItemToUpdate = orderLineItemRepository.save(orderLineItemToUpdate);
+
+    LOGGER.debug("Saved orderLineItem with id: " + orderLineItemToUpdate.getId());
+    return new ResponseEntity<>(orderLineItemToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -124,15 +107,7 @@ public class OrderLineItemController extends BaseController {
     if (orderLineItem == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        orderLineItemRepository.delete(orderLineItem);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting orderLineItem with id: "
-                    + orderLineItemId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      orderLineItemRepository.delete(orderLineItem);
       return new ResponseEntity<OrderLineItem>(HttpStatus.NO_CONTENT);
     }
   }

@@ -1,15 +1,13 @@
 package org.openlmis.reporting.web;
 
 import org.apache.log4j.Logger;
-import org.openlmis.utils.ErrorResponse;
-import org.openlmis.requisition.web.BaseController;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.reporting.service.TemplateService;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.web.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -51,11 +49,11 @@ public class TemplateController extends BaseController {
     Template template = new Template(name, null, null, CONSISTENCY_REPORT, description);
     try {
       templateService.validateFileAndInsertTemplate(template, file);
+      return new ResponseEntity<>(HttpStatus.OK);
     } catch (ReportingException ex) {
-      LOGGER.debug(ex);
+      LOGGER.error("Unable to create jasper report template", ex);
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   /**
@@ -82,26 +80,18 @@ public class TemplateController extends BaseController {
                                           @PathVariable("id") UUID templateId) {
 
     Template templateToUpdate = templateRepository.findOne(templateId);
-    try {
-      if (templateToUpdate == null) {
-        templateToUpdate = new Template();
-        LOGGER.info("Creating new template");
-      } else {
-        LOGGER.debug("Updating template with id: " + templateId);
-      }
-
-      templateToUpdate.updateFrom(template);
-      templateToUpdate = templateRepository.save(templateToUpdate);
-
-      LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
-      return new ResponseEntity<Template>(templateToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while saving template with id: "
-                  + templateToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (templateToUpdate == null) {
+      templateToUpdate = new Template();
+      LOGGER.info("Creating new template");
+    } else {
+      LOGGER.debug("Updating template with id: " + templateId);
     }
+
+    templateToUpdate.updateFrom(template);
+    templateToUpdate = templateRepository.save(templateToUpdate);
+
+    LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
+    return new ResponseEntity<Template>(templateToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -135,15 +125,7 @@ public class TemplateController extends BaseController {
     if (template == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        templateRepository.delete(template);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting template with id: "
-                    + templateId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      templateRepository.delete(template);
       return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);
     }
   }

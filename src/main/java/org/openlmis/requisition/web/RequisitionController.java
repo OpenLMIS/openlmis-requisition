@@ -1,7 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.UserDto;
@@ -34,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.validation.Valid;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -111,18 +110,11 @@ public class RequisitionController extends BaseController {
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while submitting requisition with id: "
-              + requisition.getId(), ex.getMessage());
-      LOGGER.debug(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while saving requisition with id: "
-              + requisition.getId(), ex.getMessage());
+              new ErrorResponse("An error occurred while submitting requisition with id: "
+                      + requisition.getId(), ex.getMessage());
       LOGGER.debug(errorResponse.getMessage(), ex);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
     return new ResponseEntity<Object>(requisition, HttpStatus.OK);
   }
 
@@ -344,18 +336,11 @@ public class RequisitionController extends BaseController {
       LOGGER.info("Requisition: " +  requisitionId + " authorized.");
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while authorizing requisition with id: "
-              + requisition.getId(), ex.getMessage());
-      LOGGER.debug(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while saving requisition with id: "
-              + requisition.getId(), ex.getMessage());
+              new ErrorResponse("An error occurred while authorizing requisition with id: "
+                      + requisition.getId(), ex.getMessage());
       LOGGER.debug(errorResponse.getMessage(), ex);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
     return new ResponseEntity<>(requisition, HttpStatus.OK);
   }
 

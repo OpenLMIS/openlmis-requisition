@@ -3,20 +3,19 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.utils.ErrorResponse;
-import org.openlmis.requisition.web.BaseController;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,14 +28,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class OrderController extends BaseController {
@@ -67,18 +65,11 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   public ResponseEntity<?> createOrder(@RequestBody Order order) {
-    try {
-      LOGGER.debug("Creating new order");
-      order.setId(null);
-      Order newOrder = orderRepository.save(order);
-      LOGGER.debug("Created new order with id: " + order.getId());
-      return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving order", ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    LOGGER.debug("Creating new order");
+    order.setId(null);
+    Order newOrder = orderRepository.save(order);
+    LOGGER.debug("Created new order with id: " + order.getId());
+    return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
   }
 
   /**
@@ -105,26 +96,18 @@ public class OrderController extends BaseController {
                                        @PathVariable("id") UUID orderId) {
 
     Order orderToUpdate = orderRepository.findOne(orderId);
-    try {
-      if (orderToUpdate == null) {
-        orderToUpdate = new Order();
-        LOGGER.info("Creating new order");
-      } else {
-        LOGGER.debug("Updating order with id: " + orderId);
-      }
-
-      orderToUpdate.updateFrom(order);
-      orderToUpdate = orderRepository.save(orderToUpdate);
-
-      LOGGER.debug("Saved order with id: " + orderToUpdate.getId());
-      return new ResponseEntity<Order>(orderToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving order with id: "
-                  + orderToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (orderToUpdate == null) {
+      orderToUpdate = new Order();
+      LOGGER.info("Creating new order");
+    } else {
+      LOGGER.debug("Updating order with id: " + orderId);
     }
+
+    orderToUpdate.updateFrom(order);
+    orderToUpdate = orderRepository.save(orderToUpdate);
+
+    LOGGER.debug("Saved order with id: " + orderToUpdate.getId());
+    return new ResponseEntity<>(orderToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -155,15 +138,7 @@ public class OrderController extends BaseController {
     if (order == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        orderRepository.delete(order);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting order with id: "
-                    + orderId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      orderRepository.delete(order);
       return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
     }
   }
@@ -238,7 +213,7 @@ public class OrderController extends BaseController {
               "attachment; filename=order-" + order.getOrderCode() + ".pdf");
       try {
         orderService.orderToPdf(order, columns, response.getOutputStream());
-      } catch (IOException ex) {
+      } catch (OrderPdfWriteException | IOException ex) {
         LOGGER.debug("Error getting response output stream.", ex);
       }
     } else {

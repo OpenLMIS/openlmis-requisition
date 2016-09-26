@@ -3,11 +3,9 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionTemplateService;
-import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -42,20 +40,12 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionTemplate(
         @RequestBody RequisitionTemplate requisitionTemplate) {
-    try {
-      LOGGER.debug("Creating new requisitionTemplate");
-      requisitionTemplate.setId(null);
-      RequisitionTemplate newRequisitionTemplate =
-            requisitionTemplateRepository.save(requisitionTemplate);
-      LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
-      return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while creating requisitionTemplate",
-                  ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    LOGGER.debug("Creating new requisitionTemplate");
+    requisitionTemplate.setId(null);
+    RequisitionTemplate newRequisitionTemplate =
+          requisitionTemplateRepository.save(requisitionTemplate);
+    LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
+    return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
   }
 
   /**
@@ -84,26 +74,18 @@ public class RequisitionTemplateController extends BaseController {
 
     RequisitionTemplate requisitionTemplateToUpdate =
           requisitionTemplateRepository.findOne(requisitionTemplateId);
-    try {
-      if (requisitionTemplateToUpdate == null) {
-        requisitionTemplateToUpdate = new RequisitionTemplate();
-        LOGGER.info("Creating new requisitionTemplate");
-      } else {
-        LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
-      }
-
-      requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
-      requisitionTemplateToUpdate = requisitionTemplateRepository.save(requisitionTemplateToUpdate);
-
-      LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
-      return new ResponseEntity<RequisitionTemplate>(requisitionTemplateToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while saving requisitionTemplate with id: "
-                  + requisitionTemplateToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (requisitionTemplateToUpdate == null) {
+      requisitionTemplateToUpdate = new RequisitionTemplate();
+      LOGGER.info("Creating new requisitionTemplate");
+    } else {
+      LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
     }
+
+    requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
+    requisitionTemplateToUpdate = requisitionTemplateRepository.save(requisitionTemplateToUpdate);
+
+    LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
+    return new ResponseEntity<>(requisitionTemplateToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -137,15 +119,7 @@ public class RequisitionTemplateController extends BaseController {
     if (requisitionTemplate == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        requisitionTemplateRepository.delete(requisitionTemplate);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting requisitionTemplate with id: "
-                    + requisitionTemplateId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      requisitionTemplateRepository.delete(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);
     }
   }

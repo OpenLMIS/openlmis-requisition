@@ -1,7 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -15,6 +13,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -33,8 +32,6 @@ import org.openlmis.requisition.service.referencedata.OrderableProductReferenceD
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +41,6 @@ import org.supercsv.prefs.CsvPreference;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -56,10 +52,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
+
 @Service
 public class OrderService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
   @Autowired
   private RequisitionService requisitionService;
@@ -114,7 +110,7 @@ public class OrderService {
    * @param order Order type object to be transformed into CSV
    * @param chosenColumns String array containing names of columns to be taken from order
    */
-  public void orderToCsv(Order order, String[] chosenColumns, Writer writer) {
+  public void orderToCsv(Order order, String[] chosenColumns, Writer writer) throws IOException {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
 
@@ -127,8 +123,6 @@ public class OrderService {
           for (Map<String, Object> row : rows) {
             mapWriter.write(row, chosenColumns);
           }
-        } catch (IOException ex) {
-          LOGGER.debug(ex.getMessage(), ex);
         } finally {
           closeQuietly(mapWriter);
         }
@@ -142,23 +136,29 @@ public class OrderService {
    * @param chosenColumns String array containing names of columns to be taken from order
    * @param out OutputStream to which the pdf file content will be written
    */
-  public void orderToPdf(Order order, String[] chosenColumns, OutputStream out) {
+  public void orderToPdf(Order order, String[] chosenColumns, OutputStream out)
+          throws OrderPdfWriteException {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
-      writePdf(rows, chosenColumns, out);
+      try {
+        writePdf(rows, chosenColumns, out);
+      } catch (JRException ex) {
+        throw new OrderPdfWriteException("Jasper error", ex);
+      } catch (IOException ex) {
+        throw new OrderPdfWriteException("I/O error", ex);
+      }
     }
   }
 
   //TODO: fix this temporary method after JasperTemplate class is finished
   private void writePdf(List<Map<String, Object>> data, String[] chosenColumns,
-                        OutputStream out) {
-    try {
-      ClassLoader classLoader = getClass().getClassLoader();
-      File template = new File(
-          classLoader.getResource(
-              "jasperTemplates/ordersJasperTemplate.jrxml").getFile());
+                        OutputStream out) throws JRException, IOException {
+    ClassLoader classLoader = getClass().getClassLoader();
+    File template = new File(
+            classLoader.getResource(
+                    "jasperTemplates/ordersJasperTemplate.jrxml").getFile());
 
-      FileInputStream fis = new FileInputStream(template);
+    try (FileInputStream fis = new FileInputStream(template)) {
       JasperReport pdfTemplate = JasperCompileManager.compileReport(fis);
       HashMap<String, Object>[] params = new HashMap[data.size()];
       int index = 0;
@@ -176,12 +176,6 @@ public class OrderService {
       exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
       exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
       exporter.exportReport();
-    } catch (JRException ex) {
-      LOGGER.debug("Error compiling jasper template.", ex);
-    } catch (FileNotFoundException ex) {
-      LOGGER.debug("Error reading from file.", ex);
-    } catch (NullPointerException ex) {
-      LOGGER.debug("File does not exist." , ex);
     }
   }
 
