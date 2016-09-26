@@ -1,8 +1,6 @@
 package org.openlmis.errorhandling;
 
 import org.openlmis.utils.ErrorResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -15,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Contains common error handling mappings.
  */
 @ControllerAdvice
-public class GlobalErrorHandling {
+public class GlobalErrorHandling extends AbstractErrorHandling {
 
   /**
    * Handles the {@link DataIntegrityViolationException} which signals a violation of some sort
@@ -28,10 +26,6 @@ public class GlobalErrorHandling {
   @ResponseStatus(HttpStatus.CONFLICT)
   @ResponseBody
   public ErrorResponse handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    final String msg = "Data integrity violation";
-    LOGGER.error(msg, ex);
-    return new ErrorResponse(msg, ex.getMessage());
+    return logErrorAndRespond("Data integrity violation", ex);
   }
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorHandling.class);
 }

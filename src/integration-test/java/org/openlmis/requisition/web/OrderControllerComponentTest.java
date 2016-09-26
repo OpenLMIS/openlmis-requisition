@@ -76,6 +76,7 @@ public class OrderControllerComponentTest extends BaseWebComponentTest {
 
   @Before
   public void setUp() {
+
     firstOrder = addOrder(null, "orderCode", UUID.randomUUID(), user, facility, facility, facility,
             OrderStatus.ORDERED, new BigDecimal("1.29"));
 
@@ -349,7 +350,8 @@ public class OrderControllerComponentTest extends BaseWebComponentTest {
   public void shouldCreateOrder() {
 
     firstOrder.getOrderLineItems().clear();
-    orderRepository.delete(firstOrder);
+
+    orderRepository.deleteAll();
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())

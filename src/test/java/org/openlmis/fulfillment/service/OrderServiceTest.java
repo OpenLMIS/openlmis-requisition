@@ -1,13 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +10,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -52,6 +45,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -204,7 +205,8 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldConvertOrderToCsvIfItExists() throws IOException, URISyntaxException {
+  public void shouldConvertOrderToCsvIfItExists()
+          throws IOException, URISyntaxException, OrderCsvWriteException {
     Order order = orders.get(0);
     when(order.getRequestingFacility()).thenReturn(UUID.randomUUID());
     when(orderableProductReferenceDataService
@@ -225,7 +227,7 @@ public class OrderServiceTest {
     header.add(OrderService.DEFAULT_COLUMNS[5]);
 
     StringWriter writer = new StringWriter();
-    orderService.orderToCsv(order, header.toArray(new String[0]), writer);
+    orderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
 
     String received = writer.toString().replace("\r\n","\n");
     String expected = prepareExpectedCsvOutput(order, header);

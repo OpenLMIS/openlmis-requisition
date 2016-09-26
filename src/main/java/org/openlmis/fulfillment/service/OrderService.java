@@ -13,6 +13,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
@@ -110,7 +111,8 @@ public class OrderService {
    * @param order Order type object to be transformed into CSV
    * @param chosenColumns String array containing names of columns to be taken from order
    */
-  public void orderToCsv(Order order, String[] chosenColumns, Writer writer) throws IOException {
+  public void orderToCsv(Order order, String[] chosenColumns,
+                         Writer writer) throws OrderCsvWriteException {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
 
@@ -123,6 +125,8 @@ public class OrderService {
           for (Map<String, Object> row : rows) {
             mapWriter.write(row, chosenColumns);
           }
+        } catch (IOException ex) {
+          throw new OrderCsvWriteException("I/O while creating the order CSV file", ex);
         } finally {
           closeQuietly(mapWriter);
         }
