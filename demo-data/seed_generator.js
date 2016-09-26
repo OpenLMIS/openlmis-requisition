@@ -10,20 +10,6 @@ var query = "INSERT INTO %s (SELECT * FROM json_populate_recordset(NULL::%s, '%s
 // This presents the order that must be kept for proper data insertion.
 // Tables not included here are populated in random order
 var filesOrdered = [
-    "referencedata.geographic_levels",
-    "referencedata.geographic_zones",
-    "referencedata.facility_operators",
-    "referencedata.facility_types",
-    "referencedata.facilities",
-    "referencedata.supervisory_nodes",
-    "referencedata.schedules",
-    "referencedata.periods",
-    "referencedata.product_categories",
-    "referencedata.products",
-    "referencedata.programs",
-    "referencedata.program_products",
-    "referencedata.supply_lines",
-    "referencedata.users",
     "requisition.requisition_group_program_schedules",
     "requisition.requisitions",
     "requisition.orders",
