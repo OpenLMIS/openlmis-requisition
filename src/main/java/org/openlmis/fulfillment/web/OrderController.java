@@ -264,23 +264,19 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/csv", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public void exportToCsv(@PathVariable("id") UUID orderId, HttpServletResponse response) {
+  public void exportToCsv(@PathVariable("id") UUID orderId, HttpServletResponse response)
+          throws IOException {
     Order order = orderRepository.findOne(orderId);
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
 
-    try {
-      if (order == null) {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");
-        return;
-      }
+    if (order == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");
+      return;
+    }
 
-      if (orderFileTemplate == null) {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND,
-            "Could not export Order, because Order Template File not found");
-        return;
-      }
-    } catch (IOException ex) {
-      LOGGER.info("Error sending error message to client.", ex);
+    if (orderFileTemplate == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND,
+          "Could not export Order, because Order Template File not found");
       return;
     }
 
@@ -291,13 +287,9 @@ public class OrderController extends BaseController {
     try {
       csvHelper.writeCsvFile(order, orderFileTemplate, response.getWriter());
     } catch (IOException ex) {
-      try {
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Error occurred while exporting order to csv.");
-        LOGGER.debug("Error occurred while exporting order to csv", ex);
-      } catch (IOException exception) {
-        LOGGER.info("Error sending error message to client.", exception);
-      }
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          "Error occurred while exporting order to csv.");
+      LOGGER.error("Error occurred while exporting order to csv", ex);
     }
   }
 }
