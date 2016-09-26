@@ -1,10 +1,6 @@
 package org.openlmis.requisition.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,14 +17,17 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerComponentTest extends BaseWebComponentTest {
@@ -454,6 +453,23 @@ public class OrderControllerComponentTest extends BaseWebComponentTest {
           .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnConflictForExistingOrderCode() {
+    firstOrder.getOrderLineItems().clear();
+
+    orderRepository.save(firstOrder);
+    firstOrder.setOrderLineItems(null);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(firstOrder)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(409);
   }
 /*
   @Test
