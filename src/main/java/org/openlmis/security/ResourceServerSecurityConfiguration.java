@@ -19,11 +19,11 @@ import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -67,7 +67,11 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
             "/css/*",
             "/swagger-ui.js",
             "/swagger-ui.min.js",
-            "/fonts/*"
+            "/fonts/*",
+            "/lang/*",
+            "/index.html",
+            "/o2c.html",
+            "/api-definition.json"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }
