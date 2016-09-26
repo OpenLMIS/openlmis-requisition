@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -69,7 +68,6 @@ public class OrderFileTemplateController extends BaseController {
    * @return OrderFileTemplate.
    */
   @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.GET)
-  @ResponseBody
   public ResponseEntity<OrderFileTemplate> getOrderFileTemplate() {
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
     if (orderFileTemplate == null) {

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -40,20 +41,14 @@ public class TemplateController extends BaseController {
    * @param file        File in ".jrxml" format to upload
    * @param name        Name of file in database
    * @param description Description of the file
-   * @return ResponseEntity with the "#200 OK" HTTP response status on success
-   *         or ResponseEntity containing the error description status.
    */
   @RequestMapping(value = "/templates", method = RequestMethod.POST)
-  public ResponseEntity<?> createJasperReportTemplate(@RequestPart("file") MultipartFile file,
-                                                      String name, String description) {
+  @ResponseStatus(HttpStatus.OK)
+  public void createJasperReportTemplate(@RequestPart("file") MultipartFile file,
+                                                      String name, String description)
+          throws ReportingException {
     Template template = new Template(name, null, null, CONSISTENCY_REPORT, description);
-    try {
-      templateService.validateFileAndInsertTemplate(template, file);
-      return new ResponseEntity<>(HttpStatus.OK);
-    } catch (ReportingException ex) {
-      LOGGER.error("Unable to create jasper report template", ex);
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    templateService.validateFileAndInsertTemplate(template, file);
   }
 
   /**
@@ -91,7 +86,7 @@ public class TemplateController extends BaseController {
     templateToUpdate = templateRepository.save(templateToUpdate);
 
     LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
-    return new ResponseEntity<Template>(templateToUpdate, HttpStatus.OK);
+    return new ResponseEntity<>(templateToUpdate, HttpStatus.OK);
   }
 
   /**

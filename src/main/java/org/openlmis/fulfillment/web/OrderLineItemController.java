@@ -38,7 +38,7 @@ public class OrderLineItemController extends BaseController {
     orderLineItem.setId(null);
     OrderLineItem newOrderLineItem = orderLineItemRepository.save(orderLineItem);
     LOGGER.debug("Creating new orderLineItem with id: " + orderLineItem.getId());
-    return new ResponseEntity<OrderLineItem>(newOrderLineItem, HttpStatus.CREATED);
+    return new ResponseEntity<>(newOrderLineItem, HttpStatus.CREATED);
   }
 
   /**
