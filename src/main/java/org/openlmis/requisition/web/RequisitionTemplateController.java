@@ -45,7 +45,7 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate newRequisitionTemplate =
           requisitionTemplateRepository.save(requisitionTemplate);
     LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
-    return new ResponseEntity<RequisitionTemplate>(newRequisitionTemplate, HttpStatus.CREATED);
+    return new ResponseEntity<>(newRequisitionTemplate, HttpStatus.CREATED);
   }
 
   /**
