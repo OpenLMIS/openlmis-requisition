@@ -37,8 +37,7 @@ public abstract class BaseReferenceDataService<T> {
     ResponseEntity<T> responseEntity = restTemplate
         .exchange(url, HttpMethod.GET, null, getResultClass(), params);
 
-    T object = responseEntity.getBody();
-    return object;
+    return responseEntity.getBody();
   }
 
   public Collection<T> findAll() {
@@ -64,9 +63,8 @@ public abstract class BaseReferenceDataService<T> {
 
     ResponseEntity<Collection<T>> response = restTemplate.exchange(url, HttpMethod.GET,
         null, new ParameterizedTypeReference<Collection<T>>() {}, params);
-    
-    Collection<T> result = response.getBody();
-    return result;
+
+    return response.getBody();
   }
 
   protected abstract String getUrl();
