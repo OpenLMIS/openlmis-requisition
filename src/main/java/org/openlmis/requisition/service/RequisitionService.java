@@ -5,7 +5,11 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
+import org.openlmis.requisition.exception.RequisitionAlreadyExistsException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -23,8 +27,6 @@ import java.util.UUID;
 
 @Service
 public class RequisitionService {
-  private static final String REQUISITION_NULL_MESSAGE = "requisition cannot be null";
-  private static final String REQUISITION_DOES_NOT_EXISTS_MESSAGE = "Requisition does not exist: ";
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
@@ -56,18 +58,18 @@ public class RequisitionService {
                                           throws RequisitionException {
 
     if (requisitionDto == null) {
-      throw new RequisitionException("Requisition cannot be initiated with null object");
+      throw new IllegalArgumentException("Requisition cannot be initiated with null object");
     } else if (requisitionRepository.findOne(requisitionDto.getId()) == null) {
 
       requisitionDto.setStatus(RequisitionStatus.INITIATED);
       requisitionLineItemService.initiateRequisitionLineItemFields(requisitionDto);
 
       requisitionDto.getRequisitionLineItems().forEach(
-          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
+              requisitionLineItemRepository::save);
       requisitionRepository.save(requisitionDto);
 
     } else {
-      throw new RequisitionException("Cannot initiate requisition."
+      throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
           + " Requisition with such parameters already exists");
     }
 
@@ -78,22 +80,20 @@ public class RequisitionService {
    * Delete given Requisition if possible.
    *
    * @param requisitionId UUID of Requisition to be deleted.
-   * @return True if deletion successful, false otherwise.
    * @throws RequisitionException Exception thrown when it is not possible to delete a requisition.
    */
-  public boolean tryDelete(UUID requisitionId) throws RequisitionException {
+  public void delete(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
+      throw new RequisitionNotFoundException(requisitionId);
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-      LOGGER.debug("Delete failed - " + REQUISITION_BAD_STATUS_MESSAGE);
+      throw new InvalidRequisitionStatusException("Delete failed - "
+              + REQUISITION_BAD_STATUS_MESSAGE);
     } else {
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
-      return true;
     }
-    return false;
   }
 
   /**
@@ -107,18 +107,17 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new RequisitionException("Skip failed - "
-          + REQUISITION_NULL_MESSAGE);
+      throw new RequisitionNotFoundException(requisitionId);
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-        throw new RequisitionException("Skip failed - "
+        throw new InvalidRequisitionStatusException("Skip failed - "
             + REQUISITION_BAD_STATUS_MESSAGE);
       } else if (!program.getPeriodsSkippable()) {
-        throw new RequisitionException("Skip failed - "
+        throw new SkipNotAllowedException("Skip failed - "
             + "requisition program does not allow skipping");
       } else {
-        LOGGER.info("Requisition skipped");
+        LOGGER.debug("Requisition skipped");
         requisition.setStatus(RequisitionStatus.SKIPPED);
         return requisitionRepository.save(requisition);
       }
@@ -135,7 +134,7 @@ public class RequisitionService {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
+      throw new RequisitionNotFoundException(requisitionId);
     } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
             || (requisition.getStatus() != RequisitionStatus.SUBMITTED
             && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
@@ -143,7 +142,7 @@ public class RequisitionService {
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
     } else {
-      throw new RequisitionException("Cannot reject requisition: " + requisitionId
+      throw new InvalidRequisitionStatusException("Cannot reject requisition: " + requisitionId
               + " .Requisition must be waiting for approval to be rejected");
     }
   }
@@ -207,7 +206,8 @@ public class RequisitionService {
         loadedRequisition.setStatus(RequisitionStatus.RELEASED);
         releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
       } else {
-        throw new RequisitionException("Can not release requisition:" + loadedRequisition.getId()
+        throw new InvalidRequisitionStatusException("Can not release requisition:"
+                + loadedRequisition.getId()
                 + " as order. Requisition must be approved.");
       }
     }
