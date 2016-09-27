@@ -155,7 +155,7 @@ public class RequisitionController extends BaseController {
         requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
         LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-        return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
+        return new ResponseEntity<>(requisitionToUpdate, HttpStatus.OK);
       } else {
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
       }
