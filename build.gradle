@@ -116,6 +116,7 @@ task integrationTest(type: Test) {
     classpath = sourceSets.integrationTest.runtimeClasspath
     testLogging {
         events "passed", "skipped", "failed"
+        exceptionFormat = 'full'
     }
     mustRunAfter test
 }
@@ -206,6 +207,7 @@ apply from: "documentation.gradle"
 test {
     testLogging {
         events 'started', 'passed'
+        exceptionFormat = 'full'
     }
 }
 
