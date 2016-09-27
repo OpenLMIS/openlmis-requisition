@@ -9,7 +9,7 @@ public class OrderableProductReferenceDataService
 
   @Override
   protected String getUrl() {
-    return "/orderableProducts/";
+    return "http://referencedata:8080/api/orderableProducts/";
   }
 
   @Override
