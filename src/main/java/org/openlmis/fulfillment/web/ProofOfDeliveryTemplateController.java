@@ -1,8 +1,6 @@
 package org.openlmis.fulfillment.web;
 
-import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.openlmis.reporting.exception.ReportingException;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.TemplateService;
@@ -26,9 +24,6 @@ import java.io.InputStream;
 
 @Controller
 public class ProofOfDeliveryTemplateController extends BaseController {
-
-  private static final Logger LOGGER = Logger.getLogger(
-      ProofOfDeliveryTemplateController.class);
 
   private static final String PRINT_POD = "Print POD";
   private static final String DESCRIPTION_POD = "Template to print Proof Of Delivery";
@@ -58,7 +53,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
   @RequestMapping(value = "/proofOfDeliveryTemplates", method = RequestMethod.GET)
   @ResponseBody
   public void downloadPodXmlTemlate(HttpServletResponse response)
-          throws IOException {
+          throws IOException, ReportingException {
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
     if (podPrintTemplate == null) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND,
@@ -67,21 +62,15 @@ public class ProofOfDeliveryTemplateController extends BaseController {
       response.setContentType("application/xml");
       response.addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
 
-      try {
-        File file = templateService.convertJasperToXml(podPrintTemplate);
+      File file = templateService.convertJasperToXml(podPrintTemplate);
 
-        try (InputStream fis = new FileInputStream(file);
-             InputStream bis = new BufferedInputStream(fis)) {
+      try (InputStream fis = new FileInputStream(file);
+           InputStream bis = new BufferedInputStream(fis)) {
 
-          IOUtils.copy(bis, response.getOutputStream());
-          response.flushBuffer();
-        } catch (IOException ex) {
-          LOGGER.debug("Error writing jrxml file to output stream.", ex);
-          response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
-        }
-      } catch (JRException ex) {
-        LOGGER.debug("Error writing report to xml stream.", ex);
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
+        IOUtils.copy(bis, response.getOutputStream());
+        response.flushBuffer();
+      } catch (IOException ex) {
+        throw new ReportingException("Error writing jrxml file to output stream.", ex);
       }
     }
   }

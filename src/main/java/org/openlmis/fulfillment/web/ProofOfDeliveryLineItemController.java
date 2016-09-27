@@ -42,8 +42,8 @@ public class ProofOfDeliveryLineItemController extends BaseController {
     proofOfDeliveryLineItem.setId(null);
     ProofOfDeliveryLineItem newProofOfDeliveryLineItem
             = proofOfDeliveryLineItemRepository.save(proofOfDeliveryLineItem);
-    LOGGER.debug("Created new proofOfDeliveryLineItem with id: "
-        + proofOfDeliveryLineItem.getId());
+    LOGGER.debug("Created new proofOfDeliveryLineItem with id: {}",
+        proofOfDeliveryLineItem.getId());
     return new ResponseEntity<>(newProofOfDeliveryLineItem, HttpStatus.CREATED);
   }
 
@@ -76,7 +76,7 @@ public class ProofOfDeliveryLineItemController extends BaseController {
           = proofOfDeliveryLineItemRepository.findOne(proofOfDeliveryLineItemId);
     if (proofOfDeliveryLineItemToUpdate == null) {
       proofOfDeliveryLineItemToUpdate = new ProofOfDeliveryLineItem();
-      LOGGER.info("Creating new proofOfDeliveryLineItem");
+      LOGGER.debug("Creating new proofOfDeliveryLineItem");
     } else {
       LOGGER.debug("Updating proofOfDeliveryLineItem with id: " + proofOfDeliveryLineItemId);
     }

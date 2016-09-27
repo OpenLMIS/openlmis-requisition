@@ -67,7 +67,7 @@ public class OrderLineItemController extends BaseController {
     OrderLineItem orderLineItemToUpdate = orderLineItemRepository.findOne(orderLineItemId);
     if (orderLineItemToUpdate == null) {
       orderLineItemToUpdate = new OrderLineItem();
-      LOGGER.info("Creating new orderLineItem");
+      LOGGER.debug("Creating new orderLineItem");
     } else {
       LOGGER.debug("Updating orderLineItem with id: " + orderLineItemId);
     }

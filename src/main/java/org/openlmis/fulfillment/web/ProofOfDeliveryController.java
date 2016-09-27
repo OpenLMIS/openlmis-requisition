@@ -88,7 +88,7 @@ public class ProofOfDeliveryController extends BaseController {
           proofOfDeliveryRepository.findOne(proofOfDeliveryId);
     if (proofOfDeliveryToUpdate == null) {
       proofOfDeliveryToUpdate = new ProofOfDelivery();
-      LOGGER.info("Creating new proofOfDelivery");
+      LOGGER.debug("Creating new proofOfDelivery");
     } else {
       LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
     }
