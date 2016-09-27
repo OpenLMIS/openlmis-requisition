@@ -14,6 +14,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.BaseController;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -216,8 +217,11 @@ public class OrderController extends BaseController {
     try {
       orderService.convertToOrder(requisitionList, userId);
     } catch (RequisitionException ex) {
-      LOGGER.debug(ex.getMessage(), ex);
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      ErrorResponse errorResponse =
+              new ErrorResponse("An error occurred while converting requisitions to order",
+                      ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(HttpStatus.CREATED);
   }

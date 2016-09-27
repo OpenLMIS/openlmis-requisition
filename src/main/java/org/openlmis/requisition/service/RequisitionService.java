@@ -137,14 +137,13 @@ public class RequisitionService {
     if (requisition == null) {
       throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
     } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
-            || (requisition.getStatus() != RequisitionStatus.SUBMITTED
-            && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
+            || requisition.getStatus() == RequisitionStatus.SUBMITTED) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
     } else {
       throw new RequisitionException("Cannot reject requisition: " + requisitionId
-              + " .Requisition must be waiting for approval to be rejected");
+              + " .Requisition must be waiting for approval or authorization to be rejected");
     }
   }
 
@@ -203,7 +202,7 @@ public class RequisitionService {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
-      if (RequisitionStatus.APPROVED.equals(loadedRequisition.getStatus())) {
+      if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
         loadedRequisition.setStatus(RequisitionStatus.RELEASED);
         releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
       } else {
