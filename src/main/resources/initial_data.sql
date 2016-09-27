@@ -8,7 +8,7 @@ VALUES ('33b2d2e9-3167-46b0-95d4-1295be9afc21', true, 'fulfillment.header.order.
 ('9e825396-269d-4873-baa4-89054e2722f5', true, 'fulfillment.header.product.name', 'Product name', true, 4, null, 'lineItem', 'orderableProduct', 'OrderableProduct', 'name', '457ed5b0-80d7-4cb6-af54-e3f6138c8128'),
 ('cd57f329-f549-4717-882e-ecbf98122c39', true, 'fulfillment.header.approved.quantity', 'Approved quantity', true, 5, null, 'lineItem', 'approvedQuantity', null, null, '457ed5b0-80d7-4cb6-af54-e3f6138c8128'),
 ('d0e1aec7-1556-4dc1-8e21-d80a2d76b678', true, 'fulfillment.header.period', 'Period', true, 6, 'MM/yy', 'order', 'requisition/processingPeriod', 'ProcessingPeriod', 'startDate', '457ed5b0-80d7-4cb6-af54-e3f6138c8128'),
-('dab6eec0-4cb4-4d4c-94b7-820308da73ff', true, 'fulfillment.header.order.date', 'Order date', true, 7, 'dd/MM/yy', 'order', 'createdDate', '457ed5b0-80d7-4cb6-af54-e3f6138c8128');
+('dab6eec0-4cb4-4d4c-94b7-820308da73ff', true, 'fulfillment.header.order.date', 'Order date', true, 7, 'dd/MM/yy', 'order', 'createdDate', null, null, '457ed5b0-80d7-4cb6-af54-e3f6138c8128');
 
 INSERT INTO requisition.order_number_configurations (id, orderNumberPrefix, includeOrderNumberPrefix, includeProgramCode, includeRequisitionTypeSuffix)
 VALUES ('70543032-b131-4219-b44d-7781d29db330', 'O', true, true, true);
