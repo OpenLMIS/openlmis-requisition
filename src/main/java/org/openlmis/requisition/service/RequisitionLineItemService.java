@@ -7,6 +7,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionLineItemNotFoundException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,8 @@ public class RequisitionLineItemService {
                                   RequisitionLineItem requisitionLineItem)
       throws RequisitionException {
     if (requisitionLineItem == null) {
-      throw new RequisitionException("Requisition line item does not exist");
+      throw new RequisitionLineItemNotFoundException(
+              "Requisition line item does not exist");
     } else {
 
       List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService

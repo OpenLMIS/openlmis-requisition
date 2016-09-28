@@ -1,12 +1,6 @@
 package org.openlmis.requisition.web;
 
-import static java.lang.Integer.valueOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -33,8 +27,6 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,6 +36,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.lang.Integer.valueOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerComponentTest extends BaseWebComponentTest {
@@ -612,7 +611,7 @@ public class RequisitionControllerComponentTest extends BaseWebComponentTest {
           .when()
           .delete(ID_URL)
           .then()
-          .statusCode(400);
+          .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
