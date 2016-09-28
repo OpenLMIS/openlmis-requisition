@@ -45,7 +45,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionControllerComponentTest extends BaseWebComponentTest {
+public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";

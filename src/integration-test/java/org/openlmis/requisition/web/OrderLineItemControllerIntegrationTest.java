@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class OrderLineItemControllerComponentTest extends BaseWebComponentTest {
+public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderLineItems";
   private static final String ID_URL = RESOURCE_URL + "/{id}";

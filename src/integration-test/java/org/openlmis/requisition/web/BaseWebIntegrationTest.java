@@ -1,10 +1,13 @@
 package org.openlmis.requisition.web;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -15,17 +18,16 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.UUID;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
-public abstract class BaseWebComponentTest {
+public abstract class BaseWebIntegrationTest {
   protected static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
@@ -68,7 +70,7 @@ public abstract class BaseWebComponentTest {
   /**
    * Constructor for test.
    */
-  public BaseWebComponentTest() {
+  public BaseWebIntegrationTest() {
     RestAssured.baseURI = BASE_URL;
     restAssured = ramlDefinition.createRestAssured();
 
