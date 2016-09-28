@@ -55,7 +55,7 @@ public class RequisitionCommentService {
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
-    List<UserDto> users = new ArrayList<>(userReferenceDataService.findAll("search", parameters));
+    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
     comment.setAuthorId(users.get(0).getId());
     comment.setRequisition(requisition);
 

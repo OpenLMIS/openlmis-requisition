@@ -210,7 +210,7 @@ public class OrderController extends BaseController {
       parameters.put("username", username);
 
       List<UserDto> users =
-          new ArrayList<>(userReferenceDataService.findAll("search", parameters));
+          new ArrayList<>(userReferenceDataService.findUsers(parameters));
 
       userId = users.get(0).getId();
     }

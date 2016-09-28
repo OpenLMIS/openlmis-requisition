@@ -243,7 +243,7 @@ public class RequisitionController extends BaseController {
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
-    List<UserDto> users = new ArrayList<>(userReferenceDataService.findAll("search", parameters));
+    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
     List<Requisition> requisitions =
         requisitionService.getRequisitionsForApproval(users.get(0).getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
