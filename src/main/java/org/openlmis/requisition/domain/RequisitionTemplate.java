@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -27,6 +28,7 @@ public class RequisitionTemplate extends BaseEntity {
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
+  @CollectionTable(name = "columns_maps")
   @Getter
   @Setter
   private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();
