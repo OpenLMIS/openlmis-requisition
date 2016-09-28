@@ -9,7 +9,7 @@ public class SupervisoryNodeReferenceDataService
 
   @Override
   protected String getUrl() {
-    return "http://referencedata:8080/api/supervisoryNodes/";
+    return "/api/supervisoryNodes/";
   }
 
   @Override

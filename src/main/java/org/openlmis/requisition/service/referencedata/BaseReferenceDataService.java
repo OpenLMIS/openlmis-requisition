@@ -22,13 +22,16 @@ public abstract class BaseReferenceDataService<T> {
   @Value("${auth.server.clientSecret}")
   private String clientSecret;
 
+  @Value("${referencedata.url}")
+  private String referenceDataUrl;
+
   /**
    * Return one object from Reference data service.
    * @param id UUID of requesting object.
    * @return Requesting reference data object.
    */
   public T findOne(UUID id) {
-    String url = getUrl() + id;
+    String url = getReferenceDataUrl() + getUrl() + id;
 
     RestTemplate restTemplate = new RestTemplate();
     Map<String, String> params = new HashMap<>();
@@ -55,7 +58,7 @@ public abstract class BaseReferenceDataService<T> {
    * @return all reference data T objects.
    */
   public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
-    String url = getUrl() + resourceUrl;
+    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
@@ -70,6 +73,10 @@ public abstract class BaseReferenceDataService<T> {
   protected abstract String getUrl();
 
   protected abstract Class<T> getResultClass();
+
+  protected String getReferenceDataUrl() {
+    return referenceDataUrl;
+  }
 
   private String obtainAccessToken() {
     RestTemplate restTemplate = new RestTemplate();

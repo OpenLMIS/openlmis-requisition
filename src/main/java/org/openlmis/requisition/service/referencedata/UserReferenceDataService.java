@@ -8,7 +8,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
 
   @Override
   protected String getUrl() {
-    return "http://referencedata:8080/api/users/";
+    return "/api/users/";
   }
 
   @Override
