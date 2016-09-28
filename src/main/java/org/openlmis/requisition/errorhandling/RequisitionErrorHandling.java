@@ -43,7 +43,7 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
   public ErrorResponse handleRequisitionOrItemNotFound(
-          RequisitionAlreadyExistsException ex) {
+          RequisitionException ex) {
     return logErrorAndRespond("Requisition already exists.", ex);
   }
 }
