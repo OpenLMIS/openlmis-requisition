@@ -3,6 +3,7 @@ package org.openlmis.requisition.repository.custom.impl;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryCustom;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -22,7 +23,7 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
    * @param program Program of searched requisition template.
    * @return RequisitionTemplate with matched parameters.
    */
-  public RequisitionTemplate searchRequisitionTemplates(UUID program) {
+  public List<RequisitionTemplate> searchRequisitionTemplates(UUID program) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<RequisitionTemplate> query = builder.createQuery(RequisitionTemplate.class);
     Root<RequisitionTemplate> root = query.from(RequisitionTemplate.class);
@@ -36,6 +37,6 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
     }
 
     query.where(predicate);
-    return entityManager.createQuery(query).getSingleResult();
+    return entityManager.createQuery(query).getResultList();
   }
 }

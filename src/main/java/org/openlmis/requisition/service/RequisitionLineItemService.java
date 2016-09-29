@@ -50,7 +50,7 @@ public class RequisitionLineItemService {
     } else {
 
       RequisitionTemplate requisitionTemplate = requisitionTemplateService
-          .searchRequisitionTemplates(requisition.getProgram());
+          .searchRequisitionTemplates(requisition.getProgram()).get(0);
 
       RequisitionTemplateColumn requisitionTemplateColumn =
           requisitionTemplate.getColumnsMap().get("beginningBalance");

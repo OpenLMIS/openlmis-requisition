@@ -32,13 +32,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.validation.Valid;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -72,21 +73,20 @@ public class RequisitionController extends BaseController {
   /**
    * Allows creating new requisitions.
    *
-   * @param programId UUID of Program.
-   * @param facilityId UUID of Facility.
+   * @param program UUID of Program.
+   * @param facility UUID of Facility.
    * @param emergency Emergency status.
-   * @param suggestedPeriodId Period for requisition.
+   * @param suggestedPeriod Period for requisition.
    * @return ResponseEntity containing the created requisition
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestBody UUID programId,
-                                               @RequestBody UUID facilityId,
-                                               @RequestBody UUID suggestedPeriodId,
-                                               @RequestBody Boolean emergency,
-                                               BindingResult bindingResult) {
+  public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
+                                    @RequestParam(value = "facility") UUID facility,
+                                    @RequestParam(value = "suggestedPeriod") UUID suggestedPeriod,
+                                    @RequestParam(value = "emergency") Boolean emergency) {
     try {
-      Requisition newRequisition = requisitionService.initiate(programId,
-          facilityId, suggestedPeriodId, emergency);
+      Requisition newRequisition = requisitionService.initiate(program,
+          facility, suggestedPeriod, emergency);
       return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
     } catch (RequisitionException ex) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);

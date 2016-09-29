@@ -1,6 +1,7 @@
 package org.openlmis.requisition.web;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import com.google.common.collect.ImmutableMap;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -9,6 +10,8 @@ import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -19,6 +22,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -36,6 +40,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
@@ -88,6 +94,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -157,6 +166,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
     requisitionRepository.save(requisition);
 
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.setColumnsMap(ImmutableMap.of("testColumn", new RequisitionTemplateColumn()));
+    template.setProgram(program.getId());
+
+    requisitionTemplateRepository.save(template);
   }
 
 
@@ -856,14 +870,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  @Ignore
   public void shouldInitializeRequisition() {
 
     requisitionRepository.delete(requisition);
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body(requisition)
+            .queryParam("program", program.getId())
+            .queryParam("facility", facility.getId())
+            .queryParam("suggestedPeriod", period.getId())
+            .queryParam("emergency", false)
             .when()
             .post(INITIATE_URL)
             .then()
