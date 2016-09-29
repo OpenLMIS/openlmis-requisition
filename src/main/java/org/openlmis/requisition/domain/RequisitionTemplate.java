@@ -5,6 +5,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -12,15 +16,13 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
+  @Column(unique = true)
   @Getter
   @Setter
   private UUID program;

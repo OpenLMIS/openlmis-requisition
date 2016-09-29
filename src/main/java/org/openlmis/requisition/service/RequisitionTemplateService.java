@@ -15,9 +15,9 @@ public class RequisitionTemplateService {
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   /**
-   * Method returns all requisition templates with matched parameters.
-   * @param program program of searched requisition templates.
-   * @return list of requisition templates with matched parameters.
+   * Method returns Requisition templates with matched parameters.
+   * @param program Program of searched requisition template.
+   * @return RequisitionTemplate with matched parameters.
    */
   public List<RequisitionTemplate> searchRequisitionTemplates(UUID program) {
     return requisitionTemplateRepository.searchRequisitionTemplates(program);

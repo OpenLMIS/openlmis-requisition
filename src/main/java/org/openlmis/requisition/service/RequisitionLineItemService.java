@@ -35,25 +35,25 @@ public class RequisitionLineItemService {
   /**
    * Saves given RequisitionLineItem if possible.
    *
-   * @param requisition Requisition which contains given RequisitionLineItem.
-   * @param requisitionLineItem Requisition Line Item to be saved.
+   * @param requisition         Requisition which contains given RequisitionLineItem.
+   * @param requisitionLineItem Requisition Line to be saved.
    * @return Saved RequisitionLineItem.
-   * @throws RequisitionException Exception thrown when
-   *      it is not possible to save given RequisitionLineItem.
+   * @throws RequisitionException Exception thrown when it is not possible to save given
+   *                              RequisitionLineItem.
    */
   public RequisitionLineItem save(Requisition requisition,
                                   RequisitionLineItem requisitionLineItem)
       throws RequisitionException {
     if (requisitionLineItem == null) {
       throw new RequisitionLineItemNotFoundException(
-              "Requisition line item does not exist");
+          "Requisition line item does not exist");
     } else {
 
-      List<RequisitionTemplate> requisitionTemplateList = requisitionTemplateService
-          .searchRequisitionTemplates(requisition.getProgram());
+      RequisitionTemplate requisitionTemplate = requisitionTemplateService
+          .searchRequisitionTemplates(requisition.getProgram()).get(0);
 
       RequisitionTemplateColumn requisitionTemplateColumn =
-          requisitionTemplateList.get(0).getColumnsMap().get("beginningBalance");
+          requisitionTemplate.getColumnsMap().get("beginningBalance");
 
       if (!requisitionTemplateColumn.getCanBeChangedByUser()) {
         resetBeginningBalance(requisition, requisitionLineItem);
@@ -65,10 +65,11 @@ public class RequisitionLineItemService {
   }
 
   /**
-   * Method returns all requisition line items with matched parameters.
-   * @param requisition requisition of searched requisition line items.
-   * @param product product of searched requisition line items.
-   * @return list of requisition line items with matched parameters.
+   * Method returns all requisition lines with matched parameters.
+   *
+   * @param requisition requisition of searched requisition lines.
+   * @param product     product of searched requisition lines.
+   * @return list of requisition lines with matched parameters.
    */
   public List<RequisitionLineItem> searchRequisitionLineItems(
       Requisition requisition, UUID product) {
@@ -81,14 +82,10 @@ public class RequisitionLineItemService {
    * @param requisition Requisition with RequisitionLineItems to be initiated.
    * @return Returns Requisition with initiated RequisitionLineItems.
    */
-  public Requisition initiateRequisitionLineItemFields(Requisition requisition) {
-    List<RequisitionTemplate> requisitionTemplateList
-        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
-
-    if (!requisitionTemplateList.isEmpty()) {
-      initiateBeginningBalance(requisition, requisitionTemplateList.get(0));
-      initiateTotalQuantityReceived(requisition);
-    }
+  public Requisition initiateRequisitionLineItemFields(Requisition requisition,
+                                                       RequisitionTemplate requisitionTemplate) {
+    initiateBeginningBalance(requisition, requisitionTemplate);
+    initiateTotalQuantityReceived(requisition);
 
     return requisition;
   }
@@ -97,12 +94,12 @@ public class RequisitionLineItemService {
                                         RequisitionTemplate requisitionTemplate) {
 
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-            requisition.getProcessingPeriod());
+        requisition.getProcessingPeriod());
 
     ProcessingScheduleDto schedule = period.getProcessingSchedule();
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-            schedule.getId(),
-            period.getStartDate());
+        schedule.getId(),
+        period.getStartDate());
 
     if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
         && previousPeriods != null && previousPeriods.iterator().hasNext()) {
@@ -111,12 +108,12 @@ public class RequisitionLineItemService {
       List<RequisitionLineItem> previousRequisitionLineItem;
 
       previousRequisition = requisitionService.searchRequisitions(
-              requisition.getFacility(),
-              requisition.getProgram(),
-              null,null,
-              previousPeriods.iterator().next().getId(),
-              null,
-              null);
+          requisition.getFacility(),
+          requisition.getProgram(),
+          null, null,
+          previousPeriods.iterator().next().getId(),
+          null,
+          null);
       if (previousRequisition.size() == 0) {
         return;
       }
@@ -144,7 +141,7 @@ public class RequisitionLineItemService {
   private void resetBeginningBalance(Requisition requisition,
                                      RequisitionLineItem requisitionLineItem) {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-            requisitionLineItem.getRequisition().getProcessingPeriod());
+        requisitionLineItem.getRequisition().getProcessingPeriod());
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
         period.getProcessingSchedule().getId(),
         period.getStartDate());
@@ -155,14 +152,14 @@ public class RequisitionLineItemService {
     }
 
     List<Requisition> previousRequisition =
-            requisitionService.searchRequisitions(
-                requisition.getFacility(),
-                requisition.getProgram(),
-                null,
-                null,
-                previousPeriods.iterator().next().getId(),
-                null,
-                null);
+        requisitionService.searchRequisitions(
+            requisition.getFacility(),
+            requisition.getProgram(),
+            null,
+            null,
+            previousPeriods.iterator().next().getId(),
+            null,
+            null);
 
     if (previousRequisition.size() == 0) {
       requisitionLineItem.setBeginningBalance(0);

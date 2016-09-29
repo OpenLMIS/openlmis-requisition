@@ -630,8 +630,27 @@ resourceTypes:
         post:
             is: [ secured ]
             description: Initiate requisition.
-            body:
-              application/json:
+            queryParameters:
+                program:
+                    displayName: program
+                    type: string
+                    required: true
+                    repeat: false
+                facility:
+                    displayName: facility
+                    type: string
+                    required: true
+                    repeat: false
+                suggestedPeriod:
+                    displayName: suggestedPeriod
+                    type: string
+                    required: true
+                    repeat: false
+                emergency:
+                    displayName: emergency
+                    type: boolean
+                    required: true
+                    repeat: false
             responses:
                 "201":
                     headers:
