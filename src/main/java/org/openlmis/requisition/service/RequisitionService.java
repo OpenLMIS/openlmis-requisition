@@ -4,8 +4,11 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionAlreadyExistsException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -16,15 +19,20 @@ import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -54,6 +62,12 @@ public class RequisitionService {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
+
+  @Autowired
   private UserReferenceDataService userReferenceDataService;
 
   /**
@@ -69,43 +83,55 @@ public class RequisitionService {
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               Boolean emergency) throws RequisitionException {
+      RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+      Requisition requisition;
 
-    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
-    Requisition requisition;
+      if (facilityId == null || programId == null || emergency == null) {
+        throw new RequisitionInitializationException(
+            "Requisition cannot be initiated with null object"
+        );
+      } else if (facilityReferenceDataService.findOne(facilityId) != null
+          && programReferenceDataService.findOne(programId) != null) {
+        requisition = new Requisition();
+        requisition.setStatus(RequisitionStatus.INITIATED);
+        requisition.setEmergency(emergency);
+        requisition.setFacility(facilityId);
+        requisition.setProgram(programId);
 
-    if (facilityId == null || programId == null || emergency == null) {
-      throw new RequisitionInitializationException(
-          "Requisition cannot be initiated with null object"
-      );
-    } else if (facilityReferenceDataService.findOne(facilityId) != null
-        && programReferenceDataService.findOne(programId) != null) {
-      requisition = new Requisition();
-      requisition.setStatus(RequisitionStatus.INITIATED);
-      requisition.setEmergency(emergency);
-      requisition.setFacility(facilityId);
-      requisition.setProgram(programId);
+        //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
+        //if (suggestedPeriodId != null) {
+        //  if (suggestedPeriodId != period.getId()) {
+        //    period = suggestedPeriodId;
+        //  }
+        //}
+        //TODO requisition.setProcessingPeriod();
+        //TODO setlineitem(template)
+        requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
+            requisitionTemplate);
+        requisition.getRequisitionLineItems().forEach(
+            requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
 
-      //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
-      //if (suggestedPeriodId != null) {
-      //  if (suggestedPeriodId != period.getId()) {
-      //    period = suggestedPeriodId;
-      //  }
-      //}
-      //TODO requisition.setProcessingPeriod();
-      //TODO setlineitem(template)
-      requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
-          requisitionTemplate);
+        ProcessingPeriodDto processingPeriodDto =
+            periodReferenceDataService.findOne(requisition.getProcessingPeriod());
+        RequisitionGroupProgramScheduleDto dto =
+            referenceDataService.search(requisition.getProgram());
 
-      requisition.getRequisitionLineItems().forEach(
-          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
-      requisitionRepository.save(requisition);
-    } else {
-      throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
-          + " Requisition with such parameters already exists");
+        if (dto.getProcessingSchedule() == processingPeriodDto.getProcessingSchedule()) {
+          requisitionRepository.save(requisition);
+        } else {
+          throw new InvalidPeriodException("Cannot initiate requisition."
+              + "Period for the requisition must belong to the same schedule"
+              + " that belongs to the program selected for that requisition");
+        }
+
+        requisitionRepository.save(requisition);
+      } else {
+        throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
+            + " Requisition with such parameters already exists");
+      }
+
+      return requisition;
     }
-
-    return requisition;
-  }
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
     if (null == programId) {
@@ -296,5 +322,55 @@ public class RequisitionService {
 
     return requisitionRepository.searchApprovedRequisitionsWithSortAndFilterAndPaging(
         filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+  }
+
+  /**
+   * Get Processing Periods matching all of provided parameters.
+   *
+   * @param programId  Program of searched period.
+   * @param facilityId Facility of searched period.
+   * @param startDate  Search periods only after given date.
+   * @return Collection of Processing Periods.
+   */
+  public List<ProcessingPeriodDto> filterPeriods(
+      UUID facilityId, UUID programId, LocalDate startDate, Boolean emergency) {
+    Collection<ProcessingPeriodDto> periods = periodReferenceDataService.search(
+        referenceDataService.searchByProgramAndFacility(facilityId, programId)
+            .getProcessingSchedule().getId(), startDate);
+
+    List<ProcessingPeriodDto> periodList = new ArrayList<ProcessingPeriodDto>();
+    periodList.addAll(periods);
+    Collections.sort(periodList, (p1, p2) -> p1.getStartDate().compareTo(p2.getStartDate()));
+
+    return periodList;
+  }
+
+  /**
+   * Check if Processing Periods is the oldest period which is not associated with any requisition.
+   *
+   * @param requisitionDto Requisition which we want to create.
+   * @return Boolean.
+   */
+  public boolean validatePeriodForRequisition(Requisition requisitionDto)
+      throws RequisitionException {
+    ProcessingPeriodDto processingPeriodDto =
+        periodReferenceDataService.findOne(requisitionDto.getProcessingPeriod());
+    Iterable<Requisition> requisitions = requisitionRepository.findAll();
+    List<ProcessingPeriodDto> periods = filterPeriods(
+        requisitionDto.getProgram(), requisitionDto.getFacility(),
+        processingPeriodDto.getStartDate(), requisitionDto.getEmergency());
+
+    if (requisitionDto.getEmergency() == false) {
+      for (Requisition r : requisitions) {
+        if (r == null) {
+          return true;
+        }
+        if (r.getProcessingPeriod() == requisitionDto.getProcessingPeriod()
+            || requisitionDto.getProcessingPeriod() != periods.get(0).getId()) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

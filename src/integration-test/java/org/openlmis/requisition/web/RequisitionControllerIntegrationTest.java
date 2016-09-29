@@ -869,6 +869,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     testApproveRequisition(requisition);
   }
 
+  @Ignore
   @Test
   @Ignore
   public void shouldInitializeRequisition() {

@@ -16,6 +16,8 @@ import java.util.UUID;
 
 public abstract class BaseReferenceDataService<T> {
 
+  private static final String ACCESS_TOKEN = "access_token";
+
   @Value("${auth.server.clientId}")
   private String clientId;
 
@@ -35,12 +37,31 @@ public abstract class BaseReferenceDataService<T> {
 
     RestTemplate restTemplate = new RestTemplate();
     Map<String, String> params = new HashMap<>();
-    params.put("access_token", obtainAccessToken());
+    params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<T> responseEntity = restTemplate
         .exchange(url, HttpMethod.GET, null, getResultClass(), params);
 
     return responseEntity.getBody();
+  }
+
+  /**
+   * Return one object from Reference data service.
+   * @param resourceUrl Endpoint url.
+   * @param parameters Map of query parameters.
+   * @return Requesting reference data object.
+   */
+  public T findOne(String resourceUrl, Map<String, Object> parameters) {
+    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
+    RestTemplate restTemplate = new RestTemplate();
+    Map<String, Object> params = new HashMap<>();
+    params.putAll(parameters);
+    params.put(ACCESS_TOKEN, obtainAccessToken());
+
+    ResponseEntity<T> response = restTemplate.exchange(url, HttpMethod.GET,
+          null, new ParameterizedTypeReference<T>() {}, params);
+
+    return response.getBody();
   }
 
   public Collection<T> findAll() {
@@ -62,7 +83,7 @@ public abstract class BaseReferenceDataService<T> {
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
-    params.put("access_token", obtainAccessToken());
+    params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<Collection<T>> response = restTemplate.exchange(url, HttpMethod.GET,
         null, new ParameterizedTypeReference<Collection<T>>() {}, params);
@@ -94,6 +115,6 @@ public abstract class BaseReferenceDataService<T> {
         "http://auth:8080/oauth/token?grant_type=client_credentials",
         HttpMethod.POST, request, Object.class);
 
-    return ((Map<String, String>) response.getBody()).get("access_token");
+    return ((Map<String, String>) response.getBody()).get(ACCESS_TOKEN);
   }
 }
