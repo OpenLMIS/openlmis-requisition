@@ -67,14 +67,21 @@ public class RequisitionController extends BaseController {
   /**
    * Allows creating new requisitions.
    *
-   * @param requisition A requisition bound to the request body
+   * @param programId UUID of Program.
+   * @param facilityId UUID of Facility.
+   * @param emergency Emergency status.
+   * @param suggestedPeriodId Period for requisition.
    * @return ResponseEntity containing the created requisition
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiateRequisition(@RequestBody @Valid Requisition requisition,
+  public ResponseEntity<?> initiateRequisition(@RequestBody UUID programId,
+                                               @RequestBody UUID facilityId,
+                                               @RequestBody UUID suggestedPeriodId,
+                                               @RequestBody Boolean emergency,
                                                BindingResult bindingResult) {
     try {
-      Requisition newRequisition = requisitionService.initiateRequisition(requisition);
+      Requisition newRequisition = requisitionService.initiate(programId,
+          facilityId, suggestedPeriodId, emergency);
       return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
     } catch (RequisitionException ex) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);

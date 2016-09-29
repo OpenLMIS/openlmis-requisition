@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -159,7 +158,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitionTemplates(
       @RequestParam(value = "program", required = false) UUID program) {
-    List<RequisitionTemplate> result
+    RequisitionTemplate result
         = requisitionTemplateService.searchRequisitionTemplates(program);
 
     return new ResponseEntity<>(result, HttpStatus.OK);

@@ -3,12 +3,14 @@ package org.openlmis.requisition.service;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -36,6 +38,9 @@ public class RequisitionService {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
+  private RequisitionTemplateService requisitionTemplateService;
+
+  @Autowired
   private RequisitionLineItemService requisitionLineItemService;
 
   @Autowired
@@ -43,6 +48,9 @@ public class RequisitionService {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -53,31 +61,66 @@ public class RequisitionService {
   /**
    * Initiated given requisition if possible.
    *
-   * @param requisitionDto Requisition object to initiate.
+   * @param programId UUID of Program.
+   * @param facilityId UUID of Facility.
+   * @param emergency Emergency status.
+   * @param suggestedPeriodId Period for requisition.
    * @return Initiated requisition.
    * @throws RequisitionException Exception thrown when
    *      it is not possible to initialize a requisition.
    */
-  public Requisition initiateRequisition(Requisition requisitionDto)
-                                          throws RequisitionException {
+  public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
+                              Boolean emergency) throws RequisitionException {
 
-    if (requisitionDto == null) {
+    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+    Requisition requisition;
+
+    if (facilityId == null || programId == null || emergency == null) {
       throw new RequisitionException("Requisition cannot be initiated with null object");
-    } else if (requisitionRepository.findOne(requisitionDto.getId()) == null) {
+    } else if (facilityReferenceDataService.findOne(facilityId) != null
+        && programReferenceDataService.findOne(programId) != null) {
 
-      requisitionDto.setStatus(RequisitionStatus.INITIATED);
-      requisitionLineItemService.initiateRequisitionLineItemFields(requisitionDto);
 
-      requisitionDto.getRequisitionLineItems().forEach(
+      requisition = new Requisition();
+      requisition.setStatus(RequisitionStatus.INITIATED);
+      requisition.setEmergency(emergency);
+      requisition.setFacility(facilityId);
+      requisition.setProgram(programId);
+
+
+      //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
+      //if (suggestedPeriodId != null) {
+      //  if (suggestedPeriodId != period.getId()) {
+      //    period = suggestedPeriodId;
+      //  }
+      //}
+      //TODO requisition.setProcessingPeriod();
+      //TODO setlineitem(template)
+      requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
+          requisitionTemplate);
+
+      requisition.getRequisitionLineItems().forEach(
           requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
-      requisitionRepository.save(requisitionDto);
-
+      requisitionRepository.save(requisition);
     } else {
-      throw new RequisitionException("Cannot initiate requisition."
-          + " Requisition with such parameters already exists");
+      throw new RequisitionException("Cannot initiate requisition with such parameters");
     }
 
-    return requisitionDto;
+    return requisition;
+  }
+
+  private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
+    RequisitionTemplate requisitionTemplate =
+        requisitionTemplateService.searchRequisitionTemplates(programId);
+    if (requisitionTemplate == null) {
+      throw new RequisitionException("RequisitionTemplate not found");
+    } else {
+      if (requisitionTemplate.getColumnsMap().isEmpty()) {
+        throw new RequisitionException("RequisitionTemplate is not defined");
+      } else {
+        return requisitionTemplate;
+      }
+    }
   }
 
   /**
