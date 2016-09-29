@@ -25,6 +25,9 @@ public abstract class BaseReferenceDataService<T> {
   @Value("${referencedata.url}")
   private String referenceDataUrl;
 
+  @Value("${auth.server.authorizationUrl}")
+  private String authorizationUrl;
+
   /**
    * Return one object from Reference data service.
    * @param id UUID of requesting object.
@@ -90,9 +93,9 @@ public abstract class BaseReferenceDataService<T> {
     headers.add("Authorization", "Basic " + base64Creds);
 
     HttpEntity<String> request = new HttpEntity<>(headers);
+
     ResponseEntity<?> response = restTemplate.exchange(
-        "http://auth:8080/oauth/token?grant_type=client_credentials",
-        HttpMethod.POST, request, Object.class);
+        authorizationUrl, HttpMethod.POST, request, Object.class);
 
     return ((Map<String, String>) response.getBody()).get("access_token");
   }
