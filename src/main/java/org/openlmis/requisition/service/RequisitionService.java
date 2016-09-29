@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
@@ -83,55 +84,55 @@ public class RequisitionService {
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               Boolean emergency) throws RequisitionException {
-      RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
-      Requisition requisition;
+    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+    Requisition requisition;
 
-      if (facilityId == null || programId == null || emergency == null) {
-        throw new RequisitionInitializationException(
-            "Requisition cannot be initiated with null object"
-        );
-      } else if (facilityReferenceDataService.findOne(facilityId) != null
-          && programReferenceDataService.findOne(programId) != null) {
-        requisition = new Requisition();
-        requisition.setStatus(RequisitionStatus.INITIATED);
-        requisition.setEmergency(emergency);
-        requisition.setFacility(facilityId);
-        requisition.setProgram(programId);
+    if (facilityId == null || programId == null || emergency == null) {
+      throw new RequisitionInitializationException(
+          "Requisition cannot be initiated with null object"
+      );
+    } else if (facilityReferenceDataService.findOne(facilityId) != null
+        && programReferenceDataService.findOne(programId) != null) {
+      requisition = new Requisition();
+      requisition.setStatus(RequisitionStatus.INITIATED);
+      requisition.setEmergency(emergency);
+      requisition.setFacility(facilityId);
+      requisition.setProgram(programId);
 
-        //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
-        //if (suggestedPeriodId != null) {
-        //  if (suggestedPeriodId != period.getId()) {
-        //    period = suggestedPeriodId;
-        //  }
-        //}
-        //TODO requisition.setProcessingPeriod();
-        //TODO setlineitem(template)
-        requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
-            requisitionTemplate);
-        requisition.getRequisitionLineItems().forEach(
-            requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
+      //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
+      //if (suggestedPeriodId != null) {
+      //  if (suggestedPeriodId != period.getId()) {
+      //    period = suggestedPeriodId;
+      //  }
+      //}
+      //TODO requisition.setProcessingPeriod();
+      //TODO setlineitem(template)
+      requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
+          requisitionTemplate);
+      requisition.getRequisitionLineItems().forEach(
+          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
 
-        ProcessingPeriodDto processingPeriodDto =
-            periodReferenceDataService.findOne(requisition.getProcessingPeriod());
-        RequisitionGroupProgramScheduleDto dto =
-            referenceDataService.search(requisition.getProgram());
+      ProcessingPeriodDto processingPeriodDto =
+          periodReferenceDataService.findOne(requisition.getProcessingPeriod());
+      RequisitionGroupProgramScheduleDto dto =
+          referenceDataService.search(requisition.getProgram());
 
-        if (dto.getProcessingSchedule() == processingPeriodDto.getProcessingSchedule()) {
-          requisitionRepository.save(requisition);
-        } else {
-          throw new InvalidPeriodException("Cannot initiate requisition."
-              + "Period for the requisition must belong to the same schedule"
-              + " that belongs to the program selected for that requisition");
-        }
-
+      if (dto.getProcessingSchedule() == processingPeriodDto.getProcessingSchedule()) {
         requisitionRepository.save(requisition);
       } else {
-        throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
-            + " Requisition with such parameters already exists");
+        throw new InvalidPeriodException("Cannot initiate requisition."
+            + "Period for the requisition must belong to the same schedule"
+            + " that belongs to the program selected for that requisition");
       }
 
-      return requisition;
+      requisitionRepository.save(requisition);
+    } else {
+      throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
+          + " Requisition with such parameters already exists");
     }
+
+    return requisition;
+  }
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
     if (null == programId) {

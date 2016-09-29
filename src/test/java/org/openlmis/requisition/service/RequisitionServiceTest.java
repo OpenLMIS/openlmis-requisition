@@ -352,13 +352,31 @@ public class RequisitionServiceTest {
   @Test(expected = InvalidPeriodException.class)
   public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram()
         throws RequisitionException {
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate.setColumnsMap(
+        ImmutableMap.of("beginningBalance", new RequisitionTemplateColumn())
+    );
+
     requisition.setStatus(null);
     when(requisitionRepository
           .findOne(requisition.getId()))
           .thenReturn(null);
     when(period.getProcessingSchedule()).thenReturn(schedule);
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
-    requisitionService.initiateRequisition(requisition);
+    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
+    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
+    when(requisitionTemplateService.searchRequisitionTemplates(programId))
+        .thenReturn(Arrays.asList(requisitionTemplate));
+
+    when(requisitionLineItemService.initiateRequisitionLineItemFields(
+        any(Requisition.class), any(RequisitionTemplate.class)))
+        .thenAnswer(invocation -> {
+          Requisition req = (Requisition) invocation.getArguments()[0];
+          req.setRequisitionLineItems(Lists.newArrayList());
+
+          return null;
+        });
+    requisitionService.initiate(programId, facilityId, suggestedPeriodId, false);
   }
 
   @Ignore
