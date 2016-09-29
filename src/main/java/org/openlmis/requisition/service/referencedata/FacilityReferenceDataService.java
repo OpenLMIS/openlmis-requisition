@@ -8,7 +8,7 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
 
   @Override
   protected String getUrl() {
-    return "/facilities/";
+    return "/api/facilities/";
   }
 
   @Override

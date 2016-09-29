@@ -4,7 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -15,14 +14,16 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,16 +54,8 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
   @Before
   public void setUp() {
 
-    ProductDto product = new ProductDto();
+    OrderableProductDto product = new OrderableProductDto();
     product.setId(UUID.randomUUID());
-    product.setPrimaryName("productName");
-    product.setCode("productCode");
-    product.setDispensingUnit("dispensingUnit");
-    product.setPackSize(10);
-    product.setPackRoundingThreshold(10);
-    product.setActive(true);
-    product.setFullSupply(false);
-    product.setTracer(false);
 
     FacilityDto facility = new FacilityDto();
     facility.setId(UUID.randomUUID());
@@ -76,7 +69,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     supervisoryNode.setId(UUID.randomUUID());
     supervisoryNode.setCode("NodeCode");
     supervisoryNode.setName("NodeName");
-    supervisoryNode.setFacility(facility.getId());
+    supervisoryNode.setFacility(facility);
 
     ProgramDto program = new ProgramDto();
     program.setId(UUID.randomUUID());
@@ -88,7 +81,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
     ProcessingPeriodDto period = new ProcessingPeriodDto();
     period.setId(UUID.randomUUID());
-    period.setProcessingSchedule(schedule.getId());
+    period.setProcessingSchedule(new ProcessingScheduleDto());
     period.setName("periodName");
     period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
@@ -103,7 +96,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     requisitionRepository.save(requisition);
 
     orderLineItem.setOrder(order);
-    orderLineItem.setProduct(product.getId());
+    orderLineItem.setOrderableProduct(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
 

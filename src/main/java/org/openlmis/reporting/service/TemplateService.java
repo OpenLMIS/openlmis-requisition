@@ -1,9 +1,5 @@
 package org.openlmis.reporting.service;
 
-import static java.io.File.createTempFile;
-import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -25,6 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+
+import static java.io.File.createTempFile;
+import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 public class TemplateService {
@@ -72,20 +72,23 @@ public class TemplateService {
     templateRepository.save(template);
     for (TemplateParameter parameter : template.getTemplateParameters()) {
       parameter.setTemplate(template);
-      parameter = templateParameterRepository.save(parameter);
+      templateParameterRepository.save(parameter);
     }
   }
 
   /**
    * Convert template from ".jasper" format in database to ".jrxml"(extension) format.
    */
-  public File convertJasperToXml(Template template) throws IOException, JRException {
-    InputStream inputStream = new ByteArrayInputStream(template.getData());
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    JasperCompileManager.writeReportToXmlStream(inputStream, outputStream);
-    File xmlReport =  createTempFile(template.getName(), ".jrxml");
-    writeByteArrayToFile(xmlReport, outputStream.toByteArray());
-    return xmlReport;
+  public File convertJasperToXml(Template template) throws ReportingException {
+    try (InputStream inputStream = new ByteArrayInputStream(template.getData());
+         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      JasperCompileManager.writeReportToXmlStream(inputStream, outputStream);
+      File xmlReport = createTempFile(template.getName(), ".jrxml");
+      writeByteArrayToFile(xmlReport, outputStream.toByteArray());
+      return xmlReport;
+    } catch (JRException | IOException ex) {
+      throw new ReportingException("Error creating xml report", ex);
+    }
   }
 
   /**

@@ -5,7 +5,9 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionLineItemNotFoundException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +38,15 @@ public class RequisitionLineItemService {
    * @param requisition         Requisition which contains given RequisitionLineItem.
    * @param requisitionLineItem Requisition Line to be saved.
    * @return Saved RequisitionLineItem.
-   * @throws RequisitionException Exception thrown when
-   *                              it is not possible to save given RequisitionLineItem.
+   * @throws RequisitionException Exception thrown when it is not possible to save given
+   *                              RequisitionLineItem.
    */
   public RequisitionLineItem save(Requisition requisition,
                                   RequisitionLineItem requisitionLineItem)
       throws RequisitionException {
     if (requisitionLineItem == null) {
-      throw new RequisitionException("Requisition line does not exist");
+      throw new RequisitionLineItemNotFoundException(
+          "Requisition line item does not exist");
     } else {
 
       RequisitionTemplate requisitionTemplate = requisitionTemplateService
@@ -93,8 +96,9 @@ public class RequisitionLineItemService {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriod());
 
+    ProcessingScheduleDto schedule = period.getProcessingSchedule();
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-        period.getProcessingSchedule(),
+        schedule.getId(),
         period.getStartDate());
 
     if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
@@ -115,7 +119,7 @@ public class RequisitionLineItemService {
       }
       for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
         previousRequisitionLineItem = searchRequisitionLineItems(
-            previousRequisition.get(0), requisitionLineItem.getProduct());
+            previousRequisition.get(0), requisitionLineItem.getOrderableProduct());
 
         if (requisitionLineItem.getBeginningBalance() == null) {
           if (previousRequisitionLineItem != null
@@ -139,7 +143,7 @@ public class RequisitionLineItemService {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisitionLineItem.getRequisition().getProcessingPeriod());
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-        period.getProcessingSchedule(),
+        period.getProcessingSchedule().getId(),
         period.getStartDate());
 
     if (!previousPeriods.iterator().hasNext()) {
@@ -164,7 +168,7 @@ public class RequisitionLineItemService {
 
     List<RequisitionLineItem> previousRequisitionLineItem;
     previousRequisitionLineItem = searchRequisitionLineItems(
-        previousRequisition.get(0), requisitionLineItem.getProduct());
+        previousRequisition.get(0), requisitionLineItem.getOrderableProduct());
 
     if (previousRequisitionLineItem == null) {
       requisitionLineItem.setBeginningBalance(0);

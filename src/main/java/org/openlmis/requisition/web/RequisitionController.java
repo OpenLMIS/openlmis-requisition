@@ -1,13 +1,13 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ErrorResponse;
@@ -15,11 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -31,14 +30,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.validation.Valid;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -58,6 +60,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -112,18 +117,11 @@ public class RequisitionController extends BaseController {
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while submitting requisition with id: "
-              + requisition.getId(), ex.getMessage());
-      LOGGER.debug(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while saving requisition with id: "
-              + requisition.getId(), ex.getMessage());
+              new ErrorResponse("An error occurred while submitting requisition with id: "
+                      + requisition.getId(), ex.getMessage());
       LOGGER.debug(errorResponse.getMessage(), ex);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
     return new ResponseEntity<Object>(requisition, HttpStatus.OK);
   }
 
@@ -131,18 +129,10 @@ public class RequisitionController extends BaseController {
    * Deletes requisition with the given id.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    try {
-      boolean deleted = requisitionService.tryDelete(requisitionId);
-      if (deleted) {
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-      } else {
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
-      }
-    } catch (RequisitionException ex) {
-      LOGGER.debug(ex.getMessage(), ex);
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteRequisition(@PathVariable("id") UUID requisitionId)
+          throws RequisitionException {
+    requisitionService.delete(requisitionId);
   }
 
   /**
@@ -154,26 +144,20 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
-                                       @PathVariable("id") UUID requisitionId) {
+                                       @PathVariable("id") UUID requisitionId)
+          throws InvalidRequisitionStatusException {
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-    try {
-      if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
-        LOGGER.debug("Updating requisition with id: " + requisitionId);
-        requisitionToUpdate.updateFrom(requisition);
-        requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
+    if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
+      LOGGER.debug("Updating requisition with id: " + requisitionId);
+      requisitionToUpdate.updateFrom(requisition);
+      requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
-        LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-        return new ResponseEntity<Requisition>(requisitionToUpdate, HttpStatus.OK);
-      } else {
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
-      }
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while saving requisition with id: "
-                  + requisitionToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
+      return new ResponseEntity<>(requisitionToUpdate, HttpStatus.OK);
+    } else {
+      throw new InvalidRequisitionStatusException("Cannot update a requisition "
+              + "with status: " + requisition.getStatus());
     }
   }
 
@@ -220,30 +204,19 @@ public class RequisitionController extends BaseController {
    * Skipping chosen requisition period.
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
-  public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId) {
-    ResponseEntity<Object> responseEntity;
-    try {
-      Requisition requisition = requisitionService.skip(requisitionId);
-      responseEntity = new ResponseEntity<>(requisition, HttpStatus.OK);
-    } catch (RequisitionException ex) {
-      LOGGER.debug(ex.getMessage(), ex);
-      responseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-    return responseEntity;
+  public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId)
+          throws RequisitionException {
+    Requisition requisition = requisitionService.skip(requisitionId);
+    return new ResponseEntity<>(requisition, HttpStatus.OK);
   }
 
   /**
    * Rejecting requisition which is waiting for approve.
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
-  public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id) {
-    Requisition rejectedRequisition = null;
-    try {
-      rejectedRequisition = requisitionService.reject(id);
-    } catch (RequisitionException ex) {
-      LOGGER.debug(ex.getMessage(), ex);
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+  public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id)
+          throws RequisitionException {
+    Requisition rejectedRequisition = requisitionService.reject(id);
     return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
   }
 
@@ -272,20 +245,15 @@ public class RequisitionController extends BaseController {
    * Get requisitions to approve for right supervisor.
    */
   @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
-  public ResponseEntity<Object> listForApproval(OAuth2Authentication auth) {
-    UserDto user = (UserDto) auth.getPrincipal();
-    List<Requisition> requisitions = requisitionService.getRequisitionsForApproval(user.getId());
+  public ResponseEntity<Object> listForApproval() {
+    String userName =
+        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("username", userName);
+    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
+    List<Requisition> requisitions =
+        requisitionService.getRequisitionsForApproval(users.get(0).getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
-  }
-
-  private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
-    return new HashMap<String, String>() {
-      {
-        for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getCode());
-        }
-      }
-    };
   }
 
   /**
@@ -317,7 +285,8 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
   public ResponseEntity<?> authorizeRequisition(@RequestBody @Valid Requisition requisition,
                                                 BindingResult bindingResult,
-                                                @PathVariable("id") UUID requisitionId) {
+                                                @PathVariable("id") UUID requisitionId)
+          throws RequisitionException {
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
       return new ResponseEntity<>("Requisition authorization is configured to be skipped",
@@ -334,23 +303,9 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    try {
-      requisition.authorize();
-      requisitionRepository.save(requisition);
-      LOGGER.info("Requisition: " +  requisitionId + " authorized.");
-    } catch (RequisitionException ex) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while authorizing requisition with id: "
-              + requisition.getId(), ex.getMessage());
-      LOGGER.debug(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while saving requisition with id: "
-              + requisition.getId(), ex.getMessage());
-      LOGGER.debug(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+    requisition.authorize();
+    requisitionRepository.save(requisition);
+    LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
     return new ResponseEntity<>(requisition, HttpStatus.OK);
   }
@@ -386,5 +341,15 @@ public class RequisitionController extends BaseController {
             filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
 
     return new ResponseEntity<>(approvedRequisitionList, HttpStatus.OK);
+  }
+
+  private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
+    return new HashMap<String, String>() {
+      {
+        for (FieldError error : bindingResult.getFieldErrors()) {
+          put(error.getField(), error.getCode());
+        }
+      }
+    };
   }
 }

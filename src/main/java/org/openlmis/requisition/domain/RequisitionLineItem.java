@@ -20,7 +20,7 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Getter
   @Setter
-  private UUID product;
+  private UUID orderableProduct;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "requisitionId")
@@ -81,16 +81,15 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Copy values of attributes into new or updated RequisitionLineItem.
    *
-   * @param  requisitionLineItem RequisitionLine with new values.
+   * @param  requisitionLineItem RequisitionLineItem with new values.
    */
   public void updateFrom(RequisitionLineItem requisitionLineItem) {
-    this.product = requisitionLineItem.getProduct();
+    this.orderableProduct = requisitionLineItem.getOrderableProduct();
     this.requisition = requisitionLineItem.getRequisition();
     this.stockInHand = requisitionLineItem.getStockInHand();
     this.stockOnHand = requisitionLineItem.getStockOnHand();
     this.beginningBalance = requisitionLineItem.getBeginningBalance();
     this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
-
   }
 
   /**

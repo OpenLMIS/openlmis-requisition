@@ -9,7 +9,7 @@ public class SupervisoryNodeReferenceDataService
 
   @Override
   protected String getUrl() {
-    return "/supervisoryNodes/";
+    return "/api/supervisoryNodes/";
   }
 
   @Override

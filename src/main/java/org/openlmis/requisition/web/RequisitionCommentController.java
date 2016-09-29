@@ -3,6 +3,7 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.view.View;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class RequisitionCommentController extends BaseController {
   @Autowired
   private RequisitionCommentService commentService;
 
+  @Autowired
+  private CommentRepository commentRepository;
+
   /**
    * Add comment to the requisition.
    */
@@ -39,7 +43,7 @@ public class RequisitionCommentController extends BaseController {
     return commentResponse(comments);
   }
 
-  /**
+  /**s
    * Get all comments for specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
@@ -86,9 +90,15 @@ public class RequisitionCommentController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRequisitionComment(@PathVariable("id") UUID commentId)
+  public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId)
           throws CommentNotFoundException {
-    commentService.deleteComment(commentId);
+    Comment comment = commentRepository.findOne(commentId);
+    if (comment == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    } else {
+      commentRepository.delete(comment);
+    }
+    return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
   }
 
   private ResponseEntity<MappingJacksonValue> commentResponse(Object comments) {

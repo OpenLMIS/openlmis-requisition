@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,6 +20,8 @@ import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Before
   public void setUp() {
+
     firstOrder = addOrder(null, "orderCode", UUID.randomUUID(), user, facility, facility, facility,
             OrderStatus.ORDERED, new BigDecimal("1.29"));
 
@@ -148,7 +150,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private RequisitionLineItem addRequisitionLineItem(Requisition requisition, UUID product) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setProduct(product);
+    requisitionLineItem.setOrderableProduct(product);
     requisitionLineItem.setRequestedQuantity(3);
     requisitionLineItem.setApprovedQuantity(3);
 
@@ -159,7 +161,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
                                  Long orderedQuantity) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setOrder(order);
-    orderLineItem.setProduct(product);
+    orderLineItem.setOrderableProduct(product);
     orderLineItem.setOrderedQuantity(orderedQuantity);
     orderLineItem.setFilledQuantity(filledQuantity);
     return orderLineItemRepository.save(orderLineItem);
@@ -182,8 +184,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
-  @Test
   @Ignore
+  @Test
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
             .queryParam("format", "csv")
@@ -197,11 +199,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
-    //for (OrderLineItem o : orderRepository.findOne(secondOrder.getId()).getOrderLineItems()) {
-    //      assertTrue(csvContent.contains(o.getProduct().getPrimaryName()
-    //              + "," + o.getFilledQuantity()
-    //              + "," + o.getOrderedQuantity()));
-    //}
   }
 
   @Ignore
@@ -354,7 +351,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldCreateOrder() {
 
     firstOrder.getOrderLineItems().clear();
-    orderRepository.delete(firstOrder);
+
+    orderRepository.deleteAll();
 
     restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -459,6 +457,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public void shouldReturnConflictForExistingOrderCode() {
+    firstOrder.getOrderLineItems().clear();
+
+    orderRepository.save(firstOrder);
+    firstOrder.setOrderLineItems(null);
+
+    restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.APPLICATION_JSON_VALUE)
+          .body(firstOrder)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(409);
+  }
 /*
   @Test
   public void shouldExportOrderToCsv() {
@@ -483,9 +498,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     for (RequisitionLineItem lineItem : secondOrder.getRequisition().getRequisitionLineItems()) {
       assertTrue(csvContent.contains(secondOrder.getOrderCode()
           + "," + secondOrder.getRequisition().getFacility().getCode()
+<<<<<<< HEAD
+          + "," + line.getOrderableProduct().getCode()
+          + "," + line.getOrderableProduct().getPrimaryName()
+          + "," + line.getApprovedQuantity()
+=======
           + "," + lineItem.getProduct().getCode()
           + "," + lineItem.getProduct().getPrimaryName()
           + "," + lineItem.getApprovedQuantity()
+>>>>>>> upstream/master
           + "," + period
           + "," + orderDate));
     }

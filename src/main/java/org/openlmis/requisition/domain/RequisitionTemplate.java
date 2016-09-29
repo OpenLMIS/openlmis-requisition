@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -29,6 +30,7 @@ public class RequisitionTemplate extends BaseEntity {
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
+  @CollectionTable(name = "columns_maps")
   @Getter
   @Setter
   private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();

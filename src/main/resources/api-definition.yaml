@@ -477,7 +477,7 @@ resourceTypes:
                 repeat: false
         get:
             is: [ secured ]
-            description: Print all order lines from an order to a csv or pdf file.
+            description: Print all order line items from an order to a csv or pdf file.
             queryParameters:
                 format:
                     displayName: format
@@ -537,7 +537,7 @@ resourceTypes:
                       X-XSS-Protection:
 
 /orderLineItems:
-    displayName: Order Lines
+    displayName: Order Line Items
     get:
         is: [ secured ]
         description: Get all orderLineItems.
@@ -677,6 +677,14 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
                 "409":
                     headers:
                       X-Content-Type-Options:
@@ -711,6 +719,8 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /{id}/skip:
         uriParameters:
             id:
@@ -753,6 +763,8 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /{id}/submit:
             put:
                 is: [ secured ]
@@ -950,8 +962,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
                 "409":
                     headers:
                       X-Content-Type-Options:
@@ -1040,7 +1050,7 @@ resourceTypes:
                           X-XSS-Protection:
 
 /requisitionLineItems:
-    displayName: Requisition Lines
+    displayName: Requisition Line Items
     get:
         is: [ secured ]
         description: Get all requisitionLineItems.
@@ -1420,7 +1430,7 @@ resourceTypes:
                       X-XSS-Protection:
 
 /proofOfDeliveryLineItems:
-    displayName: Proof Of Delivery Lines
+    displayName: Proof Of Delivery Line Items
     get:
         is: [ secured ]
         description: Get all proofOfDeliveryLineItems.

@@ -39,7 +39,7 @@ public class RequisitionLineItemRepositoryIntegrationTest
 
   RequisitionLineItem generateInstance() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setProduct(UUID.randomUUID());
+    requisitionLineItem.setOrderableProduct(UUID.randomUUID());
     requisitionLineItem.setRequisition(generateRequisition());
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setStockOnHand(1);
@@ -55,7 +55,7 @@ public class RequisitionLineItemRepositoryIntegrationTest
     RequisitionLineItem requisitionLineItem = cloneRequisitionLineItem(requisitionLineItems.get(0));
     List<RequisitionLineItem> receivedRequisitionLineItems = repository.searchRequisitionLineItems(
             requisitionLineItem.getRequisition(),
-            requisitionLineItem.getProduct());
+            requisitionLineItem.getOrderableProduct());
 
     Assert.assertEquals(2, receivedRequisitionLineItems.size());
     for (RequisitionLineItem receivedRequisitionLineItem : receivedRequisitionLineItems) {
@@ -63,8 +63,8 @@ public class RequisitionLineItemRepositoryIntegrationTest
               requisitionLineItem.getRequisition().getId(),
               receivedRequisitionLineItem.getRequisition().getId());
       Assert.assertEquals(
-              requisitionLineItem.getProduct(),
-              receivedRequisitionLineItem.getProduct());
+              requisitionLineItem.getOrderableProduct(),
+              receivedRequisitionLineItem.getOrderableProduct());
     }
   }
 
@@ -93,7 +93,7 @@ public class RequisitionLineItemRepositoryIntegrationTest
 
   private RequisitionLineItem cloneRequisitionLineItem(RequisitionLineItem requisitionLineItem) {
     RequisitionLineItem clonedRequisitionLineItem = new RequisitionLineItem();
-    clonedRequisitionLineItem.setProduct(requisitionLineItem.getProduct());
+    clonedRequisitionLineItem.setOrderableProduct(requisitionLineItem.getOrderableProduct());
     clonedRequisitionLineItem.setRequisition(requisitionLineItem.getRequisition());
     clonedRequisitionLineItem.setRequestedQuantity(requisitionLineItem.getRequestedQuantity());
     clonedRequisitionLineItem.setStockOnHand(requisitionLineItem.getStockOnHand());

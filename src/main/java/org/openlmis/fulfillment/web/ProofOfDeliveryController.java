@@ -4,15 +4,13 @@ import net.sf.jasperreports.engine.JRException;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.utils.ReportUtils;
-import org.openlmis.utils.ErrorResponse;
-import org.openlmis.requisition.web.BaseController;
 import org.openlmis.reporting.model.Template;
 import org.openlmis.reporting.service.JasperReportsViewFactory;
 import org.openlmis.reporting.service.TemplateService;
+import org.openlmis.requisition.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -24,11 +22,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Controller
 public class ProofOfDeliveryController extends BaseController {
@@ -55,18 +52,13 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.POST)
   public ResponseEntity<?> createProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery) {
-    try {
-      LOGGER.debug("Creating new proofOfDelivery");
-      proofOfDelivery.setId(null);
-      ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
-      LOGGER.debug("Created new proofOfDelivery with id: " + proofOfDelivery.getId());
-      return new ResponseEntity<ProofOfDelivery>(newProofOfDelivery, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving proofOfDelivery", ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    LOGGER.debug("Creating new proofOfDelivery");
+
+    proofOfDelivery.setId(null);
+    ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
+
+    LOGGER.debug("Created new proofOfDelivery with id: " + proofOfDelivery.getId());
+    return new ResponseEntity<ProofOfDelivery>(newProofOfDelivery, HttpStatus.CREATED);
   }
 
   /**
@@ -94,26 +86,18 @@ public class ProofOfDeliveryController extends BaseController {
 
     ProofOfDelivery proofOfDeliveryToUpdate =
           proofOfDeliveryRepository.findOne(proofOfDeliveryId);
-    try {
-      if (proofOfDeliveryToUpdate == null) {
-        proofOfDeliveryToUpdate = new ProofOfDelivery();
-        LOGGER.info("Creating new proofOfDelivery");
-      } else {
-        LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
-      }
-
-      proofOfDeliveryToUpdate.updateFrom(proofOfDelivery);
-      proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
-
-      LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
-      return new ResponseEntity<ProofOfDelivery>(proofOfDeliveryToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving proofOfDelivery with id: "
-                  + proofOfDeliveryToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (proofOfDeliveryToUpdate == null) {
+      proofOfDeliveryToUpdate = new ProofOfDelivery();
+      LOGGER.debug("Creating new proofOfDelivery");
+    } else {
+      LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
     }
+
+    proofOfDeliveryToUpdate.updateFrom(proofOfDelivery);
+    proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
+
+    LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
+    return new ResponseEntity<>(proofOfDeliveryToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -144,15 +128,7 @@ public class ProofOfDeliveryController extends BaseController {
     if (proofOfDelivery == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        proofOfDeliveryRepository.delete(proofOfDelivery);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting proofOfDelivery with id: "
-                    + proofOfDeliveryId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      proofOfDeliveryRepository.delete(proofOfDelivery);
       return new ResponseEntity<ProofOfDelivery>(HttpStatus.NO_CONTENT);
     }
   }

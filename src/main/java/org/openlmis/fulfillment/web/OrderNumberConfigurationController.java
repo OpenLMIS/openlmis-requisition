@@ -2,12 +2,8 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
-import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.web.BaseController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,8 +17,6 @@ import java.util.Iterator;
 @Controller
 public class OrderNumberConfigurationController extends BaseController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OrderNumberConfiguration.class);
-
   @Autowired
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
@@ -34,16 +28,9 @@ public class OrderNumberConfigurationController extends BaseController {
   @RequestMapping(value = "/orderNumberConfigurations", method = RequestMethod.POST)
   public ResponseEntity<?> saveOrderNumberConfigurations(
       @RequestBody OrderNumberConfiguration orderNumberConfigurationDto) {
-    try {
-      OrderNumberConfiguration orderNumberConfiguration =
-          orderNumberConfigurationRepository.save(orderNumberConfigurationDto);
-      return new ResponseEntity<>(orderNumberConfiguration, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while saving order", ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.save(orderNumberConfigurationDto);
+    return new ResponseEntity<>(orderNumberConfiguration, HttpStatus.OK);
   }
 
   /**

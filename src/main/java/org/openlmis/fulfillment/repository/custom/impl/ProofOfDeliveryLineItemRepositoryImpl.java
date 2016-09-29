@@ -12,7 +12,7 @@ public class ProofOfDeliveryLineItemRepositoryImpl {
   private EntityManager entityManager;
 
   /**
-   * Method deletes given proof of delivery line.
+   * Method deletes given proof of delivery line item.
    * @param entity entity to be deleted.
    */
   public void delete(ProofOfDeliveryLineItem entity) {

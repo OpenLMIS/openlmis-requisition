@@ -67,8 +67,8 @@
                     prod.primaryname,
                     prod.dispensingunit,
                     prodc.name
-             FROM requisition.proof_of_delivery_lines podl
-             INNER JOIN  requisition.order_lines ol on  podl.orderlineid = ol.id
+             FROM requisition.proof_of_delivery_line_items podl
+             INNER JOIN  requisition.order_line_items ol on  podl.orderlineitemid = ol.id
              INNER JOIN  referencedata.products prod on prod.id = ol.productid 
              INNER JOIN  referencedata.product_categories prodc on prodc.id =   prod.productcategoryid
              WHERE  podl.proofofdeliveryid  = $P!{pod_id} 

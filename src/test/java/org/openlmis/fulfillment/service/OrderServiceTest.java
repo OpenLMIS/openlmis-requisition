@@ -1,13 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +10,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -25,12 +18,15 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -50,9 +46,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
+
+  @Mock
+  private OrderableProductDto orderableProductDto;
 
   @Mock
   private RequisitionService requisitionService;
@@ -84,9 +91,11 @@ public class OrderServiceTest {
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
 
+  @Mock
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
   @InjectMocks
   private OrderService orderService;
-
 
   private List<Order> orders;
   private List<Requisition> requisitions;
@@ -103,7 +112,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldConvertRequisitionsToOrders() {
+  public void shouldConvertRequisitionsToOrders() throws RequisitionException {
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
@@ -159,7 +168,7 @@ public class OrderServiceTest {
           requisition.getRequisitionLineItems().iterator().next();
       assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
               orderLineItem.getOrderedQuantity().longValue());
-      assertEquals(requisitionLineItem.getProduct(), orderLineItem.getProduct());
+      assertEquals(requisitionLineItem.getOrderableProduct(), orderLineItem.getOrderableProduct());
     }
 
     verify(requisitionRepository, atLeastOnce()).findOne(anyObject());
@@ -196,9 +205,14 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldConvertOrderToCsvIfItExists() throws IOException, URISyntaxException {
+  public void shouldConvertOrderToCsvIfItExists()
+          throws IOException, URISyntaxException, OrderCsvWriteException {
     Order order = orders.get(0);
     when(order.getRequestingFacility()).thenReturn(UUID.randomUUID());
+    when(orderableProductReferenceDataService
+        .findOne(any())).thenReturn(orderableProductDto);
+    when(orderableProductDto.getProductCode()).thenReturn("productCode");
+    when(orderableProductDto.getName()).thenReturn("product");
 
     //Creation date has to be static cuz we read expected csv from file
     ZonedDateTime zdt = ZonedDateTime.parse("2016-08-27T11:30Z");
@@ -213,7 +227,7 @@ public class OrderServiceTest {
     header.add(OrderService.DEFAULT_COLUMNS[5]);
 
     StringWriter writer = new StringWriter();
-    orderService.orderToCsv(order, header.toArray(new String[0]), writer);
+    orderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
 
     String received = writer.toString().replace("\r\n","\n");
     String expected = prepareExpectedCsvOutput(order, header);

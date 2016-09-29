@@ -27,7 +27,7 @@ public class OrderLineItem extends BaseEntity {
 
   @Getter
   @Setter
-  private UUID product;
+  private UUID orderableProduct;
 
   @Column(nullable = false)
   @Getter
@@ -46,7 +46,7 @@ public class OrderLineItem extends BaseEntity {
    */
   public void updateFrom(OrderLineItem orderLineItem) {
     this.order = orderLineItem.getOrder();
-    this.product = orderLineItem.getProduct();
+    this.orderableProduct = orderLineItem.getOrderableProduct();
     this.orderedQuantity = orderLineItem.getOrderedQuantity();
     this.filledQuantity = orderLineItem.getFilledQuantity();
   }

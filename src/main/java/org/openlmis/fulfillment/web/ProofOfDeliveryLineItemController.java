@@ -2,12 +2,10 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
-import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -39,22 +37,14 @@ public class ProofOfDeliveryLineItemController extends BaseController {
   @RequestMapping(value = "/proofOfDeliveryLineItems", method = RequestMethod.POST)
   public ResponseEntity<?> createProofOfDeliveryLineItem(
           @RequestBody ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
-    try {
-      LOGGER.debug("Creating new proofOfDeliveryLineItem");
-      // Ignore provided id
-      proofOfDeliveryLineItem.setId(null);
-      ProofOfDeliveryLineItem newProofOfDeliveryLineItem
-              = proofOfDeliveryLineItemRepository.save(proofOfDeliveryLineItem);
-      LOGGER.debug("Created new proofOfDeliveryLineItem with id: "
-          + proofOfDeliveryLineItem.getId());
-      return new ResponseEntity<>(newProofOfDeliveryLineItem, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while creating proofOfDeliveryLineItem",
-                  ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    LOGGER.debug("Creating new proofOfDeliveryLineItem");
+    // Ignore provided id
+    proofOfDeliveryLineItem.setId(null);
+    ProofOfDeliveryLineItem newProofOfDeliveryLineItem
+            = proofOfDeliveryLineItemRepository.save(proofOfDeliveryLineItem);
+    LOGGER.debug("Created new proofOfDeliveryLineItem with id: {}",
+        proofOfDeliveryLineItem.getId());
+    return new ResponseEntity<>(newProofOfDeliveryLineItem, HttpStatus.CREATED);
   }
 
   /**
@@ -84,28 +74,20 @@ public class ProofOfDeliveryLineItemController extends BaseController {
 
     ProofOfDeliveryLineItem proofOfDeliveryLineItemToUpdate
           = proofOfDeliveryLineItemRepository.findOne(proofOfDeliveryLineItemId);
-    try {
-      if (proofOfDeliveryLineItemToUpdate == null) {
-        proofOfDeliveryLineItemToUpdate = new ProofOfDeliveryLineItem();
-        LOGGER.info("Creating new proofOfDeliveryLineItem");
-      } else {
-        LOGGER.debug("Updating proofOfDeliveryLineItem with id: " + proofOfDeliveryLineItemId);
-      }
-
-      proofOfDeliveryLineItemToUpdate.updateFrom(proofOfDeliveryLineItem);
-      proofOfDeliveryLineItemToUpdate
-            = proofOfDeliveryLineItemRepository.save(proofOfDeliveryLineItemToUpdate);
-
-      LOGGER.debug("Saved proofOfDeliveryLineItem with id: "
-          + proofOfDeliveryLineItemToUpdate.getId());
-      return new ResponseEntity<>(proofOfDeliveryLineItemToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while saving proofOfDeliveryLineItem with id: "
-                  + proofOfDeliveryLineItemToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (proofOfDeliveryLineItemToUpdate == null) {
+      proofOfDeliveryLineItemToUpdate = new ProofOfDeliveryLineItem();
+      LOGGER.debug("Creating new proofOfDeliveryLineItem");
+    } else {
+      LOGGER.debug("Updating proofOfDeliveryLineItem with id: " + proofOfDeliveryLineItemId);
     }
+
+    proofOfDeliveryLineItemToUpdate.updateFrom(proofOfDeliveryLineItem);
+    proofOfDeliveryLineItemToUpdate
+          = proofOfDeliveryLineItemRepository.save(proofOfDeliveryLineItemToUpdate);
+
+    LOGGER.debug("Saved proofOfDeliveryLineItem with id: "
+        + proofOfDeliveryLineItemToUpdate.getId());
+    return new ResponseEntity<>(proofOfDeliveryLineItemToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -140,15 +122,7 @@ public class ProofOfDeliveryLineItemController extends BaseController {
     if (proofOfDeliveryLineItem == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        proofOfDeliveryLineItemRepository.delete(proofOfDeliveryLineItem);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting proofOfDeliveryLineItem with id: "
-                    + proofOfDeliveryLineItemId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      proofOfDeliveryLineItemRepository.delete(proofOfDeliveryLineItem);
       return new ResponseEntity<ProofOfDeliveryLineItem>(HttpStatus.NO_CONTENT);
     }
   }

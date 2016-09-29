@@ -3,19 +3,21 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.exception.OrderCsvWriteException;
+import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.utils.ErrorResponse;
-import org.openlmis.requisition.web.BaseController;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.web.BaseController;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,14 +29,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class OrderController extends BaseController {
@@ -64,19 +67,14 @@ public class OrderController extends BaseController {
    * @return ResponseEntity containing the created order
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
-  public ResponseEntity<?> createOrder(@RequestBody Order order) {
-    try {
-      LOGGER.debug("Creating new order");
-      order.setId(null);
-      Order newOrder = orderRepository.save(order);
-      LOGGER.debug("Created new order with id: " + order.getId());
-      return new ResponseEntity<Order>(newOrder, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving order", ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public Order createOrder(@RequestBody Order order) {
+    LOGGER.debug("Creating new order");
+    order.setId(null);
+    Order newOrder = orderRepository.save(order);
+    LOGGER.debug("Created new order with id: {}", order.getId());
+    return newOrder;
   }
 
   /**
@@ -86,9 +84,8 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<?> getAllOrders() {
-    Iterable<Order> orders = orderRepository.findAll();
-    return new ResponseEntity<>(orders, HttpStatus.OK);
+  public Iterable<Order> getAllOrders() {
+    return orderRepository.findAll();
   }
 
   /**
@@ -99,30 +96,24 @@ public class OrderController extends BaseController {
    * @return ResponseEntity containing the updated order
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateOrder(@RequestBody Order order,
+  @ResponseBody
+  public Order updateOrder(@RequestBody Order order,
                                        @PathVariable("id") UUID orderId) {
 
     Order orderToUpdate = orderRepository.findOne(orderId);
-    try {
-      if (orderToUpdate == null) {
-        orderToUpdate = new Order();
-        LOGGER.info("Creating new order");
-      } else {
-        LOGGER.debug("Updating order with id: " + orderId);
-      }
-
-      orderToUpdate.updateFrom(order);
-      orderToUpdate = orderRepository.save(orderToUpdate);
-
-      LOGGER.debug("Saved order with id: " + orderToUpdate.getId());
-      return new ResponseEntity<Order>(orderToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while saving order with id: "
-                  + orderToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    if (orderToUpdate == null) {
+      orderToUpdate = new Order();
+      LOGGER.info("Creating new order");
+    } else {
+      LOGGER.debug("Updating order with id: {}", orderId);
     }
+
+    orderToUpdate.updateFrom(order);
+    orderToUpdate = orderRepository.save(orderToUpdate);
+
+    LOGGER.debug("Saved order with id: {}", orderToUpdate.getId());
+
+    return orderToUpdate;
   }
 
   /**
@@ -153,15 +144,7 @@ public class OrderController extends BaseController {
     if (order == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        orderRepository.delete(order);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while deleting order with id: "
-                    + orderId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      orderRepository.delete(order);
       return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
     }
   }
@@ -175,15 +158,14 @@ public class OrderController extends BaseController {
    *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
-  public ResponseEntity<Iterable<Order>> searchOrders(
+  @ResponseBody
+  public Iterable<Order> searchOrders(
           @RequestParam(value = "supplyingFacility", required = true) UUID supplyingFacility,
           @RequestParam(value = "requestingFacility", required = false)
               UUID requestingFacility,
           @RequestParam(value = "program", required = false) UUID program) {
 
-    List<Order> result = orderService.searchOrders(supplyingFacility, requestingFacility, program);
-
-    return new ResponseEntity<>(result, HttpStatus.OK);
+    return orderService.searchOrders(supplyingFacility, requestingFacility, program);
   }
 
   /**
@@ -202,53 +184,11 @@ public class OrderController extends BaseController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    LOGGER.debug("Finalizing the order");
+    LOGGER.debug("Finalizing the order with id: {}", order);
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
 
     return new ResponseEntity<>(HttpStatus.OK);
-  }
-
-  /**
-   * Returns csv or pdf of defined object in response.
-   *
-   * @param orderId UUID of order to print
-   * @param format String describing return format (pdf or csv)
-   * @param response HttpServletResponse object
-   */
-  @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
-  @ResponseBody
-  public void printOrder(@PathVariable("id") UUID orderId,
-                         @RequestParam("format") String format,
-                         HttpServletResponse response) {
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      try {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order does not exist.");
-      } catch (IOException ex) {
-        LOGGER.info("Error sending error message to client.", ex);
-      }
-    }
-    String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
-    if (format.equals("pdf")) {
-      response.setContentType("application/pdf");
-      response.addHeader("Content-Disposition",
-              "attachment; filename=order-" + order.getOrderCode() + ".pdf");
-      try {
-        orderService.orderToPdf(order, columns, response.getOutputStream());
-      } catch (IOException ex) {
-        LOGGER.debug("Error getting response output stream.", ex);
-      }
-    } else {
-      response.setContentType("text/csv");
-      response.addHeader("Content-Disposition",
-              "attachment; filename=order" + order.getOrderCode() + ".csv");
-      try {
-        orderService.orderToCsv(order, columns, response.getWriter());
-      } catch (IOException ex) {
-        LOGGER.debug("Error writing csv file to output stream.", ex);
-      }
-    }
   }
 
   /**
@@ -269,12 +209,55 @@ public class OrderController extends BaseController {
       Map<String, Object> parameters = new HashMap<>();
       parameters.put("username", username);
 
-      List<UserDto> users = userReferenceDataService.findAll("search", parameters);
+      List<UserDto> users =
+          new ArrayList<>(userReferenceDataService.findUsers(parameters));
 
       userId = users.get(0).getId();
     }
-    orderService.convertToOrder(requisitionList, userId);
+    try {
+      orderService.convertToOrder(requisitionList, userId);
+    } catch (RequisitionException ex) {
+      ErrorResponse errorResponse =
+              new ErrorResponse("An error occurred while converting requisitions to order",
+                      ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
     return new ResponseEntity<>(HttpStatus.CREATED);
+  }
+
+  /**
+   * Returns csv or pdf of defined object in response.
+   *
+   * @param orderId UUID of order to print
+   * @param format String describing return format (pdf or csv)
+   * @param response HttpServletResponse object
+   */
+  @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
+  public void printOrder(@PathVariable("id") UUID orderId,
+                         @RequestParam("format") String format,
+                         HttpServletResponse response) throws IOException,
+          OrderCsvWriteException, OrderPdfWriteException {
+
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order does not exist.");
+      return;
+    }
+
+    String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
+    if (format.equals("pdf")) {
+      response.setContentType("application/pdf");
+      response.addHeader("Content-Disposition",
+              "attachment; filename=order-" + order.getOrderCode() + ".pdf");
+      orderService.orderToPdf(order, columns, response.getOutputStream());
+    } else {
+      response.setContentType("text/csv");
+      response.addHeader("Content-Disposition",
+              "attachment; filename=order" + order.getOrderCode() + ".csv");
+      orderService.orderToCsv(order, columns, response.getWriter());
+    }
   }
 
   /**
@@ -284,24 +267,20 @@ public class OrderController extends BaseController {
    * @param response HttpServletResponse object
    */
   @RequestMapping(value = "/orders/{id}/csv", method = RequestMethod.GET)
-  @ResponseBody
-  public void exportToCsv(@PathVariable("id") UUID orderId, HttpServletResponse response) {
+  @ResponseStatus(HttpStatus.OK)
+  public void exportToCsv(@PathVariable("id") UUID orderId, HttpServletResponse response)
+          throws IOException {
     Order order = orderRepository.findOne(orderId);
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
 
-    try {
-      if (order == null) {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");
-        return;
-      }
+    if (order == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");
+      return;
+    }
 
-      if (orderFileTemplate == null) {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND,
-            "Could not export Order, because Order Template File not found");
-        return;
-      }
-    } catch (IOException ex) {
-      LOGGER.info("Error sending error message to client.", ex);
+    if (orderFileTemplate == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND,
+          "Could not export Order, because Order Template File not found");
       return;
     }
 
@@ -312,13 +291,9 @@ public class OrderController extends BaseController {
     try {
       csvHelper.writeCsvFile(order, orderFileTemplate, response.getWriter());
     } catch (IOException ex) {
-      try {
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Error occurred while exporting order to csv.");
-        LOGGER.debug("Error occurred while exporting order to csv", ex);
-      } catch (IOException exception) {
-        LOGGER.info("Error sending error message to client.", exception);
-      }
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          "Error occurred while exporting order to csv.");
+      LOGGER.error("Error occurred while exporting order to csv", ex);
     }
   }
 }

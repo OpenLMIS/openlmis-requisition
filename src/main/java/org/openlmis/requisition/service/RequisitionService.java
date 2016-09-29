@@ -5,14 +5,17 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
+import org.openlmis.requisition.exception.RequisitionAlreadyExistsException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +24,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class RequisitionService {
-  private static final String REQUISITION_NULL_MESSAGE = "requisition cannot be null";
-  private static final String REQUISITION_DOES_NOT_EXISTS_MESSAGE = "Requisition does not exist: ";
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
@@ -55,9 +55,6 @@ public class RequisitionService {
   @Autowired
   private UserReferenceDataService userReferenceDataService;
 
-  @Autowired
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-
   /**
    * Initiated given requisition if possible.
    *
@@ -76,17 +73,14 @@ public class RequisitionService {
     Requisition requisition;
 
     if (facilityId == null || programId == null || emergency == null) {
-      throw new RequisitionException("Requisition cannot be initiated with null object");
+      throw new RequisitionInitializationException("Requisition cannot be initiated with null object");
     } else if (facilityReferenceDataService.findOne(facilityId) != null
         && programReferenceDataService.findOne(programId) != null) {
-
-
       requisition = new Requisition();
       requisition.setStatus(RequisitionStatus.INITIATED);
       requisition.setEmergency(emergency);
       requisition.setFacility(facilityId);
       requisition.setProgram(programId);
-
 
       //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
       //if (suggestedPeriodId != null) {
@@ -103,7 +97,8 @@ public class RequisitionService {
           requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
       requisitionRepository.save(requisition);
     } else {
-      throw new RequisitionException("Cannot initiate requisition with such parameters");
+      throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
+          + " Requisition with such parameters already exists");
     }
 
     return requisition;
@@ -113,10 +108,10 @@ public class RequisitionService {
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateService.searchRequisitionTemplates(programId);
     if (requisitionTemplate == null) {
-      throw new RequisitionException("RequisitionTemplate not found");
+      throw new RequisitionNotFoundException("RequisitionTemplate not found");
     } else {
       if (requisitionTemplate.getColumnsMap().isEmpty()) {
-        throw new RequisitionException("RequisitionTemplate is not defined");
+        throw new RequisitionNotFoundException("RequisitionTemplate is not defined");
       } else {
         return requisitionTemplate;
       }
@@ -127,22 +122,20 @@ public class RequisitionService {
    * Delete given Requisition if possible.
    *
    * @param requisitionId UUID of Requisition to be deleted.
-   * @return True if deletion successful, false otherwise.
    * @throws RequisitionException Exception thrown when it is not possible to delete a requisition.
    */
-  public boolean tryDelete(UUID requisitionId) throws RequisitionException {
+  public void delete(UUID requisitionId) throws RequisitionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
+      throw new RequisitionNotFoundException(requisitionId);
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-      LOGGER.debug("Delete failed - " + REQUISITION_BAD_STATUS_MESSAGE);
+      throw new InvalidRequisitionStatusException("Delete failed - "
+              + REQUISITION_BAD_STATUS_MESSAGE);
     } else {
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
-      return true;
     }
-    return false;
   }
 
   /**
@@ -156,18 +149,17 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new RequisitionException("Skip failed - "
-          + REQUISITION_NULL_MESSAGE);
+      throw new RequisitionNotFoundException(requisitionId);
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-        throw new RequisitionException("Skip failed - "
+        throw new InvalidRequisitionStatusException("Skip failed - "
             + REQUISITION_BAD_STATUS_MESSAGE);
       } else if (!program.getPeriodsSkippable()) {
-        throw new RequisitionException("Skip failed - "
+        throw new SkipNotAllowedException("Skip failed - "
             + "requisition program does not allow skipping");
       } else {
-        LOGGER.info("Requisition skipped");
+        LOGGER.debug("Requisition skipped");
         requisition.setStatus(RequisitionStatus.SKIPPED);
         return requisitionRepository.save(requisition);
       }
@@ -184,14 +176,15 @@ public class RequisitionService {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      throw new RequisitionException(REQUISITION_DOES_NOT_EXISTS_MESSAGE + requisitionId);
-    } else if (requisition.getStatus() != RequisitionStatus.AUTHORIZED) {
-      throw new RequisitionException("Cannot reject requisition: " + requisitionId
-          + " .Requisition must be waiting for approval to be rejected");
-    } else {
+      throw new RequisitionNotFoundException(requisitionId);
+    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+            || requisition.getStatus() == RequisitionStatus.SUBMITTED) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
+    } else {
+      throw new InvalidRequisitionStatusException("Cannot reject requisition: " + requisitionId
+              + " .Requisition must be waiting for approval to be rejected");
     }
   }
 
@@ -215,36 +208,27 @@ public class RequisitionService {
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    if (user.getSupervisedNode() != null) {
-      requisitionsForApproval.addAll(getAuthorizedRequisitions(
-              supervisoryNodeReferenceDataService.findOne(user.getSupervisedNode())));
+    Set<ProgramDto> supervisedPrograms = user.getSupervisedPrograms();
+    for (ProgramDto program: supervisedPrograms) {
+      requisitionsForApproval.addAll(getAuthorizedRequisitions(program));
     }
     return requisitionsForApproval;
   }
 
   /**
-   * Get authorized requisitions supervised by specified Node.
+   * Get authorized requisitions for specified program.
    */
-  public List<Requisition> getAuthorizedRequisitions(SupervisoryNodeDto supervisoryNode) {
+  public List<Requisition> getAuthorizedRequisitions(ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
-    Set<SupervisoryNodeDto> supervisoryNodes = supervisoryNode.getChildNodes();
-    if (supervisoryNodes == null) {
-      supervisoryNodes = new HashSet<>();
-    }
-    supervisoryNodes.add(supervisoryNode);
-
-    for (SupervisoryNodeDto supNode : supervisoryNodes) {
-      List<Requisition> reqList = searchRequisitions(
-              null, null, null, null, null, supNode.getId(), null);
-      if (reqList != null) {
-        for (Requisition req : reqList) {
-          if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
-            requisitions.add(req);
-          }
+    List<Requisition> reqList = searchRequisitions(null, program.getId(),
+        null, null, null, null, null);
+    if (reqList != null) {
+      for (Requisition req : reqList) {
+        if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
+          requisitions.add(req);
         }
       }
     }
-
     return requisitions;
   }
 
@@ -254,12 +238,19 @@ public class RequisitionService {
    * @param requisitionList list of requisitions to be released as order
    * @return list of released requisitions
    */
-  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList) {
+  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList)
+          throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
-      loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-      releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
+      if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
+        loadedRequisition.setStatus(RequisitionStatus.RELEASED);
+        releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
+      } else {
+        throw new InvalidRequisitionStatusException("Can not release requisition:"
+                + loadedRequisition.getId()
+                + " as order. Requisition must be approved.");
+      }
     }
     return releasedRequisitions;
   }

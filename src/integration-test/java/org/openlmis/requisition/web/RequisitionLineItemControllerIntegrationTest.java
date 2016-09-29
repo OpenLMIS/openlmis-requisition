@@ -5,20 +5,22 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class RequisitionLineItemControllerIntegrationTest extends BaseWebIntegra
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
-  private ProductDto product = new ProductDto();
+  private OrderableProductDto product = new OrderableProductDto();
   private ProgramDto program = new ProgramDto();
   private FacilityDto facility = new FacilityDto();
 
@@ -79,7 +81,7 @@ public class RequisitionLineItemControllerIntegrationTest extends BaseWebIntegra
           responseRequisitionLineItem.getRequisition().getId());
       assertEquals(
           product.getId(),
-          responseRequisitionLineItem.getProduct());
+          responseRequisitionLineItem.getOrderableProduct());
       assertEquals(
           BEGINNING_BALANCE,
           responseRequisitionLineItem.getBeginningBalance());
@@ -334,14 +336,6 @@ public class RequisitionLineItemControllerIntegrationTest extends BaseWebIntegra
   private RequisitionLineItem generateRequisitionLineItem() {
 
     product.setId(UUID.randomUUID());
-    product.setCode(TEST_CODE);
-    product.setPrimaryName(TEST_NAME);
-    product.setDispensingUnit("Unit");
-    product.setPackSize(1);
-    product.setPackRoundingThreshold(0);
-    product.setActive(true);
-    product.setFullSupply(true);
-    product.setTracer(false);
 
     program.setId(UUID.randomUUID());
     program.setCode(TEST_CODE);
@@ -355,12 +349,12 @@ public class RequisitionLineItemControllerIntegrationTest extends BaseWebIntegra
 
     period.setId(UUID.randomUUID());
     period.setName(TEST_NAME);
-    period.setProcessingSchedule(UUID.randomUUID());
+    period.setProcessingSchedule(new ProcessingScheduleDto());
     period.setDescription("Description");
     period.setStartDate(LocalDate.of(2016, 1, 1));
     period.setEndDate(LocalDate.of(2016, 2, 1));
 
-    requisitionLineItem.setProduct(product.getId());
+    requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setStockOnHand(1);

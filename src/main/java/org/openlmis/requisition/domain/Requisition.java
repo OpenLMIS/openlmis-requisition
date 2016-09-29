@@ -10,11 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
+import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -26,6 +23,9 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisitions")
@@ -110,7 +110,7 @@ public class Requisition extends BaseEntity {
    */
   public void submit() throws RequisitionException {
     if (!RequisitionStatus.INITIATED.equals(status)) {
-      throw new RequisitionException("Cannot submit requisition: " + getId()
+      throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition must have status 'INITIATED' to be submitted.");
     }
 
@@ -123,7 +123,7 @@ public class Requisition extends BaseEntity {
    */
   public void authorize() throws RequisitionException {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
-      throw new RequisitionException("Cannot authorize requisition: " + getId()
+      throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
           + ", requisition must have status 'SUBMITTED' to be authorized.");
     }
 

@@ -1,18 +1,19 @@
 package org.openlmis.requisition.web;
 
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
+
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
+import guru.nidi.ramltester.junit.RamlMatchers;
 
-public class OrderNumberConfigurationControllerTest extends BaseWebIntegrationTest {
+public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderNumberConfigurations";
 

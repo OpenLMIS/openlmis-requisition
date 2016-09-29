@@ -18,6 +18,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
@@ -59,6 +60,9 @@ public class RequisitionLineItemServiceTest {
 
   @Mock
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  private ProcessingPeriodDto periodDto;
 
   @InjectMocks
   private RequisitionLineItemService requisitionLineItemService;
@@ -201,7 +205,7 @@ public class RequisitionLineItemServiceTest {
                                                             Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setProduct(product);
+    requisitionLineItem.setOrderableProduct(product);
     requisitionLineItem.setRequestedQuantity(quantityRequested);
     requisitionLineItem.setStockInHand(stockInHand);
     requisitionLineItem.setRequisition(requisition);
@@ -214,7 +218,7 @@ public class RequisitionLineItemServiceTest {
         .thenReturn(Arrays.asList(requisitionTemplate));
     when(periodReferenceDataService
         .search(any(), any()))
-        .thenReturn(Arrays.asList(new ProcessingPeriodDto()));
+        .thenReturn(Arrays.asList(periodDto));
     when(requisitionService
         .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
             eq(null), eq(null), any(), eq(null), eq(null)))
@@ -227,6 +231,8 @@ public class RequisitionLineItemServiceTest {
         .thenReturn(new ProgramDto());
     when(periodReferenceDataService
         .findOne(any()))
-        .thenReturn(new ProcessingPeriodDto());
+        .thenReturn(periodDto);
+    when(periodDto.getProcessingSchedule())
+        .thenReturn(new ProcessingScheduleDto());
   }
 }

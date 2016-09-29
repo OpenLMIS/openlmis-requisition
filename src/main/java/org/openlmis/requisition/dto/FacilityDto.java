@@ -1,6 +1,7 @@
 package org.openlmis.requisition.dto;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,5 +19,5 @@ public class FacilityDto {
   private String comment;
   private Boolean enabled;
   private Boolean openLmisAccessible;
-
+  private List<ProgramDto> supportedPrograms;
 }

@@ -97,8 +97,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize) {
 
-    //TODO: OLMIS-763 May need changes to work
-
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
 
@@ -154,8 +152,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private List<Order> setSorting(CriteriaBuilder builder, String sortBy, Boolean descending,
                                  Path root, Path programName, Path facilityCode,
                                  Path facilityName) {
-
-    //TODO: OLMIS-763 May need changes to work
 
     Path<ProcessingPeriodDto> rootProcesingPeriod = root.get("processingPeriod");
     Path<LocalDate> rootProcesingPeriodEndDate = rootProcesingPeriod.get("endDate");

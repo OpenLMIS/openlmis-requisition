@@ -3,8 +3,8 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
 
   @Override
   protected String getUrl() {
-    return "/supplyLines/";
+    return "/api/supplyLines/";
   }
 
   @Override
@@ -27,7 +27,7 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
    * @param supervisoryNodeId UUID of the supervisory node
    * @return A list of supply lines matching search criteria
    */
-  public List<SupplyLineDto> search(UUID programId, UUID supervisoryNodeId) {
+  public Collection<SupplyLineDto> search(UUID programId, UUID supervisoryNodeId) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("programId", programId);
     parameters.put("supervisoryNodeId", supervisoryNodeId);

@@ -90,9 +90,9 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT (SELECT sum(requisition.proof_of_delivery_lines.quantityreturned) FROM   requisition.proof_of_delivery_lines WHERE  requisition.proof_of_delivery_lines.proofofdeliveryid =  $P!{pod_id}) AS totalquantityreturned,
-            (SELECT sum(requisition.proof_of_delivery_lines.quantityshipped) FROM  requisition.proof_of_delivery_lines WHERE requisition.proof_of_delivery_lines.proofofdeliveryid  =  $P!{pod_id}) AS totalquantityshipped,
-            (SELECT sum(requisition.proof_of_delivery_lines.quantityreceived) FROM  requisition.proof_of_delivery_lines WHERE requisition.proof_of_delivery_lines.proofofdeliveryid = $P!{pod_id}) AS totalquantityreceived,
+		<![CDATA[SELECT (SELECT sum(requisition.proof_of_delivery_line_items.quantityreturned) FROM   requisition.proof_of_delivery_line_items WHERE  requisition.proof_of_delivery_line_items.proofofdeliveryid =  $P!{pod_id}) AS totalquantityreturned,
+            (SELECT sum(requisition.proof_of_delivery_line_items.quantityshipped) FROM  requisition.proof_of_delivery_line_items WHERE requisition.proof_of_delivery_line_items.proofofdeliveryid  =  $P!{pod_id}) AS totalquantityshipped,
+            (SELECT sum(requisition.proof_of_delivery_line_items.quantityreceived) FROM  requisition.proof_of_delivery_line_items WHERE requisition.proof_of_delivery_line_items.proofofdeliveryid = $P!{pod_id}) AS totalquantityreceived,
             p.receiveddate, p.receivedby, p.deliveredby, o.ordercode, o.createddate, f.name as facility,
              CASE WHEN r.emergency = true THEN 'Emergency'
              ELSE 'Regular' END as type,

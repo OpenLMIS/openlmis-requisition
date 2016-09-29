@@ -9,14 +9,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public abstract class BaseReferenceDataService<T> {
-
-  private static final String BASE_URL = "http://referencedata:8080/api";
 
   @Value("${auth.server.clientId}")
   private String clientId;
@@ -24,13 +22,16 @@ public abstract class BaseReferenceDataService<T> {
   @Value("${auth.server.clientSecret}")
   private String clientSecret;
 
+  @Value("${referencedata.url}")
+  private String referenceDataUrl;
+
   /**
    * Return one object from Reference data service.
    * @param id UUID of requesting object.
    * @return Requesting reference data object.
    */
   public T findOne(UUID id) {
-    String url = BASE_URL + getUrl() + id;
+    String url = getReferenceDataUrl() + getUrl() + id;
 
     RestTemplate restTemplate = new RestTemplate();
     Map<String, String> params = new HashMap<>();
@@ -39,15 +40,14 @@ public abstract class BaseReferenceDataService<T> {
     ResponseEntity<T> responseEntity = restTemplate
         .exchange(url, HttpMethod.GET, null, getResultClass(), params);
 
-    T object = responseEntity.getBody();
-    return object;
+    return responseEntity.getBody();
   }
 
-  public List<T> findAll() {
+  public Collection<T> findAll() {
     return findAll("", new HashMap<>());
   }
 
-  public List<T> findAll(String resourceUrl) {
+  public Collection<T> findAll(String resourceUrl) {
     return findAll(resourceUrl, new HashMap<>());
   }
 
@@ -57,23 +57,26 @@ public abstract class BaseReferenceDataService<T> {
    * @param parameters Map of query parameters.
    * @return all reference data T objects.
    */
-  public List<T> findAll(String resourceUrl, Map<String, Object> parameters) {
-    String url = BASE_URL + getUrl() + resourceUrl;
+  public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
+    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
     params.put("access_token", obtainAccessToken());
 
-    ResponseEntity<List<T>> response = restTemplate.exchange(url, HttpMethod.GET,
-        null, new ParameterizedTypeReference<List<T>>() {}, params);
-    
-    List<T> result = response.getBody();
-    return result;
+    ResponseEntity<Collection<T>> response = restTemplate.exchange(url, HttpMethod.GET,
+        null, new ParameterizedTypeReference<Collection<T>>() {}, params);
+
+    return response.getBody();
   }
 
   protected abstract String getUrl();
 
   protected abstract Class<T> getResultClass();
+
+  protected String getReferenceDataUrl() {
+    return referenceDataUrl;
+  }
 
   private String obtainAccessToken() {
     RestTemplate restTemplate = new RestTemplate();

@@ -20,10 +20,10 @@ public class RequisitionLineItemRepositoryImpl implements RequisitionLineItemRep
   private EntityManager entityManager;
 
   /**
-   * Method returns all Requisition lines with matched parameters.
-   * @param requisition requisition of searched requisition lines.
-   * @param product product of searched requisition lines.
-   * @return list of requisition lines with matched parameters.
+   * Method returns all Requisition line items with matched parameters.
+   * @param requisition requisition of searched requisition line items.
+   * @param product product of searched requisition line items.
+   * @return list of requisition line items with matched parameters.
    */
   public List<RequisitionLineItem> searchRequisitionLineItems(Requisition requisition,
                                                               UUID product) {
@@ -42,7 +42,7 @@ public class RequisitionLineItemRepositoryImpl implements RequisitionLineItemRep
       predicate = builder.and(
               predicate,
               builder.equal(
-                      root.get("product"), product));
+                      root.get("orderableProduct"), product));
     }
 
     query.where(predicate);
@@ -50,7 +50,7 @@ public class RequisitionLineItemRepositoryImpl implements RequisitionLineItemRep
   }
 
   /**
-   * Method deletes given requisition line.
+   * Method deletes given requisition line item.
    * @param entity entity to be deleted.
    */
   public void delete(RequisitionLineItem entity) {

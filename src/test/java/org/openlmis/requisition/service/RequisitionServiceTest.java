@@ -1,12 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +12,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -29,9 +23,17 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -78,17 +80,13 @@ public class RequisitionServiceTest {
   @Test
   public void shouldDeleteRequisitionIfItIsInitiated() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.INITIATED);
-    boolean deleted = requisitionService.tryDelete(requisition.getId());
-
-    assertTrue(deleted);
+    requisitionService.delete(requisition.getId());
   }
 
-  @Test
+  @Test(expected = InvalidRequisitionStatusException.class)
   public void shouldNotDeleteRequisitionWhenStatusIsSubmitted() throws RequisitionException {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    boolean deleted = requisitionService.tryDelete(requisition.getId());
-
-    assertFalse(deleted);
+    requisitionService.delete(requisition.getId());
   }
 
   @Test(expected = RequisitionException.class)
@@ -98,7 +96,7 @@ public class RequisitionServiceTest {
     when(requisitionRepository
             .findOne(requisition.getId()))
             .thenReturn(null);
-    requisitionService.tryDelete(deletedRequisitionId);
+    requisitionService.delete(deletedRequisitionId);
   }
   
   @Test
@@ -148,39 +146,39 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldGetAuthorizedRequisitionsIfSupervisoryNodeProvided() {
+  public void shouldGetAuthorizedRequisitions() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setSupervisoryNode(supervisoryNode.getId());
+    requisition.setProgram(program.getId());
 
     when(requisitionRepository
-        .searchRequisitions(null, null, null, null, null, supervisoryNode.getId(), null))
-        .thenReturn(Arrays.asList(requisition));
+        .searchRequisitions(null, program.getId(), null, null, null, null, null))
+        .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> authorizedRequisitions =
-        requisitionService.getAuthorizedRequisitions(supervisoryNode);
-    List<Requisition> expected = Arrays.asList(requisition);
+        requisitionService.getAuthorizedRequisitions(program);
+    List<Requisition> expected = Collections.singletonList(requisition);
 
     assertEquals(expected, authorizedRequisitions);
   }
 
   @Test
-  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedNode() {
+  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedPrograms() {
 
-    UserDto user = mock(UserDto.class);
-    UUID supervisoryNodeId = UUID.randomUUID();
-    requisition.setSupervisoryNode(supervisoryNodeId);
+    UUID programId = UUID.randomUUID();
+    requisition.setProgram(programId);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    UserDto user = mock(UserDto.class);
+    Set<ProgramDto> supervisedPrograms = new HashSet<>();
+    supervisedPrograms.add(program);
 
-    when(user.getSupervisedNode()).thenReturn(supervisoryNodeId);
-    when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);
+    when(user.getSupervisedPrograms()).thenReturn(supervisedPrograms);
+    when(program.getId()).thenReturn(programId);
     when(userReferenceDataService.findOne(user.getId()))
             .thenReturn(user);
-    when(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
-            .thenReturn(supervisoryNode);
     when(requisitionRepository
-            .searchRequisitions(null, null, null, null, null, supervisoryNodeId, null))
-            .thenReturn(Arrays.asList(requisition));
+            .searchRequisitions(null, programId, null, null, null, null, null))
+            .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId());
@@ -200,7 +198,7 @@ public class RequisitionServiceTest {
     assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
-  @Test(expected = RequisitionException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
           throws RequisitionException {
     requisitionService.initiateRequisition(null);
@@ -213,8 +211,9 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldReleaseRequisitionsAsOrder() {
-    List<Requisition> requisitions = Arrays.asList(requisition);
+  public void shouldReleaseRequisitionsAsOrder() throws RequisitionException {
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    List<Requisition> requisitions = Collections.singletonList(requisition);
     List<Requisition> expectedRequisitions = requisitionService
         .releaseRequisitionsAsOrder(requisitions);
     assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
@@ -230,7 +229,7 @@ public class RequisitionServiceTest {
         requisition.getProcessingPeriod(),
         requisition.getSupervisoryNode(),
         requisition.getStatus()))
-        .thenReturn(Arrays.asList(requisition));
+        .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
         requisition.getFacility(),

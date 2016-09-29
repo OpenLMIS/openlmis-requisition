@@ -8,7 +8,7 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
 
   @Override
   protected String getUrl() {
-    return "/programs/";
+    return "/api/programs/";
   }
 
   @Override

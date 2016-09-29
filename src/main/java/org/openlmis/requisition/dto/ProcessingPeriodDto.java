@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class ProcessingPeriodDto {
   private UUID id;
-  private UUID processingSchedule;
+  private ProcessingScheduleDto processingSchedule;
   private String name;
   private String description;
   private LocalDate startDate;

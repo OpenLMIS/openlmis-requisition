@@ -5,11 +5,9 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.service.RequisitionLineItemService;
-import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -44,20 +42,12 @@ public class RequisitionLineItemController extends BaseController {
   @RequestMapping(value = "/requisitionLineItems", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionLineItem(
       @RequestBody RequisitionLineItem requisitionLineItem) {
-    try {
-      LOGGER.debug("Creating new requisitionLineItem");
-      requisitionLineItem.setId(null);
-      RequisitionLineItem newRequisitionLineItem =
-          requisitionLineItemRepository.save(requisitionLineItem);
-      LOGGER.debug("Created new requisitionLineItem with id: " + requisitionLineItem.getId());
-      return new ResponseEntity<>(newRequisitionLineItem, HttpStatus.CREATED);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error occurred while creating requisitionLineItem",
-                ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+    LOGGER.debug("Creating new requisitionLineItem");
+    requisitionLineItem.setId(null);
+    RequisitionLineItem newRequisitionLineItem =
+        requisitionLineItemRepository.save(requisitionLineItem);
+    LOGGER.debug("Created new requisitionLineItem with id: " + requisitionLineItem.getId());
+    return new ResponseEntity<>(newRequisitionLineItem, HttpStatus.CREATED);
   }
 
   /**
@@ -86,41 +76,33 @@ public class RequisitionLineItemController extends BaseController {
 
     RequisitionLineItem requisitionLineItemToUpdate =
           requisitionLineItemRepository.findOne(requisitionLineItemId);
-    try {
-      if (requisitionLineItemToUpdate == null) {
-        requisitionLineItemToUpdate = new RequisitionLineItem();
-        LOGGER.info("Creating new requisitionLineItem");
+    if (requisitionLineItemToUpdate == null) {
+      requisitionLineItemToUpdate = new RequisitionLineItem();
+      LOGGER.info("Creating new requisitionLineItem");
+      requisitionLineItemToUpdate.updateFrom(requisitionLineItem);
+      requisitionLineItemToUpdate =
+          requisitionLineItemRepository.save(requisitionLineItemToUpdate);
+    } else {
+
+      LOGGER.debug("Updating requisitionLineItem with id: " + requisitionLineItemId);
+
+      if (requisitionLineItemToUpdate.getRequisition().getStatus() == RequisitionStatus.INITIATED
+            || requisitionLineItemToUpdate.getRequisition().getStatus()
+            == RequisitionStatus.SUBMITTED) {
         requisitionLineItemToUpdate.updateFrom(requisitionLineItem);
         requisitionLineItemToUpdate =
             requisitionLineItemRepository.save(requisitionLineItemToUpdate);
-      } else {
-
-        LOGGER.debug("Updating requisitionLineItem with id: " + requisitionLineItemId);
-
-        if (requisitionLineItemToUpdate.getRequisition().getStatus() == RequisitionStatus.INITIATED
-              || requisitionLineItemToUpdate.getRequisition().getStatus()
-              == RequisitionStatus.SUBMITTED) {
-          requisitionLineItemToUpdate.updateFrom(requisitionLineItem);
-          requisitionLineItemToUpdate =
-              requisitionLineItemRepository.save(requisitionLineItemToUpdate);
-        } else if (requisitionLineItemToUpdate.getRequisition().getStatus()
-              == RequisitionStatus.AUTHORIZED) {
-          requisitionLineItemToUpdate.setApprovedQuantity(
-              requisitionLineItem.getApprovedQuantity());
-          requisitionLineItemToUpdate.setRemarks(requisitionLineItem.getRemarks());
-          requisitionLineItemToUpdate =
-              requisitionLineItemRepository.save(requisitionLineItemToUpdate);
-        }
+      } else if (requisitionLineItemToUpdate.getRequisition().getStatus()
+            == RequisitionStatus.AUTHORIZED) {
+        requisitionLineItemToUpdate.setApprovedQuantity(
+            requisitionLineItem.getApprovedQuantity());
+        requisitionLineItemToUpdate.setRemarks(requisitionLineItem.getRemarks());
+        requisitionLineItemToUpdate =
+            requisitionLineItemRepository.save(requisitionLineItemToUpdate);
       }
-      LOGGER.debug("Saved requisitionLineItem with id: " + requisitionLineItemToUpdate.getId());
-      return new ResponseEntity<RequisitionLineItem>(requisitionLineItemToUpdate, HttpStatus.OK);
-    } catch (DataIntegrityViolationException ex) {
-      ErrorResponse errorResponse =
-            new ErrorResponse("An error accurred while saving requisitionLineItem with id: "
-                  + requisitionLineItemToUpdate.getId(), ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
+    LOGGER.debug("Saved requisitionLineItem with id: " + requisitionLineItemToUpdate.getId());
+    return new ResponseEntity<>(requisitionLineItemToUpdate, HttpStatus.OK);
   }
 
   /**
@@ -154,24 +136,16 @@ public class RequisitionLineItemController extends BaseController {
     if (requisitionLineItem == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      try {
-        requisitionLineItemRepository.delete(requisitionLineItem);
-      } catch (DataIntegrityViolationException ex) {
-        ErrorResponse errorResponse =
-              new ErrorResponse("An error accurred while deleting requisitionLineItem with id: "
-                    + requisitionLineItemId, ex.getMessage());
-        LOGGER.error(errorResponse.getMessage(), ex);
-        return new ResponseEntity(HttpStatus.CONFLICT);
-      }
+      requisitionLineItemRepository.delete(requisitionLineItem);
       return new ResponseEntity<RequisitionLineItem>(HttpStatus.NO_CONTENT);
     }
   }
 
   /**
-   * Returns all requisition lines with matched parameters.
-   * @param requisition requisition of searched requisition lines.
-   * @param product product of searched requisition lines.
-   * @return ResponseEntity with list of all requisition lines matching
+   * Returns all requisition line items with matched parameters.
+   * @param requisition requisition of searched requisition line items.
+   * @param product product of searched requisition line items.
+   * @return ResponseEntity with list of all requisition line items matching
    *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/requisitionLineItems/search", method = RequestMethod.GET)

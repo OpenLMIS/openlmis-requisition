@@ -65,6 +65,8 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.+"
     testCompile "org.powermock:powermock-api-mockito:1.6.5"
     testCompile "org.powermock:powermock-module-junit4:1.6.5"
+    testCompile "com.github.tomakehurst:wiremock:1.58"
+
 }
 
 idea {
@@ -114,6 +116,7 @@ task integrationTest(type: Test) {
     classpath = sourceSets.integrationTest.runtimeClasspath
     testLogging {
         events "passed", "skipped", "failed"
+        exceptionFormat = 'full'
     }
     mustRunAfter test
 }
@@ -204,6 +207,7 @@ apply from: "documentation.gradle"
 test {
     testLogging {
         events 'started', 'passed'
+        exceptionFormat = 'full'
     }
 }
 

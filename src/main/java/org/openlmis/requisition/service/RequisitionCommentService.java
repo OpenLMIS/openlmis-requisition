@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.UUID;
 
 /**
  * Service for managing requisition comments.
- * Comments are handled separately from requisition lines.
+ * Comments are handled separately from requisition line items.
  */
 @Service
 public class RequisitionCommentService {
@@ -36,6 +37,7 @@ public class RequisitionCommentService {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
 
   /**
    * Inserts a new comment and ties it with a requisition.
@@ -53,7 +55,7 @@ public class RequisitionCommentService {
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
-    List<UserDto> users = userReferenceDataService.findAll("search", parameters);
+    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
     comment.setAuthorId(users.get(0).getId());
     comment.setRequisition(requisition);
 
