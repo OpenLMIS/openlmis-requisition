@@ -25,7 +25,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -81,10 +80,7 @@ public class RequisitionServiceTest {
   private SupervisoryNodeDto supervisoryNode;
 
   @Mock
-  private RequisitionLineItemService requisitionLineItemService;
-
-  @Mock
-  private RequisitionLineItemRepository requisitionLineItemRepository;
+  private RequisitionLineCalculator requisitionLineCalculator;
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
@@ -259,7 +255,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.searchRequisitionTemplates(programId))
         .thenReturn(Arrays.asList(requisitionTemplate));
 
-    when(requisitionLineItemService.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];
@@ -368,7 +364,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.searchRequisitionTemplates(programId))
         .thenReturn(Arrays.asList(requisitionTemplate));
 
-    when(requisitionLineItemService.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];

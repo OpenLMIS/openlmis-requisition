@@ -1,7 +1,6 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -16,7 +15,6 @@ import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -51,10 +49,7 @@ public class RequisitionService {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Autowired
-  private RequisitionLineItemService requisitionLineItemService;
-
-  @Autowired
-  private RequisitionLineItemRepository requisitionLineItemRepository;
+  private RequisitionLineCalculator requisitionLineCalculator;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -107,10 +102,8 @@ public class RequisitionService {
       //}
       //TODO requisition.setProcessingPeriod();
       //TODO setlineitem(template)
-      requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
+      requisitionLineCalculator.initiateRequisitionLineItemFields(requisition,
           requisitionTemplate);
-      requisition.getRequisitionLineItems().forEach(
-          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
 
       ProcessingPeriodDto processingPeriodDto =
           periodReferenceDataService.findOne(requisition.getProcessingPeriod());
@@ -292,19 +285,6 @@ public class RequisitionService {
     return releasedRequisitions;
   }
 
-  private Requisition save(Requisition requisition) throws RequisitionException {
-    if (requisition != null) {
-      if (requisition.getRequisitionLineItems() != null) {
-        for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-          requisitionLineItemService.save(requisition, requisitionLineItem);
-        }
-      }
-      return requisitionRepository.save(requisition);
-    } else {
-      return null;
-    }
-  }
-
   /**
    * Get approved requisitions matching all of provided parameters.
    *
@@ -339,7 +319,7 @@ public class RequisitionService {
         referenceDataService.searchByProgramAndFacility(facilityId, programId)
             .getProcessingSchedule().getId(), startDate);
 
-    List<ProcessingPeriodDto> periodList = new ArrayList<ProcessingPeriodDto>();
+    List<ProcessingPeriodDto> periodList = new ArrayList<>();
     periodList.addAll(periods);
     Collections.sort(periodList, (p1, p2) -> p1.getStartDate().compareTo(p2.getStartDate()));
 
@@ -361,7 +341,7 @@ public class RequisitionService {
         requisitionDto.getProgram(), requisitionDto.getFacility(),
         processingPeriodDto.getStartDate(), requisitionDto.getEmergency());
 
-    if (requisitionDto.getEmergency() == false) {
+    if (!requisitionDto.getEmergency()) {
       for (Requisition r : requisitions) {
         if (r == null) {
           return true;
