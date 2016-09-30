@@ -1,10 +1,6 @@
 package org.openlmis.requisition.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -13,10 +9,14 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.util.Arrays;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -42,25 +42,24 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
   @Test
   public void shouldFindRequisitionTemplates() {
-    RequisitionTemplate[] response = restAssured.given()
+    RequisitionTemplate response = restAssured.given()
         .queryParam(PROGRAM, requisitionTemplate.getProgram())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionTemplate[].class);
+        .extract().as(RequisitionTemplate.class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(1, response.length);
-    for ( RequisitionTemplate responseRequisitionTemplate : response ) {
-      assertEquals(
-          requisitionTemplate.getProgram(),
-          responseRequisitionTemplate.getProgram());
-      assertEquals(
+
+    assertNotNull(response);
+    assertEquals(
+        requisitionTemplate.getProgram(),
+        response.getProgram());
+    assertEquals(
           requisitionTemplate.getId(),
-          responseRequisitionTemplate.getId());
-    }
+          response.getId());
   }
 
   @Test
