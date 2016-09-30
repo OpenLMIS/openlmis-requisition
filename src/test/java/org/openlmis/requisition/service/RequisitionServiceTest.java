@@ -25,8 +25,10 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
@@ -45,8 +47,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -108,6 +110,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
+
+  @Mock
+  private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -271,7 +276,7 @@ public class RequisitionServiceTest {
     assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
       throws RequisitionException {
     requisitionService.initiate(null, null, null, null);

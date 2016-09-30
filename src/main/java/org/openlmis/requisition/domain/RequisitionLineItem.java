@@ -1,8 +1,6 @@
 package org.openlmis.requisition.domain;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 
 import java.util.UUID;
 
@@ -12,6 +10,10 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "requisition_line_items")
@@ -77,6 +79,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   private Integer approvedQuantity;
+
+  public RequisitionLineItem(FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
+    // currently nothing to do here
+    // future tickets related with requisition should add some steps
+  }
 
   /**
    * Copy values of attributes into new or updated RequisitionLineItem.
