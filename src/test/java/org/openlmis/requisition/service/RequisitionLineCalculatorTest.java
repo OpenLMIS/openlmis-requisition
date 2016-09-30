@@ -130,7 +130,7 @@ public class RequisitionLineCalculatorTest {
     requisitionLineCalculator.initiateRequisitionLineItemFields(requisition, requisitionTemplate);
 
     RequisitionTemplate requisitionTemplateList
-        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram()).get(0);
+        = requisitionTemplateService.getTemplateForProgram(requisition.getProgram());
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
         = requisitionTemplateList.getColumnsMap();
@@ -189,8 +189,8 @@ public class RequisitionLineCalculatorTest {
 
   private void mockRepositories() {
     when(requisitionTemplateService
-        .searchRequisitionTemplates(program))
-        .thenReturn(Collections.singletonList(requisitionTemplate));
+        .getTemplateForProgram(program))
+        .thenReturn(requisitionTemplate);
     when(periodReferenceDataService
         .search(any(), any()))
         .thenReturn(Collections.singletonList(periodDto));

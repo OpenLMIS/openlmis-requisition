@@ -5,7 +5,6 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -19,8 +18,8 @@ public class RequisitionTemplateService {
    * @param program Program of searched requisition template.
    * @return RequisitionTemplate with matched parameters.
    */
-  public List<RequisitionTemplate> searchRequisitionTemplates(UUID program) {
-    return requisitionTemplateRepository.searchRequisitionTemplates(program);
+  public RequisitionTemplate getTemplateForProgram(UUID program) {
+    return requisitionTemplateRepository.getTemplateForProgram(program);
   }
 }
 

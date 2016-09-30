@@ -129,17 +129,15 @@ public class RequisitionService {
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
     if (null == programId) {
-      throw new IllegalArgumentException("program ID cannot be null");
+      throw new IllegalArgumentException("Program ID cannot be null");
     }
 
-    List<RequisitionTemplate> requisitionTemplates =
-        requisitionTemplateService.searchRequisitionTemplates(programId);
+    RequisitionTemplate template =
+        requisitionTemplateService.getTemplateForProgram(programId);
 
-    if (null == requisitionTemplates || requisitionTemplates.isEmpty()) {
+    if (null == template) {
       throw new RequisitionTemplateNotFoundException("RequisitionTemplate not found");
     }
-
-    RequisitionTemplate template = requisitionTemplates.get(0);
 
     if (template.getColumnsMap().isEmpty()) {
       throw new RequisitionTemplateNotFoundException("RequisitionTemplate is not defined");

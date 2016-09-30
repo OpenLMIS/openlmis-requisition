@@ -252,8 +252,8 @@ public class RequisitionServiceTest {
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.searchRequisitionTemplates(programId))
-        .thenReturn(Arrays.asList(requisitionTemplate));
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);
 
     when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
@@ -361,8 +361,8 @@ public class RequisitionServiceTest {
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.searchRequisitionTemplates(programId))
-        .thenReturn(Arrays.asList(requisitionTemplate));
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);
 
     when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
