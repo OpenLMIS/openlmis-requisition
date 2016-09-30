@@ -1,10 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -91,7 +91,7 @@ public class RequisitionLineItemServiceTest {
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
     Requisition requisitionWithInitiatedLines = requisitionLineItemService
-        .initiateRequisitionLineItemFields(requisition);
+        .initiateRequisitionLineItemFields(requisition, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = requisitionWithInitiatedLines
         .getRequisitionLineItems().iterator().next();
@@ -131,7 +131,7 @@ public class RequisitionLineItemServiceTest {
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
     Requisition requisitionWithInitiatedLines = requisitionLineItemService
-        .initiateRequisitionLineItemFields(requisition);
+        .initiateRequisitionLineItemFields(requisition, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = requisitionWithInitiatedLines
         .getRequisitionLineItems().iterator().next();
@@ -152,15 +152,13 @@ public class RequisitionLineItemServiceTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    requisitionLineItemService.initiateRequisitionLineItemFields(requisition);
+    requisitionLineItemService.initiateRequisitionLineItemFields(requisition, requisitionTemplate);
 
-    List<RequisitionTemplate> requisitionTemplateList
-        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram());
-
-    assertEquals(1, requisitionTemplateList.size());
+    RequisitionTemplate requisitionTemplateList
+        = requisitionTemplateService.searchRequisitionTemplates(requisition.getProgram()).get(0);
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
-        = requisitionTemplateList.get(0).getColumnsMap();
+        = requisitionTemplateList.getColumnsMap();
 
     assertEquals(1, testRequisitionTemplateColumnHashMap
         .get(TOTAL_QUANTITY_RECEIVED_FIELD).getDisplayOrder());
