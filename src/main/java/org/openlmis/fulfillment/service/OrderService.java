@@ -228,8 +228,7 @@ public class OrderService {
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
 
-    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(
-        requisition.getId(), program.getCode(), requisition.getEmergency()));
+    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(requisition, program));
 
     orderRepository.save(order);
     return order;

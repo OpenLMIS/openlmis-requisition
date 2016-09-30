@@ -1,8 +1,11 @@
 package org.openlmis.fulfillment.service;
 
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.exception.OrderNumberException;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.ProgramDto;
 
 import java.util.UUID;
@@ -15,17 +18,29 @@ public class OrderNumberConfigurationTest {
   private static final String PROGRAM_CODE = "code";
   private static final String PREFIX = "prefix";
   private static final String EMERGENCY = "E";
+  private static final String NOT_EMERGENCY = "R";
+
+
+  private Requisition requisition;
+  private ProgramDto program;
+
+  @Before
+  public void setUp() {
+    requisition = new Requisition();
+    requisition.setId(UUID.fromString(UUID_STRING));
+    requisition.setEmergency(true);
+
+    program = new ProgramDto();
+    program.setCode(PROGRAM_CODE);
+  }
 
   @Test
   public void shouldGenerateOrderNumber() {
-    UUID uuid = UUID.fromString(UUID_STRING);
-    ProgramDto program = new ProgramDto();
-    program.setCode(PROGRAM_CODE);
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, true, true, true);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(uuid, program.getCode(), true);
+        orderNumberConfiguration.generateOrderNumber(requisition, program);
 
     StringBuilder stringBuilder = new StringBuilder(PREFIX);
     stringBuilder.append(PROGRAM_CODE)
@@ -37,12 +52,11 @@ public class OrderNumberConfigurationTest {
 
   @Test
   public void shouldGenerateOrderNumberWithOnlyRequiredData() {
-    UUID uuid = UUID.fromString(UUID_STRING);
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, false, false, false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(uuid, null, false);
+        orderNumberConfiguration.generateOrderNumber(requisition, null);
 
     String expectedResult = UUID_STRING;
 
@@ -51,17 +65,37 @@ public class OrderNumberConfigurationTest {
 
   @Test
   public void shouldCorrectlyHandleNullPrefix() {
-    UUID uuid = UUID.fromString(UUID_STRING);
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(null, true, false, false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(uuid, null, true);
+        orderNumberConfiguration.generateOrderNumber(requisition, program);
 
     String expectedResult = UUID_STRING;
 
     assertEquals(expectedResult, generatedNumber);
   }
 
+  @Test
+  public void shouldGenerateCorrectSuffixForNotEmergencyRequisition() {
 
+    OrderNumberConfiguration orderNumberConfiguration =
+        new OrderNumberConfiguration(null, true, false, true);
+    requisition.setEmergency(false);
+    String generatedNumber =
+        orderNumberConfiguration.generateOrderNumber(requisition, program);
+
+    String expectedResult = UUID_STRING + NOT_EMERGENCY;
+
+    assertEquals(expectedResult, generatedNumber);
+  }
+
+  @Test(expected = OrderNumberException.class)
+  public void shouldThrowExceptionWhenGeneratingNumberFromNullRequisition() {
+
+    OrderNumberConfiguration orderNumberConfiguration =
+        new OrderNumberConfiguration(PREFIX, true, false, false);
+
+    orderNumberConfiguration.generateOrderNumber(null, program);
+  }
 }

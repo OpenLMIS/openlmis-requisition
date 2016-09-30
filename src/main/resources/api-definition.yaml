@@ -1334,7 +1334,8 @@ resourceTypes:
             headers:
               X-Content-Type-Options:
               X-XSS-Protection:
-
+            body:
+              application/json:
 /proofOfDeliveries:
     displayName: Proof Of Delivery
     get:
