@@ -469,7 +469,7 @@ public class RequisitionServiceTest {
           .findOne(any()))
           .thenReturn(period);
     when(referenceDataService
-          .search(any()))
+          .searchByProgramAndFacility(any(), any()))
           .thenReturn(requisitionGroupProgramSchedule);
   }
 }

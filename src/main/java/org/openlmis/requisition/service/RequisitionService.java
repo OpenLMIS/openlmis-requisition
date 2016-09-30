@@ -115,7 +115,8 @@ public class RequisitionService {
       ProcessingPeriodDto processingPeriodDto =
           periodReferenceDataService.findOne(requisition.getProcessingPeriod());
       RequisitionGroupProgramScheduleDto dto =
-          referenceDataService.search(requisition.getProgram());
+          referenceDataService.searchByProgramAndFacility(requisition.getProgram(),
+                requisition.getFacility());
 
       if (dto.getProcessingSchedule() == processingPeriodDto.getProcessingSchedule()) {
         requisitionRepository.save(requisition);

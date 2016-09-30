@@ -24,18 +24,6 @@ public class RequisitionGroupProgramScheduleReferenceDataService
   /**
    * Retrieves requisition group program schedule from reference data service by program.
    * @param programId UUID of the program
-   * @return Requisition Group Program Schedule matching search criteria
-   */
-  public RequisitionGroupProgramScheduleDto search(UUID programId) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("programId", programId);
-
-    return findOne("searchByUUID", parameters);
-  }
-
-  /**
-   * Retrieves requisition group program schedule from reference data service by program.
-   * @param programId UUID of the program
    * @param facilityId UUID of the facility
    * @return Requisition Group Program Schedule matching search criteria
    */
@@ -45,6 +33,6 @@ public class RequisitionGroupProgramScheduleReferenceDataService
     parameters.put("programId", programId);
     parameters.put("facilityId", facilityId);
 
-    return findOne("searchByUUIDAndUUID", parameters);
+    return findOne("searchByUUIDs", parameters);
   }
 }
