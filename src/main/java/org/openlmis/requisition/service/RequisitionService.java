@@ -4,6 +4,8 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
@@ -16,9 +18,9 @@ import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
@@ -36,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -51,10 +54,7 @@ public class RequisitionService {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Autowired
-  private RequisitionLineItemService requisitionLineItemService;
-
-  @Autowired
-  private RequisitionLineItemRepository requisitionLineItemRepository;
+  private RequisitionLineCalculator requisitionLineCalculator;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -67,6 +67,9 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
+
+  @Autowired
+  private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -84,70 +87,76 @@ public class RequisitionService {
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               Boolean emergency) throws RequisitionException {
-    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
-    Requisition requisition;
-
     if (facilityId == null || programId == null || emergency == null) {
       throw new RequisitionInitializationException(
           "Requisition cannot be initiated with null object"
       );
-    } else if (facilityReferenceDataService.findOne(facilityId) != null
-        && programReferenceDataService.findOne(programId) != null) {
-      requisition = new Requisition();
-      requisition.setStatus(RequisitionStatus.INITIATED);
-      requisition.setEmergency(emergency);
-      requisition.setFacility(facilityId);
-      requisition.setProgram(programId);
+    }
 
-      //ProcessingPeriodDto period = findPeriod(facilityId, programId, emergency);
-      //if (suggestedPeriodId != null) {
-      //  if (suggestedPeriodId != period.getId()) {
-      //    period = suggestedPeriodId;
-      //  }
-      //}
-      //TODO requisition.setProcessingPeriod();
-      //TODO setlineitem(template)
-      requisitionLineItemService.initiateRequisitionLineItemFields(requisition,
-          requisitionTemplate);
-      requisition.getRequisitionLineItems().forEach(
-          requisitionLineItem -> requisitionLineItemRepository.save(requisitionLineItem));
+    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
+    ProgramDto program = programReferenceDataService.findOne(programId);
 
-      ProcessingPeriodDto processingPeriodDto =
-          periodReferenceDataService.findOne(requisition.getProcessingPeriod());
-      RequisitionGroupProgramScheduleDto dto =
-          referenceDataService.searchByProgramAndFacility(requisition.getProgram(),
-                requisition.getFacility());
-
-      if (dto.getProcessingSchedule() == processingPeriodDto.getProcessingSchedule()) {
-        requisitionRepository.save(requisition);
-      } else {
-        throw new InvalidPeriodException("Cannot initiate requisition."
-            + "Period for the requisition must belong to the same schedule"
-            + " that belongs to the program selected for that requisition");
-      }
-
-      requisitionRepository.save(requisition);
-    } else {
+    if (null == facility || null == program) {
       throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
           + " Requisition with such parameters already exists");
     }
 
+    ProcessingPeriodDto period = new ProcessingPeriodDto();
+    //ProcessingPeriodDto period = findPeriod(facility, program, emergency);
+
+    if (null != suggestedPeriodId && suggestedPeriodId != period.getId()) {
+      period = periodReferenceDataService.findOne(suggestedPeriodId);
+    }
+
+    ProcessingPeriodDto processingPeriodDto = periodReferenceDataService.findOne(period.getId());
+    RequisitionGroupProgramScheduleDto dto =
+          referenceDataService.searchByProgramAndFacility(programId, facilityId);
+
+    if (dto.getProcessingSchedule() != processingPeriodDto.getProcessingSchedule()) {
+      throw new InvalidPeriodException("Cannot initiate requisition."
+          + "Period for the requisition must belong to the same schedule"
+          + " that belongs to the program selected for that requisition");
+    }
+
+    Collection<FacilityTypeApprovedProductDto> facilityTypeApprovedProducts =
+        facilityTypeApprovedProductService.getFullSupply(
+            facility.getId(), program.getId()
+        );
+
+    Requisition requisition = new Requisition();
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setEmergency(emergency);
+    requisition.setFacility(facilityId);
+    requisition.setProgram(programId);
+    //requisition.setProcessingPeriod(period.getId());
+    requisition.setRequisitionLineItems(
+        facilityTypeApprovedProducts
+            .stream()
+            .map(RequisitionLineItem::new)
+            .collect(Collectors.toList())
+    );
+
+    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+
+    requisitionLineCalculator.initiateRequisitionLineItemFields(
+        requisition, requisitionTemplate
+    );
+
+    requisitionRepository.save(requisition);
     return requisition;
   }
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
     if (null == programId) {
-      throw new IllegalArgumentException("program ID cannot be null");
+      throw new IllegalArgumentException("Program ID cannot be null");
     }
 
-    List<RequisitionTemplate> requisitionTemplates =
-        requisitionTemplateService.searchRequisitionTemplates(programId);
+    RequisitionTemplate template =
+        requisitionTemplateService.getTemplateForProgram(programId);
 
-    if (null == requisitionTemplates || requisitionTemplates.isEmpty()) {
+    if (null == template) {
       throw new RequisitionTemplateNotFoundException("RequisitionTemplate not found");
     }
-
-    RequisitionTemplate template = requisitionTemplates.get(0);
 
     if (template.getColumnsMap().isEmpty()) {
       throw new RequisitionTemplateNotFoundException("RequisitionTemplate is not defined");
@@ -293,19 +302,6 @@ public class RequisitionService {
     return releasedRequisitions;
   }
 
-  private Requisition save(Requisition requisition) throws RequisitionException {
-    if (requisition != null) {
-      if (requisition.getRequisitionLineItems() != null) {
-        for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-          requisitionLineItemService.save(requisition, requisitionLineItem);
-        }
-      }
-      return requisitionRepository.save(requisition);
-    } else {
-      return null;
-    }
-  }
-
   /**
    * Get approved requisitions matching all of provided parameters.
    *
@@ -340,7 +336,7 @@ public class RequisitionService {
         referenceDataService.searchByProgramAndFacility(facilityId, programId)
             .getProcessingSchedule().getId(), startDate);
 
-    List<ProcessingPeriodDto> periodList = new ArrayList<ProcessingPeriodDto>();
+    List<ProcessingPeriodDto> periodList = new ArrayList<>();
     periodList.addAll(periods);
     Collections.sort(periodList, (p1, p2) -> p1.getStartDate().compareTo(p2.getStartDate()));
 
@@ -362,7 +358,7 @@ public class RequisitionService {
         requisitionDto.getProgram(), requisitionDto.getFacility(),
         processingPeriodDto.getStartDate(), requisitionDto.getEmergency());
 
-    if (requisitionDto.getEmergency() == false) {
+    if (!requisitionDto.getEmergency()) {
       for (Requisition r : requisitions) {
         if (r == null) {
           return true;

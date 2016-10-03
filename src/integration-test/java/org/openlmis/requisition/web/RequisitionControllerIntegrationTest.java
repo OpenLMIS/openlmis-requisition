@@ -1,7 +1,7 @@
 package org.openlmis.requisition.web;
 
 import com.google.common.collect.ImmutableMap;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -20,7 +20,6 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -39,9 +38,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
@@ -75,9 +71,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String APPROVED_REQUISITIONS_SEARCH_URL = RESOURCE_URL + "/approved/search";
 
   @Autowired
-  private RequisitionLineItemRepository requisitionLineItemRepository;
-
-  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
@@ -107,12 +100,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private UserDto user;
   private LocalDateTime localDateTime = LocalDateTime.now();
-
-  private AtomicInteger instanceNumber = new AtomicInteger(0);
-
-  private int getNextInstanceNumber() {
-    return this.instanceNumber.incrementAndGet();
-  }
 
   @Before
   public void setUp() throws IOException {
@@ -156,7 +143,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setBeginningBalance(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
@@ -269,7 +255,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setBeginningBalance(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -305,7 +290,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -342,7 +326,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -377,7 +360,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -415,7 +397,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(-1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -451,7 +432,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -487,7 +467,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
     requisitionLineItem.setStockOnHand(1);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -524,7 +503,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setBeginningBalance(null);
     requisitionLineItem.setTotalReceivedQuantity(null);
     requisitionLineItem.setTotalLossesAndAdjustments(null);
-    requisitionLineItemRepository.save(requisitionLineItem);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -1099,7 +1077,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("sortBy", "facilityCode")
         .queryParam("descending", Boolean.FALSE.toString())
         .queryParam("pageNumber", valueOf(2))
-        .queryParam("pageSize", valueOf(pageSize))
+        .queryParam("pageSize", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1169,7 +1147,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("sortBy", "programName")
         .queryParam("descending", Boolean.TRUE.toString())
         .queryParam("pageNumber", valueOf(1))
-        .queryParam("pageSize", valueOf(pageSize))
+        .queryParam("pageSize", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)

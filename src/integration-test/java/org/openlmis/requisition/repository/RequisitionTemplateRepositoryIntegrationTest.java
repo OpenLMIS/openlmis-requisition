@@ -1,6 +1,5 @@
 package org.openlmis.requisition.repository;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /** Allow testing requisitionTemplateRepository. */
@@ -162,25 +162,12 @@ public class RequisitionTemplateRepositoryIntegrationTest
       requisitionTemplate.setProgram(UUID.randomUUID());
       requisitionTemplates.add(repository.save(requisitionTemplate));
     }
-    List<RequisitionTemplate> receivedRequisitionTemplates
-            = repository.searchRequisitionTemplates(requisitionTemplates.get(0).getProgram());
+    RequisitionTemplate template
+            = repository.getTemplateForProgram(requisitionTemplates.get(0).getProgram());
 
-    Assert.assertEquals(1, receivedRequisitionTemplates.size());
-    Assert.assertEquals(
+    assertNotNull(template);
+    assertEquals(
             requisitionTemplates.get(0).getProgram(),
-            receivedRequisitionTemplates.get(0).getProgram());
-  }
-
-  @Test
-  public void testSearchRequisitionTemplatesByAllParametersNull() {
-    for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
-      RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.setProgram(UUID.randomUUID());
-      requisitionTemplates.add(repository.save(requisitionTemplate));
-    }
-    List<RequisitionTemplate> receivedRequisitionTemplates
-            = repository.searchRequisitionTemplates(null);
-
-    Assert.assertEquals(requisitionTemplates.size(), receivedRequisitionTemplates.size());
+            template.getProgram());
   }
 }

@@ -9,10 +9,8 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,13 +29,13 @@ public class RequisitionTemplateServiceTest {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
     when(requisitionTemplateRepository
-            .searchRequisitionTemplates(program.getId()))
-            .thenReturn(Arrays.asList(requisitionTemplate));
+            .getTemplateForProgram(program.getId()))
+            .thenReturn(requisitionTemplate);
 
-    List<RequisitionTemplate> receivedRequisitionTemplates =
-            requisitionTemplateService.searchRequisitionTemplates(program.getId());
+    RequisitionTemplate template =
+            requisitionTemplateService.getTemplateForProgram(program.getId());
 
-    assertEquals(1, receivedRequisitionTemplates.size());
-    assertEquals(requisitionTemplate, receivedRequisitionTemplates.get(0));
+    assertNotNull(template);
+    assertEquals(requisitionTemplate, template);
   }
 }

@@ -25,9 +25,10 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
+import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
@@ -46,8 +47,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -81,10 +82,7 @@ public class RequisitionServiceTest {
   private SupervisoryNodeDto supervisoryNode;
 
   @Mock
-  private RequisitionLineItemService requisitionLineItemService;
-
-  @Mock
-  private RequisitionLineItemRepository requisitionLineItemRepository;
+  private RequisitionLineCalculator requisitionLineCalculator;
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
@@ -112,6 +110,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
+
+  @Mock
+  private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -256,10 +257,10 @@ public class RequisitionServiceTest {
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.searchRequisitionTemplates(programId))
-        .thenReturn(Arrays.asList(requisitionTemplate));
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);
 
-    when(requisitionLineItemService.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];
@@ -275,7 +276,7 @@ public class RequisitionServiceTest {
     assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
       throws RequisitionException {
     requisitionService.initiate(null, null, null, null);
@@ -365,10 +366,10 @@ public class RequisitionServiceTest {
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.searchRequisitionTemplates(programId))
-        .thenReturn(Arrays.asList(requisitionTemplate));
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);
 
-    when(requisitionLineItemService.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];

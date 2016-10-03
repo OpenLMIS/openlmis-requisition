@@ -3,66 +3,26 @@ package org.openlmis.requisition.service;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionLineItemNotFoundException;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class RequisitionLineItemService {
-
-  @Autowired
-  private RequisitionLineItemRepository requisitionLineItemRepository;
+public class RequisitionLineCalculator {
 
   @Autowired
   private RequisitionService requisitionService;
 
   @Autowired
-  private RequisitionTemplateService requisitionTemplateService;
-
-  @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
-
-  /**
-   * Saves given RequisitionLineItem if possible.
-   *
-   * @param requisition         Requisition which contains given RequisitionLineItem.
-   * @param requisitionLineItem Requisition Line to be saved.
-   * @return Saved RequisitionLineItem.
-   * @throws RequisitionException Exception thrown when it is not possible to save given
-   *                              RequisitionLineItem.
-   */
-  public RequisitionLineItem save(Requisition requisition,
-                                  RequisitionLineItem requisitionLineItem)
-      throws RequisitionException {
-    if (requisitionLineItem == null) {
-      throw new RequisitionLineItemNotFoundException(
-          "Requisition line item does not exist");
-    } else {
-
-      RequisitionTemplate requisitionTemplate = requisitionTemplateService
-          .searchRequisitionTemplates(requisition.getProgram()).get(0);
-
-      RequisitionTemplateColumn requisitionTemplateColumn =
-          requisitionTemplate.getColumnsMap().get("beginningBalance");
-
-      if (!requisitionTemplateColumn.getCanBeChangedByUser()) {
-        resetBeginningBalance(requisition, requisitionLineItem);
-      }
-
-      requisitionLineItemRepository.save(requisitionLineItem);
-      return requisitionLineItem;
-    }
-  }
 
   /**
    * Method returns all requisition lines with matched parameters.
@@ -73,7 +33,13 @@ public class RequisitionLineItemService {
    */
   public List<RequisitionLineItem> searchRequisitionLineItems(
       Requisition requisition, UUID product) {
-    return requisitionLineItemRepository.searchRequisitionLineItems(requisition, product);
+    List<RequisitionLineItem> items = new ArrayList<>();
+    for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
+      if (Objects.equals(product, item.getOrderableProduct())) {
+        items.add(item);
+      }
+    }
+    return items;
   }
 
   /**
@@ -136,50 +102,6 @@ public class RequisitionLineItemService {
         requisitionLineItem.setBeginningBalance(0);
       }
     }
-  }
-
-  private void resetBeginningBalance(Requisition requisition,
-                                     RequisitionLineItem requisitionLineItem) {
-    ProcessingPeriodDto period = periodReferenceDataService.findOne(
-        requisitionLineItem.getRequisition().getProcessingPeriod());
-    Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-        period.getProcessingSchedule().getId(),
-        period.getStartDate());
-
-    if (!previousPeriods.iterator().hasNext()) {
-      requisitionLineItem.setBeginningBalance(0);
-      return;
-    }
-
-    List<Requisition> previousRequisition =
-        requisitionService.searchRequisitions(
-            requisition.getFacility(),
-            requisition.getProgram(),
-            null,
-            null,
-            previousPeriods.iterator().next().getId(),
-            null,
-            null);
-
-    if (previousRequisition.size() == 0) {
-      requisitionLineItem.setBeginningBalance(0);
-      return;
-    }
-
-    List<RequisitionLineItem> previousRequisitionLineItem;
-    previousRequisitionLineItem = searchRequisitionLineItems(
-        previousRequisition.get(0), requisitionLineItem.getOrderableProduct());
-
-    if (previousRequisitionLineItem == null) {
-      requisitionLineItem.setBeginningBalance(0);
-      return;
-    }
-
-    if (requisitionLineItem.getBeginningBalance()
-        != previousRequisitionLineItem.get(0).getStockInHand()) {
-      requisitionLineItem.setBeginningBalance(previousRequisitionLineItem.get(0).getStockInHand());
-    }
-
   }
 
   private void initiateTotalQuantityReceived(Requisition requisition) {

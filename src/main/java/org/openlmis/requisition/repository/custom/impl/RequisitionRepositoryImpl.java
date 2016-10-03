@@ -159,14 +159,18 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         rootProcesingPeriod.get("processingSchedule");
     Path<LocalDateTime> rootProcesingPeriodProcesingScheduleModifiedDate =
         rootProcesingPeriodProcessingSchedule.get("modifiedDate");
-    List<Order> orders = new ArrayList();
+    List<Order> orders = new ArrayList<>();
     Path setSortBy;
-    if (sortBy.equals("programName")) {
-      setSortBy = programName;
-    } else if (sortBy.equals("facilityCode")) {
-      setSortBy = facilityCode;
-    } else {
-      setSortBy = facilityName;
+    switch (sortBy) {
+      case "programName":
+        setSortBy = programName;
+        break;
+      case "facilityCode":
+        setSortBy = facilityCode;
+        break;
+      default:
+        setSortBy = facilityName;
+        break;
     }
     //Set first sorting
     if (descending == Boolean.TRUE) {

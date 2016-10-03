@@ -7,7 +7,6 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.reporting.repository.TemplateParameterRepository;
 import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.requisition.repository.CommentRepository;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -22,9 +21,6 @@ public class CleanRepositoryHelper {
 
   public static final UUID INITIAL_USER_ID =
       UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
-
-  @Autowired
-  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -68,7 +64,6 @@ public class CleanRepositoryHelper {
     configurationSettingRepository.deleteAll();
     commentRepository.deleteAll();
     orderLineItemRepository.deleteAll();
-    requisitionLineItemRepository.deleteAll();
     requisitionRepository.deleteAll();
     requisitionTemplateRepository.deleteAll();
     orderRepository.deleteAll();

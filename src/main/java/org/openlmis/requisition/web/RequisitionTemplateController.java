@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -125,17 +124,15 @@ public class RequisitionTemplateController extends BaseController {
   }
 
   /**
-   * Returns all requisition templates with matched parameters.
+   * Returns requisition template for the given program.
    * @param program program of searched requisition templates.
    * @return ResponseEntity with list of all requisition templates matching
    *         provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
-  public ResponseEntity<?> searchRequisitionTemplates(
-      @RequestParam(value = "program", required = false) UUID program) {
-    List<RequisitionTemplate> result
-        = requisitionTemplateService.searchRequisitionTemplates(program);
-
-    return new ResponseEntity<>(result, HttpStatus.OK);
+  @ResponseBody
+  public RequisitionTemplate getTemplateByProgram(
+          @RequestParam(value = "program", required = false) UUID program) {
+    return requisitionTemplateService.getTemplateForProgram(program);
   }
 }
