@@ -19,4 +19,6 @@ public interface RequisitionRepositoryCustom {
   List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize);
+
+  List<Requisition> searchByProcessingPeriod(UUID processingPeriod);
 }
