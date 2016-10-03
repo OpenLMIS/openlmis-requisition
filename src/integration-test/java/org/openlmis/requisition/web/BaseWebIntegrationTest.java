@@ -266,6 +266,12 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
 
+    // This mocks searching for processingPeriods by UUIDs
+    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDs"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
+
   }
 
   @After
@@ -283,5 +289,13 @@ public abstract class BaseWebIntegrationTest {
 
   public UUID getProgramId() {
     return UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
+  }
+
+  public UUID getProcessingPeriodId() {
+    return UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
+  }
+
+  public UUID getProcessingScheduleId() {
+    return UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611");
   }
 }

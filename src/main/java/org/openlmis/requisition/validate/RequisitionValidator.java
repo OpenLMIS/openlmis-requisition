@@ -40,6 +40,10 @@ public class RequisitionValidator implements Validator {
       errors.rejectValue(
           REQUISITION_LINE_ITEMS,
               "A quantity" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+    } else if (requisitionLineItem.getRequestedQuantity() < 0) {
+      errors.rejectValue(
+          REQUISITION_LINE_ITEMS,
+          "A quantity" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
     if (requisitionLineItem.getBeginningBalance() == null) {
       errors.rejectValue(

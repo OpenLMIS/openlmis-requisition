@@ -30,11 +30,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -100,9 +98,8 @@ public class RequisitionService {
       throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
           + " Requisition with such parameters already exists");
     }
-
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-    //ProcessingPeriodDto period = findPeriod(facility, program, emergency);
+    
+    ProcessingPeriodDto period = findPeriod(facilityId, programId);
 
     if (null != suggestedPeriodId && suggestedPeriodId != period.getId()) {
 
@@ -110,7 +107,8 @@ public class RequisitionService {
     }
 
     ProcessingPeriodDto processingPeriodDto = periodReferenceDataService.findOne(period.getId());
-    RequisitionGroupProgramScheduleDto dto = referenceDataService.search(programId);
+    RequisitionGroupProgramScheduleDto dto =
+          referenceDataService.searchByProgramAndFacility(programId, facilityId);
 
     if (!dto.getProcessingSchedule().getId().equals(
         processingPeriodDto.getProcessingSchedule().getId())) {
@@ -327,52 +325,29 @@ public class RequisitionService {
   }
 
   /**
-   * Get Processing Periods matching all of provided parameters.
+   * Return the oldest period which is not associated with any requisition.
    *
-   * @param programId  Program of searched period.
-   * @param facilityId Facility of searched period.
-   * @param startDate  Search periods only after given date.
-   * @return Collection of Processing Periods.
+   * @param programId Program for Requisition
+   * @param facilityId Facility for Requisition
+   * @return ProcessingPeriodDto.
    */
-  public List<ProcessingPeriodDto> filterPeriods(
-      UUID facilityId, UUID programId, LocalDate startDate, Boolean emergency) {
-    Collection<ProcessingPeriodDto> periods = periodReferenceDataService.search(
-        referenceDataService.searchByProgramAndFacility(facilityId, programId)
-            .getProcessingSchedule().getId(), startDate);
+  public ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId) {
 
-    List<ProcessingPeriodDto> periodList = new ArrayList<>();
-    periodList.addAll(periods);
-    Collections.sort(periodList, (p1, p2) -> p1.getStartDate().compareTo(p2.getStartDate()));
+    ProcessingPeriodDto result = new ProcessingPeriodDto();
+    Collection<ProcessingPeriodDto> periods =
+          periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
 
-    return periodList;
-  }
+    Requisition requisition = new Requisition();
 
-  /**
-   * Check if Processing Periods is the oldest period which is not associated with any requisition.
-   *
-   * @param requisitionDto Requisition which we want to create.
-   * @return Boolean.
-   */
-  public boolean validatePeriodForRequisition(Requisition requisitionDto)
-      throws RequisitionException {
-    ProcessingPeriodDto processingPeriodDto =
-        periodReferenceDataService.findOne(requisitionDto.getProcessingPeriod());
-    Iterable<Requisition> requisitions = requisitionRepository.findAll();
-    List<ProcessingPeriodDto> periods = filterPeriods(
-        requisitionDto.getProgram(), requisitionDto.getFacility(),
-        processingPeriodDto.getStartDate(), requisitionDto.getEmergency());
-
-    if (!requisitionDto.getEmergency()) {
-      for (Requisition r : requisitions) {
-        if (r == null) {
-          return true;
-        }
-        if (r.getProcessingPeriod() == requisitionDto.getProcessingPeriod()
-            || requisitionDto.getProcessingPeriod() != periods.get(0).getId()) {
-          return false;
+    if (periods != null) {
+      for (ProcessingPeriodDto dto : periods) {
+        requisition = requisitionRepository.searchByProcessingPeriod(dto.getId());
+        if (requisition == null) {
+          result = dto;
+          break;
         }
       }
     }
-    return true;
+    return result;
   }
 }

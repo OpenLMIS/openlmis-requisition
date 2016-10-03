@@ -13,6 +13,10 @@ import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -23,13 +27,11 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseEntity {
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -47,14 +49,8 @@ public class Requisition extends BaseEntity {
       orphanRemoval = true)
   @Getter
   @Setter
-  @JsonIdentityInfo(
-      generator = ObjectIdGenerators.IntSequenceGenerator.class,
-      property = "requisitionLineItemsId")
   private List<RequisitionLineItem> requisitionLineItems;
 
-  @JsonIdentityInfo(
-      generator = ObjectIdGenerators.IntSequenceGenerator.class,
-      property = "commentsId")
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
   @Getter
   private List<Comment> comments;

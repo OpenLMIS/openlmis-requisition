@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -36,10 +35,8 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +44,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -248,12 +244,9 @@ public class RequisitionServiceTest {
     when(requisitionRepository
         .findOne(requisition.getId()))
         .thenReturn(null);
-    when(referenceDataService.searchByProgramAndFacility(
-        requisition.getProgram(),
-        requisition.getFacility()))
-        .thenReturn(requisitionGroupProgramSchedule);
+
     when(period.getProcessingSchedule()).thenReturn(schedule);
-    when(period.getStartDate()).thenReturn(LocalDate.of(2016, 8, 1));
+    when(period.getId()).thenReturn(suggestedPeriodId);
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
@@ -358,17 +351,25 @@ public class RequisitionServiceTest {
         ImmutableMap.of("beginningBalance", new RequisitionTemplateColumn())
     );
 
+    RequisitionGroupProgramScheduleDto requisitionGroupProgramScheduleDto =
+        new RequisitionGroupProgramScheduleDto();
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
+    processingScheduleDto.setId(UUID.randomUUID());
+    requisitionGroupProgramScheduleDto.setProcessingSchedule(processingScheduleDto);
+    when(referenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(requisitionGroupProgramScheduleDto);
+
     requisition.setStatus(null);
     when(requisitionRepository
           .findOne(requisition.getId()))
           .thenReturn(null);
     when(period.getProcessingSchedule()).thenReturn(schedule);
+    when(period.getId()).thenReturn(suggestedPeriodId);
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
-    //when(requisitionTemplateService.getTemplateForProgram(programId))
-      //  .thenReturn(requisitionTemplate);
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);
 
     when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
@@ -379,61 +380,6 @@ public class RequisitionServiceTest {
           return null;
         });
     requisitionService.initiate(programId, facilityId, suggestedPeriodId, false);
-  }
-
-  @Ignore
-  @Test
-  public void shouldFilterPeriods() {
-    period.setStartDate(LocalDate.of(2016, 8, 6));
-    period2.setStartDate(LocalDate.of(2016, 8, 2));
-    when(referenceDataService.searchByProgramAndFacility(
-          requisition.getProgram(),
-          requisition.getFacility()))
-          .thenReturn(requisitionGroupProgramSchedule);
-    when(requisitionGroupProgramSchedule.getProcessingSchedule())
-          .thenReturn(schedule);
-    when(periodReferenceDataService.search(
-          schedule.getId(),
-          LocalDate.of(2016, 8, 1)))
-          .thenReturn(Arrays.asList(period, period2));
-
-    List<ProcessingPeriodDto> filteredPeriods = requisitionService.filterPeriods(
-          requisition.getProgram(),
-          requisition.getFacility(),
-          LocalDate.of(2016, 8, 1),
-          requisition.getEmergency());
-
-    assertEquals(2, filteredPeriods.size());
-    assertEquals(filteredPeriods.get(0), period2);
-  }
-
-  @Test
-  public void shouldValidateProcessingPeriodsForRequisition() throws RequisitionException {
-    Requisition req = generateRequisition();
-    req.setStatus(null);
-    when(requisitionRepository
-          .findOne(req.getId()))
-          .thenReturn(null);
-    when(requisitionRepository
-          .findAll())
-          .thenReturn(Arrays.asList(requisition));
-    when(referenceDataService.searchByProgramAndFacility(
-          requisition.getProgram(),
-          requisition.getFacility()))
-          .thenReturn(requisitionGroupProgramSchedule);
-    when(period.getProcessingSchedule()).thenReturn(schedule);
-    when(period.getStartDate()).thenReturn(LocalDate.of(2016, 8, 1));
-    when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
-
-    when(requisitionService.filterPeriods(
-          requisition.getProgram(),
-          requisition.getFacility(),
-          LocalDate.of(2016, 8, 1),
-          requisition.getEmergency()))
-          .thenReturn(Arrays.asList(period));
-    Boolean result = requisitionService.validatePeriodForRequisition(req);
-
-    assertFalse(result);
   }
 
   private Requisition generateRequisition() {
@@ -449,12 +395,13 @@ public class RequisitionServiceTest {
     requisition.setFacility(facilityId);
     UUID programId = UUID.randomUUID();
     requisition.setProgram(programId);
-    UUID processingPeriodId = UUID.randomUUID();
-    requisition.setProcessingPeriod(processingPeriodId);
     return requisition;
   }
 
   private void mockRepositories() {
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
+    processingScheduleDto.setId(UUID.randomUUID());
+
     when(requisitionRepository
         .findOne(requisition.getId()))
         .thenReturn(requisition);
@@ -467,11 +414,17 @@ public class RequisitionServiceTest {
     when(programReferenceDataService
           .findOne(any()))
           .thenReturn(program);
+
+    ProcessingPeriodDto processingPeriodDto = new ProcessingPeriodDto();
+    processingPeriodDto.setProcessingSchedule(processingScheduleDto);
     when(periodReferenceDataService
           .findOne(any()))
-          .thenReturn(period);
-    when(referenceDataService
-          .search(any()))
-          .thenReturn(requisitionGroupProgramSchedule);
+          .thenReturn(processingPeriodDto);
+
+    RequisitionGroupProgramScheduleDto requisitionGroupProgramScheduleDto =
+        new RequisitionGroupProgramScheduleDto();
+    requisitionGroupProgramScheduleDto.setProcessingSchedule(processingScheduleDto);
+    when(referenceDataService.searchByProgramAndFacility(any(), any()))
+        .thenReturn(requisitionGroupProgramScheduleDto);
   }
 }

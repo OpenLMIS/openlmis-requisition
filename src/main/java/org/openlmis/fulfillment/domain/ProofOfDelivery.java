@@ -27,6 +27,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "proof_of_deliveries")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class ProofOfDelivery extends BaseEntity {
 
   @OneToOne
@@ -35,9 +36,6 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private Order order;
 
-  @JsonIdentityInfo(
-        generator = ObjectIdGenerators.IntSequenceGenerator.class,
-        property = "proofOfDeliveryLineItemsId")
   @OneToMany(
       mappedBy = "proofOfDelivery",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},

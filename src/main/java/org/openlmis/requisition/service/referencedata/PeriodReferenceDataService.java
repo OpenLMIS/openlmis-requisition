@@ -40,4 +40,19 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
 
     return findAll("searchByUUIDAndDate", parameters);
   }
+
+  /**
+   * Retrieves periods from the reference data service by program ID and facility ID.
+   * @param programId UUID of the program
+   * @param facilityId UUID of the facility
+   * @return A list of periods matching search criteria
+   */
+  public Collection<ProcessingPeriodDto> searchByProgramAndFacility(UUID programId,
+                                                                    UUID facilityId) {
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("programId", programId);
+    parameters.put("facilityId", facilityId);
+
+    return findAll("searchByUUIDs", parameters);
+  }
 }

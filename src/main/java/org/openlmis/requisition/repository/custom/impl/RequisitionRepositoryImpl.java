@@ -80,6 +80,25 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return entityManager.createQuery(query).getResultList();
   }
 
+
+  /**
+   * Method returns all Requisitions with matched parameters.
+   * @param processingPeriod processingPeriod of searched Requisitions.
+   * @return list of Requisitions with matched parameters.
+   */
+  public Requisition searchByProcessingPeriod(UUID processingPeriod) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    Root<Requisition> root = query.from(Requisition.class);
+    Predicate predicate = builder.conjunction();
+    if (processingPeriod != null) {
+      predicate = builder.and(predicate,
+            builder.equal(root.get("processingPeriod"), processingPeriod));
+    }
+    query.where(predicate);
+    return entityManager.createQuery(query).getSingleResult();
+  }
+
   /**
    * Get approved requisitions matching all of provided parameters.
    *

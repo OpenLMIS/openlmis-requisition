@@ -87,9 +87,6 @@ public class Order extends BaseEntity {
   private BigDecimal quotedCost;
 
   // TODO: determine why it has to be set explicitly
-  @JsonIdentityInfo(
-      generator = ObjectIdGenerators.IntSequenceGenerator.class,
-      property = "orderLineItemsId")
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},

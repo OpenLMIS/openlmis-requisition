@@ -12,3 +12,9 @@ VALUES ('33b2d2e9-3167-46b0-95d4-1295be9afc21', true, 'fulfillment.header.order.
 
 INSERT INTO requisition.order_number_configurations (id, orderNumberPrefix, includeOrderNumberPrefix, includeProgramCode, includeRequisitionTypeSuffix)
 VALUES ('70543032-b131-4219-b44d-7781d29db330', 'O', true, true, true);
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, mandatory) VALUES
+('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'requestedQuantity', 'Requested Quantity', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT');
