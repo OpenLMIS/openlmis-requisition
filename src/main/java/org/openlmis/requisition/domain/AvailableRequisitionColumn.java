@@ -1,8 +1,16 @@
 package org.openlmis.requisition.domain;
 
 import java.util.Objects;
+import java.util.Set;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import lombok.Getter;
@@ -16,7 +24,16 @@ import lombok.Setter;
 @Setter
 public class AvailableRequisitionColumn extends BaseEntity {
   private String name;
-  private SourceType source;
+
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = SourceType.class)
+  @Enumerated(EnumType.STRING)
+  @Column(name = "value")
+  @CollectionTable(
+      name = "available_requisition_column_sources",
+      joinColumns = @JoinColumn(name = "columnId")
+  )
+  private Set<SourceType> sources;
+
   private String label;
   private boolean mandatory;
 
