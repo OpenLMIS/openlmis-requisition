@@ -2,6 +2,7 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -64,7 +65,7 @@ public abstract class BaseReferenceDataService<T> {
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<T> response = restTemplate.exchange(url, HttpMethod.GET,
-          null, new ParameterizedTypeReference<T>() {}, params);
+          null, getResultClass(), params);
 
     return response.getBody();
   }
@@ -121,17 +122,13 @@ public abstract class BaseReferenceDataService<T> {
 
     HttpEntity<String> request = new HttpEntity<>(headers);
 
-<<<<<<< HEAD
+
     Map<String, Object> params = new HashMap<>();
-    params.put("grant_type", "client_credentials");
+    params.put("grant_type","client_credentials");
 
     ResponseEntity<?> response = restTemplate.exchange(
-        "http://localhost/auth/oauth/token",
-        HttpMethod.POST, request, Object.class, params);
-=======
-    ResponseEntity<?> response = restTemplate.exchange(
-        authorizationUrl, HttpMethod.POST, request, Object.class);
->>>>>>> origin/master
+        authorizationUrl, HttpMethod.POST, request, Object.class, params);
+
 
     return ((Map<String, String>) response.getBody()).get(ACCESS_TOKEN);
   }

@@ -105,13 +105,15 @@ public class RequisitionService {
     //ProcessingPeriodDto period = findPeriod(facility, program, emergency);
 
     if (null != suggestedPeriodId && suggestedPeriodId != period.getId()) {
+
       period = periodReferenceDataService.findOne(suggestedPeriodId);
     }
 
     ProcessingPeriodDto processingPeriodDto = periodReferenceDataService.findOne(period.getId());
     RequisitionGroupProgramScheduleDto dto = referenceDataService.search(programId);
 
-    if (dto.getProcessingSchedule() != processingPeriodDto.getProcessingSchedule()) {
+    if (!dto.getProcessingSchedule().getId().equals(
+        processingPeriodDto.getProcessingSchedule().getId())) {
       throw new InvalidPeriodException("Cannot initiate requisition."
           + "Period for the requisition must belong to the same schedule"
           + " that belongs to the program selected for that requisition");
@@ -127,7 +129,7 @@ public class RequisitionService {
     requisition.setEmergency(emergency);
     requisition.setFacility(facilityId);
     requisition.setProgram(programId);
-    //requisition.setProcessingPeriod(period.getId());
+    requisition.setProcessingPeriod(period.getId());
     requisition.setRequisitionLineItems(
         facilityTypeApprovedProducts
             .stream()

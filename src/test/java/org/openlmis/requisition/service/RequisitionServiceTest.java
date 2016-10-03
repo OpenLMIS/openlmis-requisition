@@ -366,8 +366,9 @@ public class RequisitionServiceTest {
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.getTemplateForProgram(programId))
-        .thenReturn(requisitionTemplate);
+    doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
+    //when(requisitionTemplateService.getTemplateForProgram(programId))
+      //  .thenReturn(requisitionTemplate);
 
     when(requisitionLineCalculator.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))

@@ -116,12 +116,59 @@ public abstract class BaseWebIntegrationTest {
       + " \"productName\":\"Product Name\"\n"
       + "}";
 
+  private static final String MOCK_FIND_PROCESSING_SCHEDULE = "{"
+      + " \"id\":\"c73ad6a4-895c-11e6-ae22-56b6b6499611\","
+      + " \"code\":\"Schedule Code\","
+      + " \"name\":\"Schedule Name\""
+      + "}";
+
+  private static final String MOCK_FIND_PROCESSING_PERIOD = "{"
+      + " \"id\":\"4c6b05c2-894b-11e6-ae22-56b6b6499611\","
+      + " \"name\":\"Period Name\","
+      + " \"description\":\"Period Description\","
+      +  "\"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE + ","
+      + " \"startDate\":\"2016-03-01\","
+      + " \"endDate\":\"2017-03-01\""
+      + " }";
+
+  private static final String MOCK_FIND_FACILITY_TYPE = "{"
+      + " \"id\":\"7fbef45e-8961-11e6-ae22-56b6b6499611\","
+      + " \"code\":\"Facility Type Code\""
+      + "}";
+
+  private static final String MOCK_FIND_PRODUCT_CATEGORY = "{"
+      + " \"id\":\"6d469a06-8962-11e6-ae22-56b6b6499611\""
+      + "}";
+
+  private static final String MOCK_FIND_PROGRAM_PRODUCT = "{"
+      + " \"id\":\"047cb32a-8962-11e6-ae22-56b6b6499611\","
+      + " \"program\":" + MOCK_FIND_PROGRAM_RESULT + ","
+      + " \"product\":" + MOCK_FIND_PRODUCT_RESULT + ","
+      + " \"productCategory\":" + MOCK_FIND_PRODUCT_CATEGORY
+      + "}";
+
   private static final String MOCK_SEARCH_SUPPLY_LINE_RESULT = "[{\n"
       + " \"id\":\"99cd664e-871a-11e6-ae22-56b6b6499611\",\n"
       + " \"supervisoryNode\":\"aa66b244-871a-11e6-ae22-56b6b6499611\",\n"
       + " \"program\":\"aa66b58c-871a-11e6-ae22-56b6b6499611\",\n"
       + " \"supplyingFacility\":\"aa66b762-871a-11e6-ae22-56b6b6499611\"\n"
       + "}]";
+
+  private static final String MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE = "{"
+      + " \"id\":\"7b34f06e-895c-11e6-ae22-56b6b6499611\","
+      + " \"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE
+      + "}";
+
+  private static final String MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS = "[{"
+      + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
+      + " \"facilityType\":" + MOCK_FIND_FACILITY_TYPE + ","
+      + " \"programProduct\":" + MOCK_FIND_PROGRAM_PRODUCT + ","
+      + " \"maxMonthStock\": 2"
+      + "}]";
+
+  private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["
+      + "" + MOCK_FIND_PROCESSING_PERIOD
+      + "]";
 
   @Autowired
   private CleanRepositoryHelper cleanRepositoryHelper;
@@ -143,7 +190,7 @@ public abstract class BaseWebIntegrationTest {
             .withBody(MOCK_CHECK_RESULT)));
 
     // This mocks the auth token request response
-    wireMockRule.stubFor(post(urlEqualTo("/auth/oauth/token"))
+    wireMockRule.stubFor(post(urlPathEqualTo("/auth/oauth/token"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
@@ -188,11 +235,37 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));
 
+    // This mocks searching for processingPeriods
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/processingPeriods/" + UUID_REGEX))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_FIND_PROCESSING_PERIOD)));
+
     // This mocks searching for supplyLines
     wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/supplyLines/searchByUUID"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_SUPPLY_LINE_RESULT)));
+
+    // This mocks searching for requisitionGroupProgramSchedules
+    wireMockRule.stubFor(get(
+        urlEqualTo("/referencedata/api/requisitionGroupProgramSchedules/searchByUUID"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE)));
+
+    // This mocks searching for facilityTypeApprovedProducts
+    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/facilityTypeApprovedProducts/search"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
+
+    // This mocks searching for processingPeriods
+    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDAndDate"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
+
   }
 
   @After

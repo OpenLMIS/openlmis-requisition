@@ -21,6 +21,11 @@ public class RequisitionGroupProgramScheduleReferenceDataService
     return RequisitionGroupProgramScheduleDto.class;
   }
 
+  @Override
+  protected Class<RequisitionGroupProgramScheduleDto[]> getArrayResultClass() {
+    return RequisitionGroupProgramScheduleDto[].class;
+  }
+
   /**
    * Retrieves requisition group program schedule from reference data service by program.
    * @param programId UUID of the program

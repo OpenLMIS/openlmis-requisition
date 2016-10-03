@@ -153,7 +153,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     RequisitionTemplate template = new RequisitionTemplate();
-    template.setColumnsMap(ImmutableMap.of("testColumn", new RequisitionTemplateColumn()));
+    RequisitionTemplateColumn col = new RequisitionTemplateColumn();
+    col.setName("productCode");
+    col.setIsDisplayed(true);
+    template.setColumnsMap(ImmutableMap.of("beginningBalance", col));
     template.setProgram(program.getId());
 
     requisitionTemplateRepository.save(template);
@@ -845,7 +848,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  @Ignore
   public void shouldInitializeRequisition() {
 
     requisitionRepository.delete(requisition);

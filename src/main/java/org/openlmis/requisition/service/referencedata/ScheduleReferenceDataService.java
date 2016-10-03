@@ -15,4 +15,9 @@ public class ScheduleReferenceDataService extends BaseReferenceDataService<Proce
   protected Class<ProcessingScheduleDto> getResultClass() {
     return ProcessingScheduleDto.class;
   }
+
+  @Override
+  protected Class<ProcessingScheduleDto[]> getArrayResultClass() {
+    return ProcessingScheduleDto[].class;
+  }
 }

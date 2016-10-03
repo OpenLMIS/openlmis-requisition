@@ -21,6 +21,11 @@ public class FacilityTypeApprovedProductReferenceDataService
     return FacilityTypeApprovedProductDto.class;
   }
 
+  @Override
+  protected Class<FacilityTypeApprovedProductDto[]> getArrayResultClass() {
+    return FacilityTypeApprovedProductDto[].class;
+  }
+
   /**
    * Retrieves full supply FacilityTypeApprovedProduct from the reference data service by
    * facility id and program id.
