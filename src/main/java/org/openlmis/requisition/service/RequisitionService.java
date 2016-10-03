@@ -98,8 +98,7 @@ public class RequisitionService {
       throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
           + " Requisition with such parameters already exists");
     }
-
-    //ProcessingPeriodDto period = new ProcessingPeriodDto();
+    
     ProcessingPeriodDto period = findPeriod(facilityId, programId);
 
     if (null != suggestedPeriodId && suggestedPeriodId != period.getId()) {
@@ -126,7 +125,7 @@ public class RequisitionService {
     requisition.setEmergency(emergency);
     requisition.setFacility(facilityId);
     requisition.setProgram(programId);
-    //requisition.setProcessingPeriod(period.getId());
+    requisition.setProcessingPeriod(period.getId());
     requisition.setRequisitionLineItems(
         facilityTypeApprovedProducts
             .stream()
