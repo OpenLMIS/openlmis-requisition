@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionColumn;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -64,7 +64,7 @@ public class RequisitionLineCalculatorTest {
   private RequisitionLineCalculator requisitionLineCalculator;
 
   @Mock
-  private RequisitionColumn requisitionColumn;
+  private AvailableRequisitionColumn availableRequisitionColumn;
 
   private UUID program = UUID.randomUUID();
   private UUID period = UUID.randomUUID();
@@ -85,7 +85,7 @@ public class RequisitionLineCalculatorTest {
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD, new RequisitionTemplateColumn(
         BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1, true, false, true, true, SOURCE,
-        requisitionColumn));
+        availableRequisitionColumn));
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
@@ -107,7 +107,7 @@ public class RequisitionLineCalculatorTest {
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD, new RequisitionTemplateColumn(
         BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1, false, false, true, true, SOURCE,
-        requisitionColumn));
+        availableRequisitionColumn));
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
@@ -126,10 +126,10 @@ public class RequisitionLineCalculatorTest {
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
         new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD,
-            2, false, false, true, true, SourceType.USER_INPUT, requisitionColumn));
+            2, false, false, true, true, SourceType.USER_INPUT, availableRequisitionColumn));
     requisitionTemplateColumnHashMap.put(TOTAL_QUANTITY_RECEIVED_FIELD,
         new RequisitionTemplateColumn(TOTAL_QUANTITY_RECEIVED_FIELD, TOTAL_QUANTITY_RECEIVED_FIELD,
-            1, false, false, true, true, SourceType.USER_INPUT, requisitionColumn));
+            1, false, false, true, true, SourceType.USER_INPUT, availableRequisitionColumn));
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 

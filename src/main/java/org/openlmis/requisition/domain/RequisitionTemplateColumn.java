@@ -40,7 +40,7 @@ public class RequisitionTemplateColumn {
 
   @OneToOne
   @JoinColumn(name = "requisitionColumnId", nullable = false)
-  private RequisitionColumn requisitionColumn;
+  private AvailableRequisitionColumn columnDefinition;
 
   /**
    * Validate name of new label and change it if it's alphanumeric.

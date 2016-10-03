@@ -2,7 +2,7 @@ package org.openlmis.requisition.repository;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.RequisitionColumn;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -31,7 +31,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   RequisitionTemplateRepository repository;
 
   @Autowired
-  private RequisitionColumnRepository requisitionColumnRepository;
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   private List<RequisitionTemplate> requisitionTemplates;
 
@@ -175,8 +175,8 @@ public class RequisitionTemplateRepositoryIntegrationTest
             template.getProgram());
   }
 
-  private RequisitionColumn getColumn() {
-    return requisitionColumnRepository.findOne(
+  private AvailableRequisitionColumn getColumn() {
+    return availableRequisitionColumnRepository.findOne(
         UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")
     );
   }

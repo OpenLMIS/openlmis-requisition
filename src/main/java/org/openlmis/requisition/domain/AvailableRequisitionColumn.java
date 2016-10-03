@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "requisition_columns", schema = "requisition")
+@Table(name = "available_requisition_columns", schema = "requisition")
 @NoArgsConstructor
 @Getter
 @Setter
-public class RequisitionColumn extends BaseEntity {
+public class AvailableRequisitionColumn extends BaseEntity {
   private String name;
   private SourceType source;
   private String label;
@@ -26,11 +26,11 @@ public class RequisitionColumn extends BaseEntity {
       return true;
     }
 
-    if (!(obj instanceof RequisitionColumn)) {
+    if (!(obj instanceof AvailableRequisitionColumn)) {
       return false;
     }
 
-    RequisitionColumn column = (RequisitionColumn) obj;
+    AvailableRequisitionColumn column = (AvailableRequisitionColumn) obj;
     return Objects.equals(column.getName(), getName());
   }
 
