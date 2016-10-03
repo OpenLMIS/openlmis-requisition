@@ -22,6 +22,11 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     return ProcessingPeriodDto.class;
   }
 
+  @Override
+  protected Class<ProcessingPeriodDto[]> getArrayResultClass() {
+    return ProcessingPeriodDto[].class;
+  }
+
   /**
    * Retrieves periods from the reference data service by schedule ID and start date.
    * @param processingScheduleId UUID of the schedule

@@ -2,15 +2,17 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -64,15 +66,19 @@ public abstract class BaseReferenceDataService<T> {
     params.putAll(parameters);
     params.put("access_token", obtainAccessToken());
 
-    ResponseEntity<Collection<T>> response = restTemplate.exchange(url, HttpMethod.GET,
-        null, new ParameterizedTypeReference<Collection<T>>() {}, params);
+    ResponseEntity<T[]> responseEntity =
+        restTemplate.getForEntity(url, getArrayResultClass(), params);
 
-    return response.getBody();
+    List<T> response = new ArrayList<T>(Arrays.asList(responseEntity.getBody()));
+
+    return response;
   }
 
   protected abstract String getUrl();
 
   protected abstract Class<T> getResultClass();
+
+  protected abstract Class<T[]> getArrayResultClass();
 
   protected String getReferenceDataUrl() {
     return referenceDataUrl;
@@ -90,9 +96,13 @@ public abstract class BaseReferenceDataService<T> {
     headers.add("Authorization", "Basic " + base64Creds);
 
     HttpEntity<String> request = new HttpEntity<>(headers);
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("grant_type", "client_credentials");
+
     ResponseEntity<?> response = restTemplate.exchange(
-        "http://auth:8080/oauth/token?grant_type=client_credentials",
-        HttpMethod.POST, request, Object.class);
+        "http://localhost/auth/oauth/token",
+        HttpMethod.POST, request, Object.class, params);
 
     return ((Map<String, String>) response.getBody()).get("access_token");
   }

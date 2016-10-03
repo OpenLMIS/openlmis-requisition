@@ -21,6 +21,11 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
     return SupplyLineDto.class;
   }
 
+  @Override
+  protected Class<SupplyLineDto[]> getArrayResultClass() {
+    return SupplyLineDto[].class;
+  }
+
   /**
    * Retrieves supply lines from reference data service by program and supervisory node.
    * @param programId UUID of the program

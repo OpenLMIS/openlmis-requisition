@@ -15,4 +15,9 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
   protected Class<ProgramDto> getResultClass() {
     return ProgramDto.class;
   }
+
+  @Override
+  protected Class<ProgramDto[]> getArrayResultClass() {
+    return ProgramDto[].class;
+  }
 }

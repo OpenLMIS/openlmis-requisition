@@ -16,4 +16,9 @@ public class SupervisoryNodeReferenceDataService
   protected Class<SupervisoryNodeDto> getResultClass() {
     return SupervisoryNodeDto.class;
   }
+
+  @Override
+  protected Class<SupervisoryNodeDto[]> getArrayResultClass() {
+    return SupervisoryNodeDto[].class;
+  }
 }

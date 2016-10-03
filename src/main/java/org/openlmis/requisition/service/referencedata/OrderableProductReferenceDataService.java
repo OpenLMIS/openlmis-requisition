@@ -16,4 +16,9 @@ public class OrderableProductReferenceDataService
   protected Class<OrderableProductDto> getResultClass() {
     return OrderableProductDto.class;
   }
+
+  @Override
+  protected Class<OrderableProductDto[]> getArrayResultClass() {
+    return OrderableProductDto[].class;
+  }
 }

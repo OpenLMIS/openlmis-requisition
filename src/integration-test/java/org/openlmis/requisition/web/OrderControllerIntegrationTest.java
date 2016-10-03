@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -46,7 +45,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
   private UUID facility2 = UUID.randomUUID();
-  private UUID program = UUID.randomUUID();
+  private UUID program = getProgramId();
   private UUID program1 = UUID.randomUUID();
   private UUID program2 = UUID.randomUUID();
   private UUID period = UUID.randomUUID();
@@ -56,7 +55,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID product2 = UUID.randomUUID();
   private UUID supplyingFacility = UUID.randomUUID();
   private UUID supervisoryNode = UUID.randomUUID();
-  private UUID user = UUID.randomUUID();
+  private UUID user = getUserId();
 
 
   @Autowired
@@ -184,7 +183,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
-  @Ignore
   @Test
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
@@ -201,7 +199,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
   }
 
-  @Ignore
   @Test
   public void shouldPrintOrderAsPdf() {
     restAssured.given()
@@ -216,7 +213,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();

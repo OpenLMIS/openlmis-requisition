@@ -532,7 +532,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore
   @Test
   public void shouldSkipRequisition() {
     restAssured.given()
@@ -659,7 +658,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
 
-  @Ignore
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
     requisition.setSupervisoryNode(supervisoryNode.getId());
@@ -688,7 +686,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     //user.setSupervisedNode(null);
   }
 
-  @Ignore
   @Test
   public void shouldInsertComment() {
 

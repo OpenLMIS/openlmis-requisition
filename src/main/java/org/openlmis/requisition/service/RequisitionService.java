@@ -167,8 +167,10 @@ public class RequisitionService {
     UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     Set<ProgramDto> supervisedPrograms = user.getSupervisedPrograms();
-    for (ProgramDto program: supervisedPrograms) {
-      requisitionsForApproval.addAll(getAuthorizedRequisitions(program));
+    if (supervisedPrograms != null) {
+      for (ProgramDto program : supervisedPrograms) {
+        requisitionsForApproval.addAll(getAuthorizedRequisitions(program));
+      }
     }
     return requisitionsForApproval;
   }

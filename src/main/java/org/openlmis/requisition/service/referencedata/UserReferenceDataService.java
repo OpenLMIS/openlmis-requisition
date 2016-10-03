@@ -19,6 +19,11 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     return UserDto.class;
   }
 
+  @Override
+  protected Class<UserDto[]> getArrayResultClass() {
+    return UserDto[].class;
+  }
+
   public Collection<UserDto> findUsers(Map<String, Object> parameters) {
     return findAll("search", parameters);
   }
