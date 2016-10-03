@@ -35,7 +35,6 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -250,7 +249,7 @@ public class RequisitionServiceTest {
         requisition.getFacility()))
         .thenReturn(requisitionGroupProgramSchedule);
     when(period.getProcessingSchedule()).thenReturn(schedule);
-    when(period.getStartDate()).thenReturn(LocalDate.of(2016, 8, 1));
+    when(period.getId()).thenReturn(suggestedPeriodId);
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
@@ -360,6 +359,7 @@ public class RequisitionServiceTest {
           .findOne(requisition.getId()))
           .thenReturn(null);
     when(period.getProcessingSchedule()).thenReturn(schedule);
+    when(period.getId()).thenReturn(suggestedPeriodId);
     when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
@@ -390,8 +390,6 @@ public class RequisitionServiceTest {
     requisition.setFacility(facilityId);
     UUID programId = UUID.randomUUID();
     requisition.setProgram(programId);
-    UUID processingPeriodId = UUID.randomUUID();
-    requisition.setProcessingPeriod(processingPeriodId);
     return requisition;
   }
 

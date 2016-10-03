@@ -327,19 +327,18 @@ public class RequisitionService {
    * @param facilityId Facility for Requisition
    * @return ProcessingPeriodDto.
    */
-  public ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId)
-      throws RequisitionException {
+  public ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId) {
 
-    ProcessingPeriodDto result = null;
+    ProcessingPeriodDto result = new ProcessingPeriodDto();
     Collection<ProcessingPeriodDto> periods =
           periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
 
-    Iterable<Requisition> requisitions;
+    Requisition requisition = new Requisition();
 
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {
-        requisitions = requisitionRepository.searchByProcessingPeriod(dto.getId());
-        if (requisitions == null) {
+        requisition = requisitionRepository.searchByProcessingPeriod(dto.getId());
+        if (requisition == null) {
           result = dto;
           break;
         }

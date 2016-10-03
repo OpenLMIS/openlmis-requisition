@@ -20,5 +20,5 @@ public interface RequisitionRepositoryCustom {
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize);
 
-  List<Requisition> searchByProcessingPeriod(UUID processingPeriod);
+  Requisition searchByProcessingPeriod(UUID processingPeriod);
 }

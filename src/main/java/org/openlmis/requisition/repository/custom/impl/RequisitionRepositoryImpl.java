@@ -86,7 +86,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param processingPeriod processingPeriod of searched Requisitions.
    * @return list of Requisitions with matched parameters.
    */
-  public List<Requisition> searchByProcessingPeriod(UUID processingPeriod) {
+  public Requisition searchByProcessingPeriod(UUID processingPeriod) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
@@ -96,7 +96,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
             builder.equal(root.get("processingPeriod"), processingPeriod));
     }
     query.where(predicate);
-    return entityManager.createQuery(query).getResultList();
+    return entityManager.createQuery(query).getSingleResult();
   }
 
   /**
