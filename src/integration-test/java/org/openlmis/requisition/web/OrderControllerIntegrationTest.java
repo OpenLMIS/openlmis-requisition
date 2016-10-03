@@ -1,10 +1,6 @@
 package org.openlmis.requisition.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -15,12 +11,9 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.repository.RequisitionLineItemRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -28,6 +21,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -66,8 +64,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
-  @Autowired
-  private RequisitionLineItemRepository requisitionLineItemRepository;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -146,14 +142,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return requisitionRepository.save(requisition);
   }
 
-  private RequisitionLineItem addRequisitionLineItem(Requisition requisition, UUID product) {
+  private void addRequisitionLineItem(Requisition requisition, UUID product) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setOrderableProduct(product);
     requisitionLineItem.setRequestedQuantity(3);
     requisitionLineItem.setApprovedQuantity(3);
-
-    return requisitionLineItemRepository.save(requisitionLineItem);
+    requisition.setRequisitionLineItems(new ArrayList<>(
+            Collections.singletonList(requisitionLineItem)));
   }
 
   private OrderLineItem addOrderLineItem(Order order, UUID product, Long filledQuantity,

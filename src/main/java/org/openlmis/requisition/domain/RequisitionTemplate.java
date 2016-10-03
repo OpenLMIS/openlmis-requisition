@@ -21,6 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
+  @Column(unique = true)
   @Getter
   @Setter
   private UUID program;
@@ -31,7 +32,7 @@ public class RequisitionTemplate extends BaseEntity {
   @CollectionTable(name = "columns_maps")
   @Getter
   @Setter
-  private Map<String,RequisitionTemplateColumn> columnsMap = new HashMap<>();
+  private Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
   /**
    * Allows creating requisition template with predefined columns.
