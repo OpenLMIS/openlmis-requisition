@@ -1,13 +1,14 @@
 package org.openlmis.requisition.web;
 
 import com.google.common.collect.ImmutableMap;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionColumn;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -20,6 +21,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
+import org.openlmis.requisition.repository.RequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -38,6 +40,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
@@ -90,6 +94,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  private RequisitionColumnRepository requisitionColumnRepository;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -153,7 +160,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     RequisitionTemplate template = new RequisitionTemplate();
-    template.setColumnsMap(ImmutableMap.of("testColumn", new RequisitionTemplateColumn()));
+    RequisitionTemplateColumn templateColumn = new RequisitionTemplateColumn();
+    templateColumn.setRequisitionColumn(requisitionColumnRepository.save(new RequisitionColumn()));
+    template.setColumnsMap(ImmutableMap.of("testColumn", templateColumn));
     template.setProgram(program.getId());
 
     requisitionTemplateRepository.save(template);
