@@ -86,7 +86,6 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
-  // TODO: determine why it has to be set explicitly
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
