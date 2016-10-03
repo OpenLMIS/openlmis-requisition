@@ -36,9 +36,9 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
   public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate startDate) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("processingScheduleId", processingScheduleId);
-    parameters.put("startDate", startDate);
+    parameters.put("toDate", startDate);
 
-    return findAll("searchByUUIDAndDate", parameters);
+    return findAll("search", parameters);
   }
 
   /**

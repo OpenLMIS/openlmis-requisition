@@ -261,7 +261,7 @@ public abstract class BaseWebIntegrationTest {
             .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
 
     // This mocks searching for processingPeriods
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDAndDate"))
+    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/search"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
