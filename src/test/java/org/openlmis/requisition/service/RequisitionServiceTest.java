@@ -291,10 +291,19 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldReleaseRequisitionsAsOrder() throws RequisitionException {
+    UserDto user = mock(UserDto.class);
+    FacilityDto facility = mock(FacilityDto.class);
+
+    Set<FacilityDto> facilities = new HashSet<>();
+    facilities.add(facility);
+
+    when(facility.getId()).thenReturn(facilityId);
+    when(user.getFulfillmentFacilities()).thenReturn(facilities);
+
     requisition.setStatus(RequisitionStatus.APPROVED);
     List<Requisition> requisitions = Collections.singletonList(requisition);
     List<Requisition> expectedRequisitions = requisitionService
-          .releaseRequisitionsAsOrder(requisitions);
+          .releaseRequisitionsAsOrder(requisitions, user);
     assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
   }
 
@@ -388,6 +397,7 @@ public class RequisitionServiceTest {
     requisition.setEmergency(false);
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupplyingFacility(facilityId);
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(mock(RequisitionLineItem.class));
     requisition.setRequisitionLineItems(requisitionLineItems);

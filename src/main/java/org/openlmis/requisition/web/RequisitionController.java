@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -31,14 +32,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.validation.Valid;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -243,7 +246,7 @@ public class RequisitionController extends BaseController {
    * Get requisitions to approve for right supervisor.
    */
   @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
-  public ResponseEntity<Object> listForApproval() {
+  public ResponseEntity<?> listForApproval() {
     String userName =
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
@@ -320,8 +323,8 @@ public class RequisitionController extends BaseController {
    *
    * @return ResponseEntity with list of approved requisitions.
    */
-  @RequestMapping(value = "/requisitions/approved/search", method = RequestMethod.GET)
-  public ResponseEntity<?> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+  @RequestMapping(value = "/requisitions/requisitions-for-convert", method = RequestMethod.GET)
+  public ResponseEntity<?> listForConvertToOrder(
       @RequestParam String filterValue,
       @RequestParam String filterBy,
       @RequestParam String sortBy,
@@ -331,14 +334,30 @@ public class RequisitionController extends BaseController {
 
     // TODO Add filtering about available Requisition for user
     // (If Reference Data Service - EBAC will be finished)
-    // TODO Add available supplying depot and filtering about this
-    // (If OLMIS-227 will be finished)
+    String userName =
+        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("username", userName);
+    UserDto user = new ArrayList<>(userReferenceDataService.findUsers(parameters)).get(0);
 
-    List<Requisition> approvedRequisitionList =
+    Collection<UUID> userManagedFacilities = user.getFulfillmentFacilities()
+        .stream().map(FacilityDto::getId).collect(Collectors.toList());
+
+    Collection<Requisition> approvedRequisitionList =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
             filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
 
-    return new ResponseEntity<>(approvedRequisitionList, HttpStatus.OK);
+    Map<Requisition, Collection<FacilityDto>> requisitionListMap = approvedRequisitionList.stream()
+        .collect(Collectors.toMap(
+            Function.identity(),
+            requisition -> {
+              Collection<FacilityDto> facilities =
+                  requisitionService.getAvailableSupplyingDepots(requisition);
+              return facilities.stream().filter(f -> userManagedFacilities.contains(f.getId()))
+                  .collect(Collectors.toList());
+            }));
+
+    return new ResponseEntity<>(requisitionListMap, HttpStatus.OK);
   }
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {

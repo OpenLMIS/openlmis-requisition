@@ -22,6 +22,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -212,6 +215,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
+    requisition.setSupplyingFacility(facility);
+
+    String mockUserFindResult = "{"
+        + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
+        + "\"username\":\"admin\","
+        + "\"firstName\":\"Admin\","
+        + "\"lastName\":\"User\","
+        + "\"email\":\"example@mail.com\","
+        + "\"verified\":\"true\","
+        + "\"fulfillmentFacilities\":"
+        + "[{\"id\":\"" + facility + "\"}]"
+        + "}";
+
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(mockUserFindResult)));
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())

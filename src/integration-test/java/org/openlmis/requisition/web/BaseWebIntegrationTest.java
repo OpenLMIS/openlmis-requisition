@@ -39,14 +39,14 @@ public abstract class BaseWebIntegrationTest {
   protected static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
 
-  private static final String BASE_URL = System.getenv("BASE_URL");
+  protected static final String BASE_URL = System.getenv("BASE_URL");
 
-  private static final String UUID_REGEX =
+  protected static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
-  private static final String CONTENT_TYPE = "Content-Type";
+  protected static final String CONTENT_TYPE = "Content-Type";
 
-  private static final String APPLICATION_JSON = "application/json";
+  protected static final String APPLICATION_JSON = "application/json";
 
   private static final String MOCK_CHECK_RESULT = "{\n"
       + "  \"aud\": [\n"

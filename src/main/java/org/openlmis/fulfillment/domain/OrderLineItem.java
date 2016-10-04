@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 
 import java.util.UUID;
 
@@ -38,6 +39,17 @@ public class OrderLineItem extends BaseEntity {
   @Getter
   @Setter
   private Long filledQuantity;
+
+  /**
+   * Creates a new instance based on a given RequisitionLineItem.
+   * @param requisitionLineItem RequisitionLineItem to create instance from.
+   */
+  public OrderLineItem(RequisitionLineItem requisitionLineItem) {
+    setOrder(order);
+    setOrderableProduct(requisitionLineItem.getOrderableProduct());
+    setFilledQuantity(0L);
+    setOrderedQuantity(requisitionLineItem.getRequestedQuantity().longValue());
+  }
 
   /**
    * Copy values of attributes into new or updated OrderLineItem.

@@ -67,6 +67,10 @@ public class Requisition extends BaseEntity {
   @Setter
   private UUID processingPeriod;
 
+  @Getter
+  @Setter
+  private UUID supplyingFacility;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   @Getter

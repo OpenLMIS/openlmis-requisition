@@ -133,6 +133,8 @@ public class OrderServiceTest {
         .thenReturn(Arrays.asList(orderNumberConfiguration));
     when(program.getCode()).thenReturn("code");
 
+    when(requisitionService.releaseRequisitionsAsOrder(anyObject(), anyObject()))
+        .thenReturn(requisitions);
     orders = orderService.convertToOrder(requisitions, userId);
 
     assertEquals(2, orders.size());
@@ -159,7 +161,7 @@ public class OrderServiceTest {
               requisition.getProgram());
       assertEquals(
               order.getSupplyingFacility(),
-              supplyLines.get(orders.indexOf(order)).getSupplyingFacility());
+              requisition.getSupplyingFacility());
       assertEquals(1, order.getOrderLineItems().size());
       assertEquals(1, requisition.getRequisitionLineItems().size());
 
@@ -171,8 +173,6 @@ public class OrderServiceTest {
       assertEquals(requisitionLineItem.getOrderableProduct(), orderLineItem.getOrderableProduct());
     }
 
-    verify(requisitionRepository, atLeastOnce()).findOne(anyObject());
-    verify(supplyLineService, atLeastOnce()).search(anyObject(), anyObject());
     verify(orderRepository, atLeastOnce()).save(any(Order.class));
   }
 
@@ -285,6 +285,7 @@ public class OrderServiceTest {
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setEmergency(true);
+    requisition.setSupplyingFacility(UUID.randomUUID());
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(generateRequisitionLineItem());
     requisition.setRequisitionLineItems(requisitionLineItems);
