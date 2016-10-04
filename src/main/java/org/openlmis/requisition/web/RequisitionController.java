@@ -82,9 +82,9 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
-                                    @RequestParam(value = "facility") UUID facility,
-                                    @RequestParam(value = "suggestedPeriod") UUID suggestedPeriod,
-                                    @RequestParam(value = "emergency") Boolean emergency) {
+                   @RequestParam(value = "facility") UUID facility,
+                   @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
+                   @RequestParam(value = "emergency") Boolean emergency) {
     try {
       Requisition newRequisition = requisitionService.initiate(program,
           facility, suggestedPeriod, emergency);
