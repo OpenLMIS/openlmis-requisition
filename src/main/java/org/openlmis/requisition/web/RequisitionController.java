@@ -114,7 +114,8 @@ public class RequisitionController extends BaseController {
     try {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
       requisition.submit();
-      requisitionRepository.save(requisition);
+      savedRequisition.updateFrom(requisition);
+      requisitionRepository.save(savedRequisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
