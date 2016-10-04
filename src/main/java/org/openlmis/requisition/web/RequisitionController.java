@@ -14,7 +14,6 @@ import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +52,6 @@ public class RequisitionController extends BaseController {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  @Qualifier("beforeSaveRequisitionValidator")
   private RequisitionValidator validator;
 
   @Autowired
