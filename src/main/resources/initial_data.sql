@@ -20,7 +20,7 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT');
 
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
-('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'totalReceivedQuantity', 'B', 'Total Received Quantity', false);
+('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'totalReceivedQuantity', 'Total Received Quantity', 'B', false);
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
 ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT');
