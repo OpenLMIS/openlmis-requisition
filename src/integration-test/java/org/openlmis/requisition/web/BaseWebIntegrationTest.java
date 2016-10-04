@@ -1,15 +1,10 @@
 package org.openlmis.requisition.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
-
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -20,11 +15,14 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
-
 import java.util.UUID;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -249,7 +247,7 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks searching for requisitionGroupProgramSchedules
     wireMockRule.stubFor(get(
-        urlEqualTo("/referencedata/api/requisitionGroupProgramSchedules/searchByUUID"))
+        urlEqualTo("/referencedata/api/requisitionGroupProgramSchedules/search"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE)));
@@ -266,8 +264,8 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
 
-    // This mocks searching for processingPeriods by UUIDs
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDs"))
+    // This mocks searching for processingPeriods by UUID and date
+    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDAndDate"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));

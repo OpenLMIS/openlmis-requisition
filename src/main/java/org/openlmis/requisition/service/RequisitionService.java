@@ -98,20 +98,19 @@ public class RequisitionService {
       throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
           + " Requisition with such parameters already exists");
     }
-    
-    ProcessingPeriodDto period = findPeriod(facilityId, programId);
 
-    if (null != suggestedPeriodId && suggestedPeriodId != period.getId()) {
+    ProcessingPeriodDto period = findTheOldestPeriod(programId, facilityId);
 
-      period = periodReferenceDataService.findOne(suggestedPeriodId);
+    if (period == null || (null != suggestedPeriodId && suggestedPeriodId != period.getId())) {
+      throw new InvalidPeriodException(
+            "Period should be the oldest and not associated with any requisitions");
     }
 
-    ProcessingPeriodDto processingPeriodDto = periodReferenceDataService.findOne(period.getId());
     RequisitionGroupProgramScheduleDto dto =
           referenceDataService.searchByProgramAndFacility(programId, facilityId);
 
     if (!dto.getProcessingSchedule().getId().equals(
-        processingPeriodDto.getProcessingSchedule().getId())) {
+        period.getProcessingSchedule().getId())) {
       throw new InvalidPeriodException("Cannot initiate requisition."
           + "Period for the requisition must belong to the same schedule"
           + " that belongs to the program selected for that requisition");
@@ -331,18 +330,18 @@ public class RequisitionService {
    * @param facilityId Facility for Requisition
    * @return ProcessingPeriodDto.
    */
-  public ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId) {
+  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId) {
 
-    ProcessingPeriodDto result = new ProcessingPeriodDto();
+    ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods =
           periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
 
-    Requisition requisition = new Requisition();
+    List<Requisition> requisitions;
 
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {
-        requisition = requisitionRepository.searchByProcessingPeriod(dto.getId());
-        if (requisition == null) {
+        requisitions = requisitionRepository.searchByProcessingPeriod(dto.getId());
+        if (requisitions == null || requisitions.isEmpty()) {
           result = dto;
           break;
         }
