@@ -3,11 +3,13 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
@@ -66,6 +68,9 @@ public class RequisitionController extends BaseController {
   @Autowired
   private UserReferenceDataService userReferenceDataService;
 
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
@@ -92,6 +97,36 @@ public class RequisitionController extends BaseController {
     } catch (RequisitionException ex) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
+  }
+
+  /**
+   * Returns processing periods.
+   *
+   * @param program UUID of Program.
+   * @param facility UUID of Facility.
+   * @param type Emergency or regular.
+   * @return ResponseEntity containing processing periods
+   */
+  @RequestMapping(value = "/requisitions/periods-for-initiate", method = POST)
+  public ResponseEntity<?> getProcessingPeriods(@RequestParam(value = "programId") UUID program,
+                                    @RequestParam(value = "facilityId") UUID facility,
+                                    @RequestParam(value = "type") Boolean type) {
+
+    Collection<ProcessingPeriodDto> periods =
+          periodReferenceDataService.searchByProgramAndFacility(program, facility);
+
+    List<Requisition> requisitions = null;
+
+    for (ProcessingPeriodDto periodDto : periods) {
+      requisitions = requisitionRepository.searchByProcessingPeriod(periodDto.getId());
+      if (requisitions != null && !requisitions.isEmpty()
+            && (requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
+            || requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED )) {
+        periods.remove(periodDto);
+      }
+    }
+
+    return new ResponseEntity<Object>(periods, HttpStatus.OK);
   }
 
   /**

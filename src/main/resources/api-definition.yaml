@@ -1067,6 +1067,26 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+    /requisitions/periods-for-initiate:
+            get:
+                is: [ secured ]
+                description: Find periods for initiate requisition.
+                queryParameters:
+                    programId:
+                        displayName: program
+                        type: string
+                        required: true
+                        repeat: false
+                    facilityId:
+                        displayName: facility
+                        type: string
+                        required: true
+                        repeat: false
+                    type:
+                        displayName: type
+                        type: boolean
+                        required: true
+                        repeat: false
 
 /requisitionLineItems:
     displayName: Requisition Line Items
