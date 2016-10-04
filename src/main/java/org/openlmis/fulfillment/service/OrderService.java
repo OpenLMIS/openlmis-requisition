@@ -12,26 +12,20 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
-import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,13 +39,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
 
@@ -60,12 +54,6 @@ public class OrderService {
 
   @Autowired
   private RequisitionService requisitionService;
-
-  @Autowired
-  private RequisitionRepository requisitionRepository;
-
-  @Autowired
-  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private OrderRepository orderRepository;
@@ -81,9 +69,6 @@ public class OrderService {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
@@ -223,54 +208,29 @@ public class OrderService {
   public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId)
           throws RequisitionException {
     UserDto user = userReferenceDataService.findOne(userId);
-    requisitionService.releaseRequisitionsAsOrder(requisitionList);
-    List<Order> convertedOrders = new ArrayList<>();
+    List<Requisition> releasedRequisitions =
+        requisitionService.releaseRequisitionsAsOrder(requisitionList, user);
 
-    for (Requisition requisition : requisitionList) {
-      requisition = requisitionRepository.findOne(requisition.getId());
+    return releasedRequisitions.stream().map(r -> createFromRequisition(r, user))
+        .collect(Collectors.toList());
+  }
 
-      Order order = new Order();
-      order.setCreatedById(user.getId());
-      order.setRequisition(requisition);
-      order.setStatus(OrderStatus.ORDERED);
+  /**
+   * Creates an order based on given requisition.
+   * @param requisition requisition to initialize order
+   * @return created order
+   */
+  private Order createFromRequisition(Requisition requisition, UserDto user) {
+    Order order = new Order(requisition);
+    order.setCreatedById(user.getId());
 
-      order.setReceivingFacility(requisition.getFacility());
-      order.setRequestingFacility(requisition.getFacility());
+    ProgramDto program = programReferenceDataService.findOne(order.getProgram());
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.findAll().iterator().next();
 
-      List<SupplyLineDto> supplyLines =
-          new ArrayList<>(supplyLineReferenceDataService
-          .search(requisition.getProgram(),
-              requisition.getSupervisoryNode()));
-      SupplyLineDto supplyLine = supplyLines.get(0);
+    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(requisition, program));
 
-      order.setSupplyingFacility(supplyLine.getSupplyingFacility());
-      order.setProgram(supplyLine.getProgram());
-
-      OrderNumberConfiguration orderNumberConfiguration =
-          orderNumberConfigurationRepository.findAll().iterator().next();
-
-      ProgramDto program = programReferenceDataService.findOne(order.getProgram());
-
-      order.setOrderCode(orderNumberConfiguration.generateOrderNumber(
-          requisition.getId(), program.getCode(), requisition.getEmergency()));
-
-      order.setQuotedCost(BigDecimal.ZERO);
-
-      orderRepository.save(order);
-
-      List<OrderLineItem> orderLineItems = new ArrayList<>();
-      for (RequisitionLineItem rl : requisition.getRequisitionLineItems()) {
-        OrderLineItem orderLineItem = new OrderLineItem();
-        orderLineItem.setOrder(order);
-        orderLineItem.setOrderableProduct(rl.getOrderableProduct());
-        orderLineItem.setFilledQuantity(0L);
-        orderLineItem.setOrderedQuantity(rl.getRequestedQuantity().longValue());
-        orderLineItems.add(orderLineItem);
-        orderLineItemRepository.save(orderLineItem);
-      }
-      order.setOrderLineItems(orderLineItems);
-      convertedOrders.add(order);
-    }
-    return convertedOrders;
+    orderRepository.save(order);
+    return order;
   }
 }

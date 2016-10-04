@@ -37,14 +37,14 @@ public abstract class BaseWebIntegrationTest {
   protected static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
 
-  private static final String BASE_URL = System.getenv("BASE_URL");
+  protected static final String BASE_URL = System.getenv("BASE_URL");
 
-  private static final String UUID_REGEX =
+  protected static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
-  private static final String CONTENT_TYPE = "Content-Type";
+  protected static final String CONTENT_TYPE = "Content-Type";
 
-  private static final String APPLICATION_JSON = "application/json";
+  protected static final String APPLICATION_JSON = "application/json";
 
   private static final String MOCK_CHECK_RESULT = "{\n"
       + "  \"aud\": [\n"
@@ -188,7 +188,7 @@ public abstract class BaseWebIntegrationTest {
             .withBody(MOCK_CHECK_RESULT)));
 
     // This mocks the auth token request response
-    wireMockRule.stubFor(post(urlPathEqualTo("/auth/oauth/token"))
+    wireMockRule.stubFor(post(urlPathEqualTo("/auth/oauth/token?grant_type=client_credentials"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
@@ -204,68 +204,72 @@ public abstract class BaseWebIntegrationTest {
             .withStatus(200)));
 
     // This mocks searching for users
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/users/search"))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_USER_SEARCH_RESULT)));
 
     // This mocks for find one user
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_USER_RESULT)));
 
     // This mocks for find one program
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/programs/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/programs/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROGRAM_RESULT)));
 
     // This mocks for find one facility
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/facilities/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/facilities/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_FACILITY_RESULT)));
 
     // This mocks for find one orderableproduct
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/orderableProducts/" + UUID_REGEX))
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/orderableProducts/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));
 
     // This mocks searching for processingPeriods
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/processingPeriods/" + UUID_REGEX))
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/processingPeriods/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROCESSING_PERIOD)));
 
     // This mocks searching for supplyLines
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/supplyLines/searchByUUID"))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/supplyLines/searchByUUID.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_SUPPLY_LINE_RESULT)));
 
     // This mocks searching for requisitionGroupProgramSchedules
     wireMockRule.stubFor(get(
-        urlEqualTo("/referencedata/api/requisitionGroupProgramSchedules/search"))
+        urlMatching("/referencedata/api/requisitionGroupProgramSchedules/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE)));
 
     // This mocks searching for facilityTypeApprovedProducts
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/facilityTypeApprovedProducts/search"))
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/facilityTypeApprovedProducts/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
 
     // This mocks searching for processingPeriods
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/search"))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/processingPeriods/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
 
     // This mocks searching for processingPeriods by UUID and date
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDAndDate"))
+    wireMockRule.stubFor(get(urlMatching(
+          "/referencedata/api/processingPeriods/searchByUUIDAndDate.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));

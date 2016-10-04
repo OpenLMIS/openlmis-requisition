@@ -7,12 +7,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,6 +35,7 @@ public abstract class BaseReferenceDataService<T> {
 
   /**
    * Return one object from Reference data service.
+   *
    * @param id UUID of requesting object.
    * @return Requesting reference data object.
    */
@@ -45,15 +47,16 @@ public abstract class BaseReferenceDataService<T> {
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<T> responseEntity = restTemplate
-        .exchange(url, HttpMethod.GET, null, getResultClass(), params);
+        .exchange(buildUri(url, params), HttpMethod.GET, null, getResultClass());
 
     return responseEntity.getBody();
   }
 
   /**
    * Return one object from Reference data service.
+   *
    * @param resourceUrl Endpoint url.
-   * @param parameters Map of query parameters.
+   * @param parameters  Map of query parameters.
    * @return Requesting reference data object.
    */
   public T findOne(String resourceUrl, Map<String, Object> parameters) {
@@ -63,8 +66,8 @@ public abstract class BaseReferenceDataService<T> {
     params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
-    ResponseEntity<T> response = restTemplate.exchange(url, HttpMethod.GET,
-          null, getResultClass(), params);
+    ResponseEntity<T> response = restTemplate.exchange(buildUri(url, params), HttpMethod.GET,
+          null, getResultClass());
 
     return response.getBody();
   }
@@ -79,8 +82,9 @@ public abstract class BaseReferenceDataService<T> {
 
   /**
    * Return all reference data T objects.
+   *
    * @param resourceUrl Endpoint url.
-   * @param parameters Map of query parameters.
+   * @param parameters  Map of query parameters.
    * @return all reference data T objects.
    */
   public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
@@ -91,11 +95,9 @@ public abstract class BaseReferenceDataService<T> {
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<T[]> responseEntity =
-        restTemplate.getForEntity(url, getArrayResultClass(), params);
+        restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
 
-    List<T> response = new ArrayList<T>(Arrays.asList(responseEntity.getBody()));
-
-    return response;
+    return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
   }
 
   protected abstract String getUrl();
@@ -121,14 +123,21 @@ public abstract class BaseReferenceDataService<T> {
 
     HttpEntity<String> request = new HttpEntity<>(headers);
 
-
     Map<String, Object> params = new HashMap<>();
-    params.put("grant_type","client_credentials");
+    params.put("grant_type", "client_credentials");
 
     ResponseEntity<?> response = restTemplate.exchange(
-        authorizationUrl, HttpMethod.POST, request, Object.class, params);
+        buildUri(authorizationUrl, params), HttpMethod.POST, request, Object.class);
 
 
     return ((Map<String, String>) response.getBody()).get(ACCESS_TOKEN);
+  }
+
+  private URI buildUri(String url, Map<String, ?> params) {
+    UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
+
+    params.entrySet().forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
+
+    return builder.build(true).toUri();
   }
 }

@@ -11,6 +11,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
+import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionAlreadyExistsException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -286,21 +287,47 @@ public class RequisitionService {
    * @param requisitionList list of requisitions to be released as order
    * @return list of released requisitions
    */
-  public List<Requisition> releaseRequisitionsAsOrder(List<Requisition> requisitionList)
-      throws RequisitionException {
+  public List<Requisition> releaseRequisitionsAsOrder(
+      List<Requisition> requisitionList, UserDto user) throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
+    Set<UUID> userFacilities = user.getFulfillmentFacilities()
+        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
+
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
+
       if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
         loadedRequisition.setStatus(RequisitionStatus.RELEASED);
-        releasedRequisitions.add(requisitionRepository.save(loadedRequisition));
       } else {
-        throw new InvalidRequisitionStatusException("Can not release requisition:"
-            + loadedRequisition.getId()
-            + " as order. Requisition must be approved.");
+        throw new InvalidRequisitionStatusException("Can not release requisition: "
+            + loadedRequisition.getId() + " as order. Requisition must be approved.");
       }
+
+      UUID facilityId = requisition.getSupplyingFacility();
+      if (userFacilities.contains(facilityId)) {
+        loadedRequisition.setSupplyingFacility(facilityId);
+      } else {
+        throw new InvalidRequisitionStateException("Can not release requisition: "
+            + loadedRequisition.getId() + " as order. Requisition must have supplying facility.");
+      }
+
+      releasedRequisitions.add(loadedRequisition);
     }
+
+    releasedRequisitions.forEach(r -> requisitionRepository.save(r));
     return releasedRequisitions;
+  }
+
+  /**
+   * Retrieves available supplying depots for given requisition.
+   *
+   * @param requisition requisition to find facilities for
+   * @return list of facilities
+   */
+  public List<FacilityDto> getAvailableSupplyingDepots(Requisition requisition) {
+    Collection<FacilityDto> facilityDtos = facilityReferenceDataService
+        .searchSupplyingDepots(requisition.getProgram(), requisition.getSupervisoryNode());
+    return new ArrayList<>(facilityDtos);
   }
 
   /**

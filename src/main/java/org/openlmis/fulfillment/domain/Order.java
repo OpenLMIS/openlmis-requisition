@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -94,6 +95,25 @@ public class Order extends BaseEntity {
   @Getter
   @Setter
   private List<OrderLineItem> orderLineItems;
+
+  /**
+   * Creates a new instance based on a given Requisition.
+   * @param requisition Requisition to create instance from.
+   */
+  public Order(Requisition requisition) {
+    setRequisition(requisition);
+    setStatus(OrderStatus.ORDERED);
+    setQuotedCost(BigDecimal.ZERO);
+
+    setReceivingFacility(requisition.getFacility());
+    setRequestingFacility(requisition.getFacility());
+
+    setSupplyingFacility(requisition.getSupplyingFacility());
+    setProgram(requisition.getProgram());
+
+    orderLineItems = requisition.getRequisitionLineItems()
+        .stream().map(OrderLineItem::new).collect(Collectors.toList());
+  }
 
   @PrePersist
   private void prePersist() {

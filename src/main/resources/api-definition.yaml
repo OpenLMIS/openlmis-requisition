@@ -644,7 +644,7 @@ resourceTypes:
                 suggestedPeriod:
                     displayName: suggestedPeriod
                     type: string
-                    required: true
+                    required: false
                     repeat: false
                 emergency:
                     displayName: emergency
@@ -1334,7 +1334,8 @@ resourceTypes:
             headers:
               X-Content-Type-Options:
               X-XSS-Protection:
-
+            body:
+              application/json:
 /proofOfDeliveries:
     displayName: Proof Of Delivery
     get:

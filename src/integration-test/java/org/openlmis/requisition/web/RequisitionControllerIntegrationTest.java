@@ -71,7 +71,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String COMMENT_TEXT = "OpenLMIS";
   private static final String COMMENT = "Comment";
-  private static final String APPROVED_REQUISITIONS_SEARCH_URL = RESOURCE_URL + "/approved/search";
+  private static final String APPROVED_REQUISITIONS_SEARCH_URL =
+      RESOURCE_URL + "/requisitions-for-convert";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
