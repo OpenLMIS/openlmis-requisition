@@ -47,7 +47,7 @@ public abstract class BaseReferenceDataService<T> {
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<T> responseEntity = restTemplate
-        .exchange(url, HttpMethod.GET, null, getResultClass(), params);
+        .exchange(buildUri(url, params), HttpMethod.GET, null, getResultClass());
 
     return responseEntity.getBody();
   }
@@ -66,8 +66,8 @@ public abstract class BaseReferenceDataService<T> {
     params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
-    ResponseEntity<T> response = restTemplate.exchange(url, HttpMethod.GET,
-          null, getResultClass(), params);
+    ResponseEntity<T> response = restTemplate.exchange(buildUri(url, params), HttpMethod.GET,
+          null, getResultClass());
 
     return response.getBody();
   }
@@ -95,7 +95,7 @@ public abstract class BaseReferenceDataService<T> {
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
     ResponseEntity<T[]> responseEntity =
-        restTemplate.getForEntity(url, getArrayResultClass(), params);
+        restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
 
     return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
   }

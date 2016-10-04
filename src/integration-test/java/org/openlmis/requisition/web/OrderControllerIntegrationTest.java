@@ -1,6 +1,5 @@
 package org.openlmis.requisition.web;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -21,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -228,7 +229,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         + "[{\"id\":\"" + facility + "\"}]"
         + "}";
 
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(mockUserFindResult)));
