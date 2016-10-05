@@ -104,13 +104,13 @@ public class RequisitionController extends BaseController {
    *
    * @param program UUID of Program.
    * @param facility UUID of Facility.
-   * @param type Emergency or regular.
+   * @param emergency Emergency or regular.
    * @return ResponseEntity containing processing periods
    */
   @RequestMapping(value = "/requisitions/periods-for-initiate", method = POST)
   public ResponseEntity<?> getProcessingPeriods(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
-                                    @RequestParam(value = "type") Boolean type) {
+                                    @RequestParam(value = "emergency") Boolean emergency) {
 
     Collection<ProcessingPeriodDto> periods =
           periodReferenceDataService.searchByProgramAndFacility(program, facility);

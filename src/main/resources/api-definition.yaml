@@ -1082,8 +1082,8 @@ resourceTypes:
                         type: string
                         required: true
                         repeat: false
-                    type:
-                        displayName: type
+                    emergency:
+                        displayName: emergency
                         type: boolean
                         required: true
                         repeat: false
