@@ -1,6 +1,5 @@
 package org.openlmis.requisition.domain;
 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,10 +17,6 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 
