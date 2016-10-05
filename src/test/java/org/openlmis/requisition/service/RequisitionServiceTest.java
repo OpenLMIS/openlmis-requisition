@@ -402,7 +402,7 @@ public class RequisitionServiceTest {
     processingScheduleDto.setId(UUID.randomUUID());
     requisitionGroupProgramScheduleDto.setProcessingSchedule(processingScheduleDto);
     when(referenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(requisitionGroupProgramScheduleDto);
+        .thenReturn(Arrays.asList(requisitionGroupProgramScheduleDto));
 
     requisition.setStatus(null);
     when(requisitionRepository
@@ -504,7 +504,7 @@ public class RequisitionServiceTest {
         new RequisitionGroupProgramScheduleDto();
     requisitionGroupProgramScheduleDto.setProcessingSchedule(processingScheduleDto);
     when(referenceDataService.searchByProgramAndFacility(any(), any()))
-        .thenReturn(requisitionGroupProgramScheduleDto);
+        .thenReturn(Arrays.asList(requisitionGroupProgramScheduleDto));
 
     when(periodReferenceDataService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriodDto));

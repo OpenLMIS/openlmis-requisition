@@ -52,26 +52,6 @@ public abstract class BaseReferenceDataService<T> {
     return responseEntity.getBody();
   }
 
-  /**
-   * Return one object from Reference data service.
-   *
-   * @param resourceUrl Endpoint url.
-   * @param parameters  Map of query parameters.
-   * @return Requesting reference data object.
-   */
-  public T findOne(String resourceUrl, Map<String, Object> parameters) {
-    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
-    RestTemplate restTemplate = new RestTemplate();
-    Map<String, Object> params = new HashMap<>();
-    params.putAll(parameters);
-    params.put(ACCESS_TOKEN, obtainAccessToken());
-
-    ResponseEntity<T> response = restTemplate.exchange(buildUri(url, params), HttpMethod.GET,
-          null, getResultClass());
-
-    return response.getBody();
-  }
-
   public Collection<T> findAll() {
     return findAll("", new HashMap<>());
   }

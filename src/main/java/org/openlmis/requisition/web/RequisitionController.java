@@ -45,6 +45,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -107,7 +108,7 @@ public class RequisitionController extends BaseController {
    * @param emergency Emergency or regular.
    * @return ResponseEntity containing processing periods
    */
-  @RequestMapping(value = "/requisitions/periods-for-initiate", method = POST)
+  @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
   public ResponseEntity<?> getProcessingPeriods(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") Boolean emergency) {
@@ -126,7 +127,7 @@ public class RequisitionController extends BaseController {
       }
     }
 
-    return new ResponseEntity<Object>(periods, HttpStatus.OK);
+    return new ResponseEntity<>(periods, HttpStatus.OK);
   }
 
   /**

@@ -88,7 +88,7 @@ public class RequisitionService {
                               Boolean emergency) throws RequisitionException {
     if (facilityId == null || programId == null || emergency == null) {
       throw new RequisitionInitializationException(
-          "Requisition cannot be initiated with null object"
+          "Requisition cannot be initiated with null id"
       );
     }
 
@@ -107,16 +107,16 @@ public class RequisitionService {
             "Period should be the oldest and not associated with any requisitions");
     }
 
-    RequisitionGroupProgramScheduleDto dto =
+    Collection<RequisitionGroupProgramScheduleDto> dtos =
           referenceDataService.searchByProgramAndFacility(programId, facilityId);
 
-    if (dto == null) {
+    if (dtos == null) {
       throw new RequisitionInitializationException(
             "Cannot initiate requisition. Requisition group program schedule"
             + " with given program and facility does not exist");
     }
 
-    if (!dto.getProcessingSchedule().getId().equals(
+    if (!dtos.iterator().next().getProcessingSchedule().getId().equals(
         period.getProcessingSchedule().getId())) {
       throw new InvalidPeriodException("Cannot initiate requisition."
           + " Period for the requisition must belong to the same schedule"
