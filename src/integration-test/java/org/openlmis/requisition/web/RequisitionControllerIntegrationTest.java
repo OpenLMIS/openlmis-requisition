@@ -1,11 +1,10 @@
 package org.openlmis.requisition.web;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -36,8 +35,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -164,16 +165,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
     requisitionRepository.save(requisition);
 
-    RequisitionTemplateColumn templateColumn = new RequisitionTemplateColumn();
-    templateColumn.setColumnDefinition(availableRequisitionColumnRepository.findOne(
-        UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")
-    ));
-
-    templateColumn.setName("Template Column");
-    templateColumn.setIsDisplayed(true);
-
     RequisitionTemplate template = new RequisitionTemplate();
-    template.setColumnsMap(ImmutableMap.of("beginningBalance", templateColumn));
+    template.setColumnsMap(generateTemplateColumns());
     template.setProgram(program.getId());
 
     requisitionTemplateRepository.save(template);
@@ -1078,6 +1071,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         generateRequisition(RequisitionStatus.APPROVED, facility1);
       }
     }
+  }
+
+  private Map<String, RequisitionTemplateColumn> generateTemplateColumns() {
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+
+    for (AvailableRequisitionColumn columnDefinition :
+        availableRequisitionColumnRepository.findAll()) {
+      RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+      column.setColumnDefinition(columnDefinition);
+      column.setName(columnDefinition.getName());
+      column.setIsDisplayed(true);
+      columns.put(columnDefinition.getName(), column);
+    }
+    return columns;
   }
 
   @Ignore

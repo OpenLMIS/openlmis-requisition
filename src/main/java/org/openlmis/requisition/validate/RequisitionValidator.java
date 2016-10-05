@@ -63,11 +63,11 @@ public class RequisitionValidator implements Validator {
     );
     rejectIfLessThanZero(
         errors, template, item.getTotalReceivedQuantity(),
-        "Total received quantity", null
+        "Total received quantity", "B"
     );
     rejectIfNull(
         errors, template, item.getStockOnHand(),
-        "Total stock on hand", null
+        "Total stock on hand", "E"
     );
     rejectIfNull(
         errors, template, item.getTotalConsumedQuantity(),

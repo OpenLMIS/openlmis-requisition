@@ -24,3 +24,9 @@ INSERT INTO requisition.available_requisition_columns (id, name, label, indicato
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
 ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('96fc688a-091d-404c-b37b-857a2e4d4c89', 'stockOnHand', 'Stock on Hand', 'E', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('96fc688a-091d-404c-b37b-857a2e4d4c89', 'USER_INPUT');
