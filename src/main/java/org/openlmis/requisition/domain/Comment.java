@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.view.View;
 
@@ -25,6 +26,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Comment extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @ManyToOne
   @JoinColumn(name = "requisitionId", nullable = false)
   @JsonView(View.BasicInformation.class)
@@ -34,6 +37,7 @@ public class Comment extends BaseEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID authorId;
 
   @JsonView(View.BasicInformation.class)

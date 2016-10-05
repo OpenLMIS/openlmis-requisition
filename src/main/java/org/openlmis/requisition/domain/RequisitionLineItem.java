@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 
 import java.util.UUID;
@@ -20,8 +21,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RequisitionLineItem extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID orderableProduct;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
