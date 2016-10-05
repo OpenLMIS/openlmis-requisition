@@ -17,17 +17,17 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 @Component
 public class RequisitionValidator implements Validator {
 
-  private static final String VALUE_MUST_BE_ENTERED_NOTIFICATION =
+  static final String VALUE_MUST_BE_ENTERED_NOTIFICATION =
       " must be entered prior to submission of a requisition.";
-  private static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
+  static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
       " must be a non-negative value.";
-  private static final String TEMPLATE_DOESNT_CONTAIN_FIELD =
+  static final String TEMPLATE_DOESNT_CONTAIN_FIELD =
       " is not present in template";
-  private static final String TEMPLATE_COLUMN_IS_HIDDEN =
+  static final String TEMPLATE_COLUMN_IS_HIDDEN =
       " is hidden in template and should not contain a value";
-  private static final String TEMPLATE_COLUMN_IS_CALCULATED =
+  static final String TEMPLATE_COLUMN_IS_CALCULATED =
       " is calculated and should not contain a value";
-  private static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
+  static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
