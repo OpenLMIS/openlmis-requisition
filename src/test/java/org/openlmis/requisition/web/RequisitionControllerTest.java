@@ -47,8 +47,8 @@ public class RequisitionControllerTest {
   @Mock
   private Requisition approvedRequsition;
 
-  private UUID programUUID = UUID.randomUUID();
-  private UUID facilityUUID = UUID.randomUUID();
+  private UUID programUuid = UUID.randomUUID();
+  private UUID facilityUuid = UUID.randomUUID();
 
   private UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
   private UUID uuid2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
@@ -71,7 +71,7 @@ public class RequisitionControllerTest {
     when(approvedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
     when(periodReferenceDataService.searchByProgramAndFacility(
-            programUUID, facilityUUID)).thenReturn(processingPeriods);
+            programUuid, facilityUuid)).thenReturn(processingPeriods);
 
     mockRequsitionRepository();
   }
@@ -79,19 +79,21 @@ public class RequisitionControllerTest {
   @Test
   public void shouldReturnOnlyValidPeriodsForRequisitionInitiate() {
     ResponseEntity<?> response =
-            requisitionController.getProcessingPeriods(programUUID, facilityUUID, false);
+            requisitionController.getProcessingPeriods(programUuid, facilityUuid, false);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
 
     List<ProcessingPeriodDto> periods = (List<ProcessingPeriodDto>) response.getBody();
 
-    verify(periodReferenceDataService).searchByProgramAndFacility(programUUID, facilityUUID);
+    verify(periodReferenceDataService).searchByProgramAndFacility(programUuid, facilityUuid);
     verify(requisitionRepository, times(5)).searchByProcessingPeriod(any(UUID.class));
 
     assertNotNull(periods);
     assertEquals(3, periods.size());
 
-    List<UUID> periodUuids = periods.stream().map(period -> period.getId()).collect(Collectors.toList());
+    List<UUID> periodUuids = periods.stream().map(period -> period.getId())
+            .collect(Collectors.toList());
+
     assertTrue(periodUuids.contains(uuid1));
     assertTrue(periodUuids.contains(uuid2));
     assertTrue(periodUuids.contains(uuid3));

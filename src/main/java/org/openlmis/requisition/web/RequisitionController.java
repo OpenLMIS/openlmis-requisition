@@ -119,7 +119,9 @@ public class RequisitionController extends BaseController {
 
     for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext();) {
       ProcessingPeriodDto periodDto = iterator.next();
-      List<Requisition> requisitions = requisitionRepository.searchByProcessingPeriod(periodDto.getId());
+      List<Requisition> requisitions =
+              requisitionRepository.searchByProcessingPeriod(periodDto.getId());
+
       if (requisitions != null && !requisitions.isEmpty()
             && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
             && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
