@@ -294,7 +294,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A quantity must be entered prior to submission of a requisition.\"\n}";
+            + "\"Quantity must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -329,7 +329,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A beginning balance must be entered prior to submission of a requisition.\"\n}";
+            + "\"Beginning balance must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -365,7 +365,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A beginning balance must be a non-negative value.\"\n}";
+            + "\"Beginning balance must be a non-negative value.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -399,7 +399,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A total received quantity"
+            + "\"Total received quantity"
             + " must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
@@ -436,7 +436,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A total received quantity must be a non-negative value.\"\n}";
+            + "\"Total received quantity must be a non-negative value.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -471,7 +471,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-           + "\"A total stock on hand must be entered prior to submission of a requisition.\"\n}";
+           + "\"Total stock on hand must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -506,7 +506,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"A total consumed quantity"
+            + "\"Total consumed quantity"
             + " must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));

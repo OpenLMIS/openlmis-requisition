@@ -24,7 +24,7 @@ public class RequisitionValidator implements Validator {
       " must be entered prior to submission of a requisition.";
   private static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
       " must be a non-negative value.";
-  private static final String TEMPLATE_NOT_CONTAIN_FIELD =
+  private static final String TEMPLATE_DOESNT_CONTAIN_FIELD =
       " is not present in template";
   private static final String TEMPLATE_COLUMN_IS_HIDDEN =
       " is hidden in template and should not contain a value";
@@ -59,27 +59,27 @@ public class RequisitionValidator implements Validator {
                                            RequisitionLineItem item) {
     rejectIfLessThanZero(
         errors, template, item.getRequestedQuantity(),
-        "A quantity", "J"
+        "Quantity", "J"
     );
     rejectIfLessThanZero(
         errors, template, item.getBeginningBalance(),
-        "A beginning balance", null
+        "Beginning balance", null
     );
     rejectIfLessThanZero(
         errors, template, item.getTotalReceivedQuantity(),
-        "A total received quantity", null
+        "Total received quantity", null
     );
     rejectIfNull(
         errors, template, item.getStockOnHand(),
-        "A total stock on hand", null
+        "Total stock on hand", null
     );
     rejectIfNull(
         errors, template, item.getTotalConsumedQuantity(),
-        "A total consumed quantity", null
+        "Total consumed quantity", null
     );
     rejectIfNull(
         errors, template, item.getTotalLossesAndAdjustments(),
-        "A total losses and adjustments", null
+        "Total losses and adjustments", null
     );
   }
 
@@ -117,7 +117,7 @@ public class RequisitionValidator implements Validator {
         if (value != null) {
           errors.rejectValue(
               REQUISITION_LINE_ITEMS,
-              field + TEMPLATE_NOT_CONTAIN_FIELD
+              field + TEMPLATE_DOESNT_CONTAIN_FIELD
           );
           return false;
         }
