@@ -1,6 +1,5 @@
 package org.openlmis.requisition.validate;
 
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -11,10 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import java.util.Map;
-
 import static org.apache.commons.lang.BooleanUtils.isFalse;
-import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Component
@@ -111,7 +107,7 @@ public class RequisitionValidator implements Validator {
   private boolean checkTemplate(Errors errors, RequisitionTemplate template,
                                 Object value, String field, String indicator) {
     if (null != indicator) {
-      RequisitionTemplateColumn column = findColumn(template, indicator);
+      RequisitionTemplateColumn column = null == template ? null : template.findColumn(indicator);
 
       if (null == column) {
         if (value != null) {
@@ -135,33 +131,4 @@ public class RequisitionValidator implements Validator {
     return true;
   }
 
-  private RequisitionTemplateColumn findColumn(RequisitionTemplate template, String indicator) {
-    if (null == template) {
-      return null;
-    }
-
-    Map<String, RequisitionTemplateColumn> columns = template.getColumnsMap();
-
-    if (null == columns || columns.isEmpty()) {
-      return null;
-    }
-
-    return columns.values().stream()
-        .filter(c -> findColumn(c, indicator))
-        .findFirst().orElse(null);
-  }
-
-  private boolean findColumn(RequisitionTemplateColumn column, String indicator) {
-    if (null == column) {
-      return false;
-    }
-
-    AvailableRequisitionColumn definition = column.getColumnDefinition();
-
-    if (null == definition) {
-      return false;
-    }
-
-    return equalsIgnoreCase(definition.getIndicator(), indicator);
-  }
 }

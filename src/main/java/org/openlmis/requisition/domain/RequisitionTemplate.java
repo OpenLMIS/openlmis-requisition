@@ -1,9 +1,10 @@
 package org.openlmis.requisition.domain;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -12,9 +13,12 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 
 @Entity
 @Table(name = "requisition_templates")
@@ -157,5 +161,36 @@ public class RequisitionTemplate extends BaseEntity {
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
     this.program = requisitionTemplate.getProgram();
     this.columnsMap = requisitionTemplate.getColumnsMap();
+  }
+
+  /**
+   * Finds a column by indicator of column definition.
+   *
+   * @param indicator single letter of available requisition column.
+   * @return {@link RequisitionTemplateColumn} if found column with definition with the given
+   *           indicator; otherwise {@code null}.
+   */
+  public RequisitionTemplateColumn findColumn(String indicator) {
+    if (null == columnsMap || columnsMap.isEmpty()) {
+      return null;
+    }
+
+    return columnsMap.values().stream()
+        .filter(c -> hasColumn(c, indicator))
+        .findFirst().orElse(null);
+  }
+
+  private boolean hasColumn(RequisitionTemplateColumn column, String indicator) {
+    if (null == column) {
+      return false;
+    }
+
+    AvailableRequisitionColumn definition = column.getColumnDefinition();
+
+    if (null == definition) {
+      return false;
+    }
+
+    return equalsIgnoreCase(definition.getIndicator(), indicator);
   }
 }
