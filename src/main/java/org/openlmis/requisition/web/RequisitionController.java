@@ -39,6 +39,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -101,11 +102,11 @@ public class RequisitionController extends BaseController {
   }
 
   /**
-   * Returns processing periods.
+   * Returns processing periods for unprocessed requisitions.
    *
-   * @param program UUID of Program.
-   * @param facility UUID of Facility.
-   * @param emergency Emergency or regular.
+   * @param program UUID of the Program.
+   * @param facility UUID of the Facility.
+   * @param emergency true for periods to initiate an emergency requisition; false otherwise.
    * @return ResponseEntity containing processing periods
    */
   @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
@@ -116,14 +117,13 @@ public class RequisitionController extends BaseController {
     Collection<ProcessingPeriodDto> periods =
           periodReferenceDataService.searchByProgramAndFacility(program, facility);
 
-    List<Requisition> requisitions = null;
-
-    for (ProcessingPeriodDto periodDto : periods) {
-      requisitions = requisitionRepository.searchByProcessingPeriod(periodDto.getId());
+    for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext();) {
+      ProcessingPeriodDto periodDto = iterator.next();
+      List<Requisition> requisitions = requisitionRepository.searchByProcessingPeriod(periodDto.getId());
       if (requisitions != null && !requisitions.isEmpty()
-            && (requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
-            || requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED )) {
-        periods.remove(periodDto);
+            && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
+            && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
+        iterator.remove();
       }
     }
 
