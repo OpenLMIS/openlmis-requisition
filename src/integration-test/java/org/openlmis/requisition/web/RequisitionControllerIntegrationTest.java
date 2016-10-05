@@ -129,11 +129,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     facility.setEnabled(true);
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
-    processingScheduleDto.setId(getProcessingScheduleId());
+    processingScheduleDto.setId(getExpectingProcessingScheduleId());
     processingScheduleDto.setCode("Schedule Code");
     processingScheduleDto.setName("Schedule Name");
 
-    period.setId(getProcessingPeriodId());
+    period.setId(getExpectingProcessingPeriodId());
     period.setName("Period Name");
     period.setProcessingSchedule(processingScheduleDto);
     period.setDescription("Period Description");
