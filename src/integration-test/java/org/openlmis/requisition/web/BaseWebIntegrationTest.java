@@ -285,19 +285,19 @@ public abstract class BaseWebIntegrationTest {
     return "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   }
 
-  public UUID getUserId() {
+  public UUID getExpectingUserId() {
     return UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   }
 
-  public UUID getProgramId() {
+  public UUID getExpectingProgramId() {
     return UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
   }
 
-  public UUID getProcessingPeriodId() {
+  public UUID getExpectingProcessingPeriodId() {
     return UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
   }
 
-  public UUID getProcessingScheduleId() {
+  public UUID getExpectingProcessingScheduleId() {
     return UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611");
   }
 }
