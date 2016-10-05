@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 
@@ -20,6 +21,8 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class OrderLineItem extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderId", nullable = false)
   @Getter
@@ -28,6 +31,7 @@ public class OrderLineItem extends BaseEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID orderableProduct;
 
   @Column(nullable = false)

@@ -1,5 +1,9 @@
 package org.openlmis.requisition.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.HashMap;
@@ -14,10 +18,6 @@ import javax.persistence.FetchType;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 
 @Entity
@@ -25,9 +25,12 @@ import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @Column(unique = true)
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID program;
 
   @ElementCollection(fetch = FetchType.EAGER)
