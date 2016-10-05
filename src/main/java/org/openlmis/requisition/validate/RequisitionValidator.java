@@ -4,6 +4,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,8 @@ public class RequisitionValidator implements Validator {
       " is not present in template";
   private static final String TEMPLATE_COLUMN_IS_HIDDEN =
       " is hidden in template and should not contain a value";
+  private static final String TEMPLATE_COLUMN_IS_CALCULATED =
+      " is calculated and should not contain a value";
   private static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
   @Autowired
@@ -118,6 +121,14 @@ public class RequisitionValidator implements Validator {
           return false;
         }
       } else {
+        if (value != null && column.getSource() != null
+            && column.getSource().equals(SourceType.CALCULATED)) {
+          errors.rejectValue(
+              REQUISITION_LINE_ITEMS,
+              field + TEMPLATE_COLUMN_IS_CALCULATED
+          );
+          return false;
+        }
         if (isFalse(column.getIsDisplayed()) && value != null) {
           errors.rejectValue(
               REQUISITION_LINE_ITEMS,
