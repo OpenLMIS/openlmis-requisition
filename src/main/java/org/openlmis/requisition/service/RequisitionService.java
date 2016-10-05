@@ -40,7 +40,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
@@ -110,10 +110,16 @@ public class RequisitionService {
     RequisitionGroupProgramScheduleDto dto =
           referenceDataService.searchByProgramAndFacility(programId, facilityId);
 
+    if (dto == null) {
+      throw new RequisitionInitializationException(
+            "Cannot initiate requisition. Requisition group program schedule"
+            + " with given program and facility does not exist");
+    }
+
     if (!dto.getProcessingSchedule().getId().equals(
         period.getProcessingSchedule().getId())) {
       throw new InvalidPeriodException("Cannot initiate requisition."
-          + "Period for the requisition must belong to the same schedule"
+          + " Period for the requisition must belong to the same schedule"
           + " that belongs to the program selected for that requisition");
     }
 

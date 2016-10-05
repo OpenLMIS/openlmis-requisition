@@ -54,6 +54,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
+  private static final String BEGINNING_BALANCE = "beginningBalance";
+
   private Requisition requisition;
 
   @Mock
@@ -238,7 +240,7 @@ public class RequisitionServiceTest {
   public void shouldInitiateRequisitionIfItNotAlreadyExist() throws RequisitionException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
-        ImmutableMap.of("beginningBalance", new RequisitionTemplateColumn())
+        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
     );
 
     requisition.setStatus(null);
@@ -262,6 +264,42 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false
+    );
+
+    assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
+  }
+
+  @Test(expected = RequisitionInitializationException.class)
+  public void shouldThrowExceptionIfRequisitionGroupProgramScheduleDoesNotExist()
+        throws RequisitionException {
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate.setColumnsMap(
+          ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
+    );
+
+    requisition.setStatus(null);
+    when(requisitionRepository
+          .findOne(requisition.getId()))
+          .thenReturn(null);
+
+    when(referenceDataService.searchByProgramAndFacility(programId, facilityId))
+          .thenReturn(null);
+    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
+    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+          .thenReturn(requisitionTemplate);
+
+    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+          any(Requisition.class), any(RequisitionTemplate.class)))
+          .thenAnswer(invocation -> {
+            Requisition req = (Requisition) invocation.getArguments()[0];
+            req.setRequisitionLineItems(Lists.newArrayList());
+
+            return null;
+          });
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+          programId, facilityId, suggestedPeriodId, false
     );
 
     assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
@@ -355,7 +393,7 @@ public class RequisitionServiceTest {
         throws RequisitionException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
-        ImmutableMap.of("beginningBalance", new RequisitionTemplateColumn())
+        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
     );
 
     RequisitionGroupProgramScheduleDto requisitionGroupProgramScheduleDto =
@@ -391,7 +429,7 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionIfPeriodIsNotTheOldest() throws RequisitionException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
-          ImmutableMap.of("beginningBalance", new RequisitionTemplateColumn())
+          ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
     );
 
     requisition.setStatus(null);
