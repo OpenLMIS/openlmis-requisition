@@ -38,6 +38,6 @@ public class RequisitionGroupProgramScheduleReferenceDataService
     parameters.put("programId", programId);
     parameters.put("facilityId", facilityId);
 
-    return findOne("searchByUUIDs", parameters);
+    return findOne("search", parameters);
   }
 }
