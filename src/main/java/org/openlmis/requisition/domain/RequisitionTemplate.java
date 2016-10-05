@@ -143,17 +143,6 @@ public class RequisitionTemplate extends BaseEntity {
   }
 
   /**
-   *
-   * @param key Key to column which needs a new name.
-   * @param canBeChangedByUser Is it allowed to change column cells value by user input.
-   */
-  public void changeCanBeChangedByUserSetting(String key, Boolean canBeChangedByUser) {
-    RequisitionTemplateColumn column = columnsMap.get(key);
-    column.setCanBeChangedByUser(canBeChangedByUser);
-    columnsMap.put(key, column);
-  }
-
-  /**
    * Copy values of attributes into new or updated RequisitionTemplate.
    *
    * @param requisitionTemplate RequisitionTemplate with new values.
