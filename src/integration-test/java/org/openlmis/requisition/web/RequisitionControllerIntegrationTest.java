@@ -16,6 +16,7 @@ import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.CommentRepository;
@@ -939,7 +940,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetChosenRequisition() {
 
-    Requisition response = restAssured.given()
+    RequisitionDto response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
           .contentType(MediaType.APPLICATION_JSON_VALUE)
           .pathParam("id", requisition.getId())
@@ -947,7 +948,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           .get(ID_URL)
           .then()
           .statusCode(200)
-          .extract().as(Requisition.class);
+          .extract().as(RequisitionDto.class);
 
     assertTrue(requisitionRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

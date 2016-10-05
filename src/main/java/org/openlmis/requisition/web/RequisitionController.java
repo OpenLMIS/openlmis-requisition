@@ -4,9 +4,11 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -208,8 +210,9 @@ public class RequisitionController extends BaseController {
    * @return Requisition.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
+  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
+      throws RequisitionNotFoundException {
+    RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
     if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
