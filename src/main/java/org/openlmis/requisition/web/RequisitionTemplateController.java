@@ -3,12 +3,17 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +21,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import javax.validation.Valid;
 
 @Controller
 public class RequisitionTemplateController extends BaseController {
@@ -29,16 +38,30 @@ public class RequisitionTemplateController extends BaseController {
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
+  @Autowired
+  private RequisitionTemplateValidator validator;
+
+  @InitBinder
+  protected void initBinder(final WebDataBinder binder) {
+    binder.addValidators(validator);
+  }
+
   /**
    * Allows creating new requisitionLineItems.
    * If the id is specified, it will be ignored.
    *
    * @param requisitionTemplate A requisitionTemplate bound to the request body
+   * @param bindingResult Object used for validation.
    * @return ResponseEntity containing the created requisitionTemplate
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionTemplate(
-        @RequestBody RequisitionTemplate requisitionTemplate) {
+        @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
+
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
+
     LOGGER.debug("Creating new requisitionTemplate");
     requisitionTemplate.setId(null);
     RequisitionTemplate newRequisitionTemplate =
@@ -64,12 +87,17 @@ public class RequisitionTemplateController extends BaseController {
    *
    * @param requisitionTemplate A requisitionTemplate bound to the request body
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
+   * @param bindingResult Object used for validation.
    * @return ResponseEntity containing the updated requisitionTemplate
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionTemplate(
-        @RequestBody RequisitionTemplate requisitionTemplate,
-        @PathVariable("id") UUID requisitionTemplateId) {
+        @RequestBody @Valid RequisitionTemplate requisitionTemplate,
+        @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult) {
+
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
 
     RequisitionTemplate requisitionTemplateToUpdate =
           requisitionTemplateRepository.findOne(requisitionTemplateId);
@@ -134,5 +162,15 @@ public class RequisitionTemplateController extends BaseController {
   public RequisitionTemplate getTemplateByProgram(
           @RequestParam(value = "program", required = false) UUID program) {
     return requisitionTemplateService.getTemplateForProgram(program);
+  }
+
+  private Map<String, String> getErrors(BindingResult bindingResult) {
+    return new HashMap<String, String>() {
+      {
+        for (FieldError error : bindingResult.getFieldErrors()) {
+          put(error.getField(), error.getCode());
+        }
+      }
+    };
   }
 }

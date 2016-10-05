@@ -1,5 +1,13 @@
 package org.openlmis.requisition.web;
 
+import static java.lang.Integer.valueOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -19,8 +27,8 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -41,15 +49,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
-import static java.lang.Integer.valueOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -152,6 +151,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setBeginningBalance(1);
@@ -288,7 +288,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"Quantity must be entered prior to submission of a requisition.\"\n}";
+            + "\"requestedQuantity must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -299,6 +299,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
@@ -323,7 +324,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"Beginning balance must be entered prior to submission of a requisition.\"\n}";
+            + "\"beginningBalance must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -334,6 +335,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Quantity Explanation");
     requisitionLineItem.setBeginningBalance(-1);
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setStockOnHand(1);
@@ -359,7 +361,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"Beginning balance must be a non-negative value.\"\n}";
+            + "\"beginningBalance must be a non-negative value.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -370,6 +372,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Quantity Explanation");
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
@@ -393,8 +396,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"Total received quantity"
-            + " must be entered prior to submission of a requisition.\"\n}";
+            + "\"totalReceivedQuantity must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -405,6 +407,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Quantity Explanation");
     requisitionLineItem.setBeginningBalance(1);
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setStockOnHand(1);
@@ -430,7 +433,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"Total received quantity must be a non-negative value.\"\n}";
+            + "\"totalReceivedQuantity must be a non-negative value.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -441,6 +444,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Explanation");
     requisitionLineItem.setBeginningBalance(1);
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setTotalConsumedQuantity(1);
@@ -465,7 +469,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-           + "\"Total stock on hand must be entered prior to submission of a requisition.\"\n}";
+           + "\"stockOnHand must be entered prior to submission of a requisition.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -476,6 +480,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Explanation");
     requisitionLineItem.setBeginningBalance(1);
     requisitionLineItem.setOrderableProduct(product.getId());
     requisitionLineItem.setTotalReceivedQuantity(1);
@@ -500,8 +505,44 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .extract().asString();
 
     String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
-            + "\"Total consumed quantity"
-            + " must be entered prior to submission of a requisition.\"\n}";
+            + "\"totalConsumedQuantity must be entered prior to submission of a requisition.\"\n}";
+
+    assertTrue(response.contains(expectedExceptionMessage));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitRequisitionWhenRequestedQuantitySetWitnNoExplanation() {
+
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setTotalReceivedQuantity(-1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
+
+    requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition = requisitionRepository.save(requisition);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .body(requisition)
+        .when()
+        .put(SUBMIT_URL)
+        .then()
+        .statusCode(400)
+        .extract().asString();
+
+    String expectedExceptionMessage = EXPECTED_MESSAGE_FIRST_PART
+        + "\"requestedQuantityExplanation must be entered"
+        + " when requested quantity is not empty.\"\n}";
 
     assertTrue(response.contains(expectedExceptionMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

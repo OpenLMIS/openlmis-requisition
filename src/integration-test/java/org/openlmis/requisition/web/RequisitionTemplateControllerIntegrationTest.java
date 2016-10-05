@@ -1,22 +1,27 @@
 package org.openlmis.requisition.web;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-
-import java.util.Arrays;
-import java.util.UUID;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -28,14 +33,20 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private static final String PROGRAM = "program";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
+  private static final String REQUESTED_QUANTITY = "requestedQuantity";
+  private static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
+
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   private RequisitionTemplate requisitionTemplate;
   private Integer currentInstanceNumber;
 
   @Before
-  public void setUp() {
+  public void setUp() throws RequisitionTemplateColumnException {
     currentInstanceNumber = 0;
     requisitionTemplate = generateRequisitionTemplate();
   }
@@ -207,8 +218,54 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private RequisitionTemplate generateRequisitionTemplate() {
-    RequisitionTemplate reqTemplate = new RequisitionTemplate();
+  @Test
+  public void shouldNotSaveWhenRequestedQuantityAndExplanationDisplayedValuesAreDifferent() {
+    requisitionTemplate.changeColumnDisplay(REQUESTED_QUANTITY, false);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionTemplate.getId())
+        .body(requisitionTemplate)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .extract().asString();
+
+    String expectedMessage = REQUESTED_QUANTITY
+        + " must be displayed when requested quantity explanation is displayed.";
+
+    assertTrue(response.contains(expectedMessage));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private RequisitionTemplate generateRequisitionTemplate()
+      throws RequisitionTemplateColumnException {
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+    column.setName(REQUESTED_QUANTITY);
+    column.setLabel("Requested Quantity");
+    column.setIsDisplayed(true);
+    column.setIsDisplayRequired(false);
+    column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
+        UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")
+    ));
+
+    Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
+    columnMap.put(REQUESTED_QUANTITY, column);
+
+    column = new RequisitionTemplateColumn();
+    column.setName(REQUESTED_QUANTITY_EXPLANATION);
+    column.setLabel("Requested Quantity Explanation");
+    column.setIsDisplayed(true);
+    column.setIsDisplayRequired(false);
+    column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
+        UUID.fromString("6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5")
+    ));
+
+    columnMap.put(REQUESTED_QUANTITY_EXPLANATION, column);
+
+    RequisitionTemplate reqTemplate = new RequisitionTemplate(columnMap);
     reqTemplate.setProgram(generateProgram().getId());
     requisitionTemplateRepository.save(reqTemplate);
     return reqTemplate;
