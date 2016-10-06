@@ -22,4 +22,5 @@ public class FacilityDto {
   private List<ProgramDto> supportedPrograms;
   private GeographicZoneDto geographicZone;
   private FacilityOperatorDto operator;
+  private FacilityTypeDto type;
 }
