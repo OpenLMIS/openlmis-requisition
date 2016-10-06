@@ -31,6 +31,10 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.web.RequisitionController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity
 @Table(name = "requisitions")
@@ -39,6 +43,8 @@ import lombok.Setter;
 public class Requisition extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -141,10 +147,12 @@ public class Requisition extends BaseEntity {
     this.emergency = requisition.getEmergency();
     this.supervisoryNode = requisition.getSupervisoryNode();
 
-    RequisitionTemplateColumn stockOnHand = requisitionTemplate.getColumnsMap().get("stockOnHand");
-    if (stockOnHand != null && stockOnHand.getSource() != null
-        && stockOnHand.getSource().equals(SourceType.CALCULATED)) {
-      calculateStockOnHand();
+    try {
+      if (requisitionTemplate.isColumnCalculated("stockOnHand")) {
+        calculateStockOnHand();
+      }
+    } catch (RequisitionTemplateColumnException ex) {
+      LOGGER.debug("stockOnHand column not present in template, skipping calculation");
     }
   }
 
