@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -143,7 +142,7 @@ public class RequisitionController extends BaseController {
                                              BindingResult bindingResult,
                                              @PathVariable("id") UUID requisitionId) {
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
     Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
@@ -340,7 +339,7 @@ public class RequisitionController extends BaseController {
     }
 
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
     Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
@@ -405,15 +404,5 @@ public class RequisitionController extends BaseController {
             }));
 
     return new ResponseEntity<>(requisitionListMap, HttpStatus.OK);
-  }
-
-  private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
-    return new HashMap<String, String>() {
-      {
-        for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getCode());
-        }
-      }
-    };
   }
 }
