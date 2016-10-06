@@ -10,6 +10,7 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -59,6 +60,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
   private RequisitionValidator validator;
@@ -154,7 +158,8 @@ public class RequisitionController extends BaseController {
     try {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
       requisition.submit();
-      savedRequisition.updateFrom(requisition);
+      savedRequisition.updateFrom(requisition,
+              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgram()));
       requisitionRepository.save(savedRequisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
@@ -192,7 +197,8 @@ public class RequisitionController extends BaseController {
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
     if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
-      requisitionToUpdate.updateFrom(requisition);
+      requisitionToUpdate.updateFrom(requisition,
+              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgram()));
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
@@ -347,7 +353,9 @@ public class RequisitionController extends BaseController {
     }
 
     requisition.authorize();
-    requisitionRepository.save(requisition);
+    savedRequisition.updateFrom(requisition,
+            requisitionTemplateRepository.getTemplateForProgram(requisition.getProgram()));
+    requisitionRepository.save(savedRequisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
     return new ResponseEntity<>(requisition, HttpStatus.OK);

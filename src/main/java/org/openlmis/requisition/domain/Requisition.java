@@ -102,14 +102,21 @@ public class Requisition extends BaseEntity {
    * Copy values of attributes into new or updated Requisition.
    *
    * @param requisition Requisition with new values.
+   * @param requisitionTemplate Requisition template
    */
-  public void updateFrom(Requisition requisition) {
+  public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate) {
     this.comments = requisition.getComments();
     this.facility = requisition.getFacility();
     this.program = requisition.getProgram();
     this.processingPeriod = requisition.getProcessingPeriod();
     this.emergency = requisition.getEmergency();
     this.supervisoryNode = requisition.getSupervisoryNode();
+
+    RequisitionTemplateColumn stockOnHand = requisitionTemplate.getColumnsMap().get("stockOnHand");
+    if (stockOnHand != null && stockOnHand.getSource() != null
+        && stockOnHand.getSource().equals(SourceType.CALCULATED)) {
+      calculateStockOnHand();
+    }
   }
 
   /**
@@ -122,7 +129,6 @@ public class Requisition extends BaseEntity {
     }
 
     status = RequisitionStatus.SUBMITTED;
-    calculateStockOnHand();
   }
 
   /**
@@ -135,7 +141,6 @@ public class Requisition extends BaseEntity {
     }
 
     status = RequisitionStatus.AUTHORIZED;
-    calculateStockOnHand();
   }
 
   private void calculateStockOnHand() {
