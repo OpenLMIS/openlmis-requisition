@@ -4,9 +4,11 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -39,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -101,11 +104,11 @@ public class RequisitionController extends BaseController {
   }
 
   /**
-   * Returns processing periods.
+   * Returns processing periods for unprocessed requisitions.
    *
-   * @param program UUID of Program.
-   * @param facility UUID of Facility.
-   * @param emergency Emergency or regular.
+   * @param program UUID of the Program.
+   * @param facility UUID of the Facility.
+   * @param emergency true for periods to initiate an emergency requisition; false otherwise.
    * @return ResponseEntity containing processing periods
    */
   @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
@@ -116,14 +119,15 @@ public class RequisitionController extends BaseController {
     Collection<ProcessingPeriodDto> periods =
           periodReferenceDataService.searchByProgramAndFacility(program, facility);
 
-    List<Requisition> requisitions = null;
+    for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext();) {
+      ProcessingPeriodDto periodDto = iterator.next();
+      List<Requisition> requisitions =
+              requisitionRepository.searchByProcessingPeriod(periodDto.getId());
 
-    for (ProcessingPeriodDto periodDto : periods) {
-      requisitions = requisitionRepository.searchByProcessingPeriod(periodDto.getId());
       if (requisitions != null && !requisitions.isEmpty()
-            && (requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
-            || requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED )) {
-        periods.remove(periodDto);
+            && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
+            && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
+        iterator.remove();
       }
     }
 
@@ -206,8 +210,9 @@ public class RequisitionController extends BaseController {
    * @return Requisition.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
+  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
+      throws RequisitionNotFoundException {
+    RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
     if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

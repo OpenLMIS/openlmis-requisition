@@ -44,6 +44,6 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public ErrorResponse handleRequisitionOrItemNotFound(
           RequisitionException ex) {
-    return logErrorAndRespond("Requisition already exists.", ex);
+    return logErrorAndRespond("Requisition not found.", ex);
   }
 }

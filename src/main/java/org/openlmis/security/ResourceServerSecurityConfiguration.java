@@ -71,7 +71,7 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
             "/lang/*",
             "/index.html",
             "/o2c.html",
-            "/api-definition.json"
+            "/generated/api-definition.json"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }

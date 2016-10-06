@@ -8,6 +8,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
@@ -72,6 +73,39 @@ public class RequisitionService {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  /**
+   * Return requisitionDto with information about facility, program and period.
+   * @param requisitionId Id of the requisition to be returned
+   * @return RequisitionDto object
+   */
+  public RequisitionDto getRequisition(UUID requisitionId) throws RequisitionNotFoundException {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return null;
+    }
+    ProgramDto program = programReferenceDataService
+        .findOne(requisition.getProgram());
+    FacilityDto facility = facilityReferenceDataService
+        .findOne(requisition.getFacility());
+    ProcessingPeriodDto processingPeriod = periodReferenceDataService
+        .findOne(requisition.getProcessingPeriod());
+
+    RequisitionDto requisitionDto = new RequisitionDto(
+        requisition.getId(),
+        requisition.getCreatedDate(),
+        requisition.getRequisitionLineItems(),
+        requisition.getComments(),
+        facility,
+        program,
+        processingPeriod,
+        requisition.getStatus(),
+        requisition.getEmergency(),
+        requisition.getSupplyingFacility(),
+        requisition.getSupervisoryNode());
+
+    return requisitionDto;
+  }
 
   /**
    * Initiated given requisition if possible.

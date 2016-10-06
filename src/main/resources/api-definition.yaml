@@ -1295,6 +1295,8 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /search:
         get:
             is: [ secured ]
