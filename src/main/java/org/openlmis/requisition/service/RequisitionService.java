@@ -53,7 +53,7 @@ public class RequisitionService {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Autowired
-  private RequisitionLineCalculator requisitionLineCalculator;
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -145,7 +145,7 @@ public class RequisitionService {
 
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
 
-    requisitionLineCalculator.initiateRequisitionLineItemFields(
+    requisitionLineCalculationService.initiateRequisitionLineItemFields(
         requisition, requisitionTemplate
     );
 

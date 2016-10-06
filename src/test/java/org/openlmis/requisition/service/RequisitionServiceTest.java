@@ -80,7 +80,7 @@ public class RequisitionServiceTest {
   private SupervisoryNodeDto supervisoryNode;
 
   @Mock
-  private RequisitionLineCalculator requisitionLineCalculator;
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
@@ -253,7 +253,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];
@@ -289,7 +289,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
           .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
           any(Requisition.class), any(RequisitionTemplate.class)))
           .thenAnswer(invocation -> {
             Requisition req = (Requisition) invocation.getArguments()[0];
@@ -414,7 +414,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];
@@ -443,7 +443,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
           .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
           any(Requisition.class), any(RequisitionTemplate.class)))
           .thenAnswer(invocation -> {
             Requisition req = (Requisition) invocation.getArguments()[0];

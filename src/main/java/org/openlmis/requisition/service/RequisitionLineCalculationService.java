@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class RequisitionLineCalculator {
+public class RequisitionLineCalculationService {
   private static final String BEGINNING_BALANCE_COLUMN = "beginningBalance";
 
   @Autowired
