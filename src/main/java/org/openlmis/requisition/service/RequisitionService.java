@@ -91,7 +91,7 @@ public class RequisitionService {
     ProcessingPeriodDto processingPeriod = periodReferenceDataService
         .findOne(requisition.getProcessingPeriod());
 
-    RequisitionDto requisitionDto = new RequisitionDto(
+    return new RequisitionDto(
         requisition.getId(),
         requisition.getCreatedDate(),
         requisition.getRequisitionLineItems(),
@@ -103,8 +103,6 @@ public class RequisitionService {
         requisition.getEmergency(),
         requisition.getSupplyingFacility(),
         requisition.getSupervisoryNode());
-
-    return requisitionDto;
   }
 
   /**

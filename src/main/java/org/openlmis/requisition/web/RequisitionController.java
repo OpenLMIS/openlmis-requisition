@@ -97,14 +97,11 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
                    @RequestParam(value = "facility") UUID facility,
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                   @RequestParam(value = "emergency") Boolean emergency) {
-    try {
-      Requisition newRequisition = requisitionService.initiate(program,
-          facility, suggestedPeriod, emergency);
-      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
-    } catch (RequisitionException ex) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+                   @RequestParam(value = "emergency") Boolean emergency)
+          throws RequisitionException {
+    Requisition newRequisition = requisitionService.initiate(program,
+        facility, suggestedPeriod, emergency);
+    return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
   }
 
   /**
