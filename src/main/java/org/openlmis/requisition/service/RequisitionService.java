@@ -41,7 +41,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
@@ -118,11 +117,8 @@ public class RequisitionService {
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               Boolean emergency) throws RequisitionException {
-    if (facilityId == null || programId == null || emergency == null) {
-      throw new RequisitionInitializationException(
-          "Requisition cannot be initiated with null id"
-      );
-    }
+    Requisition requisition = Requisition.newRequisition(programId, facilityId, emergency);
+    requisition.setStatus(RequisitionStatus.INITIATED);
 
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     ProgramDto program = programReferenceDataService.findOne(programId);
@@ -132,40 +128,14 @@ public class RequisitionService {
           + " Requisition with such parameters already exists");
     }
 
-    ProcessingPeriodDto period = findTheOldestPeriod(programId, facilityId);
-
-    if (period == null || (null != suggestedPeriodId && suggestedPeriodId != period.getId())) {
-      throw new InvalidPeriodException(
-            "Period should be the oldest and not associated with any requisitions");
-    }
-
-    RequisitionGroupProgramScheduleDto dto =
-          referenceDataService.searchByProgramAndFacility(programId, facilityId);
-
-    if (dto == null) {
-      throw new RequisitionInitializationException(
-            "Cannot initiate requisition. Requisition group program schedule"
-            + " with given program and facility does not exist");
-    }
-
-    if (!dto.getProcessingSchedule().getId().equals(
-        period.getProcessingSchedule().getId())) {
-      throw new InvalidPeriodException("Cannot initiate requisition."
-          + " Period for the requisition must belong to the same schedule"
-          + " that belongs to the program selected for that requisition");
-    }
+    ProcessingPeriodDto period = findTheOldestPeriod(programId, facilityId, suggestedPeriodId);
+    requisition.setProcessingPeriod(period.getId());
 
     Collection<FacilityTypeApprovedProductDto> facilityTypeApprovedProducts =
         facilityTypeApprovedProductService.getFullSupply(
             facility.getId(), program.getId()
         );
 
-    Requisition requisition = new Requisition();
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setEmergency(emergency);
-    requisition.setFacility(facilityId);
-    requisition.setProgram(programId);
-    requisition.setProcessingPeriod(period.getId());
     requisition.setRequisitionLineItems(
         facilityTypeApprovedProducts
             .stream()
@@ -181,6 +151,25 @@ public class RequisitionService {
 
     requisitionRepository.save(requisition);
     return requisition;
+  }
+
+  private void checkPeriod(UUID programId, UUID facilityId, ProcessingPeriodDto period)
+      throws RequisitionException {
+    RequisitionGroupProgramScheduleDto dto =
+          referenceDataService.searchByProgramAndFacility(programId, facilityId);
+
+    if (dto == null) {
+      throw new RequisitionInitializationException(
+            "Cannot initiate requisition. Requisition group program schedule"
+            + " with given program and facility does not exist");
+    }
+
+    if (!dto.getProcessingSchedule().getId().equals(
+        period.getProcessingSchedule().getId())) {
+      throw new InvalidPeriodException("Cannot initiate requisition."
+          + " Period for the requisition must belong to the same schedule"
+          + " that belongs to the program selected for that requisition");
+    }
   }
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
@@ -393,9 +382,12 @@ public class RequisitionService {
    *
    * @param programId Program for Requisition
    * @param facilityId Facility for Requisition
+   * @param suggestedPeriodId Suggested period ID
    * @return ProcessingPeriodDto.
    */
-  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId) {
+  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId,
+                                                  UUID suggestedPeriodId)
+      throws RequisitionException {
 
     ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods =
@@ -412,6 +404,14 @@ public class RequisitionService {
         }
       }
     }
+
+    if (result == null || (null != suggestedPeriodId && suggestedPeriodId != result.getId())) {
+      throw new InvalidPeriodException(
+          "Period should be the oldest and not associated with any requisitions");
+    }
+
+    checkPeriod(programId, facilityId, result);
+
     return result;
   }
 }

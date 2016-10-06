@@ -6,13 +6,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionInitializationException;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,9 +27,10 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "requisitions")
@@ -96,6 +100,31 @@ public class Requisition extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
+  }
+
+  /**
+   * Createa a new instance of Requisition with given program and facility IDs and emergency flag.
+   *
+   * @param programId UUID of program
+   * @param facilityId UUID of facility
+   * @param emergency flag
+   * @return a new instance of Requisition
+   * @throws RequisitionInitializationException if any of arguments is {@code null}
+   */
+  public static Requisition newRequisition(UUID programId, UUID facilityId, Boolean emergency)
+      throws RequisitionInitializationException {
+    if (facilityId == null || programId == null || emergency == null) {
+      throw new RequisitionInitializationException(
+          "Requisition cannot be initiated with null id"
+      );
+    }
+
+    Requisition requisition = new Requisition();
+    requisition.setEmergency(emergency);
+    requisition.setFacility(facilityId);
+    requisition.setProgram(programId);
+
+    return requisition;
   }
 
   /**
