@@ -1,0 +1,15 @@
+[
+  {
+    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "key": "beginningBalance",
+    "name": "beginningBalance",
+    "label": "beginningBalance",
+    "displayOrder": 1,
+    "isDisplayed": false,
+    "isDisplayRequired": false,
+    "canChangeOrder": false,
+    "canBeChangedByUser": false,
+    "source": 0,
+    "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
+  }
+]
