@@ -48,7 +48,7 @@ public abstract class BaseWebIntegrationTest {
 
   private static final String APPLICATION_JSON = "application/json";
 
-  private static final String MOCK_CHECK_RESULT = "{\n"
+  private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
       + "    \"auth\",\n"
       + "    \"example\",\n"
@@ -70,7 +70,7 @@ public abstract class BaseWebIntegrationTest {
       + "  \"client_id\": \"trusted-client\"\n"
       + "}";
 
-  private static final String MOCK_TOKEN_REQUEST_RESPONSE = "{\n"
+  private static final String MOCK_TOKEN_REQUEST_RESPONSE = "{"
       + "  \"access_token\": \"418c89c5-7f21-4cd1-a63a-38c47892b0fe\",\n"
       + "  \"token_type\": \"bearer\",\n"
       + "  \"expires_in\": 847,\n"
@@ -103,9 +103,10 @@ public abstract class BaseWebIntegrationTest {
       + " \"periodsSkippable\":true"
       + "}";
 
-  private static final String MOCK_FIND_FACILITY_RESULT = "{\n"
+  private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"1d5bdd9c-8702-11e6-ae22-56b6b6499611\",\n"
       + " \"code\":\"Facility Code\",\n"
+      + " \"name\":\"Facility Name\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
       + "}";
@@ -168,6 +169,16 @@ public abstract class BaseWebIntegrationTest {
 
   private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["
       + "" + MOCK_FIND_PROCESSING_PERIOD
+      + "]";
+
+  private static final String MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME = "["
+      + "{"
+      + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+      + " \"code\":\"facilityCode\",\n"
+      + " \"name\":\"facilityName\",\n"
+      + " \"active\":true,\n"
+      + " \"enabled\":true\n"
+      + "}"
       + "]";
 
   @Autowired
@@ -271,6 +282,13 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
+
+    // This mocks searching facilities with similar facilityCode or facilityName
+    wireMockRule.stubFor(
+        get(urlEqualTo("/referencedata/api/facilities/findFacilitiesWithSimilarCodeOrName"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME)));
 
   }
 

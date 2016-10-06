@@ -3,6 +3,10 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class FacilityReferenceDataService extends BaseReferenceDataService<FacilityDto> {
 
@@ -20,4 +24,23 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
   protected Class<FacilityDto[]> getArrayResultClass() {
     return FacilityDto[].class;
   }
+
+  /**
+   *
+   * @param code Field with string to find similar code.
+   * @param name Filed with string to find similar name.
+   * @return List of FacilityDtos with similar code or name.
+   */
+  public Collection<FacilityDto> searchFacilitiesBySimilarCodeOrName(String code, String name) {
+    Map<String, Object> parameters = new HashMap<>();
+    if (code != null) {
+      parameters.put("code", code);
+    }
+    if (name != null) {
+      parameters.put("name", name);
+    }
+
+    return findAll("findFacilitiesWithSimilarCodeOrName",parameters);
+  }
+
 }

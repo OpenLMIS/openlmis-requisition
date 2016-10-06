@@ -1079,7 +1079,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
   }
 
-  @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
     generateRequisitions();
@@ -1149,7 +1148,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();
