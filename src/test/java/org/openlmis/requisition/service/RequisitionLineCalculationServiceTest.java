@@ -133,7 +133,8 @@ public class RequisitionLineCalculationServiceTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    requisitionLineCalculationService.initiateRequisitionLineItemFields(requisition, requisitionTemplate);
+    requisitionLineCalculationService.initiateRequisitionLineItemFields(
+            requisition, requisitionTemplate);
 
     RequisitionTemplate requisitionTemplateList
         = requisitionTemplateService.getTemplateForProgram(requisition.getProgram());
