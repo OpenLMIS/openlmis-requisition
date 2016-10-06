@@ -107,16 +107,16 @@ public class RequisitionService {
             "Period should be the oldest and not associated with any requisitions");
     }
 
-    Collection<RequisitionGroupProgramScheduleDto> dtos =
+    RequisitionGroupProgramScheduleDto dto =
           referenceDataService.searchByProgramAndFacility(programId, facilityId);
 
-    if (dtos == null) {
+    if (dto == null) {
       throw new RequisitionInitializationException(
             "Cannot initiate requisition. Requisition group program schedule"
             + " with given program and facility does not exist");
     }
 
-    if (!dtos.iterator().next().getProcessingSchedule().getId().equals(
+    if (!dto.getProcessingSchedule().getId().equals(
         period.getProcessingSchedule().getId())) {
       throw new InvalidPeriodException("Cannot initiate requisition."
           + " Period for the requisition must belong to the same schedule"
