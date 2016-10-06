@@ -22,7 +22,7 @@
   {
     "id": "00000000-0000-0000-0000-000000000003",
     "orderableProduct": "00000000-0000-0000-0000-000000000003",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000001" },
+    "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
     "stockInHand": 22,
     "beginningBalance": 6,
     "totalReceivedQuantity": 16,
@@ -32,7 +32,7 @@
   },
   {
     "id": "00000000-0000-0000-0000-000000000004",
-    "orderableProduct": "00000000-0000-0000-0000-000000000001",
+    "orderableProduct": "00000000-0000-0000-0000-000000000004",
     "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
     "stockInHand": 300,
     "beginningBalance": 300,
@@ -43,7 +43,7 @@
   {
     "id": "00000000-0000-0000-0000-000000000005",
     "orderableProduct": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
+    "requisition": { "id": "00000000-0000-0000-0000-000000000003" },
     "stockInHand": 250,
     "beginningBalance": 50,
     "totalReceivedQuantity": 250,
@@ -54,6 +54,46 @@
     "id": "00000000-0000-0000-0000-000000000006",
     "orderableProduct": "00000000-0000-0000-0000-000000000002",
     "requisition": { "id": "00000000-0000-0000-0000-000000000003" },
+    "stockInHand": 30000,
+    "beginningBalance": 1000,
+    "totalReceivedQuantity": 30000,
+    "requestedQuantity": 35000,
+    "totalConsumedQuantity": 1000
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000007",
+    "orderableProduct": "00000000-0000-0000-0000-000000000001",
+    "requisition": { "id": "00000000-0000-0000-0000-000000000004" },
+    "stockInHand": 30000,
+    "beginningBalance": 1000,
+    "totalReceivedQuantity": 30000,
+    "requestedQuantity": 35000,
+    "totalConsumedQuantity": 1000
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000008",
+    "orderableProduct": "00000000-0000-0000-0000-000000000002",
+    "requisition": { "id": "00000000-0000-0000-0000-000000000004" },
+    "stockInHand": 30000,
+    "beginningBalance": 1000,
+    "totalReceivedQuantity": 30000,
+    "requestedQuantity": 35000,
+    "totalConsumedQuantity": 1000
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000009",
+    "orderableProduct": "00000000-0000-0000-0000-000000000003",
+    "requisition": { "id": "00000000-0000-0000-0000-000000000005" },
+    "stockInHand": 30000,
+    "beginningBalance": 1000,
+    "totalReceivedQuantity": 30000,
+    "requestedQuantity": 35000,
+    "totalConsumedQuantity": 1000
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000010",
+    "orderableProduct": "00000000-0000-0000-0000-000000000004",
+    "requisition": { "id": "00000000-0000-0000-0000-000000000005" },
     "stockInHand": 30000,
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
