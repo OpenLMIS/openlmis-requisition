@@ -50,7 +50,7 @@
         url = decodeURIComponent(url[1]);
       } else {
         var token = $.urlParam('access_token');
-        url = window.location.origin + '/api-definition.json';
+        url = window.location.origin + '/generated/api-definition.json';
         if (token) {
           url += '?access_token=' + token;
         }
