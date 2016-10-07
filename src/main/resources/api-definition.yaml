@@ -128,6 +128,15 @@ schemas:
           }
       }
 
+  - convertedRequisitionMap: |
+      {
+          "type": "array",
+          "items": [
+              { "type": "object", "$ref": "#/schemas/requisition" },
+              { "type": "array", "items": { "type": "object", "$ref": "#/schemas/facility" } }
+          ]
+      }
+
   - proofOfDelivery: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
@@ -919,6 +928,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: convertedRequisitionMap
                 "500":
                     headers:
                       X-Content-Type-Options:

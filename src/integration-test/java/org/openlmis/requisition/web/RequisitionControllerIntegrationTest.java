@@ -1126,13 +1126,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return columns;
   }
 
+
+  @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 10;
     String filterValue = "facilityNameA";
 
-    RequisitionDto[] response = restAssured.given()
+    RequisitionDto[]  response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", "facilityName")
@@ -1148,6 +1150,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(RequisitionDto[].class);
 
     List<RequisitionDto> requisitions = Arrays.asList(response);
+
     Iterator<RequisitionDto> requisitionIterator = requisitions.iterator();
 
     Assert.assertTrue(requisitions.size() <= pageSize);
@@ -1181,6 +1184,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();

@@ -403,12 +403,6 @@ public class RequisitionController extends BaseController {
                   .collect(Collectors.toList());
             }));
 
-
-    List<RequisitionDto> listToReturn = new ArrayList<>();
-    for (Map.Entry<RequisitionDto,Collection<FacilityDto>> entry : requisitionListMap.entrySet()) {
-      listToReturn.add(entry.getKey());
-    }
-
-    return new ResponseEntity<>(listToReturn, HttpStatus.OK);
+    return new ResponseEntity<>(requisitionListMap, HttpStatus.OK);
   }
 }

@@ -110,7 +110,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Predicate predicate = builder.conjunction();
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get("processingPeriod"), processingPeriod));
+            builder.equal(root.get("processingPeriodId"), processingPeriod));
     }
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
