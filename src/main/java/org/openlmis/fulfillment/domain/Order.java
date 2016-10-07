@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -37,6 +39,8 @@ import javax.persistence.Table;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Order extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @OneToOne
   @JoinColumn(name = "requisitionId")
   @Getter
@@ -52,22 +56,27 @@ public class Order extends BaseEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID createdById;
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID program;
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID requestingFacility;
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID receivingFacility;
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID supplyingFacility;
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
@@ -86,7 +95,6 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
-  // TODO: determine why it has to be set explicitly
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -95,6 +103,25 @@ public class Order extends BaseEntity {
   @Getter
   @Setter
   private List<OrderLineItem> orderLineItems;
+
+  /**
+   * Creates a new instance based on a given Requisition.
+   * @param requisition Requisition to create instance from.
+   */
+  public Order(Requisition requisition) {
+    setRequisition(requisition);
+    setStatus(OrderStatus.ORDERED);
+    setQuotedCost(BigDecimal.ZERO);
+
+    setReceivingFacility(requisition.getFacility());
+    setRequestingFacility(requisition.getFacility());
+
+    setSupplyingFacility(requisition.getSupplyingFacility());
+    setProgram(requisition.getProgram());
+
+    orderLineItems = requisition.getRequisitionLineItems()
+        .stream().map(OrderLineItem::new).collect(Collectors.toList());
+  }
 
   @PrePersist
   private void prePersist() {

@@ -9,13 +9,10 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -27,12 +24,17 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseEntity {
+
+  private static final String UUID = "pg-uuid";
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -57,15 +59,23 @@ public class Requisition extends BaseEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID facility;
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID program;
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID processingPeriod;
+
+  @Getter
+  @Setter
+  @Type(type = UUID)
+  private UUID supplyingFacility;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -80,6 +90,7 @@ public class Requisition extends BaseEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID supervisoryNode;
 
   @PrePersist

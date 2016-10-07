@@ -2,11 +2,16 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
@@ -14,7 +19,6 @@ import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,15 +36,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -53,7 +61,6 @@ public class RequisitionController extends BaseController {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  @Qualifier("beforeSaveRequisitionValidator")
   private RequisitionValidator validator;
 
   @Autowired
@@ -64,6 +71,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -81,9 +91,9 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
-                                    @RequestParam(value = "facility") UUID facility,
-                                    @RequestParam(value = "suggestedPeriod") UUID suggestedPeriod,
-                                    @RequestParam(value = "emergency") Boolean emergency) {
+                   @RequestParam(value = "facility") UUID facility,
+                   @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
+                   @RequestParam(value = "emergency") Boolean emergency) {
     try {
       Requisition newRequisition = requisitionService.initiate(program,
           facility, suggestedPeriod, emergency);
@@ -91,6 +101,37 @@ public class RequisitionController extends BaseController {
     } catch (RequisitionException ex) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
+  }
+
+  /**
+   * Returns processing periods for unprocessed requisitions.
+   *
+   * @param program UUID of the Program.
+   * @param facility UUID of the Facility.
+   * @param emergency true for periods to initiate an emergency requisition; false otherwise.
+   * @return ResponseEntity containing processing periods
+   */
+  @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
+  public ResponseEntity<?> getProcessingPeriods(@RequestParam(value = "programId") UUID program,
+                                    @RequestParam(value = "facilityId") UUID facility,
+                                    @RequestParam(value = "emergency") Boolean emergency) {
+
+    Collection<ProcessingPeriodDto> periods =
+          periodReferenceDataService.searchByProgramAndFacility(program, facility);
+
+    for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext();) {
+      ProcessingPeriodDto periodDto = iterator.next();
+      List<Requisition> requisitions =
+              requisitionRepository.searchByProcessingPeriod(periodDto.getId());
+
+      if (requisitions != null && !requisitions.isEmpty()
+            && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
+            && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
+        iterator.remove();
+      }
+    }
+
+    return new ResponseEntity<>(periods, HttpStatus.OK);
   }
 
   /**
@@ -113,7 +154,8 @@ public class RequisitionController extends BaseController {
     try {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
       requisition.submit();
-      requisitionRepository.save(requisition);
+      savedRequisition.updateFrom(requisition);
+      requisitionRepository.save(savedRequisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
@@ -168,8 +210,9 @@ public class RequisitionController extends BaseController {
    * @return Requisition.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
+  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
+      throws RequisitionNotFoundException {
+    RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
     if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -245,7 +288,7 @@ public class RequisitionController extends BaseController {
    * Get requisitions to approve for right supervisor.
    */
   @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
-  public ResponseEntity<Object> listForApproval() {
+  public ResponseEntity<?> listForApproval() {
     String userName =
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
@@ -322,8 +365,8 @@ public class RequisitionController extends BaseController {
    *
    * @return ResponseEntity with list of approved requisitions.
    */
-  @RequestMapping(value = "/requisitions/approved/search", method = RequestMethod.GET)
-  public ResponseEntity<?> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+  @RequestMapping(value = "/requisitions/requisitions-for-convert", method = RequestMethod.GET)
+  public ResponseEntity<?> listForConvertToOrder(
       @RequestParam String filterValue,
       @RequestParam String filterBy,
       @RequestParam String sortBy,
@@ -333,14 +376,36 @@ public class RequisitionController extends BaseController {
 
     // TODO Add filtering about available Requisition for user
     // (If Reference Data Service - EBAC will be finished)
-    // TODO Add available supplying depot and filtering about this
-    // (If OLMIS-227 will be finished)
+    String userName =
+        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("username", userName);
+    UserDto user = new ArrayList<>(userReferenceDataService.findUsers(parameters)).get(0);
 
-    List<Requisition> approvedRequisitionList =
+    Collection<UUID> userManagedFacilities = user.getFulfillmentFacilities()
+        .stream().map(FacilityDto::getId).collect(Collectors.toList());
+
+    Collection<RequisitionDto> approvedRequisitionList =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
             filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
 
-    return new ResponseEntity<>(approvedRequisitionList, HttpStatus.OK);
+    Map<RequisitionDto, Collection<FacilityDto>> requisitionListMap =
+        approvedRequisitionList.stream().collect(Collectors.toMap(
+            Function.identity(),
+            requisition -> {
+              Collection<FacilityDto> facilities =
+                  requisitionService.getAvailableSupplyingDepots(requisition);
+              return facilities.stream().filter(f -> userManagedFacilities.contains(f.getId()))
+                  .collect(Collectors.toList());
+            }));
+
+
+    List<RequisitionDto> listToReturn = new ArrayList<>();
+    for (Map.Entry<RequisitionDto,Collection<FacilityDto>> entry : requisitionListMap.entrySet()) {
+      listToReturn.add(entry.getKey());
+    }
+
+    return new ResponseEntity<>(listToReturn, HttpStatus.OK);
   }
 
   private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {

@@ -1,15 +1,10 @@
 package org.openlmis.requisition.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
-
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -20,11 +15,14 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
-
 import java.util.UUID;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -39,14 +37,14 @@ public abstract class BaseWebIntegrationTest {
   protected static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
 
-  private static final String BASE_URL = System.getenv("BASE_URL");
+  protected static final String BASE_URL = System.getenv("BASE_URL");
 
-  private static final String UUID_REGEX =
+  protected static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
-  private static final String CONTENT_TYPE = "Content-Type";
+  protected static final String CONTENT_TYPE = "Content-Type";
 
-  private static final String APPLICATION_JSON = "application/json";
+  protected static final String APPLICATION_JSON = "application/json";
 
   private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
@@ -84,7 +82,13 @@ public abstract class BaseWebIntegrationTest {
       + "\"firstName\":\"Admin\","
       + "\"lastName\":\"User\","
       + "\"email\":\"example@mail.com\","
-      + "\"verified\":false"
+      + "\"verified\":false,"
+      + "\"fulfillmentFacilities\": [{\"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+      +    "\"code\":\"facilityCode\",\n"
+      +    "\"name\":\"facilityNameA\",\n"
+      +    "\"active\":true,\n"
+      +    "\"enabled\":true\n"
+      +    "}]"
       + "}]";
 
   private static final String MOCK_FIND_USER_RESULT = "{"
@@ -105,8 +109,8 @@ public abstract class BaseWebIntegrationTest {
 
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"1d5bdd9c-8702-11e6-ae22-56b6b6499611\",\n"
-      + " \"code\":\"Facility Code\",\n"
-      + " \"name\":\"Facility Name\",\n"
+      + " \"code\":\"facilityCode\",\n"
+      + " \"name\":\"facilityNameA\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
       + "}";
@@ -175,7 +179,7 @@ public abstract class BaseWebIntegrationTest {
       + "{"
       + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
       + " \"code\":\"facilityCode\",\n"
-      + " \"name\":\"facilityName\",\n"
+      + " \"name\":\"facilityNameA\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
       + "}"
@@ -201,7 +205,7 @@ public abstract class BaseWebIntegrationTest {
             .withBody(MOCK_CHECK_RESULT)));
 
     // This mocks the auth token request response
-    wireMockRule.stubFor(post(urlPathEqualTo("/auth/oauth/token"))
+    wireMockRule.stubFor(post(urlPathEqualTo("/auth/oauth/token?grant_type=client_credentials"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
@@ -217,78 +221,89 @@ public abstract class BaseWebIntegrationTest {
             .withStatus(200)));
 
     // This mocks searching for users
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/users/search"))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_USER_SEARCH_RESULT)));
 
     // This mocks for find one user
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_USER_RESULT)));
 
     // This mocks for find one program
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/programs/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/programs/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROGRAM_RESULT)));
 
     // This mocks for find one facility
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/facilities/" + UUID_REGEX))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/facilities/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_FACILITY_RESULT)));
 
     // This mocks for find one orderableproduct
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/orderableProducts/" + UUID_REGEX))
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/orderableProducts/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));
 
     // This mocks searching for processingPeriods
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/processingPeriods/" + UUID_REGEX))
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/processingPeriods/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROCESSING_PERIOD)));
 
     // This mocks searching for supplyLines
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/supplyLines/searchByUUID"))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/supplyLines/searchByUUID.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_SUPPLY_LINE_RESULT)));
 
     // This mocks searching for requisitionGroupProgramSchedules
     wireMockRule.stubFor(get(
-        urlEqualTo("/referencedata/api/requisitionGroupProgramSchedules/searchByUUID"))
+        urlMatching("/referencedata/api/requisitionGroupProgramSchedules/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE)));
 
     // This mocks searching for facilityTypeApprovedProducts
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/facilityTypeApprovedProducts/search"))
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/facilityTypeApprovedProducts/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
 
     // This mocks searching for processingPeriods
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDAndDate"))
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/processingPeriods/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
 
-    // This mocks searching for processingPeriods by UUIDs
-    wireMockRule.stubFor(get(urlEqualTo("/referencedata/api/processingPeriods/searchByUUIDs"))
+    // This mocks searching for processingPeriods by UUID and date
+    wireMockRule.stubFor(get(urlMatching(
+          "/referencedata/api/processingPeriods/searchByUUIDAndDate.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
 
     // This mocks searching facilities with similar facilityCode or facilityName
     wireMockRule.stubFor(
-        get(urlEqualTo("/referencedata/api/facilities/findFacilitiesWithSimilarCodeOrName"))
+        get(urlMatching("/referencedata/api/facilities/findFacilitiesWithSimilarCodeOrName.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME)));
+
+    // This mocks searching for supplying facilitiy
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/facilities/supplying.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
 
   }
 
@@ -301,19 +316,23 @@ public abstract class BaseWebIntegrationTest {
     return "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   }
 
-  public UUID getUserId() {
+  public UUID getExpectingUserId() {
     return UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   }
 
-  public UUID getProgramId() {
+  public UUID getExpectingProgramId() {
     return UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
   }
 
-  public UUID getProcessingPeriodId() {
+  public UUID getExpectingProcessingPeriodId() {
     return UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
   }
 
-  public UUID getProcessingScheduleId() {
+  public UUID getExpectingProcessingScheduleId() {
     return UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611");
+  }
+
+  public UUID getExpectionFacilityId() {
+    return UUID.fromString("aaf12a5a-8b16-11e6-ae22-56b6b6499611");
   }
 }

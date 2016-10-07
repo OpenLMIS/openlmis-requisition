@@ -3,7 +3,12 @@ package org.openlmis.requisition.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -12,18 +17,18 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @Column(unique = true)
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID program;
 
   @ElementCollection(fetch = FetchType.EAGER)
@@ -46,6 +51,30 @@ public class RequisitionTemplate extends BaseEntity {
   }
 
   /**
+   * Checks if column with given name is displayed.
+   *
+   * @param name name of requisition column.
+   * @return return true if column is displayed
+   */
+  public boolean isColumnDisplayed(String name) throws RequisitionTemplateColumnException {
+    RequisitionTemplateColumn column = findColumn(name);
+
+    return column.getIsDisplayed();
+  }
+
+  /**
+   * Checks if column with given name is calculated.
+   *
+   * @param name name of requisition column.
+   * @return return true if column is calculated
+   */
+  public boolean isColumnCalculated(String name) throws RequisitionTemplateColumnException {
+    RequisitionTemplateColumn column = findColumn(name);
+
+    return SourceType.CALCULATED.equals(column.getSource());
+  }
+
+  /**
    * Allows changing the display order of columns.
    *
    * @param key Key to column which needs a new display order.
@@ -65,36 +94,29 @@ public class RequisitionTemplate extends BaseEntity {
     }
     if (column.getCanChangeOrder()) {
       column.setDisplayOrder(newDisplayOrder);
-      columnsMap.put(key, column);
     }
   }
 
   private void moveDownAllColumnsBelowIndex(int beginIndex) {
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
-      RequisitionTemplateColumn tempColumn = entry.getValue();
-      if (tempColumn.getDisplayOrder() >= beginIndex) {
-        tempColumn.setDisplayOrder(tempColumn.getDisplayOrder() + 1);
-        columnsMap.put(entry.getKey(), tempColumn);
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() >= beginIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() + 1);
       }
     }
   }
 
   private void moveUpAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
-      RequisitionTemplateColumn tempColumn = entry.getValue();
-      if (tempColumn.getDisplayOrder() <= beginIndex && tempColumn.getDisplayOrder() > endIndex) {
-        tempColumn.setDisplayOrder(tempColumn.getDisplayOrder() - 1);
-        columnsMap.put(entry.getKey(), tempColumn);
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() <= beginIndex && column.getDisplayOrder() > endIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() - 1);
       }
     }
   }
 
   private void moveDownAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
-      RequisitionTemplateColumn tempColumn = entry.getValue();
-      if (tempColumn.getDisplayOrder() >= beginIndex && tempColumn.getDisplayOrder() < endIndex) {
-        tempColumn.setDisplayOrder(tempColumn.getDisplayOrder() + 1);
-        columnsMap.put(entry.getKey(), tempColumn);
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() >= beginIndex && column.getDisplayOrder() < endIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() + 1);
       }
     }
   }
@@ -111,7 +133,6 @@ public class RequisitionTemplate extends BaseEntity {
         column.setDisplayOrder(1);
       }
       column.setIsDisplayed(display);
-      columnsMap.put(key, column);
     }
   }
 
@@ -124,7 +145,6 @@ public class RequisitionTemplate extends BaseEntity {
       throws RequisitionTemplateColumnException {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setLabel(name);
-    columnsMap.put(key, column);
   }
 
   /**
@@ -135,18 +155,6 @@ public class RequisitionTemplate extends BaseEntity {
   public void changeColumnSource(String key, SourceType source) {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setSource(source);
-    columnsMap.put(key, column);
-  }
-
-  /**
-   *
-   * @param key Key to column which needs a new name.
-   * @param canBeChangedByUser Is it allowed to change column cells value by user input.
-   */
-  public void changeCanBeChangedByUserSetting(String key, Boolean canBeChangedByUser) {
-    RequisitionTemplateColumn column = columnsMap.get(key);
-    column.setCanBeChangedByUser(canBeChangedByUser);
-    columnsMap.put(key, column);
   }
 
   /**
@@ -157,5 +165,29 @@ public class RequisitionTemplate extends BaseEntity {
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
     this.program = requisitionTemplate.getProgram();
     this.columnsMap = requisitionTemplate.getColumnsMap();
+  }
+
+  /**
+   * Finds a column by column name.
+   *
+   * @param name name of requisition column.
+   * @return {@link RequisitionTemplateColumn} if found column with the given name.
+   */
+  private RequisitionTemplateColumn findColumn(String name)
+      throws RequisitionTemplateColumnException {
+
+    if (null == columnsMap) {
+      throw new RequisitionTemplateColumnException("Column with name: " + name
+          + " is not present in template");
+    }
+
+    RequisitionTemplateColumn column = columnsMap.get(name);
+
+    if (column == null) {
+      throw new RequisitionTemplateColumnException("Column with name: " + name
+          + " is not present in template");
+    }
+
+    return column;
   }
 }

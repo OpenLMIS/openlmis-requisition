@@ -644,7 +644,7 @@ resourceTypes:
                 suggestedPeriod:
                     displayName: suggestedPeriod
                     type: string
-                    required: true
+                    required: false
                     repeat: false
                 emergency:
                     displayName: emergency
@@ -923,6 +923,53 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+    /requisitions-for-convert:
+        get:
+            is: [ secured ]
+            description: Get requisitions to approve for right supervisor.
+            queryParameters:
+                filterValue:
+                    displayName: filterValue
+                    type: string
+                    required: true
+                    repeat: false
+                filterBy:
+                    displayName: filterBy
+                    type: string
+                    required: true
+                    repeat: false
+                sortBy:
+                    displayName: sortBy
+                    type: string
+                    required: true
+                    repeat: false
+                descending:
+                    displayName: descending
+                    type: boolean
+                    required: true
+                    repeat: false
+                pageNumber:
+                    displayName: pageNumber
+                    type: integer
+                    required: true
+                    repeat: false
+                pageSize:
+                    displayName: pageSize
+                    type: integer
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
     /{id}/comments:
         uriParameters:
             id:
@@ -1067,6 +1114,26 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+    /requisitions/periods-for-initiate:
+            get:
+                is: [ secured ]
+                description: Find periods for initiate requisition.
+                queryParameters:
+                    programId:
+                        displayName: program
+                        type: string
+                        required: true
+                        repeat: false
+                    facilityId:
+                        displayName: facility
+                        type: string
+                        required: true
+                        repeat: false
+                    emergency:
+                        displayName: emergency
+                        type: boolean
+                        required: true
+                        repeat: false
 
 /requisitionLineItems:
     displayName: Requisition Line Items
@@ -1275,6 +1342,8 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /search:
         get:
             is: [ secured ]
@@ -1334,7 +1403,8 @@ resourceTypes:
             headers:
               X-Content-Type-Options:
               X-XSS-Protection:
-
+            body:
+              application/json:
 /proofOfDeliveries:
     displayName: Proof Of Delivery
     get:

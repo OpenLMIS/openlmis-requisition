@@ -3,10 +3,14 @@ package org.openlmis.requisition.repository.custom.impl;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.utils.RequisitionDtoComparator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -20,6 +24,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +35,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService processingPeriodReferenceDataService;
+
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -94,7 +103,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param processingPeriod processingPeriod of searched Requisitions.
    * @return list of Requisitions with matched parameters.
    */
-  public Requisition searchByProcessingPeriod(UUID processingPeriod) {
+  public List<Requisition> searchByProcessingPeriod(UUID processingPeriod) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
@@ -104,7 +113,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           builder.equal(root.get("processingPeriod"), processingPeriod));
     }
     query.where(predicate);
-    return entityManager.createQuery(query).getSingleResult();
+    return entityManager.createQuery(query).getResultList();
   }
 
   /**
@@ -119,10 +128,33 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @return List of requisitions.
    */
   @Override
-  public List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+  public List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize) {
 
+    List<Requisition> filteredRequisitions = filterRequisitions(filterValue, filterBy);
+    List<RequisitionDto> filteredRequisitionsDto =
+        convertRequisitionListToRequisitionDtoList(filteredRequisitions);
+
+    filteredRequisitionsDto.sort(new RequisitionDtoComparator(sortBy));
+    if (!descending) {
+      Collections.reverse(filteredRequisitionsDto);
+    }
+
+    int firstPageRecordListIndex = (pageNumber - 1) * pageSize;
+    int lastPageRecordListIndex = (pageNumber * pageSize) - 1;
+
+    if (firstPageRecordListIndex > filteredRequisitionsDto.size()) {
+      return null;
+    }
+    if (lastPageRecordListIndex > filteredRequisitionsDto.size()) {
+      lastPageRecordListIndex = filteredRequisitionsDto.size() - 1;
+    }
+
+    return filteredRequisitionsDto.subList(firstPageRecordListIndex, lastPageRecordListIndex);
+  }
+
+  private List<Requisition> filterRequisitions(String filterValue, String filterBy) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
 
@@ -133,24 +165,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
 
     Predicate predicate =
-        setFiltering(filterValue, filterBy, builder, root, facility, program, sortBy);
+        setFiltering(filterValue, filterBy, builder, root, facility, program);
 
     criteriaQuery = criteriaQuery.where(predicate);
     Query query = entityManager.createQuery(criteriaQuery);
-
-    query = setPaging(query, pageNumber, pageSize);
-
-
 
     return query.getResultList();
   }
 
   private Predicate setFiltering(String filterValue, String filterBy, CriteriaBuilder builder,
-                                 Root<Requisition> root, Path<UUID> facility, Path<UUID> program,
-                                 String sortBy) {
+                                 Root<Requisition> root, Path<UUID> facility, Path<UUID> program) {
 
     //Add second important filter
-    List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy, sortBy);
+    List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
     Predicate predicateFilterBy = builder.disjunction();
     predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
     predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
@@ -167,33 +194,55 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return query;
   }
 
-  private List<UUID> findDesiredUuids(String filterValue, String filterBy, String sortBy) {
+  private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
     List<UUID> uuidsToReturn = new ArrayList<>();
+
     if (filterBy.equals("programName") || filterBy.equals("all")) {
       Collection<ProgramDto> foundPrograms =
           programReferenceDataService.searchBySimilarProgramName(filterValue);
-      for (ProgramDto program : foundPrograms) {
-        uuidsToReturn.add(program.getId());
-      }
+      foundPrograms.forEach(program -> uuidsToReturn.add(program.getId()));
     }
     if (filterBy.equals("facilityCode") || filterBy.equals("all")) {
       Collection<FacilityDto> foundFacilities =
           facilityReferenceDataService.searchFacilitiesBySimilarCodeOrName(filterValue, null);
-      for (FacilityDto facility : foundFacilities) {
-        uuidsToReturn.add(facility.getId());
-      }
+      foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
     if (filterBy.equals("facilityName") || filterBy.equals("all")) {
       Collection<FacilityDto> foundFacilities =
           facilityReferenceDataService.searchFacilitiesBySimilarCodeOrName(null, filterValue);
-      for (FacilityDto facility : foundFacilities) {
-        if (!uuidsToReturn.contains(facility.getId())) {
-          uuidsToReturn.add(facility.getId());
+      foundFacilities.forEach(facilityDto -> {
+        if (!uuidsToReturn.add(facilityDto.getId())) {
+          uuidsToReturn.add(facilityDto.getId());
         }
-      }
+      });
     }
     return uuidsToReturn;
   }
 
-}
+  private List<RequisitionDto> convertRequisitionListToRequisitionDtoList(
+      List<Requisition> requisitions) {
+    List<RequisitionDto> requisitionsConvertedToDto = new ArrayList<>();
 
+    for (Requisition requisition : requisitions) {
+      RequisitionDto requisitionDto = new RequisitionDto();
+      requisitionDto.setId(requisition.getId());
+      requisitionDto.setRequsitionLineItems(requisition.getRequisitionLineItems());
+      requisitionDto.setComments(requisition.getComments());
+      requisitionDto.setStatus(requisition.getStatus());
+      requisitionDto.setEmergency(requisition.getEmergency());
+      requisitionDto.setSupervisoryNode(requisition.getSupervisoryNode());
+      requisitionDto.setSupplyingFacility(requisition.getSupplyingFacility());
+      FacilityDto facilityDto = facilityReferenceDataService.findOne(requisition.getFacility());
+      requisitionDto.setFacility(facilityDto);
+      ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgram());
+      requisitionDto.setProgram(programDto);
+      ProcessingPeriodDto processingPeriodDto =
+          processingPeriodReferenceDataService.findOne(requisition.getProcessingPeriod());
+      requisitionDto.setProcessingPeriod(processingPeriodDto);
+      requisitionsConvertedToDto.add(requisitionDto);
+    }
+
+    return requisitionsConvertedToDto;
+  }
+
+}

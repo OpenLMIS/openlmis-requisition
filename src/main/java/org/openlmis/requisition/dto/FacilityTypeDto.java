@@ -2,11 +2,9 @@ package org.openlmis.requisition.dto;
 
 import java.util.UUID;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class FacilityTypeDto {
   private UUID id;
   private String code;

@@ -53,6 +53,6 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     parameters.put("programId", programId);
     parameters.put("facilityId", facilityId);
 
-    return findAll("searchByUUIDs", parameters);
+    return findAll("search", parameters);
   }
 }

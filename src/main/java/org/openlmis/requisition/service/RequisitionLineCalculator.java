@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @Service
 public class RequisitionLineCalculator {
+  private static final String BEGINNING_BALANCE_COLUMN = "beginningBalance";
 
   @Autowired
   private RequisitionService requisitionService;
@@ -67,7 +68,7 @@ public class RequisitionLineCalculator {
         schedule.getId(),
         period.getStartDate());
 
-    if (requisitionTemplate.getColumnsMap().get("beginningBalance").getIsDisplayed()
+    if (requisitionTemplate.getColumnsMap().get(BEGINNING_BALANCE_COLUMN).getIsDisplayed()
         && previousPeriods != null && previousPeriods.iterator().hasNext()) {
 
       List<Requisition> previousRequisition;

@@ -3,7 +3,9 @@ package org.openlmis.fulfillment.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 
 import java.util.UUID;
 
@@ -19,6 +21,8 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class OrderLineItem extends BaseEntity {
 
+  private static final String UUID = "pg-uuid";
+
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderId", nullable = false)
   @Getter
@@ -27,6 +31,7 @@ public class OrderLineItem extends BaseEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID orderableProduct;
 
   @Column(nullable = false)
@@ -38,6 +43,17 @@ public class OrderLineItem extends BaseEntity {
   @Getter
   @Setter
   private Long filledQuantity;
+
+  /**
+   * Creates a new instance based on a given RequisitionLineItem.
+   * @param requisitionLineItem RequisitionLineItem to create instance from.
+   */
+  public OrderLineItem(RequisitionLineItem requisitionLineItem) {
+    setOrder(order);
+    setOrderableProduct(requisitionLineItem.getOrderableProduct());
+    setFilledQuantity(0L);
+    setOrderedQuantity(requisitionLineItem.getRequestedQuantity().longValue());
+  }
 
   /**
    * Copy values of attributes into new or updated OrderLineItem.

@@ -101,7 +101,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     assertEquals(false, testColumn1.getIsDisplayRequired());
     assertEquals(true, testColumn1.getIsDisplayed());
     testColumn1.setIsDisplayRequired(true);
-    requisitionTemplate.changeColumnDisplay(COLUMN_KEY,false);
+    requisitionTemplate.changeColumnDisplay(COLUMN_KEY, false);
     assertEquals(true, testColumn1.getIsDisplayRequired());
     assertEquals(true, testColumn1.getIsDisplayed());
   }

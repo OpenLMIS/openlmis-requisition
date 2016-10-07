@@ -20,4 +20,6 @@ public class FacilityDto {
   private Boolean enabled;
   private Boolean openLmisAccessible;
   private List<ProgramDto> supportedPrograms;
+  private GeographicZoneDto geographicZone;
+  private FacilityOperatorDto operator;
 }

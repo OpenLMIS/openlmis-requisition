@@ -1,17 +1,43 @@
 package org.openlmis.requisition.validate;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.springframework.util.CollectionUtils.isEmpty;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
+@Component
 public class RequisitionValidator implements Validator {
 
-  private static final  String VALUE_MUST_BE_ENTERED_NOTIFICATION =
-          " must be entered prior to submission of a requisition.";
-  private static final  String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
-          " must be a non-negative value.";
-  private static final  String REQUISITION_LINE_ITEMS = "requisitionLineItems";
+  static final String VALUE_MUST_BE_ENTERED_NOTIFICATION =
+      " must be entered prior to submission of a requisition.";
+  static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
+      " must be a non-negative value.";
+  static final String TEMPLATE_COLUMN_IS_HIDDEN =
+      " is hidden in template and should not contain a value.";
+  static final String TEMPLATE_COLUMN_IS_CALCULATED =
+      " is calculated and should not contain a value";
+  static final String EXPLANATION_MUST_BE_ENTERED =
+      " must be entered when requested quantity is not empty.";
+  static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
+
+  static final String REQUESTED_QUANTITY = "requestedQuantity";
+  static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
+  static final String BEGINNING_BALANCE = "beginningBalance";
+  static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
+  static final String STOCK_ON_HAND = "stockOnHand";
+  static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
+  static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
+
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -20,63 +46,103 @@ public class RequisitionValidator implements Validator {
 
   @Override
   public void validate(Object target, Errors errors) {
-
     Requisition requisition = (Requisition) target;
 
-    if (requisition.getRequisitionLineItems() == null
-        || requisition.getRequisitionLineItems().isEmpty()) {
+    if (isEmpty(requisition.getRequisitionLineItems())) {
       errors.rejectValue(REQUISITION_LINE_ITEMS,
           "A requisitionLineItems" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
-      return;
-    }
+    } else {
+      RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
+          requisition.getProgram()
+      );
 
-    for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-      validateRequisitionLineItem(errors, requisitionLineItem);
+      requisition.getRequisitionLineItems()
+          .forEach(i -> validateRequisitionLineItem(errors, template, i));
     }
   }
 
-  private void validateRequisitionLineItem(Errors errors, RequisitionLineItem requisitionLineItem) {
-    if (requisitionLineItem.getRequestedQuantity() == null) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A quantity" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
-    } else if (requisitionLineItem.getRequestedQuantity() < 0) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-          "A quantity" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
+  private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
+                                           RequisitionLineItem item) {
+    rejectIfNull(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
+    rejectIfLessThanZero(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
+    rejectIfNull(errors, template, item.getBeginningBalance(), BEGINNING_BALANCE);
+    rejectIfLessThanZero(errors, template, item.getBeginningBalance(), BEGINNING_BALANCE);
+    rejectIfNull(errors, template, item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
+    rejectIfLessThanZero(errors, template, item.getTotalReceivedQuantity(),
+        TOTAL_RECEIVED_QUANTITY);
+    rejectIfNull(errors, template, item.getStockOnHand(), STOCK_ON_HAND);
+    rejectIfNull(errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
+    rejectIfNull(errors, template, item.getTotalLossesAndAdjustments(),
+        TOTAL_LOSSES_AND_ADJUSTMENTS);
+    validateRequestedQuantityExplanation(errors, template, item);
+  }
+
+  private void rejectIfLessThanZero(Errors errors, RequisitionTemplate template,
+                                    Integer value, String field) {
+    boolean templateValid = checkTemplate(errors, template, value, field);
+
+    if (templateValid && value != null && value < 0) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
-    if (requisitionLineItem.getBeginningBalance() == null) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A beginning balance" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
-    } else if (requisitionLineItem.getBeginningBalance() < 0) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A beginning balance" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
+  }
+
+  private void rejectIfNull(Errors errors, RequisitionTemplate template,
+                            Object value, String field) {
+    boolean templateValid = checkTemplate(errors, template, value, field);
+
+    if (templateValid && value == null) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     }
-    if (requisitionLineItem.getTotalReceivedQuantity() == null) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A total received quantity" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
-    } else if (requisitionLineItem.getTotalReceivedQuantity() < 0) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A total received quantity" + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
+  }
+
+  private void validateRequestedQuantityExplanation(Errors errors, RequisitionTemplate template,
+                                                    RequisitionLineItem item) {
+    String value = item.getRequestedQuantityExplanation();
+    boolean templateValid = checkTemplate(errors, template, value, REQUESTED_QUANTITY_EXPLANATION);
+
+    if (templateValid && item.getRequestedQuantity() != null && isBlank(value)) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, REQUESTED_QUANTITY_EXPLANATION
+          + EXPLANATION_MUST_BE_ENTERED);
     }
-    if (requisitionLineItem.getStockOnHand() == null) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A total stock on hand" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+  }
+
+  private boolean checkTemplate(Errors errors, RequisitionTemplate template,
+                                Object value, String field) {
+    try {
+      boolean displayed = checkIfDisplayed(errors, template, value, field);
+      boolean calculated = checkIfCalculated(errors, template, value, field);
+
+      return displayed && !calculated;
+    } catch (RequisitionTemplateColumnException ex) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
     }
-    if (requisitionLineItem.getTotalConsumedQuantity() == null) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A total consumed quantity" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+
+    return false;
+  }
+
+  private boolean checkIfDisplayed(Errors errors, RequisitionTemplate template, Object value,
+                                   String field) throws RequisitionTemplateColumnException {
+    if (!template.isColumnDisplayed(field)) {
+      if (value != null) {
+        errors.rejectValue(REQUISITION_LINE_ITEMS, field + TEMPLATE_COLUMN_IS_HIDDEN);
+      }
+
+      return false;
     }
-    if (requisitionLineItem.getTotalLossesAndAdjustments() == null) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS,
-              "A total losses and adjustments" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+
+    return true;
+  }
+
+  private boolean checkIfCalculated(Errors errors, RequisitionTemplate template, Object value,
+                                    String field) throws RequisitionTemplateColumnException {
+    if (template.isColumnCalculated(field)) {
+      if (value != null) {
+        errors.rejectValue(REQUISITION_LINE_ITEMS, field + TEMPLATE_COLUMN_IS_CALCULATED);
+      }
+
+      return true;
     }
+
+    return false;
   }
 }

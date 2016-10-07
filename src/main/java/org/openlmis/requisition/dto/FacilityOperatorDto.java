@@ -1,12 +1,12 @@
 package org.openlmis.requisition.dto;
 
-import java.util.UUID;
-
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
-public class OrderableProductDto {
+public class FacilityOperatorDto {
   private UUID id;
-  private String productCode;
+  private String code;
   private String name;
 }

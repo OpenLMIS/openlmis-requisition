@@ -35,6 +35,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
   private Set<SourceType> sources;
 
   private String label;
+  private String indicator;
   private boolean mandatory;
 
   @Override

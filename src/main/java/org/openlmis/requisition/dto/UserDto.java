@@ -18,5 +18,6 @@ public class UserDto {
   private Set<ProgramDto> homeFacilityPrograms;
   private Set<ProgramDto> supervisedPrograms;
   private Set<FacilityDto> supervisedFacilities;
+  private Set<FacilityDto> fulfillmentFacilities;
   private Set<RoleAssignmentDto> roleAssignments;
 }

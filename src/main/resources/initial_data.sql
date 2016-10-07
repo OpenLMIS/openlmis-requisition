@@ -13,8 +13,44 @@ VALUES ('33b2d2e9-3167-46b0-95d4-1295be9afc21', true, 'fulfillment.header.order.
 INSERT INTO requisition.order_number_configurations (id, orderNumberPrefix, includeOrderNumberPrefix, includeProgramCode, includeRequisitionTypeSuffix)
 VALUES ('70543032-b131-4219-b44d-7781d29db330', 'O', true, true, true);
 
-INSERT INTO requisition.available_requisition_columns (id, name, label, mandatory) VALUES
-('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'requestedQuantity', 'Requested Quantity', false);
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'requestedQuantity', 'Requested Quantity', 'J', false);
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
 ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'totalReceivedQuantity', 'Total Received Quantity', 'B', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('33b2d2e9-3167-46b0-95d4-1295be9afc22', 'beginningBalance', 'Beginning Balance', 'A', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('33b2d2e9-3167-46b0-95d4-1295be9afc22', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('752cda76-0db5-4b6e-bb79-0f531ab78e2c', 'stockOnHand', 'Stock On Hand', 'E', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('752cda76-0db5-4b6e-bb79-0f531ab78e2c', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('9e825396-269d-4873-baa4-89054e2722f4', 'totalConsumedQuantity', 'Total Consumed Quantity', 'C', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('9e825396-269d-4873-baa4-89054e2722f4', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('cd57f329-f549-4717-882e-ecbf98122c38', 'totalLossesAndAdjustments', 'Total Losses And Adjustments', 'D', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('cd57f329-f549-4717-882e-ecbf98122c38', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5', 'requestedQuantityExplanation', 'Requested Quantity Explanation', 'W', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5', 'USER_INPUT');
