@@ -10,6 +10,7 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -25,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,6 +61,9 @@ public class RequisitionController extends BaseController {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
   private RequisitionValidator validator;
 
   @Autowired
@@ -93,14 +96,11 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
                    @RequestParam(value = "facility") UUID facility,
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                   @RequestParam(value = "emergency") Boolean emergency) {
-    try {
-      Requisition newRequisition = requisitionService.initiate(program,
-          facility, suggestedPeriod, emergency);
-      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
-    } catch (RequisitionException ex) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
+                   @RequestParam(value = "emergency") Boolean emergency)
+          throws RequisitionException {
+    Requisition newRequisition = requisitionService.initiate(program,
+        facility, suggestedPeriod, emergency);
+    return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
   }
 
   /**
@@ -112,7 +112,7 @@ public class RequisitionController extends BaseController {
    * @return ResponseEntity containing processing periods
    */
   @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
-  public ResponseEntity<?> getProcessingPeriods(@RequestParam(value = "programId") UUID program,
+  public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") Boolean emergency) {
 
@@ -142,7 +142,7 @@ public class RequisitionController extends BaseController {
                                              BindingResult bindingResult,
                                              @PathVariable("id") UUID requisitionId) {
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
     Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
@@ -154,7 +154,8 @@ public class RequisitionController extends BaseController {
     try {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
       requisition.submit();
-      savedRequisition.updateFrom(requisition);
+      savedRequisition.updateFrom(requisition,
+              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
       requisitionRepository.save(savedRequisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
@@ -192,7 +193,8 @@ public class RequisitionController extends BaseController {
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
     if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
-      requisitionToUpdate.updateFrom(requisition);
+      requisitionToUpdate.updateFrom(requisition,
+              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
@@ -337,7 +339,7 @@ public class RequisitionController extends BaseController {
     }
 
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getRequisitionErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
     Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
@@ -347,7 +349,9 @@ public class RequisitionController extends BaseController {
     }
 
     requisition.authorize();
-    requisitionRepository.save(requisition);
+    savedRequisition.updateFrom(requisition,
+            requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
+    requisitionRepository.save(savedRequisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
     return new ResponseEntity<>(requisition, HttpStatus.OK);
@@ -406,15 +410,5 @@ public class RequisitionController extends BaseController {
     }
 
     return new ResponseEntity<>(listToReturn, HttpStatus.OK);
-  }
-
-  private Map<String, String> getRequisitionErrors(BindingResult bindingResult) {
-    return new HashMap<String, String>() {
-      {
-        for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getCode());
-        }
-      }
-    };
   }
 }

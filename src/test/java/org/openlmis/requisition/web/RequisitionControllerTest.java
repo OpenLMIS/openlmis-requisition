@@ -79,7 +79,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldReturnOnlyValidPeriodsForRequisitionInitiate() {
     ResponseEntity<?> response =
-            requisitionController.getProcessingPeriods(programUuid, facilityUuid, false);
+            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
 

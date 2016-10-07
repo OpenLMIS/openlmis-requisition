@@ -16,9 +16,10 @@ schemas:
           "title": "Comment",
           "description": "A single comment",
           "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
-              "author": { "type": "object", "$ref": "#/schemas/user", "required": false, "title": "author" },
-              "commentText": { "type": "string", "required": true, "title": "commentText" },
+              "authorId": { "type": "string", "required": false, "title": "authorId" },
+              "body": { "type": "string", "required": true, "title": "body" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" }
           }
       }
@@ -32,11 +33,11 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisitionCode" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "createdBy": { "type": "object", "$ref": "#/schemas/user", "required": true, "title": "createdBy" },
-              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title":"program" },
-              "requestingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "requestingFacility" },
-              "receivingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "receivingFacility" },
-              "supplyingFacility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "supplyingFacility" },
+              "createdById": { "type": "object", "$ref": "#/schemas/user", "required": true, "title": "createdBy" },
+              "programId": { "type": "string", "required": true, "title": "programId" },
+              "requestingFacilityId": { "type": "string", "required": true, "title": "requestingFacilityId" },
+              "receivingFacilityId": { "type": "string", "required": true, "title": "receivingFacilityId" },
+              "supplyingFacilityId": { "type": "string", "required": true, "title": "supplyingFacilityId" },
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
               "status": { "type": "object", "$ref": "#/schemas/orderStatus", "required": true, "title": "status" },
               "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
@@ -51,7 +52,7 @@ schemas:
           "description": "A single orderLineItem",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
+              "orderableProductId": { "type": "string", "required": true, "title": "orderableProductId" },
               "orderedQuantity": { "type": "integer", "required": true, "title": "orderedQuantity" },
               "order": { "type": "object", "$ref": "#/schemas/order", "required": false, "title": "order" },
               "filledQuantity": { "type": "integer", "required": true, "title": "filledQuantity" }
@@ -66,13 +67,13 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "facility": { "type": "object", "$ref": "#/schemas/facility", "required": true, "title": "facility" },
-              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
-              "processingPeriod": { "type": "object", "$ref": "#/schemas/processingPeriod", "required": true, "title": "processingPeriod" },
+              "facilityId": { "type": "string", "required": true, "title": "facilityId" },
+              "programId": { "type": "string", "required": true, "title": "programId" },
+              "processingPeriodId": { "type": "string", "required": true, "title": "processingPeriodId" },
               "status": { "type": "string", "required": true, "title": "status" },
               "remarks": { "type": "string", "required": false, "title": "remarks" },
               "emergency": { "type": "boolean", "required": false, "title": "emergency" },
-              "supervisoryNode": { "type": "object", "$ref": "#/schemas/supervisoryNode", "required": false, "title": "supervisoryNode" },
+              "supervisoryNodeId": { "type": "string", "required": true, "title": "supervisoryNodeId" },
               "requisitionLineItems": { "type": "array", "required": false, "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false }
           }
       }
@@ -85,7 +86,7 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
-              "product": { "type": "object", "$ref": "#/schemas/product", "required": true, "title": "product" },
+              "orderableProductId": { "type": "string", "required": true, "title": "orderableProductId" },
               "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
               "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
               "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
@@ -104,7 +105,7 @@ schemas:
           "description": "A single requisitionTemplate",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "program": { "type": "object", "$ref": "#/schemas/program", "required": true, "title": "program" },
+              "programId": { "type": "string", "required": true, "title": "programId" },
               "columnsMap": { "type": "array", "required": false, "title": "columnsMap", "items": { "type": "string", "title": "columnsMap" }, "uniqueItems": false }
           }
       }
@@ -171,16 +172,12 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": false, "title": "name" }
+              "name": { "type": "string", "required": false, "title": "name" },
+              "description": { "type": "string", "required": false, "title": "description" },
+              "active": { "type": "boolean", "required": false, "title": "active" },
+              "periodsSkippable": { "type": "boolean", "required": false, "title": "periodsSkippable" },
+              "showNonFullSupplyTab": { "type": "boolean", "required": false, "title": "showNonFullSupplyTab" }
           }
-      }
-
-  - requisitionList: |
-      {   "type": "array",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "RequisitionList",
-          "description": "A list of requisitions",
-          "items": { "type": "object", "$ref":"#/schemas/requisition", "required": false }
       }
 
   - template: |
@@ -253,7 +250,10 @@ schemas:
               "position": { "type": "integer", "required": false, "title": "position" },
               "format": { "type": "string", "required": false, "title": "format" },
               "nested": { "type": "string", "required": false, "title": "nested" },
-              "keyPath": { "type": "string", "required": false, "title": "keyPath" }
+              "keyPath": { "type": "string", "required": false, "title": "keyPath" },
+              "related": { "type": "string", "required": false, "title": "related" },
+              "relatedKeyPath": { "type": "string", "required": false, "title": "relatedKeyPath" },
+              "orderFileTemplate": {"type": "object", "$ref": "#/schemas/orderFileTemplate", "required": true}
           }
       }
 

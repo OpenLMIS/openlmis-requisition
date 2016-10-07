@@ -32,7 +32,7 @@ public class OrderLineItem extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID orderableProduct;
+  private UUID orderableProductId;
 
   @Column(nullable = false)
   @Getter
@@ -50,7 +50,7 @@ public class OrderLineItem extends BaseEntity {
    */
   public OrderLineItem(RequisitionLineItem requisitionLineItem) {
     setOrder(order);
-    setOrderableProduct(requisitionLineItem.getOrderableProduct());
+    setOrderableProductId(requisitionLineItem.getOrderableProductId());
     setFilledQuantity(0L);
     setOrderedQuantity(requisitionLineItem.getRequestedQuantity().longValue());
   }
@@ -62,7 +62,7 @@ public class OrderLineItem extends BaseEntity {
    */
   public void updateFrom(OrderLineItem orderLineItem) {
     this.order = orderLineItem.getOrder();
-    this.orderableProduct = orderLineItem.getOrderableProduct();
+    this.orderableProductId = orderLineItem.getOrderableProductId();
     this.orderedQuantity = orderLineItem.getOrderedQuantity();
     this.filledQuantity = orderLineItem.getFilledQuantity();
   }

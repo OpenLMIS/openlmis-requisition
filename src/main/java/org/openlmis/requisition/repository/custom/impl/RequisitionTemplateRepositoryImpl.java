@@ -31,7 +31,7 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
       predicate = builder.and(
               predicate,
               builder.equal(
-                      root.get("program"), program));
+                      root.get("programId"), program));
     }
 
     query.where(predicate);

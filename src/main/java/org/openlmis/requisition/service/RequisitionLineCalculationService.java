@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class RequisitionLineCalculator {
+public class RequisitionLineCalculationService {
   private static final String BEGINNING_BALANCE_COLUMN = "beginningBalance";
 
   @Autowired
@@ -36,7 +36,7 @@ public class RequisitionLineCalculator {
       Requisition requisition, UUID product) {
     List<RequisitionLineItem> items = new ArrayList<>();
     for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
-      if (Objects.equals(product, item.getOrderableProduct())) {
+      if (Objects.equals(product, item.getOrderableProductId())) {
         items.add(item);
       }
     }
@@ -61,7 +61,7 @@ public class RequisitionLineCalculator {
                                         RequisitionTemplate requisitionTemplate) {
 
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
-        requisition.getProcessingPeriod());
+        requisition.getProcessingPeriodId());
 
     ProcessingScheduleDto schedule = period.getProcessingSchedule();
     Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
@@ -75,8 +75,8 @@ public class RequisitionLineCalculator {
       List<RequisitionLineItem> previousRequisitionLineItem;
 
       previousRequisition = requisitionService.searchRequisitions(
-          requisition.getFacility(),
-          requisition.getProgram(),
+          requisition.getFacilityId(),
+          requisition.getProgramId(),
           null, null,
           previousPeriods.iterator().next().getId(),
           null,
@@ -86,7 +86,7 @@ public class RequisitionLineCalculator {
       }
       for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
         previousRequisitionLineItem = searchRequisitionLineItems(
-            previousRequisition.get(0), requisitionLineItem.getOrderableProduct());
+            previousRequisition.get(0), requisitionLineItem.getOrderableProductId());
 
         if (requisitionLineItem.getBeginningBalance() == null) {
           if (previousRequisitionLineItem != null

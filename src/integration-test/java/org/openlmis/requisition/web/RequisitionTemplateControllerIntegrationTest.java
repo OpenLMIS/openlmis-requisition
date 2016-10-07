@@ -54,7 +54,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldFindRequisitionTemplates() {
     RequisitionTemplate response = restAssured.given()
-        .queryParam(PROGRAM, requisitionTemplate.getProgram())
+        .queryParam(PROGRAM, requisitionTemplate.getProgramId())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(SEARCH_URL)
@@ -66,8 +66,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     assertNotNull(response);
     assertEquals(
-        requisitionTemplate.getProgram(),
-        response.getProgram());
+        requisitionTemplate.getProgramId(),
+        response.getProgramId());
     assertEquals(
           requisitionTemplate.getId(),
           response.getId());
@@ -128,7 +128,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldUpdateRequisitionTemplate() {
 
     ProgramDto program = generateProgram();
-    requisitionTemplate.setProgram(program.getId());
+    requisitionTemplate.setProgramId(program.getId());
 
     RequisitionTemplate response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -141,7 +141,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           .statusCode(200)
           .extract().as(RequisitionTemplate.class);
 
-    assertEquals(response.getProgram(), program.getId());
+    assertEquals(response.getProgramId(), program.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -150,7 +150,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     requisitionTemplateRepository.delete(requisitionTemplate);
     ProgramDto program = generateProgram();
-    requisitionTemplate.setProgram(program.getId());
+    requisitionTemplate.setProgramId(program.getId());
 
     RequisitionTemplate response = restAssured.given()
           .queryParam(ACCESS_TOKEN, getToken())
@@ -163,7 +163,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
           .statusCode(200)
           .extract().as(RequisitionTemplate.class);
 
-    assertEquals(response.getProgram(), program.getId());
+    assertEquals(response.getProgramId(), program.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -266,7 +266,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     columnMap.put(REQUESTED_QUANTITY_EXPLANATION, column);
 
     RequisitionTemplate reqTemplate = new RequisitionTemplate(columnMap);
-    reqTemplate.setProgram(generateProgram().getId());
+    reqTemplate.setProgramId(generateProgram().getId());
     requisitionTemplateRepository.save(reqTemplate);
     return reqTemplate;
   }

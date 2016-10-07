@@ -27,12 +27,12 @@ public class RequisitionRepositoryIntegrationTest
 
   Requisition generateInstance() {
     Requisition requisition = new Requisition();
-    requisition.setProgram(UUID.randomUUID());
-    requisition.setFacility(UUID.randomUUID());
-    requisition.setProcessingPeriod(UUID.randomUUID());
+    requisition.setProgramId(UUID.randomUUID());
+    requisition.setFacilityId(UUID.randomUUID());
+    requisition.setProcessingPeriodId(UUID.randomUUID());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
-    requisition.setSupervisoryNode(UUID.randomUUID());
+    requisition.setSupervisoryNodeId(UUID.randomUUID());
     return requisition;
   }
 
@@ -48,36 +48,36 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByAllParameters() {
     Requisition requisition = new Requisition();
-    requisition.setFacility(requisitions.get(0).getFacility());
-    requisition.setProgram(requisitions.get(0).getProgram());
+    requisition.setFacilityId(requisitions.get(0).getFacilityId());
+    requisition.setProgramId(requisitions.get(0).getProgramId());
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
-    requisition.setProcessingPeriod(requisitions.get(0).getProcessingPeriod());
-    requisition.setSupervisoryNode(requisitions.get(0).getSupervisoryNode());
+    requisition.setProcessingPeriodId(requisitions.get(0).getProcessingPeriodId());
+    requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setStatus(requisitions.get(0).getStatus());
     repository.save(requisition);
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-            requisitions.get(0).getFacility(),
-            requisitions.get(0).getProgram(),
+            requisitions.get(0).getFacilityId(),
+            requisitions.get(0).getProgramId(),
             requisitions.get(0).getCreatedDate().minusDays(1),
             requisitions.get(0).getCreatedDate().plusDays(2),
-            requisitions.get(0).getProcessingPeriod(),
-            requisitions.get(0).getSupervisoryNode(),
+            requisitions.get(0).getProcessingPeriodId(),
+            requisitions.get(0).getSupervisoryNodeId(),
             requisitions.get(0).getStatus());
 
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       Assert.assertEquals(
-              receivedRequisition.getProgram(),
-              requisitions.get(0).getProgram());
+              receivedRequisition.getProgramId(),
+              requisitions.get(0).getProgramId());
       Assert.assertEquals(
-              receivedRequisition.getProcessingPeriod(),
-              requisitions.get(0).getProcessingPeriod());
+              receivedRequisition.getProcessingPeriodId(),
+              requisitions.get(0).getProcessingPeriodId());
       Assert.assertEquals(
-              receivedRequisition.getFacility(),
-              requisitions.get(0).getFacility());
+              receivedRequisition.getFacilityId(),
+              requisitions.get(0).getFacilityId());
       Assert.assertEquals(
-              receivedRequisition.getSupervisoryNode(),
-              requisitions.get(0).getSupervisoryNode());
+              receivedRequisition.getSupervisoryNodeId(),
+              requisitions.get(0).getSupervisoryNodeId());
       Assert.assertEquals(
               receivedRequisition.getStatus(),
               requisitions.get(0).getStatus());
@@ -93,26 +93,26 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByFacilityAndProgram() {
     Requisition requisition = new Requisition();
-    requisition.setFacility(requisitions.get(0).getFacility());
-    requisition.setProgram(requisitions.get(0).getProgram());
+    requisition.setFacilityId(requisitions.get(0).getFacilityId());
+    requisition.setProgramId(requisitions.get(0).getProgramId());
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
-    requisition.setProcessingPeriod(requisitions.get(0).getProcessingPeriod());
-    requisition.setSupervisoryNode(requisitions.get(0).getSupervisoryNode());
+    requisition.setProcessingPeriodId(requisitions.get(0).getProcessingPeriodId());
+    requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setStatus(requisitions.get(0).getStatus());
     repository.save(requisition);
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-            requisitions.get(0).getFacility(),
-            requisitions.get(0).getProgram(),
+            requisitions.get(0).getFacilityId(),
+            requisitions.get(0).getProgramId(),
             null, null, null, null, null);
 
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       Assert.assertEquals(
-              receivedRequisition.getProgram(),
-              requisitions.get(0).getProgram());
+              receivedRequisition.getProgramId(),
+              requisitions.get(0).getProgramId());
       Assert.assertEquals(
-              receivedRequisition.getFacility(),
-              requisitions.get(0).getFacility());
+              receivedRequisition.getFacilityId(),
+              requisitions.get(0).getFacilityId());
     }
   }
 

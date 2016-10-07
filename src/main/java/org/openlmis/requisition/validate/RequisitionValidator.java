@@ -53,7 +53,7 @@ public class RequisitionValidator implements Validator {
           "A requisitionLineItems" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     } else {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
-          requisition.getProgram()
+          requisition.getProgramId()
       );
 
       requisition.getRequisitionLineItems()

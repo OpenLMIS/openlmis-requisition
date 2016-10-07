@@ -47,7 +47,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   RequisitionTemplate generateInstance() {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
             new HashMap<>());
-    requisitionTemplate.setProgram(UUID.randomUUID());
+    requisitionTemplate.setProgramId(UUID.randomUUID());
     return requisitionTemplate;
   }
 
@@ -163,16 +163,16 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void testSearchRequisitionTemplatesByAllParameters() {
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.setProgram(UUID.randomUUID());
+      requisitionTemplate.setProgramId(UUID.randomUUID());
       requisitionTemplates.add(repository.save(requisitionTemplate));
     }
     RequisitionTemplate template
-            = repository.getTemplateForProgram(requisitionTemplates.get(0).getProgram());
+            = repository.getTemplateForProgram(requisitionTemplates.get(0).getProgramId());
 
     assertNotNull(template);
     assertEquals(
-            requisitionTemplates.get(0).getProgram(),
-            template.getProgram());
+            requisitionTemplates.get(0).getProgramId(),
+            template.getProgramId());
   }
 
   private AvailableRequisitionColumn getColumn() {
