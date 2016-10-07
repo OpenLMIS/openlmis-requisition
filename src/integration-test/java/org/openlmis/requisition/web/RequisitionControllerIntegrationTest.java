@@ -32,7 +32,6 @@ import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -86,9 +85,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -1179,6 +1175,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
       Assert.assertTrue(facility1.getCode()
           .compareTo(facility2.getCode()) <= 0);
+
+      requisition1 = requisition2;
     }
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1231,6 +1229,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       ProgramDto program2 = programReferenceDataService.findOne(programId2);
 
       Assert.assertTrue(program1.getName().compareTo(program2.getName()) >= 0);
+      requisition1 = requisition2;
     }
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
