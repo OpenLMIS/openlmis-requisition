@@ -8,6 +8,12 @@ import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -17,11 +23,6 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -93,7 +94,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Predicate predicate = builder.conjunction();
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-            builder.equal(root.get("processingPeriod"), processingPeriod));
+            builder.equal(root.get("processingPeriodId"), processingPeriod));
     }
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
