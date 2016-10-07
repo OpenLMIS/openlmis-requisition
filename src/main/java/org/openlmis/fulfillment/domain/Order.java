@@ -62,22 +62,22 @@ public class Order extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID program;
+  private UUID programId;
 
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID requestingFacility;
+  private UUID requestingFacilityId;
 
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID receivingFacility;
+  private UUID receivingFacilityId;
 
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID supplyingFacility;
+  private UUID supplyingFacilityId;
 
   @Column(nullable = false, unique = true, columnDefinition = "text")
   @Getter
@@ -113,11 +113,11 @@ public class Order extends BaseEntity {
     setStatus(OrderStatus.ORDERED);
     setQuotedCost(BigDecimal.ZERO);
 
-    setReceivingFacility(requisition.getFacility());
-    setRequestingFacility(requisition.getFacility());
+    setReceivingFacilityId(requisition.getFacilityId());
+    setRequestingFacilityId(requisition.getFacilityId());
 
-    setSupplyingFacility(requisition.getSupplyingFacility());
-    setProgram(requisition.getProgram());
+    setSupplyingFacilityId(requisition.getSupplyingFacilityId());
+    setProgramId(requisition.getProgramId());
 
     orderLineItems = requisition.getRequisitionLineItems()
         .stream().map(OrderLineItem::new).collect(Collectors.toList());
@@ -136,10 +136,10 @@ public class Order extends BaseEntity {
   public void updateFrom(Order order) {
     this.requisition = order.requisition;
     this.createdById = order.createdById;
-    this.program = order.program;
-    this.requestingFacility = order.requestingFacility;
-    this.receivingFacility = order.receivingFacility;
-    this.supplyingFacility = order.supplyingFacility;
+    this.programId = order.programId;
+    this.requestingFacilityId = order.requestingFacilityId;
+    this.receivingFacilityId = order.receivingFacilityId;
+    this.supplyingFacilityId = order.supplyingFacilityId;
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;

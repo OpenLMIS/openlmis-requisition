@@ -50,10 +50,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Root<Requisition> root = query.from(Requisition.class);
     Predicate predicate = builder.conjunction();
     if (facility != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("facility"), facility));
+      predicate = builder.and(predicate, builder.equal(root.get("facilityId"), facility));
     }
     if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("program"), program));
+      predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
     }
     if (createdDateFrom != null) {
       predicate = builder.and(predicate,
@@ -65,11 +65,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get("processingPeriod"), processingPeriod));
+              builder.equal(root.get("processingPeriodId"), processingPeriod));
     }
     if (supervisoryNode != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get("supervisoryNode"), supervisoryNode));
+              builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
     }
     if (requisitionStatus != null) {
       predicate = builder.and(predicate,

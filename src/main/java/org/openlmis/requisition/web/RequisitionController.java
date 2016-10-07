@@ -112,7 +112,7 @@ public class RequisitionController extends BaseController {
    * @return ResponseEntity containing processing periods
    */
   @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
-  public ResponseEntity<?> getProcessingPeriods(@RequestParam(value = "programId") UUID program,
+  public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") Boolean emergency) {
 
@@ -155,7 +155,7 @@ public class RequisitionController extends BaseController {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
       requisition.submit();
       savedRequisition.updateFrom(requisition,
-              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgram()));
+              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
       requisitionRepository.save(savedRequisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException ex) {
@@ -194,7 +194,7 @@ public class RequisitionController extends BaseController {
     if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
       requisitionToUpdate.updateFrom(requisition,
-              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgram()));
+              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
@@ -350,7 +350,7 @@ public class RequisitionController extends BaseController {
 
     requisition.authorize();
     savedRequisition.updateFrom(requisition,
-            requisitionTemplateRepository.getTemplateForProgram(requisition.getProgram()));
+            requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
     requisitionRepository.save(savedRequisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 

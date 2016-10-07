@@ -52,8 +52,8 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     requisition = new Requisition();
     requisition.setEmergency(true);
     requisition.setStatus(RequisitionStatus.APPROVED);
-    requisition.setSupplyingFacility(facility);
-    requisition.setProgram(programDto.getId());
+    requisition.setSupplyingFacilityId(facility);
+    requisition.setProgramId(programDto.getId());
     requisition = requisitionRepository.save(requisition);
   }
 

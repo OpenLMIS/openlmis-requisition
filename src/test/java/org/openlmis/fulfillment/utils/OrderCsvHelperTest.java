@@ -39,7 +39,7 @@ public class OrderCsvHelperTest {
 
   private static final String ORDER = "order";
   private static final String LINE_ITEM = "lineItem";
-  private static final String ORDERABLE_PRODUCT = "orderableProduct";
+  private static final String ORDERABLE_PRODUCT = "orderableProductId";
 
   private static final String ORDER_NUMBER = "Order number";
   private static final String PRODUCT_CODE = "Product code";
@@ -65,13 +65,14 @@ public class OrderCsvHelperTest {
   public void setUp() {
     order = createOrder();
 
-    UUID facilityId = order.getRequisition().getFacility();
+    UUID facilityId = order.getRequisition().getFacilityId();
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(createFacility());
 
-    UUID periodId = order.getRequisition().getProcessingPeriod();
+    UUID periodId = order.getRequisition().getProcessingPeriodId();
     when(periodReferenceDataService.findOne(periodId)).thenReturn(createPeriod());
 
-    UUID productId = order.getRequisition().getRequisitionLineItems().get(0).getOrderableProduct();
+    UUID productId = order.getRequisition().getRequisitionLineItems()
+        .get(0).getOrderableProductId();
     when(orderableProductReferenceDataService.findOne(productId)).thenReturn(createProduct());
   }
 
@@ -118,7 +119,7 @@ public class OrderCsvHelperTest {
     String csv = writeCsvFile(order, orderFileTemplate);
 
     assertTrue(csv.startsWith(order.getRequisition()
-        .getRequisitionLineItems().get(0).getOrderableProduct()
+        .getRequisitionLineItems().get(0).getOrderableProductId()
         + ",1"));
   }
 
@@ -146,13 +147,13 @@ public class OrderCsvHelperTest {
   public void shouldExportRelatedFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.facility.code", "Facility code",
-        true, 1, null, ORDER, "requisition/facility", "Facility", "code", null));
+        true, 1, null, ORDER, "requisition/facilityId", "Facility", "code", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
         true, 2, null, LINE_ITEM, ORDERABLE_PRODUCT, "OrderableProduct", "productCode", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.product.name", "Product name",
         true, 3, null, LINE_ITEM, ORDERABLE_PRODUCT, "OrderableProduct", "name", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 4,
-        "MM/yy", ORDER, "requisition/processingPeriod", "ProcessingPeriod", "startDate", null));
+        "MM/yy", ORDER, "requisition/processingPeriodId", "ProcessingPeriod", "startDate", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
@@ -164,7 +165,7 @@ public class OrderCsvHelperTest {
   public void shouldFormatDates() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 1,
-        "MM/yy", ORDER, "requisition/processingPeriod", "ProcessingPeriod", "startDate", null));
+        "MM/yy", ORDER, "requisition/processingPeriodId", "ProcessingPeriod", "startDate", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
         true, 2, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
@@ -185,14 +186,14 @@ public class OrderCsvHelperTest {
 
   private Order createOrder() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProduct(UUID.randomUUID());
+    requisitionLineItem.setOrderableProductId(UUID.randomUUID());
     requisitionLineItem.setApprovedQuantity(1);
 
     Requisition requisition = new Requisition();
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
-    requisition.setProcessingPeriod(UUID.randomUUID());
-    requisition.setFacility(UUID.randomUUID());
+    requisition.setProcessingPeriodId(UUID.randomUUID());
+    requisition.setFacilityId(UUID.randomUUID());
 
     Order order = new Order();
     order.setOrderCode("code");

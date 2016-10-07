@@ -34,18 +34,18 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
       predicate = builder.and(
               predicate,
               builder.equal(
-                      root.get("supplyingFacility"), supplyingFacility));
+                      root.get("supplyingFacilityId"), supplyingFacility));
     }
     if (requestingFacility != null) {
       predicate = builder.and(
               predicate,
               builder.equal(
-                      root.get("requestingFacility"), requestingFacility));
+                      root.get("requestingFacilityId"), requestingFacility));
     }
     if (program != null) {
       predicate = builder.and(predicate,
               builder.equal(
-                      root.get("program"), program));
+                      root.get("programId"), program));
     }
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();

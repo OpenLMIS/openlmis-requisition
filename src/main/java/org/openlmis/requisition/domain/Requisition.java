@@ -70,22 +70,22 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID facility;
+  private UUID facilityId;
 
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID program;
+  private UUID programId;
 
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID processingPeriod;
+  private UUID processingPeriodId;
 
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID supplyingFacility;
+  private UUID supplyingFacilityId;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -101,7 +101,7 @@ public class Requisition extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID supervisoryNode;
+  private UUID supervisoryNodeId;
 
   @PrePersist
   private void prePersist() {
@@ -127,8 +127,8 @@ public class Requisition extends BaseEntity {
 
     Requisition requisition = new Requisition();
     requisition.setEmergency(emergency);
-    requisition.setFacility(facilityId);
-    requisition.setProgram(programId);
+    requisition.setFacilityId(facilityId);
+    requisition.setProgramId(programId);
 
     return requisition;
   }
@@ -141,11 +141,11 @@ public class Requisition extends BaseEntity {
    */
   public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate) {
     this.comments = requisition.getComments();
-    this.facility = requisition.getFacility();
-    this.program = requisition.getProgram();
-    this.processingPeriod = requisition.getProcessingPeriod();
+    this.facilityId = requisition.getFacilityId();
+    this.programId = requisition.getProgramId();
+    this.processingPeriodId = requisition.getProcessingPeriodId();
     this.emergency = requisition.getEmergency();
-    this.supervisoryNode = requisition.getSupervisoryNode();
+    this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     try {
       if (requisitionTemplate.isColumnCalculated("stockOnHand")) {

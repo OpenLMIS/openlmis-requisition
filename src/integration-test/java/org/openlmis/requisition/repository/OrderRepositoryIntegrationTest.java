@@ -30,11 +30,11 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setOrderCode("O" + instanceNumber);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
-    order.setProgram(UUID.randomUUID());
+    order.setProgramId(UUID.randomUUID());
     order.setCreatedById(UUID.randomUUID());
-    order.setRequestingFacility(UUID.randomUUID());
-    order.setReceivingFacility(UUID.randomUUID());
-    order.setSupplyingFacility(UUID.randomUUID());
+    order.setRequestingFacilityId(UUID.randomUUID());
+    order.setReceivingFacilityId(UUID.randomUUID());
+    order.setSupplyingFacilityId(UUID.randomUUID());
     return order;
   }
 
@@ -50,21 +50,21 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void testSearchOrdersByAllParameters() {
     Order order = cloneOrder(orders.get(0));
     List<Order> receivedOrders = repository.searchOrders(
-            order.getSupplyingFacility(),
-            order.getRequestingFacility(),
-            order.getProgram());
+            order.getSupplyingFacilityId(),
+            order.getRequestingFacilityId(),
+            order.getProgramId());
 
     Assert.assertEquals(2, receivedOrders.size());
     for (Order receivedOrder : receivedOrders) {
       Assert.assertEquals(
-              order.getSupplyingFacility(),
-              receivedOrder.getSupplyingFacility());
+              order.getSupplyingFacilityId(),
+              receivedOrder.getSupplyingFacilityId());
       Assert.assertEquals(
-              order.getRequestingFacility(),
-              receivedOrder.getRequestingFacility());
+              order.getRequestingFacilityId(),
+              receivedOrder.getRequestingFacilityId());
       Assert.assertEquals(
-              order.getProgram(),
-              receivedOrder.getProgram());
+              order.getProgramId(),
+              receivedOrder.getProgramId());
     }
   }
 
@@ -79,28 +79,28 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void testSearchOrdersBySupplyingFacilityAndProgram() {
     Order order = cloneOrder(orders.get(0));
     List<Order> receivedOrders = repository.searchOrders(
-            order.getSupplyingFacility(),
+            order.getSupplyingFacilityId(),
             null,
-            order.getProgram());
+            order.getProgramId());
 
     Assert.assertEquals(2, receivedOrders.size());
     for (Order receivedOrder : receivedOrders) {
       Assert.assertEquals(
-              order.getSupplyingFacility(),
-              receivedOrder.getSupplyingFacility());
+              order.getSupplyingFacilityId(),
+              receivedOrder.getSupplyingFacilityId());
       Assert.assertEquals(
-              order.getProgram(),
-              receivedOrder.getProgram());
+              order.getProgramId(),
+              receivedOrder.getProgramId());
     }
   }
 
   private Order cloneOrder(Order order) {
     Order clonedOrder = new Order();
     Integer instanceNumber = this.getNextInstanceNumber();
-    clonedOrder.setSupplyingFacility(order.getSupplyingFacility());
-    clonedOrder.setRequestingFacility(order.getRequestingFacility());
-    clonedOrder.setReceivingFacility(order.getReceivingFacility());
-    clonedOrder.setProgram(order.getProgram());
+    clonedOrder.setSupplyingFacilityId(order.getSupplyingFacilityId());
+    clonedOrder.setRequestingFacilityId(order.getRequestingFacilityId());
+    clonedOrder.setReceivingFacilityId(order.getReceivingFacilityId());
+    clonedOrder.setProgramId(order.getProgramId());
     clonedOrder.setOrderCode(order.getOrderCode() + instanceNumber);
     clonedOrder.setQuotedCost(order.getQuotedCost());
     clonedOrder.setStatus(order.getStatus());

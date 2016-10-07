@@ -84,11 +84,11 @@ public class RequisitionService {
       return null;
     }
     ProgramDto program = programReferenceDataService
-        .findOne(requisition.getProgram());
+        .findOne(requisition.getProgramId());
     FacilityDto facility = facilityReferenceDataService
-        .findOne(requisition.getFacility());
+        .findOne(requisition.getFacilityId());
     ProcessingPeriodDto processingPeriod = periodReferenceDataService
-        .findOne(requisition.getProcessingPeriod());
+        .findOne(requisition.getProcessingPeriodId());
 
     return new RequisitionDto(
         requisition.getId(),
@@ -100,8 +100,8 @@ public class RequisitionService {
         processingPeriod,
         requisition.getStatus(),
         requisition.getEmergency(),
-        requisition.getSupplyingFacility(),
-        requisition.getSupervisoryNode());
+        requisition.getSupplyingFacilityId(),
+        requisition.getSupervisoryNodeId());
   }
 
   /**
@@ -129,7 +129,7 @@ public class RequisitionService {
     }
 
     ProcessingPeriodDto period = findTheOldestPeriod(programId, facilityId, suggestedPeriodId);
-    requisition.setProcessingPeriod(period.getId());
+    requisition.setProcessingPeriodId(period.getId());
 
     Collection<FacilityTypeApprovedProductDto> facilityTypeApprovedProducts =
         facilityTypeApprovedProductService.getFullSupply(
@@ -224,7 +224,7 @@ public class RequisitionService {
     if (requisition == null) {
       throw new RequisitionNotFoundException(requisitionId);
     } else {
-      ProgramDto program = programReferenceDataService.findOne(requisition.getProgram());
+      ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
         throw new InvalidRequisitionStatusException("Skip failed - "
             + REQUISITION_BAD_STATUS_MESSAGE);
@@ -330,9 +330,9 @@ public class RequisitionService {
             + loadedRequisition.getId() + " as order. Requisition must be approved.");
       }
 
-      UUID facilityId = requisition.getSupplyingFacility();
+      UUID facilityId = requisition.getSupplyingFacilityId();
       if (userFacilities.contains(facilityId)) {
-        loadedRequisition.setSupplyingFacility(facilityId);
+        loadedRequisition.setSupplyingFacilityId(facilityId);
       } else {
         throw new InvalidRequisitionStateException("Can not release requisition: "
             + loadedRequisition.getId() + " as order. Requisition must have supplying facility.");
@@ -353,7 +353,7 @@ public class RequisitionService {
    */
   public List<FacilityDto> getAvailableSupplyingDepots(Requisition requisition) {
     Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .searchSupplyingDepots(requisition.getProgram(), requisition.getSupervisoryNode());
+        .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
     return new ArrayList<>(facilityDtos);
   }
 

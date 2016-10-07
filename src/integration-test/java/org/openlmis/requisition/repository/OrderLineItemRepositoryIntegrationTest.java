@@ -46,11 +46,11 @@ public class OrderLineItemRepositoryIntegrationTest {
     order.setOrderCode(ORDER_LINE_ITEM_REPOSITORY_INTEGRATION_TEST);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
-    order.setProgram(programId);
+    order.setProgramId(programId);
     order.setCreatedById(userId);
-    order.setRequestingFacility(requestingFacilityId);
-    order.setReceivingFacility(receivingFacilityId);
-    order.setSupplyingFacility(supplyingFacilityId);
+    order.setRequestingFacilityId(requestingFacilityId);
+    order.setReceivingFacilityId(receivingFacilityId);
+    order.setSupplyingFacilityId(supplyingFacilityId);
     orderRepository.save(order);
   }
 

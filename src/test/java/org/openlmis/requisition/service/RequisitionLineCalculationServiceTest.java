@@ -137,7 +137,7 @@ public class RequisitionLineCalculationServiceTest {
             requisition, requisitionTemplate);
 
     RequisitionTemplate requisitionTemplateList
-        = requisitionTemplateService.getTemplateForProgram(requisition.getProgram());
+        = requisitionTemplateService.getTemplateForProgram(requisition.getProgramId());
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
         = requisitionTemplateList.getColumnsMap();
@@ -166,7 +166,7 @@ public class RequisitionLineCalculationServiceTest {
     requisition.setRequisitionLineItems(new ArrayList<>(
             Collections.singletonList(requisitionLineItem)));
     requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(program);
+    requisitionTemplate.setProgramId(program);
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
@@ -174,9 +174,9 @@ public class RequisitionLineCalculationServiceTest {
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
+    requisition.setFacilityId(facility);
+    requisition.setProcessingPeriodId(period);
+    requisition.setProgramId(program);
     requisition.setStatus(requisitionStatus);
     return requisition;
   }
@@ -186,11 +186,11 @@ public class RequisitionLineCalculationServiceTest {
                                                             Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setOrderableProduct(product);
+    requisitionLineItem.setOrderableProductId(product);
     requisitionLineItem.setRequestedQuantity(quantityRequested);
     requisitionLineItem.setStockInHand(stockInHand);
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableProduct(productId);
+    requisitionLineItem.setOrderableProductId(productId);
     return requisitionLineItem;
   }
 
@@ -202,7 +202,7 @@ public class RequisitionLineCalculationServiceTest {
         .search(any(), any()))
         .thenReturn(Collections.singletonList(periodDto));
     when(requisitionService
-        .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
+        .searchRequisitions(eq(requisition.getFacilityId()), eq(requisition.getProgramId()),
             eq(null), eq(null), any(), eq(null), eq(null)))
         .thenReturn(Collections.singletonList(requisition));
     when(programReferenceDataService

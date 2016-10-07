@@ -123,8 +123,8 @@ public class OrderServiceTest {
               .findOne(requisitions.get(i).getId()))
               .thenReturn(requisitions.get(i));
       when(supplyLineService.search(
-              requisitions.get(i).getProgram(),
-              requisitions.get(i).getSupervisoryNode()))
+              requisitions.get(i).getProgramId(),
+              requisitions.get(i).getSupervisoryNodeId()))
               .thenReturn(Arrays.asList(supplyLines.get(i)));
     }
     OrderNumberConfiguration orderNumberConfiguration =
@@ -151,17 +151,17 @@ public class OrderServiceTest {
               order.getRequisition().getId(),
               requisition.getId());
       assertEquals(
-              order.getReceivingFacility(),
-              requisition.getFacility());
+              order.getReceivingFacilityId(),
+              requisition.getFacilityId());
       assertEquals(
-              order.getRequestingFacility(),
-              requisition.getFacility());
+              order.getRequestingFacilityId(),
+              requisition.getFacilityId());
       assertEquals(
-              order.getProgram(),
-              requisition.getProgram());
+              order.getProgramId(),
+              requisition.getProgramId());
       assertEquals(
-              order.getSupplyingFacility(),
-              requisition.getSupplyingFacility());
+              order.getSupplyingFacilityId(),
+              requisition.getSupplyingFacilityId());
       assertEquals(1, order.getOrderLineItems().size());
       assertEquals(1, requisition.getRequisitionLineItems().size());
 
@@ -170,7 +170,8 @@ public class OrderServiceTest {
           requisition.getRequisitionLineItems().iterator().next();
       assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
               orderLineItem.getOrderedQuantity().longValue());
-      assertEquals(requisitionLineItem.getOrderableProduct(), orderLineItem.getOrderableProduct());
+      assertEquals(requisitionLineItem.getOrderableProductId(),
+          orderLineItem.getOrderableProductId());
     }
 
     verify(orderRepository, atLeastOnce()).save(any(Order.class));
@@ -181,26 +182,26 @@ public class OrderServiceTest {
     Order order = orders.get(0);
     when(orderRepository
             .searchOrders(
-                    order.getSupplyingFacility(),
-                    order.getRequestingFacility(),
-                    order.getProgram()))
+                    order.getSupplyingFacilityId(),
+                    order.getRequestingFacilityId(),
+                    order.getProgramId()))
             .thenReturn(Arrays.asList(order));
 
     List<Order> receivedOrders = orderService.searchOrders(
-            order.getSupplyingFacility(),
-            order.getRequestingFacility(),
-            order.getProgram());
+            order.getSupplyingFacilityId(),
+            order.getRequestingFacilityId(),
+            order.getProgramId());
 
     assertEquals(1, receivedOrders.size());
     assertEquals(
-            receivedOrders.get(0).getSupplyingFacility(),
-            order.getSupplyingFacility());
+            receivedOrders.get(0).getSupplyingFacilityId(),
+            order.getSupplyingFacilityId());
     assertEquals(
-            receivedOrders.get(0).getRequestingFacility(),
-            order.getRequestingFacility());
+            receivedOrders.get(0).getRequestingFacilityId(),
+            order.getRequestingFacilityId());
     assertEquals(
-            receivedOrders.get(0).getProgram(),
-            order.getProgram());
+            receivedOrders.get(0).getProgramId(),
+            order.getProgramId());
     verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject());
   }
 
@@ -208,7 +209,7 @@ public class OrderServiceTest {
   public void shouldConvertOrderToCsvIfItExists()
           throws IOException, URISyntaxException, OrderCsvWriteException {
     Order order = orders.get(0);
-    when(order.getRequestingFacility()).thenReturn(UUID.randomUUID());
+    when(order.getRequestingFacilityId()).thenReturn(UUID.randomUUID());
     when(orderableProductReferenceDataService
         .findOne(any())).thenReturn(orderableProductDto);
     when(orderableProductDto.getProductCode()).thenReturn("productCode");
@@ -250,9 +251,9 @@ public class OrderServiceTest {
   private void generateSupplyLines() {
     for (Requisition requisition : requisitions) {
       SupplyLineDto supplyLine = generateSupplyLine(
-              requisition.getProgram(),
-              requisition.getSupervisoryNode(),
-              requisition.getSupervisoryNode());
+              requisition.getProgramId(),
+              requisition.getSupervisoryNodeId(),
+              requisition.getSupervisoryNodeId());
       supplyLines.add(supplyLine);
     }
   }
@@ -266,7 +267,7 @@ public class OrderServiceTest {
 
   private Order generateOrder(int instanceNumber) {
     Order order = new Order();
-    order.setProgram(program.getId());
+    order.setProgramId(program.getId());
     order.setCreatedDate(LocalDateTime.now().plusDays(instanceNumber));
     order.setCreatedById(UUID.randomUUID());
     order.setQuotedCost(BigDecimal.valueOf(1));
@@ -281,11 +282,11 @@ public class OrderServiceTest {
   private Requisition generateRequisition() {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setProgram(program.getId());
+    requisition.setProgramId(program.getId());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setEmergency(true);
-    requisition.setSupplyingFacility(UUID.randomUUID());
+    requisition.setSupplyingFacilityId(UUID.randomUUID());
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(generateRequisitionLineItem());
     requisition.setRequisitionLineItems(requisitionLineItems);

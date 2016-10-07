@@ -197,7 +197,7 @@ public class RequisitionValidatorTest {
   private void mockRepositoriesAndObjects() {
     UUID programId = UUID.randomUUID();
 
-    when(requisition.getProgram()).thenReturn(programId);
+    when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getRequisitionLineItems()).thenReturn(requisitionLineItems);
 
     when(requisitionTemplateRepository
