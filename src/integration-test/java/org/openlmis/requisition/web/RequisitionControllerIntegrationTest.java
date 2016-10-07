@@ -120,17 +120,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     program.setCode(REQUISITION_REPOSITORY_NAME);
     program.setPeriodsSkippable(true);
 
-    facility.setId(getExpectionFacilityId());
+    facility.setId(getSharedFacilityId());
     facility.setCode("facilityCode");
     facility.setActive(true);
     facility.setEnabled(true);
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
-    processingScheduleDto.setId(getExpectingProcessingScheduleId());
+    processingScheduleDto.setId(UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611"));
     processingScheduleDto.setCode("Schedule Code");
     processingScheduleDto.setName("Schedule Name");
 
-    period.setId(getExpectingProcessingPeriodId());
+    period.setId(UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611"));
     period.setName("Period Name");
     period.setProcessingSchedule(processingScheduleDto);
     period.setDescription("Period Description");
@@ -1101,7 +1101,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void generateRequisitions() {
     for (int i = 0; i < 4; i++) {
-      UUID facility1 = getExpectionFacilityId();
+      UUID facility1 = getSharedFacilityId();
       UUID facility2 = UUID.randomUUID();
       generateRequisition(RequisitionStatus.APPROVED, facility2);
       generateRequisition(RequisitionStatus.SUBMITTED, facility1);

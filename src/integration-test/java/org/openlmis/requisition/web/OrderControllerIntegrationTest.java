@@ -47,7 +47,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
   private UUID facility2 = UUID.randomUUID();
-  private UUID program = getExpectingProgramId();
+  private UUID program = UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
   private UUID program1 = UUID.randomUUID();
   private UUID program2 = UUID.randomUUID();
   private UUID period = UUID.randomUUID();
@@ -57,7 +57,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID product2 = UUID.randomUUID();
   private UUID supplyingFacility = UUID.randomUUID();
   private UUID supervisoryNode = UUID.randomUUID();
-  private UUID user = getExpectingUserId();
+  private UUID user = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
 
   @Autowired
