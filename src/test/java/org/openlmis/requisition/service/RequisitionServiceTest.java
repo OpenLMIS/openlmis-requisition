@@ -31,7 +31,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
 import java.time.LocalDateTime;
@@ -89,9 +89,6 @@ public class RequisitionServiceTest {
   private RequisitionRepository requisitionRepository;
 
   @Mock
-  private UserReferenceDataService userReferenceDataService;
-
-  @Mock
   private ProgramReferenceDataService programReferenceDataService;
 
   @Mock
@@ -111,6 +108,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
+
+  @Mock
+  private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -213,18 +213,13 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetRequisitionsForApprovalIfUserHasSupervisedPrograms() {
-
-    UUID programId = UUID.randomUUID();
+    when(program.getId()).thenReturn(programId);
     requisition.setProgramId(programId);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     UserDto user = mock(UserDto.class);
-    Set<ProgramDto> supervisedPrograms = new HashSet<>();
-    supervisedPrograms.add(program);
 
-    when(user.getSupervisedPrograms()).thenReturn(supervisedPrograms);
-    when(program.getId()).thenReturn(programId);
-    when(userReferenceDataService.findOne(user.getId()))
-        .thenReturn(user);
+    when(userSupervisedProgramsReferenceDataService.getProgramsSupervisedByUser(user.getId()))
+        .thenReturn(Arrays.asList(program));
     when(requisitionRepository
         .searchRequisitions(null, programId, null, null, null, null, null))
         .thenReturn(Collections.singletonList(requisition));

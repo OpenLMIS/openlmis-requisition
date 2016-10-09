@@ -100,6 +100,10 @@ public abstract class BaseWebIntegrationTest {
       + "\"verified\":false"
       + "}";
 
+  private static final String MOCK_FIND_USER_SUPERVISED_PROGRAMS = "[{"
+      + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\""
+      + "}]";
+
   private static final String MOCK_FIND_PROGRAM_RESULT = "{"
       + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Program Code\","
@@ -231,6 +235,12 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_USER_RESULT)));
+
+    // This mocks the call to retrieve programs supervised by the user
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/programs.*"))
+            .willReturn(aResponse()
+                    .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                    .withBody(MOCK_FIND_USER_SUPERVISED_PROGRAMS)));
 
     // This mocks for find one program
     wireMockRule.stubFor(get(urlMatching("/referencedata/api/programs/" + UUID_REGEX + ".*"))

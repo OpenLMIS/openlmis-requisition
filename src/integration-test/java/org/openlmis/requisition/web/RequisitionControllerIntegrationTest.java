@@ -1,12 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static java.lang.Integer.valueOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,6 +41,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static java.lang.Integer.valueOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -707,8 +707,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    //user.setSupervisedNode(supervisoryNode.getId());
-
     Requisition[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -726,7 +724,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     for (int i = 0; i < responseList.size(); i++) {
       assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
     }
-    //user.setSupervisedNode(null);
   }
 
   @Test

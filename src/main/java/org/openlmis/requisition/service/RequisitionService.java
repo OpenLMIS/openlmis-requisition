@@ -26,7 +26,7 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProduc
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,7 @@ public class RequisitionService {
   private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
+  private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
 
   /**
    * Return requisitionDto with information about facility, program and period.
@@ -279,9 +279,9 @@ public class RequisitionService {
    * Get requisitions to approve for specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    Set<ProgramDto> supervisedPrograms = user.getSupervisedPrograms();
+    Collection<ProgramDto> supervisedPrograms =
+            userSupervisedProgramsReferenceDataService.getProgramsSupervisedByUser(userId);
 
     if (supervisedPrograms != null) {
       for (ProgramDto program : supervisedPrograms) {
