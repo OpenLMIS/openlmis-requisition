@@ -54,3 +54,9 @@ INSERT INTO requisition.available_requisition_columns (id, name, label, indicato
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
 ('6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5', 'USER_INPUT');
+
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
+('2ed8c74a-f424-4742-bd14-cfbe67b6e7be', 'remarks', 'Remarks', 'L', false);
+
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
+('2ed8c74a-f424-4742-bd14-cfbe67b6e7be', 'USER_INPUT');
