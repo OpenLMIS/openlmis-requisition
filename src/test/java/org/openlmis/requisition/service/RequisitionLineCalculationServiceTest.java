@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
-public class RequisitionLineCalculatorTest {
+public class RequisitionLineCalculationServiceTest {
 
   private static final String BEGINNING_BALANCE_FIELD = "beginningBalance";
   private static final String TOTAL_QUANTITY_RECEIVED_FIELD = "totalQuantityReceived";
@@ -61,7 +61,7 @@ public class RequisitionLineCalculatorTest {
   private ProcessingPeriodDto periodDto;
 
   @InjectMocks
-  private RequisitionLineCalculator requisitionLineCalculator;
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Mock
   private AvailableRequisitionColumn availableRequisitionColumn;
@@ -89,7 +89,7 @@ public class RequisitionLineCalculatorTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    Requisition requisitionWithInitiatedLines = requisitionLineCalculator
+    Requisition requisitionWithInitiatedLines = requisitionLineCalculationService
         .initiateRequisitionLineItemFields(requisition, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = requisitionWithInitiatedLines
@@ -111,7 +111,7 @@ public class RequisitionLineCalculatorTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    Requisition requisitionWithInitiatedLines = requisitionLineCalculator
+    Requisition requisitionWithInitiatedLines = requisitionLineCalculationService
         .initiateRequisitionLineItemFields(requisition, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = requisitionWithInitiatedLines
@@ -133,10 +133,11 @@ public class RequisitionLineCalculatorTest {
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
-    requisitionLineCalculator.initiateRequisitionLineItemFields(requisition, requisitionTemplate);
+    requisitionLineCalculationService.initiateRequisitionLineItemFields(
+            requisition, requisitionTemplate);
 
     RequisitionTemplate requisitionTemplateList
-        = requisitionTemplateService.getTemplateForProgram(requisition.getProgram());
+        = requisitionTemplateService.getTemplateForProgram(requisition.getProgramId());
 
     Map<String, RequisitionTemplateColumn> testRequisitionTemplateColumnHashMap
         = requisitionTemplateList.getColumnsMap();
@@ -150,7 +151,7 @@ public class RequisitionLineCalculatorTest {
   @Test
   public void shouldFindRequisitionLineItemIfItExists() {
     List<RequisitionLineItem> receivedRequisitionLineItems =
-        requisitionLineCalculator.searchRequisitionLineItems(
+        requisitionLineCalculationService.searchRequisitionLineItems(
         requisition, productId);
 
     assertEquals(1, receivedRequisitionLineItems.size());
@@ -165,7 +166,7 @@ public class RequisitionLineCalculatorTest {
     requisition.setRequisitionLineItems(new ArrayList<>(
             Collections.singletonList(requisitionLineItem)));
     requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setProgram(program);
+    requisitionTemplate.setProgramId(program);
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
@@ -173,9 +174,9 @@ public class RequisitionLineCalculatorTest {
                                             RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(period);
-    requisition.setProgram(program);
+    requisition.setFacilityId(facility);
+    requisition.setProcessingPeriodId(period);
+    requisition.setProgramId(program);
     requisition.setStatus(requisitionStatus);
     return requisition;
   }
@@ -185,11 +186,11 @@ public class RequisitionLineCalculatorTest {
                                                             Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setOrderableProduct(product);
+    requisitionLineItem.setOrderableProductId(product);
     requisitionLineItem.setRequestedQuantity(quantityRequested);
     requisitionLineItem.setStockInHand(stockInHand);
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableProduct(productId);
+    requisitionLineItem.setOrderableProductId(productId);
     return requisitionLineItem;
   }
 
@@ -201,7 +202,7 @@ public class RequisitionLineCalculatorTest {
         .search(any(), any()))
         .thenReturn(Collections.singletonList(periodDto));
     when(requisitionService
-        .searchRequisitions(eq(requisition.getFacility()), eq(requisition.getProgram()),
+        .searchRequisitions(eq(requisition.getFacilityId()), eq(requisition.getProgramId()),
             eq(null), eq(null), any(), eq(null), eq(null)))
         .thenReturn(Collections.singletonList(requisition));
     when(programReferenceDataService

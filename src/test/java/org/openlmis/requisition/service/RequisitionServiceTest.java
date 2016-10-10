@@ -31,7 +31,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
 import java.time.LocalDateTime;
@@ -80,16 +80,13 @@ public class RequisitionServiceTest {
   private SupervisoryNodeDto supervisoryNode;
 
   @Mock
-  private RequisitionLineCalculator requisitionLineCalculator;
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private RequisitionRepository requisitionRepository;
-
-  @Mock
-  private UserReferenceDataService userReferenceDataService;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -111,6 +108,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
+
+  @Mock
+  private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -198,7 +198,7 @@ public class RequisitionServiceTest {
   public void shouldGetAuthorizedRequisitions() {
 
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setProgram(program.getId());
+    requisition.setProgramId(program.getId());
 
     when(requisitionRepository
         .searchRequisitions(null, program.getId(), null, null, null, null, null))
@@ -213,18 +213,13 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetRequisitionsForApprovalIfUserHasSupervisedPrograms() {
-
-    UUID programId = UUID.randomUUID();
-    requisition.setProgram(programId);
+    when(program.getId()).thenReturn(programId);
+    requisition.setProgramId(programId);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     UserDto user = mock(UserDto.class);
-    Set<ProgramDto> supervisedPrograms = new HashSet<>();
-    supervisedPrograms.add(program);
 
-    when(user.getSupervisedPrograms()).thenReturn(supervisedPrograms);
-    when(program.getId()).thenReturn(programId);
-    when(userReferenceDataService.findOne(user.getId()))
-        .thenReturn(user);
+    when(userSupervisedProgramsReferenceDataService.getProgramsSupervisedByUser(user.getId()))
+        .thenReturn(Arrays.asList(program));
     when(requisitionRepository
         .searchRequisitions(null, programId, null, null, null, null, null))
         .thenReturn(Collections.singletonList(requisition));
@@ -253,7 +248,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];
@@ -289,7 +284,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
           .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
           any(Requisition.class), any(RequisitionTemplate.class)))
           .thenAnswer(invocation -> {
             Requisition req = (Requisition) invocation.getArguments()[0];
@@ -346,31 +341,31 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFindRequisitionIfItExists() {
     when(requisitionRepository.searchRequisitions(
-        requisition.getFacility(),
-        requisition.getProgram(),
+        requisition.getFacilityId(),
+        requisition.getProgramId(),
         requisition.getCreatedDate().minusDays(2),
         requisition.getCreatedDate().plusDays(2),
-        requisition.getProcessingPeriod(),
-        requisition.getSupervisoryNode(),
+        requisition.getProcessingPeriodId(),
+        requisition.getSupervisoryNodeId(),
         requisition.getStatus()))
         .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
-          requisition.getFacility(),
-          requisition.getProgram(),
+          requisition.getFacilityId(),
+          requisition.getProgramId(),
           requisition.getCreatedDate().minusDays(2),
           requisition.getCreatedDate().plusDays(2),
-          requisition.getProcessingPeriod(),
-          requisition.getSupervisoryNode(),
+          requisition.getProcessingPeriodId(),
+          requisition.getSupervisoryNodeId(),
           requisition.getStatus());
 
     assertEquals(1, receivedRequisitions.size());
     assertEquals(
-          receivedRequisitions.get(0).getFacility(),
-          requisition.getFacility());
+          receivedRequisitions.get(0).getFacilityId(),
+          requisition.getFacilityId());
     assertEquals(
-          receivedRequisitions.get(0).getProgram(),
-          requisition.getProgram());
+          receivedRequisitions.get(0).getProgramId(),
+          requisition.getProgramId());
     assertTrue(
           receivedRequisitions.get(0).getCreatedDate().isAfter(
                 requisition.getCreatedDate().minusDays(2)));
@@ -378,11 +373,11 @@ public class RequisitionServiceTest {
           receivedRequisitions.get(0).getCreatedDate().isBefore(
                 requisition.getCreatedDate().plusDays(2)));
     assertEquals(
-          receivedRequisitions.get(0).getProcessingPeriod(),
-          requisition.getProcessingPeriod());
+          receivedRequisitions.get(0).getProcessingPeriodId(),
+          requisition.getProcessingPeriodId());
     assertEquals(
-          receivedRequisitions.get(0).getSupervisoryNode(),
-          requisition.getSupervisoryNode());
+          receivedRequisitions.get(0).getSupervisoryNodeId(),
+          requisition.getSupervisoryNodeId());
     assertEquals(
           receivedRequisitions.get(0).getStatus(),
           requisition.getStatus());
@@ -414,7 +409,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
         any(Requisition.class), any(RequisitionTemplate.class)))
         .thenAnswer(invocation -> {
           Requisition req = (Requisition) invocation.getArguments()[0];
@@ -443,7 +438,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
           .thenReturn(requisitionTemplate);
 
-    when(requisitionLineCalculator.initiateRequisitionLineItemFields(
+    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
           any(Requisition.class), any(RequisitionTemplate.class)))
           .thenAnswer(invocation -> {
             Requisition req = (Requisition) invocation.getArguments()[0];
@@ -465,14 +460,14 @@ public class RequisitionServiceTest {
     requisition.setEmergency(false);
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupplyingFacility(facilityId);
+    requisition.setSupplyingFacilityId(facilityId);
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(mock(RequisitionLineItem.class));
     requisition.setRequisitionLineItems(requisitionLineItems);
     UUID facilityId = UUID.randomUUID();
-    requisition.setFacility(facilityId);
+    requisition.setFacilityId(facilityId);
     UUID programId = UUID.randomUUID();
-    requisition.setProgram(programId);
+    requisition.setProgramId(programId);
     return requisition;
   }
 

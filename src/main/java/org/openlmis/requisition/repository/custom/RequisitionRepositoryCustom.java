@@ -2,6 +2,7 @@ package org.openlmis.requisition.repository.custom;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.RequisitionDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +17,7 @@ public interface RequisitionRepositoryCustom {
                                        UUID supervisoryNode,
                                        RequisitionStatus requisitionStatus);
 
-  List<Requisition> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+  List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize);
 

@@ -87,16 +87,16 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
     Requisition requisition = new Requisition();
-    requisition.setProgram(program.getId());
-    requisition.setFacility(facility.getId());
-    requisition.setProcessingPeriod(period.getId());
+    requisition.setProgramId(program.getId());
+    requisition.setFacilityId(facility.getId());
+    requisition.setProcessingPeriodId(period.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setEmergency(false);
-    requisition.setSupervisoryNode(supervisoryNode.getId());
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisitionRepository.save(requisition);
 
     orderLineItem.setOrder(order);
-    orderLineItem.setOrderableProduct(product.getId());
+    orderLineItem.setOrderableProductId(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
 
@@ -104,11 +104,11 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
     order.setStatus(OrderStatus.ORDERED);
-    order.setProgram(program.getId());
+    order.setProgramId(program.getId());
     order.setCreatedById(UUID.randomUUID());
-    order.setRequestingFacility(facility.getId());
-    order.setReceivingFacility(facility.getId());
-    order.setSupplyingFacility(facility.getId());
+    order.setRequestingFacilityId(facility.getId());
+    order.setReceivingFacilityId(facility.getId());
+    order.setSupplyingFacilityId(facility.getId());
     order.setOrderLineItems(new ArrayList<>());
     order.getOrderLineItems().add(orderLineItem);
     orderRepository.save(order);

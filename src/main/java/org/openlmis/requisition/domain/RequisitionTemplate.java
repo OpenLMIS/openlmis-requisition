@@ -29,7 +29,7 @@ public class RequisitionTemplate extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID program;
+  private UUID programId;
 
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")
@@ -163,7 +163,7 @@ public class RequisitionTemplate extends BaseEntity {
    * @param requisitionTemplate RequisitionTemplate with new values.
    */
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
-    this.program = requisitionTemplate.getProgram();
+    this.programId = requisitionTemplate.getProgramId();
     this.columnsMap = requisitionTemplate.getColumnsMap();
   }
 

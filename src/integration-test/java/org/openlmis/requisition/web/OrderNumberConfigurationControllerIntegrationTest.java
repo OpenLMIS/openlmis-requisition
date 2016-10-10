@@ -22,7 +22,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
 
@@ -53,8 +52,8 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     requisition = new Requisition();
     requisition.setEmergency(true);
     requisition.setStatus(RequisitionStatus.APPROVED);
-    requisition.setSupplyingFacility(facility);
-    requisition.setProgram(programDto.getId());
+    requisition.setSupplyingFacilityId(facility);
+    requisition.setProgramId(programDto.getId());
     requisition = requisitionRepository.save(requisition);
   }
 
@@ -80,7 +79,6 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
   @Test
   public void shouldUseNewestConfigurationWhenConvertingRequisitionToOrder() {
-    orderRepository.deleteAll();
     final String prefix = "prefix";
 
     OrderNumberConfiguration orderNumberConfiguration =
@@ -112,7 +110,6 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
   @Test
   public void shouldUseOldConfigurationWhenNewOneIsIncorrect() {
-    orderRepository.deleteAll();
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration("prefix", false, false, false);
@@ -140,7 +137,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   }
 
   @Test
-  public void shouldNotSaveConfigurationWhenPrefixIsNotAlphanumeric() {
+  public void shouldReturn400WhenSavingConfigurationWithNotAlphanumericPrefix() {
     final String notAlphanumericString = "..dsa2,";
 
     OrderNumberConfiguration orderNumberConfiguration =
@@ -148,12 +145,10 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
     postForOrderNumberConfiguration(orderNumberConfiguration, 400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertNotEquals(notAlphanumericString,
-        orderNumberConfigurationRepository.findAll().iterator().next().getOrderNumberPrefix());
   }
 
   @Test
-  public void shouldNotSaveConfigurationWhenPrefixHasMoreThan8Characters() {
+  public void shouldReturn400WhenSavingConfigurationWithPrefixLongerThan8Characters() {
     final String tooLongPrefix = "123456789";
 
     OrderNumberConfiguration orderNumberConfiguration =
@@ -161,8 +156,6 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
     postForOrderNumberConfiguration(orderNumberConfiguration, 400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertNotEquals(tooLongPrefix,
-        orderNumberConfigurationRepository.findAll().iterator().next().getOrderNumberPrefix());
   }
 
   private void postForOrderNumberConfiguration(OrderNumberConfiguration orderNumberConfiguration,

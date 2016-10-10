@@ -52,15 +52,15 @@ public class ProofOfDeliveryLineItemRepositoryIntegrationTest {
     order.setOrderCode(CODE);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
-    order.setProgram(UUID.randomUUID());
+    order.setProgramId(UUID.randomUUID());
     order.setCreatedById(UUID.randomUUID());
-    order.setRequestingFacility(UUID.randomUUID());
-    order.setReceivingFacility(UUID.randomUUID());
-    order.setSupplyingFacility(UUID.randomUUID());
+    order.setRequestingFacilityId(UUID.randomUUID());
+    order.setReceivingFacilityId(UUID.randomUUID());
+    order.setSupplyingFacilityId(UUID.randomUUID());
     orderRepository.save(order);
 
     orderLineItem.setOrder(order);
-    orderLineItem.setOrderableProduct(UUID.randomUUID());
+    orderLineItem.setOrderableProductId(UUID.randomUUID());
     orderLineItem.setOrderedQuantity(5L);
     orderLineItem.setFilledQuantity(5L);
     orderLineItemRepository.save(orderLineItem);

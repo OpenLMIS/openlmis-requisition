@@ -3,6 +3,10 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class ProgramReferenceDataService extends BaseReferenceDataService<ProgramDto> {
 
@@ -19,5 +23,17 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
   @Override
   protected Class<ProgramDto[]> getArrayResultClass() {
     return ProgramDto[].class;
+  }
+
+  /**
+   *
+   * @param programName Field with string to find similar name.
+   * @return List of ProgramDtos with similar programName.
+   */
+  public Collection<ProgramDto> searchBySimilarProgramName(String programName) {
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("name", programName);
+
+    return findAll("findProgramsWithSimilarName", parameters);
   }
 }

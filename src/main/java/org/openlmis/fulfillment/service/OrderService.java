@@ -175,7 +175,7 @@ public class OrderService {
     String orderNum = order.getOrderCode();
 
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
-            order.getRequestingFacility());
+            order.getRequestingFacilityId());
     String facilityCode = requestingFacility.getCode();
     LocalDateTime createdDate = order.getCreatedDate();
 
@@ -183,7 +183,7 @@ public class OrderService {
       Map<String, Object> row = new HashMap<>();
 
       OrderableProductDto product = orderableProductReferenceDataService
-          .findOne(orderLineItem.getOrderableProduct());
+          .findOne(orderLineItem.getOrderableProductId());
 
       row.put(DEFAULT_COLUMNS[0], facilityCode);
       row.put(DEFAULT_COLUMNS[1], createdDate);
@@ -224,7 +224,7 @@ public class OrderService {
     Order order = new Order(requisition);
     order.setCreatedById(user.getId());
 
-    ProgramDto program = programReferenceDataService.findOne(order.getProgram());
+    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
 

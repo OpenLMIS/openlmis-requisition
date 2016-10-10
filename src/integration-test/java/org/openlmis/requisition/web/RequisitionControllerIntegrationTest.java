@@ -1,12 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static java.lang.Integer.valueOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,7 +25,6 @@ import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -49,6 +41,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static java.lang.Integer.valueOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -88,9 +87,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
-
-  @Autowired
   private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
@@ -124,17 +120,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     program.setCode(REQUISITION_REPOSITORY_NAME);
     program.setPeriodsSkippable(true);
 
-    facility.setId(UUID.randomUUID());
-    facility.setCode(REQUISITION_REPOSITORY_NAME);
+    facility.setId(getSharedFacilityId());
+    facility.setCode("facilityCode");
     facility.setActive(true);
     facility.setEnabled(true);
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
-    processingScheduleDto.setId(getExpectingProcessingScheduleId());
+    processingScheduleDto.setId(UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611"));
     processingScheduleDto.setCode("Schedule Code");
     processingScheduleDto.setName("Schedule Name");
 
-    period.setId(getExpectingProcessingPeriodId());
+    period.setId(UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611"));
     period.setName("Period Name");
     period.setProcessingSchedule(processingScheduleDto);
     period.setDescription("Period Description");
@@ -149,7 +145,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     configureRequisition(requisition);
 
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
     requisitionLineItem.setStockOnHand(1);
@@ -168,7 +164,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionTemplate template = new RequisitionTemplate();
     template.setColumnsMap(generateTemplateColumns());
-    template.setProgram(program.getId());
+    template.setProgramId(program.getId());
 
     requisitionTemplateRepository.save(template);
   }
@@ -195,16 +191,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals(1, response.length);
     for ( Requisition receivedRequisition : response ) {
       assertEquals(
-              receivedRequisition.getProgram(),
+              receivedRequisition.getProgramId(),
               program.getId());
       assertEquals(
-              receivedRequisition.getProcessingPeriod(),
+              receivedRequisition.getProcessingPeriodId(),
               period.getId());
       assertEquals(
-              receivedRequisition.getFacility(),
+              receivedRequisition.getFacilityId(),
               facility.getId());
       assertEquals(
-              receivedRequisition.getSupervisoryNode(),
+              receivedRequisition.getSupervisoryNodeId(),
               supervisoryNode.getId());
       assertEquals(
               receivedRequisition.getStatus(),
@@ -263,7 +259,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSubmitRequisitionWithNullQuantityInRequisitionLineItem() {
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setBeginningBalance(1);
@@ -300,7 +296,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
@@ -337,7 +333,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Quantity Explanation");
     requisitionLineItem.setBeginningBalance(-1);
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
@@ -373,7 +369,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Quantity Explanation");
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
@@ -409,7 +405,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Quantity Explanation");
     requisitionLineItem.setBeginningBalance(1);
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(-1);
@@ -446,7 +442,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Explanation");
     requisitionLineItem.setBeginningBalance(1);
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
@@ -482,7 +478,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Explanation");
     requisitionLineItem.setBeginningBalance(1);
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setTotalReceivedQuantity(1);
     requisitionLineItem.setTotalLossesAndAdjustments(1);
     requisitionLineItem.setStockOnHand(1);
@@ -517,7 +513,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setBeginningBalance(1);
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(1);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setTotalReceivedQuantity(-1);
@@ -552,7 +548,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSubmitRequisitionWithNullAttributesInRequisitionLineItem() {
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProduct(product.getId());
+    requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setStockOnHand(null);
     requisitionLineItem.setTotalConsumedQuantity(null);
     requisitionLineItem.setBeginningBalance(null);
@@ -707,11 +703,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
-    requisition.setSupervisoryNode(supervisoryNode.getId());
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
-
-    //user.setSupervisedNode(supervisoryNode.getId());
 
     Requisition[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -730,7 +724,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     for (int i = 0; i < responseList.size(); i++) {
       assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
     }
-    //user.setSupervisedNode(null);
   }
 
   @Test
@@ -1071,11 +1064,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private Requisition configureRequisition(Requisition requisition) {
-    requisition.setFacility(facility.getId());
-    requisition.setProcessingPeriod(period.getId());
-    requisition.setProgram(program.getId());
+    requisition.setFacilityId(facility.getId());
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setProgramId(program.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupervisoryNode(supervisoryNode.getId());
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
     requisition.setEmergency(false);
 
@@ -1094,9 +1087,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private void generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
     Requisition requisition = new Requisition();
     requisition.setId(UUID.randomUUID());
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(UUID.randomUUID());
-    requisition.setProgram(UUID.randomUUID());
+    requisition.setFacilityId(facility);
+    requisition.setProcessingPeriodId(UUID.randomUUID());
+    requisition.setProgramId(UUID.randomUUID());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setStatus(requisitionStatus);
     requisition.setEmergency(true);
@@ -1105,7 +1098,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void generateRequisitions() {
     for (int i = 0; i < 4; i++) {
-      UUID facility1 = UUID.randomUUID();
+      UUID facility1 = getSharedFacilityId();
       UUID facility2 = UUID.randomUUID();
       generateRequisition(RequisitionStatus.APPROVED, facility2);
       generateRequisition(RequisitionStatus.SUBMITTED, facility1);
@@ -1114,6 +1107,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       }
     }
   }
+
 
   private Map<String, RequisitionTemplateColumn> generateTemplateColumns() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
@@ -1129,6 +1123,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return columns;
   }
 
+
   @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
@@ -1136,7 +1131,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Integer pageSize = 10;
     String filterValue = "facilityNameA";
 
-    Requisition[] response = restAssured.given()
+    RequisitionDto[]  response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", "facilityName")
@@ -1149,27 +1144,29 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Requisition[].class);
+        .extract().as(RequisitionDto[].class);
 
-    List<Requisition> requisitions = Arrays.asList(response);
-    Iterator<Requisition> requisitionIterator = requisitions.iterator();
+    List<RequisitionDto> requisitions = Arrays.asList(response);
+
+    Iterator<RequisitionDto> requisitionIterator = requisitions.iterator();
 
     Assert.assertTrue(requisitions.size() <= pageSize);
-    Requisition requisition1 = null;
+    RequisitionDto requisition1 = null;
     if (requisitionIterator.hasNext()) {
       requisition1 = requisitionIterator.next();
     }
-    Requisition requisition2;
+    RequisitionDto requisition2;
     while (requisitionIterator.hasNext()) {
       requisition2 = requisitionIterator.next();
 
       RequisitionStatus requisitionStatus = requisition1.getStatus();
       Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
 
-      UUID facility1Id = requisition1.getFacility();
+      UUID facility1Id = requisition1.getFacility().getId();
       FacilityDto facility1 = facilityReferenceDataService.findOne(facility1Id);
 
-      UUID facility2Id = requisition1.getFacility();
+      UUID facility2Id = requisition1.getFacility().getId();
+
       FacilityDto facility2 = facilityReferenceDataService.findOne(facility2Id);
 
       Assert.assertNotNull(facility1);
@@ -1179,21 +1176,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       Assert.assertTrue(facility1.getCode()
           .compareTo(facility2.getCode()) <= 0);
 
-      if (facility1.getCode().equals(facility2.getCode())) {
-        UUID processingPeriodId1 = requisition1.getProcessingPeriod();
-        ProcessingPeriodDto processingPeriodDto1 =
-            periodReferenceDataService.findOne(processingPeriodId1);
-
-        UUID processingPeriodId2 = requisition2.getProcessingPeriod();
-        ProcessingPeriodDto processingPeriodDto2 =
-            periodReferenceDataService.findOne(processingPeriodId2);
-
-        LocalDateTime modifiedDate1 =
-            processingPeriodDto1.getProcessingSchedule().getModifiedDate();
-        LocalDateTime modifiedDate2 =
-            processingPeriodDto2.getProcessingSchedule().getModifiedDate();
-        Assert.assertTrue(modifiedDate1.isAfter(modifiedDate2));
-      }
       requisition1 = requisition2;
     }
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -1204,9 +1186,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 20;
-    String filterValue = "1";
+    String filterValue = "facility";
 
-    Requisition[] response = restAssured.given()
+    RequisitionDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", "facilityCode")
@@ -1219,45 +1201,35 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Requisition[].class);
+        .extract().as(RequisitionDto[].class);
 
-    List<Requisition> requisitions = Arrays.asList(response);
-    Iterator<Requisition> requisitionIterator = requisitions.iterator();
+    List<RequisitionDto> requisitions = Arrays.asList(response);
+    Iterator<RequisitionDto> requisitionIterator = requisitions.iterator();
 
     Assert.assertTrue(requisitions.size() <= pageSize);
-    Requisition requisition1 = null;
+    RequisitionDto requisition1 = null;
     if (requisitionIterator.hasNext()) {
       requisition1 = requisitionIterator.next();
     }
-    Requisition requisition2;
+    RequisitionDto requisition2;
     while (requisitionIterator.hasNext()) {
       requisition2 = requisitionIterator.next();
 
       RequisitionStatus requisitionStatus = requisition1.getStatus();
       Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
 
-      UUID facilitId1 = requisition1.getFacility();
+      UUID facilitId1 = requisition1.getFacility().getId();
       FacilityDto facility1 = facilityReferenceDataService.findOne(facilitId1);
 
       String facilityCode = facility1.getCode();
       Assert.assertTrue(facilityCode.contains(filterValue));
-
-      UUID programId1 = requisition1.getProgram();
+      UUID programId1 = requisition1.getProgram().getId();
       ProgramDto program1 = programReferenceDataService.findOne(programId1);
 
-      UUID programId2 = requisition2.getProgram();
+      UUID programId2 = requisition2.getProgram().getId();
       ProgramDto program2 = programReferenceDataService.findOne(programId2);
 
       Assert.assertTrue(program1.getName().compareTo(program2.getName()) >= 0);
-
-      if (program1.getCode().equals(program2.getName())) {
-        UUID periodId1 = requisition1.getProcessingPeriod();
-        ProcessingPeriodDto period1 = periodReferenceDataService.findOne(periodId1);
-
-        UUID periodId2 = requisition2.getProcessingPeriod();
-        ProcessingPeriodDto period2 = periodReferenceDataService.findOne(periodId2);
-        Assert.assertTrue(period1.getEndDate().isAfter(period2.getEndDate()));
-      }
       requisition1 = requisition2;
     }
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

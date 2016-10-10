@@ -47,7 +47,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
   private UUID facility2 = UUID.randomUUID();
-  private UUID program = getExpectingProgramId();
+  private UUID program = UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
   private UUID program1 = UUID.randomUUID();
   private UUID program2 = UUID.randomUUID();
   private UUID period = UUID.randomUUID();
@@ -57,7 +57,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID product2 = UUID.randomUUID();
   private UUID supplyingFacility = UUID.randomUUID();
   private UUID supervisoryNode = UUID.randomUUID();
-  private UUID user = getExpectingUserId();
+  private UUID user = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
 
   @Autowired
@@ -123,11 +123,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setOrderCode(orderCode);
     order.setQuotedCost(cost);
     order.setStatus(orderStatus);
-    order.setProgram(program);
+    order.setProgramId(program);
     order.setCreatedById(user);
-    order.setRequestingFacility(requestingFacility);
-    order.setReceivingFacility(receivingFacility);
-    order.setSupplyingFacility(supplyingFacility);
+    order.setRequestingFacilityId(requestingFacility);
+    order.setReceivingFacilityId(receivingFacility);
+    order.setSupplyingFacilityId(supplyingFacility);
     return orderRepository.save(order);
   }
 
@@ -136,12 +136,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
                                      RequisitionStatus requisitionStatus,
                                      UUID supervisoryNode) {
     Requisition requisition = new Requisition();
-    requisition.setProgram(program);
-    requisition.setFacility(facility);
-    requisition.setProcessingPeriod(processingPeriod);
+    requisition.setProgramId(program);
+    requisition.setFacilityId(facility);
+    requisition.setProcessingPeriodId(processingPeriod);
     requisition.setStatus(requisitionStatus);
     requisition.setEmergency(false);
-    requisition.setSupervisoryNode(supervisoryNode);
+    requisition.setSupervisoryNodeId(supervisoryNode);
 
     return requisitionRepository.save(requisition);
   }
@@ -149,7 +149,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private void addRequisitionLineItem(Requisition requisition, UUID product) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableProduct(product);
+    requisitionLineItem.setOrderableProductId(product);
     requisitionLineItem.setRequestedQuantity(3);
     requisitionLineItem.setApprovedQuantity(3);
     requisition.setRequisitionLineItems(new ArrayList<>(
@@ -160,7 +160,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
                                  Long orderedQuantity) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setOrder(order);
-    orderLineItem.setOrderableProduct(product);
+    orderLineItem.setOrderableProductId(product);
     orderLineItem.setOrderedQuantity(orderedQuantity);
     orderLineItem.setFilledQuantity(filledQuantity);
     return orderLineItemRepository.save(orderLineItem);
@@ -216,7 +216,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
-    requisition.setSupplyingFacility(facility);
+    requisition.setSupplyingFacilityId(facility);
 
     String mockUserFindResult = "{"
         + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
@@ -250,15 +250,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(user, order.getCreatedById());
     assertEquals(OrderStatus.ORDERED, order.getStatus());
     assertEquals(order.getRequisition().getId(), requisition.getId());
-    assertEquals(order.getReceivingFacility(), requisition.getFacility());
-    assertEquals(order.getRequestingFacility(), requisition.getFacility());
-    assertEquals(order.getProgram(), requisition.getProgram());
+    assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
+    assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
+    assertEquals(order.getProgramId(), requisition.getProgramId());
   }
 
   @Test
   public void shouldFindBySupplyingFacility() {
     Order[] response = restAssured.given()
-            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility())
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
             .get(SEARCH_URL)
@@ -270,16 +270,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, response.length);
     for ( Order order : response ) {
       assertEquals(
-              order.getSupplyingFacility(),
-              firstOrder.getSupplyingFacility());
+              order.getSupplyingFacilityId(),
+              firstOrder.getSupplyingFacilityId());
     }
   }
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacility() {
     Order[] response = restAssured.given()
-            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility())
-            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility())
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
             .get(SEARCH_URL)
@@ -291,20 +291,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, response.length);
     for ( Order order : response ) {
       assertEquals(
-              order.getSupplyingFacility(),
-              firstOrder.getSupplyingFacility());
+              order.getSupplyingFacilityId(),
+              firstOrder.getSupplyingFacilityId());
       assertEquals(
-              order.getRequestingFacility(),
-              firstOrder.getRequestingFacility());
+              order.getRequestingFacilityId(),
+              firstOrder.getRequestingFacilityId());
     }
   }
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     Order[] response = restAssured.given()
-            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacility())
-            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacility())
-            .queryParam(PROGRAM, firstOrder.getProgram())
+            .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+            .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+            .queryParam(PROGRAM, firstOrder.getProgramId())
             .queryParam(ACCESS_TOKEN, getToken())
             .when()
             .get(SEARCH_URL)
@@ -316,14 +316,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, response.length);
     for ( Order order : response ) {
       assertEquals(
-              order.getSupplyingFacility(),
-              firstOrder.getSupplyingFacility());
+              order.getSupplyingFacilityId(),
+              firstOrder.getSupplyingFacilityId());
       assertEquals(
-              order.getRequestingFacility(),
-              firstOrder.getRequestingFacility());
+              order.getRequestingFacilityId(),
+              firstOrder.getRequestingFacilityId());
       assertEquals(
-              order.getProgram(),
-              firstOrder.getProgram());
+              order.getProgramId(),
+              firstOrder.getProgramId());
     }
   }
 
@@ -503,17 +503,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertTrue(csvContent.startsWith("Order number,Facility code,Product code,Product name,"
         + "Approved quantity,Period,Order date"));
 
-    String period = secondOrder.getRequisition().getProcessingPeriod().getStartDate().format(
+    String period = secondOrder.getRequisition().getProcessingPeriodId().getStartDate().format(
         DateTimeFormatter.ofPattern("MM/yy"));
     String orderDate = secondOrder.getCreatedDate().format(
         DateTimeFormatter.ofPattern("dd/MM/yy"));
 
     for (RequisitionLineItem lineItem : secondOrder.getRequisition().getRequisitionLineItems()) {
       assertTrue(csvContent.contains(secondOrder.getOrderCode()
-          + "," + secondOrder.getRequisition().getFacility().getCode()
+          + "," + secondOrder.getRequisition().getFacilityId().getCode()
 <<<<<<< HEAD
-          + "," + line.getOrderableProduct().getCode()
-          + "," + line.getOrderableProduct().getPrimaryName()
+          + "," + line.getOrderableProductId().getCode()
+          + "," + line.getOrderableProductId().getPrimaryName()
           + "," + line.getApprovedQuantity()
 =======
           + "," + lineItem.getProduct().getCode()

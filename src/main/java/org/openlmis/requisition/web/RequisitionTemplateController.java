@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -162,15 +159,5 @@ public class RequisitionTemplateController extends BaseController {
   public RequisitionTemplate getTemplateByProgram(
           @RequestParam(value = "program", required = false) UUID program) {
     return requisitionTemplateService.getTemplateForProgram(program);
-  }
-
-  private Map<String, String> getErrors(BindingResult bindingResult) {
-    return new HashMap<String, String>() {
-      {
-        for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getCode());
-        }
-      }
-    };
   }
 }

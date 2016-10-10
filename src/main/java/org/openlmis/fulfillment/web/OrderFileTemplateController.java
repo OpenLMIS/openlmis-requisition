@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 public class OrderFileTemplateController extends BaseController {
@@ -75,15 +72,5 @@ public class OrderFileTemplateController extends BaseController {
     } else {
       return new ResponseEntity<>(orderFileTemplate, HttpStatus.OK);
     }
-  }
-
-  private Map<String, String> getErrors(final BindingResult bindingResult) {
-    return new HashMap<String, String>() {
-      {
-        for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getDefaultMessage());
-        }
-      }
-    };
   }
 }

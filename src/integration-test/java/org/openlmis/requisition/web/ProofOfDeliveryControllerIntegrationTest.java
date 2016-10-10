@@ -110,12 +110,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
     Requisition requisition = new Requisition();
-    requisition.setProgram(program.getId());
-    requisition.setFacility(facility.getId());
-    requisition.setProcessingPeriod(period.getId());
+    requisition.setProgramId(program.getId());
+    requisition.setFacilityId(facility.getId());
+    requisition.setProcessingPeriodId(period.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setEmergency(false);
-    requisition.setSupervisoryNode(supervisoryNode.getId());
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisitionRepository.save(requisition);
 
     Order order = new Order();
@@ -123,16 +123,16 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     order.setCreatedDate(LocalDateTime.now());
     order.setCreatedById(UUID.randomUUID());
     order.setOrderCode("O1");
-    order.setProgram(program.getId());
+    order.setProgramId(program.getId());
     order.setQuotedCost(new BigDecimal(100));
-    order.setSupplyingFacility(facility.getId());
-    order.setRequestingFacility(facility.getId());
-    order.setReceivingFacility(facility.getId());
+    order.setSupplyingFacilityId(facility.getId());
+    order.setRequestingFacilityId(facility.getId());
+    order.setReceivingFacilityId(facility.getId());
     orderRepository.save(order);
 
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setOrder(order);
-    orderLineItem.setOrderableProduct(product.getId());
+    orderLineItem.setOrderableProductId(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
     orderLineItemRepository.save(orderLineItem);

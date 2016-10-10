@@ -46,7 +46,7 @@ public abstract class BaseWebIntegrationTest {
 
   protected static final String APPLICATION_JSON = "application/json";
 
-  private static final String MOCK_CHECK_RESULT = "{\n"
+  private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
       + "    \"auth\",\n"
       + "    \"example\",\n"
@@ -68,7 +68,7 @@ public abstract class BaseWebIntegrationTest {
       + "  \"client_id\": \"trusted-client\"\n"
       + "}";
 
-  private static final String MOCK_TOKEN_REQUEST_RESPONSE = "{\n"
+  private static final String MOCK_TOKEN_REQUEST_RESPONSE = "{"
       + "  \"access_token\": \"418c89c5-7f21-4cd1-a63a-38c47892b0fe\",\n"
       + "  \"token_type\": \"bearer\",\n"
       + "  \"expires_in\": 847,\n"
@@ -82,7 +82,13 @@ public abstract class BaseWebIntegrationTest {
       + "\"firstName\":\"Admin\","
       + "\"lastName\":\"User\","
       + "\"email\":\"example@mail.com\","
-      + "\"verified\":false"
+      + "\"verified\":false,"
+      + "\"fulfillmentFacilities\": [{\"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+      +    "\"code\":\"facilityCode\",\n"
+      +    "\"name\":\"facilityNameA\",\n"
+      +    "\"active\":true,\n"
+      +    "\"enabled\":true\n"
+      +    "}]"
       + "}]";
 
   private static final String MOCK_FIND_USER_RESULT = "{"
@@ -94,6 +100,10 @@ public abstract class BaseWebIntegrationTest {
       + "\"verified\":false"
       + "}";
 
+  private static final String MOCK_FIND_USER_SUPERVISED_PROGRAMS = "[{"
+      + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\""
+      + "}]";
+
   private static final String MOCK_FIND_PROGRAM_RESULT = "{"
       + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Program Code\","
@@ -101,9 +111,10 @@ public abstract class BaseWebIntegrationTest {
       + " \"periodsSkippable\":true"
       + "}";
 
-  private static final String MOCK_FIND_FACILITY_RESULT = "{\n"
+  private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"1d5bdd9c-8702-11e6-ae22-56b6b6499611\",\n"
-      + " \"code\":\"Facility Code\",\n"
+      + " \"code\":\"facilityCode\",\n"
+      + " \"name\":\"facilityNameA\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
       + "}";
@@ -168,6 +179,16 @@ public abstract class BaseWebIntegrationTest {
       + "" + MOCK_FIND_PROCESSING_PERIOD
       + "]";
 
+  private static final String MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME = "["
+      + "{"
+      + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+      + " \"code\":\"facilityCode\",\n"
+      + " \"name\":\"facilityNameA\",\n"
+      + " \"active\":true,\n"
+      + " \"enabled\":true\n"
+      + "}"
+      + "]";
+
   @Autowired
   private CleanRepositoryHelper cleanRepositoryHelper;
 
@@ -214,6 +235,12 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_USER_RESULT)));
+
+    // This mocks the call to retrieve programs supervised by the user
+    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/programs.*"))
+            .willReturn(aResponse()
+                    .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                    .withBody(MOCK_FIND_USER_SUPERVISED_PROGRAMS)));
 
     // This mocks for find one program
     wireMockRule.stubFor(get(urlMatching("/referencedata/api/programs/" + UUID_REGEX + ".*"))
@@ -274,6 +301,20 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_PROCESSING_PERIODS)));
 
+    // This mocks searching facilities with similar facilityCode or facilityName
+    wireMockRule.stubFor(
+        get(urlMatching("/referencedata/api/facilities/findFacilitiesWithSimilarCodeOrName.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME)));
+
+    // This mocks searching for supplying facilitiy
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/facilities/supplying.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
+
   }
 
   @After
@@ -285,19 +326,7 @@ public abstract class BaseWebIntegrationTest {
     return "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   }
 
-  public UUID getExpectingUserId() {
-    return UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
-  }
-
-  public UUID getExpectingProgramId() {
-    return UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
-  }
-
-  public UUID getExpectingProcessingPeriodId() {
-    return UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
-  }
-
-  public UUID getExpectingProcessingScheduleId() {
-    return UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611");
+  public UUID getSharedFacilityId() {
+    return UUID.fromString("aaf12a5a-8b16-11e6-ae22-56b6b6499611");
   }
 }
