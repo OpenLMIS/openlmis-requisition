@@ -405,7 +405,8 @@ public class RequisitionService {
       }
     }
 
-    if (result == null || (null != suggestedPeriodId && suggestedPeriodId != result.getId())) {
+    if (result == null
+        || (null != suggestedPeriodId && !suggestedPeriodId.equals(result.getId()))) {
       throw new InvalidPeriodException(
           "Period should be the oldest and not associated with any requisitions");
     }

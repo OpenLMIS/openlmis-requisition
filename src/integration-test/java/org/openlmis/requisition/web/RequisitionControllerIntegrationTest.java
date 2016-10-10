@@ -3,7 +3,6 @@ package org.openlmis.requisition.web;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Comment;
@@ -890,7 +889,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     testApproveRequisition(requisition);
   }
 
-  @Ignore
   @Test
   public void shouldInitializeRequisition() {
 
