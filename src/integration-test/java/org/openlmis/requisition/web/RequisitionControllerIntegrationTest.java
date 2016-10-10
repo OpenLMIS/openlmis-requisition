@@ -18,6 +18,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
@@ -25,7 +26,7 @@ import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
@@ -87,7 +90,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
+  private UserReferenceDataService userReferenceDataService;
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -1181,14 +1184,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 20;
     String filterValue = "facility";
 
-    RequisitionDto[] response = restAssured.given()
+    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", "facilityCode")
@@ -1201,37 +1203,36 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionDto[].class);
+        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
 
-    List<RequisitionDto> requisitions = Arrays.asList(response);
-    Iterator<RequisitionDto> requisitionIterator = requisitions.iterator();
+    Assert.assertTrue(response.length <= pageSize);
 
-    Assert.assertTrue(requisitions.size() <= pageSize);
-    RequisitionDto requisition1 = null;
-    if (requisitionIterator.hasNext()) {
-      requisition1 = requisitionIterator.next();
-    }
-    RequisitionDto requisition2;
-    while (requisitionIterator.hasNext()) {
-      requisition2 = requisitionIterator.next();
+    RequisitionDto previousRequisition = null;
+    Set<UUID> userFacilities = userReferenceDataService.findOne(user.getId())
+        .getFulfillmentFacilities().stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
-      RequisitionStatus requisitionStatus = requisition1.getStatus();
-      Assert.assertTrue(requisitionStatus.equals(RequisitionStatus.APPROVED));
+    for (RequisitionWithSupplyingDepotsDto dto : response) {
+      RequisitionDto requisition = dto.getRequisition();
+      Assert.assertTrue(requisition.getStatus().equals(RequisitionStatus.APPROVED));
 
-      UUID facilitId1 = requisition1.getFacility().getId();
-      FacilityDto facility1 = facilityReferenceDataService.findOne(facilitId1);
-
-      String facilityCode = facility1.getCode();
+      String facilityCode = requisition.getFacility().getCode();
       Assert.assertTrue(facilityCode.contains(filterValue));
-      UUID programId1 = requisition1.getProgram().getId();
-      ProgramDto program1 = programReferenceDataService.findOne(programId1);
 
-      UUID programId2 = requisition2.getProgram().getId();
-      ProgramDto program2 = programReferenceDataService.findOne(programId2);
+      List<FacilityDto> facilities = dto.getSupplyingDepots();
+      for (FacilityDto facility : facilities) {
+        Assert.assertTrue(userFacilities.contains(facility.getId()));
+      }
 
-      Assert.assertTrue(program1.getName().compareTo(program2.getName()) >= 0);
-      requisition1 = requisition2;
+      if (previousRequisition != null) {
+        ProgramDto program1 = previousRequisition.getProgram();
+        ProgramDto program2 = requisition.getProgram();
+
+        Assert.assertTrue(program1.getName().compareTo(program2.getName()) >= 0);
+      }
+
+      previousRequisition = requisition;
     }
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
