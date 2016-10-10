@@ -36,7 +36,8 @@ public class OrderFileTemplateValidator implements Validator {
       OrderFileColumn orderFileColumn = columns.get(i);
       if ((orderFileColumn.getFormat() != null)
           && (!acceptedValues.contains(orderFileColumn.getFormat()))) {
-        errors.rejectValue("orderFileColumns[" + i + "].format" , "", INVALID_FORMAT_DATE);
+        errors.rejectValue("orderFileColumns[" + i + "].format" ,
+            INVALID_FORMAT_DATE, INVALID_FORMAT_DATE);
       }
     }
   }
