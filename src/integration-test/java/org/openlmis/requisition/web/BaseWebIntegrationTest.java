@@ -76,34 +76,6 @@ public abstract class BaseWebIntegrationTest {
       + "  \"referenceDataUserId\": \"35316636-6264-6331-2d34-3933322d3462\"\n"
       + "}";
 
-  private static final String MOCK_USER_SEARCH_RESULT = "[{"
-      + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-      + "\"username\":\"admin\","
-      + "\"firstName\":\"Admin\","
-      + "\"lastName\":\"User\","
-      + "\"email\":\"example@mail.com\","
-      + "\"verified\":false,"
-      + "\"fulfillmentFacilities\": [{\"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
-      +    "\"code\":\"facilityCode\",\n"
-      +    "\"name\":\"facilityNameA\",\n"
-      +    "\"active\":true,\n"
-      +    "\"enabled\":true\n"
-      +    "}]"
-      + "}]";
-
-  private static final String MOCK_FIND_USER_RESULT = "{"
-      + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-      + "\"username\":\"admin\","
-      + "\"firstName\":\"Admin\","
-      + "\"lastName\":\"User\","
-      + "\"email\":\"example@mail.com\","
-      + "\"verified\":false"
-      + "}";
-
-  private static final String MOCK_FIND_USER_SUPERVISED_PROGRAMS = "[{"
-      + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\""
-      + "}]";
-
   private static final String MOCK_FIND_PROGRAM_RESULT = "{"
       + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Program Code\","
@@ -119,12 +91,35 @@ public abstract class BaseWebIntegrationTest {
       + " \"enabled\":true\n"
       + "}";
 
+  private static final String MOCK_USER_SEARCH_RESULT = "[{"
+      + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
+      + "\"username\":\"admin\","
+      + "\"firstName\":\"Admin\","
+      + "\"lastName\":\"User\","
+      + "\"email\":\"example@mail.com\","
+      + "\"verified\":false,"
+      + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
+      + "}]";
+
+  private static final String MOCK_FIND_USER_RESULT = "{"
+      + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
+      + "\"username\":\"admin\","
+      + "\"firstName\":\"Admin\","
+      + "\"lastName\":\"User\","
+      + "\"email\":\"example@mail.com\","
+      + "\"verified\":false,"
+      + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
+      + "}";
+
+  private static final String MOCK_FIND_USER_SUPERVISED_PROGRAMS = "[{"
+      + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\""
+      + "}]";
+
   private static final String MOCK_FIND_PRODUCT_RESULT = "{"
       + " \"id\":\"cd9e1412-8703-11e6-ae22-56b6b6499611\",\n"
       + " \"productCode\":\"Product Code\",\n"
       + " \"productName\":\"Product Name\"\n"
       + "}";
-
   private static final String MOCK_FIND_PROCESSING_SCHEDULE = "{"
       + " \"id\":\"c73ad6a4-895c-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Schedule Code\","
@@ -162,6 +157,9 @@ public abstract class BaseWebIntegrationTest {
       + " \"program\":\"aa66b58c-871a-11e6-ae22-56b6b6499611\",\n"
       + " \"supplyingFacility\":\"aa66b762-871a-11e6-ae22-56b6b6499611\"\n"
       + "}]";
+
+  private static final String MOCK_SEARCH_SUPPLYING_FACILITY_RESULT = "["
+      + MOCK_FIND_FACILITY_RESULT + "]";
 
   private static final String MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE = "{"
       + " \"id\":\"7b34f06e-895c-11e6-ae22-56b6b6499611\","
@@ -260,6 +258,13 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));
+
+    // This mocks searching for supplying facilities
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/facilities/supplying.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_SUPPLYING_FACILITY_RESULT)));
 
     // This mocks searching for processingPeriods
     wireMockRule.stubFor(get(

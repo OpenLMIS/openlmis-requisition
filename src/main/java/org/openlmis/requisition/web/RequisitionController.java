@@ -5,6 +5,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -45,7 +46,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -393,16 +393,15 @@ public class RequisitionController extends BaseController {
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
             filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
 
-    Map<RequisitionDto, Collection<FacilityDto>> requisitionListMap =
-        approvedRequisitionList.stream().collect(Collectors.toMap(
-            Function.identity(),
-            requisition -> {
-              Collection<FacilityDto> facilities =
-                  requisitionService.getAvailableSupplyingDepots(requisition);
-              return facilities.stream().filter(f -> userManagedFacilities.contains(f.getId()))
+    List<RequisitionWithSupplyingDepotsDto> response = approvedRequisitionList.stream()
+        .map(requisition -> {
+          List<FacilityDto> facilities =
+              requisitionService.getAvailableSupplyingDepots(requisition)
+                  .stream().filter(f -> userManagedFacilities.contains(f.getId()))
                   .collect(Collectors.toList());
-            }));
+          return new RequisitionWithSupplyingDepotsDto(requisition, facilities);
+        }).collect(Collectors.toList());
 
-    return new ResponseEntity<>(requisitionListMap, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
