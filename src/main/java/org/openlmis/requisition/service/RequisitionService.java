@@ -10,6 +10,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
@@ -23,6 +24,7 @@ import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
@@ -73,6 +75,9 @@ public class RequisitionService {
   @Autowired
   private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
 
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
   /**
    * Return requisitionDto with information about facility, program and period.
    * @param requisitionId Id of the requisition to be returned
@@ -90,10 +95,31 @@ public class RequisitionService {
     ProcessingPeriodDto processingPeriod = periodReferenceDataService
         .findOne(requisition.getProcessingPeriodId());
 
+    List<RequisitionLineItemDto> requisitionLineItems = new ArrayList<>();
+
+    for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
+      RequisitionLineItemDto req =  new RequisitionLineItemDto();
+      req.setId(requisitionLineItem.getId());
+      req.setOrderableProduct(orderableProductReferenceDataService.findOne(requisitionLineItem
+          .getOrderableProductId()));
+      req.setRequisition(requisitionLineItem.getRequisition());
+      req.setStockInHand(requisitionLineItem.getStockInHand());
+      req.setBeginningBalance(requisitionLineItem.getBeginningBalance());
+      req.setTotalReceivedQuantity(requisitionLineItem.getTotalReceivedQuantity());
+      req.setTotalLossesAndAdjustments(requisitionLineItem.getTotalLossesAndAdjustments());
+      req.setStockOnHand(requisitionLineItem.getStockOnHand());
+      req.setRequestedQuantity(requisitionLineItem.getRequestedQuantity());
+      req.setTotalConsumedQuantity(requisitionLineItem.getTotalConsumedQuantity());
+      req.setRequestedQuantityExplanation(requisitionLineItem.getRequestedQuantityExplanation());
+      req.setRemarks(requisitionLineItem.getRemarks());
+      req.setApprovedQuantity(requisitionLineItem.getApprovedQuantity());
+      requisitionLineItems.add(req);
+    }
+
     return new RequisitionDto(
         requisition.getId(),
         requisition.getCreatedDate(),
-        requisition.getRequisitionLineItems(),
+        requisitionLineItems,
         requisition.getComments(),
         facility,
         program,
