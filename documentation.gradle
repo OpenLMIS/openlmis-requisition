@@ -5,7 +5,10 @@ def ramlToCopy = copySpec {
     from 'src/main/resources'
     include 'api-definition.yaml'
     rename { 'api-definition-raml.yaml' }
-    filter(ReplaceTokens, tokens: [baseUrl: System.env.BASE_URL])
+    def virtualLocation = System.getenv("VIRTUAL_LOCATION")
+    filter(ReplaceTokens, tokens: [
+            baseUrl: System.getenv("VIRTUAL_HOST"),
+            prefix: virtualLocation ? "/" + virtualLocation : ""])
 }
 
 def ramlHtmlToCopy = copySpec {
