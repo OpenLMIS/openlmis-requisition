@@ -1,5 +1,10 @@
 package org.openlmis.requisition.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -14,22 +19,14 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -216,23 +213,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
-    requisition.setSupplyingFacilityId(facility);
-
-    String mockUserFindResult = "{"
-        + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-        + "\"username\":\"admin\","
-        + "\"firstName\":\"Admin\","
-        + "\"lastName\":\"User\","
-        + "\"email\":\"example@mail.com\","
-        + "\"verified\":\"true\","
-        + "\"fulfillmentFacilities\":"
-        + "[{\"id\":\"" + facility + "\"}]"
-        + "}";
-
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(mockUserFindResult)));
+    requisition.setSupplyingFacilityId(UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611"));
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())

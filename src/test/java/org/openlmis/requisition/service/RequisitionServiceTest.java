@@ -1,7 +1,15 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +39,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
@@ -42,13 +51,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -111,6 +113,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
+
+  @Mock
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -322,14 +327,17 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldReleaseRequisitionsAsOrder() throws RequisitionException {
-    UserDto user = mock(UserDto.class);
-    FacilityDto facility = mock(FacilityDto.class);
+    final UUID userUuid = UUID.randomUUID();
+    final UserDto user = mock(UserDto.class);
+    final FacilityDto facility = mock(FacilityDto.class);
+    when(user.getId()).thenReturn(userUuid);
 
     Set<FacilityDto> facilities = new HashSet<>();
     facilities.add(facility);
 
     when(facility.getId()).thenReturn(facilityId);
-    when(user.getFulfillmentFacilities()).thenReturn(facilities);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(any(UUID.class)))
+        .thenReturn(facilities);
 
     requisition.setStatus(RequisitionStatus.APPROVED);
     List<Requisition> requisitions = Collections.singletonList(requisition);

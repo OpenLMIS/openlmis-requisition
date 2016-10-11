@@ -8,6 +8,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -19,7 +20,9 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ErrorResponse;
@@ -81,6 +84,12 @@ public class RequisitionController extends BaseController {
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
+  @Autowired
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
+
+  @Autowired
+  private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
+
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
@@ -101,6 +110,22 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                    @RequestParam(value = "emergency") Boolean emergency)
           throws RequisitionException {
+    String userName =
+        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("username", userName);
+    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
+    Collection<ProgramDto> supervisedPrograms = userSupervisedProgramsReferenceDataService
+        .getProgramsSupervisedByUser(users.get(0).getId());
+
+    if (supervisedPrograms != null && supervisedPrograms.size() == 1
+        && !supervisedPrograms.iterator().next().getId().equals(program)) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("Invalid program", "The user is not associated with given program");
+      LOGGER.debug(errorResponse.getMessage());
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     Requisition newRequisition = requisitionService.initiate(program,
         facility, suggestedPeriod, emergency);
     return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
@@ -300,8 +325,8 @@ public class RequisitionController extends BaseController {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
     List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
-    List<Requisition> requisitions =
-        requisitionService.getRequisitionsForApproval(users.get(0).getId());
+    Collection<RequisitionDto> requisitions =
+        requisitionService.getRequisitionForApprovalDtos(users.get(0).getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
@@ -382,15 +407,14 @@ public class RequisitionController extends BaseController {
       @RequestParam Integer pageNumber,
       @RequestParam Integer pageSize) {
 
-    // TODO Add filtering about available Requisition for user
-    // (If Reference Data Service - EBAC will be finished)
     String userName =
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
     UserDto user = new ArrayList<>(userReferenceDataService.findUsers(parameters)).get(0);
 
-    Collection<UUID> userManagedFacilities = user.getFulfillmentFacilities()
+    Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
     Collection<RequisitionDto> approvedRequisitionList =

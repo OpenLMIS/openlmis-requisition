@@ -26,6 +26,7 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProduc
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,22 @@ public class RequisitionService {
   @Autowired
   private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
 
+  @Autowired
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
+
+  /**
+   * Return list of requisitionDtos with information about facility, program and period.
+   * @param requisitions List of requisitions to be returned
+   * @return list of RequisitionDto objects
+   */
+  public List<RequisitionDto> getRequisitions(List<Requisition> requisitions) {
+    List<RequisitionDto> requisitionDtos = new ArrayList<>();
+    for (Requisition requisition : requisitions) {
+      requisitionDtos.add(getRequisition(requisition));
+    }
+    return requisitionDtos;
+  }
+
   /**
    * Return requisitionDto with information about facility, program and period.
    * @param requisitionId Id of the requisition to be returned
@@ -80,6 +97,15 @@ public class RequisitionService {
    */
   public RequisitionDto getRequisition(UUID requisitionId) throws RequisitionNotFoundException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
+    return getRequisition(requisition);
+  }
+
+  /**
+   * Return requisitionDto with information about facility, program and period.
+   * @param requisition Requisition to be returned
+   * @return RequisitionDto object
+   */
+  public RequisitionDto getRequisition(Requisition requisition) {
     if (requisition == null) {
       return null;
     }
@@ -292,6 +318,14 @@ public class RequisitionService {
   }
 
   /**
+   * Get requisition Dtos to approve for specified user.
+   */
+  public List<RequisitionDto> getRequisitionForApprovalDtos(UUID userId) {
+    List<Requisition> requisitionsForApproval = getRequisitionsForApproval(userId);
+    return getRequisitions(requisitionsForApproval);
+  }
+
+  /**
    * Get authorized requisitions for specified program.
    */
   public List<Requisition> getAuthorizedRequisitions(ProgramDto program) {
@@ -317,8 +351,9 @@ public class RequisitionService {
   public List<Requisition> releaseRequisitionsAsOrder(
       List<Requisition> requisitionList, UserDto user) throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
-    Set<UUID> userFacilities = user.getFulfillmentFacilities()
-        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
+    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)
+        .collect(Collectors.toSet());
 
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());

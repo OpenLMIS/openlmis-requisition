@@ -1,7 +1,13 @@
 package org.openlmis.requisition.web;
 
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -15,15 +21,10 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.util.Collections;
 import java.util.UUID;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
 
 public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -40,7 +41,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
   private Requisition requisition;
   private ProgramDto programDto;
-  private UUID facility = UUID.randomUUID();
+  private UUID facility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
 
   @Before
   public void setUp() {
@@ -171,22 +172,6 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   }
 
   private void mockReferenceData() {
-    final String userFindResult = "{"
-        + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-        + "\"username\":\"admin\","
-        + "\"firstName\":\"Admin\","
-        + "\"lastName\":\"User\","
-        + "\"email\":\"example@mail.com\","
-        + "\"verified\":\"true\","
-        + "\"fulfillmentFacilities\":"
-        + "[{\"id\":\"" + facility + "\"}]"
-        + "}";
-
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(userFindResult)));
-
     final String programFindResult = "{"
         + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
         + "\"code\":\"" + programDto.getCode() + "\","
