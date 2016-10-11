@@ -41,7 +41,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
   private Requisition requisition;
   private ProgramDto programDto;
-  private UUID facility = UUID.randomUUID();
+  private UUID facility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
 
   @Before
   public void setUp() {
@@ -172,28 +172,6 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   }
 
   private void mockReferenceData() {
-    final String userFindResult = "{"
-        + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-        + "\"username\":\"admin\","
-        + "\"firstName\":\"Admin\","
-        + "\"lastName\":\"User\","
-        + "\"email\":\"example@mail.com\","
-        + "\"verified\":\"true\","
-        + "\"fulfillmentFacilities\":"
-        + "[{\"id\":\"" + facility + "\"}]"
-        + "}";
-
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(userFindResult)));
-
-    wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody("[{\"id\":\"" + facility + "\"}]")));
-
     final String programFindResult = "{"
         + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
         + "\"code\":\"" + programDto.getCode() + "\","
