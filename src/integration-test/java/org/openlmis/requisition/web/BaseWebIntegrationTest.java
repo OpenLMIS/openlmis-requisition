@@ -308,7 +308,7 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks searching facilities with similar facilityCode or facilityName
     wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/facilities/findFacilitiesWithSimilarCodeOrName.*"))
+        get(urlMatching("/referencedata/api/facilities/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME)));

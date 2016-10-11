@@ -199,17 +199,17 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     if (filterBy.equals("programName") || filterBy.equals("all")) {
       Collection<ProgramDto> foundPrograms =
-          programReferenceDataService.searchBySimilarProgramName(filterValue);
+          programReferenceDataService.search(filterValue);
       foundPrograms.forEach(program -> uuidsToReturn.add(program.getId()));
     }
     if (filterBy.equals("facilityCode") || filterBy.equals("all")) {
       Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.searchFacilitiesBySimilarCodeOrName(filterValue, null);
+          facilityReferenceDataService.search(filterValue, null);
       foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
     if (filterBy.equals("facilityName") || filterBy.equals("all")) {
       Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.searchFacilitiesBySimilarCodeOrName(null, filterValue);
+          facilityReferenceDataService.search(null, filterValue);
       foundFacilities.forEach(facilityDto -> {
         if (!uuidsToReturn.add(facilityDto.getId())) {
           uuidsToReturn.add(facilityDto.getId());
