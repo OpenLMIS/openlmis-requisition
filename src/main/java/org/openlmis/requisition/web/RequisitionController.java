@@ -5,6 +5,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -13,6 +14,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
@@ -158,12 +160,13 @@ public class RequisitionController extends BaseController {
 
     try {
       LOGGER.debug("Submitting a requisition with id " + requisition.getId());
-      requisition.submit();
-      savedRequisition.updateFrom(requisition,
-              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
+      RequisitionTemplate template =
+          requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
+      requisition.submit(template);
+      savedRequisition.updateFrom(requisition, template);
       requisitionRepository.save(savedRequisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
-    } catch (RequisitionException ex) {
+    } catch (RequisitionException | RequisitionTemplateColumnException ex) {
       ErrorResponse errorResponse =
               new ErrorResponse("An error occurred while submitting requisition with id: "
                       + requisition.getId(), ex.getMessage());

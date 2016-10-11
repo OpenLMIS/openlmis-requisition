@@ -1,17 +1,28 @@
 package org.openlmis.requisition.repository.custom.impl;
 
+
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,12 +32,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -38,6 +43,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @Autowired
   private PeriodReferenceDataService processingPeriodReferenceDataService;
+
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
 
   @PersistenceContext
@@ -199,17 +207,17 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     if (filterBy.equals("programName") || filterBy.equals("all")) {
       Collection<ProgramDto> foundPrograms =
-          programReferenceDataService.searchBySimilarProgramName(filterValue);
+          programReferenceDataService.search(filterValue);
       foundPrograms.forEach(program -> uuidsToReturn.add(program.getId()));
     }
     if (filterBy.equals("facilityCode") || filterBy.equals("all")) {
       Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.searchFacilitiesBySimilarCodeOrName(filterValue, null);
+          facilityReferenceDataService.search(filterValue, null);
       foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
     if (filterBy.equals("facilityName") || filterBy.equals("all")) {
       Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.searchFacilitiesBySimilarCodeOrName(null, filterValue);
+          facilityReferenceDataService.search(null, filterValue);
       foundFacilities.forEach(facilityDto -> {
         if (!uuidsToReturn.add(facilityDto.getId())) {
           uuidsToReturn.add(facilityDto.getId());
@@ -226,7 +234,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     for (Requisition requisition : requisitions) {
       RequisitionDto requisitionDto = new RequisitionDto();
       requisitionDto.setId(requisition.getId());
-      requisitionDto.setRequsitionLineItems(requisition.getRequisitionLineItems());
+      requisitionDto.setRequsitionLineItems(getRequisitionLineItems(requisition));
       requisitionDto.setComments(requisition.getComments());
       requisitionDto.setStatus(requisition.getStatus());
       requisitionDto.setEmergency(requisition.getEmergency());
@@ -243,6 +251,29 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return requisitionsConvertedToDto;
+  }
+
+  private List<RequisitionLineItemDto> getRequisitionLineItems(Requisition requisition) {
+    List<RequisitionLineItemDto> requisitionLineItems =  new ArrayList<>();
+    for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
+      RequisitionLineItemDto req =  new RequisitionLineItemDto();
+      req.setId(requisitionLineItem.getId());
+      req.setOrderableProduct(orderableProductReferenceDataService.findOne(requisitionLineItem
+          .getOrderableProductId()));
+      req.setRequisition(requisitionLineItem.getRequisition());
+      req.setStockInHand(requisitionLineItem.getStockInHand());
+      req.setBeginningBalance(requisitionLineItem.getBeginningBalance());
+      req.setTotalReceivedQuantity(requisitionLineItem.getTotalReceivedQuantity());
+      req.setTotalLossesAndAdjustments(requisitionLineItem.getTotalLossesAndAdjustments());
+      req.setStockOnHand(requisitionLineItem.getStockOnHand());
+      req.setRequestedQuantity(requisitionLineItem.getRequestedQuantity());
+      req.setTotalConsumedQuantity(requisitionLineItem.getTotalConsumedQuantity());
+      req.setRequestedQuantityExplanation(requisitionLineItem.getRequestedQuantityExplanation());
+      req.setRemarks(requisitionLineItem.getRemarks());
+      req.setApprovedQuantity(requisitionLineItem.getApprovedQuantity());
+      requisitionLineItems.add(req);
+    }
+    return requisitionLineItems;
   }
 
 }

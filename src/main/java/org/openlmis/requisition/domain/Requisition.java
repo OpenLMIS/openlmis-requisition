@@ -151,18 +151,31 @@ public class Requisition extends BaseEntity {
       if (requisitionTemplate.isColumnCalculated("stockOnHand")) {
         calculateStockOnHand();
       }
+
+      if (requisitionTemplate.isColumnCalculated("totalConsumedQuantity")) {
+        calculateTotalConsumedQuantity();
+      }
     } catch (RequisitionTemplateColumnException ex) {
-      LOGGER.debug("stockOnHand column not present in template, skipping calculation");
+      LOGGER.debug("stockOnHand or totalConsumedQuantity column not present in template,"
+          + " skipping calculation");
     }
   }
 
   /**
    * Submits given requisition.
+   *
+   * @param template Requisition template
    */
-  public void submit() throws RequisitionException {
+  public void submit(RequisitionTemplate template)
+      throws RequisitionException, RequisitionTemplateColumnException {
     if (!RequisitionStatus.INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition must have status 'INITIATED' to be submitted.");
+    }
+
+    if (areFieldsNotFilled(template, "totalConsumedQuantity")) {
+      throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
+          + ", requisition fields must have values.");
     }
 
     status = RequisitionStatus.SUBMITTED;
@@ -182,9 +195,33 @@ public class Requisition extends BaseEntity {
 
   private void calculateStockOnHand() {
     if (requisitionLineItems != null) {
-      for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
-        requisitionLineItem.calculateStockOnHand();
+      requisitionLineItems.forEach(RequisitionLineItem::calculateStockOnHand);
+    }
+  }
+
+  private void calculateTotalConsumedQuantity() {
+    if (requisitionLineItems != null) {
+      requisitionLineItems.forEach(RequisitionLineItem::calculateTotalConsumedQuality);
+    }
+  }
+
+  private boolean areFieldsNotFilled(RequisitionTemplate template, String field)
+      throws RequisitionTemplateColumnException {
+    if ("totalConsumedQuantity".equals(field)) {
+      boolean calculated = template.isColumnCalculated(field);
+
+      if (calculated && requisitionLineItems != null) {
+        for (RequisitionLineItem line : requisitionLineItems) {
+          if (null == line.getBeginningBalance()
+              || null == line.getTotalReceivedQuantity()
+              || null == line.getTotalLossesAndAdjustments()
+              || null == line.getStockOnHand()) {
+            return true;
+          }
+        }
       }
     }
+
+    return false;
   }
 }

@@ -65,15 +65,26 @@ public class RequisitionValidator implements Validator {
                                            RequisitionLineItem item) {
     rejectIfNull(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
     rejectIfLessThanZero(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
+
     rejectIfNull(errors, template, item.getBeginningBalance(), BEGINNING_BALANCE);
     rejectIfLessThanZero(errors, template, item.getBeginningBalance(), BEGINNING_BALANCE);
+
     rejectIfNull(errors, template, item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
-    rejectIfLessThanZero(errors, template, item.getTotalReceivedQuantity(),
-        TOTAL_RECEIVED_QUANTITY);
+    rejectIfLessThanZero(
+        errors, template, item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY
+    );
+
     rejectIfNull(errors, template, item.getStockOnHand(), STOCK_ON_HAND);
+
     rejectIfNull(errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
-    rejectIfNull(errors, template, item.getTotalLossesAndAdjustments(),
-        TOTAL_LOSSES_AND_ADJUSTMENTS);
+    rejectIfLessThanZero(
+        errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY
+    );
+
+    rejectIfNull(
+        errors, template, item.getTotalLossesAndAdjustments(), TOTAL_LOSSES_AND_ADJUSTMENTS
+    );
+
     validateRequestedQuantityExplanation(errors, template, item);
   }
 

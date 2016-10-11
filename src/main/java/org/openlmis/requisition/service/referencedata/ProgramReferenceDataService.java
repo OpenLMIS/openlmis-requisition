@@ -26,14 +26,15 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
   }
 
   /**
+   * This method retrieves Programs with programName similar with name parameter.
    *
    * @param programName Field with string to find similar name.
    * @return List of ProgramDtos with similar programName.
    */
-  public Collection<ProgramDto> searchBySimilarProgramName(String programName) {
+  public Collection<ProgramDto> search(String programName) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("name", programName);
 
-    return findAll("findProgramsWithSimilarName", parameters);
+    return findAll("find", parameters);
   }
 }
