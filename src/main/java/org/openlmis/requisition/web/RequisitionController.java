@@ -304,8 +304,8 @@ public class RequisitionController extends BaseController {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
     List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
-    List<Requisition> requisitions =
-        requisitionService.getRequisitionsForApproval(users.get(0).getId());
+    Collection<RequisitionDto> requisitions =
+        requisitionService.getRequisitionForApprovalDtos(users.get(0).getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
