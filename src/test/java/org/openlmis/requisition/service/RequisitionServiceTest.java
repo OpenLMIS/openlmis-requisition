@@ -336,7 +336,7 @@ public class RequisitionServiceTest {
     facilities.add(facility);
 
     when(facility.getId()).thenReturn(facilityId);
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userUuid))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(any(UUID.class)))
         .thenReturn(facilities);
 
     requisition.setStatus(RequisitionStatus.APPROVED);

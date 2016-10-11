@@ -85,7 +85,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
-  private UserFulfillmentFacilitiesReferenceDataService userReferenceDataService;
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -1178,7 +1178,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertTrue(response.length <= pageSize);
 
     RequisitionDto previousRequisition = null;
-    Set<UUID> userFacilities = userReferenceDataService.getFulfillmentFacilities(user.getId())
+    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {
@@ -1230,7 +1231,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertTrue(response.length <= pageSize);
 
     RequisitionDto previousRequisition = null;
-    Set<UUID> userFacilities = userReferenceDataService.getFulfillmentFacilities(user.getId())
+    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {

@@ -1,8 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -216,29 +213,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
-    requisition.setSupplyingFacilityId(facility);
-
-    String mockUserFindResult = "{"
-        + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-        + "\"username\":\"admin\","
-        + "\"firstName\":\"Admin\","
-        + "\"lastName\":\"User\","
-        + "\"email\":\"example@mail.com\","
-        + "\"verified\":\"true\","
-        + "\"fulfillmentFacilities\":"
-        + "[{\"id\":\"" + facility + "\"}]"
-        + "}";
-
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(mockUserFindResult)));
-
-    wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody("[{\"id\":\"" + facility + "\"}]")));
+    requisition.setSupplyingFacilityId(UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611"));
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
