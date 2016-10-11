@@ -1,7 +1,6 @@
 package org.openlmis.requisition.domain;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.internal.util.type.PrimitiveWrapperHelper;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 
 import lombok.Getter;
@@ -16,7 +15,6 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.criteria.CriteriaBuilder;
 
 @Entity
 @Table(name = "requisition_line_items")
@@ -121,10 +119,27 @@ public class RequisitionLineItem extends BaseEntity {
             + totalLossesAndAdjustments - stockOnHand;
   }
 
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setStockInHand(stockInHand);
+    exporter.setBeginningBalance(beginningBalance);
+    exporter.setTotalReceivedQuantity(totalReceivedQuantity);
+    exporter.setTotalLossesAndAdjustments(totalLossesAndAdjustments);
+    exporter.setStockOnHand(stockOnHand);
+    exporter.setRequestedQuantity(requestedQuantity);
+    exporter.setTotalConsumedQuantity(totalConsumedQuantity);
+    exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
+    exporter.setRemarks(remarks);
+    exporter.setApprovedQuantity(approvedQuantity);
+  }
+
   public interface Exporter {
     void setId(UUID id);
-
-    void setRequisition(Requisition requisition);
 
     void setStockInHand(Integer stockInHand);
 
@@ -150,8 +165,6 @@ public class RequisitionLineItem extends BaseEntity {
   public interface Importer {
     UUID getId();
 
-    Requisition getRequisition();
-
     Integer getStockInHand();
 
     Integer getBeginningBalance();
@@ -164,7 +177,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getRequestedQuantity();
 
-    Integer getTotalConsumendQuantity();
+    Integer getTotalConsumedQuantity();
 
     String getRequestedQuantityExplanation();
 

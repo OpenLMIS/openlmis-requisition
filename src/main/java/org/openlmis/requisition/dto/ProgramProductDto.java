@@ -1,10 +1,12 @@
 package org.openlmis.requisition.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
-import lombok.Data;
-
-@Data
+@Getter
+@Setter
 public class ProgramProductDto {
   private UUID id;
   private ProgramDto program;

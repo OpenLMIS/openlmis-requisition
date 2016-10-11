@@ -1,12 +1,13 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import lombok.Getter;
-import lombok.Setter;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openlmis.view.View;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -24,5 +25,5 @@ public abstract class BaseEntity {
   @Type(type = "pg-uuid")
   @Getter
   @Setter
-  private UUID id;
+  protected UUID id;
 }
