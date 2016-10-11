@@ -1,6 +1,6 @@
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 
 import java.util.UUID;
 
@@ -9,10 +9,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RequisitionLineItemDto {
+public class RequisitionLineItemDto implements RequisitionLineItem.Exporter, RequisitionLineItem.Importer{
   private UUID id;
   private OrderableProductDto orderableProduct;
-  private Requisition requisition;
   private Integer stockInHand;
   private Integer beginningBalance;
   private Integer totalReceivedQuantity;

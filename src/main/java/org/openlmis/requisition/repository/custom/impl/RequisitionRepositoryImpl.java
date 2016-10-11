@@ -252,14 +252,18 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return requisitionsConvertedToDto;
   }
 
-  private List<RequisitionLineItemDto> getRequisitionLineItems(Requisition requisition) {
+  /**
+   *  Gets list of RequisitionLineItem for a specific requisition.
+   * @param requisition of which RequisitionLineItems are requested
+   * @return list of RequisitionLinesItems
+   */
+  public List<RequisitionLineItemDto> getRequisitionLineItems(Requisition requisition) {
     List<RequisitionLineItemDto> requisitionLineItems =  new ArrayList<>();
     for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
       RequisitionLineItemDto req =  new RequisitionLineItemDto();
       req.setId(requisitionLineItem.getId());
       req.setOrderableProduct(orderableProductReferenceDataService.findOne(requisitionLineItem
           .getOrderableProductId()));
-      req.setRequisition(requisitionLineItem.getRequisition());
       req.setStockInHand(requisitionLineItem.getStockInHand());
       req.setBeginningBalance(requisitionLineItem.getBeginningBalance());
       req.setTotalReceivedQuantity(requisitionLineItem.getTotalReceivedQuantity());

@@ -1,6 +1,7 @@
 package org.openlmis.requisition.domain;
 
 import org.hibernate.annotations.Type;
+import org.hibernate.internal.util.type.PrimitiveWrapperHelper;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 
 import java.util.UUID;
@@ -11,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.criteria.CriteriaBuilder;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -117,5 +119,57 @@ public class RequisitionLineItem extends BaseEntity {
   void calculateTotalConsumedQuality() {
     totalConsumedQuantity = beginningBalance + totalReceivedQuantity
             + totalLossesAndAdjustments - stockOnHand;
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setRequisition(Requisition requisition);
+
+    void setStockInHand(Integer stockInHand);
+
+    void setBeginningBalance(Integer beginningBalance);
+
+    void setTotalReceivedQuantity(Integer totalReceivedQuantity);
+
+    void setTotalLossesAndAdjustments(Integer totalLossesAndAdjustments);
+
+    void setStockOnHand(Integer stockOnHand);
+
+    void setRequestedQuantity(Integer requestedQuantity);
+
+    void setTotalConsumedQuantity(Integer totalConsumedQuantity);
+
+    void setRequestedQuantityExplanation(String requestedQuantityExplanation);
+
+    void setRemarks(String remarks);
+
+    void setApprovedQuantity(Integer approvedQuantity);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    Requisition getRequisition();
+
+    Integer getStockInHand();
+
+    Integer getBeginningBalance();
+
+    Integer getTotalReceivedQuantity();
+
+    Integer getTotalLossesAndAdjustments();
+
+    Integer getStockOnHand();
+
+    Integer getRequestedQuantity();
+
+    Integer getTotalConsumendQuantity();
+
+    String getRequestedQuantityExplanation();
+
+    String getRemarks();
+
+    Integer getApprovedQuantity();
   }
 }
