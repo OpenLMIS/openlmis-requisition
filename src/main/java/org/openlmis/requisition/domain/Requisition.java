@@ -201,7 +201,7 @@ public class Requisition extends BaseEntity {
 
   private void calculateTotalConsumedQuantity() {
     if (requisitionLineItems != null) {
-      requisitionLineItems.forEach(RequisitionLineItem::calculateTotalConsumedQuality);
+      requisitionLineItems.forEach(RequisitionLineItem::calculateTotalConsumedQuantity);
     }
   }
 
