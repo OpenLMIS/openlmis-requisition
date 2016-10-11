@@ -26,6 +26,7 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProduc
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,9 @@ public class RequisitionService {
 
   @Autowired
   private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
+
+  @Autowired
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   /**
    * Return requisitionDto with information about facility, program and period.
@@ -317,8 +321,9 @@ public class RequisitionService {
   public List<Requisition> releaseRequisitionsAsOrder(
       List<Requisition> requisitionList, UserDto user) throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
-    Set<UUID> userFacilities = user.getFulfillmentFacilities()
-        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
+    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)
+        .collect(Collectors.toSet());
 
     for (Requisition requisition : requisitionList) {
       Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());

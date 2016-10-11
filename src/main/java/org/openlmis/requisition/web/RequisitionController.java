@@ -1,5 +1,8 @@
 package org.openlmis.requisition.web;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -14,6 +17,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
@@ -37,7 +41,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,8 +51,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import javax.validation.Valid;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -77,6 +79,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -378,15 +383,14 @@ public class RequisitionController extends BaseController {
       @RequestParam Integer pageNumber,
       @RequestParam Integer pageSize) {
 
-    // TODO Add filtering about available Requisition for user
-    // (If Reference Data Service - EBAC will be finished)
     String userName =
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("username", userName);
     UserDto user = new ArrayList<>(userReferenceDataService.findUsers(parameters)).get(0);
 
-    Collection<UUID> userManagedFacilities = user.getFulfillmentFacilities()
+    Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
     Collection<RequisitionDto> approvedRequisitionList =
