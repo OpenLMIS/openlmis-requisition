@@ -30,7 +30,7 @@ import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +85,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
+  private UserFulfillmentFacilitiesReferenceDataService userReferenceDataService;
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -1178,8 +1178,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertTrue(response.length <= pageSize);
 
     RequisitionDto previousRequisition = null;
-    Set<UUID> userFacilities = userReferenceDataService.findOne(user.getId())
-        .getFulfillmentFacilities().stream().map(FacilityDto::getId).collect(Collectors.toSet());
+    Set<UUID> userFacilities = userReferenceDataService.getFulfillmentFacilities(user.getId())
+        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {
       RequisitionDto requisition = dto.getRequisition();
@@ -1230,8 +1230,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Assert.assertTrue(response.length <= pageSize);
 
     RequisitionDto previousRequisition = null;
-    Set<UUID> userFacilities = userReferenceDataService.findOne(user.getId())
-        .getFulfillmentFacilities().stream().map(FacilityDto::getId).collect(Collectors.toSet());
+    Set<UUID> userFacilities = userReferenceDataService.getFulfillmentFacilities(user.getId())
+        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {
       RequisitionDto requisition = dto.getRequisition();

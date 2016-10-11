@@ -1,7 +1,13 @@
 package org.openlmis.requisition.web;
 
 
-import guru.nidi.ramltester.junit.RamlMatchers;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
@@ -15,15 +21,10 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.util.Collections;
 import java.util.UUID;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
 
 public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -186,6 +187,12 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(userFindResult)));
+
+    wireMockRule.stubFor(
+        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("[{\"id\":\"" + facility + "\"}]")));
 
     final String programFindResult = "{"
         + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
