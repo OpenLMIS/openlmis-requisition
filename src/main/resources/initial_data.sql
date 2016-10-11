@@ -15,6 +15,7 @@ VALUES ('70543032-b131-4219-b44d-7781d29db330', 'O', true, true, true);
 
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory) VALUES
 ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'requestedQuantity', 'Requested Quantity', 'J', false),
+('3d1d11a8-8ee3-11e6-ae22-56b6b6499611', 'totalConsumedQuantity', 'Total Consumed Quantity', 'C', false),
 ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'totalReceivedQuantity', 'Total Received Quantity', 'B', false),
 ('33b2d2e9-3167-46b0-95d4-1295be9afc22', 'beginningBalance', 'Beginning Balance', 'A', false),
 ('752cda76-0db5-4b6e-bb79-0f531ab78e2c', 'stockOnHand', 'Stock On Hand', 'E', false),
@@ -26,6 +27,8 @@ INSERT INTO requisition.available_requisition_columns (id, name, label, indicato
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES
 ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT'), -- requestedQuantity
+('3d1d11a8-8ee3-11e6-ae22-56b6b6499611', 'USER_INPUT'), -- totalConsumedQuantity
+('3d1d11a8-8ee3-11e6-ae22-56b6b6499611', 'CALCULATED'), -- totalConsumedQuantity
 ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT'), -- totalReceivedQuantity
 ('33b2d2e9-3167-46b0-95d4-1295be9afc22', 'USER_INPUT'), -- beginningBalance
 ('752cda76-0db5-4b6e-bb79-0f531ab78e2c', 'USER_INPUT'), -- stockOnHand
