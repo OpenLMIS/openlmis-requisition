@@ -671,6 +671,8 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
     /submitted:
         get:
             is: [ secured ]
