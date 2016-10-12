@@ -175,8 +175,10 @@ public class Requisition extends BaseEntity {
           .findFirst().orElse(null);
 
       if (null == existing) {
+        item.setRequisition(this);
         updatedList.add(item);
       } else {
+        existing.setRequisition(this);
         existing.updateFrom(item);
         updatedList.add(existing);
       }

@@ -1,5 +1,8 @@
 package org.openlmis.requisition.web;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -42,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,8 +55,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import javax.validation.Valid;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -193,7 +194,9 @@ public class RequisitionController extends BaseController {
       LOGGER.debug(errorResponse.getMessage(), ex);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<Object>(requisition, HttpStatus.OK);
+    return new ResponseEntity<Object>(
+        requisitionService.getRequisition(requisition), HttpStatus.OK
+    );
   }
 
   /**
@@ -229,7 +232,9 @@ public class RequisitionController extends BaseController {
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-      return new ResponseEntity<>(requisitionToUpdate, HttpStatus.OK);
+      return new ResponseEntity<>(
+          requisitionService.getRequisition(requisitionToUpdate), HttpStatus.OK
+      );
     } else {
       throw new InvalidRequisitionStatusException("Cannot update a requisition "
               + "with status: " + requisition.getStatus());

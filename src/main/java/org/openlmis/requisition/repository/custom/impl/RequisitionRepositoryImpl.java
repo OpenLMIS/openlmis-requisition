@@ -260,7 +260,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       req.setId(requisitionLineItem.getId());
       req.setOrderableProduct(orderableProductReferenceDataService.findOne(requisitionLineItem
           .getOrderableProductId()));
-      req.setRequisition(requisitionLineItem.getRequisition());
       req.setStockInHand(requisitionLineItem.getStockInHand());
       req.setBeginningBalance(requisitionLineItem.getBeginningBalance());
       req.setTotalReceivedQuantity(requisitionLineItem.getTotalReceivedQuantity());
