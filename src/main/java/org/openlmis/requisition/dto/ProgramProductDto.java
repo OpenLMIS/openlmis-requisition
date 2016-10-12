@@ -14,6 +14,8 @@ public class ProgramProductDto {
   private Integer dosesPerMonth;
   private boolean active;
   private ProductCategoryDto productCategory;
+  private String productCategoryDisplayName;
+  private int productCategoryDisplayOrder;
   private boolean fullSupply;
   private int displayOrder;
   private int maxMonthsStock;

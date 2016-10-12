@@ -26,6 +26,7 @@ import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
@@ -80,6 +81,10 @@ public class RequisitionService {
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
+
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
 
   /**
    * Return list of requisitionDtos with information about facility, program and period.
@@ -461,6 +466,8 @@ public class RequisitionService {
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
     requisitionLineItem.export(dto);
+    dto.setOrderableProduct(orderableProductReferenceDataService.findOne(
+        requisitionLineItem.getOrderableProductId()));
     return dto;
   }
 

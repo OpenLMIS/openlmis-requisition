@@ -3,7 +3,7 @@ package org.openlmis.requisition.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -12,5 +12,5 @@ public class OrderableProductDto {
   private UUID id;
   private String productCode;
   private String name;
-  private Set<ProgramProductDto> programProducts;
+  private List<ProgramProductDto> programs;
 }
