@@ -1,8 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -45,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +53,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -222,8 +221,11 @@ public class RequisitionController extends BaseController {
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
     if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
+
       requisitionToUpdate.updateFrom(requisition,
-              requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
+              requisitionTemplateRepository.getTemplateForProgram(
+                      requisitionToUpdate.getProgramId()));
+
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());

@@ -12,8 +12,18 @@ import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.web.RequisitionController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,14 +37,6 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
-import org.openlmis.requisition.web.RequisitionController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Entity
 @Table(name = "requisitions")
@@ -141,11 +143,9 @@ public class Requisition extends BaseEntity {
    */
   public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate) {
     this.comments = requisition.getComments();
-    this.facilityId = requisition.getFacilityId();
-    this.programId = requisition.getProgramId();
-    this.processingPeriodId = requisition.getProcessingPeriodId();
-    this.emergency = requisition.getEmergency();
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
+
+    updateReqLines(requisition.getRequisitionLineItems());
 
     try {
       if (requisitionTemplate.isColumnCalculated("stockOnHand")) {
@@ -159,6 +159,31 @@ public class Requisition extends BaseEntity {
       LOGGER.debug("stockOnHand or totalConsumedQuantity column not present in template,"
           + " skipping calculation");
     }
+  }
+
+  private void updateReqLines(Collection<RequisitionLineItem> lineItems) {
+    if (null == requisitionLineItems) {
+      this.requisitionLineItems = new ArrayList<>();
+    }
+
+    List<RequisitionLineItem> updatedList = new ArrayList<>();
+
+    for (RequisitionLineItem item : lineItems) {
+      RequisitionLineItem existing = requisitionLineItems
+          .stream()
+          .filter(l -> l.getId().equals(item.getId()))
+          .findFirst().orElse(null);
+
+      if (null == existing) {
+        updatedList.add(item);
+      } else {
+        existing.updateFrom(item);
+        updatedList.add(existing);
+      }
+    }
+
+    this.requisitionLineItems.clear();
+    this.requisitionLineItems.addAll(updatedList);
   }
 
   /**

@@ -1,10 +1,5 @@
 package org.openlmis.requisition.domain;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -12,6 +7,11 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class RequisitionTest {
 
@@ -46,10 +46,14 @@ public class RequisitionTest {
 
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
 
-    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
+
+    Requisition newRequisition = new Requisition();
+    newRequisition.setRequisitionLineItems(new ArrayList<>(
+            Collections.singletonList(requisitionLineItem)));
+
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.authorize();
-    requisition.updateFrom(requisition, requisitionTemplate);
+    requisition.updateFrom(newRequisition, requisitionTemplate);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verify(requisitionLineItem).calculateStockOnHand();
