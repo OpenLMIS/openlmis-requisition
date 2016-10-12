@@ -234,7 +234,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     for (Requisition requisition : requisitions) {
       RequisitionDto requisitionDto = new RequisitionDto();
       requisitionDto.setId(requisition.getId());
-      requisitionDto.setRequsitionLineItems(getRequisitionLineItems(requisition));
+      requisitionDto.setRequisitionLineItems(getRequisitionLineItems(requisition));
       requisitionDto.setComments(requisition.getComments());
       requisitionDto.setStatus(requisition.getStatus());
       requisitionDto.setEmergency(requisition.getEmergency());

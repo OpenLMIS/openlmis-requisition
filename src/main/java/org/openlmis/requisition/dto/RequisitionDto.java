@@ -1,10 +1,11 @@
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.Comment;
+import org.openlmis.requisition.domain.RequisitionStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.openlmis.requisition.domain.Comment;
-import org.openlmis.requisition.domain.RequisitionStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.UUID;
 public class RequisitionDto {
   private UUID id;
   private LocalDateTime createdDate;
-  private List<RequisitionLineItemDto> requsitionLineItems;
+  private List<RequisitionLineItemDto> requisitionLineItems;
   private List<Comment> comments;
   private FacilityDto facility;
   private ProgramDto program;
