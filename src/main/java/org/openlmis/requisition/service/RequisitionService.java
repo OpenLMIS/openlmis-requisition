@@ -1,5 +1,7 @@
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toList;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -10,6 +12,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
@@ -41,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Service
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
@@ -116,10 +120,13 @@ public class RequisitionService {
     ProcessingPeriodDto processingPeriod = periodReferenceDataService
         .findOne(requisition.getProcessingPeriodId());
 
+    List<RequisitionLineItemDto> requisitionLineItemDtoList
+        = exportToDtos(requisition.getRequisitionLineItems());
+
     return new RequisitionDto(
         requisition.getId(),
         requisition.getCreatedDate(),
-        requisitionRepository.getRequisitionLineItems(requisition),
+        requisitionLineItemDtoList,
         requisition.getComments(),
         facility,
         program,
@@ -449,5 +456,16 @@ public class RequisitionService {
     checkPeriod(programId, facilityId, result);
 
     return result;
+  }
+
+  private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
+    RequisitionLineItemDto dto = new RequisitionLineItemDto();
+    requisitionLineItem.export(dto);
+    return dto;
+  }
+
+  private List<RequisitionLineItemDto> exportToDtos(
+      List<RequisitionLineItem> requisitionLineItems) {
+    return requisitionLineItems.stream().map(this::exportToDto).collect(toList());
   }
 }
