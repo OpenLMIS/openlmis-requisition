@@ -15,6 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -145,6 +146,21 @@ public class RequisitionValidatorTest {
             + RequisitionValidator.EXPLANATION_MUST_BE_ENTERED));
   }
 
+  @Test
+  public void shouldRejectIfApprovedQuantitySetAndInvalidRequisitionStatus() {
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setApprovedQuantity(1);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        eq(RequisitionValidator.APPROVED_QUANTITY
+            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
+  }
+
   private Map<String, RequisitionTemplateColumn> initiateColumns() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     columns.put(RequisitionValidator.REQUESTED_QUANTITY,
@@ -177,6 +193,7 @@ public class RequisitionValidatorTest {
     lineItem.setStockOnHand(0);
     lineItem.setTotalConsumedQuantity(0);
     lineItem.setTotalLossesAndAdjustments(0);
+    lineItem.setRequisition(requisition);
     return lineItem;
   }
 
@@ -199,6 +216,7 @@ public class RequisitionValidatorTest {
 
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getRequisitionLineItems()).thenReturn(requisitionLineItems);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
 
     when(requisitionTemplateRepository
         .getTemplateForProgram(programId)).thenReturn(requisitionTemplate);

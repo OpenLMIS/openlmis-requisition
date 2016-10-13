@@ -5,6 +5,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -26,6 +27,8 @@ public class RequisitionValidator implements Validator {
       " is calculated and should not contain a value";
   static final String EXPLANATION_MUST_BE_ENTERED =
       " must be entered when requested quantity is not empty.";
+  static final String IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP =
+      " is only available during the approval step of the requisition process.";
   static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
   static final String REQUESTED_QUANTITY = "requestedQuantity";
@@ -35,6 +38,7 @@ public class RequisitionValidator implements Validator {
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
+  static final String APPROVED_QUANTITY = "approvedQuantity";
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -57,12 +61,12 @@ public class RequisitionValidator implements Validator {
       );
 
       requisition.getRequisitionLineItems()
-          .forEach(i -> validateRequisitionLineItem(errors, template, i));
+          .forEach(i -> validateRequisitionLineItem(errors, template, requisition, i));
     }
   }
 
   private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
-                                           RequisitionLineItem item) {
+                                           Requisition requisition, RequisitionLineItem item) {
     rejectIfNull(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
     rejectIfLessThanZero(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
 
@@ -85,6 +89,8 @@ public class RequisitionValidator implements Validator {
         errors, template, item.getTotalLossesAndAdjustments(), TOTAL_LOSSES_AND_ADJUSTMENTS
     );
 
+    validateApprovedQuantity(errors, template, requisition, item);
+
     validateRequestedQuantityExplanation(errors, template, item);
   }
 
@@ -103,6 +109,21 @@ public class RequisitionValidator implements Validator {
 
     if (templateValid && value == null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+    }
+  }
+
+  private void validateApprovedQuantity(Errors errors, RequisitionTemplate template,
+                                        Requisition requisition, RequisitionLineItem item) {
+    Integer value = item.getApprovedQuantity();
+
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+      rejectIfNull(errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
+      rejectIfLessThanZero(
+          errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY
+      );
+    } else if (value != null) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, APPROVED_QUANTITY
+          + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
     }
   }
 
