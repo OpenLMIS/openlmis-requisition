@@ -118,4 +118,71 @@ public class RequisitionLineItem extends BaseEntity {
     totalConsumedQuantity = beginningBalance + totalReceivedQuantity
             + totalLossesAndAdjustments - stockOnHand;
   }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setStockInHand(stockInHand);
+    exporter.setBeginningBalance(beginningBalance);
+    exporter.setTotalReceivedQuantity(totalReceivedQuantity);
+    exporter.setTotalLossesAndAdjustments(totalLossesAndAdjustments);
+    exporter.setStockOnHand(stockOnHand);
+    exporter.setRequestedQuantity(requestedQuantity);
+    exporter.setTotalConsumedQuantity(totalConsumedQuantity);
+    exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
+    exporter.setRemarks(remarks);
+    exporter.setApprovedQuantity(approvedQuantity);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setStockInHand(Integer stockInHand);
+
+    void setBeginningBalance(Integer beginningBalance);
+
+    void setTotalReceivedQuantity(Integer totalReceivedQuantity);
+
+    void setTotalLossesAndAdjustments(Integer totalLossesAndAdjustments);
+
+    void setStockOnHand(Integer stockOnHand);
+
+    void setRequestedQuantity(Integer requestedQuantity);
+
+    void setTotalConsumedQuantity(Integer totalConsumedQuantity);
+
+    void setRequestedQuantityExplanation(String requestedQuantityExplanation);
+
+    void setRemarks(String remarks);
+
+    void setApprovedQuantity(Integer approvedQuantity);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    Integer getStockInHand();
+
+    Integer getBeginningBalance();
+
+    Integer getTotalReceivedQuantity();
+
+    Integer getTotalLossesAndAdjustments();
+
+    Integer getStockOnHand();
+
+    Integer getRequestedQuantity();
+
+    Integer getTotalConsumedQuantity();
+
+    String getRequestedQuantityExplanation();
+
+    String getRemarks();
+
+    Integer getApprovedQuantity();
+  }
 }

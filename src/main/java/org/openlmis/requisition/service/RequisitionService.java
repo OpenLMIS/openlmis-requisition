@@ -1,5 +1,7 @@
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toList;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -43,6 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Service
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
@@ -81,6 +84,7 @@ public class RequisitionService {
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
 
   /**
    * Return list of requisitionDtos with information about facility, program and period.
@@ -121,30 +125,13 @@ public class RequisitionService {
     ProcessingPeriodDto processingPeriod = periodReferenceDataService
         .findOne(requisition.getProcessingPeriodId());
 
-    List<RequisitionLineItemDto> requisitionLineItems = new ArrayList<>();
-
-    for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-      RequisitionLineItemDto req =  new RequisitionLineItemDto();
-      req.setId(requisitionLineItem.getId());
-      req.setOrderableProduct(orderableProductReferenceDataService.findOne(requisitionLineItem
-          .getOrderableProductId()));
-      req.setStockInHand(requisitionLineItem.getStockInHand());
-      req.setBeginningBalance(requisitionLineItem.getBeginningBalance());
-      req.setTotalReceivedQuantity(requisitionLineItem.getTotalReceivedQuantity());
-      req.setTotalLossesAndAdjustments(requisitionLineItem.getTotalLossesAndAdjustments());
-      req.setStockOnHand(requisitionLineItem.getStockOnHand());
-      req.setRequestedQuantity(requisitionLineItem.getRequestedQuantity());
-      req.setTotalConsumedQuantity(requisitionLineItem.getTotalConsumedQuantity());
-      req.setRequestedQuantityExplanation(requisitionLineItem.getRequestedQuantityExplanation());
-      req.setRemarks(requisitionLineItem.getRemarks());
-      req.setApprovedQuantity(requisitionLineItem.getApprovedQuantity());
-      requisitionLineItems.add(req);
-    }
+    List<RequisitionLineItemDto> requisitionLineItemDtoList
+        = exportToDtos(requisition.getRequisitionLineItems());
 
     return new RequisitionDto(
         requisition.getId(),
         requisition.getCreatedDate(),
-        requisitionLineItems,
+        requisitionLineItemDtoList,
         requisition.getComments(),
         facility,
         program,
@@ -474,5 +461,18 @@ public class RequisitionService {
     checkPeriod(programId, facilityId, result);
 
     return result;
+  }
+
+  private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
+    RequisitionLineItemDto dto = new RequisitionLineItemDto();
+    requisitionLineItem.export(dto);
+    dto.setOrderableProduct(orderableProductReferenceDataService.findOne(
+        requisitionLineItem.getOrderableProductId()));
+    return dto;
+  }
+
+  private List<RequisitionLineItemDto> exportToDtos(
+      List<RequisitionLineItem> requisitionLineItems) {
+    return requisitionLineItems.stream().map(this::exportToDto).collect(toList());
   }
 }

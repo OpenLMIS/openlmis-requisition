@@ -1,10 +1,12 @@
 package org.openlmis.requisition.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
-import lombok.Data;
-
-@Data
+@Getter
+@Setter
 public class ProgramProductDto {
   private UUID id;
   private ProgramDto program;
@@ -12,6 +14,8 @@ public class ProgramProductDto {
   private Integer dosesPerMonth;
   private boolean active;
   private ProductCategoryDto productCategory;
+  private String productCategoryDisplayName;
+  private int productCategoryDisplayOrder;
   private boolean fullSupply;
   private int displayOrder;
   private int maxMonthsStock;

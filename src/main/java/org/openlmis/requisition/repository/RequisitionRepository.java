@@ -9,5 +9,4 @@ import java.util.UUID;
 public interface RequisitionRepository extends
         PagingAndSortingRepository<Requisition, UUID>,
         RequisitionRepositoryCustom {
-
 }
