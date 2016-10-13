@@ -1,10 +1,15 @@
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toList;
+
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +28,9 @@ public class RequisitionLineCalculationService {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
 
   /**
@@ -109,5 +117,24 @@ public class RequisitionLineCalculationService {
     for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
       requisitionLineItem.setTotalReceivedQuantity(0);
     }
+  }
+
+  /**
+   * Return list of RequisitionLineItemDtos for a given RequisitionLineItem.
+   *
+   * @param requisitionLineItems List of RequisitionLineItems to be exported to Dto
+   * @return list of RequisitionLineItemDtos
+   */
+  public List<RequisitionLineItemDto> exportToDtos(
+      List<RequisitionLineItem> requisitionLineItems) {
+    return requisitionLineItems.stream().map(this::exportToDto).collect(toList());
+  }
+
+  private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
+    RequisitionLineItemDto dto = new RequisitionLineItemDto();
+    requisitionLineItem.export(dto);
+    dto.setOrderableProduct(orderableProductReferenceDataService.findOne(
+        requisitionLineItem.getOrderableProductId()));
+    return dto;
   }
 }

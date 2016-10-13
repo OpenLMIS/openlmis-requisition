@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static java.util.stream.Collectors.toList;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -26,7 +25,6 @@ import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
@@ -45,7 +43,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.TooManyMethods")
 @Service
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
@@ -82,8 +79,6 @@ public class RequisitionService {
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
-  @Autowired
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
 
   /**
@@ -126,7 +121,7 @@ public class RequisitionService {
         .findOne(requisition.getProcessingPeriodId());
 
     List<RequisitionLineItemDto> requisitionLineItemDtoList
-        = exportToDtos(requisition.getRequisitionLineItems());
+        = requisitionLineCalculationService.exportToDtos(requisition.getRequisitionLineItems());
 
     return new RequisitionDto(
         requisition.getId(),
@@ -461,18 +456,5 @@ public class RequisitionService {
     checkPeriod(programId, facilityId, result);
 
     return result;
-  }
-
-  private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
-    RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    requisitionLineItem.export(dto);
-    dto.setOrderableProduct(orderableProductReferenceDataService.findOne(
-        requisitionLineItem.getOrderableProductId()));
-    return dto;
-  }
-
-  private List<RequisitionLineItemDto> exportToDtos(
-      List<RequisitionLineItem> requisitionLineItems) {
-    return requisitionLineItems.stream().map(this::exportToDto).collect(toList());
   }
 }

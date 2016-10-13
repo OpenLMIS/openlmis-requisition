@@ -253,12 +253,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return requisitionsConvertedToDto;
   }
 
-  /**
-   *  Gets list of RequisitionLineItem for a specific requisition.
-   * @param requisition of which RequisitionLineItems are requested
-   * @return list of RequisitionLinesItems
-   */
-  public List<RequisitionLineItemDto> getRequisitionLineItems(Requisition requisition) {
+  private List<RequisitionLineItemDto> getRequisitionLineItems(Requisition requisition) {
     List<RequisitionLineItemDto> requisitionLineItems =  new ArrayList<>();
     for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
       RequisitionLineItemDto req =  new RequisitionLineItemDto();
