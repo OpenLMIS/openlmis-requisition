@@ -301,7 +301,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     column.setIsDisplayed(true);
     column.setIsDisplayRequired(false);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
-        UUID.fromString("3d1d11a8-8ee3-11e6-ae22-56b6b6499611")
+        UUID.fromString("9e825396-269d-4873-baa4-89054e2722f4")
     ));
     columnMap.put(TOTAL_CONSUMED_QUANTITY, column);
 
