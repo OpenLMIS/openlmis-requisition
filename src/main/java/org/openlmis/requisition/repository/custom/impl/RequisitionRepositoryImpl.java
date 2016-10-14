@@ -2,7 +2,6 @@ package org.openlmis.requisition.repository.custom.impl;
 
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -10,8 +9,8 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionDtoComparator;
@@ -45,7 +44,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private PeriodReferenceDataService processingPeriodReferenceDataService;
 
   @Autowired
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
 
   @PersistenceContext
@@ -234,7 +233,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     for (Requisition requisition : requisitions) {
       RequisitionDto requisitionDto = new RequisitionDto();
       requisitionDto.setId(requisition.getId());
-      requisitionDto.setRequisitionLineItems(getRequisitionLineItems(requisition));
+      List<RequisitionLineItemDto> requisitionLineItemDtoList
+          = requisitionLineCalculationService.exportToDtos(requisition.getRequisitionLineItems());
+      requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
       requisitionDto.setComments(requisition.getComments());
       requisitionDto.setStatus(requisition.getStatus());
       requisitionDto.setEmergency(requisition.getEmergency());
@@ -252,27 +253,4 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     return requisitionsConvertedToDto;
   }
-
-  private List<RequisitionLineItemDto> getRequisitionLineItems(Requisition requisition) {
-    List<RequisitionLineItemDto> requisitionLineItems =  new ArrayList<>();
-    for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-      RequisitionLineItemDto req =  new RequisitionLineItemDto();
-      req.setId(requisitionLineItem.getId());
-      req.setOrderableProduct(orderableProductReferenceDataService.findOne(requisitionLineItem
-          .getOrderableProductId()));
-      req.setStockInHand(requisitionLineItem.getStockInHand());
-      req.setBeginningBalance(requisitionLineItem.getBeginningBalance());
-      req.setTotalReceivedQuantity(requisitionLineItem.getTotalReceivedQuantity());
-      req.setTotalLossesAndAdjustments(requisitionLineItem.getTotalLossesAndAdjustments());
-      req.setStockOnHand(requisitionLineItem.getStockOnHand());
-      req.setRequestedQuantity(requisitionLineItem.getRequestedQuantity());
-      req.setTotalConsumedQuantity(requisitionLineItem.getTotalConsumedQuantity());
-      req.setRequestedQuantityExplanation(requisitionLineItem.getRequestedQuantityExplanation());
-      req.setRemarks(requisitionLineItem.getRemarks());
-      req.setApprovedQuantity(requisitionLineItem.getApprovedQuantity());
-      requisitionLineItems.add(req);
-    }
-    return requisitionLineItems;
-  }
-
 }
