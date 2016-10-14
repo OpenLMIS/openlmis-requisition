@@ -40,13 +40,16 @@
 
     $(function () {
       var url = window.location.search.match(/url=([^&]+)/);
+      // Location without filename
+      var baseUrl = window.location.href.replace(/[#|?].*/, "").match(/^(http.+\/)[^\/]+$/)[1];
+      // Location without filename and protocol
+      var basePath = baseUrl.replace(/.*?:\/\//g, "");
+
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
         var token = $.urlParam('access_token');
-
-        // Important! This path is relative to current (only filename is removed)
-        url = window.location.href.match( /^(http.+\/)[^\/]+$/ )[1] + '/generated/api-definition.json';
+        url = baseUrl + '/generated/api-definition.json';
         if (token) {
           url += '?access_token=' + token;
         }
@@ -93,6 +96,9 @@
       });
 
       window.swaggerUi.load();
+      setTimeout(function(){
+        window.swaggerUi.api.setHost(basePath);
+      }, 1000);
 
       function log() {
         if ('console' in window) {
