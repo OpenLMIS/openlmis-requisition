@@ -84,9 +84,10 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Integer approvedQuantity;
 
-  public RequisitionLineItem(FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
-    // currently nothing to do here
-    // future tickets related with requisition should add some steps
+  public RequisitionLineItem(Requisition requisition,
+                             FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
+    this.requisition = requisition;
+    this.orderableProductId = facilityTypeApprovedProduct.getProgramProduct().getProduct().getId();
   }
 
   /**

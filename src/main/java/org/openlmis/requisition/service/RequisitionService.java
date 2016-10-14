@@ -172,7 +172,7 @@ public class RequisitionService {
     requisition.setRequisitionLineItems(
         facilityTypeApprovedProducts
             .stream()
-            .map(RequisitionLineItem::new)
+            .map(ftap -> new RequisitionLineItem(requisition, ftap))
             .collect(Collectors.toList())
     );
 
