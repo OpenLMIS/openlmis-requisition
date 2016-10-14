@@ -35,7 +35,7 @@
     "isDisplayRequired": false,
     "canChangeOrder": false,
     "canBeChangedByUser": false,
-    "source": 0,
+    "source": 1,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
@@ -113,7 +113,7 @@
     "isDisplayRequired": false,
     "canChangeOrder": false,
     "canBeChangedByUser": false,
-    "source": 0,
+    "source": 1,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {

@@ -7,7 +7,7 @@
     "beginningBalance": 5,
     "totalReceivedQuantity": 5,
     "requestedQuantity": 15,
-    "totalConsumedQuantity": 4
+    "totalConsumedQuantity": 10
   },
   {
     "id": "00000000-0000-0000-0000-000000000002",
@@ -17,7 +17,7 @@
     "beginningBalance": 400,
     "totalReceivedQuantity": 800,
     "requestedQuantity": 800,
-    "totalConsumedQuantity": 600
+    "totalConsumedQuantity": 1200
   },
   {
     "id": "00000000-0000-0000-0000-000000000003",
@@ -27,7 +27,7 @@
     "beginningBalance": 6,
     "totalReceivedQuantity": 16,
     "requestedQuantity": 500,
-    "totalConsumedQuantity": 0,
+    "totalConsumedQuantity": 22,
     "requestedQuantityExplanation": "Too few left to make any use out of it."
   },
   {
@@ -38,7 +38,7 @@
     "beginningBalance": 300,
     "totalReceivedQuantity": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 100
+    "totalConsumedQuantity": 300
   },
   {
     "id": "00000000-0000-0000-0000-000000000005",
@@ -48,7 +48,7 @@
     "beginningBalance": 50,
     "totalReceivedQuantity": 250,
     "requestedQuantity": 250,
-    "totalConsumedQuantity": 50
+    "totalConsumedQuantity": 300
   },
   {
     "id": "00000000-0000-0000-0000-000000000006",
@@ -58,7 +58,7 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 1000
+    "totalConsumedQuantity": 31000
   },
   {
     "id": "00000000-0000-0000-0000-000000000007",
@@ -68,7 +68,7 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 1000
+    "totalConsumedQuantity": 31000
   },
   {
     "id": "00000000-0000-0000-0000-000000000008",
@@ -78,7 +78,7 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 1000
+    "totalConsumedQuantity": 31000
   },
   {
     "id": "00000000-0000-0000-0000-000000000009",
@@ -88,7 +88,7 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 1000
+    "totalConsumedQuantity": 31000
   },
   {
     "id": "00000000-0000-0000-0000-000000000010",
@@ -98,7 +98,7 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 1000
+    "totalConsumedQuantity": 31000
   },
   {
     "id": "00000000-0000-0000-0000-000000000011",
