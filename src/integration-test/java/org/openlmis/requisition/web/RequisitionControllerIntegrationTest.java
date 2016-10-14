@@ -72,7 +72,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String COMMENT_TEXT = "OpenLMIS";
   private static final String COMMENT = "Comment";
-  private static final String FACILITY = "facility";
   private static final String APPROVED_REQUISITIONS_SEARCH_URL =
       RESOURCE_URL + "/requisitions-for-convert";
 
@@ -99,7 +98,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
   private OrderableProductDto product = new OrderableProductDto();
   private ProgramDto program = new ProgramDto();
-  private ProgramDto supervisedProgram = new ProgramDto();
   private FacilityDto facility = new FacilityDto();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private UserDto user;
@@ -119,9 +117,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     program.setId(UUID.randomUUID());
     program.setCode(REQUISITION_REPOSITORY_NAME);
     program.setPeriodsSkippable(true);
-
-    supervisedProgram.setId(UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611"));
-    supervisedProgram.setCode(REQUISITION_REPOSITORY_NAME);
 
     facility.setId(getSharedFacilityId());
     facility.setCode("facilityCode");
@@ -168,11 +163,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionTemplate template = new RequisitionTemplate();
     template.setColumnsMap(generateTemplateColumns());
     template.setProgramId(program.getId());
-    requisitionTemplateRepository.save(template);
 
-    template = new RequisitionTemplate();
-    template.setColumnsMap(generateTemplateColumns());
-    template.setProgramId(supervisedProgram.getId());
+
+
     requisitionTemplateRepository.save(template);
   }
 
@@ -183,7 +176,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("program", program.getId())
         .queryParam("processingPeriod", period.getId())
-        .queryParam(FACILITY, facility.getId())
+        .queryParam("facility", facility.getId())
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
         .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
@@ -938,33 +931,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("program", supervisedProgram.getId())
-        .queryParam(FACILITY, facility.getId())
+        .queryParam("program", program.getId())
+        .queryParam("facility", facility.getId())
         .queryParam("suggestedPeriod", period.getId())
         .queryParam("emergency", false)
         .when()
         .post(INITIATE_URL)
         .then()
         .statusCode(201);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotInitializeIfUserIsNotAssociatedWithGivenProgram() {
-
-    requisitionRepository.delete(requisition);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("program", program.getId())
-        .queryParam(FACILITY, facility.getId())
-        .queryParam("suggestedPeriod", period.getId())
-        .queryParam("emergency", false)
-        .when()
-        .post(INITIATE_URL)
-        .then()
-        .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1217,7 +1191,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 20;
-    String filterValue = FACILITY;
+    String filterValue = "facility";
 
     RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
