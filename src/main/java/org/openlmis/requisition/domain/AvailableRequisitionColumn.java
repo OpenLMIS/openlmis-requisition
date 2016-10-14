@@ -1,5 +1,9 @@
 package org.openlmis.requisition.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,10 +16,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "available_requisition_columns", schema = "requisition")
@@ -37,6 +37,10 @@ public class AvailableRequisitionColumn extends BaseEntity {
   private String label;
   private String indicator;
   private boolean mandatory;
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private ColumnType columnType;
 
   @Override
   public boolean equals(Object obj) {
