@@ -943,32 +943,32 @@ resourceTypes:
                 filterValue:
                     displayName: filterValue
                     type: string
-                    required: true
+                    required: false
                     repeat: false
                 filterBy:
                     displayName: filterBy
                     type: string
-                    required: true
+                    required: false
                     repeat: false
                 sortBy:
                     displayName: sortBy
                     type: string
-                    required: true
+                    required: false
                     repeat: false
                 descending:
                     displayName: descending
                     type: boolean
-                    required: true
+                    required: false
                     repeat: false
                 pageNumber:
                     displayName: pageNumber
                     type: integer
-                    required: true
+                    required: false
                     repeat: false
                 pageSize:
                     displayName: pageSize
                     type: integer
-                    required: true
+                    required: false
                     repeat: false
             responses:
                 "200":

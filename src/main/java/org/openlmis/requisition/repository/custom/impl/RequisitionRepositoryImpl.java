@@ -140,25 +140,20 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       Integer pageNumber, Integer pageSize) {
 
     List<Requisition> filteredRequisitions = filterRequisitions(filterValue, filterBy);
-    List<RequisitionDto> filteredRequisitionsDto =
+    List<RequisitionDto> filteredRequisitionDtos =
         convertRequisitionListToRequisitionDtoList(filteredRequisitions);
 
-    filteredRequisitionsDto.sort(new RequisitionDtoComparator(sortBy));
+    filteredRequisitionDtos.sort(new RequisitionDtoComparator(sortBy));
     if (!descending) {
-      Collections.reverse(filteredRequisitionsDto);
+      Collections.reverse(filteredRequisitionDtos);
     }
 
-    int firstPageRecordListIndex = (pageNumber - 1) * pageSize;
-    int lastPageRecordListIndex = (pageNumber * pageSize) - 1;
-
-    if (firstPageRecordListIndex > filteredRequisitionsDto.size()) {
-      return null;
-    }
-    if (lastPageRecordListIndex > filteredRequisitionsDto.size()) {
-      lastPageRecordListIndex = filteredRequisitionsDto.size() - 1;
+    if (pageNumber != null && pageSize != null) {
+      filteredRequisitionDtos = pageCollection(filteredRequisitionDtos, pageNumber,
+              pageSize);
     }
 
-    return filteredRequisitionsDto.subList(firstPageRecordListIndex, lastPageRecordListIndex);
+    return filteredRequisitionDtos;
   }
 
   private List<Requisition> filterRequisitions(String filterValue, String filterBy) {
@@ -204,17 +199,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
     List<UUID> uuidsToReturn = new ArrayList<>();
 
-    if (filterBy.equals("programName") || filterBy.equals("all")) {
+    boolean filterAll = "all".equals(filterBy);
+
+    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
       Collection<ProgramDto> foundPrograms =
           programReferenceDataService.search(filterValue);
       foundPrograms.forEach(program -> uuidsToReturn.add(program.getId()));
     }
-    if (filterBy.equals("facilityCode") || filterBy.equals("all")) {
+    if (filterAll || "facilityCode".equals(filterBy)) {
       Collection<FacilityDto> foundFacilities =
           facilityReferenceDataService.search(filterValue, null);
       foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
-    if (filterBy.equals("facilityName") || filterBy.equals("all")) {
+    if (filterAll || "facilityName".equals(filterBy)) {
       Collection<FacilityDto> foundFacilities =
           facilityReferenceDataService.search(null, filterValue);
       foundFacilities.forEach(facilityDto -> {
@@ -252,5 +249,20 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return requisitionsConvertedToDto;
+  }
+
+  private List<RequisitionDto> pageCollection(List<RequisitionDto> requisitions,
+                                              int pageNumber, int pageSize) {
+    int firstPageRecordListIndex = (pageNumber - 1) * pageSize;
+    int lastPageRecordListIndex = (pageNumber * pageSize) - 1;
+
+    if (firstPageRecordListIndex > requisitions.size()) {
+      return Collections.emptyList();
+    }
+    if (lastPageRecordListIndex > requisitions.size()) {
+      lastPageRecordListIndex = requisitions.size() - 1;
+    }
+
+    return requisitions.subList(firstPageRecordListIndex, lastPageRecordListIndex);
   }
 }

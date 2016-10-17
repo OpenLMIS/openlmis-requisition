@@ -391,12 +391,12 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/requisitions-for-convert", method = RequestMethod.GET)
   public ResponseEntity<?> listForConvertToOrder(
-      @RequestParam String filterValue,
-      @RequestParam String filterBy,
-      @RequestParam String sortBy,
-      @RequestParam Boolean descending,
-      @RequestParam Integer pageNumber,
-      @RequestParam Integer pageSize) {
+      @RequestParam(required = false) String filterValue,
+      @RequestParam(required = false) String filterBy,
+      @RequestParam(required = false, defaultValue = "programName") String sortBy,
+      @RequestParam(required = false, defaultValue = "true") boolean descending,
+      @RequestParam(required = false) Integer pageNumber,
+      @RequestParam(required = false) Integer pageSize) {
 
     String userName =
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

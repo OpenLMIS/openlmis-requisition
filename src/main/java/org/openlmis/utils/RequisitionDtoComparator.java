@@ -26,7 +26,7 @@ public class RequisitionDtoComparator implements Comparator<RequisitionDto> {
       }
       default: {
         throw new IllegalArgumentException(
-            "Something gone wrong with comparison of RequisitionDtos");
+            compareCondition + " is not a valid column for sorting");
       }
     }
   }
