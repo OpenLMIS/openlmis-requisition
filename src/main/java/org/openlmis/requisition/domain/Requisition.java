@@ -25,7 +25,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -113,9 +116,9 @@ public class Requisition extends BaseEntity {
   /**
    * Createa a new instance of Requisition with given program and facility IDs and emergency flag.
    *
-   * @param programId UUID of program
+   * @param programId  UUID of program
    * @param facilityId UUID of facility
-   * @param emergency flag
+   * @param emergency  flag
    * @return a new instance of Requisition
    * @throws RequisitionInitializationException if any of arguments is {@code null}
    */
@@ -138,7 +141,7 @@ public class Requisition extends BaseEntity {
   /**
    * Copy values of attributes into new or updated Requisition.
    *
-   * @param requisition Requisition with new values.
+   * @param requisition         Requisition with new values.
    * @param requisitionTemplate Requisition template
    */
   public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate) {
@@ -149,11 +152,11 @@ public class Requisition extends BaseEntity {
 
     try {
       if (requisitionTemplate.isColumnCalculated("stockOnHand")) {
-        calculateStockOnHand();
+        forEachLine(RequisitionLineItem::calculateStockOnHand);
       }
 
       if (requisitionTemplate.isColumnCalculated("totalConsumedQuantity")) {
-        calculateTotalConsumedQuantity();
+        forEachLine(RequisitionLineItem::calculateTotalConsumedQuantity);
       }
     } catch (RequisitionTemplateColumnException ex) {
       LOGGER.debug("stockOnHand or totalConsumedQuantity column not present in template,"
@@ -220,18 +223,6 @@ public class Requisition extends BaseEntity {
     status = RequisitionStatus.AUTHORIZED;
   }
 
-  private void calculateStockOnHand() {
-    if (requisitionLineItems != null) {
-      requisitionLineItems.forEach(RequisitionLineItem::calculateStockOnHand);
-    }
-  }
-
-  private void calculateTotalConsumedQuantity() {
-    if (requisitionLineItems != null) {
-      requisitionLineItems.forEach(RequisitionLineItem::calculateTotalConsumedQuantity);
-    }
-  }
-
   private boolean areFieldsNotFilled(RequisitionTemplate template, String field)
       throws RequisitionTemplateColumnException {
     if ("totalConsumedQuantity".equals(field)) {
@@ -251,4 +242,30 @@ public class Requisition extends BaseEntity {
 
     return false;
   }
+
+  /**
+   * Finds first RequisitionLineItem that have productId property equals to the given productId
+   * argument.
+   *
+   * @param productId UUID of orderable product
+   * @return first RequisitionLineItem that have productId property equals to the given productId
+   *         argument; otherwise null;
+   */
+  public RequisitionLineItem findLineByProductId(UUID productId) {
+    if (null == requisitionLineItems) {
+      return null;
+    }
+
+    return requisitionLineItems
+        .stream()
+        .filter(e -> Objects.equals(productId, e.getOrderableProductId()))
+        .findFirst()
+        .orElse(null);
+  }
+
+  public void forEachLine(Consumer<RequisitionLineItem> consumer) {
+    Optional.ofNullable(requisitionLineItems)
+        .ifPresent(list -> list.forEach(consumer));
+  }
+
 }

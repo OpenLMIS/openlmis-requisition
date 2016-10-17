@@ -1,13 +1,19 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+
+import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -16,20 +22,17 @@ import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
 
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -41,7 +44,6 @@ public class RequisitionLineCalculationServiceTest {
   private static final SourceType SOURCE = SourceType.CALCULATED;
 
   private Requisition requisition;
-  private RequisitionLineItem requisitionLineItem;
   private RequisitionTemplate requisitionTemplate;
 
   @Mock
@@ -58,7 +60,13 @@ public class RequisitionLineCalculationServiceTest {
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Mock
-  private ProcessingPeriodDto periodDto;
+  private ProcessingPeriodDto periodDto1;
+
+  @Mock
+  private ProcessingPeriodDto periodDto2;
+
+  @Mock
+  private ProcessingPeriodDto periodDto3;
 
   @InjectMocks
   private RequisitionLineCalculationService requisitionLineCalculationService;
@@ -67,7 +75,9 @@ public class RequisitionLineCalculationServiceTest {
   private AvailableRequisitionColumn availableRequisitionColumn;
 
   private UUID program = UUID.randomUUID();
-  private UUID period = UUID.randomUUID();
+  private UUID period1 = UUID.randomUUID();
+  private UUID period2 = UUID.randomUUID();
+  private UUID period3 = UUID.randomUUID();
   private UUID productId = UUID.randomUUID();
 
   @Before
@@ -77,7 +87,8 @@ public class RequisitionLineCalculationServiceTest {
   }
 
   @Test
-  public void shouldInitiateRequisitionLineItemFieldsIfValidRequisitionProvided() {
+  public void shouldInitiateRequisitionLineItemFieldsIfValidRequisitionProvided()
+      throws RequisitionTemplateColumnException {
     final Integer expectedBeginningBalance = 20;
     final Integer expectedTotalReceivedQuantity = 0;
 
@@ -100,7 +111,8 @@ public class RequisitionLineCalculationServiceTest {
   }
 
   @Test
-  public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed() {
+  public void shouldNotInitiateBeginningBalanceWhenItIsNotDisplayed()
+      throws RequisitionTemplateColumnException {
     final Integer expectedBeginningBalance = 0;
 
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
@@ -121,7 +133,7 @@ public class RequisitionLineCalculationServiceTest {
   }
 
   @Test
-  public void shouldDisplayColumnsInCorrectOrder() {
+  public void shouldDisplayColumnsInCorrectOrder() throws RequisitionTemplateColumnException {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
@@ -148,20 +160,12 @@ public class RequisitionLineCalculationServiceTest {
         .get(BEGINNING_BALANCE_FIELD).getDisplayOrder());
   }
 
-  @Test
-  public void shouldFindRequisitionLineItemIfItExists() {
-    List<RequisitionLineItem> receivedRequisitionLineItems =
-        requisitionLineCalculationService.searchRequisitionLineItems(
-        requisition, productId);
-
-    assertEquals(1, receivedRequisitionLineItems.size());
-    assertEquals(requisitionLineItem, receivedRequisitionLineItems.get(0));
-  }
-
   private void generateInstances() {
-    requisition = createTestRequisition(UUID.randomUUID(), period, program,
+    requisition = createTestRequisition(UUID.randomUUID(), period1, program,
         RequisitionStatus.INITIATED);
-    requisitionLineItem = createTestRequisitionLineItem(UUID.randomUUID(), 10, 20, requisition);
+    RequisitionLineItem requisitionLineItem = createTestRequisitionLineItem(
+        10, 20, requisition
+    );
 
     requisition.setRequisitionLineItems(new ArrayList<>(
             Collections.singletonList(requisitionLineItem)));
@@ -181,12 +185,11 @@ public class RequisitionLineCalculationServiceTest {
     return requisition;
   }
 
-  private RequisitionLineItem createTestRequisitionLineItem(UUID product, Integer quantityRequested,
+  private RequisitionLineItem createTestRequisitionLineItem(Integer quantityRequested,
                                                             Integer stockInHand,
                                                             Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setOrderableProductId(product);
     requisitionLineItem.setRequestedQuantity(quantityRequested);
     requisitionLineItem.setStockInHand(stockInHand);
     requisitionLineItem.setRequisition(requisition);
@@ -200,18 +203,30 @@ public class RequisitionLineCalculationServiceTest {
         .thenReturn(requisitionTemplate);
     when(periodReferenceDataService
         .search(any(), any()))
-        .thenReturn(Collections.singletonList(periodDto));
+        .thenReturn(Lists.newArrayList(periodDto3, periodDto2, periodDto1));
     when(requisitionService
-        .searchRequisitions(eq(requisition.getFacilityId()), eq(requisition.getProgramId()),
-            eq(null), eq(null), any(), eq(null), eq(null)))
+        .searchRequisitions(requisition.getFacilityId(), requisition.getProgramId(),
+            null, null, period2, null, null))
         .thenReturn(Collections.singletonList(requisition));
     when(programReferenceDataService
         .findOne(any()))
         .thenReturn(new ProgramDto());
     when(periodReferenceDataService
         .findOne(any()))
-        .thenReturn(periodDto);
-    when(periodDto.getProcessingSchedule())
+        .thenReturn(periodDto1);
+    when(periodDto1.getProcessingSchedule())
         .thenReturn(new ProcessingScheduleDto());
+    when(periodDto1.getStartDate())
+        .thenReturn(LocalDate.of(2016, Month.MARCH, 10));
+    when(periodDto2.getStartDate())
+        .thenReturn(LocalDate.of(2016, Month.FEBRUARY, 10));
+    when(periodDto3.getStartDate())
+        .thenReturn(LocalDate.of(2016, Month.JANUARY, 10));
+    when(periodDto1.getId())
+        .thenReturn(period1);
+    when(periodDto2.getId())
+        .thenReturn(period2);
+    when(periodDto3.getId())
+        .thenReturn(period3);
   }
 }

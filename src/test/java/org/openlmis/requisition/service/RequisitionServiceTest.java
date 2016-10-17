@@ -32,6 +32,7 @@ import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
@@ -237,7 +238,8 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldInitiateRequisitionIfItNotAlreadyExist() throws RequisitionException {
+  public void shouldInitiateRequisitionIfItNotAlreadyExist()
+      throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
         ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
@@ -271,7 +273,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionIfRequisitionGroupProgramScheduleDoesNotExist()
-        throws RequisitionException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
           ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
@@ -307,13 +309,13 @@ public class RequisitionServiceTest {
 
   @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
-      throws RequisitionException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     requisitionService.initiate(null, null, null, null);
   }
 
   @Test(expected = RequisitionException.class)
   public void shouldThrowExceptionWhenInitiatingAlreadyExistingRequisition()
-      throws RequisitionException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     doReturn(null)
         .when(facilityReferenceDataService)
         .findOne(any(UUID.class));
@@ -393,7 +395,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = InvalidPeriodException.class)
   public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram()
-        throws RequisitionException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
         ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
@@ -429,7 +431,8 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = InvalidPeriodException.class)
-  public void shouldThrowExceptionIfPeriodIsNotTheOldest() throws RequisitionException {
+  public void shouldThrowExceptionIfPeriodIsNotTheOldest()
+      throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
           ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())

@@ -1,5 +1,13 @@
 package org.openlmis.requisition.domain;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -7,21 +15,28 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.UUID;
 
 public class RequisitionTest {
 
   private Requisition requisition;
+  private RequisitionLineItem requisitionLineItem;
+
+  private UUID productId = UUID.randomUUID();
 
   @Before
   public void setUp() {
     requisition = new Requisition();
+    requisitionLineItem = new RequisitionLineItem();
+
+    requisitionLineItem.setId(UUID.randomUUID());
+    requisitionLineItem.setRequestedQuantity(10);
+    requisitionLineItem.setStockInHand(20);
+    requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setOrderableProductId(productId);
+
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setRequisitionLineItems(new ArrayList<>());
+    requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
   }
 
   @Test
@@ -57,5 +72,13 @@ public class RequisitionTest {
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verify(requisitionLineItem).calculateStockOnHand();
+  }
+
+  @Test
+  public void shouldFindRequisitionLineItemByProductId() {
+    RequisitionLineItem found = requisition.findLineByProductId(productId);
+
+    assertNotNull(found);
+    assertEquals(requisitionLineItem, found);
   }
 }

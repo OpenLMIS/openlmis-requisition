@@ -2,21 +2,21 @@ package org.openlmis.requisition.service;
 
 import static java.util.stream.Collectors.toList;
 
-
+import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -34,83 +34,81 @@ public class RequisitionLineCalculationService {
 
 
   /**
-   * Method returns all requisition lines with matched parameters.
-   *
-   * @param requisition requisition of searched requisition lines.
-   * @param product     product of searched requisition lines.
-   * @return list of requisition lines with matched parameters.
-   */
-  public List<RequisitionLineItem> searchRequisitionLineItems(
-      Requisition requisition, UUID product) {
-    List<RequisitionLineItem> items = new ArrayList<>();
-    for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
-      if (Objects.equals(product, item.getOrderableProductId())) {
-        items.add(item);
-      }
-    }
-    return items;
-  }
-
-  /**
    * Initiate all RequisitionLineItem fields from given Requisition to default value.
    *
    * @param requisition Requisition with RequisitionLineItems to be initiated.
    * @return Returns Requisition with initiated RequisitionLineItems.
    */
   public Requisition initiateRequisitionLineItemFields(Requisition requisition,
-                                                       RequisitionTemplate requisitionTemplate) {
+                                                       RequisitionTemplate requisitionTemplate)
+      throws RequisitionTemplateColumnException {
     initiateBeginningBalance(requisition, requisitionTemplate);
     initiateTotalQuantityReceived(requisition);
 
     return requisition;
   }
 
-  private void initiateBeginningBalance(Requisition requisition,
-                                        RequisitionTemplate requisitionTemplate) {
+  private void initiateBeginningBalance(Requisition requisition, RequisitionTemplate template)
+      throws RequisitionTemplateColumnException {
 
-    ProcessingPeriodDto period = periodReferenceDataService.findOne(
-        requisition.getProcessingPeriodId());
+    if (template.isColumnDisplayed(BEGINNING_BALANCE_COLUMN)) {
+      ProcessingPeriodDto previousPeriod = findPreviousPeriod(requisition.getProcessingPeriodId());
+      Requisition previousRequisition = null != previousPeriod
+          ? findPreviousRequesition(requisition, previousPeriod)
+          : null;
 
-    ProcessingScheduleDto schedule = period.getProcessingSchedule();
-    Iterable<ProcessingPeriodDto> previousPeriods = periodReferenceDataService.search(
-        schedule.getId(),
-        period.getStartDate());
+      if (null != previousRequisition) {
+        requisition.forEachLine(currentLine -> {
+          RequisitionLineItem previousLine = previousRequisition
+              .findLineByProductId(currentLine.getOrderableProductId());
 
-    if (requisitionTemplate.getColumnsMap().get(BEGINNING_BALANCE_COLUMN).getIsDisplayed()
-        && previousPeriods != null && previousPeriods.iterator().hasNext()) {
-
-      List<Requisition> previousRequisition;
-      List<RequisitionLineItem> previousRequisitionLineItem;
-
-      previousRequisition = requisitionService.searchRequisitions(
-          requisition.getFacilityId(),
-          requisition.getProgramId(),
-          null, null,
-          previousPeriods.iterator().next().getId(),
-          null,
-          null);
-      if (previousRequisition.size() == 0) {
-        return;
-      }
-      for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-        previousRequisitionLineItem = searchRequisitionLineItems(
-            previousRequisition.get(0), requisitionLineItem.getOrderableProductId());
-
-        if (requisitionLineItem.getBeginningBalance() == null) {
-          if (previousRequisitionLineItem != null
-              && previousRequisitionLineItem.get(0).getStockInHand() != null) {
-            requisitionLineItem.setBeginningBalance(
-                previousRequisitionLineItem.get(0).getStockInHand());
-          } else {
-            requisitionLineItem.setBeginningBalance(0);
+          if (null != previousLine) {
+            currentLine.setBeginningBalance(previousLine.getStockInHand());
           }
-        }
-      }
-    } else {
-      for (RequisitionLineItem requisitionLineItem : requisition.getRequisitionLineItems()) {
-        requisitionLineItem.setBeginningBalance(0);
+        });
       }
     }
+
+    requisition.forEachLine(line -> {
+      if (null == line.getBeginningBalance()) {
+        line.setBeginningBalance(0);
+      }
+    });
+  }
+
+  private ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
+    // retrieve data from reference-data
+    ProcessingPeriodDto period = periodReferenceDataService.findOne(periodId);
+
+    if (null == period) {
+      return null;
+    }
+
+    Collection<ProcessingPeriodDto> collection = periodReferenceDataService
+        .search(period.getProcessingSchedule().getId(), period.getStartDate());
+
+    if (null == collection || collection.isEmpty()) {
+      return null;
+    }
+
+    // create a list...
+    List<ProcessingPeriodDto> list = new ArrayList<>(collection);
+    // ...remove the latest period from the list because it is not previous...
+    list.removeIf(p -> p.getId().equals(periodId));
+    // .. and sort elements by startDate property DESC.
+    list.sort((one, two) -> ObjectUtils.compare(two.getStartDate(), one.getStartDate()));
+
+    // The latest previous date should be first.
+    return list.isEmpty() ? null : list.get(0);
+  }
+
+  private Requisition findPreviousRequesition(Requisition requisition, ProcessingPeriodDto period) {
+    List<Requisition> list = requisitionService.searchRequisitions(
+        requisition.getFacilityId(), requisition.getProgramId(),
+        null, null, period.getId(), null, null
+    );
+
+    return list.isEmpty() ? null : list.get(0);
   }
 
   private void initiateTotalQuantityReceived(Requisition requisition) {

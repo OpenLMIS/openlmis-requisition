@@ -104,7 +104,7 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "facility") UUID facility,
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                    @RequestParam(value = "emergency") Boolean emergency)
-          throws RequisitionException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     Requisition newRequisition = requisitionService.initiate(program,
         facility, suggestedPeriod, emergency);
     return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
