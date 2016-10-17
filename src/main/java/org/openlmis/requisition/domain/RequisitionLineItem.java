@@ -108,16 +108,20 @@ public class RequisitionLineItem extends BaseEntity {
    * Calculate StockOnHand field value.
    */
   void calculateStockOnHand() {
-    stockOnHand = beginningBalance + totalReceivedQuantity
-        + totalLossesAndAdjustments - totalConsumedQuantity;
+    stockOnHand = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
+        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(totalConsumedQuantity);
   }
 
   /**
    * Calculate TotalConsumedQuantity field value.
    */
   void calculateTotalConsumedQuantity() {
-    totalConsumedQuantity = beginningBalance + totalReceivedQuantity
-            + totalLossesAndAdjustments - stockOnHand;
+    totalConsumedQuantity = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
+            + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
+  }
+
+  private int zeroIfNull(Integer value) {
+    return null == value ? 0 : value;
   }
 
   /**
