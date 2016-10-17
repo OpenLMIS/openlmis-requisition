@@ -1,29 +1,29 @@
 [
   {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000001" },
-    "author": { "id": "00000000-0000-0000-0000-000000000001" },
+    "id": "af152d43-2ec7-494b-a550-dabac24ad420",
+    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "body": "I am not sure this is correct.",
     "createdDate": "2016-07-21T15:19:24"
   },
   {
-    "id": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000001" },
-    "author": { "id": "00000000-0000-0000-0000-000000000001" },
+    "id": "25814d1b-b994-42f1-a1e8-cc8f9e227595",
+    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "body": "This is certainly not correct.",
     "createdDate": "2016-07-21T15:21:22"
   },
   {
-    "id": "00000000-0000-0000-0000-000000000003",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
-    "author": { "id": "00000000-0000-0000-0000-000000000001" },
+    "id": "1efe3e9b-55b9-44e8-9a82-96c97fd1c9e9",
+    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "body": "Let me take a double check on this.",
     "createdDate": "2016-07-25T13:21:31"
   },
   {
-    "id": "00000000-0000-0000-0000-000000000004",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
-    "author": { "id": "00000000-0000-0000-0000-000000000001" },
+    "id": "b666b2ae-0675-4687-b9ce-ba0d631acfa0",
+    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "body": "This seems fine.",
     "createdDate": "2016-07-25T16:00:08"
   }

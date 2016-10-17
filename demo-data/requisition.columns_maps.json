@@ -1,6 +1,6 @@
 [
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "beginningBalance",
     "name": "Beginning Balance",
     "label": "A",
@@ -13,7 +13,7 @@
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalReceivedQuantity",
     "name": "Total Received Quantity",
     "label": "B",
@@ -26,7 +26,7 @@
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalConsumedQuantity",
     "name": "Total Consumed Quantity",
     "label": "C",
@@ -39,7 +39,7 @@
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalLossesAndAdjustments",
     "name": "Total Losses And Adjustments",
     "label": "D",
@@ -52,7 +52,7 @@
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "stockOnHand",
     "name": "Stock On Hand",
     "label": "E",
@@ -65,7 +65,7 @@
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000001",
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "requestedQuantity",
     "name": "Requested Quantity",
     "label": "J",
@@ -78,7 +78,7 @@
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000002",
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "beginningBalance",
     "name": "Beginning Balance",
     "label": "A",
@@ -91,7 +91,7 @@
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000002",
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalReceivedQuantity",
     "name": "Total Received Quantity",
     "label": "B",
@@ -104,7 +104,7 @@
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000002",
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalConsumedQuantity",
     "name": "Total Consumed Quantity",
     "label": "C",
@@ -117,7 +117,7 @@
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000002",
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalLossesAndAdjustments",
     "name": "Total Losses And Adjustments",
     "label": "D",
@@ -130,7 +130,7 @@
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000002",
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "stockOnHand",
     "name": "Stock On Hand",
     "label": "E",
@@ -143,7 +143,7 @@
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
-    "requisitionTemplate": "00000000-0000-0000-0000-000000000002",
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "requestedQuantity",
     "name": "Requested Quantity",
     "label": "J",

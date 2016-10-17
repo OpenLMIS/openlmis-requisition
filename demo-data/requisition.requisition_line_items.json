@@ -1,8 +1,8 @@
 [
   {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "orderableProductId": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000001" },
+    "id": "99118ee8-ec30-400a-bb05-0b1512bd4fb8",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
     "stockInHand": 10,
     "beginningBalance": 5,
     "totalReceivedQuantity": 5,
@@ -10,9 +10,9 @@
     "totalConsumedQuantity": 10
   },
   {
-    "id": "00000000-0000-0000-0000-000000000002",
-    "orderableProductId": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000001" },
+    "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
     "stockInHand": 1000,
     "beginningBalance": 400,
     "totalReceivedQuantity": 800,
@@ -20,9 +20,9 @@
     "totalConsumedQuantity": 1200
   },
   {
-    "id": "00000000-0000-0000-0000-000000000003",
-    "orderableProductId": "00000000-0000-0000-0000-000000000003",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
+    "id": "f27415c4-7049-46a6-9e59-818990c85390",
+    "orderableProductId": "bac90734-6e58-426e-849b-331286ec77d2",
+    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
     "stockInHand": 22,
     "beginningBalance": 6,
     "totalReceivedQuantity": 16,
@@ -31,9 +31,9 @@
     "requestedQuantityExplanation": "Too few left to make any use out of it."
   },
   {
-    "id": "00000000-0000-0000-0000-000000000004",
-    "orderableProductId": "00000000-0000-0000-0000-000000000004",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000002" },
+    "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
+    "orderableProductId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
     "stockInHand": 300,
     "beginningBalance": 300,
     "totalReceivedQuantity": 0,
@@ -41,9 +41,9 @@
     "totalConsumedQuantity": 300
   },
   {
-    "id": "00000000-0000-0000-0000-000000000005",
-    "orderableProductId": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000003" },
+    "id": "ac49b686-c74c-4684-a635-d777ee298cd2",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "8c7f1a6d-d139-483a-ad60-4288016f3d23" },
     "stockInHand": 250,
     "beginningBalance": 50,
     "totalReceivedQuantity": 250,
@@ -51,9 +51,9 @@
     "totalConsumedQuantity": 300
   },
   {
-    "id": "00000000-0000-0000-0000-000000000006",
-    "orderableProductId": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000003" },
+    "id": "1d0d970f-c619-40db-ae81-6d8990505502",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "8c7f1a6d-d139-483a-ad60-4288016f3d23" },
     "stockInHand": 30000,
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
@@ -61,9 +61,9 @@
     "totalConsumedQuantity": 31000
   },
   {
-    "id": "00000000-0000-0000-0000-000000000007",
-    "orderableProductId": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000004" },
+    "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "21d138bc-f2c2-4188-adf3-a3aae381abde" },
     "stockInHand": 30000,
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
@@ -71,9 +71,9 @@
     "totalConsumedQuantity": 31000
   },
   {
-    "id": "00000000-0000-0000-0000-000000000008",
-    "orderableProductId": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000004" },
+    "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "21d138bc-f2c2-4188-adf3-a3aae381abde" },
     "stockInHand": 30000,
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
@@ -81,9 +81,9 @@
     "totalConsumedQuantity": 31000
   },
   {
-    "id": "00000000-0000-0000-0000-000000000009",
-    "orderableProductId": "00000000-0000-0000-0000-000000000003",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000005" },
+    "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
+    "orderableProductId": "bac90734-6e58-426e-849b-331286ec77d2",
+    "requisition": { "id": "122508c9-f77b-4401-8dd7-00272c7f7919" },
     "stockInHand": 30000,
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
@@ -91,9 +91,9 @@
     "totalConsumedQuantity": 31000
   },
   {
-    "id": "00000000-0000-0000-0000-000000000010",
-    "orderableProductId": "00000000-0000-0000-0000-000000000004",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000005" },
+    "id": "f2ccd66c-f608-4eaa-8eea-22daba187a5a",
+    "orderableProductId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "requisition": { "id": "122508c9-f77b-4401-8dd7-00272c7f7919" },
     "stockInHand": 30000,
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
@@ -101,9 +101,9 @@
     "totalConsumedQuantity": 31000
   },
   {
-    "id": "00000000-0000-0000-0000-000000000011",
-    "orderableProductId": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000006" },
+    "id": "682baaa0-9a68-40a2-97a4-a2cafb8fcce6",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "f152b9bb-c1e2-40b6-b381-28d739208662" },
     "stockInHand": 0,
     "beginningBalance": 100,
     "totalReceivedQuantity": 0,
@@ -116,9 +116,9 @@
     "approvedQuantity": 0
   },
   {
-    "id": "00000000-0000-0000-0000-000000000012",
-    "orderableProductId": "00000000-0000-0000-0000-000000000004",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000006" },
+    "id": "a2ab1bea-5833-4fa6-9c8f-ea4cba43a6da",
+    "orderableProductId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "requisition": { "id": "f152b9bb-c1e2-40b6-b381-28d739208662" },
     "stockInHand": 0,
     "beginningBalance": 200,
     "totalReceivedQuantity": 0,
@@ -131,9 +131,9 @@
     "approvedQuantity": 999
   },
   {
-    "id": "00000000-0000-0000-0000-000000000013",
-    "orderableProductId": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000007" },
+    "id": "d2529049-6e96-4ca0-870e-6d9819bfb17d",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "89bd3422-9ada-4369-8ee3-5747fa79c92d" },
     "stockInHand": 0,
     "beginningBalance": 100,
     "totalReceivedQuantity": 0,
@@ -146,9 +146,9 @@
     "approvedQuantity": 1278
   },
   {
-    "id": "00000000-0000-0000-0000-000000000014",
-    "orderableProductId": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000007" },
+    "id": "818b66c2-27c3-4662-9644-db8da5afacbe",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "89bd3422-9ada-4369-8ee3-5747fa79c92d" },
     "stockInHand": 0,
     "beginningBalance": 500,
     "totalReceivedQuantity": 0,
@@ -161,9 +161,9 @@
     "approvedQuantity": 2019
   },
   {
-    "id": "00000000-0000-0000-0000-000000000015",
-    "orderableProductId": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000008" },
+    "id": "982943fe-c8a7-468c-9622-dd1a345ce459",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "276353fb-970f-4638-8ead-3e97c9450aa3" },
     "stockInHand": 0,
     "beginningBalance": 100,
     "totalReceivedQuantity": 0,
@@ -176,9 +176,9 @@
     "approvedQuantity": 0
   },
   {
-    "id": "00000000-0000-0000-0000-000000000016",
-    "orderableProductId": "00000000-0000-0000-0000-000000000004",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000008" },
+    "id": "14e25f19-1857-4ab0-b426-2893cef14663",
+    "orderableProductId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "requisition": { "id": "276353fb-970f-4638-8ead-3e97c9450aa3" },
     "stockInHand": 0,
     "beginningBalance": 200,
     "totalReceivedQuantity": 0,
@@ -191,9 +191,9 @@
     "approvedQuantity": 999
   },
   {
-    "id": "00000000-0000-0000-0000-000000000017",
-    "orderableProductId": "00000000-0000-0000-0000-000000000001",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000009" },
+    "id": "a9280f48-5d7f-48b8-9064-10e4d4c567fb",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a" },
     "stockInHand": 0,
     "beginningBalance": 100,
     "totalReceivedQuantity": 0,
@@ -206,9 +206,9 @@
     "approvedQuantity": 1278
   },
   {
-    "id": "00000000-0000-0000-0000-000000000018",
-    "orderableProductId": "00000000-0000-0000-0000-000000000002",
-    "requisition": { "id": "00000000-0000-0000-0000-000000000009" },
+    "id": "21297efb-af7c-4342-8b00-d15c324d5282",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a" },
     "stockInHand": 0,
     "beginningBalance": 500,
     "totalReceivedQuantity": 0,
