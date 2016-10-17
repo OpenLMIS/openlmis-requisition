@@ -35,8 +35,16 @@ public class AvailableRequisitionColumn extends BaseEntity {
   private Set<SourceType> sources;
 
   private String label;
+
   private String indicator;
-  private boolean mandatory;
+
+  private Boolean mandatory;
+
+  private Boolean isDisplayRequired;
+
+  private Boolean canChangeOrder;
+
+  private Boolean canBeChangedByUser;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)

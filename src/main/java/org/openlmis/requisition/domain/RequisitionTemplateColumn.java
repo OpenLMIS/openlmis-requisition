@@ -26,15 +26,11 @@ public class RequisitionTemplateColumn {
 
   private String label;
 
+  private String indicator;
+
   private int displayOrder;
 
   private Boolean isDisplayed;
-
-  private Boolean isDisplayRequired;
-
-  private Boolean canChangeOrder;
-
-  private Boolean canBeChangedByUser;
 
   private SourceType source;
 

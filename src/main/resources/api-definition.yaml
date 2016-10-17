@@ -119,11 +119,9 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "name": { "type": "string", "required": false, "title": "name" },
               "label": { "type": "string", "required": false, "title": "label" },
+              "indicator": { "type": "string", "required": false, "title": "indicator" },
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "isDisplayed": { "type": "boolean", "required": false, "title": "isDisplayed" },
-              "isDisplayRequired": { "type": "boolean", "required": false, "title": "isDisplayRequired" },
-              "canBeChangedByUser": { "type": "boolean", "required": false, "title": "canByChangedByUser" },
-              "canChangeOrder": { "type": "boolean", "required": false, "title": "canChangeOrder" },
               "source": { "type": "string", "required": false, "title": "source" }
           }
       }

@@ -40,7 +40,9 @@ import java.util.UUID;
 public class RequisitionLineCalculationServiceTest {
 
   private static final String BEGINNING_BALANCE_FIELD = "beginningBalance";
+  private static final String BEGINNING_BALANCE_INDICATOR = "A";
   private static final String TOTAL_QUANTITY_RECEIVED_FIELD = "totalQuantityReceived";
+  private static final String TOTAL_QUANTITY_RECEIVED_INDICATOR = "B";
   private static final SourceType SOURCE = SourceType.CALCULATED;
 
   private Requisition requisition;
@@ -95,8 +97,8 @@ public class RequisitionLineCalculationServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD, new RequisitionTemplateColumn(
-        BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1, true, false, true, true, SOURCE,
-        availableRequisitionColumn));
+        BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_INDICATOR, 1, true, 
+        SOURCE, availableRequisitionColumn));
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
@@ -118,8 +120,8 @@ public class RequisitionLineCalculationServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD, new RequisitionTemplateColumn(
-        BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 1, false, false, true, true, SOURCE,
-        availableRequisitionColumn));
+        BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_INDICATOR, 1, false, 
+        SOURCE, availableRequisitionColumn));
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
@@ -137,11 +139,13 @@ public class RequisitionLineCalculationServiceTest {
     HashMap<String, RequisitionTemplateColumn> requisitionTemplateColumnHashMap = new HashMap<>();
 
     requisitionTemplateColumnHashMap.put(BEGINNING_BALANCE_FIELD,
-        new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD,
-            2, false, false, true, true, SourceType.USER_INPUT, availableRequisitionColumn));
+        new RequisitionTemplateColumn(BEGINNING_BALANCE_FIELD, BEGINNING_BALANCE_FIELD, 
+            BEGINNING_BALANCE_INDICATOR, 2, false,  SourceType.USER_INPUT, 
+            availableRequisitionColumn));
     requisitionTemplateColumnHashMap.put(TOTAL_QUANTITY_RECEIVED_FIELD,
-        new RequisitionTemplateColumn(TOTAL_QUANTITY_RECEIVED_FIELD, TOTAL_QUANTITY_RECEIVED_FIELD,
-            1, false, false, true, true, SourceType.USER_INPUT, availableRequisitionColumn));
+        new RequisitionTemplateColumn(TOTAL_QUANTITY_RECEIVED_FIELD, TOTAL_QUANTITY_RECEIVED_FIELD, 
+            TOTAL_QUANTITY_RECEIVED_INDICATOR, 1, false, SourceType.USER_INPUT, 
+            availableRequisitionColumn));
 
     requisitionTemplate.setColumnsMap(requisitionTemplateColumnHashMap);
 
@@ -228,5 +232,7 @@ public class RequisitionLineCalculationServiceTest {
         .thenReturn(period2);
     when(periodDto3.getId())
         .thenReturn(period3);
+    when(availableRequisitionColumn.getCanChangeOrder()).thenReturn(true);
+    when(availableRequisitionColumn.getCanBeChangedByUser()).thenReturn(true);
   }
 }

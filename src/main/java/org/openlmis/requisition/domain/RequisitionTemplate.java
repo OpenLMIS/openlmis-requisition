@@ -92,7 +92,7 @@ public class RequisitionTemplate extends BaseEntity {
         moveDownAllColumnsBetweenIndexes(newDisplayOrder, oldDisplayOrder);
       }
     }
-    if (column.getCanChangeOrder()) {
+    if (column.getColumnDefinition().getCanChangeOrder()) {
       column.setDisplayOrder(newDisplayOrder);
     }
   }
@@ -128,7 +128,7 @@ public class RequisitionTemplate extends BaseEntity {
    */
   public void changeColumnDisplay(String key, boolean display) {
     RequisitionTemplateColumn column = columnsMap.get(key);
-    if (!column.getIsDisplayRequired()) {
+    if (!column.getColumnDefinition().getIsDisplayRequired()) {
       if (display && key.equals("productCode")) {
         column.setDisplayOrder(1);
       }

@@ -16,22 +16,24 @@ public class RequisitionTemplateTest {
   @Before
   public void setUp() {
     requisitionTemplate = new RequisitionTemplate();
+    AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
+    columnDefinition.setCanChangeOrder(true);
     RequisitionTemplateColumn column1 = new RequisitionTemplateColumn();
     column1.setName(COLUMN_NAMES[0]);
     column1.setDisplayOrder(1);
-    column1.setCanChangeOrder(true);
+    column1.setColumnDefinition(columnDefinition);
     RequisitionTemplateColumn column2 = new RequisitionTemplateColumn();
     column2.setName(COLUMN_NAMES[1]);
     column2.setDisplayOrder(2);
-    column2.setCanChangeOrder(true);
+    column2.setColumnDefinition(columnDefinition);
     RequisitionTemplateColumn column3 = new RequisitionTemplateColumn();
     column3.setName(COLUMN_NAMES[2]);
     column3.setDisplayOrder(3);
-    column3.setCanChangeOrder(true);
+    column3.setColumnDefinition(columnDefinition);
     RequisitionTemplateColumn column4 = new RequisitionTemplateColumn();
     column4.setName(COLUMN_NAMES[3]);
     column4.setDisplayOrder(4);
-    column4.setCanChangeOrder(true);
+    column4.setColumnDefinition(columnDefinition);
     Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<String,
         RequisitionTemplateColumn>();
     columnsMap.put(column1.getName(), column1);
