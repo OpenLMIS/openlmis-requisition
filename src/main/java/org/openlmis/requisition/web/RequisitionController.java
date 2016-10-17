@@ -198,9 +198,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
                                        @PathVariable("id") UUID requisitionId)
-          throws InvalidRequisitionStatusException {
+      throws InvalidRequisitionStatusException, RequisitionNotFoundException {
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
+
+    if (requisitionToUpdate == null) {
+      throw new RequisitionNotFoundException(requisitionId);
+    }
+
     if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
 
