@@ -99,16 +99,6 @@ public class RequisitionControllerTest {
     assertTrue(periodUuids.contains(uuid3));
   }
 
-  @Test
-  public void shouldSubmitValidRequisition() {
-    requisitionController.submitRequisition(uuid1);
-  }
-
-  @Test
-  public void shouldNotSubmitInvalidRequisition() {
-
-  }
-
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
     ProcessingPeriodDto period = new ProcessingPeriodDto();
     period.setId(uuid1);
