@@ -66,6 +66,17 @@
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "requestedQuantityExplanation",
+    "name": "requestedQuantityExplanation",
+    "label": "Requested Quantity Explanation",
+    "indicator": "W",
+    "displayOrder": 7,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
+  },
+  {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "beginningBalance",
     "name": "beginningBalance",
@@ -130,5 +141,16 @@
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
+  },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "requestedQuantityExplanation",
+    "name": "requestedQuantityExplanation",
+    "label": "Requested Quantity Explanation",
+    "indicator": "W",
+    "displayOrder": 7,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   }
 ]
