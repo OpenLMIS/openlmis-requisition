@@ -365,15 +365,15 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    if(requisition.getStatus() == RequisitionStatus.SUBMITTED
-        && !configurationSettingService.getBoolValue("skipAuthorization")) {
+    if(requisition.getStatus() == RequisitionStatus.SUBMITTED) {
       requisition.authorize();
       requisitionRepository.save(requisition);
       LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
       return new ResponseEntity<>(requisition, HttpStatus.OK);
     } else {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>("Requisition must be submitted to be authorized",
+          HttpStatus.BAD_REQUEST);
     }
 
   }
