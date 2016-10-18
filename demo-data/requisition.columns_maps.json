@@ -29,7 +29,7 @@
     "indicator": "C",
     "displayOrder": 3,
     "isDisplayed": true,
-    "source": 1,
+    "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
@@ -140,7 +140,7 @@
     "indicator": "C",
     "displayOrder": 3,
     "isDisplayed": true,
-    "source": 1,
+    "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
