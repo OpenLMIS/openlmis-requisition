@@ -54,7 +54,7 @@ public class RequisitionLineCalculationService {
     if (template.isColumnDisplayed(BEGINNING_BALANCE_COLUMN)) {
       ProcessingPeriodDto previousPeriod = findPreviousPeriod(requisition.getProcessingPeriodId());
       Requisition previousRequisition = null != previousPeriod
-          ? findPreviousRequesition(requisition, previousPeriod)
+          ? findPreviousRequisition(requisition, previousPeriod)
           : null;
 
       if (null != previousRequisition) {
@@ -102,7 +102,7 @@ public class RequisitionLineCalculationService {
     return list.isEmpty() ? null : list.get(0);
   }
 
-  private Requisition findPreviousRequesition(Requisition requisition, ProcessingPeriodDto period) {
+  private Requisition findPreviousRequisition(Requisition requisition, ProcessingPeriodDto period) {
     List<Requisition> list = requisitionService.searchRequisitions(
         requisition.getFacilityId(), requisition.getProgramId(),
         null, null, period.getId(), null, null
