@@ -195,7 +195,7 @@ public class RequisitionController extends BaseController {
    * @return ResponseEntity containing the updated requisition
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
+  public ResponseEntity<?> updateRequisition(@RequestBody @Valid Requisition requisition,
                                        @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException {
 
@@ -347,22 +347,16 @@ public class RequisitionController extends BaseController {
   /**
    * Authorize given requisition.
    *
-   * @param bindingResult Object used for validation.
    * @param requisitionId UUID of Requisition to authorize.
    * @return ResponseEntity with authorized Requisition if authorization was successful.
    */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
-  public ResponseEntity<?> authorizeRequisition(BindingResult bindingResult,
-                                                @PathVariable("id") UUID requisitionId)
+  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException {
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
       return new ResponseEntity<>("Requisition authorization is configured to be skipped",
           HttpStatus.BAD_REQUEST);
-    }
-
-    if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -371,11 +365,17 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    requisition.authorize();
-    requisitionRepository.save(requisition);
-    LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
+    if(requisition.getStatus() == RequisitionStatus.SUBMITTED
+        && !configurationSettingService.getBoolValue("skipAuthorization")) {
+      requisition.authorize();
+      requisitionRepository.save(requisition);
+      LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
-    return new ResponseEntity<>(requisition, HttpStatus.OK);
+      return new ResponseEntity<>(requisition, HttpStatus.OK);
+    } else {
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
   }
 
   /**
