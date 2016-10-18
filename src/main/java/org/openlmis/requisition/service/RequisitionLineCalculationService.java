@@ -108,7 +108,7 @@ public class RequisitionLineCalculationService {
         null, null, period.getId(), null, null
     );
 
-    return list.isEmpty() ? null : list.get(0);
+    return null == list ? null : (list.isEmpty() ? null : list.get(0));
   }
 
   private void initiateTotalQuantityReceived(Requisition requisition) {
