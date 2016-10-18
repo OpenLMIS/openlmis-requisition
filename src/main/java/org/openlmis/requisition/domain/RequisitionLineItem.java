@@ -96,12 +96,17 @@ public class RequisitionLineItem extends BaseEntity {
    * @param  requisitionLineItem RequisitionLineItem with new values.
    */
   public void updateFrom(RequisitionLineItem requisitionLineItem) {
-    this.orderableProductId = requisitionLineItem.getOrderableProductId();
-    this.requisition = requisitionLineItem.getRequisition();
-    this.stockInHand = requisitionLineItem.getStockInHand();
-    this.stockOnHand = requisitionLineItem.getStockOnHand();
-    this.beginningBalance = requisitionLineItem.getBeginningBalance();
-    this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+      this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
+      this.remarks = requisitionLineItem.getRemarks();
+    } else {
+      this.orderableProductId = requisitionLineItem.getOrderableProductId();
+      this.requisition = requisitionLineItem.getRequisition();
+      this.stockInHand = requisitionLineItem.getStockInHand();
+      this.stockOnHand = requisitionLineItem.getStockOnHand();
+      this.beginningBalance = requisitionLineItem.getBeginningBalance();
+      this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
+    }
   }
 
   /**

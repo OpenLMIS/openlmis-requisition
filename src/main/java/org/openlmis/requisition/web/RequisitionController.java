@@ -210,7 +210,8 @@ public class RequisitionController extends BaseController {
       throw new RequisitionNotFoundException(requisitionId);
     }
 
-    if (requisitionToUpdate.getStatus() == RequisitionStatus.INITIATED) {
+    RequisitionStatus status = requisitionToUpdate.getStatus();
+    if (status == RequisitionStatus.INITIATED || status == RequisitionStatus.AUTHORIZED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
 
       requisitionToUpdate.updateFrom(requisition,
