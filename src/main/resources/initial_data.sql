@@ -35,5 +35,5 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 ('cd57f329-f549-4717-882e-ecbf98122c38', 'USER_INPUT'), -- totalLossesAndAdjustments
 ('6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5', 'USER_INPUT'), -- requestedQuantityExplanation
 ('2ed8c74a-f424-4742-bd14-cfbe67b6e7be', 'USER_INPUT'), -- remarks
-('bde01507-3837-47b7-ae08-cec92c0c3cd2', 'USER_INPUT'), -- productCode
+('bde01507-3837-47b7-ae08-cec92c0c3cd2', 'REFERENCE_DATA'), -- productCode
 ('a62a5fed-c0b6-4d49-8a96-c631da0d0113', 'USER_INPUT'); -- approvedQuantity
