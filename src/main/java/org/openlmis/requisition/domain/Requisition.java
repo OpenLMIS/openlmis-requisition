@@ -9,7 +9,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.requisition.exception.CannotChangeFieldException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
@@ -145,9 +144,7 @@ public class Requisition extends BaseEntity {
    * @param requisition         Requisition with new values.
    * @param requisitionTemplate Requisition template
    */
-  public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate)
-      throws CannotChangeFieldException {
-    checkImmutableFields(requisition);
+  public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate) {
     this.comments = requisition.getComments();
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
@@ -167,20 +164,7 @@ public class Requisition extends BaseEntity {
     }
   }
 
-  private void checkImmutableFields(Requisition newRequisition)
-      throws CannotChangeFieldException {
-    if (!this.facilityId.equals(newRequisition.getFacilityId())
-        || !this.processingPeriodId.equals(newRequisition.getProcessingPeriodId())
-        || !this.programId.equals(newRequisition.getProgramId())
-        || !this.supplyingFacilityId.equals(newRequisition.getSupplyingFacilityId())
-        || this.emergency != newRequisition.getEmergency()) {
-      throw new CannotChangeFieldException("FacilityId, ProcessingPeriod, ProgramId, "
-          + "SupplyingFacilityId and Emergency");
-    }
-  }
-
-  private void updateReqLines(Collection<RequisitionLineItem> lineItems)
-      throws CannotChangeFieldException {
+  private void updateReqLines(Collection<RequisitionLineItem> lineItems) {
     if (null == requisitionLineItems) {
       this.requisitionLineItems = new ArrayList<>();
     }
@@ -192,22 +176,6 @@ public class Requisition extends BaseEntity {
           .stream()
           .filter(l -> l.getId().equals(item.getId()))
           .findFirst().orElse(null);
-      String changedFields = fieldChanged(existing, item);
-      if (this.status == RequisitionStatus.INITIATED
-          || this.status == RequisitionStatus.SUBMITTED) {
-        if (changedFields.contains("Remarks") || changedFields.contains("ApprovedQuantity")) {
-          throw new CannotChangeFieldException(
-              changedFields.contains("Remarks") ? "Remarks" : "ApprovedQuantity"
-          );
-        }
-      }
-      if (this.status == RequisitionStatus.AUTHORIZED) {
-        changedFields.replace(" Remarks", "");
-        changedFields.replace(" ApprovedAuantity", "");
-        if (!changedFields.isEmpty()) {
-          throw new CannotChangeFieldException(changedFields);
-        }
-      }
 
       if (null == existing) {
         item.setRequisition(this);
@@ -221,74 +189,6 @@ public class Requisition extends BaseEntity {
 
     this.requisitionLineItems.clear();
     this.requisitionLineItems.addAll(updatedList);
-  }
-
-  private String fieldChanged(RequisitionLineItem oldOne, RequisitionLineItem newOne) {
-    String result = new String();
-
-    if ((oldOne == null ^ newOne.getOrderableProductId() == null)
-        || (oldOne != null && !oldOne.getOrderableProductId().equals(
-        newOne.getOrderableProductId()))) {
-      result += " OrderableProductId";
-    }
-
-    if ((oldOne == null ^ newOne.getStockInHand() == null)
-        || (oldOne != null && !oldOne.getStockInHand().equals(newOne.getStockInHand()))) {
-      result += " StockInHand";
-    }
-
-    if ((oldOne == null ^ newOne.getBeginningBalance() == null)
-        || (oldOne != null && !oldOne.getBeginningBalance().equals(
-        newOne.getBeginningBalance()))) {
-      result += " BeginningBalance";
-    }
-
-    if ((oldOne == null ^ newOne.getTotalReceivedQuantity() == null)
-        || (oldOne != null && !oldOne.getTotalReceivedQuantity().equals(
-        newOne.getTotalReceivedQuantity()))) {
-      result += " TotalReceivedQuantity";
-    }
-
-    if ((oldOne == null ^ newOne.getTotalLossesAndAdjustments() == null)
-        || (oldOne != null && !oldOne.getTotalLossesAndAdjustments().equals(
-        newOne.getTotalLossesAndAdjustments()))) {
-      result += " TotalLossesAndAdjustments";
-    }
-
-    if ((oldOne == null ^ newOne.getStockOnHand() == null)
-        || (oldOne != null && !oldOne.getStockOnHand().equals(newOne.getStockOnHand()))) {
-      result += " StockOnHand";
-    }
-
-    if ((oldOne == null ^ newOne.getRequestedQuantity() == null)
-        || (oldOne != null && !oldOne.getRequestedQuantity().equals(
-        newOne.getRequestedQuantity()))) {
-      result += " RequestedQuantity";
-    }
-
-    if ((oldOne == null ^ newOne.getTotalConsumedQuantity() == null)
-        || (oldOne != null && !oldOne.getTotalConsumedQuantity().equals(
-        newOne.getTotalConsumedQuantity()))) {
-      result += " TotalConsumedQuantity";
-    }
-
-    if ((oldOne == null ^ newOne.getRequestedQuantityExplanation() == null)
-        || (oldOne != null && !oldOne.getRequestedQuantityExplanation().equals(
-        newOne.getRequestedQuantityExplanation()))) {
-      result += " RequestedQuantityExplanation";
-    }
-
-    if ((oldOne == null ^ newOne.getRemarks() == null)
-        || (oldOne != null && !oldOne.getRemarks().equals(newOne.getRemarks()))) {
-      result += " Remarks";
-    }
-
-    if ((oldOne == null ^ newOne.getApprovedQuantity() == null)
-        || (oldOne != null && !oldOne.getApprovedQuantity().equals(
-        newOne.getApprovedQuantity()))) {
-      result += " ApprovedQuantity";
-    }
-    return result;
   }
 
   /**
