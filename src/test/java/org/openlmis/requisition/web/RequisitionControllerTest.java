@@ -7,11 +7,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,14 +30,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class RequisitionControllerTest {
 
   @Mock
   private RequisitionRepository requisitionRepository;
+
+  @Mock
+  private RequisitionService requisitionService;
 
   @Mock
   private PeriodReferenceDataService periodReferenceDataService;
@@ -47,6 +61,15 @@ public class RequisitionControllerTest {
   @Mock
   private Requisition approvedRequsition;
 
+  @Mock
+  private RequisitionTemplate template;
+
+  @Mock
+  private RequisitionValidator validator;
+
+  @Mock
+  private RequisitionTemplateRepository templateRepository;
+
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
 
@@ -56,15 +79,13 @@ public class RequisitionControllerTest {
   private UUID uuid4 = UUID.fromString("00000000-0000-0000-0000-000000000004");
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
 
-  private List<ProcessingPeriodDto> processingPeriods;
-
   @InjectMocks
   private RequisitionController requisitionController;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    processingPeriods = generateProcessingPeriods();
+    List<ProcessingPeriodDto> processingPeriods = generateProcessingPeriods();
     when(initiatedRequsition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(submittedRequsition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
@@ -97,6 +118,37 @@ public class RequisitionControllerTest {
     assertTrue(periodUuids.contains(uuid1));
     assertTrue(periodUuids.contains(uuid2));
     assertTrue(periodUuids.contains(uuid3));
+  }
+
+  @Test
+  public void shouldSubmitValidInitiatedRequisition()
+          throws RequisitionException, RequisitionTemplateColumnException {
+    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(initiatedRequsition.getProgramId()).thenReturn(uuid2);
+    when(templateRepository.getTemplateForProgram(uuid2)).thenReturn(template);
+
+    requisitionController.submitRequisition(uuid1);
+
+    verify(initiatedRequsition).submit(template);
+    // we do not update in this endpoint
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
+            any(RequisitionTemplate.class));
+  }
+
+  @Test
+  public void shouldNotSubmitInvalidRequisition()
+          throws RequisitionException, RequisitionTemplateColumnException {
+    doAnswer(invocation -> {
+      Errors errors = (Errors) invocation.getArguments()[1];
+      errors.reject("requisitionLineItems[0].beginningBalance", "Bad argument");
+
+      return null;
+    }).when(validator).validate(eq(initiatedRequsition), any(Errors.class));
+    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+
+    requisitionController.submitRequisition(uuid1);
+
+    verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
@@ -132,5 +184,13 @@ public class RequisitionControllerTest {
             .thenReturn(Arrays.asList(authorizedRequsition));
     when(requisitionRepository.searchByProcessingPeriod(uuid5))
             .thenReturn(Arrays.asList(approvedRequsition));
+  }
+
+  private void verifyNoSubmitOrUpdate(Requisition requisition)
+          throws RequisitionException, RequisitionTemplateColumnException {
+    verifyZeroInteractions(requisitionService);
+    verify(requisition, never()).updateFrom(any(Requisition.class),
+            any(RequisitionTemplate.class));
+    verify(requisition, never()).submit(any(RequisitionTemplate.class));
   }
 }

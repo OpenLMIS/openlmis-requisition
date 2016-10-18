@@ -23,7 +23,6 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,7 +145,8 @@ public class RequisitionController extends BaseController {
    * Submits earlier initiated requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
-  public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId) {
+  public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId)
+          throws RequisitionException, RequisitionTemplateColumnException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
@@ -162,21 +162,14 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    try {
-      LOGGER.debug("Submitting a requisition with id " + requisition.getId());
-      RequisitionTemplate template =
-          requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
-      requisition.submit(template);
+    LOGGER.debug("Submitting a requisition with id " + requisition.getId());
+    RequisitionTemplate template =
+        requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
+    requisition.submit(template);
 
-      requisitionRepository.save(requisition);
-      LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
-    } catch (RequisitionException | RequisitionTemplateColumnException ex) {
-      ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while submitting requisition with id: "
-                      + requisition.getId(), ex.getMessage());
-      LOGGER.debug(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+    requisitionRepository.save(requisition);
+    LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
+
     return new ResponseEntity<Object>(
         requisitionService.getRequisition(requisition), HttpStatus.OK
     );
