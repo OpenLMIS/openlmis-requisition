@@ -46,6 +46,7 @@ public class RequisitionLineItemTest {
     requisitionLineItem.setStockOnHand(5);
 
     RequisitionLineItem updatedItem = new RequisitionLineItem();
+    updatedItem.setRequisition(requisition);
     updatedItem.updateFrom(requisitionLineItem);
 
     assertEquals(1, updatedItem.getApprovedQuantity().intValue());
