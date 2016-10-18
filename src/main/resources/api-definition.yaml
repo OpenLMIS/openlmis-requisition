@@ -794,11 +794,9 @@ resourceTypes:
                     body:
                       application/json:
     /{id}/submit:
-            put:
+            post:
                 is: [ secured ]
                 description: Submit earlier initiated requisition.
-                body:
-                    application/json:
                 responses:
                     "200":
                         headers:

@@ -32,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -144,17 +145,20 @@ public class RequisitionController extends BaseController {
   /**
    * Submits earlier initiated requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.PUT)
-  public ResponseEntity<?> submitRequisition(@RequestBody @Valid Requisition requisition,
-                                             BindingResult bindingResult,
-                                             @PathVariable("id") UUID requisitionId) {
+  @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
+  public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId) {
+
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+
+    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, "requisition");
+    validator.validate(requisition, bindingResult);
+
     if (bindingResult.hasErrors()) {
+      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
-    Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
-
-    if (savedRequisition == null) {
+    if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -163,8 +167,8 @@ public class RequisitionController extends BaseController {
       RequisitionTemplate template =
           requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
       requisition.submit(template);
-      savedRequisition.updateFrom(requisition, template);
-      requisitionRepository.save(savedRequisition);
+
+      requisitionRepository.save(requisition);
       LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
     } catch (RequisitionException | RequisitionTemplateColumnException ex) {
       ErrorResponse errorResponse =
