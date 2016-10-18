@@ -4,5 +4,5 @@ public enum ColumnType {
   CURRENCY,
   TEXT,
   BOOLEAN,
-  NUMERIC;
+  NUMERIC
 }

@@ -1,6 +1,7 @@
 [
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
@@ -11,6 +12,7 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "totalReceivedQuantity",
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
@@ -21,6 +23,7 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "totalConsumedQuantity",
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
@@ -31,6 +34,7 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "totalLossesAndAdjustments",
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
@@ -41,6 +45,7 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "stockOnHand",
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
@@ -51,6 +56,7 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "requestedQuantity",
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
@@ -61,6 +67,7 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
@@ -71,6 +78,7 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "totalReceivedQuantity",
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
@@ -81,6 +89,7 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "totalConsumedQuantity",
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
@@ -91,6 +100,7 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "totalLossesAndAdjustments",
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
@@ -101,6 +111,7 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "stockOnHand",
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
@@ -111,6 +122,7 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "requestedQuantity",
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
