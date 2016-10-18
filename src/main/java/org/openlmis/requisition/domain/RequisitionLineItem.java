@@ -87,7 +87,7 @@ public class RequisitionLineItem extends BaseEntity {
   public RequisitionLineItem(Requisition requisition,
                              FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
     this.requisition = requisition;
-    this.orderableProductId = facilityTypeApprovedProduct.getProgramProduct().getProduct().getId();
+    this.orderableProductId = facilityTypeApprovedProduct.getProgramProduct().getProductId();
   }
 
   /**
