@@ -68,4 +68,37 @@ public class Comment extends BaseEntity {
     this.authorId = comment.getAuthorId();
     this.body = comment.getBody();
   }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setAuthorId(authorId);
+    exporter.setBody(body);
+    exporter.setCreatedDate(createdDate);
+
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setAuthorId(UUID authorId);
+
+    void setBody(String body);
+
+    void setCreatedDate(LocalDateTime createdDate);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    UUID getAuthorId();
+
+    String getBody();
+
+    LocalDateTime getCreatedDate();
+  }
 }

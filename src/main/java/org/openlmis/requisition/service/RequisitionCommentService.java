@@ -1,7 +1,10 @@
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toList;
+
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -128,5 +131,22 @@ public class RequisitionCommentService {
       throw new RequisitionNotFoundException(requisitionId);
     }
     return requisition;
+  }
+
+  /**
+   * Return list of CommentsDtos for a given Comments.
+   *
+   * @param comments List of Comments to be exported to Dto
+   * @return list of CommentDtos
+   */
+  public List<CommentDto> exportToDtos(
+      List<Comment> comments) {
+    return comments.stream().map(this::exportToDto).collect(toList());
+  }
+
+  private CommentDto exportToDto(Comment comment) {
+    CommentDto dto = new CommentDto();
+    comment.export(dto);
+    return dto;
   }
 }

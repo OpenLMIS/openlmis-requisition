@@ -3,12 +3,14 @@ package org.openlmis.requisition.repository.custom.impl;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -45,6 +47,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @Autowired
   private RequisitionLineCalculationService requisitionLineCalculationService;
+
+  @Autowired
+  private RequisitionCommentService requisitionCommentService;
 
 
   @PersistenceContext
@@ -233,7 +238,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       List<RequisitionLineItemDto> requisitionLineItemDtoList
           = requisitionLineCalculationService.exportToDtos(requisition.getRequisitionLineItems());
       requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
-      requisitionDto.setComments(requisition.getComments());
+      List<CommentDto> commentDtoList = requisitionCommentService.exportToDtos(requisition
+          .getComments());
+      requisitionDto.setComments(commentDtoList);
       requisitionDto.setStatus(requisition.getStatus());
       requisitionDto.setEmergency(requisition.getEmergency());
       requisitionDto.setSupervisoryNode(requisition.getSupervisoryNodeId());

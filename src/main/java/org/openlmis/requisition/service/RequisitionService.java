@@ -5,6 +5,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -58,6 +59,9 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionLineCalculationService requisitionLineCalculationService;
+
+  @Autowired
+  private RequisitionCommentService requisitionCommentService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -124,11 +128,14 @@ public class RequisitionService {
     List<RequisitionLineItemDto> requisitionLineItemDtoList
         = requisitionLineCalculationService.exportToDtos(requisition.getRequisitionLineItems());
 
+    List<CommentDto> commentDtoList = requisitionCommentService.exportToDtos(requisition
+        .getComments());
+
     return new RequisitionDto(
         requisition.getId(),
         requisition.getCreatedDate(),
         requisitionLineItemDtoList,
-        requisition.getComments(),
+        commentDtoList,
         facility,
         program,
         processingPeriod,
