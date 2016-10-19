@@ -140,20 +140,6 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfRequestedQuantitySetWithNoExplanation() {
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setRequestedQuantity(1);
-    lineItem.setRequestedQuantityExplanation(null);
-    requisitionLineItems.add(lineItem);
-
-    requisitionValidator.validate(requisition, errors);
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionValidator.REQUESTED_QUANTITY_EXPLANATION
-            + RequisitionValidator.EXPLANATION_MUST_BE_ENTERED));
-  }
-
-  @Test
   public void shouldRejectIfApprovedQuantitySetAndInvalidRequisitionStatus() {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 

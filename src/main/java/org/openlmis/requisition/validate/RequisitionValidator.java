@@ -1,6 +1,5 @@
 package org.openlmis.requisition.validate;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -25,8 +24,6 @@ public class RequisitionValidator implements Validator {
       " is hidden in template and should not contain a value.";
   static final String TEMPLATE_COLUMN_IS_CALCULATED =
       " is calculated and should not contain a value";
-  static final String EXPLANATION_MUST_BE_ENTERED =
-      " must be entered when requested quantity is not empty.";
   static final String IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP =
       " is only available during the approval step of the requisition process.";
   static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
@@ -92,7 +89,8 @@ public class RequisitionValidator implements Validator {
 
     validateApprovedQuantity(errors, template, requisition, item);
 
-    validateRequestedQuantityExplanation(errors, template, item);
+    checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
+        REQUESTED_QUANTITY_EXPLANATION);
   }
 
   private void rejectIfLessThanZero(Errors errors, RequisitionTemplate template,
@@ -125,17 +123,6 @@ public class RequisitionValidator implements Validator {
     } else if (value != null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, APPROVED_QUANTITY
           + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
-    }
-  }
-
-  private void validateRequestedQuantityExplanation(Errors errors, RequisitionTemplate template,
-                                                    RequisitionLineItem item) {
-    String value = item.getRequestedQuantityExplanation();
-    boolean templateValid = checkTemplate(errors, template, value, REQUESTED_QUANTITY_EXPLANATION);
-
-    if (templateValid && item.getRequestedQuantity() != null && isBlank(value)) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, REQUESTED_QUANTITY_EXPLANATION
-          + EXPLANATION_MUST_BE_ENTERED);
     }
   }
 
