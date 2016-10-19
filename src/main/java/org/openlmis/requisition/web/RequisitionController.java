@@ -208,8 +208,8 @@ public class RequisitionController extends BaseController {
 
     RequisitionStatus status = requisitionToUpdate.getStatus();
     if (status != RequisitionStatus.APPROVED
-        || status != RequisitionStatus.SKIPPED
-        || status != RequisitionStatus.RELEASED) {
+        && status != RequisitionStatus.SKIPPED
+        && status != RequisitionStatus.RELEASED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
 
       requisitionToUpdate.updateFrom(requisition,
