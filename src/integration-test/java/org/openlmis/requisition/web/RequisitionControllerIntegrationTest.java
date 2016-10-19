@@ -652,26 +652,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test
-  public void shouldNotUpdateRequisitionIfStatusIsNotInitiated() {
-
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
-    requisition.setEmergency(true);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .body(requisition)
-        .when()
-        .put(ID_URL)
-        .then()
-        .statusCode(400);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
   private void testApproveRequisition(Requisition requisition) {
 
     Requisition response = restAssured.given()

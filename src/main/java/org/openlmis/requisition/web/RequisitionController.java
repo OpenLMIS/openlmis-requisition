@@ -207,7 +207,7 @@ public class RequisitionController extends BaseController {
     }
 
     RequisitionStatus status = requisitionToUpdate.getStatus();
-    if (status == RequisitionStatus.INITIATED || status == RequisitionStatus.AUTHORIZED) {
+    if (status != RequisitionStatus.APPROVED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
 
       requisitionToUpdate.updateFrom(requisition,
