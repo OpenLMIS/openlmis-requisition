@@ -1,8 +1,8 @@
 #%RAML 0.8
 ---
 title: OpenLMIS Requisition API
-version: "1.0.0"
-baseUri: "http://@baseUrl@@prefix@/api"
+version: "@version@"
+baseUri: "@baseUrl@@prefix@/api"
 
 documentation:
     - title: Getting Started

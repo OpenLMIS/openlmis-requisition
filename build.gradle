@@ -20,10 +20,12 @@ apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
 apply plugin: 'pmd'
 
-jar {
-    baseName = 'openlmis-requisition'
-    version  = '0.0.1'
-}
+group = serviceGroup
+version = serviceVersion
+archivesBaseName = rootProject.name
+project.ext.buildTime = java.time.Instant.now().toString() // for versioning
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -31,9 +33,6 @@ repositories {
     maven { url "http://jaspersoft.artifactoryonline.com/jaspersoft/third-party-ce-artifacts/" }
     maven { url "http://jasperreports.sourceforge.net/maven2/" }
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
@@ -176,6 +175,7 @@ sonarqube {
         property "sonar.projectName", "OpenLMIS Requisition"
         property "sonar.projectKey", "org.sonarqube:openlmis-requisition"
         property "sonar.host.url", "http://sonar.openlmis.org"
+        property "sonar.projectVersion", version
         property "sonar.java.coveragePlugin", "jacoco"
         //Tells SonarQube where the unit tests execution reports are
         property "sonar.junit.reportsPath", "build/test-results/test"
@@ -202,7 +202,14 @@ tasks.withType(Pmd){
     }
 }
 
-apply from: "documentation.gradle"
+
+processResources {
+    // update version information in build
+    filesMatching('**/version.properties') {
+        expand(project.properties)
+    }
+}
+
 
 test {
     testLogging {
@@ -211,6 +218,7 @@ test {
     }
 }
 
+apply from: "documentation.gradle"
 integrationTest.dependsOn copyRamlToBuild
 
 check {
@@ -219,7 +227,8 @@ check {
 }
 
 build {
-    jacocoTestReport
+    dependsOn jacocoTestReport
+    dependsOn check
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
