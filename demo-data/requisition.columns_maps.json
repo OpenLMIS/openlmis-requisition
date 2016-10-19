@@ -51,7 +51,7 @@
     "indicator": "E",
     "displayOrder": 5,
     "isDisplayed": true,
-    "source": 0,
+    "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
@@ -162,7 +162,7 @@
     "indicator": "E",
     "displayOrder": 5,
     "isDisplayed": true,
-    "source": 0,
+    "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
