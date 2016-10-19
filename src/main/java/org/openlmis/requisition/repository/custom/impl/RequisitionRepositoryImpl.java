@@ -183,15 +183,20 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private Predicate setFiltering(String filterValue, String filterBy, CriteriaBuilder builder,
                                  Root<Requisition> root, Path<UUID> facility, Path<UUID> program) {
 
-    //Add second important filter
-    List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
-    Predicate predicateFilterBy = builder.disjunction();
-    predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
-    predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
     //Add first important filter
     Predicate predicate = builder.equal(root.get("status"), RequisitionStatus.APPROVED);
-    //Connector filters
-    predicate = builder.and(predicate, predicateFilterBy);
+
+    if (filterBy != null && !filterBy.isEmpty()) {
+      //Add second important filter
+      List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
+      Predicate predicateFilterBy = builder.disjunction();
+      predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
+      predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
+
+      //Connector filters
+      predicate = builder.and(predicate, predicateFilterBy);
+    }
+
     return predicate;
   }
 

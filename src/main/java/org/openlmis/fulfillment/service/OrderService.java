@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.service;
 
+import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -9,6 +11,7 @@ import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -46,8 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
 
 @Service
 public class OrderService {
@@ -221,7 +222,7 @@ public class OrderService {
    * @return created order
    */
   private Order createFromRequisition(Requisition requisition, UserDto user) {
-    Order order = new Order(requisition);
+    Order order = Order.newOrder(requisition);
     order.setCreatedById(user.getId());
 
     ProgramDto program = programReferenceDataService.findOne(order.getProgramId());

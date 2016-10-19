@@ -6,19 +6,22 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -105,22 +108,30 @@ public class Order extends BaseEntity {
   private List<OrderLineItem> orderLineItems;
 
   /**
-   * Creates a new instance based on a given Requisition.
+   * Static factory method for constructing new Order based on Requisition.
    * @param requisition Requisition to create instance from.
    */
-  public Order(Requisition requisition) {
-    setRequisition(requisition);
-    setStatus(OrderStatus.ORDERED);
-    setQuotedCost(BigDecimal.ZERO);
+  public static Order newOrder(Requisition requisition) {
+    Order order = new Order();
+    order.setRequisition(requisition);
+    order.setStatus(OrderStatus.ORDERED);
+    order.setQuotedCost(BigDecimal.ZERO);
 
-    setReceivingFacilityId(requisition.getFacilityId());
-    setRequestingFacilityId(requisition.getFacilityId());
+    order.setReceivingFacilityId(requisition.getFacilityId());
+    order.setRequestingFacilityId(requisition.getFacilityId());
 
-    setSupplyingFacilityId(requisition.getSupplyingFacilityId());
-    setProgramId(requisition.getProgramId());
+    order.setSupplyingFacilityId(requisition.getSupplyingFacilityId());
+    order.setProgramId(requisition.getProgramId());
 
-    orderLineItems = requisition.getRequisitionLineItems()
-        .stream().map(OrderLineItem::new).collect(Collectors.toList());
+    List<OrderLineItem> orderLineItems = new ArrayList<>();
+
+    for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
+      orderLineItems.add(OrderLineItem.newOrderLineItem(lineItem, order));
+    }
+
+    order.setOrderLineItems(orderLineItems);
+
+    return order;
   }
 
   @PrePersist

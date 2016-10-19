@@ -54,8 +54,8 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * */
   public Collection<FacilityDto> searchSupplyingDepots(UUID programId, UUID supervisoryNodeId) {
     Map<String, Object> parameters = new HashMap<>();
-    parameters.put("program", programId);
-    parameters.put("supervisoryNode", supervisoryNodeId);
+    parameters.put("programId", programId);
+    parameters.put("supervisoryNodeId", supervisoryNodeId);
 
     return findAll("supplying", parameters);
   }
