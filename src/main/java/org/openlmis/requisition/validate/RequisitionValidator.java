@@ -79,6 +79,7 @@ public class RequisitionValidator implements Validator {
     );
 
     rejectIfNull(errors, template, item.getStockOnHand(), STOCK_ON_HAND);
+    rejectIfLessThanZero(errors, template, item.getStockOnHand(), STOCK_ON_HAND);
 
     rejectIfNull(errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
     rejectIfLessThanZero(

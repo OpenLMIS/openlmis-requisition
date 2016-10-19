@@ -190,12 +190,12 @@ public class RequisitionLineCalculationServiceTest {
   }
 
   private RequisitionLineItem createTestRequisitionLineItem(Integer quantityRequested,
-                                                            Integer stockInHand,
+                                                            Integer stockOnHand,
                                                             Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setRequestedQuantity(quantityRequested);
-    requisitionLineItem.setStockInHand(stockInHand);
+    requisitionLineItem.setStockOnHand(stockOnHand);
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setOrderableProductId(productId);
     return requisitionLineItem;

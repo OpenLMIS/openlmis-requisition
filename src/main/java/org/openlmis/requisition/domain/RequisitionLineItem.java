@@ -37,11 +37,6 @@ public class RequisitionLineItem extends BaseEntity {
   @Column
   @Getter
   @Setter
-  private Integer stockInHand;
-
-  @Column
-  @Getter
-  @Setter
   private Integer beginningBalance;
 
   @Column
@@ -53,7 +48,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   private Integer totalLossesAndAdjustments;
-  
+
   @Column
   @Getter
   @Setter
@@ -93,7 +88,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Copy values of attributes into new or updated RequisitionLineItem.
    *
-   * @param  requisitionLineItem RequisitionLineItem with new values.
+   * @param requisitionLineItem RequisitionLineItem with new values.
    */
   public void updateFrom(RequisitionLineItem requisitionLineItem) {
     if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
@@ -102,7 +97,6 @@ public class RequisitionLineItem extends BaseEntity {
     } else {
       this.orderableProductId = requisitionLineItem.getOrderableProductId();
       this.requisition = requisitionLineItem.getRequisition();
-      this.stockInHand = requisitionLineItem.getStockInHand();
       this.stockOnHand = requisitionLineItem.getStockOnHand();
       this.beginningBalance = requisitionLineItem.getBeginningBalance();
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
@@ -125,6 +119,23 @@ public class RequisitionLineItem extends BaseEntity {
             + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
+  boolean isFieldsContainValues(String field) {
+    switch (field) {
+      case "totalConsumedQuantity":
+        return null == beginningBalance
+            && null == totalReceivedQuantity
+            && null == totalLossesAndAdjustments
+            && null == stockOnHand;
+      case "stockOnHand":
+        return null == beginningBalance
+            && null == totalReceivedQuantity
+            && null == totalLossesAndAdjustments
+            && null == totalConsumedQuantity;
+      default:
+        return false;
+    }
+  }
+
   private int zeroIfNull(Integer value) {
     return null == value ? 0 : value;
   }
@@ -136,7 +147,6 @@ public class RequisitionLineItem extends BaseEntity {
    */
   public void export(Exporter exporter) {
     exporter.setId(id);
-    exporter.setStockInHand(stockInHand);
     exporter.setBeginningBalance(beginningBalance);
     exporter.setTotalReceivedQuantity(totalReceivedQuantity);
     exporter.setTotalLossesAndAdjustments(totalLossesAndAdjustments);
@@ -150,8 +160,6 @@ public class RequisitionLineItem extends BaseEntity {
 
   public interface Exporter {
     void setId(UUID id);
-
-    void setStockInHand(Integer stockInHand);
 
     void setBeginningBalance(Integer beginningBalance);
 
@@ -174,8 +182,6 @@ public class RequisitionLineItem extends BaseEntity {
 
   public interface Importer {
     UUID getId();
-
-    Integer getStockInHand();
 
     Integer getBeginningBalance();
 

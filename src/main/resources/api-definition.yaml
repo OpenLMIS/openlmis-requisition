@@ -87,7 +87,6 @@ schemas:
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
               "orderableProductId": { "type": "string", "required": true, "title": "orderableProductId" },
-              "stockInHand": { "type": "integer", "required": false, "title": "stockInHand" },
               "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
               "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
               "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },

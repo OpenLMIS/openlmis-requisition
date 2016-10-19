@@ -31,7 +31,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setRequestedQuantity(10);
-    requisitionLineItem.setStockInHand(20);
+    requisitionLineItem.setStockOnHand(20);
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setOrderableProductId(productId);
 

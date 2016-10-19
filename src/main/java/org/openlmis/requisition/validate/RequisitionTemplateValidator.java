@@ -18,6 +18,8 @@ public class RequisitionTemplateValidator implements Validator {
   static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   static final String STOCK_ON_HAND = "stockOnHand";
+  static final String STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION =
+      " must be displayed when stock on hand is calculated.";
   static final String TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION =
       " must be displayed when total consumed quantity is calculated.";
 
@@ -32,7 +34,19 @@ public class RequisitionTemplateValidator implements Validator {
     RequisitionTemplate requisitionTemplate = (RequisitionTemplate) target;
 
     validateRequestedQuantity(errors, requisitionTemplate);
-    validateTotalConsumedQuantity(errors, requisitionTemplate);
+    validateCalculatedFields(errors, requisitionTemplate);
+
+    if (!errors.hasErrors()) {
+      validateCalculatedField(errors, requisitionTemplate, STOCK_ON_HAND,
+          STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION,
+          BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMENTS,
+          TOTAL_CONSUMED_QUANTITY
+      );
+      validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
+          TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION,
+          BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMENTS, STOCK_ON_HAND
+      );
+    }
   }
 
   private void validateRequestedQuantity(Errors errors, RequisitionTemplate template) {
@@ -56,19 +70,24 @@ public class RequisitionTemplateValidator implements Validator {
     }
   }
 
-  private void validateTotalConsumedQuantity(Errors errors, RequisitionTemplate template) {
+  private void validateCalculatedFields(Errors errors, RequisitionTemplate template) {
     try {
-      boolean consumedQuantityCalculated = template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY);
+      if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
+          && template.isColumnCalculated(STOCK_ON_HAND)) {
+        errors.rejectValue(COLUMNS_MAP, TOTAL_CONSUMED_QUANTITY + " and " + STOCK_ON_HAND
+            + "columns cannot be calculated at the same time");
+      }
+    } catch (RequisitionTemplateColumnException ex) {
+      errors.rejectValue(COLUMNS_MAP, ex.getMessage());
+    }
+  }
 
-      if (consumedQuantityCalculated) {
-        if (template.isColumnCalculated(STOCK_ON_HAND)) {
-          errors.rejectValue(COLUMNS_MAP, TOTAL_CONSUMED_QUANTITY + " and " + STOCK_ON_HAND
-              + "columns cannot be calculated at the same time");
-        } else {
-          rejectIfNotDisplayed(errors, template, BEGINNING_BALANCE);
-          rejectIfNotDisplayed(errors, template, TOTAL_RECEIVED_QUANTITY);
-          rejectIfNotDisplayed(errors, template, TOTAL_LOSSES_AND_ADJUSTMENTS);
-          rejectIfNotDisplayed(errors, template, STOCK_ON_HAND);
+  private void validateCalculatedField(Errors errors, RequisitionTemplate template, String field,
+                                       String suffix, String... requiredFields) {
+    try {
+      if (template.isColumnCalculated(field)) {
+        for (String requiredField : requiredFields) {
+          rejectIfNotDisplayed(errors, template, requiredField, suffix);
         }
       }
     } catch (RequisitionTemplateColumnException ex) {
@@ -76,12 +95,11 @@ public class RequisitionTemplateValidator implements Validator {
     }
   }
 
-  private void rejectIfNotDisplayed(Errors errors, RequisitionTemplate template, String field)
+  private void rejectIfNotDisplayed(Errors errors, RequisitionTemplate template,
+                                    String field, String suffix)
       throws RequisitionTemplateColumnException {
     if (!template.isColumnDisplayed(field)) {
-      errors.rejectValue(
-          COLUMNS_MAP, field + TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION
-      );
+      errors.rejectValue(COLUMNS_MAP, field + suffix);
     }
   }
 }

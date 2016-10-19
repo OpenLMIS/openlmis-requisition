@@ -14,7 +14,6 @@ public class RequisitionLineItemDto
 
   private UUID id;
   private OrderableProductDto orderableProduct;
-  private Integer stockInHand;
   private Integer beginningBalance;
   private Integer totalReceivedQuantity;
   private Integer totalLossesAndAdjustments;

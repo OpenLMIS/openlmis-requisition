@@ -3,6 +3,7 @@ package org.openlmis.requisition.validate;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -100,7 +101,9 @@ public class RequisitionValidatorTest {
 
     requisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    // 1. when we check if value is not null
+    // 2. when we check if values is greater or equal to zero
+    verify(errors, times(2)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains("is not present in template"));
   }
 
@@ -114,7 +117,9 @@ public class RequisitionValidatorTest {
 
     requisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    // 1. when we check if value is not null
+    // 2. when we check if values is greater or equal to zero
+    verify(errors, times(2)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
   }
 
@@ -128,7 +133,9 @@ public class RequisitionValidatorTest {
 
     requisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    // 1. when we check if value is not null
+    // 2. when we check if values is greater or equal to zero
+    verify(errors, times(2)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionValidator.TEMPLATE_COLUMN_IS_HIDDEN));
   }
 

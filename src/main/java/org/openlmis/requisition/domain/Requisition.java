@@ -203,7 +203,7 @@ public class Requisition extends BaseEntity {
           + ", requisition must have status 'INITIATED' to be submitted.");
     }
 
-    if (areFieldsNotFilled(template, "totalConsumedQuantity")) {
+    if (areFieldsNotFilled(template)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition fields must have values.");
     }
@@ -223,19 +223,27 @@ public class Requisition extends BaseEntity {
     status = RequisitionStatus.AUTHORIZED;
   }
 
-  private boolean areFieldsNotFilled(RequisitionTemplate template, String field)
+  private boolean areFieldsNotFilled(RequisitionTemplate template)
       throws RequisitionTemplateColumnException {
-    if ("totalConsumedQuantity".equals(field)) {
-      boolean calculated = template.isColumnCalculated(field);
+    if (null == requisitionLineItems) {
+      return false;
+    }
 
-      if (calculated && requisitionLineItems != null) {
-        for (RequisitionLineItem line : requisitionLineItems) {
-          if (null == line.getBeginningBalance()
-              || null == line.getTotalReceivedQuantity()
-              || null == line.getTotalLossesAndAdjustments()
-              || null == line.getStockOnHand()) {
-            return true;
-          }
+    boolean isTotalConsumedQuantityCalculated =
+        template.isColumnCalculated("totalConsumedQuantity");
+    boolean isStockOnHandCalculated =
+        template.isColumnCalculated("stockOnHand");
+
+    if (isTotalConsumedQuantityCalculated || isStockOnHandCalculated) {
+      for (RequisitionLineItem line : requisitionLineItems) {
+        if (isTotalConsumedQuantityCalculated
+            && line.isFieldsContainValues("totalConsumedQuantity")) {
+          return true;
+        }
+
+        if (isStockOnHandCalculated
+            && line.isFieldsContainValues("stockOnHand")) {
+          return true;
         }
       }
     }

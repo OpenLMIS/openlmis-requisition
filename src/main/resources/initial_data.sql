@@ -30,6 +30,7 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT'), -- totalReceivedQuantity
 ('33b2d2e9-3167-46b0-95d4-1295be9afc22', 'USER_INPUT'), -- beginningBalance
 ('752cda76-0db5-4b6e-bb79-0f531ab78e2c', 'USER_INPUT'), -- stockOnHand
+('752cda76-0db5-4b6e-bb79-0f531ab78e2c', 'CALCULATED'), -- stockOnHand
 ('9e825396-269d-4873-baa4-89054e2722f4', 'USER_INPUT'), -- totalConsumedQuantity
 ('9e825396-269d-4873-baa4-89054e2722f4', 'CALCULATED'), -- totalConsumedQuantity
 ('cd57f329-f549-4717-882e-ecbf98122c38', 'USER_INPUT'), -- totalLossesAndAdjustments
