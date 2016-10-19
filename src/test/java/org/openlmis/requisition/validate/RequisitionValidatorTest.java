@@ -115,20 +115,6 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectDraftIfColumnIsCalculatedAndValueNotEmpty() {
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setStockOnHand(1);
-    requisitionLineItems.add(lineItem);
-
-    columnsMap.get(RequisitionValidator.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
-
-    draftRequisitionValidator.validate(requisition, errors);
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
-  }
-
-  @Test
   public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setStockOnHand(1);
@@ -145,29 +131,33 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfApprovedQuantitySetAndInvalidRequisitionStatus() {
+  public void shouldRejectDraftIfColumnIsCalculatedAndValueNotEmpty() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setStockOnHand(1);
+    requisitionLineItems.add(lineItem);
+
+    columnsMap.get(RequisitionValidator.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
+  }
+
+  @Test
+  public void shouldRejectDraftIfValueIsPresentWithInvalidRequisitionStatus() {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setApprovedQuantity(1);
+    lineItem.setRemarks("Remarks");
     requisitionLineItems.add(lineItem);
 
-    requisitionValidator.validate(requisition, errors);
+    draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         eq(RequisitionValidator.APPROVED_QUANTITY
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
-  }
-
-  @Test
-  public void shouldRejectIfRemarksSetAndInvalidRequisitionStatus() {
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
-
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setRemarks("Remarks");
-    requisitionLineItems.add(lineItem);
-
-    requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         eq(RequisitionValidator.REMARKS
