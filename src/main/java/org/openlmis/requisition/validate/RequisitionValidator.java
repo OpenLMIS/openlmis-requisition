@@ -8,6 +8,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -36,9 +37,13 @@ public class RequisitionValidator implements Validator {
   static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   static final String APPROVED_QUANTITY = "approvedQuantity";
+  static final String REMARKS = "remarks";
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -87,6 +92,8 @@ public class RequisitionValidator implements Validator {
         errors, template, item.getTotalLossesAndAdjustments(), TOTAL_LOSSES_AND_ADJUSTMENTS
     );
 
+    validateRemarks(errors, requisition, item);
+
     validateApprovedQuantity(errors, template, requisition, item);
 
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
@@ -115,13 +122,27 @@ public class RequisitionValidator implements Validator {
                                         Requisition requisition, RequisitionLineItem item) {
     Integer value = item.getApprovedQuantity();
 
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+        || (configurationSettingService.getBoolValue("skipAuthorization")
+        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
       rejectIfNull(errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
       rejectIfLessThanZero(
           errors, template, item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY
       );
     } else if (value != null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, APPROVED_QUANTITY
+          + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
+    }
+  }
+
+  private void validateRemarks(Errors errors,
+                               Requisition requisition, RequisitionLineItem item) {
+    String value = item.getRemarks();
+
+    if ((requisition.getStatus() != RequisitionStatus.AUTHORIZED
+        || (configurationSettingService.getBoolValue("skipAuthorization")
+        && requisition.getStatus() != RequisitionStatus.SUBMITTED)) && value != null) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, REMARKS
           + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
     }
   }

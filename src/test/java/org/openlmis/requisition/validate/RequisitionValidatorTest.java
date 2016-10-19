@@ -21,6 +21,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ public class RequisitionValidatorTest {
 
   @Mock
   private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
 
   @InjectMocks
   private RequisitionValidator requisitionValidator;
@@ -155,6 +159,21 @@ public class RequisitionValidatorTest {
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
   }
 
+  @Test
+  public void shouldRejectIfRemarksSetAndInvalidRequisitionStatus() {
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRemarks("Remarks");
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        eq(RequisitionValidator.REMARKS
+            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
+  }
+
   private Map<String, RequisitionTemplateColumn> initiateColumns() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     columns.put(RequisitionValidator.REQUESTED_QUANTITY,
@@ -214,5 +233,6 @@ public class RequisitionValidatorTest {
 
     when(requisitionTemplateRepository
         .getTemplateForProgram(programId)).thenReturn(requisitionTemplate);
+    when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
   }
 }

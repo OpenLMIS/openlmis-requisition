@@ -165,10 +165,6 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
-    if (requisition == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
     RequisitionTemplate template =
         requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
