@@ -39,6 +39,9 @@ public class RequisitionValidatorTest {
   @InjectMocks
   private RequisitionValidator requisitionValidator;
 
+  @InjectMocks
+  private DraftRequisitionValidator draftRequisitionValidator;
+
   private Requisition requisition = mock(Requisition.class);
   private Errors errors = mock(Errors.class);
 
@@ -108,18 +111,16 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfColumnIsCalculatedAndValueNotEmpty() {
+  public void shouldRejectDraftIfColumnIsCalculatedAndValueNotEmpty() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setStockOnHand(1);
     requisitionLineItems.add(lineItem);
 
     columnsMap.get(RequisitionValidator.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
 
-    requisitionValidator.validate(requisition, errors);
+    draftRequisitionValidator.validate(requisition, errors);
 
-    // 1. when we check if value is not null
-    // 2. when we check if values is greater or equal to zero
-    verify(errors, times(2)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
   }
 

@@ -129,10 +129,7 @@ public class RequisitionValidator implements Validator {
   private boolean checkTemplate(Errors errors, RequisitionTemplate template,
                                 Object value, String field) {
     try {
-      boolean displayed = checkIfDisplayed(errors, template, value, field);
-      boolean calculated = checkIfCalculated(errors, template, value, field);
-
-      return displayed && !calculated;
+      return checkIfDisplayed(errors, template, value, field);
     } catch (RequisitionTemplateColumnException ex) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
     }
@@ -151,18 +148,5 @@ public class RequisitionValidator implements Validator {
     }
 
     return true;
-  }
-
-  private boolean checkIfCalculated(Errors errors, RequisitionTemplate template, Object value,
-                                    String field) throws RequisitionTemplateColumnException {
-    if (template.isColumnCalculated(field)) {
-      if (value != null) {
-        errors.rejectValue(REQUISITION_LINE_ITEMS, field + TEMPLATE_COLUMN_IS_CALCULATED);
-      }
-
-      return true;
-    }
-
-    return false;
   }
 }

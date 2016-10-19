@@ -21,6 +21,7 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
@@ -69,6 +70,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionValidator validator;
+
+  @Autowired
+  private DraftRequisitionValidator draftValidator;
 
   @Autowired
   private RequisitionService requisitionService;
@@ -211,6 +215,14 @@ public class RequisitionController extends BaseController {
         && status != RequisitionStatus.SKIPPED
         && status != RequisitionStatus.RELEASED) {
       LOGGER.debug("Updating requisition with id: " + requisitionId);
+
+      BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
+      draftValidator.validate(requisition, bindingResult);
+
+      if (bindingResult.hasErrors()) {
+        LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
+        return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      }
 
       requisitionToUpdate.updateFrom(requisition,
               requisitionTemplateRepository.getTemplateForProgram(
