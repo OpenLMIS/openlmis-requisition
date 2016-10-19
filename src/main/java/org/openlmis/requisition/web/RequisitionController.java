@@ -53,13 +53,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
 public class RequisitionController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
+  private static final String REQUISITION = "requisition";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -149,8 +149,11 @@ public class RequisitionController extends BaseController {
           throws RequisitionException, RequisitionTemplateColumnException {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
 
-    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, "requisition");
+    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
     validator.validate(requisition, bindingResult);
 
     if (bindingResult.hasErrors()) {
@@ -286,12 +289,21 @@ public class RequisitionController extends BaseController {
   /**
    * Approve specified by id requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.PUT)
+  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     }
+
+    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
+    validator.validate(requisition, bindingResult);
+
+    if (bindingResult.hasErrors()) {
+      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
+
     if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
@@ -340,15 +352,11 @@ public class RequisitionController extends BaseController {
   /**
    * Authorize given requisition.
    *
-   * @param requisition Requisition object to be authorized.
-   * @param bindingResult Object used for validation.
    * @param requisitionId UUID of Requisition to authorize.
    * @return ResponseEntity with authorized Requisition if authorization was successful.
    */
-  @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.PUT)
-  public ResponseEntity<?> authorizeRequisition(@RequestBody @Valid Requisition requisition,
-                                                BindingResult bindingResult,
-                                                @PathVariable("id") UUID requisitionId)
+  @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
+  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException {
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
@@ -356,20 +364,21 @@ public class RequisitionController extends BaseController {
           HttpStatus.BAD_REQUEST);
     }
 
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+
+    if (requisition == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
+    validator.validate(requisition, bindingResult);
+
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
-    Requisition savedRequisition = requisitionRepository.findOne(requisitionId);
-
-    if (savedRequisition == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
     requisition.authorize();
-    savedRequisition.updateFrom(requisition,
-            requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId()));
-    requisitionRepository.save(savedRequisition);
+    requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
     return new ResponseEntity<>(requisition, HttpStatus.OK);

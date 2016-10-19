@@ -591,11 +591,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(requisition)
         .pathParam("id", requisition.getId())
         .when()
-        .put(AUTHORIZATION_URL)
+        .post(AUTHORIZATION_URL)
         .then()
         .statusCode(200);
 
@@ -611,11 +609,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(requisition)
         .pathParam("id", requisition.getId())
         .when()
-        .put(AUTHORIZATION_URL)
+        .post(AUTHORIZATION_URL)
         .then()
         .statusCode(400);
 
@@ -680,10 +676,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     Requisition response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
-        .put(APPROVE_REQUISITION)
+        .post(APPROVE_REQUISITION)
         .then()
         .statusCode(200)
         .extract().as(Requisition.class);
