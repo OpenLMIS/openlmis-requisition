@@ -50,6 +50,8 @@ public class Requisition extends BaseEntity {
   private static final String UUID = "pg-uuid";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
+  private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
+  private static final String STOCK_ON_HAND = "stockOnHand";
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -151,11 +153,11 @@ public class Requisition extends BaseEntity {
     updateReqLines(requisition.getRequisitionLineItems());
 
     try {
-      if (requisitionTemplate.isColumnCalculated("stockOnHand")) {
+      if (requisitionTemplate.isColumnCalculated(STOCK_ON_HAND)) {
         forEachLine(RequisitionLineItem::calculateStockOnHand);
       }
 
-      if (requisitionTemplate.isColumnCalculated("totalConsumedQuantity")) {
+      if (requisitionTemplate.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
         forEachLine(RequisitionLineItem::calculateTotalConsumedQuantity);
       }
     } catch (RequisitionTemplateColumnException ex) {
@@ -230,19 +232,19 @@ public class Requisition extends BaseEntity {
     }
 
     boolean isTotalConsumedQuantityCalculated =
-        template.isColumnCalculated("totalConsumedQuantity");
+        template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY);
     boolean isStockOnHandCalculated =
-        template.isColumnCalculated("stockOnHand");
+        template.isColumnCalculated(STOCK_ON_HAND);
 
     if (isTotalConsumedQuantityCalculated || isStockOnHandCalculated) {
       for (RequisitionLineItem line : requisitionLineItems) {
         if (isTotalConsumedQuantityCalculated
-            && line.isFieldsContainValues("totalConsumedQuantity")) {
+            && line.allRequiredCalcFieldsNotFilled(TOTAL_CONSUMED_QUANTITY)) {
           return true;
         }
 
         if (isStockOnHandCalculated
-            && line.isFieldsContainValues("stockOnHand")) {
+            && line.allRequiredCalcFieldsNotFilled(STOCK_ON_HAND)) {
           return true;
         }
       }

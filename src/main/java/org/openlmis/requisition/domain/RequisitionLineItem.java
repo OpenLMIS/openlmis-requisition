@@ -119,18 +119,18 @@ public class RequisitionLineItem extends BaseEntity {
             + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
-  boolean isFieldsContainValues(String field) {
+  boolean allRequiredCalcFieldsNotFilled(String field) {
     switch (field) {
       case "totalConsumedQuantity":
         return null == beginningBalance
-            && null == totalReceivedQuantity
-            && null == totalLossesAndAdjustments
-            && null == stockOnHand;
+            || null == totalReceivedQuantity
+            || null == totalLossesAndAdjustments
+            || null == stockOnHand;
       case "stockOnHand":
         return null == beginningBalance
-            && null == totalReceivedQuantity
-            && null == totalLossesAndAdjustments
-            && null == totalConsumedQuantity;
+            || null == totalReceivedQuantity
+            || null == totalLossesAndAdjustments
+            || null == totalConsumedQuantity;
       default:
         return false;
     }
