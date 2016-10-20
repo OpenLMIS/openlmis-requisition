@@ -183,8 +183,8 @@ public class Requisition extends BaseEntity {
         item.setRequisition(this);
         updatedList.add(item);
       } else {
-        existing.updateFrom(item);
         existing.setRequisition(this);
+        existing.updateFrom(item);
         updatedList.add(existing);
       }
     }

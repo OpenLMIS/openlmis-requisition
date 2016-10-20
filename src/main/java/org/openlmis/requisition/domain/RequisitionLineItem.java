@@ -96,7 +96,6 @@ public class RequisitionLineItem extends BaseEntity {
       this.remarks = requisitionLineItem.getRemarks();
     } else {
       this.orderableProductId = requisitionLineItem.getOrderableProductId();
-      this.requisition = requisitionLineItem.getRequisition();
       this.stockOnHand = requisitionLineItem.getStockOnHand();
       this.beginningBalance = requisitionLineItem.getBeginningBalance();
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
