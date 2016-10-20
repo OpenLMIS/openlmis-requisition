@@ -21,6 +21,16 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class RequisitionLineItem extends BaseEntity {
 
+  public static final String REQUESTED_QUANTITY = "requestedQuantity";
+  public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
+  public static final String BEGINNING_BALANCE = "beginningBalance";
+  public static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
+  public static final String STOCK_ON_HAND = "stockOnHand";
+  public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
+  public static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
+  public static final String APPROVED_QUANTITY = "approvedQuantity";
+  public static final String REMARKS = "remarks";
+
   private static final String UUID = "pg-uuid";
 
   @Getter

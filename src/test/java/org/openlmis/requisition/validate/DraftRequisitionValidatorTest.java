@@ -53,7 +53,7 @@ public class DraftRequisitionValidatorTest {
   @Before
   public void setUp() {
     requisitionLineItems = new ArrayList<>();
-    columnsMap = RequisitionValidatorTest.initiateColumns();
+    columnsMap = RequisitionValidationTestUtils.initiateColumns();
     requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(columnsMap);
     mockRepositoriesAndObjects();
@@ -66,7 +66,7 @@ public class DraftRequisitionValidatorTest {
     lineItem.setStockOnHand(1);
     requisitionLineItems.add(lineItem);
 
-    columnsMap.get(RequisitionValidator.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
+    columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
 
     draftRequisitionValidator.validate(requisition, errors);
 
@@ -86,11 +86,11 @@ public class DraftRequisitionValidatorTest {
     draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionValidator.APPROVED_QUANTITY
+        eq(RequisitionLineItem.APPROVED_QUANTITY
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionValidator.REMARKS
+        eq(RequisitionLineItem.REMARKS
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
   }
 

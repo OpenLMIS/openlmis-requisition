@@ -13,10 +13,9 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 @Component
-public class DraftRequisitionValidator implements Validator {
+public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -49,9 +48,9 @@ public class DraftRequisitionValidator implements Validator {
   private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
                                            Requisition requisition, RequisitionLineItem item) {
     rejectIfCalculatedAndNotNull(errors, template, item.getStockOnHand(),
-        RequisitionValidator.STOCK_ON_HAND);
+        RequisitionLineItem.STOCK_ON_HAND);
     rejectIfCalculatedAndNotNull(errors, template, item.getTotalConsumedQuantity(),
-        RequisitionValidator.TOTAL_CONSUMED_QUANTITY);
+        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
     validateApprovalFields(errors, requisition, item);
   }
@@ -65,12 +64,12 @@ public class DraftRequisitionValidator implements Validator {
       expectedStatus = RequisitionStatus.AUTHORIZED;
     }
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
-        expectedStatus, RequisitionValidator.APPROVED_QUANTITY
-            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
+        expectedStatus, RequisitionLineItem.APPROVED_QUANTITY
+            + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
 
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getRemarks(),
-        expectedStatus, RequisitionValidator.REMARKS
-            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
+        expectedStatus, RequisitionLineItem.REMARKS
+            + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
 
   }
 
@@ -78,18 +77,18 @@ public class DraftRequisitionValidator implements Validator {
                                             Object value, String field) {
     try {
       if (template.isColumnCalculated(field) && value != null) {
-        errors.rejectValue(RequisitionValidator.REQUISITION_LINE_ITEMS,
-            field + RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED);
+        errors.rejectValue(REQUISITION_LINE_ITEMS,
+            field + TEMPLATE_COLUMN_IS_CALCULATED);
       }
     } catch (RequisitionTemplateColumnException ex) {
-      errors.rejectValue(RequisitionValidator.REQUISITION_LINE_ITEMS, ex.getMessage());
+      errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
     }
   }
 
   private void rejectIfInvalidStatusAndNotNull(Errors errors, Requisition requisition, Object value,
                                                RequisitionStatus expectedStatus, String errorCode) {
     if (requisition.getStatus() != expectedStatus && value != null) {
-      errors.rejectValue(RequisitionValidator.REQUISITION_LINE_ITEMS, errorCode);
+      errors.rejectValue(REQUISITION_LINE_ITEMS, errorCode);
     }
   }
 }
