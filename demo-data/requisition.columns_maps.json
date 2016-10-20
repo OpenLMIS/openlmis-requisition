@@ -82,7 +82,7 @@
     "name": "remarks",
     "label": "Remarks",
     "indicator": "L",
-    "displayOrder": 8,
+    "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
@@ -104,7 +104,7 @@
     "name": "approvedQuantity",
     "label": "Approved Quantity",
     "indicator": "K",
-    "displayOrder": 10,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
