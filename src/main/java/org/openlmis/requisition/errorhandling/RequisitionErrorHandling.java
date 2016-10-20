@@ -2,6 +2,7 @@ package org.openlmis.requisition.errorhandling;
 
 import org.openlmis.errorhandling.AbstractErrorHandling;
 import org.openlmis.requisition.exception.CommentNotFoundException;
+import org.openlmis.requisition.exception.IdMismatchException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionAlreadyExistsException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -45,5 +46,13 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
   public ErrorResponse handleRequisitionOrItemNotFound(
           RequisitionException ex) {
     return logErrorAndRespond("Requisition not found.", ex);
+  }
+
+  @ExceptionHandler({IdMismatchException.class})
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ErrorResponse handleIdMismatchException(
+      IdMismatchException ex) {
+    return logErrorAndRespond("Requisition id mismatch.", ex);
   }
 }

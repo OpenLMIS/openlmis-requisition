@@ -7,6 +7,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class DraftRequisitionValidator implements Validator {
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
+  @Autowired
+  private RequisitionRepository requisitionRepository;
+
   @Override
   public boolean supports(Class<?> clazz) {
     return Requisition.class.equals(clazz);
@@ -31,13 +35,14 @@ public class DraftRequisitionValidator implements Validator {
   @Override
   public void validate(Object target, Errors errors) {
     Requisition requisition = (Requisition) target;
+    Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
 
     if (!isEmpty(requisition.getRequisitionLineItems())) {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
-          requisition.getProgramId()
+          savedRequisition.getProgramId()
       );
       requisition.getRequisitionLineItems()
-          .forEach(i -> validateRequisitionLineItem(errors, template, requisition, i));
+          .forEach(i -> validateRequisitionLineItem(errors, template, savedRequisition, i));
     }
   }
 

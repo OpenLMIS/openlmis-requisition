@@ -11,6 +11,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.IdMismatchException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -198,7 +199,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
                                        @PathVariable("id") UUID requisitionId)
-      throws InvalidRequisitionStatusException, RequisitionNotFoundException {
+      throws InvalidRequisitionStatusException, RequisitionNotFoundException, IdMismatchException {
+
+    if (requisition.getId() == null) {
+      requisition.setId(requisitionId);
+    } else if (requisition.getId() != requisitionId) {
+      throw new IdMismatchException("The ID that was provided in the requisition body "
+          + "differs from the one in url");
+    }
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
 

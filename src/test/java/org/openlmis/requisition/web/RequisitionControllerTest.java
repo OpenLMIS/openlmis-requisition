@@ -9,6 +9,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.exception.IdMismatchException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 public class RequisitionControllerTest {
 
@@ -149,6 +151,14 @@ public class RequisitionControllerTest {
     requisitionController.submitRequisition(uuid1);
 
     verifyNoSubmitOrUpdate(initiatedRequsition);
+  }
+
+  @Test(expected = IdMismatchException.class)
+  public void shouldThrowExceptionWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.getId()).thenReturn(uuid1);
+
+    requisitionController.updateRequisition(requisition, uuid2);
   }
 
   private List<ProcessingPeriodDto> generateProcessingPeriods() {

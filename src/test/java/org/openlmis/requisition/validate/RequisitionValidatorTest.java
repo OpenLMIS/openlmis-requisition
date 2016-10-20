@@ -1,5 +1,6 @@
 package org.openlmis.requisition.validate;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -20,6 +21,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
@@ -36,6 +38,9 @@ public class RequisitionValidatorTest {
 
   @Mock
   private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Mock
+  private RequisitionRepository requisitionRepository;
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
@@ -223,6 +228,7 @@ public class RequisitionValidatorTest {
 
     when(requisitionTemplateRepository
         .getTemplateForProgram(programId)).thenReturn(requisitionTemplate);
+    when(requisitionRepository.findOne(any())).thenReturn(requisition);
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
   }
 }

@@ -22,17 +22,18 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
    * @return RequisitionTemplate with matched parameters.
    */
   public RequisitionTemplate getTemplateForProgram(UUID program) {
+    if (program == null) {
+      throw new IllegalArgumentException("Program cannot be null.");
+    }
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<RequisitionTemplate> query = builder.createQuery(RequisitionTemplate.class);
     Root<RequisitionTemplate> root = query.from(RequisitionTemplate.class);
     Predicate predicate = builder.conjunction();
 
-    if (program != null) {
-      predicate = builder.and(
-              predicate,
-              builder.equal(
-                      root.get("programId"), program));
-    }
+    predicate = builder.and(
+            predicate,
+            builder.equal(
+                    root.get("programId"), program));
 
     query.where(predicate);
     return entityManager.createQuery(query).getSingleResult();
