@@ -139,8 +139,10 @@ public class RequisitionCommentService {
    * @param comments List of Comments to be exported to Dto
    * @return list of CommentDtos
    */
-  public List<CommentDto> exportToDtos(
-      List<Comment> comments) {
+  public List<CommentDto> exportToDtos(List<Comment> comments) {
+    if (comments == null) {
+      return new ArrayList<>();
+    }
     return comments.stream().map(this::exportToDto).collect(toList());
   }
 
