@@ -1,7 +1,9 @@
 package org.openlmis.requisition.domain;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,5 +82,41 @@ public class RequisitionTest {
 
     assertNotNull(found);
     assertEquals(requisitionLineItem, found);
+  }
+
+  @Test
+  public void shouldSetRequisitionFieldForLineItemsAfterUpdate() throws Exception {
+    // given
+    Requisition newRequisition = new Requisition();
+
+    // existing line
+    RequisitionLineItem firstRequisitionLineItem = new RequisitionLineItem();
+    firstRequisitionLineItem.setId(requisitionLineItem.getId());
+    firstRequisitionLineItem.setRequestedQuantity(10);
+    firstRequisitionLineItem.setStockOnHand(20);
+    firstRequisitionLineItem.setRequisition(newRequisition);
+    firstRequisitionLineItem.setOrderableProductId(productId);
+
+    // new line
+    RequisitionLineItem secondRequisitionLineItem = new RequisitionLineItem();
+    secondRequisitionLineItem.setRequestedQuantity(10);
+    secondRequisitionLineItem.setStockOnHand(20);
+    secondRequisitionLineItem.setRequisition(newRequisition);
+    secondRequisitionLineItem.setOrderableProductId(productId);
+
+    newRequisition.setId(UUID.randomUUID());
+    newRequisition.setStatus(RequisitionStatus.INITIATED);
+    newRequisition.setRequisitionLineItems(
+        Lists.newArrayList(firstRequisitionLineItem, secondRequisitionLineItem)
+    );
+
+    // when
+    requisition.setId(UUID.randomUUID());
+    requisition.updateFrom(newRequisition, mock(RequisitionTemplate.class));
+
+    // then
+    requisition
+        .getRequisitionLineItems()
+        .forEach(line -> assertThat(line.getRequisition().getId(), is(requisition.getId())));
   }
 }
