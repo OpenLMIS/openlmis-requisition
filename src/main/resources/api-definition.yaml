@@ -1068,57 +1068,6 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-    /approved/search:
-            get:
-                is: [ secured ]
-                description: Find approved requisitions matching all of provided parameters like sorting,
-                              filtering and paging.
-                queryParameters:
-                    filterValue:
-                        displayName: filterValue
-                        type: string
-                        required: true
-                        repeat: false
-                    filterBy:
-                        displayName: filterBy
-                        type: string
-                        required: true
-                        repeat: false
-                    sortBy:
-                        displayName: sortBy
-                        type: string
-                        required: true
-                        repeat: false
-                    descending:
-                        displayName: descending
-                        type: boolean
-                        required: true
-                        repeat: false
-                    pageNumber:
-                        displayName: pageNumber
-                        type: integer
-                        required: true
-                        repeat: false
-                    pageSize:
-                        displayName: pageSize
-                        type: integer
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "400":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "500":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
     /requisitions/periods-for-initiate:
             get:
                 is: [ secured ]
