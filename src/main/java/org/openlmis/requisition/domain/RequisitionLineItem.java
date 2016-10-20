@@ -79,10 +79,19 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Integer approvedQuantity;
 
+  /**
+   * Constructor - initiates the line item based on product and requisition.
+   * Initiates totalLossesAndAdjustments to 0.
+   * @param requisition the requisition this item belongs to
+   * @param facilityTypeApprovedProduct the product for this line item
+   */
   public RequisitionLineItem(Requisition requisition,
                              FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
     this.requisition = requisition;
     this.orderableProductId = facilityTypeApprovedProduct.getProgramProduct().getProductId();
+    // TODO: initiating this so calculation validation won't fail
+    // TODO: OLMIS-815 will introduce adjustments
+    totalLossesAndAdjustments = 0;
   }
 
   /**
