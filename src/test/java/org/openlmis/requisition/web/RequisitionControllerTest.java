@@ -9,7 +9,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.exception.IdMismatchException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -17,6 +16,7 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.utils.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -153,12 +153,16 @@ public class RequisitionControllerTest {
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
-  @Test(expected = IdMismatchException.class)
-  public void shouldThrowExceptionWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
+  @Test
+  public void shouldReturnBadRequestWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getId()).thenReturn(uuid1);
+    ResponseEntity responseEntity = requisitionController.updateRequisition(requisition, uuid2);
 
-    requisitionController.updateRequisition(requisition, uuid2);
+    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    assertTrue(responseEntity.getBody() instanceof ErrorResponse);
+    ErrorResponse errorResponse = (ErrorResponse) responseEntity.getBody();
+    assertEquals("Requisition id mismatch", errorResponse.getMessage());
   }
 
   private List<ProcessingPeriodDto> generateProcessingPeriods() {

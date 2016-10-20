@@ -11,7 +11,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.IdMismatchException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -25,6 +24,7 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,13 +199,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
                                        @PathVariable("id") UUID requisitionId)
-      throws InvalidRequisitionStatusException, RequisitionNotFoundException, IdMismatchException {
+      throws InvalidRequisitionStatusException, RequisitionNotFoundException {
 
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);
-    } else if (requisition.getId() != requisitionId) {
-      throw new IdMismatchException("The ID that was provided in the requisition body "
-          + "differs from the one in url");
+    } else if (!requisitionId.equals(requisition.getId())) {
+      ErrorResponse errorResponse = new ErrorResponse("Requisition id mismatch",
+          "The ID that was provided in the requisition body differs from the one in url");
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
