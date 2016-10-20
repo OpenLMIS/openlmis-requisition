@@ -15,6 +15,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
@@ -68,6 +70,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionValidator validator;
+
+  @Mock
+  private DraftRequisitionValidator draftValidator;
 
   @Mock
   private RequisitionTemplateRepository templateRepository;
@@ -142,11 +147,11 @@ public class RequisitionControllerTest {
           throws RequisitionException, RequisitionTemplateColumnException {
     doAnswer(invocation -> {
       Errors errors = (Errors) invocation.getArguments()[1];
-      errors.reject("requisitionLineItems[0].beginningBalance", "Bad argument");
-
+      errors.reject("requisitionLineItems",
+          "approvedQuantity is only available during the approval step of the requisition process");
       return null;
     }).when(validator).validate(eq(initiatedRequsition), any(Errors.class));
-    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(initiatedRequsition.getId()).thenReturn(uuid1);
 
     requisitionController.submitRequisition(uuid1);
 
@@ -163,6 +168,37 @@ public class RequisitionControllerTest {
     assertTrue(responseEntity.getBody() instanceof ErrorResponse);
     ErrorResponse errorResponse = (ErrorResponse) responseEntity.getBody();
     assertEquals("Requisition id mismatch", errorResponse.getMessage());
+  }
+
+  @Test
+  public void shouldUpdateRequisition() throws Exception {
+    Requisition requisition = mock(Requisition.class);
+
+    when(requisition.getId()).thenReturn(uuid1);
+    when(initiatedRequsition.getId()).thenReturn(uuid1);
+
+    ResponseEntity responseEntity = requisitionController.updateRequisition(requisition, uuid1);
+
+    assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    verify(initiatedRequsition).updateFrom(eq(requisition), anyObject());
+    verify(requisitionRepository).save(initiatedRequsition);
+  }
+
+  @Test
+  public void shouldNotUpdateWithInvalidRequisition()
+      throws RequisitionException, RequisitionTemplateColumnException {
+    Requisition requisition = mock(Requisition.class);
+
+    doAnswer(invocation -> {
+      Errors errors = (Errors) invocation.getArguments()[1];
+      errors.reject("requisitionLineItems[0].beginningBalance", "Bad argument");
+
+      return null;
+    }).when(draftValidator).validate(eq(requisition), any(Errors.class));
+
+    requisitionController.updateRequisition(requisition, uuid1);
+
+    verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
@@ -198,6 +234,10 @@ public class RequisitionControllerTest {
             .thenReturn(Arrays.asList(authorizedRequsition));
     when(requisitionRepository.searchByProcessingPeriod(uuid5))
             .thenReturn(Arrays.asList(approvedRequsition));
+    when(requisitionRepository.save(initiatedRequsition))
+            .thenReturn(initiatedRequsition);
+    when(requisitionRepository.findOne(uuid1))
+            .thenReturn(initiatedRequsition);
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition)
