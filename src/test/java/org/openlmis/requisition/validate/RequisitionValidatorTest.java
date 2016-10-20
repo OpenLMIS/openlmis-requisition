@@ -48,9 +48,6 @@ public class RequisitionValidatorTest {
   @InjectMocks
   private RequisitionValidator requisitionValidator;
 
-  @InjectMocks
-  private DraftRequisitionValidator draftRequisitionValidator;
-
   private Requisition requisition = mock(Requisition.class);
   private Errors errors = mock(Errors.class);
 
@@ -135,41 +132,7 @@ public class RequisitionValidatorTest {
         contains(RequisitionValidator.TEMPLATE_COLUMN_IS_HIDDEN));
   }
 
-  @Test
-  public void shouldRejectDraftIfColumnIsCalculatedAndValueNotEmpty() {
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setStockOnHand(1);
-    requisitionLineItems.add(lineItem);
-
-    columnsMap.get(RequisitionValidator.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
-
-    draftRequisitionValidator.validate(requisition, errors);
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
-  }
-
-  @Test
-  public void shouldRejectDraftIfValueIsPresentWithInvalidRequisitionStatus() {
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
-
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setApprovedQuantity(1);
-    lineItem.setRemarks("Remarks");
-    requisitionLineItems.add(lineItem);
-
-    draftRequisitionValidator.validate(requisition, errors);
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionValidator.APPROVED_QUANTITY
-            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionValidator.REMARKS
-            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
-  }
-
-  private Map<String, RequisitionTemplateColumn> initiateColumns() {
+  static Map<String, RequisitionTemplateColumn> initiateColumns() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     columns.put(RequisitionValidator.REQUESTED_QUANTITY,
         generateTemplateColumn(RequisitionValidator.REQUESTED_QUANTITY,
@@ -205,8 +168,8 @@ public class RequisitionValidatorTest {
     return lineItem;
   }
 
-  private RequisitionTemplateColumn generateTemplateColumn(String name, SourceType sourceType,
-                                                           String indicator) {
+  private static RequisitionTemplateColumn generateTemplateColumn(
+      String name, SourceType sourceType, String indicator) {
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
     columnDefinition.setName(name);
     columnDefinition.setIndicator(indicator);
