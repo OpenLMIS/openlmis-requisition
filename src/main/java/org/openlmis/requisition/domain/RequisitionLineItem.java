@@ -99,6 +99,8 @@ public class RequisitionLineItem extends BaseEntity {
       this.stockOnHand = requisitionLineItem.getStockOnHand();
       this.beginningBalance = requisitionLineItem.getBeginningBalance();
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
+      this.totalConsumedQuantity = requisitionLineItem.getTotalConsumedQuantity();
+      this.requestedQuantity = requisitionLineItem.getRequestedQuantity();
     }
   }
 
