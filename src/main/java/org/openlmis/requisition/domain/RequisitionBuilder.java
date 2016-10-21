@@ -49,7 +49,7 @@ public class RequisitionBuilder {
     if (importer.getProgram() != null) {
       requisition.setProgramId(importer.getProgram().getId());
     }
-    if(importer.getProcessingPeriod() != null) {
+    if (importer.getProcessingPeriod() != null) {
       requisition.setProcessingPeriodId(importer.getProcessingPeriod().getId());
     }
     requisition.setStatus(importer.getStatus());
