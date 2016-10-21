@@ -2,17 +2,17 @@ package org.openlmis.requisition.service;
 
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionBuilder;
+import org.openlmis.requisition.domain.RequisitionDtoBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
-import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
@@ -61,9 +61,6 @@ public class RequisitionService {
   private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Autowired
-  private RequisitionCommentService requisitionCommentService;
-
-  @Autowired
   private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
@@ -84,7 +81,8 @@ public class RequisitionService {
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
-
+  @Autowired
+  private RequisitionDtoBuilder requisitionDtoBuilder;
 
   /**
    * Return list of requisitionDtos with information about facility, program and period.
@@ -118,31 +116,9 @@ public class RequisitionService {
     if (requisition == null) {
       return null;
     }
-    ProgramDto program = programReferenceDataService
-        .findOne(requisition.getProgramId());
-    FacilityDto facility = facilityReferenceDataService
-        .findOne(requisition.getFacilityId());
-    ProcessingPeriodDto processingPeriod = periodReferenceDataService
-        .findOne(requisition.getProcessingPeriodId());
+    RequisitionDto requisitionDto =  requisitionDtoBuilder.build(requisition);
+    return requisitionDto;
 
-    List<RequisitionLineItemDto> requisitionLineItemDtoList
-        = requisitionLineCalculationService.exportToDtos(requisition.getRequisitionLineItems());
-
-    List<CommentDto> commentDtoList = requisitionCommentService.exportToDtos(requisition
-        .getComments());
-
-    return new RequisitionDto(
-        requisition.getId(),
-        requisition.getCreatedDate(),
-        requisitionLineItemDtoList,
-        commentDtoList,
-        facility,
-        program,
-        processingPeriod,
-        requisition.getStatus(),
-        requisition.getEmergency(),
-        requisition.getSupplyingFacilityId(),
-        requisition.getSupervisoryNodeId());
   }
 
   /**
@@ -159,7 +135,7 @@ public class RequisitionService {
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               Boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
-    Requisition requisition = Requisition.newRequisition(programId, facilityId, emergency);
+    Requisition requisition = RequisitionBuilder.newRequisition(programId, facilityId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);

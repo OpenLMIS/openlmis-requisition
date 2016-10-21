@@ -2,18 +2,13 @@ package org.openlmis.requisition.repository.custom.impl;
 
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionDtoBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.openlmis.requisition.service.RequisitionCommentService;
-import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,13 +38,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
-  private PeriodReferenceDataService processingPeriodReferenceDataService;
-
-  @Autowired
-  private RequisitionLineCalculationService requisitionLineCalculationService;
-
-  @Autowired
-  private RequisitionCommentService requisitionCommentService;
+  private RequisitionDtoBuilder requisitionDtoBuilder;
 
 
   @PersistenceContext
@@ -238,25 +227,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     List<RequisitionDto> requisitionsConvertedToDto = new ArrayList<>();
 
     for (Requisition requisition : requisitions) {
-      RequisitionDto requisitionDto = new RequisitionDto();
-      requisitionDto.setId(requisition.getId());
-      List<RequisitionLineItemDto> requisitionLineItemDtoList
-          = requisitionLineCalculationService.exportToDtos(requisition.getRequisitionLineItems());
-      requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
-      List<CommentDto> commentDtoList = requisitionCommentService.exportToDtos(requisition
-          .getComments());
-      requisitionDto.setComments(commentDtoList);
-      requisitionDto.setStatus(requisition.getStatus());
-      requisitionDto.setEmergency(requisition.getEmergency());
-      requisitionDto.setSupervisoryNode(requisition.getSupervisoryNodeId());
-      requisitionDto.setSupplyingFacility(requisition.getSupplyingFacilityId());
-      FacilityDto facilityDto = facilityReferenceDataService.findOne(requisition.getFacilityId());
-      requisitionDto.setFacility(facilityDto);
-      ProgramDto programDto = programReferenceDataService.findOne(requisition.getProgramId());
-      requisitionDto.setProgram(programDto);
-      ProcessingPeriodDto processingPeriodDto =
-          processingPeriodReferenceDataService.findOne(requisition.getProcessingPeriodId());
-      requisitionDto.setProcessingPeriod(processingPeriodDto);
+      RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
       requisitionsConvertedToDto.add(requisitionDto);
     }
 

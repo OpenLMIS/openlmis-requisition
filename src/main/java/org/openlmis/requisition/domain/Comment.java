@@ -70,6 +70,22 @@ public class Comment extends BaseEntity {
   }
 
   /**
+   * Creates new instance of Comment object based on data from {@link Comment.Importer}
+   *
+   * @param importer instance of {@link Comment.Importer}
+   * @return new instance od Comment
+   */
+
+  public static Comment newComment(Importer importer) {
+    Comment comment =  new Comment();
+    comment.setId(importer.getId());
+    comment.setAuthorId(importer.getAuthorId());
+    comment.setBody(importer.getBody());
+    comment.setCreatedDate(importer.getCreatedDate());
+    return comment;
+  }
+
+  /**
    * Export this object to the specified exporter (DTO).
    *
    * @param exporter exporter to export to

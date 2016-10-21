@@ -4,6 +4,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -192,14 +193,16 @@ public class RequisitionController extends BaseController {
   /**
    * Allows updating requisitions.
    *
-   * @param requisition A requisition bound to the request body
+   * @param requisitionDto A requisitionDto bound to the request body
    * @param requisitionId UUID of requisition which we want to update
    * @return ResponseEntity containing the updated requisition
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisition(@RequestBody Requisition requisition,
+  public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                        @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException {
+
+    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);

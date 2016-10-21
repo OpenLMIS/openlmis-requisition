@@ -9,9 +9,13 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
+import org.openlmis.requisition.dto.CommentDto;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.web.RequisitionController;
 import org.slf4j.Logger;
@@ -72,6 +76,7 @@ public class Requisition extends BaseEntity {
 
   @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
   @Getter
+  @Setter
   private List<Comment> comments;
 
   @Getter
@@ -113,31 +118,6 @@ public class Requisition extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
-  }
-
-  /**
-   * Createa a new instance of Requisition with given program and facility IDs and emergency flag.
-   *
-   * @param programId  UUID of program
-   * @param facilityId UUID of facility
-   * @param emergency  flag
-   * @return a new instance of Requisition
-   * @throws RequisitionInitializationException if any of arguments is {@code null}
-   */
-  public static Requisition newRequisition(UUID programId, UUID facilityId, Boolean emergency)
-      throws RequisitionInitializationException {
-    if (facilityId == null || programId == null || emergency == null) {
-      throw new RequisitionInitializationException(
-          "Requisition cannot be initiated with null id"
-      );
-    }
-
-    Requisition requisition = new Requisition();
-    requisition.setEmergency(emergency);
-    requisition.setFacilityId(facilityId);
-    requisition.setProgramId(programId);
-
-    return requisition;
   }
 
   /**
@@ -276,6 +256,58 @@ public class Requisition extends BaseEntity {
   public void forEachLine(Consumer<RequisitionLineItem> consumer) {
     Optional.ofNullable(requisitionLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Requisition.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setCreatedDate(createdDate);
+    exporter.setStatus(status);
+    exporter.setEmergency(emergency);
+    exporter.setSupplyingFacility(supplyingFacilityId);
+    exporter.setSupervisoryNode(supervisoryNodeId);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setCreatedDate(LocalDateTime createdDate);
+
+    void setStatus(RequisitionStatus status);
+
+    void setEmergency(Boolean emergency);
+
+    void setSupplyingFacility(UUID supplyingFacility);
+
+    void setSupervisoryNode(UUID supervisoryNode);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    LocalDateTime getCreatedDate();
+
+    List<RequisitionLineItemDto> getRequisitionLineItems();
+
+    List<CommentDto> getComments();
+
+    FacilityDto getFacility();
+
+    ProgramDto getProgram();
+
+    ProcessingPeriodDto getProcessingPeriod();
+
+    RequisitionStatus getStatus();
+
+    Boolean getEmergency();
+
+    UUID getSupplyingFacility();
+
+    UUID getSupervisoryNode();
   }
 
 }

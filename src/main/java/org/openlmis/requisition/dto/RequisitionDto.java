@@ -1,5 +1,6 @@
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequisitionDto {
+public class RequisitionDto implements Requisition.Importer, Requisition.Exporter {
   private UUID id;
   private LocalDateTime createdDate;
   private List<RequisitionLineItemDto> requisitionLineItems;
@@ -25,4 +26,5 @@ public class RequisitionDto {
   private Boolean emergency;
   private UUID supplyingFacility;
   private UUID supervisoryNode;
+
 }
