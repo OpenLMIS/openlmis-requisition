@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -19,6 +18,8 @@ import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -248,9 +249,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void
-      shouldNotSaveWhenTotalConsumedQuantityCalculatedAndAtLeastOneReqColumnIsNotDisplayed() {
-    requisitionTemplate.changeColumnDisplay(BEGINNING_BALANCE, false);
+  public void shouldNotSaveWhenTotalConsumedQuantityCalculatedAndStockOnHandIsNotDisplayed() {
+    requisitionTemplate.changeColumnDisplay(STOCK_ON_HAND, false);
     requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
 
     String response = restAssured.given()
@@ -264,7 +264,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .statusCode(400)
         .extract().asString();
 
-    String expectedMessage = BEGINNING_BALANCE
+    String expectedMessage = STOCK_ON_HAND
         + " must be displayed when total consumed quantity is calculated.";
 
     assertTrue(response.contains(expectedMessage));

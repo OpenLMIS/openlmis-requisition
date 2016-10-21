@@ -134,13 +134,9 @@ public class RequisitionLineItem extends BaseEntity {
   boolean allRequiredCalcFieldsNotFilled(String field) {
     switch (field) {
       case "totalConsumedQuantity":
-        return null == beginningBalance
-            || null == totalReceivedQuantity
-            || null == stockOnHand;
+        return null == stockOnHand;
       case "stockOnHand":
-        return null == beginningBalance
-            || null == totalReceivedQuantity
-            || null == totalConsumedQuantity;
+        return null == totalConsumedQuantity;
       default:
         return false;
     }
