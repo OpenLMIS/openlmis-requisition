@@ -42,9 +42,16 @@ public class RequisitionBuilder {
     Requisition requisition = new Requisition();
     requisition.setId(importer.getId());
     requisition.setCreatedDate(importer.getCreatedDate());
-    requisition.setFacilityId(importer.getFacility().getId());
-    requisition.setProgramId(importer.getProgram().getId());
-    requisition.setProcessingPeriodId(importer.getProcessingPeriod().getId());
+
+    if (importer.getFacility() != null) {
+      requisition.setFacilityId(importer.getFacility().getId());
+    }
+    if (importer.getProgram() != null) {
+      requisition.setProgramId(importer.getProgram().getId());
+    }
+    if(importer.getProcessingPeriod() != null) {
+      requisition.setProcessingPeriodId(importer.getProcessingPeriod().getId());
+    }
     requisition.setStatus(importer.getStatus());
     requisition.setEmergency(importer.getEmergency());
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
