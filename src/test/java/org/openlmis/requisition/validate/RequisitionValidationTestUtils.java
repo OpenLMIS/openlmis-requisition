@@ -31,6 +31,9 @@ public class RequisitionValidationTestUtils {
     columns.put(RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS,
         generateTemplateColumn(RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS,
             SourceType.USER_INPUT, "D"));
+    columns.put(RequisitionLineItem.APPROVED_QUANTITY,
+        generateTemplateColumn(RequisitionLineItem.APPROVED_QUANTITY,
+            SourceType.USER_INPUT, "K"));
     return columns;
   }
 

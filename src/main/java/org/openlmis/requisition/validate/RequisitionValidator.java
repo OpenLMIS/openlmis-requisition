@@ -8,6 +8,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -24,6 +25,9 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   @Override
   public void validate(Object target, Errors errors) {
@@ -98,11 +102,14 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateApprovedQuantity(Errors errors, RequisitionTemplate template,
                                         Requisition requisition, RequisitionLineItem item) {
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
-      rejectIfNull(errors, template, item.getTotalConsumedQuantity(),
-          RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
-      rejectIfLessThanZero(errors, template, item.getTotalConsumedQuantity(),
-          RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+        || (configurationSettingService.getBoolValue("skipAuthorization")
+        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
+
+      rejectIfNull(errors, template, item.getApprovedQuantity(),
+          RequisitionLineItem.APPROVED_QUANTITY);
+      rejectIfLessThanZero(errors, template, item.getApprovedQuantity(),
+          RequisitionLineItem.APPROVED_QUANTITY);
     }
   }
 
