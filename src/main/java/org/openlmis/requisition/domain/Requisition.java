@@ -9,11 +9,9 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
-import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
@@ -291,9 +289,9 @@ public class Requisition extends BaseEntity {
 
     LocalDateTime getCreatedDate();
 
-    List<RequisitionLineItemDto> getRequisitionLineItems();
+    List<RequisitionLineItem.Importer> getRequisitionLineItems();
 
-    List<CommentDto> getComments();
+    List<Comment.Importer> getComments();
 
     FacilityDto getFacility();
 
