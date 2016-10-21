@@ -2,7 +2,7 @@ package org.openlmis.requisition.repository.custom.impl;
 
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.RequisitionDtoBuilder;
+import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;

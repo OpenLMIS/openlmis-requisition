@@ -3,7 +3,7 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.dto.RequisitionDtoBuilder;
+import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;

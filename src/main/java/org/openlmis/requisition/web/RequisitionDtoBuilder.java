@@ -1,6 +1,9 @@
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.CommentDto;
+import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
