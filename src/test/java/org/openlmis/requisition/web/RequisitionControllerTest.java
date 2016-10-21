@@ -1,7 +1,6 @@
 package org.openlmis.requisition.web;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -179,25 +178,22 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  @Ignore
   public void shouldUpdateRequisition() throws Exception {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
+
+    when(requisitionDto.getId()).thenReturn(uuid1);
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
-
-    when(requisitionDto.getId()).thenReturn(uuid1);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
-    Requisition requisition = mock(Requisition.class);
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid1);
     assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    verify(initiatedRequsition).updateFrom(eq(requisition), anyObject());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyObject());
     verify(requisitionRepository).save(initiatedRequsition);
   }
 
   @Test
-  @Ignore
   public void shouldNotUpdateWithInvalidRequisition()
       throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
@@ -210,7 +206,7 @@ public class RequisitionControllerTest {
       errors.reject("requisitionLineItems[0].beginningBalance", "Bad argument");
 
       return null;
-    }).when(draftValidator).validate(eq(requisitionDto), any(Errors.class));
+    }).when(draftValidator).validate(any(Requisition.class), any(Errors.class));
 
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
