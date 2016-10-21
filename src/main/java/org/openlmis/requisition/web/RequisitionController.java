@@ -403,7 +403,7 @@ public class RequisitionController extends BaseController {
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
-    return new ResponseEntity<>(requisition, HttpStatus.OK);
+    return new ResponseEntity<>(requisitionService.getRequisition(requisition), HttpStatus.OK);
   }
 
   /**
