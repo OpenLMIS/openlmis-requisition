@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
+import java.util.UUID;
+
 public class RequisitionLineItemTest {
 
   @Test
@@ -82,6 +84,25 @@ public class RequisitionLineItemTest {
     assertThat(item.getBeginningBalance(), is(33));
     assertThat(item.getTotalReceivedQuantity(), is(44));
     assertThat(item.getRequestedQuantity(), is(55));
+  }
+
+  @Test
+  public void shouldNotUpdateProduct() {
+    final UUID product1 = UUID.randomUUID();
+    final UUID product2 = UUID.randomUUID();
+
+    Requisition requisition = mockReq(RequisitionStatus.INITIATED);
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.setOrderableProductId(product1);
+
+    RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setRequisition(requisition);
+    updateItem.setOrderableProductId(product2);
+
+    item.updateFrom(updateItem);
+
+    assertThat(item.getOrderableProductId(), is(product1));
   }
 
   private Requisition mockReq(RequisitionStatus status) {

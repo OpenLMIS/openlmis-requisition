@@ -63,10 +63,10 @@ public class RequisitionTest {
 
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
 
+    requisition.setRequisitionLineItems(new ArrayList<>(
+            Collections.singletonList(requisitionLineItem)));
 
     Requisition newRequisition = new Requisition();
-    newRequisition.setRequisitionLineItems(new ArrayList<>(
-            Collections.singletonList(requisitionLineItem)));
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.authorize();

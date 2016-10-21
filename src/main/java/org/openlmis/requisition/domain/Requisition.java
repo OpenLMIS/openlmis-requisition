@@ -149,26 +149,19 @@ public class Requisition extends BaseEntity {
       this.requisitionLineItems = new ArrayList<>();
     }
 
-    List<RequisitionLineItem> updatedList = new ArrayList<>();
+    if (lineItems != null) {
+      for (RequisitionLineItem existing : requisitionLineItems) {
+        RequisitionLineItem item = lineItems
+                .stream()
+                .filter(l -> l.getId().equals(existing.getId()))
+                .findFirst().orElse(null);
 
-    for (RequisitionLineItem item : lineItems) {
-      RequisitionLineItem existing = requisitionLineItems
-          .stream()
-          .filter(l -> l.getId().equals(item.getId()))
-          .findFirst().orElse(null);
-
-      if (null == existing) {
-        item.setRequisition(this);
-        updatedList.add(item);
-      } else {
-        existing.setRequisition(this);
-        existing.updateFrom(item);
-        updatedList.add(existing);
+        if (null != item) {
+          existing.setRequisition(this);
+          existing.updateFrom(item);
+        }
       }
     }
-
-    this.requisitionLineItems.clear();
-    this.requisitionLineItems.addAll(updatedList);
   }
 
   /**
