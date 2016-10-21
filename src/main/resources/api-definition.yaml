@@ -957,7 +957,7 @@ resourceTypes:
                 descending:
                     displayName: descending
                     description: This parameter contains sorting order. Default it is descending,
-                      but if user want to have descending order there should be false.
+                      but if user want to have ascending order there should be false.
                     type: boolean
                     required: false
                     repeat: false
