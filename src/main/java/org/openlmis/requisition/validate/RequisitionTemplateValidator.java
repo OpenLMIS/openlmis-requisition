@@ -38,9 +38,7 @@ public class RequisitionTemplateValidator implements Validator {
 
     if (!errors.hasErrors()) {
       validateCalculatedField(errors, requisitionTemplate, STOCK_ON_HAND,
-          STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION,
-          BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMENTS,
-          TOTAL_CONSUMED_QUANTITY
+          STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY
       );
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION,

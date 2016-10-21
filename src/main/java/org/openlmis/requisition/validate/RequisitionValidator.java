@@ -73,9 +73,6 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     rejectIfLessThanZero(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
-    rejectIfNull(errors, template, item.getTotalLossesAndAdjustments(),
-        RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS);
-
     validateApprovedQuantity(errors, template, requisition, item);
 
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
