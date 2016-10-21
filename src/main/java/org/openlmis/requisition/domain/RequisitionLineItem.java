@@ -161,7 +161,9 @@ public class RequisitionLineItem extends BaseEntity {
 
     RequisitionLineItem requisitionLineItem =  new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
-    requisitionLineItem.setOrderableProductId(importer.getOrderableProduct().getId());
+    if (importer.getOrderableProduct() != null) {
+      requisitionLineItem.setOrderableProductId(importer.getOrderableProduct().getId());
+    }
     requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
     requisitionLineItem.setTotalReceivedQuantity(importer.getRequestedQuantity());
     requisitionLineItem.setTotalLossesAndAdjustments(importer.getTotalLossesAndAdjustments());
