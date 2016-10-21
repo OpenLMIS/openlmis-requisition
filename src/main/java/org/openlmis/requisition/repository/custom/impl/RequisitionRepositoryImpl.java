@@ -149,7 +149,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         convertRequisitionListToRequisitionDtoList(filteredRequisitions);
 
     filteredRequisitionDtos.sort(new RequisitionDtoComparator(sortBy));
-    if (!descending) {
+    if (descending) {
       Collections.reverse(filteredRequisitionDtos);
     }
 

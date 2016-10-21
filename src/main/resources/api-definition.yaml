@@ -935,31 +935,43 @@ resourceTypes:
             queryParameters:
                 filterValue:
                     displayName: filterValue
+                    description: This parameter contains filter value.
                     type: string
                     required: false
                     repeat: false
                 filterBy:
                     displayName: filterBy
+                    description: This parameter contains field which we are going to filter by.
+                      There is four possibilities - facilityCode, facilityName, programName
+                      and all
                     type: string
                     required: false
                     repeat: false
                 sortBy:
                     displayName: sortBy
+                    description: This parameter contains field which we are going to sort by.
+                      There is three possibilities -  facilityCode, facilityName and programName
                     type: string
                     required: false
                     repeat: false
                 descending:
                     displayName: descending
+                    description: This parameter contains sorting order. Default it is ascending,
+                      but if user want to have descending order there should be true.
                     type: boolean
                     required: false
                     repeat: false
                 pageNumber:
                     displayName: pageNumber
+                    description: This parameter defines what page number should be returned. For
+                      example if you want to display second page you should set here 2.
                     type: integer
                     required: false
                     repeat: false
                 pageSize:
                     displayName: pageSize
+                    description: This parameter defines size of page. If you want to have, for
+                      example, ten records per one page you should set here 10.
                     type: integer
                     required: false
                     repeat: false
