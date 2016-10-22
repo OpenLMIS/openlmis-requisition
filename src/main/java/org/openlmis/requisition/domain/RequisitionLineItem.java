@@ -129,7 +129,7 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Calculate TotalConsumedQuantity value.
+   * Calculate StockOnHand value.
    */
   public Integer calculateStockOnHandValue() {
     return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
@@ -137,7 +137,7 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Calculate StockOnHand value.
+   * Calculate TotalConsumedQuantity value.
    */
   public Integer calculateTotalConsumedQuantityValue() {
     return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
