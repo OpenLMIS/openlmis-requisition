@@ -179,8 +179,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       //Add second important filter
       List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
       Predicate predicateFilterBy = builder.disjunction();
-      predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
-      predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
+
+      if (!desiredUuids.isEmpty()) {
+        predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
+        predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
+      }
 
       //Connector filters
       predicate = builder.and(predicate, predicateFilterBy);

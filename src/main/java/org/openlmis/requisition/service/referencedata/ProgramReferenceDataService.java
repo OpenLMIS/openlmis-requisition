@@ -35,6 +35,6 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("name", programName);
 
-    return findAll("find", parameters);
+    return findAll("search", parameters);
   }
 }
