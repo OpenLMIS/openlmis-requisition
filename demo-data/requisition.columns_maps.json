@@ -89,17 +89,6 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
-    "key": "productCode",
-    "name": "productCode",
-    "label": "Product Code",
-    "indicator": "O",
-    "displayOrder": 8,
-    "isDisplayed": true,
-    "source": 2,
-    "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
-  },
-  {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "approvedQuantity",
     "name": "approvedQuantity",
     "label": "Approved Quantity",
@@ -275,17 +264,6 @@
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
-  },
-  {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
-    "key": "productCode",
-    "name": "productCode",
-    "label": "Product Code",
-    "indicator": "O",
-    "displayOrder": 9,
-    "isDisplayed": true,
-    "source": 2,
-    "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
