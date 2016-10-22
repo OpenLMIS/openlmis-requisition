@@ -1,5 +1,13 @@
 package org.openlmis.fulfillment.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,14 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -135,7 +136,8 @@ public class OrderServiceTest {
 
     when(requisitionService.releaseRequisitionsAsOrder(anyObject(), anyObject()))
         .thenReturn(requisitions);
-    orders = orderService.convertToOrder(requisitions, userId);
+    orders = orderService.convertToOrder(requisitions.stream().map(Requisition::getId)
+        .collect(Collectors.toList()), userId);
 
     assertEquals(2, orders.size());
     for (Order order : orders) {

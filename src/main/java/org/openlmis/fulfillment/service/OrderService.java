@@ -206,11 +206,11 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public List<Order> convertToOrder(List<Requisition> requisitionList, UUID userId)
+  public List<Order> convertToOrder(List<UUID> requisitionIdList, UUID userId)
           throws RequisitionException {
     UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> releasedRequisitions =
-        requisitionService.releaseRequisitionsAsOrder(requisitionList, user);
+        requisitionService.releaseRequisitionsAsOrder(requisitionIdList, user);
 
     return releasedRequisitions.stream().map(r -> createFromRequisition(r, user))
         .collect(Collectors.toList());

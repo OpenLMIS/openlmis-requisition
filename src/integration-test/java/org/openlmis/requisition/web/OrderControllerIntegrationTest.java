@@ -52,7 +52,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID period2 = UUID.randomUUID();
   private UUID product1 = UUID.randomUUID();
   private UUID product2 = UUID.randomUUID();
-  private UUID supplyingFacility = UUID.randomUUID();
+  private UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
   private UUID supervisoryNode = UUID.randomUUID();
   private UUID user = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
@@ -77,14 +77,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder = addOrder(null, "orderCode", UUID.randomUUID(), user, facility, facility, facility,
             OrderStatus.ORDERED, new BigDecimal("1.29"));
 
-    Requisition requisition1 = addRequisition(program1, facility1, period1,
-            RequisitionStatus.RELEASED, null);
+    Requisition requisition1 = addRequisition(program1, facility2, period1,
+            RequisitionStatus.RELEASED, null, facility1);
 
     addRequisitionLineItem(requisition1, product1);
     requisition1 = requisitionRepository.findOne(requisition1.getId());
 
-    Requisition requisition2 = addRequisition(program2, facility1, period2,
-            RequisitionStatus.RELEASED, null);
+    Requisition requisition2 = addRequisition(program2, facility2, period2,
+            RequisitionStatus.RELEASED, null, facility1);
 
     secondOrder = addOrder(requisition1, "O2", program1, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -108,8 +108,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     firstOrder = orderRepository.save(firstOrder);
 
-    requisition = addRequisition(program, supplyingFacility, period,
-            RequisitionStatus.APPROVED, supervisoryNode);
+    requisition = addRequisition(program, facility, period,
+            RequisitionStatus.APPROVED, supervisoryNode, supplyingFacility);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, UUID program, UUID user,
@@ -128,10 +128,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return orderRepository.save(order);
   }
 
-  private Requisition addRequisition(UUID program, UUID facility,
-                                     UUID processingPeriod,
-                                     RequisitionStatus requisitionStatus,
-                                     UUID supervisoryNode) {
+  private Requisition addRequisition(UUID program, UUID facility, UUID processingPeriod,
+                                     RequisitionStatus requisitionStatus, UUID supervisoryNode,
+                                     UUID supplyingFacility) {
     Requisition requisition = new Requisition();
     requisition.setProgramId(program);
     requisition.setFacilityId(facility);
@@ -139,6 +138,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setStatus(requisitionStatus);
     requisition.setEmergency(false);
     requisition.setSupervisoryNodeId(supervisoryNode);
+    requisition.setSupplyingFacilityId(supplyingFacility);
 
     return requisitionRepository.save(requisition);
   }
@@ -213,12 +213,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
-    requisition.setSupplyingFacilityId(UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611"));
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body(Collections.singletonList(requisition))
+            .body(Collections.singletonList(requisition.getId()))
             .when()
             .post("/api/orders/requisitions")
             .then()

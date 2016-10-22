@@ -337,18 +337,18 @@ public class RequisitionService {
   /**
    * Releases the list of given requisitions as order.
    *
-   * @param requisitionList list of requisitions to be released as order
+   * @param requisitionIdList list of UUIDs of requisitions to be released as order
    * @return list of released requisitions
    */
   public List<Requisition> releaseRequisitionsAsOrder(
-      List<Requisition> requisitionList, UserDto user) throws RequisitionException {
+      List<UUID> requisitionIdList, UserDto user) throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)
         .collect(Collectors.toSet());
 
-    for (Requisition requisition : requisitionList) {
-      Requisition loadedRequisition = requisitionRepository.findOne(requisition.getId());
+    for (UUID requisitionId : requisitionIdList) {
+      Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
 
       if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
         loadedRequisition.setStatus(RequisitionStatus.RELEASED);
@@ -357,10 +357,8 @@ public class RequisitionService {
             + loadedRequisition.getId() + " as order. Requisition must be approved.");
       }
 
-      UUID facilityId = requisition.getSupplyingFacilityId();
-      if (userFacilities.contains(facilityId)) {
-        loadedRequisition.setSupplyingFacilityId(facilityId);
-      } else {
+      UUID facilityId = loadedRequisition.getSupplyingFacilityId();
+      if (!userFacilities.contains(facilityId)) {
         throw new InvalidRequisitionStateException("Can not release requisition: "
             + loadedRequisition.getId() + " as order. Requisition must have supplying facility.");
       }

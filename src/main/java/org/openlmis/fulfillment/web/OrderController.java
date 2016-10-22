@@ -9,7 +9,6 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
-import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -31,13 +30,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class OrderController extends BaseController {
@@ -194,11 +194,11 @@ public class OrderController extends BaseController {
   /**
    * Converting Requisition list to orders.
    *
-   * @param requisitionList List of Requisitions that will be converted to Orders
+   * @param requisitionIdList List of UUIDs of Requisitions that will be converted to Orders
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
   @RequestMapping(value = "/orders/requisitions", method = RequestMethod.POST)
-  public ResponseEntity<?> convertToOrder(@RequestBody List<Requisition> requisitionList,
+  public ResponseEntity<?> convertToOrder(@RequestBody List<UUID> requisitionIdList,
                                           OAuth2Authentication auth) {
     UUID userId = null;
 
@@ -215,7 +215,7 @@ public class OrderController extends BaseController {
       userId = users.get(0).getId();
     }
     try {
-      orderService.convertToOrder(requisitionList, userId);
+      orderService.convertToOrder(requisitionIdList, userId);
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
               new ErrorResponse("An error occurred while converting requisitions to order",

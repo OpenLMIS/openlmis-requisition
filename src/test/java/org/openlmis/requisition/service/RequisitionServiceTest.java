@@ -342,9 +342,9 @@ public class RequisitionServiceTest {
         .thenReturn(facilities);
 
     requisition.setStatus(RequisitionStatus.APPROVED);
-    List<Requisition> requisitions = Collections.singletonList(requisition);
+    List<UUID> requisitionIds = Collections.singletonList(requisition.getId());
     List<Requisition> expectedRequisitions = requisitionService
-          .releaseRequisitionsAsOrder(requisitions, user);
+          .releaseRequisitionsAsOrder(requisitionIds, user);
     assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
   }
 
