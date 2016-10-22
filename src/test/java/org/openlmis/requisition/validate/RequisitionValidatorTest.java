@@ -109,7 +109,8 @@ public class RequisitionValidatorTest {
 
     // 1. when we check if value is not null
     // 2. when we check if values is greater or equal to zero
-    verify(errors, times(2)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    // 3. when we check if calculation was correct
+    verify(errors, times(3)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains("is not present in template"));
   }
 
@@ -125,8 +126,21 @@ public class RequisitionValidatorTest {
 
     // 1. when we check if value is not null
     // 2. when we check if values is greater or equal to zero
-    verify(errors, times(2)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    // 3. when we check if calculation was correct
+    verify(errors, times(3)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionValidator.TEMPLATE_COLUMN_IS_HIDDEN));
+  }
+
+  @Test
+  public void shouldRejectIfColumnIsIncorrectlyCalculated() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setStockOnHand(2);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
   }
 
   private RequisitionLineItem generateLineItem() {
@@ -134,8 +148,8 @@ public class RequisitionValidatorTest {
     lineItem.setRequestedQuantity(1);
     lineItem.setBeginningBalance(1);
     lineItem.setTotalReceivedQuantity(1);
-    lineItem.setStockOnHand(0);
-    lineItem.setTotalConsumedQuantity(0);
+    lineItem.setStockOnHand(1);
+    lineItem.setTotalConsumedQuantity(1);
     lineItem.setTotalLossesAndAdjustments(0);
     lineItem.setRequisition(requisition);
     return lineItem;

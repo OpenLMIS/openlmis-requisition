@@ -22,6 +22,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       " must be a non-negative value.";
   static final String TEMPLATE_COLUMN_IS_HIDDEN =
       " is hidden in template and should not contain a value.";
+  static final String VALUE_IS_INCORRECTLY_CALCULATED = " has incorrect value, it does not match"
+      + " the calculated value.";
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -77,6 +79,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
         RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION);
+
+    validateCalculations(errors, template, item);
   }
 
   private void rejectIfLessThanZero(Errors errors, RequisitionTemplate template,
@@ -107,6 +111,18 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
           RequisitionLineItem.APPROVED_QUANTITY);
       rejectIfLessThanZero(errors, template, item.getApprovedQuantity(),
           RequisitionLineItem.APPROVED_QUANTITY);
+    }
+  }
+
+  private void validateCalculations(Errors errors, RequisitionTemplate template,
+                                   RequisitionLineItem item) {
+    boolean templateValid = checkTemplate(errors, template, item.getStockOnHand(),
+        RequisitionLineItem.STOCK_ON_HAND) && checkTemplate(errors, template,
+        item.getTotalConsumedQuantity(), RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+
+    if (templateValid && !item.calculateStockOnHandValue().equals(item.getStockOnHand())) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, RequisitionLineItem.STOCK_ON_HAND + " or "
+          + RequisitionLineItem.TOTAL_CONSUMED_QUANTITY  + VALUE_IS_INCORRECTLY_CALCULATED);
     }
   }
 

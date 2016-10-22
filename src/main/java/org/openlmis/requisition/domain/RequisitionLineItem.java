@@ -118,16 +118,30 @@ public class RequisitionLineItem extends BaseEntity {
    * Calculate StockOnHand field value.
    */
   void calculateStockOnHand() {
-    stockOnHand = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
-        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(totalConsumedQuantity);
+    stockOnHand = calculateStockOnHandValue();
   }
 
   /**
    * Calculate TotalConsumedQuantity field value.
    */
   void calculateTotalConsumedQuantity() {
-    totalConsumedQuantity = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
-            + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
+    totalConsumedQuantity = calculateTotalConsumedQuantityValue();
+  }
+
+  /**
+   * Calculate TotalConsumedQuantity value.
+   */
+  public Integer calculateStockOnHandValue() {
+    return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
+        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(totalConsumedQuantity);
+  }
+
+  /**
+   * Calculate StockOnHand value.
+   */
+  public Integer calculateTotalConsumedQuantityValue() {
+    return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
+        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
   boolean allRequiredCalcFieldsNotFilled(String field) {

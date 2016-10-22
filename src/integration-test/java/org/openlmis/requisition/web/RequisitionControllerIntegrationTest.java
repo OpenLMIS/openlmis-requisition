@@ -145,7 +145,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
-    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setStockOnHand(2);
     requisitionLineItem.setTotalConsumedQuantity(1);
     requisitionLineItem.setBeginningBalance(1);
     requisitionLineItem.setTotalReceivedQuantity(1);
