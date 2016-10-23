@@ -62,7 +62,8 @@ public class RequisitionBuilderTest {
   }
 
   @Test(expected = RequisitionInitializationException.class)
-  public void shouldThrowExceptionWhenProgramIdIsMissing() throws RequisitionInitializationException {
+  public void shouldThrowExceptionWhenProgramIdIsMissing()
+      throws RequisitionInitializationException {
     RequisitionBuilder.newRequisition(null, UUID.randomUUID(), true);
   }
 
