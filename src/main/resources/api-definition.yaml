@@ -10,8 +10,7 @@ documentation:
 
 schemas:
   - comment: |
-      {
-          "type": "object",
+      {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "Comment",
           "description": "A single comment",
@@ -22,6 +21,109 @@ schemas:
               "body": { "type": "string", "required": true, "title": "body" },
               "createdDate": { "type": "string", "required": false, "title": "createdDate" }
           }
+      }
+
+  - commentDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "Comment",
+          "description": "A single commentDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "authorId": { "type": "string", "required": false, "title": "authorId" },
+              "body": { "type": "string", "required": true, "title": "body" },
+              "createdDate": { "type": "string", "required": false, "title": "createdDate" }
+          }
+      }
+
+  - facilityDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "FacilityDto",
+          "description": "A single facilityDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "description": { "type": "string", "required": false, "title": "description" },
+              "active": { "type": "boolean", "required": true, "title": "active" },
+              "goLiveDate": { "type": "string", "required": false, "title": "goLiveDate" },
+              "goDownDate": { "type": "string", "required": false, "title": "goDownDate" },
+              "comment": { "type": "string", "required": false, "title": "comment" },
+              "enabled": { "type": "boolean", "required": false, "title": "enabled" },
+              "openLmisAccessible": { "type": "boolean", "required": false, "title": "openLmisAccessible" },
+              "supportedPrograms": { "type": "array", "required": false, "title": "supportedPrograms", "items": {"type": "object", "$ref": "#/schemas/programDto"}, "uniqueItems": false },
+              "geographicZone": { "type": "object", "$ref": "#/schemas/geographicZoneDto", "required": false, "title": "geographicZone" },
+              "operator": { "type": "object", "$ref": "#/schemas/facilityOperatorDto", "required": false, "title": "operator" },
+              "type": { "type": "object", "$ref": "#/schemas/facilityTypeDto", "required": false, "title": "type" }
+          }
+      }
+
+  - facilityOperatorDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "FacilityOperatorDto",
+          "description": "A single facilityOperatorDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" }
+          }
+      }
+
+  - facilityTypeDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "FacilityTypeDto",
+          "description": "A single facilityTypeDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "description": { "type": "string", "required": true, "title": "description" },
+              "displayOrder": {"type": "integer", "required": true, "title": "displayOrder" },
+              "active": { "type": "boolean", "required": true, "title": "active" }
+          }
+      }
+
+  - geographicLevelDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "GeographicLevelDto",
+          "description": "A single geographicLevelDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "levelNumber": { "type": "integer", "required": true, "title": "levelNumber" }
+          }
+      }
+
+  - geographicZoneDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "GeographicZoneDto",
+          "description": "A single geographicZoneDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "level": { "type": "object", "$ref": "#/schemas/geographicLevelDto", "required": true, "title": "level" },
+              "parent": {"type": "object", "$ref": "#/schemas/geographicZoneDto", "required": true, "title": "parent" }
+          }
+      }
+
+  - orderableProductDto: |
+      {    "type": "object",
+           "$schema": "http://json-schema.org/draft-03/schema",
+           "title": "OrderableProductDto",
+           "description": "A single orderableProductDto",
+           "properties": {
+               "id": { "type": "string", "required": true, "title": "id" },
+               "productCode": { "type": "string", "required": true, "title": "code" },
+               "name": { "type": "string", "required": true, "title": "name" },
+               "programs": {"type": "array", "required": false, "title": "programs", "items": { "type": "object", "$ref": "#/schemas/programProductDto"}, "uniqueItems": false}
+           }
       }
 
   - order: |
@@ -59,6 +161,71 @@ schemas:
           }
       }
 
+  - processingPeriodDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ProcessingPeriodDto",
+          "description": "A single processingPeriodDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "processingSchedule": { "type": "object", "$ref": "#/schemas/processingSchedule" ,"required": true, "title": "processingSchedule" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "description": { "type": "string", "required": true, "title": "description" },
+              "startDate": { "type": "string", "required": true, "title": "startDate" },
+              "endDate": { "type": "string", "required": true, "title": "endDate" }
+          }
+      }
+
+  - processingScheduleDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ProcessingScheduleDto",
+          "description": "A single processingScheduleDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "description": { "type": "string", "required": true, "title": "description" },
+              "modifiedDate": { "type": "string", "required": true, "title": "modifiedDate" },
+              "name": { "type": "string", "required": true, "title": "name" }
+          }
+      }
+
+  - programDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ProgramDto",
+          "description": "A single programDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "code": { "type": "string", "required": true, "title": "code" },
+              "name": { "type": "string", "required": true, "title": "name" },
+              "description": { "type": "string", "required": true, "title": "description" },
+              "active": { "type": "boolean", "required": true, "title": "active" },
+              "periodsSkippable": { "type": "boolean", "required": true, "title": "periodsSkippable" },
+              "showNonFullSupplyTab": { "type": "boolean", "required": true, "title": "showNonFullSupplyTab" }
+          }
+      }
+
+  - programProductDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "ProgramProductDto",
+          "description": "A single programProductDto",
+          "properties": {
+              "programId": { "type": "string", "required": true, "title": "programId" },
+              "productId": { "type": "string", "required": true, "title": "productId" },
+              "productCategoryId": { "type": "string", "required": true, "title": "productCategoryId" },
+              "productCategoryDisplayName": { "type": "string", "required": true, "title": "productCategoryDisplayName" },
+              "productCategoryDisplayOrder": { "type": "integer", "required": true, "title": "productCategoryDisplayOrder" },
+              "active": { "type": "boolean", "required": true, "title": "active" },
+              "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
+              "displayOrder": { "type": "integer", "required": true, "title": "displayOrder" },
+              "maxMonthsOfStock": { "type": "integer", "required": true, "title": "maxMonthsOfStock" },
+              "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" }
+
+          }
+      }
+
   - requisition: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
@@ -70,11 +237,32 @@ schemas:
               "facilityId": { "type": "string", "required": true, "title": "facilityId" },
               "programId": { "type": "string", "required": true, "title": "programId" },
               "processingPeriodId": { "type": "string", "required": true, "title": "processingPeriodId" },
+              "supplyingFacilityId" : {"type": "string", "required": false, "title": "supplyingFacilityId"},
               "status": { "type": "string", "required": true, "title": "status" },
-              "remarks": { "type": "string", "required": false, "title": "remarks" },
               "emergency": { "type": "boolean", "required": false, "title": "emergency" },
               "supervisoryNodeId": { "type": "string", "required": true, "title": "supervisoryNodeId" },
-              "requisitionLineItems": { "type": "array", "required": false, "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false }
+              "requisitionLineItems": { "type": "array", "required": false, "title":"requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false },
+              "commens": {"type": "array", "required": false, "title": "comments", "items": {"type": "object", "$ref": "#/schemas/comment" }, "uniqueItems": false }
+          }
+      }
+
+  - requisitionDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "RequisitionDto",
+          "description": "A single requisitionDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "createdDate": { "type": "string", "required": false, "title": "createdDate" },
+              "facility": { "type": "object", "$ref": "#/schemas/facilityDto", "required": true, "title": "facility" },
+              "program": { "type": "object", "$ref": "#/schemas/programDto", "required": true, "title": "program" },
+              "processingPeriod": { "type": "object", "$ref": "#/schemas/processingPeriodDto", "required": true, "title": "processingPeriod" },
+              "supplyingFacility" : {"type": "string", "required": false, "title": "supplyingFacility"},
+              "status": { "type": "string", "required": true, "title": "status" },
+              "emergency": { "type": "boolean", "required": false, "title": "emergency" },
+              "supervisoryNode": { "type": "string", "required": true, "title": "supervisoryNode" },
+              "requisitionLineItems": { "type": "array", "required": false, "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItemDto" }, "uniqueItems": false },
+              "comments": {"type": "array", "required": false, "title": "comments", "items": {"type": "object", "$ref": "#/schemas/commentDto" }, "uniqueItems": false }
           }
       }
 
@@ -93,8 +281,31 @@ schemas:
               "stockOnHand": { "type": "integer", "required": false, "title": "stockOnHand" },
               "requestedQuantity": { "type": "integer", "required": false, "title": "requestedQuantity" },
               "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
-              "requestedQuantityExplanation": { "type": "integer", "required": false, "title": "requestedQuantityExplanation" }
+              "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
+              "remarks": {"type": "string", "required": true, "title": "remarks" },
+              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" }
           }
+      }
+
+  - requisitionLineItemDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "RequisitionLineItemDto",
+          "description": "A single requisitionLineItemDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "orderableProduct": { "type": "object", "$ref": "#/schemas/orderableProductDto", "required": true, "title": "orderableProduct" },
+              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
+              "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
+              "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },
+              "stockOnHand": { "type": "integer", "required": false, "title": "stockOnHand" },
+              "requestedQuantity": { "type": "integer", "required": false, "title": "requestedQuantity" },
+              "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
+              "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
+              "remarks": {"type": "string", "required": true, "title": "remarks" },
+              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" }
+          }
+
       }
 
   - requisitionTemplate: |
@@ -735,6 +946,7 @@ resourceTypes:
             description: Update existing requisition.
             body:
                 application/json:
+                  schema: requisitionDto
             responses:
                 "200":
                     headers:
@@ -742,6 +954,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: requisitionDto
                 "400":
                     headers:
                       X-Content-Type-Options:

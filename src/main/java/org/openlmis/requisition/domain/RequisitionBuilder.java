@@ -5,7 +5,12 @@ import org.openlmis.requisition.exception.RequisitionInitializationException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class RequisitionBuilder {
+public final class RequisitionBuilder {
+
+
+  private RequisitionBuilder() {
+    
+  }
 
   /**
    * Create a new instance of Requisition with given program and facility IDs and emergency flag.
