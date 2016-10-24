@@ -358,7 +358,11 @@ public class RequisitionService {
       }
 
       UUID facilityId = loadedRequisition.getSupplyingFacilityId();
-      if (!userFacilities.contains(facilityId)) {
+      Set<UUID> validFacilities = getAvailableSupplyingDepots(requisitionId)
+          .stream().filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
+          .collect(Collectors.toSet());
+
+      if (!validFacilities.contains(facilityId)) {
         throw new InvalidRequisitionStateException("Can not release requisition: "
             + loadedRequisition.getId() + " as order. Requisition must have supplying facility.");
       }
@@ -373,12 +377,13 @@ public class RequisitionService {
   /**
    * Retrieves available supplying depots for given requisition.
    *
-   * @param requisition requisition to find facilities for
+   * @param requisitionId id of requisition to find facilities for
    * @return list of facilities
    */
-  public List<FacilityDto> getAvailableSupplyingDepots(RequisitionDto requisition) {
+  public List<FacilityDto> getAvailableSupplyingDepots(UUID requisitionId) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
     Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .searchSupplyingDepots(requisition.getProgram().getId(), requisition.getSupervisoryNode());
+        .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
     return new ArrayList<>(facilityDtos);
   }
 

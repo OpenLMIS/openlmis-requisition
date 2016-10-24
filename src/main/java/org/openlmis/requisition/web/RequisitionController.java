@@ -444,7 +444,7 @@ public class RequisitionController extends BaseController {
     List<RequisitionWithSupplyingDepotsDto> response = approvedRequisitionList.stream()
         .map(requisition -> {
           List<FacilityDto> facilities =
-              requisitionService.getAvailableSupplyingDepots(requisition)
+              requisitionService.getAvailableSupplyingDepots(requisition.getId())
                   .stream().filter(f -> userManagedFacilities.contains(f.getId()))
                   .collect(Collectors.toList());
           return new RequisitionWithSupplyingDepotsDto(requisition, facilities);

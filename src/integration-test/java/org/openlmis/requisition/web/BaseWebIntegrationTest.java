@@ -122,6 +122,7 @@ public abstract class BaseWebIntegrationTest {
       + " \"productCode\":\"Product Code\",\n"
       + " \"productName\":\"Product Name\"\n"
       + "}";
+
   private static final String MOCK_FIND_PROCESSING_SCHEDULE = "{"
       + " \"id\":\"c73ad6a4-895c-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Schedule Code\","
@@ -321,14 +322,6 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME)));
-
-    // This mocks searching for supplying facilitiy
-    wireMockRule.stubFor(get(
-        urlMatching("/referencedata/api/facilities/supplying.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
-
   }
 
   @After

@@ -340,6 +340,8 @@ public class RequisitionServiceTest {
     when(facility.getId()).thenReturn(facilityId);
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(any(UUID.class)))
         .thenReturn(facilities);
+    when(facilityReferenceDataService.searchSupplyingDepots(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId())).thenReturn(facilities);
 
     requisition.setStatus(RequisitionStatus.APPROVED);
     List<UUID> requisitionIds = Collections.singletonList(requisition.getId());
