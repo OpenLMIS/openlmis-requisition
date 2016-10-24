@@ -111,6 +111,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
       this.totalConsumedQuantity = requisitionLineItem.getTotalConsumedQuantity();
       this.requestedQuantity = requisitionLineItem.getRequestedQuantity();
+      this.requestedQuantityExplanation = requisitionLineItem.getRequestedQuantityExplanation();
     }
   }
 
