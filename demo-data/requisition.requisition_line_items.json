@@ -1,46 +1,5 @@
 [
   {
-    "id": "99118ee8-ec30-400a-bb05-0b1512bd4fb8",
-    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
-    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
-    "stockOnHand": 10,
-    "beginningBalance": 5,
-    "totalReceivedQuantity": 5,
-    "requestedQuantity": 15,
-    "totalConsumedQuantity": 10
-  },
-  {
-    "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
-    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
-    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
-    "stockOnHand": 1000,
-    "beginningBalance": 400,
-    "totalReceivedQuantity": 800,
-    "requestedQuantity": 800,
-    "totalConsumedQuantity": 1200
-  },
-  {
-    "id": "f27415c4-7049-46a6-9e59-818990c85390",
-    "orderableProductId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
-    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
-    "stockOnHand": 100,
-    "beginningBalance": 100,
-    "totalReceivedQuantity": 16,
-    "requestedQuantity": 500,
-    "totalConsumedQuantity": 16,
-    "requestedQuantityExplanation": "Too few left to make any use out of it."
-  },
-  {
-    "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
-    "orderableProductId": "7f7b83db-580d-4269-88d2-7f9c80a591a9",
-    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
-    "stockOnHand": 200,
-    "beginningBalance": 300,
-    "totalReceivedQuantity": 0,
-    "requestedQuantity": 0,
-    "totalConsumedQuantity": 100
-  },
-  {
     "id": "ac49b686-c74c-4684-a635-d777ee298cd2",
     "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
     "requisition": { "id": "8c7f1a6d-d139-483a-ad60-4288016f3d23" },
