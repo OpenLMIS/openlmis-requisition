@@ -15,6 +15,7 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
@@ -206,11 +207,11 @@ public class OrderService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public List<Order> convertToOrder(List<UUID> requisitionIdList, UUID userId)
+  public List<Order> convertToOrder(List<ConvertToOrderDto> convertToOrderDtos, UUID userId)
           throws RequisitionException {
     UserDto user = userReferenceDataService.findOne(userId);
     List<Requisition> releasedRequisitions =
-        requisitionService.releaseRequisitionsAsOrder(requisitionIdList, user);
+        requisitionService.releaseRequisitionsAsOrder(convertToOrderDtos, user);
 
     return releasedRequisitions.stream().map(r -> createFromRequisition(r, user))
         .collect(Collectors.toList());

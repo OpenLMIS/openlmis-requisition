@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -344,9 +345,10 @@ public class RequisitionServiceTest {
         requisition.getProgramId(), requisition.getSupervisoryNodeId())).thenReturn(facilities);
 
     requisition.setStatus(RequisitionStatus.APPROVED);
-    List<UUID> requisitionIds = Collections.singletonList(requisition.getId());
+    List<ConvertToOrderDto> requisitions =
+        Collections.singletonList(new ConvertToOrderDto(requisition.getId(), facilityId));
     List<Requisition> expectedRequisitions = requisitionService
-          .releaseRequisitionsAsOrder(requisitionIds, user);
+          .releaseRequisitionsAsOrder(requisitions, user);
     assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
   }
 

@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
@@ -78,13 +79,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             OrderStatus.ORDERED, new BigDecimal("1.29"));
 
     Requisition requisition1 = addRequisition(program1, facility2, period1,
-            RequisitionStatus.RELEASED, null, facility1);
+            RequisitionStatus.RELEASED, null);
 
     addRequisitionLineItem(requisition1, product1);
     requisition1 = requisitionRepository.findOne(requisition1.getId());
 
     Requisition requisition2 = addRequisition(program2, facility2, period2,
-            RequisitionStatus.RELEASED, null, facility1);
+            RequisitionStatus.RELEASED, null);
 
     secondOrder = addOrder(requisition1, "O2", program1, user, facility2, facility2,
             facility1, OrderStatus.RECEIVED, new BigDecimal(100));
@@ -109,7 +110,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder = orderRepository.save(firstOrder);
 
     requisition = addRequisition(program, facility, period,
-            RequisitionStatus.APPROVED, supervisoryNode, supplyingFacility);
+            RequisitionStatus.APPROVED, supervisoryNode);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, UUID program, UUID user,
@@ -129,8 +130,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   private Requisition addRequisition(UUID program, UUID facility, UUID processingPeriod,
-                                     RequisitionStatus requisitionStatus, UUID supervisoryNode,
-                                     UUID supplyingFacility) {
+                                     RequisitionStatus requisitionStatus, UUID supervisoryNode) {
     Requisition requisition = new Requisition();
     requisition.setProgramId(program);
     requisition.setFacilityId(facility);
@@ -138,7 +138,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setStatus(requisitionStatus);
     requisition.setEmergency(false);
     requisition.setSupervisoryNodeId(supervisoryNode);
-    requisition.setSupplyingFacilityId(supplyingFacility);
 
     return requisitionRepository.save(requisition);
   }
@@ -213,11 +212,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldConvertRequisitionToOrder() {
     orderRepository.deleteAll();
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), supplyingFacility);
 
     restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body(Collections.singletonList(requisition.getId()))
+            .body(Collections.singletonList(convertToOrderDto))
             .when()
             .post("/api/orders/requisitions")
             .then()

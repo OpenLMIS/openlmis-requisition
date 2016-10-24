@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.Requisition;
@@ -53,7 +54,6 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     requisition = new Requisition();
     requisition.setEmergency(true);
     requisition.setStatus(RequisitionStatus.APPROVED);
-    requisition.setSupplyingFacilityId(facility);
     requisition.setProgramId(programDto.getId());
     requisition = requisitionRepository.save(requisition);
   }
@@ -93,10 +93,13 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
     mockReferenceData();
 
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), facility);
+
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(Collections.singletonList(requisition.getId()))
+        .body(Collections.singletonList(convertToOrderDto))
         .when()
         .post("/api/orders/requisitions")
         .then()
@@ -124,10 +127,13 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
     mockReferenceData();
 
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), facility);
+
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(Collections.singletonList(requisition.getId()))
+        .body(Collections.singletonList(convertToOrderDto))
         .when()
         .post("/api/orders/requisitions")
         .then()

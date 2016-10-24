@@ -1,9 +1,9 @@
 package org.openlmis.requisition.service;
 
 
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -32,6 +32,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -337,17 +338,19 @@ public class RequisitionService {
   /**
    * Releases the list of given requisitions as order.
    *
-   * @param requisitionIdList list of UUIDs of requisitions to be released as order
+   * @param convertToOrderDtos list of Requisitions with their supplyingDepots
+   *                           to be released as order
    * @return list of released requisitions
    */
-  public List<Requisition> releaseRequisitionsAsOrder(
-      List<UUID> requisitionIdList, UserDto user) throws RequisitionException {
+  public List<Requisition> releaseRequisitionsAsOrder(List<ConvertToOrderDto> convertToOrderDtos,
+                                                      UserDto user) throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)
         .collect(Collectors.toSet());
 
-    for (UUID requisitionId : requisitionIdList) {
+    for (ConvertToOrderDto convertToOrderDto : convertToOrderDtos) {
+      UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
 
       if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
@@ -357,12 +360,14 @@ public class RequisitionService {
             + loadedRequisition.getId() + " as order. Requisition must be approved.");
       }
 
-      UUID facilityId = loadedRequisition.getSupplyingFacilityId();
+      UUID facilityId = convertToOrderDto.getSupplyingDepotId();
       Set<UUID> validFacilities = getAvailableSupplyingDepots(requisitionId)
           .stream().filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
           .collect(Collectors.toSet());
 
-      if (!validFacilities.contains(facilityId)) {
+      if (validFacilities.contains(facilityId)) {
+        loadedRequisition.setSupplyingFacilityId(facilityId);
+      } else {
         throw new InvalidRequisitionStateException("Can not release requisition: "
             + loadedRequisition.getId() + " as order. Requisition must have supplying facility.");
       }

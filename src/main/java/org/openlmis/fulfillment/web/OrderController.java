@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -194,11 +195,12 @@ public class OrderController extends BaseController {
   /**
    * Converting Requisition list to orders.
    *
-   * @param requisitionIdList List of UUIDs of Requisitions that will be converted to Orders
+   * @param convertToOrderDtos List of Requisitions with their supplyingDepots
+   *                           that will be converted to Orders
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
   @RequestMapping(value = "/orders/requisitions", method = RequestMethod.POST)
-  public ResponseEntity<?> convertToOrder(@RequestBody List<UUID> requisitionIdList,
+  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> convertToOrderDtos,
                                           OAuth2Authentication auth) {
     UUID userId = null;
 
@@ -215,7 +217,7 @@ public class OrderController extends BaseController {
       userId = users.get(0).getId();
     }
     try {
-      orderService.convertToOrder(requisitionIdList, userId);
+      orderService.convertToOrder(convertToOrderDtos, userId);
     } catch (RequisitionException ex) {
       ErrorResponse errorResponse =
               new ErrorResponse("An error occurred while converting requisitions to order",

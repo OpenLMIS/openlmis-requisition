@@ -18,6 +18,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
@@ -136,7 +137,8 @@ public class OrderServiceTest {
 
     when(requisitionService.releaseRequisitionsAsOrder(anyObject(), anyObject()))
         .thenReturn(requisitions);
-    orders = orderService.convertToOrder(requisitions.stream().map(Requisition::getId)
+    orders = orderService.convertToOrder(requisitions.stream()
+        .map(r -> new ConvertToOrderDto(r.getId(), UUID.randomUUID()))
         .collect(Collectors.toList()), userId);
 
     assertEquals(2, orders.size());
