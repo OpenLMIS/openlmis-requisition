@@ -132,9 +132,21 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfColumnIsIncorrectlyCalculated() {
+  public void shouldRejectIfStockOnHandIsIncorrectlyCalculated() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setStockOnHand(2);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
+  }
+
+  @Test
+  public void shouldRejectIfTotalConsumedQuantityIsIncorrectlyCalculated() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setTotalConsumedQuantity(2);
     requisitionLineItems.add(lineItem);
 
     requisitionValidator.validate(requisition, errors);

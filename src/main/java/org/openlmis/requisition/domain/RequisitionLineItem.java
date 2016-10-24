@@ -115,21 +115,39 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Calculate StockOnHand field value.
+   * Calculates StockOnHand (E) value and sets the field in this item to that value.
+   * The formula is E = A + B (+/-) D - C
+   * A = Beginning Balance
+   * B = Total Received Quantity
+   * C = Total Consumed Quantity
+   * D = Total Losses/Adjustments
+   * E = Stock on Hand
    */
   void calculateStockOnHand() {
     stockOnHand = calculateStockOnHandValue();
   }
 
   /**
-   * Calculate TotalConsumedQuantity field value.
+   * Calculates TotalConsumedQuantity (C) value and sets the field in this item to that value.
+   * The formula is C = A + B (+/-) D - E
+   * A = Beginning Balance
+   * B = Total Received Quantity
+   * C = Total Consumed Quantity
+   * D = Total Losses/Adjustments
+   * E = Stock on Hand
    */
   void calculateTotalConsumedQuantity() {
     totalConsumedQuantity = calculateTotalConsumedQuantityValue();
   }
 
   /**
-   * Calculate StockOnHand value.
+   * Calculates StockOnHand (E) value and returns it.
+   * The formula is E = A + B (+/-) D - C
+   * A = Beginning Balance
+   * B = Total Received Quantity
+   * C = Total Consumed Quantity
+   * D = Total Losses/Adjustments
+   * E = Stock on Hand
    */
   public Integer calculateStockOnHandValue() {
     return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
@@ -137,7 +155,13 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Calculate TotalConsumedQuantity value.
+   * Calculates TotalConsumedQuantity (C) value and returns it.
+   * The formula is C = A + B (+/-) D - E
+   * A = Beginning Balance
+   * B = Total Received Quantity
+   * C = Total Consumed Quantity
+   * D = Total Losses/Adjustments
+   * E = Stock on Hand
    */
   public Integer calculateTotalConsumedQuantityValue() {
     return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
