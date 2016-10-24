@@ -428,7 +428,7 @@ public class RequisitionService {
         facilityId, programId
     );
 
-    if (null != lastRequisition && lastRequisition.preAuthorize()) {
+    if (null != lastRequisition && lastRequisition.isPreAuthorize()) {
       throw new InvalidRequisitionStatusException("Please finish previous requisition");
     }
 

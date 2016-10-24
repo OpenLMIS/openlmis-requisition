@@ -252,7 +252,7 @@ public class Requisition extends BaseEntity {
         .ifPresent(list -> list.forEach(consumer));
   }
 
-  public boolean preAuthorize() {
+  public boolean isPreAuthorize() {
     return status == INITIATED || status == SUBMITTED;
   }
 
