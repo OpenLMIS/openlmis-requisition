@@ -221,23 +221,20 @@ public class Requisition extends BaseEntity {
     boolean isTotalLossesAndAdjustmentsCalculated =
         template.isColumnCalculated(TOTAL_LOSSES_AND_ADJUSTMENTS);
 
-    if (isTotalConsumedQuantityCalculated || isStockOnHandCalculated
-        || isTotalLossesAndAdjustmentsCalculated) {
-      for (RequisitionLineItem line : requisitionLineItems) {
-        if (isTotalConsumedQuantityCalculated
-            && line.allRequiredCalcFieldsNotFilled(TOTAL_CONSUMED_QUANTITY)) {
-          return true;
-        }
+    for (RequisitionLineItem line : requisitionLineItems) {
+      if (isTotalConsumedQuantityCalculated
+          && line.allRequiredCalcFieldsNotFilled(TOTAL_CONSUMED_QUANTITY)) {
+        return true;
+      }
 
-        if (isStockOnHandCalculated
-            && line.allRequiredCalcFieldsNotFilled(STOCK_ON_HAND)) {
-          return true;
-        }
+      if (isStockOnHandCalculated
+          && line.allRequiredCalcFieldsNotFilled(STOCK_ON_HAND)) {
+        return true;
+      }
 
-        if (isTotalLossesAndAdjustmentsCalculated
-            && line.allRequiredCalcFieldsNotFilled(TOTAL_LOSSES_AND_ADJUSTMENTS)) {
-          return true;
-        }
+      if (isTotalLossesAndAdjustmentsCalculated
+          && line.allRequiredCalcFieldsNotFilled(TOTAL_LOSSES_AND_ADJUSTMENTS)) {
+        return true;
       }
     }
 

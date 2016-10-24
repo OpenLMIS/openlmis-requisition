@@ -20,6 +20,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_line_items")
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItem extends BaseEntity {
 
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
