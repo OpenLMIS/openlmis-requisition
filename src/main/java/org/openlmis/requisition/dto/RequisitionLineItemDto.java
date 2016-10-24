@@ -5,6 +5,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -23,4 +24,5 @@ public class RequisitionLineItemDto
   private String requestedQuantityExplanation;
   private String remarks;
   private Integer approvedQuantity;
+  private Set<StockAdjustmentDto> stockAdjustments;
 }

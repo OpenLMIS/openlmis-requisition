@@ -58,6 +58,7 @@ public class Requisition extends BaseEntity {
   private static final String UUID = "pg-uuid";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
+  private static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   private static final String STOCK_ON_HAND = "stockOnHand";
 
@@ -138,6 +139,10 @@ public class Requisition extends BaseEntity {
     updateReqLines(requisition.getRequisitionLineItems());
 
     try {
+      if (requisitionTemplate.isColumnCalculated(TOTAL_LOSSES_AND_ADJUSTMENTS)) {
+        forEachLine(RequisitionLineItem::calculateTotalLossesAndAdjustments);
+      }
+
       if (requisitionTemplate.isColumnCalculated(STOCK_ON_HAND)) {
         forEachLine(RequisitionLineItem::calculateStockOnHand);
       }
@@ -146,8 +151,8 @@ public class Requisition extends BaseEntity {
         forEachLine(RequisitionLineItem::calculateTotalConsumedQuantity);
       }
     } catch (RequisitionTemplateColumnException ex) {
-      LOGGER.debug("stockOnHand or totalConsumedQuantity column not present in template,"
-          + " skipping calculation");
+      LOGGER.debug("stockOnHand, totalLossesAndAdjustments or totalConsumedQuantity"
+          + " column not present in template, skipping calculation");
     }
   }
 
@@ -213,8 +218,11 @@ public class Requisition extends BaseEntity {
         template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY);
     boolean isStockOnHandCalculated =
         template.isColumnCalculated(STOCK_ON_HAND);
+    boolean isTotalLossesAndAdjustmentsCalculated =
+        template.isColumnCalculated(TOTAL_LOSSES_AND_ADJUSTMENTS);
 
-    if (isTotalConsumedQuantityCalculated || isStockOnHandCalculated) {
+    if (isTotalConsumedQuantityCalculated || isStockOnHandCalculated
+        || isTotalLossesAndAdjustmentsCalculated) {
       for (RequisitionLineItem line : requisitionLineItems) {
         if (isTotalConsumedQuantityCalculated
             && line.allRequiredCalcFieldsNotFilled(TOTAL_CONSUMED_QUANTITY)) {
@@ -223,6 +231,11 @@ public class Requisition extends BaseEntity {
 
         if (isStockOnHandCalculated
             && line.allRequiredCalcFieldsNotFilled(STOCK_ON_HAND)) {
+          return true;
+        }
+
+        if (isTotalLossesAndAdjustmentsCalculated
+            && line.allRequiredCalcFieldsNotFilled(TOTAL_LOSSES_AND_ADJUSTMENTS)) {
           return true;
         }
       }

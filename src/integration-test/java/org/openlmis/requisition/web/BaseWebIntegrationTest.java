@@ -93,6 +93,13 @@ public abstract class BaseWebIntegrationTest {
       + " \"enabled\":true\n"
       + "}";
 
+  private static final String MOCK_FIND_STOCK_ADJUSTMENT_REASONS_RESULT = "[{"
+      + " \"id\":\"62c44f68-9200-1de2-22ea-34b5f98f121a\",\n"
+      + " \"programId\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\",\n"
+      + " \"additive\":\"true\",\n"
+      + " \"displayOrder\":1\n"
+      + "}]";
+
   private static final String MOCK_USER_SEARCH_RESULT = "[{"
       + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
       + "\"username\":\"admin\","
@@ -255,6 +262,13 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROGRAM_RESULT)));
+
+    // This mocks for find stock adjustment reasons for program
+    wireMockRule.stubFor(get(urlMatching(
+        "/referencedata/api/programs/" + UUID_REGEX + "/stockAdjustmentReasons.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_FIND_STOCK_ADJUSTMENT_REASONS_RESULT)));
 
     // This mocks for find one facility
     wireMockRule.stubFor(get(urlMatching("/referencedata/api/facilities/" + UUID_REGEX + ".*"))

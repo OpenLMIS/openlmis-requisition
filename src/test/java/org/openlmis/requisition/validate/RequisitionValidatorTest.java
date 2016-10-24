@@ -19,12 +19,16 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,6 +45,9 @@ public class RequisitionValidatorTest {
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
+
+  @Mock
+  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @InjectMocks
   private RequisitionValidator requisitionValidator;
@@ -144,6 +151,21 @@ public class RequisitionValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfStockAdjustmentsHaveInvalidReasons() {
+    StockAdjustment adjustment = mock(StockAdjustment.class);
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.getStockAdjustments().add(adjustment);
+    requisitionLineItems.add(lineItem);
+
+    when(adjustment.getId()).thenReturn(UUID.randomUUID());
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
+        contains(RequisitionValidator.VALUE_NOT_FOUND));
+  }
+
+  @Test
   public void shouldRejectIfTotalConsumedQuantityIsIncorrectlyCalculated() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setTotalConsumedQuantity(2);
@@ -164,6 +186,7 @@ public class RequisitionValidatorTest {
     lineItem.setTotalConsumedQuantity(1);
     lineItem.setTotalLossesAndAdjustments(0);
     lineItem.setRequisition(requisition);
+    lineItem.setStockAdjustments(new HashSet<>());
     return lineItem;
   }
 
@@ -178,5 +201,7 @@ public class RequisitionValidatorTest {
         .getTemplateForProgram(programId)).thenReturn(requisitionTemplate);
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
+    when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))
+        .thenReturn(new ArrayList<>());
   }
 }

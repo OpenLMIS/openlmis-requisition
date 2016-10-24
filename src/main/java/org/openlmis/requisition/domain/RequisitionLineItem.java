@@ -1,25 +1,25 @@
 package org.openlmis.requisition.domain;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_line_items")
-@NoArgsConstructor
 public class RequisitionLineItem extends BaseEntity {
 
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
@@ -90,8 +90,27 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Integer approvedQuantity;
 
-  public RequisitionLineItem(Requisition requisition,
-                             FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
+  @OneToMany(
+      mappedBy = "requisitionLineItem",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
+  @Getter
+  @Setter
+  private Set<StockAdjustment> stockAdjustments;
+
+  public RequisitionLineItem() {
+    stockAdjustments = new HashSet<>();
+  }
+
+  /**
+   * Initiates a requisition line item with specified requisition and product.
+   * @param requisition requisition to apply
+   * @param facilityTypeApprovedProduct facilityTypeApprovedProduct to apply
+   */
+  public RequisitionLineItem(
+      Requisition requisition, FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
+    this();
     this.requisition = requisition;
     this.orderableProductId = facilityTypeApprovedProduct.getProgramProduct().getProductId();
   }
@@ -112,6 +131,11 @@ public class RequisitionLineItem extends BaseEntity {
       this.totalConsumedQuantity = requisitionLineItem.getTotalConsumedQuantity();
       this.requestedQuantity = requisitionLineItem.getRequestedQuantity();
       this.requestedQuantityExplanation = requisitionLineItem.getRequestedQuantityExplanation();
+
+      this.stockAdjustments = new HashSet<>();
+      if (requisitionLineItem.getStockAdjustments() != null) {
+        stockAdjustments.addAll(requisitionLineItem.getStockAdjustments());
+      }
     }
   }
 
@@ -142,6 +166,15 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
+   * Calculates TotalLossesAndAdjustments (D) value and sets the field in this item to that value.
+   * The property is calculated by taking all item's StockAdjustments and adding their quantities.
+   * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
+   */
+  void calculateTotalLossesAndAdjustments() {
+    totalLossesAndAdjustments = calculateTotalLossesAndAdjustmentsValue();
+  }
+
+  /**
    * Calculates StockOnHand (E) value and returns it.
    * The formula is E = A + B (+/-) D - C
    * A = Beginning Balance
@@ -169,12 +202,22 @@ public class RequisitionLineItem extends BaseEntity {
         + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
+  private Integer calculateTotalLossesAndAdjustmentsValue() {
+    int result = 0;
+    for (StockAdjustment adjustment : stockAdjustments) {
+      result += zeroIfNull(adjustment.getQuantity());
+    }
+    return result;
+  }
+
   boolean allRequiredCalcFieldsNotFilled(String field) {
     switch (field) {
-      case "totalConsumedQuantity":
+      case TOTAL_CONSUMED_QUANTITY:
         return null == stockOnHand;
-      case "stockOnHand":
+      case STOCK_ON_HAND:
         return null == totalConsumedQuantity;
+      case TOTAL_LOSSES_AND_ADJUSTMENTS:
+        return null == totalLossesAndAdjustments;
       default:
         return false;
     }
