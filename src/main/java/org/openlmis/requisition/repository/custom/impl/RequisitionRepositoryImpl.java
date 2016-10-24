@@ -178,7 +178,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     query.where(predicate);
     query.orderBy(builder.desc(root.get("createdDate")));
 
-    List<Requisition> list = entityManager.createQuery(query).getResultList();
+    List<Requisition> list = entityManager.createQuery(query).setMaxResults(1).getResultList();
     return null == list || list.isEmpty() ? null : list.get(0);
   }
 
