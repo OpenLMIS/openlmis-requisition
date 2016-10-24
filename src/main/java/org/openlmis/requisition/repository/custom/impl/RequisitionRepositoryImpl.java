@@ -2,7 +2,6 @@ package org.openlmis.requisition.repository.custom.impl;
 
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -10,6 +9,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -148,6 +148,38 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return filteredRequisitionDtos;
+  }
+
+  /**
+   * Get last regular requisition for the given facility and program.
+   *
+   * @param facility UUID of facility
+   * @param program  UUID of program
+   * @return last regular requisition for the given facility and program. {@code null} if not found.
+   * @throws NullPointerException if any of arguments is {@code null}.
+   */
+  @Override
+  public Requisition getLastRegularRequisition(UUID facility, UUID program) {
+    if (null == facility || null == program) {
+      throw new NullPointerException();
+    }
+
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+
+    Root<Requisition> root = query.from(Requisition.class);
+
+    Predicate predicate = builder.conjunction();
+    predicate = builder.and(predicate, builder.equal(root.get("emergency"), false));
+    predicate = builder.and(predicate, builder.equal(root.get("facilityId"), facility));
+    predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
+
+    query.where(predicate);
+    query.orderBy(builder.desc(root.get("createdDate")));
+
+    List<Requisition> list = entityManager.createQuery(query).getResultList();
+    return null == list || list.isEmpty() ? null : list.get(0);
   }
 
   private List<Requisition> filterRequisitions(String filterValue, String filterBy) {

@@ -1,5 +1,8 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -171,7 +174,7 @@ public class Requisition extends BaseEntity {
    */
   public void submit(RequisitionTemplate template)
       throws RequisitionException, RequisitionTemplateColumnException {
-    if (!RequisitionStatus.INITIATED.equals(status)) {
+    if (!INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition must have status 'INITIATED' to be submitted.");
     }
@@ -247,6 +250,10 @@ public class Requisition extends BaseEntity {
   public void forEachLine(Consumer<RequisitionLineItem> consumer) {
     Optional.ofNullable(requisitionLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  public boolean preAuthorize() {
+    return status == INITIATED || status == SUBMITTED;
   }
 
   /**

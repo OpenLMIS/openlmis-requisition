@@ -38,7 +38,7 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     parameters.put("processingScheduleId", processingScheduleId);
     parameters.put("startDate", startDate);
 
-    return findAll("searchByUUIDAndDate", parameters);
+    return findAll("searchByScheduleAndDate", parameters);
   }
 
   /**

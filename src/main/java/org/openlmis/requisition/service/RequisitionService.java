@@ -419,6 +419,14 @@ public class RequisitionService {
                                                   UUID suggestedPeriodId)
       throws RequisitionException {
 
+    Requisition lastRequisition = requisitionRepository.getLastRegularRequisition(
+        facilityId, programId
+    );
+
+    if (null != lastRequisition && lastRequisition.preAuthorize()) {
+      throw new InvalidRequisitionStatusException("Please finish previous requisition");
+    }
+
     ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods =
           periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);

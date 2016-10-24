@@ -22,4 +22,6 @@ public interface RequisitionRepositoryCustom {
       Integer pageNumber, Integer pageSize);
 
   List<Requisition> searchByProcessingPeriod(UUID processingPeriod);
+
+  Requisition getLastRegularRequisition(UUID facility, UUID program);
 }
