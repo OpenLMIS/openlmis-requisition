@@ -4,6 +4,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -252,6 +253,7 @@ public class Requisition extends BaseEntity {
         .ifPresent(list -> list.forEach(consumer));
   }
 
+  @JsonIgnore
   public boolean isPreAuthorize() {
     return status == INITIATED || status == SUBMITTED;
   }
