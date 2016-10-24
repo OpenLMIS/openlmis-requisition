@@ -156,12 +156,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param facility UUID of facility
    * @param program  UUID of program
    * @return last regular requisition for the given facility and program. {@code null} if not found.
-   * @throws NullPointerException if any of arguments is {@code null}.
+   * @throws IllegalArgumentException if any of arguments is {@code null}.
    */
   @Override
   public Requisition getLastRegularRequisition(UUID facility, UUID program) {
     if (null == facility || null == program) {
-      throw new NullPointerException();
+      throw new IllegalArgumentException("facility and program must be provided");
     }
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
