@@ -6,7 +6,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -87,11 +86,6 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     rejectIfLessThanZero(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
-    rejectIfNull(errors, template, item.getTotalLossesAndAdjustments(),
-        RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS);
-    rejectIfLessThanZero(errors, template, item.getTotalLossesAndAdjustments(),
-        RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS);
-
     validateApprovedQuantity(errors, template, requisition, item);
 
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
@@ -126,12 +120,11 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         .getStockAdjustmentReasonsByProgram(requisition.getProgramId())
         .stream().map(StockAdjustmentReasonDto::getId).collect(Collectors.toList());
 
-    for (StockAdjustment adjustment : item.getStockAdjustments()) {
-      if (!reasons.contains(adjustment.getReasonId())) {
-        errors.rejectValue(STOCK_ADJUSTMENT_REASON,
-            STOCK_ADJUSTMENT_REASON + " with id " + adjustment.getReasonId() + VALUE_NOT_FOUND);
-      }
-    }
+    item.getStockAdjustments()
+        .stream()
+        .filter(adjustment -> !reasons.contains(adjustment.getReasonId()))
+        .forEach(adjustment -> errors.rejectValue(STOCK_ADJUSTMENT_REASON,
+            STOCK_ADJUSTMENT_REASON + " with id " + adjustment.getReasonId() + VALUE_NOT_FOUND));
   }
 
   private void validateApprovedQuantity(Errors errors, RequisitionTemplate template,

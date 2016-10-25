@@ -1,16 +1,20 @@
 package org.openlmis.requisition.service;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +36,8 @@ public class RequisitionLineCalculationService {
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
+  @Autowired
+  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   /**
    * Initiate all RequisitionLineItem fields from given Requisition to default value.
@@ -134,5 +140,30 @@ public class RequisitionLineCalculationService {
     dto.setOrderableProduct(orderableProductReferenceDataService.findOne(
         requisitionLineItem.getOrderableProductId()));
     return dto;
+  }
+
+  /**
+   * Calculates TotalLossesAndAdjustments (D) value for each line in the given requisition.
+   * The property is calculated by taking all item's StockAdjustments and adding their quantities.
+   * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
+   */
+  public void calculateTotalLossesAndAdjustments(Requisition requisition) {
+    requisition.forEachLine(line -> {
+      List<StockAdjustment> adjustments = line.getStockAdjustments();
+
+      if (null != adjustments) {
+        int total = 0;
+
+        for (StockAdjustment adjustment : adjustments) {
+          StockAdjustmentReasonDto reason =
+              stockAdjustmentReasonReferenceDataService.findOne(adjustment.getReasonId());
+          int sign = isTrue(reason.getAdditive()) ? 1 : -1;
+
+          total += adjustment.getQuantity() * sign;
+        }
+
+        line.setTotalLossesAndAdjustments(total);
+      }
+    });
   }
 }

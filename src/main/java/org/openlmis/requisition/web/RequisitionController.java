@@ -18,6 +18,7 @@ import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -90,6 +91,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
+
+  @Autowired
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -235,6 +239,7 @@ public class RequisitionController extends BaseController {
       requisitionToUpdate.updateFrom(requisition,
               requisitionTemplateRepository.getTemplateForProgram(
                       requisitionToUpdate.getProgramId()));
+      requisitionLineCalculationService.calculateTotalLossesAndAdjustments(requisitionToUpdate);
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 

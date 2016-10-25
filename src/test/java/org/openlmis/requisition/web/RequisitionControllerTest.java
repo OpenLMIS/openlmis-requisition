@@ -1,5 +1,19 @@
 package org.openlmis.requisition.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -16,6 +30,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
@@ -30,20 +45,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
 
 public class RequisitionControllerTest {
 
@@ -79,6 +80,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionTemplateRepository templateRepository;
+
+  @Mock
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
@@ -191,6 +195,8 @@ public class RequisitionControllerTest {
     assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyObject());
     verify(requisitionRepository).save(initiatedRequsition);
+    verify(requisitionLineCalculationService)
+        .calculateTotalLossesAndAdjustments(any(Requisition.class));
   }
 
   @Test

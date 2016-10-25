@@ -27,7 +27,6 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -185,7 +184,7 @@ public class RequisitionValidatorTest {
     lineItem.setTotalConsumedQuantity(1);
     lineItem.setTotalLossesAndAdjustments(0);
     lineItem.setRequisition(requisition);
-    lineItem.setStockAdjustments(new HashSet<>());
+    lineItem.setStockAdjustments(new ArrayList<>());
     return lineItem;
   }
 
