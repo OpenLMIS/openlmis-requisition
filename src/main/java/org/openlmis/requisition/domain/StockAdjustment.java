@@ -1,15 +1,18 @@
 package org.openlmis.requisition.domain;
 
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
+import java.util.UUID;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @Entity
 @Table(name = "stock_adjustments")
@@ -21,10 +24,12 @@ public class StockAdjustment extends BaseEntity {
   @Setter
   private RequisitionLineItem requisitionLineItem;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   private UUID reasonId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   private Integer quantity;
