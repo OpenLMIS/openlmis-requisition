@@ -269,8 +269,7 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new RequisitionNotFoundException(requisitionId);
-    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
-        || requisition.getStatus() == RequisitionStatus.SUBMITTED) {
+    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);

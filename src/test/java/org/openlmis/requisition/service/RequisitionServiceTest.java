@@ -33,6 +33,7 @@ import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -187,14 +188,21 @@ public class RequisitionServiceTest {
     assertEquals(returnedRequisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
-  @Test(expected = RequisitionException.class)
+  @Test(expected = InvalidRequisitionStatusException.class)
+  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
+      throws RequisitionException {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionService.reject(requisition.getId());
+  }
+
+  @Test(expected = InvalidRequisitionStatusException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
         throws RequisitionException {
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisitionService.reject(requisition.getId());
   }
 
-  @Test(expected = RequisitionException.class)
+  @Test(expected = RequisitionNotFoundException.class)
   public void shouldThrowExceptionWhenRejectingNotExistingRequisition()
         throws RequisitionException {
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
