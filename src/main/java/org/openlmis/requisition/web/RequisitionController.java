@@ -121,9 +121,9 @@ public class RequisitionController extends BaseController {
       newRequisition = requisitionService.initiate(program,
           facility, suggestedPeriod, emergency);
     } catch (InvalidPeriodException ipe) {
-      ErrorResponse errorResponse =
-          new ErrorResponse("An error occurred while initiating requisition",
-              ipe.getMessage());
+      ErrorResponse errorResponse = new ErrorResponse(
+          "Error occurred while initiating requisition - incorrect suggested period.",
+          ipe.getMessage());
       LOGGER.error(errorResponse.getMessage(), ipe);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

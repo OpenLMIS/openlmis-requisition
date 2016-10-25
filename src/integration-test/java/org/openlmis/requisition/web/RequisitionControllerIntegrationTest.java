@@ -549,8 +549,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotInitializeRequisitionWithIncorrectSuggestedPeriodId() {
 
-    requisitionRepository.delete(requisition);
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("program", program.getId())
