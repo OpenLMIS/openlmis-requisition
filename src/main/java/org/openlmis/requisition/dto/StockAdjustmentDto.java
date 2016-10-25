@@ -1,9 +1,9 @@
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.StockAdjustment;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.StockAdjustment;
 
 import java.util.UUID;
 
@@ -11,12 +11,6 @@ import java.util.UUID;
 @Setter
 public class StockAdjustmentDto implements StockAdjustment.Importer, StockAdjustment.Exporter {
   private UUID id;
-  private RequisitionLineItemDto requisitionLineItem;
-  private StockAdjustmentReasonDto reason;
+  private UUID reasonId;
   private Integer quantity;
-
-  @Override
-  public void setRequisitionLineItem(RequisitionLineItem requisitionLineItem) {
-    requisitionLineItem.export(this.requisitionLineItem);
-  }
 }

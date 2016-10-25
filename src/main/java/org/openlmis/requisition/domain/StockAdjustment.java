@@ -1,7 +1,5 @@
 package org.openlmis.requisition.domain;
 
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +16,7 @@ import javax.persistence.Table;
 @Table(name = "stock_adjustments")
 @NoArgsConstructor
 public class StockAdjustment extends BaseEntity {
+
   @OneToOne
   @JoinColumn(name = "requisitionLineItemId")
   @Getter
@@ -35,30 +34,46 @@ public class StockAdjustment extends BaseEntity {
   private Integer quantity;
 
   /**
+   * Creates new StockAdjustment object based on data from {@link Importer}
+   *
+   * @param importer instance of {@link Importer}
+   * @param requisitionLineItem RequisitionLineItem object
+   * @return new instance od StockAdjustment.
+   */
+  public static StockAdjustment newStockAdjustment(Importer importer,
+                                                   RequisitionLineItem requisitionLineItem) {
+    StockAdjustment stockAdjustment = new StockAdjustment();
+    stockAdjustment.id = importer.getId();
+    stockAdjustment.requisitionLineItem = requisitionLineItem;
+    stockAdjustment.reasonId = importer.getReasonId();
+    stockAdjustment.quantity = importer.getQuantity();
+
+    return stockAdjustment;
+  }
+
+  /**
    * Export this object to the specified exporter (DTO).
    *
    * @param exporter exporter to export to
    */
   public void export(StockAdjustment.Exporter exporter) {
     exporter.setId(id);
-    exporter.setRequisitionLineItem(requisitionLineItem);
+    exporter.setReasonId(reasonId);
     exporter.setQuantity(quantity);
   }
 
   public interface Exporter {
     void setId(UUID id);
 
-    void setRequisitionLineItem(RequisitionLineItem requisitionLineItem);
-
     void setQuantity(Integer quantity);
+
+    void setReasonId(UUID reasonId);
   }
 
   public interface Importer {
     UUID getId();
 
-    RequisitionLineItem.Importer getRequisitionLineItem();
-
-    StockAdjustmentReasonDto getReason();
+    UUID getReasonId();
 
     Integer getQuantity();
   }

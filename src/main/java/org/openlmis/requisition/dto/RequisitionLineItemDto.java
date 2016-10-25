@@ -1,11 +1,16 @@
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.StockAdjustment;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -24,5 +29,37 @@ public class RequisitionLineItemDto
   private String requestedQuantityExplanation;
   private String remarks;
   private Integer approvedQuantity;
-  private Set<StockAdjustmentDto> stockAdjustments;
+
+  @JsonProperty
+  private List<StockAdjustmentDto> stockAdjustments;
+
+  @JsonIgnore
+  @Override
+  public List<StockAdjustment.Importer> getStockAdjustments() {
+    if (stockAdjustments == null) {
+      return null;
+    }
+
+    List<StockAdjustment.Importer> stockAdjustmentImporters = new ArrayList<>();
+    stockAdjustmentImporters.addAll(stockAdjustments);
+    return stockAdjustmentImporters;
+  }
+
+  @JsonIgnore
+  @Override
+  public void setStockAdjustments(List<StockAdjustment> stockAdjustments) {
+    if (stockAdjustments != null) {
+      List<StockAdjustmentDto> stockAdjustmentDtos = new ArrayList<>();
+
+      for (StockAdjustment stockAdjustment : stockAdjustments) {
+        StockAdjustmentDto stockAdjustmentDto = new StockAdjustmentDto();
+        stockAdjustment.export(stockAdjustmentDto);
+        stockAdjustmentDtos.add(stockAdjustmentDto);
+      }
+
+      this.stockAdjustments = stockAdjustmentDtos;
+    } else {
+      this.stockAdjustments = null;
+    }
+  }
 }

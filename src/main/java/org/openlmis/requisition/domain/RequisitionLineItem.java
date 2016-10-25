@@ -269,6 +269,15 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setRemarks(importer.getRemarks());
     requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
 
+    List<StockAdjustment> stockAdjustments = new ArrayList<>();
+    if (importer.getStockAdjustments() != null) {
+      for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
+        stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter,
+            requisitionLineItem));
+      }
+    }
+
+    requisitionLineItem.setStockAdjustments(stockAdjustments);
 
     return requisitionLineItem;
   }
@@ -289,6 +298,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
     exporter.setRemarks(remarks);
     exporter.setApprovedQuantity(approvedQuantity);
+    exporter.setStockAdjustments(stockAdjustments);
   }
 
   public interface Exporter {
@@ -311,6 +321,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setRemarks(String remarks);
 
     void setApprovedQuantity(Integer approvedQuantity);
+
+    void setStockAdjustments(List<StockAdjustment> stockAdjustments);
   }
 
   public interface Importer {
@@ -335,5 +347,7 @@ public class RequisitionLineItem extends BaseEntity {
     String getRemarks();
 
     Integer getApprovedQuantity();
+
+    List<StockAdjustment.Importer> getStockAdjustments();
   }
 }
