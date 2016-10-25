@@ -265,7 +265,7 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks for find stock adjustment reasons for program
     wireMockRule.stubFor(get(urlMatching(
-        "/referencedata/api/programs/" + UUID_REGEX + "/stockAdjustmentReasons.*"))
+        "/referencedata/api/stockAdjustmentReasons/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_STOCK_ADJUSTMENT_REASONS_RESULT)));
