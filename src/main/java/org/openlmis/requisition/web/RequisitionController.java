@@ -12,6 +12,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -115,8 +116,17 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                    @RequestParam(value = "emergency") Boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
-    Requisition newRequisition = requisitionService.initiate(program,
-        facility, suggestedPeriod, emergency);
+    Requisition newRequisition = null;
+    try {
+      newRequisition = requisitionService.initiate(program,
+          facility, suggestedPeriod, emergency);
+    } catch (InvalidPeriodException ipe) {
+      ErrorResponse errorResponse =
+          new ErrorResponse("An error occurred while initiating requisition",
+              ipe.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ipe);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
     return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
   }
 

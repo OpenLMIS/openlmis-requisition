@@ -71,6 +71,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String COMMENT_TEXT = "OpenLMIS";
   private static final String COMMENT = "Comment";
+  private static final String FACILITY = "facility";
   private static final String APPROVED_REQUISITIONS_SEARCH_URL =
       RESOURCE_URL + "/requisitions-for-convert";
 
@@ -173,7 +174,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("program", program.getId())
         .queryParam("processingPeriod", period.getId())
-        .queryParam("facility", facility.getId())
+        .queryParam(FACILITY, facility.getId())
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
         .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
@@ -546,6 +547,25 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotInitializeRequisitionWithIncorrectSuggestedPeriodId() {
+
+    requisitionRepository.delete(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("program", program.getId())
+        .queryParam(FACILITY, facility.getId())
+        .queryParam("suggestedPeriod", UUID.randomUUID())
+        .queryParam("emergency", false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldInitializeRequisition() {
 
     requisitionRepository.delete(requisition);
@@ -553,7 +573,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("program", program.getId())
-        .queryParam("facility", facility.getId())
+        .queryParam(FACILITY, facility.getId())
         .queryParam("suggestedPeriod", period.getId())
         .queryParam("emergency", false)
         .when()
@@ -787,11 +807,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
     generateRequisitions();
     Integer pageSize = 20;
-    String filterValue = "facility";
 
     RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("filterValue", filterValue)
+        .queryParam("filterValue", FACILITY)
         .queryParam("filterBy", "facilityCode")
         .queryParam("sortBy", "programName")
         .queryParam("descending", Boolean.TRUE.toString())
@@ -816,7 +835,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       Assert.assertTrue(requisition.getStatus().equals(RequisitionStatus.APPROVED));
 
       String facilityCode = requisition.getFacility().getCode();
-      Assert.assertTrue(facilityCode.contains(filterValue));
+      Assert.assertTrue(facilityCode.contains(FACILITY));
 
       List<FacilityDto> facilities = dto.getSupplyingDepots();
       for (FacilityDto facility : facilities) {
