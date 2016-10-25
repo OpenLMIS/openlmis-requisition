@@ -1,14 +1,19 @@
 package org.openlmis.requisition.domain;
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
+
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -107,7 +112,8 @@ public class RequisitionLineItem extends BaseEntity {
 
   /**
    * Initiates a requisition line item with specified requisition and product.
-   * @param requisition requisition to apply
+   *
+   * @param requisition                 requisition to apply
    * @param facilityTypeApprovedProduct facilityTypeApprovedProduct to apply
    */
   public RequisitionLineItem(
@@ -200,6 +206,30 @@ public class RequisitionLineItem extends BaseEntity {
         + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
+  /**
+   * Calculates TotalLossesAndAdjustments (D) value and sets the field in this item to that value.
+   * The property is calculated by taking all item's StockAdjustments and adding their quantities.
+   * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
+   */
+  public void calculateTotalLossesAndAdjustments(Collection<StockAdjustmentReasonDto> reasons) {
+    totalLossesAndAdjustments = 0;
+
+    if (null != stockAdjustments) {
+      for (StockAdjustment adjustment : stockAdjustments) {
+        Optional<StockAdjustmentReasonDto> reason = reasons
+            .stream()
+            .filter(r -> r.getId().equals(adjustment.getReasonId()))
+            .findFirst();
+
+        if (reason.isPresent()) {
+          int sign = isTrue(reason.get().getAdditive()) ? 1 : -1;
+
+          totalLossesAndAdjustments += adjustment.getQuantity() * sign;
+        }
+      }
+    }
+  }
+
   boolean allRequiredCalcFieldsNotFilled(String field) {
     switch (field) {
       case TOTAL_CONSUMED_QUANTITY:
@@ -224,7 +254,7 @@ public class RequisitionLineItem extends BaseEntity {
    */
   public static RequisitionLineItem newRequisitionLineItem(Importer importer) {
 
-    RequisitionLineItem requisitionLineItem =  new RequisitionLineItem();
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
     if (importer.getOrderableProduct() != null) {
       requisitionLineItem.setOrderableProductId(importer.getOrderableProduct().getId());

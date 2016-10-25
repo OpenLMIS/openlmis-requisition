@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -30,9 +31,9 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.ErrorResponse;
@@ -82,7 +83,7 @@ public class RequisitionControllerTest {
   private RequisitionTemplateRepository templateRepository;
 
   @Mock
-  private RequisitionLineCalculationService requisitionLineCalculationService;
+  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
@@ -146,7 +147,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(template);
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
-            any(RequisitionTemplate.class));
+            any(RequisitionTemplate.class), anyList());
   }
 
   @Test
@@ -193,10 +194,10 @@ public class RequisitionControllerTest {
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid1);
     assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyObject());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyObject(), anyList());
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionLineCalculationService)
-        .calculateTotalLossesAndAdjustments(any(Requisition.class));
+    verify(stockAdjustmentReasonReferenceDataService)
+        .getStockAdjustmentReasonsByProgram(any(UUID.class));
   }
 
   @Test
@@ -262,7 +263,7 @@ public class RequisitionControllerTest {
           throws RequisitionException, RequisitionTemplateColumnException {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class),
-            any(RequisitionTemplate.class));
+            any(RequisitionTemplate.class), anyList());
     verify(requisition, never()).submit(any(RequisitionTemplate.class));
   }
 }

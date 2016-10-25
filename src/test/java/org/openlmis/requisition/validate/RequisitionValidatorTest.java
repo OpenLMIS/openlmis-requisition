@@ -164,6 +164,36 @@ public class RequisitionValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfStockAdjustmentsHaveNullQuantity() {
+    StockAdjustment adjustment = mock(StockAdjustment.class);
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.getStockAdjustments().add(adjustment);
+    requisitionLineItems.add(lineItem);
+
+    when(adjustment.getQuantity()).thenReturn(null);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
+        contains(RequisitionValidator.VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION));
+  }
+
+  @Test
+  public void shouldRejectIfStockAdjustmentsHaveNegativeQuantity() {
+    StockAdjustment adjustment = mock(StockAdjustment.class);
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.getStockAdjustments().add(adjustment);
+    requisitionLineItems.add(lineItem);
+
+    when(adjustment.getQuantity()).thenReturn(-6);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
+        contains(RequisitionValidator.VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION));
+  }
+
+  @Test
   public void shouldRejectIfTotalConsumedQuantityIsIncorrectlyCalculated() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setTotalConsumedQuantity(2);

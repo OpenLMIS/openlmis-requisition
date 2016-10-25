@@ -18,6 +18,7 @@ import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
@@ -131,13 +132,16 @@ public class Requisition extends BaseEntity {
    * @param requisition         Requisition with new values.
    * @param requisitionTemplate Requisition template
    */
-  public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate) {
+  public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate,
+                         Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
     this.comments = requisition.getComments();
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     updateReqLines(requisition.getRequisitionLineItems());
 
     try {
+      forEachLine(line -> line.calculateTotalLossesAndAdjustments(stockAdjustmentReasons));
+
       if (requisitionTemplate.isColumnCalculated(STOCK_ON_HAND)) {
         forEachLine(RequisitionLineItem::calculateStockOnHand);
       }

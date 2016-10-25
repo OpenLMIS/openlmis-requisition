@@ -6,6 +6,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -120,11 +121,17 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         .getStockAdjustmentReasonsByProgram(requisition.getProgramId())
         .stream().map(StockAdjustmentReasonDto::getId).collect(Collectors.toList());
 
-    item.getStockAdjustments()
-        .stream()
-        .filter(adjustment -> !reasons.contains(adjustment.getReasonId()))
-        .forEach(adjustment -> errors.rejectValue(STOCK_ADJUSTMENT_REASON,
-            STOCK_ADJUSTMENT_REASON + " with id " + adjustment.getReasonId() + VALUE_NOT_FOUND));
+    for (StockAdjustment adjustment : item.getStockAdjustments()) {
+      if (!reasons.contains(adjustment.getReasonId())) {
+        errors.rejectValue(STOCK_ADJUSTMENT_REASON, STOCK_ADJUSTMENT_REASON + " with id "
+            + adjustment.getReasonId() + VALUE_NOT_FOUND);
+      }
+
+      if (adjustment.getQuantity() == null || adjustment.getQuantity() < 0) {
+        errors.rejectValue(STOCK_ADJUSTMENT_REASON, STOCK_ADJUSTMENT_REASON + " with id "
+            + adjustment.getReasonId() + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
+      }
+    }
   }
 
   private void validateApprovedQuantity(Errors errors, RequisitionTemplate template,

@@ -70,7 +70,7 @@ public class RequisitionTest {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.authorize();
-    requisition.updateFrom(newRequisition, requisitionTemplate);
+    requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verify(requisitionLineItem).calculateStockOnHand();
@@ -112,7 +112,7 @@ public class RequisitionTest {
 
     // when
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, mock(RequisitionTemplate.class));
+    requisition.updateFrom(newRequisition, mock(RequisitionTemplate.class), Lists.newArrayList());
 
     // then
     requisition
