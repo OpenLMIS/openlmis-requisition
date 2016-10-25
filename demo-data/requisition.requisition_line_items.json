@@ -1,5 +1,46 @@
 [
   {
+    "id": "99118ee8-ec30-400a-bb05-0b1512bd4fb8",
+    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
+    "stockOnHand": 10,
+    "beginningBalance": 5,
+    "totalReceivedQuantity": 5,
+    "requestedQuantity": 15,
+    "totalConsumedQuantity": 10
+  },
+  {
+    "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
+    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
+    "stockOnHand": 1000,
+    "beginningBalance": 400,
+    "totalReceivedQuantity": 800,
+    "requestedQuantity": 800,
+    "totalConsumedQuantity": 1200
+  },
+  {
+    "id": "f27415c4-7049-46a6-9e59-818990c85390",
+    "orderableProductId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
+    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
+    "stockOnHand": 100,
+    "beginningBalance": 100,
+    "totalReceivedQuantity": 16,
+    "requestedQuantity": 500,
+    "totalConsumedQuantity": 16,
+    "requestedQuantityExplanation": "Too few left to make any use out of it."
+  },
+  {
+    "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
+    "orderableProductId": "7f7b83db-580d-4269-88d2-7f9c80a591a9",
+    "requisition": { "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67" },
+    "stockOnHand": 200,
+    "beginningBalance": 300,
+    "totalReceivedQuantity": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 100
+  },
+  {
     "id": "ac49b686-c74c-4684-a635-d777ee298cd2",
     "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
     "requisition": { "id": "8c7f1a6d-d139-483a-ad60-4288016f3d23" },
@@ -254,5 +295,71 @@
     "totalConsumedQuantity": 200,
     "remarks": "",
     "approvedQuantity": 999
+  },
+  {
+    "id": "8c8026b8-0ae8-4adb-b2ca-bfb0dfb030a5",
+    "orderableProductId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
+    "requisition": { "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21" },
+    "beginningBalance": 50,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 0
+  },
+  {
+    "id": "552eb0f7-fc57-4916-bb54-0c3c9540420a",
+    "orderableProductId": "23819693-0670-4c4b-b400-28e009b86b51",
+    "requisition": { "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21" },
+    "beginningBalance": 0,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 0
+  },
+  {
+    "id": "bcbd9a7c-6068-40d9-90ab-cb090fd6ed8c",
+    "orderableProductId": "bfde33c3-83f1-4feb-a27c-842852f66b71",
+    "requisition": { "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21" },
+    "beginningBalance": 90,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 0
+  },
+  {
+    "id": "502eb011-27bc-4f7f-bb1f-6425ae66a5d5",
+    "orderableProductId": "880cf2eb-7b68-4450-a037-a0dec1a17987",
+    "requisition": { "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21" },
+    "beginningBalance": 0,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 0
+  },
+  {
+    "id": "5b449a32-aedf-4a8b-a9d7-c3b665ad76e2",
+    "orderableProductId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
+    "requisition": { "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21" },
+    "beginningBalance": 50,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 0
+  },
+  {
+    "id": "89e46600-aa5a-4cc9-8bfd-67be8e907778",
+    "orderableProductId": "7f7b83db-580d-4269-88d2-7f9c80a591a9",
+    "requisition": { "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21" },
+    "beginningBalance": 0,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 0,
+    "requestedQuantity": 0,
+    "totalConsumedQuantity": 0
   }
 ]
