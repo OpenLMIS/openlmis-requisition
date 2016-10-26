@@ -50,29 +50,36 @@ public class RequisitionLineCalculationService {
   private void initiateBeginningBalance(Requisition requisition, RequisitionTemplate template)
       throws RequisitionTemplateColumnException {
 
-    if (template.isColumnDisplayed(BEGINNING_BALANCE_COLUMN)) {
-      ProcessingPeriodDto previousPeriod = findPreviousPeriod(requisition.getProcessingPeriodId());
-      Requisition previousRequisition = null != previousPeriod
-          ? findPreviousRequisition(requisition, previousPeriod)
-          : null;
-
-      if (null != previousRequisition) {
-        requisition.forEachLine(currentLine -> {
-          RequisitionLineItem previousLine = previousRequisition
-              .findLineByProductId(currentLine.getOrderableProductId());
-
-          if (null != previousLine) {
-            currentLine.calculateBeginningBalance(previousLine);
-          }
-        });
-      }
-    }
-
+    // Firstly, we set the Beginning Balance to zero for all lines.
     requisition.forEachLine(line -> {
       if (null == line.getBeginningBalance()) {
         line.setBeginningBalance(0);
       }
     });
+
+    // Secondly, if we display the column ...
+    if (template.isColumnDisplayed(BEGINNING_BALANCE_COLUMN)) {
+      // ... we try to find previous period and requisition ...
+      ProcessingPeriodDto previousPeriod = findPreviousPeriod(requisition.getProcessingPeriodId());
+      Requisition previousRequisition = null != previousPeriod
+          ? findPreviousRequisition(requisition, previousPeriod)
+          : null;
+
+      // ... and if the previous requisition exists ...
+      if (null != previousRequisition) {
+        // .. for each line from the current requsition ...
+        requisition.forEachLine(currentLine -> {
+          // ... we try to find line in the previous requisition for the same product ...
+          RequisitionLineItem previousLine = previousRequisition
+              .findLineByProductId(currentLine.getOrderableProductId());
+
+          // ... and in the end we use it to calculate beginning balance in a new line.
+          currentLine.calculateBeginningBalance(previousLine);
+        });
+      }
+    }
+
+
   }
 
   private ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
