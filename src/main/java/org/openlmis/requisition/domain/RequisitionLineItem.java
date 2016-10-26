@@ -255,7 +255,7 @@ public class RequisitionLineItem extends BaseEntity {
    * {@link RequisitionLineItem.Importer}
    *
    * @param importer instance of {@link Importer}
-   * @return new instance od RequisitionLineItem.
+   * @return new instance of RequisitionLineItem.
    */
   public static RequisitionLineItem newRequisitionLineItem(Importer importer) {
 

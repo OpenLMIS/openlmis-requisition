@@ -38,7 +38,7 @@ public class StockAdjustment extends BaseEntity {
    *
    * @param importer instance of {@link Importer}
    * @param requisitionLineItem RequisitionLineItem object
-   * @return new instance od StockAdjustment.
+   * @return new instance of StockAdjustment.
    */
   public static StockAdjustment newStockAdjustment(Importer importer,
                                                    RequisitionLineItem requisitionLineItem) {
