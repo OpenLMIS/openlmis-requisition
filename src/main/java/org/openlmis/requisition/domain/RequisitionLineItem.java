@@ -153,6 +153,24 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
+   * Calculates beginningBalance (A) value of current requsition line item based on previous one
+   * and sets the field in this item to that value.
+   * The formula is A = E + K
+   * E = Stock on Hand
+   * K = Approved Quantity
+   *
+   * @param previous line item from previous requsition
+   */
+  public void calculateBeginningBalance(RequisitionLineItem previous) {
+    this.beginningBalance = 0;
+
+    if (null != previous) {
+      this.beginningBalance = zeroIfNull(previous.getStockOnHand())
+          + zeroIfNull(previous.getApprovedQuantity());
+    }
+  }
+
+  /**
    * Calculates StockOnHand (E) value and sets the field in this item to that value.
    * The formula is E = A + B (+/-) D - C
    * A = Beginning Balance
@@ -175,7 +193,8 @@ public class RequisitionLineItem extends BaseEntity {
    * E = Stock on Hand
    */
   void calculateTotalConsumedQuantity() {
-    totalConsumedQuantity = calculateTotalConsumedQuantityValue();
+    totalConsumedQuantity = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
+        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
   /**
@@ -190,20 +209,6 @@ public class RequisitionLineItem extends BaseEntity {
   public Integer calculateStockOnHandValue() {
     return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
         + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(totalConsumedQuantity);
-  }
-
-  /**
-   * Calculates TotalConsumedQuantity (C) value and returns it.
-   * The formula is C = A + B (+/-) D - E
-   * A = Beginning Balance
-   * B = Total Received Quantity
-   * C = Total Consumed Quantity
-   * D = Total Losses/Adjustments
-   * E = Stock on Hand
-   */
-  public Integer calculateTotalConsumedQuantityValue() {
-    return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
-        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
   }
 
   /**

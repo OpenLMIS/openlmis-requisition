@@ -65,6 +65,34 @@ public class RequisitionLineItemTest {
   }
 
   @Test
+  public void shouldCalculateBeginningBalanceBasedOnPrevious() throws Exception {
+    RequisitionLineItem previous = new RequisitionLineItem();
+    previous.setStockOnHand(3789);
+    previous.setApprovedQuantity(714);
+
+    RequisitionLineItem current = new RequisitionLineItem();
+    current.calculateBeginningBalance(previous);
+
+    assertThat(current.getBeginningBalance(), is(4503));
+  }
+
+  @Test
+  public void shouldSetZeroToBeginningBalanceIfPreviousNotExist() throws Exception {
+    RequisitionLineItem current = new RequisitionLineItem();
+    current.calculateBeginningBalance(null);
+
+    assertThat(current.getBeginningBalance(), is(0));
+  }
+
+  @Test
+  public void shouldSetZeroToBeginningBalanceIfPreviousNotHasData() throws Exception {
+    RequisitionLineItem current = new RequisitionLineItem();
+    current.calculateBeginningBalance(new RequisitionLineItem());
+
+    assertThat(current.getBeginningBalance(), is(0));
+  }
+
+  @Test
   public void shouldCalculateStockOnHand() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setTotalLossesAndAdjustments(-100);

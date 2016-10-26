@@ -62,7 +62,7 @@ public class RequisitionLineCalculationService {
               .findLineByProductId(currentLine.getOrderableProductId());
 
           if (null != previousLine) {
-            currentLine.setBeginningBalance(previousLine.getStockOnHand());
+            currentLine.calculateBeginningBalance(previousLine);
           }
         });
       }
