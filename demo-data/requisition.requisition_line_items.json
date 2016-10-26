@@ -7,7 +7,8 @@
     "beginningBalance": 5,
     "totalReceivedQuantity": 5,
     "requestedQuantity": 15,
-    "totalConsumedQuantity": 10
+    "totalConsumedQuantity": 10,
+    "requestedQuantityExplanation": "Some test explanation"
   },
   {
     "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
@@ -17,7 +18,8 @@
     "beginningBalance": 400,
     "totalReceivedQuantity": 800,
     "requestedQuantity": 800,
-    "totalConsumedQuantity": 1200
+    "totalConsumedQuantity": 1200,
+    "requestedQuantityExplanation": "Some test explanation"
   },
   {
     "id": "f27415c4-7049-46a6-9e59-818990c85390",
@@ -48,7 +50,8 @@
     "beginningBalance": 50,
     "totalReceivedQuantity": 250,
     "requestedQuantity": 250,
-    "totalConsumedQuantity": 300
+    "totalConsumedQuantity": 300,
+    "requestedQuantityExplanation": "Some test explanation"
   },
   {
     "id": "1d0d970f-c619-40db-ae81-6d8990505502",
@@ -58,7 +61,8 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 31000
+    "totalConsumedQuantity": 31000,
+    "requestedQuantityExplanation": "Some test explanation"
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
