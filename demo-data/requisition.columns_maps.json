@@ -222,27 +222,27 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
-    "key": "remarks",
-    "name": "remarks",
-    "label": "Remarks",
-    "indicator": "L",
-    "displayOrder": 10,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
-  },
-  {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "approvedQuantity",
     "name": "approvedQuantity",
     "label": "Approved Quantity",
     "indicator": "K",
-    "displayOrder": 8,
+    "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
-
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "remarks",
+    "name": "remarks",
+    "label": "Remarks",
+    "indicator": "L",
+    "displayOrder": 11,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
+  },
+  
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productCode",
