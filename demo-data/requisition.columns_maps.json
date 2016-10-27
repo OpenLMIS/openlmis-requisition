@@ -61,7 +61,7 @@
     "label": "Total Losses And Adjustments",
     "indicator": "D",
     "displayOrder": 6,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
@@ -183,7 +183,7 @@
     "label": "Total Losses And Adjustments",
     "indicator": "D",
     "displayOrder": 6,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
