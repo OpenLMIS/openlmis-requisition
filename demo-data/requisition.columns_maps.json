@@ -1,11 +1,33 @@
 [
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "productCode",
+    "name": "orderableProduct.productCode",
+    "label": "Product Code",
+    "indicator": "O",
+    "displayOrder": 1,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
+  },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "productName",
+    "name": "orderableProduct.name",
+    "label": "Product",
+    "indicator": "N",
+    "displayOrder": 2,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
+  },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
-    "displayOrder": 1,
+    "displayOrder": 3,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -16,7 +38,7 @@
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
-    "displayOrder": 2,
+    "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -27,7 +49,7 @@
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
-    "displayOrder": 3,
+    "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -38,7 +60,7 @@
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
-    "displayOrder": 4,
+    "displayOrder": 6,
     "isDisplayed": false,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -49,7 +71,7 @@
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
-    "displayOrder": 5,
+    "displayOrder": 7,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
@@ -60,7 +82,7 @@
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
-    "displayOrder": 6,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
@@ -71,41 +93,63 @@
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
     "indicator": "W",
-    "displayOrder": 7,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
-  },
-  {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
-    "key": "remarks",
-    "name": "remarks",
-    "label": "Remarks",
-    "indicator": "L",
-    "displayOrder": 10,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
-  },
-  {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
-    "key": "approvedQuantity",
-    "name": "approvedQuantity",
-    "label": "Approved Quantity",
-    "indicator": "K",
     "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
+    "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
+  },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "approvedQuantity",
+    "name": "approvedQuantity",
+    "label": "Approved Quantity",
+    "indicator": "K",
+    "displayOrder": 10,
+    "isDisplayed": true,
+    "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "remarks",
+    "name": "remarks",
+    "label": "Remarks",
+    "indicator": "L",
+    "displayOrder": 11,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
+  },
 
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "productCode",
+    "name": "orderableProduct.productCode",
+    "label": "Product Code",
+    "indicator": "O",
+    "displayOrder": 1,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
+  },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "orderableProduct.name",
+    "name": "productName",
+    "label": "Product",
+    "indicator": "N",
+    "displayOrder": 2,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
+  },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
-    "displayOrder": 1,
+    "displayOrder": 3,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -116,7 +160,7 @@
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
-    "displayOrder": 2,
+    "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -127,7 +171,7 @@
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
-    "displayOrder": 3,
+    "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -138,7 +182,7 @@
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
-    "displayOrder": 4,
+    "displayOrder": 6,
     "isDisplayed": false,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -149,7 +193,7 @@
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
-    "displayOrder": 5,
+    "displayOrder": 7,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
@@ -160,7 +204,7 @@
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
-    "displayOrder": 6,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
@@ -171,7 +215,7 @@
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
     "indicator": "W",
-    "displayOrder": 7,
+    "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
@@ -201,11 +245,33 @@
 
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "productCode",
+    "name": "orderableProduct.productCode",
+    "label": "Product Code",
+    "indicator": "O",
+    "displayOrder": 1,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "orderableProduct.name",
+    "name": "productName",
+    "label": "Product",
+    "indicator": "N",
+    "displayOrder": 2,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
-    "displayOrder": 1,
+    "displayOrder": 3,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -216,7 +282,7 @@
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
-    "displayOrder": 2,
+    "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -227,7 +293,7 @@
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
-    "displayOrder": 3,
+    "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -238,7 +304,7 @@
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
-    "displayOrder": 4,
+    "displayOrder": 6,
     "isDisplayed": false,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -249,7 +315,7 @@
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
-    "displayOrder": 5,
+    "displayOrder": 7,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
@@ -260,7 +326,7 @@
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
-    "displayOrder": 6,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
@@ -271,21 +337,10 @@
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
     "indicator": "W",
-    "displayOrder": 7,
+    "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
-  },
-  {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
-    "key": "remarks",
-    "name": "remarks",
-    "label": "Remarks",
-    "indicator": "L",
-    "displayOrder": 10,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
@@ -293,9 +348,21 @@
     "name": "approvedQuantity",
     "label": "Approved Quantity",
     "indicator": "K",
-    "displayOrder": 8,
+    "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "remarks",
+    "name": "remarks",
+    "label": "Remarks",
+    "indicator": "L",
+    "displayOrder": 11,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   }
+  
 ]
