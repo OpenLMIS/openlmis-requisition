@@ -134,8 +134,8 @@
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
-    "key": "orderableProduct.name",
-    "name": "productName",
+    "key": "productName",
+    "name": "orderableProduct.name",
     "label": "Product",
     "indicator": "N",
     "displayOrder": 2,
@@ -256,8 +256,8 @@
   },
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
-    "key": "orderableProduct.name",
-    "name": "productName",
+    "key": "productName",
+    "name": "orderableProduct.name",
     "label": "Product",
     "indicator": "N",
     "displayOrder": 2,
