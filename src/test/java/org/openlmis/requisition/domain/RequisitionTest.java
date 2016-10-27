@@ -1,6 +1,7 @@
 package org.openlmis.requisition.domain;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -61,6 +62,7 @@ public class RequisitionTest {
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
+    when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(true);
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
 
     requisition.setRequisitionLineItems(new ArrayList<>(
@@ -118,5 +120,23 @@ public class RequisitionTest {
     requisition
         .getRequisitionLineItems()
         .forEach(line -> assertThat(line.getRequisition().getId(), is(requisition.getId())));
+  }
+
+  @Test
+  public void shouldSetNullForCalculatedValuesIfColumnIsHidden() throws Exception {
+    requisitionLineItem.setStockOnHand(10);
+    requisitionLineItem.setTotalConsumedQuantity(15);
+
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+
+    when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(false);
+    when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
+
+    Requisition newRequisition = new Requisition();
+    requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
+
+    assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
+    assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
+
   }
 }

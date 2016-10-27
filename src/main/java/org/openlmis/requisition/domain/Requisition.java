@@ -130,9 +130,9 @@ public class Requisition extends BaseEntity {
    * Copy values of attributes into new or updated Requisition.
    *
    * @param requisition         Requisition with new values.
-   * @param requisitionTemplate Requisition template
+   * @param template Requisition template
    */
-  public void updateFrom(Requisition requisition, RequisitionTemplate requisitionTemplate,
+  public void updateFrom(Requisition requisition, RequisitionTemplate template,
                          Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
     this.comments = requisition.getComments();
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
@@ -142,12 +142,20 @@ public class Requisition extends BaseEntity {
     try {
       forEachLine(line -> line.calculateTotalLossesAndAdjustments(stockAdjustmentReasons));
 
-      if (requisitionTemplate.isColumnCalculated(STOCK_ON_HAND)) {
-        forEachLine(RequisitionLineItem::calculateStockOnHand);
+      if (template.isColumnDisplayed(STOCK_ON_HAND)) {
+        if (template.isColumnCalculated(STOCK_ON_HAND)) {
+          forEachLine(RequisitionLineItem::calculateStockOnHand);
+        }
+      } else {
+        forEachLine(line -> line.setStockOnHand(null));
       }
 
-      if (requisitionTemplate.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
-        forEachLine(RequisitionLineItem::calculateTotalConsumedQuantity);
+      if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
+        if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
+          forEachLine(RequisitionLineItem::calculateTotalConsumedQuantity);
+        }
+      } else {
+        forEachLine(line -> line.setTotalConsumedQuantity(null));
       }
     } catch (RequisitionTemplateColumnException ex) {
       LOGGER.debug("stockOnHand, totalLossesAndAdjustments or totalConsumedQuantity"
