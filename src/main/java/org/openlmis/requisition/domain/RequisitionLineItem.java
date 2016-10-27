@@ -6,6 +6,9 @@ import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +43,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String REMARKS = "remarks";
 
   private static final String UUID = "pg-uuid";
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
   @Getter
   @Setter
@@ -127,14 +131,23 @@ public class RequisitionLineItem extends BaseEntity {
    * Copy values of attributes into new or updated RequisitionLineItem.
    *
    * @param requisitionLineItem RequisitionLineItem with new values.
+   * @param requisitionTemplate RequisitionTemplate object.
    */
-  public void updateFrom(RequisitionLineItem requisitionLineItem) {
+  public void updateFrom(RequisitionLineItem requisitionLineItem,
+                         RequisitionTemplate requisitionTemplate) {
     if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();
     } else {
+      try {
+        if (requisitionTemplate.isColumnDisplayed(BEGINNING_BALANCE)) {
+          this.beginningBalance = requisitionLineItem.getBeginningBalance();
+        }
+      } catch (RequisitionTemplateColumnException ex) {
+        LOGGER.debug(BEGINNING_BALANCE + " not present in template, it will not be updated");
+      }
+
       this.stockOnHand = requisitionLineItem.getStockOnHand();
-      this.beginningBalance = requisitionLineItem.getBeginningBalance();
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
       this.totalConsumedQuantity = requisitionLineItem.getTotalConsumedQuantity();
       this.requestedQuantity = requisitionLineItem.getRequestedQuantity();

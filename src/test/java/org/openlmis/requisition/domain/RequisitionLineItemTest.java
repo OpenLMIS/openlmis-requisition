@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -12,9 +13,11 @@ import com.google.common.collect.Lists;
 
 import org.junit.Test;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.UUID;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class RequisitionLineItemTest {
 
   @Test
@@ -119,7 +122,8 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldOnlyUpdateApprovedFieldsWhenRequisitionStatusIsAuthorized() {
+  public void shouldOnlyUpdateApprovedFieldsWhenRequisitionStatusIsAuthorized()
+      throws RequisitionTemplateColumnException {
     Requisition requisition = mockReq(RequisitionStatus.AUTHORIZED);
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
@@ -130,7 +134,7 @@ public class RequisitionLineItemTest {
 
     RequisitionLineItem updatedItem = new RequisitionLineItem();
     updatedItem.setRequisition(requisition);
-    updatedItem.updateFrom(requisitionLineItem);
+    updatedItem.updateFrom(requisitionLineItem, mockTemplate());
 
     assertEquals(1, updatedItem.getApprovedQuantity().intValue());
     assertEquals("Remarks", updatedItem.getRemarks());
@@ -138,7 +142,7 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldUpdateSubmissionFields() {
+  public void shouldUpdateSubmissionFields() throws RequisitionTemplateColumnException {
     Requisition requisition = mockReq(RequisitionStatus.INITIATED);
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(requisition);
@@ -156,7 +160,7 @@ public class RequisitionLineItemTest {
     updateItem.setTotalReceivedQuantity(44);
     updateItem.setRequestedQuantity(55);
 
-    item.updateFrom(updateItem);
+    item.updateFrom(updateItem, mockTemplate());
 
     assertThat(item.getStockOnHand(), is(11));
     assertThat(item.getTotalConsumedQuantity(), is(22));
@@ -166,7 +170,7 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldNotUpdateProduct() {
+  public void shouldNotUpdateProduct() throws RequisitionTemplateColumnException {
     final UUID product1 = UUID.randomUUID();
     final UUID product2 = UUID.randomUUID();
 
@@ -179,14 +183,59 @@ public class RequisitionLineItemTest {
     updateItem.setRequisition(requisition);
     updateItem.setOrderableProductId(product2);
 
-    item.updateFrom(updateItem);
+    item.updateFrom(updateItem, mockTemplate());
 
     assertThat(item.getOrderableProductId(), is(product1));
+  }
+
+  @Test
+  public void shouldUpdateBeginningIfItIsDisplayed() throws RequisitionTemplateColumnException {
+    Requisition requisition = mockReq(RequisitionStatus.INITIATED);
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.setBeginningBalance(10);
+
+    RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setRequisition(requisition);
+    updateItem.setBeginningBalance(5);
+
+    item.updateFrom(updateItem, mockTemplate(RequisitionLineItem.BEGINNING_BALANCE, true));
+
+    assertThat(item.getBeginningBalance(), is(5));
+  }
+
+  @Test
+  public void shouldNotUpdateBeginningIfItIsHidden() throws RequisitionTemplateColumnException {
+    Requisition requisition = mockReq(RequisitionStatus.INITIATED);
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.setBeginningBalance(10);
+
+    RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setRequisition(requisition);
+    updateItem.setBeginningBalance(5);
+
+    item.updateFrom(updateItem, mockTemplate(RequisitionLineItem.BEGINNING_BALANCE, false));
+
+    assertThat(item.getBeginningBalance(), is(10));
   }
 
   private Requisition mockReq(RequisitionStatus status) {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(status);
     return requisition;
+  }
+
+  private RequisitionTemplate mockTemplate() throws RequisitionTemplateColumnException {
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    when(requisitionTemplate.isColumnDisplayed(anyString())).thenReturn(true);
+    return requisitionTemplate;
+  }
+
+  private RequisitionTemplate mockTemplate(String field, boolean displayed) throws
+      RequisitionTemplateColumnException {
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    when(requisitionTemplate.isColumnDisplayed(field)).thenReturn(displayed);
+    return requisitionTemplate;
   }
 }

@@ -28,8 +28,6 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       " must be entered prior to submission of a requisition.";
   static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
       " must be a non-negative value.";
-  static final String TEMPLATE_COLUMN_IS_HIDDEN =
-      " is hidden in template and should not contain a value.";
   static final String VALUE_IS_INCORRECTLY_CALCULATED = " has incorrect value, it does not match"
       + " the calculated value.";
   static final String VALUE_NOT_FOUND = " could not be found.";
@@ -62,35 +60,32 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
                                            Requisition requisition, RequisitionLineItem item) {
-    rejectIfNull(errors, template, item.getRequestedQuantity(),
+    rejectIfDisplayedAndNull(errors, template, item.getRequestedQuantity(),
         RequisitionLineItem.REQUESTED_QUANTITY);
     rejectIfLessThanZero(errors, template, item.getRequestedQuantity(),
         RequisitionLineItem.REQUESTED_QUANTITY);
 
-    rejectIfNull(errors, template, item.getBeginningBalance(),
+    rejectIfDisplayedAndNull(errors, template, item.getBeginningBalance(),
         RequisitionLineItem.BEGINNING_BALANCE);
     rejectIfLessThanZero(errors, template, item.getBeginningBalance(),
         RequisitionLineItem.BEGINNING_BALANCE);
 
-    rejectIfNull(errors, template, item.getTotalReceivedQuantity(),
+    rejectIfDisplayedAndNull(errors, template, item.getTotalReceivedQuantity(),
         RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
     rejectIfLessThanZero(errors, template, item.getTotalReceivedQuantity(),
         RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
 
-    rejectIfNull(errors, template, item.getStockOnHand(),
+    rejectIfDisplayedAndNull(errors, template, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND);
     rejectIfLessThanZero(errors, template, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND);
 
-    rejectIfNull(errors, template, item.getTotalConsumedQuantity(),
+    rejectIfDisplayedAndNull(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
     rejectIfLessThanZero(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
     validateApprovedQuantity(errors, template, requisition, item);
-
-    checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
-        RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION);
 
     validateCalculations(errors, template, item);
 
@@ -99,18 +94,18 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void rejectIfLessThanZero(Errors errors, RequisitionTemplate template,
                                     Integer value, String field) {
-    boolean templateValid = checkTemplate(errors, template, value, field);
+    boolean displayed = checkIfDisplayed(errors, template, field);
 
-    if (templateValid && value != null && value < 0) {
+    if (displayed && value != null && value < 0) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
     }
   }
 
-  private void rejectIfNull(Errors errors, RequisitionTemplate template,
-                            Object value, String field) {
-    boolean templateValid = checkTemplate(errors, template, value, field);
+  private void rejectIfDisplayedAndNull(Errors errors, RequisitionTemplate template,
+                                        Object value, String field) {
+    boolean displayed = checkIfDisplayed(errors, template, field);
 
-    if (templateValid && value == null) {
+    if (displayed && value == null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     }
   }
@@ -140,7 +135,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
-      rejectIfNull(errors, template, item.getApprovedQuantity(),
+      rejectIfDisplayedAndNull(errors, template, item.getApprovedQuantity(),
           RequisitionLineItem.APPROVED_QUANTITY);
       rejectIfLessThanZero(errors, template, item.getApprovedQuantity(),
           RequisitionLineItem.APPROVED_QUANTITY);
@@ -149,37 +144,22 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateCalculations(Errors errors, RequisitionTemplate template,
                                    RequisitionLineItem item) {
-    boolean templateValid = checkTemplate(errors, template, item.getStockOnHand(),
-        RequisitionLineItem.STOCK_ON_HAND) && checkTemplate(errors, template,
-        item.getTotalConsumedQuantity(), RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    boolean displayed = checkIfDisplayed(errors, template, RequisitionLineItem.STOCK_ON_HAND)
+        && checkIfDisplayed(errors, template, RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
-    if (templateValid && !item.calculateStockOnHandValue().equals(item.getStockOnHand())) {
+    if (displayed && !item.calculateStockOnHandValue().equals(item.getStockOnHand())) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, RequisitionLineItem.STOCK_ON_HAND + " or "
           + RequisitionLineItem.TOTAL_CONSUMED_QUANTITY  + VALUE_IS_INCORRECTLY_CALCULATED);
     }
   }
 
-  private boolean checkTemplate(Errors errors, RequisitionTemplate template,
-                                Object value, String field) {
+  private boolean checkIfDisplayed(Errors errors, RequisitionTemplate template, String field) {
     try {
-      return checkIfDisplayed(errors, template, value, field);
+      return template.isColumnDisplayed(field);
     } catch (RequisitionTemplateColumnException ex) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
     }
 
     return false;
-  }
-
-  private boolean checkIfDisplayed(Errors errors, RequisitionTemplate template, Object value,
-                                   String field) throws RequisitionTemplateColumnException {
-    if (!template.isColumnDisplayed(field)) {
-      if (value != null) {
-        errors.rejectValue(REQUISITION_LINE_ITEMS, field + TEMPLATE_COLUMN_IS_HIDDEN);
-      }
-
-      return false;
-    }
-
-    return true;
   }
 }

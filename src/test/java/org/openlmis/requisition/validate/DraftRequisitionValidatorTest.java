@@ -1,5 +1,11 @@
 package org.openlmis.requisition.validate;
 
+import static org.mockito.Matchers.contains;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.mockito.Matchers.contains;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DraftRequisitionValidatorTest {
@@ -72,6 +72,20 @@ public class DraftRequisitionValidatorTest {
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
+  }
+
+  @Test
+  public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setStockOnHand(1);
+    requisitionLineItems.add(lineItem);
+
+    columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(DraftRequisitionValidator.TEMPLATE_COLUMN_IS_HIDDEN));
   }
 
   @Test

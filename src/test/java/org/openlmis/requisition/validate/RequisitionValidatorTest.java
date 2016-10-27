@@ -120,23 +120,6 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setStockOnHand(1);
-    requisitionLineItems.add(lineItem);
-
-    columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
-
-    requisitionValidator.validate(requisition, errors);
-
-    // 1. when we check if value is not null
-    // 2. when we check if values is greater or equal to zero
-    // 3. when we check if calculation was correct
-    verify(errors, times(3)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionValidator.TEMPLATE_COLUMN_IS_HIDDEN));
-  }
-
-  @Test
   public void shouldRejectIfStockOnHandIsIncorrectlyCalculated() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setStockOnHand(2);

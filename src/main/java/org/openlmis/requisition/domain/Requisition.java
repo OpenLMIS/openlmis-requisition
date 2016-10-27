@@ -137,7 +137,7 @@ public class Requisition extends BaseEntity {
     this.comments = requisition.getComments();
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
-    updateReqLines(requisition.getRequisitionLineItems());
+    updateReqLines(requisition.getRequisitionLineItems(), requisitionTemplate);
 
     try {
       forEachLine(line -> line.calculateTotalLossesAndAdjustments(stockAdjustmentReasons));
@@ -163,7 +163,8 @@ public class Requisition extends BaseEntity {
     }
   }
 
-  private void updateReqLines(Collection<RequisitionLineItem> lineItems) {
+  private void updateReqLines(Collection<RequisitionLineItem> lineItems,
+                              RequisitionTemplate requisitionTemplate) {
     if (null == requisitionLineItems) {
       this.requisitionLineItems = new ArrayList<>();
     }
@@ -177,7 +178,7 @@ public class Requisition extends BaseEntity {
 
         if (null != item) {
           existing.setRequisition(this);
-          existing.updateFrom(item);
+          existing.updateFrom(item, requisitionTemplate);
         }
       }
     }

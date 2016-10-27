@@ -17,6 +17,9 @@ import org.springframework.validation.Errors;
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
+  static final String TEMPLATE_COLUMN_IS_HIDDEN =
+      " is hidden in template and should not contain a value.";
+
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
@@ -52,6 +55,19 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     rejectIfCalculatedAndNotNull(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
+    rejectIfHiddenAndNotNull(errors, template, item.getBeginningBalance(),
+        RequisitionLineItem.BEGINNING_BALANCE);
+    rejectIfHiddenAndNotNull(errors, template, item.getTotalReceivedQuantity(),
+        RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
+    rejectIfHiddenAndNotNull(errors, template, item.getTotalConsumedQuantity(),
+        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    rejectIfHiddenAndNotNull(errors, template, item.getStockOnHand(),
+        RequisitionLineItem.STOCK_ON_HAND);
+    rejectIfHiddenAndNotNull(errors, template, item.getRequestedQuantity(),
+        RequisitionLineItem.REQUESTED_QUANTITY);
+    rejectIfHiddenAndNotNull(errors, template, item.getRequestedQuantityExplanation(),
+        RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION);
+
     validateApprovalFields(errors, requisition, item);
   }
 
@@ -79,6 +95,18 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
       if (template.isColumnCalculated(field) && value != null) {
         errors.rejectValue(REQUISITION_LINE_ITEMS,
             field + TEMPLATE_COLUMN_IS_CALCULATED);
+      }
+    } catch (RequisitionTemplateColumnException ex) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
+    }
+  }
+
+  private void rejectIfHiddenAndNotNull(Errors errors, RequisitionTemplate template,
+                                        Object value, String field) {
+    try {
+      if (!template.isColumnDisplayed(field) && value != null) {
+        errors.rejectValue(REQUISITION_LINE_ITEMS,
+            field + TEMPLATE_COLUMN_IS_HIDDEN);
       }
     } catch (RequisitionTemplateColumnException ex) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
