@@ -19,7 +19,7 @@ public class Application {
   }
 
   /**
-   * Creates new LocaleResolve.
+   * Creates new LocaleResolver.
    *
    * @return Created LocalResolver.
    */
