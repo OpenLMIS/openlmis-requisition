@@ -8,20 +8,12 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "stock_adjustments")
 @NoArgsConstructor
 public class StockAdjustment extends BaseEntity {
-
-  @OneToOne
-  @JoinColumn(name = "requisitionLineItemId")
-  @Getter
-  @Setter
-  private RequisitionLineItem requisitionLineItem;
 
   @Column(nullable = false)
   @Getter
@@ -37,14 +29,11 @@ public class StockAdjustment extends BaseEntity {
    * Creates new StockAdjustment object based on data from {@link Importer}
    *
    * @param importer instance of {@link Importer}
-   * @param requisitionLineItem RequisitionLineItem object
    * @return new instance of StockAdjustment.
    */
-  public static StockAdjustment newStockAdjustment(Importer importer,
-                                                   RequisitionLineItem requisitionLineItem) {
+  public static StockAdjustment newStockAdjustment(Importer importer) {
     StockAdjustment stockAdjustment = new StockAdjustment();
     stockAdjustment.id = importer.getId();
-    stockAdjustment.requisitionLineItem = requisitionLineItem;
     stockAdjustment.reasonId = importer.getReasonId();
     stockAdjustment.quantity = importer.getQuantity();
 

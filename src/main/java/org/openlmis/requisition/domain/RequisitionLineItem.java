@@ -98,12 +98,12 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer approvedQuantity;
 
   @OneToMany(
-      mappedBy = "requisitionLineItem",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
       orphanRemoval = true)
   @Getter
   @Setter
+  @JoinColumn(name = "requisitionLineItemId")
   private List<StockAdjustment> stockAdjustments;
 
   public RequisitionLineItem() {
@@ -277,8 +277,7 @@ public class RequisitionLineItem extends BaseEntity {
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     if (importer.getStockAdjustments() != null) {
       for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
-        stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter,
-            requisitionLineItem));
+        stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
       }
     }
 
