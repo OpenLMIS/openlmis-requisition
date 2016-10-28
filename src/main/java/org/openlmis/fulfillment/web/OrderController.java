@@ -266,14 +266,24 @@ public class OrderController extends BaseController {
    * Exporting order to csv.
    *
    * @param orderId UUID of order to print
+   * @param type export type
    * @param response HttpServletResponse object
    */
-  @RequestMapping(value = "/orders/{id}/csv", method = RequestMethod.GET)
+  @RequestMapping(value = "/orders/{id}/export", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public void exportToCsv(@PathVariable("id") UUID orderId, HttpServletResponse response)
-          throws IOException {
+  public void export(
+      @PathVariable("id") UUID orderId,
+      @RequestParam(value = "type", required = false, defaultValue = "csv") String type,
+      HttpServletResponse response) throws IOException {
+
     Order order = orderRepository.findOne(orderId);
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
+
+    if (!"csv".equals(type)) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Export type: " + type
+          + " not allowed");
+      return;
+    }
 
     if (order == null) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");

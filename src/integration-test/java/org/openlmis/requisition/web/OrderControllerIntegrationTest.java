@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -468,14 +469,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           .then()
           .statusCode(409);
   }
-/*
+
   @Test
-  public void shouldExportOrderToCsv() {
+  public void shouldExportOrderIfTypeIsNotSpecified() {
     String csvContent = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
         .when()
-        .get("/api/orders/{id}/csv")
+        .get("/api/orders/{id}/export")
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -484,25 +485,47 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertTrue(csvContent.startsWith("Order number,Facility code,Product code,Product name,"
         + "Approved quantity,Period,Order date"));
 
-    String period = secondOrder.getRequisition().getProcessingPeriodId().getStartDate().format(
-        DateTimeFormatter.ofPattern("MM/yy"));
-    String orderDate = secondOrder.getCreatedDate().format(
-        DateTimeFormatter.ofPattern("dd/MM/yy"));
+    String orderDate = secondOrder.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yy"));
 
     for (RequisitionLineItem lineItem : secondOrder.getRequisition().getRequisitionLineItems()) {
       assertTrue(csvContent.contains(secondOrder.getOrderCode()
-          + "," + secondOrder.getRequisition().getFacilityId().getCode()
-<<<<<<< HEAD
-          + "," + line.getOrderableProductId().getCode()
-          + "," + line.getOrderableProductId().getPrimaryName()
-          + "," + line.getApprovedQuantity()
-=======
-          + "," + lineItem.getProduct().getCode()
-          + "," + lineItem.getProduct().getPrimaryName()
+          + ",facilityCode"
+          + ",Product Code"
+          + ",Product Name"
           + "," + lineItem.getApprovedQuantity()
->>>>>>> upstream/master
-          + "," + period
+          + ",03/16"
           + "," + orderDate));
     }
-  }*/
+  }
+
+  @Test
+  public void shouldExportOrderIfTypeIsCsv() {
+    String csvContent = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", secondOrder.getId())
+        .queryParam("type", "csv")
+        .when()
+        .get("/api/orders/{id}/export")
+        .then()
+        .statusCode(200)
+        .extract().body().asString();
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertTrue(csvContent.startsWith("Order number,Facility code,Product code,Product name,"
+        + "Approved quantity,Period,Order date"));
+  }
+
+  @Test
+  public void shouldNotExportOrderIfTypeIsDifferentThanCsv() {
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", secondOrder.getId())
+        .queryParam("type", "pdf")
+        .when()
+        .get("/api/orders/{id}/export")
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 }

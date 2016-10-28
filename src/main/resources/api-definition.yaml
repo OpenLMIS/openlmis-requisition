@@ -626,10 +626,17 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-        /csv:
+        /export:
             get:
                 is: [ secured ]
                 description: Export Order to csv.
+                queryParameters:
+                    type:
+                        displayName: type
+                        type: string
+                        required: false
+                        default: "csv"
+                        repeat: false
                 responses:
                   200:
                     headers:
@@ -642,6 +649,14 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
+                  404:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
                   500:
                     headers:
                       X-Content-Type-Options:
