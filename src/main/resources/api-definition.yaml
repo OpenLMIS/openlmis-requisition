@@ -1308,7 +1308,7 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-    /requisitions/periods-for-initiate:
+    /periods-for-initiate:
             get:
                 is: [ secured ]
                 description: Find periods for initiate requisition.
@@ -1328,6 +1328,14 @@ resourceTypes:
                         type: boolean
                         required: true
                         repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                            schema: processingPeriodDto
 
 /requisitionTemplates:
     displayName: Requisition Template
