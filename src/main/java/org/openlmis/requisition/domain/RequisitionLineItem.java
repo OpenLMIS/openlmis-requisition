@@ -38,6 +38,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   public static final String APPROVED_QUANTITY = "approvedQuantity";
   public static final String REMARKS = "remarks";
+  public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
 
   private static final String UUID = "pg-uuid";
 
@@ -97,6 +98,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Integer approvedQuantity;
 
+  @Column
+  @Getter
+  @Setter
+  private Integer totalStockoutDays;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -139,6 +145,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.totalConsumedQuantity = requisitionLineItem.getTotalConsumedQuantity();
       this.requestedQuantity = requisitionLineItem.getRequestedQuantity();
       this.requestedQuantityExplanation = requisitionLineItem.getRequestedQuantityExplanation();
+      this.totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
 
       if (null == this.stockAdjustments) {
         this.stockAdjustments = new ArrayList<>();
@@ -273,6 +280,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setRequestedQuantityExplanation(importer.getRequestedQuantityExplanation());
     requisitionLineItem.setRemarks(importer.getRemarks());
     requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
+    requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     if (importer.getStockAdjustments() != null) {
@@ -303,6 +311,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setRemarks(remarks);
     exporter.setApprovedQuantity(approvedQuantity);
     exporter.setStockAdjustments(stockAdjustments);
+    exporter.setTotalStockoutDays(totalStockoutDays);
   }
 
   public interface Exporter {
@@ -327,6 +336,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setApprovedQuantity(Integer approvedQuantity);
 
     void setStockAdjustments(List<StockAdjustment> stockAdjustments);
+
+    void setTotalStockoutDays(Integer totalStockoutDays);
   }
 
   public interface Importer {
@@ -353,5 +364,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getApprovedQuantity();
 
     List<StockAdjustment.Importer> getStockAdjustments();
+
+    Integer getTotalStockoutDays();
   }
 }

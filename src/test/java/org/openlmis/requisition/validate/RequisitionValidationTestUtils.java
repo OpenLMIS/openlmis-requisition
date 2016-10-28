@@ -34,6 +34,9 @@ public class RequisitionValidationTestUtils {
     columns.put(RequisitionLineItem.APPROVED_QUANTITY,
         generateTemplateColumn(RequisitionLineItem.APPROVED_QUANTITY,
             SourceType.USER_INPUT, "K"));
+    columns.put(RequisitionLineItem.TOTAL_STOCKOUT_DAYS,
+        generateTemplateColumn(RequisitionLineItem.TOTAL_STOCKOUT_DAYS,
+            SourceType.USER_INPUT, "X"));
     return columns;
   }
 
