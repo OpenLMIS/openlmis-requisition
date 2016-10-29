@@ -341,8 +341,8 @@ public class RequisitionService {
    *                           to be released as order
    * @return list of released requisitions
    */
-  public List<Requisition> releaseRequisitionsAsOrder(List<ConvertToOrderDto> convertToOrderDtos,
-                                                      UserDto user) throws RequisitionException {
+  public List<Requisition> releaseRequisitionsAsOrder(
+      List<ConvertToOrderDto> convertToOrderDtos, UserDto user) throws RequisitionException {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)

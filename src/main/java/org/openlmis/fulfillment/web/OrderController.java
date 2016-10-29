@@ -11,6 +11,7 @@ import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.AuthorizationException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.BaseController;
@@ -202,30 +203,20 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/requisitions", method = RequestMethod.POST)
   public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> convertToOrderDtos,
                                           OAuth2Authentication auth) {
-    UUID userId = null;
-
-    if (auth != null && auth.getPrincipal() != null) {
+    try {
       String username =
           (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-      Map<String, Object> parameters = new HashMap<>();
-      parameters.put("username", username);
-
-      List<UserDto> users =
-          new ArrayList<>(userReferenceDataService.findUsers(parameters));
-
-      userId = users.get(0).getId();
-    }
-    try {
-      orderService.convertToOrder(convertToOrderDtos, userId);
-    } catch (RequisitionException ex) {
-      ErrorResponse errorResponse =
-              new ErrorResponse("An error occurred while converting requisitions to order",
-                      ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
+      UserDto user = userReferenceDataService.findUser(username);
+      orderService.convertToOrder(convertToOrderDtos, user);
+      return new ResponseEntity<>(HttpStatus.CREATED);
+    } catch (RequisitionException err) {
+      ErrorResponse errorResponse = new ErrorResponse(
+          "An error occurred while converting requisitions to order", err.getMessage());
+      LOGGER.error(errorResponse.getMessage(), err);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    } catch (AuthorizationException err) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-    return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
   /**

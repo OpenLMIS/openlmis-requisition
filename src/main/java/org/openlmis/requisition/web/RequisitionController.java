@@ -12,6 +12,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.AuthorizationException;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -443,30 +444,33 @@ public class RequisitionController extends BaseController {
       @RequestParam(required = false, defaultValue = "true") boolean descending,
       @RequestParam(required = false) Integer pageNumber,
       @RequestParam(required = false) Integer pageSize) {
+    try {
+      String username =
+          (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      UserDto user = userReferenceDataService.findUser(username);
 
-    String userName =
-        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("username", userName);
-    UserDto user = new ArrayList<>(userReferenceDataService.findUsers(parameters)).get(0);
+      Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
+          .getFulfillmentFacilities(user.getId())
+          .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
-    Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId())
-        .stream().map(FacilityDto::getId).collect(Collectors.toList());
+      Collection<RequisitionDto> approvedRequisitionList =
+          requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+              filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
 
-    Collection<RequisitionDto> approvedRequisitionList =
-        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-            filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+      List<RequisitionWithSupplyingDepotsDto> response = new ArrayList<>();
+      for (RequisitionDto requisition : approvedRequisitionList) {
+        List<FacilityDto> facilities = requisitionService
+            .getAvailableSupplyingDepots(requisition.getId()).stream()
+            .filter(f -> userManagedFacilities.contains(f.getId())).collect(Collectors.toList());
 
-    List<RequisitionWithSupplyingDepotsDto> response = approvedRequisitionList.stream()
-        .map(requisition -> {
-          List<FacilityDto> facilities =
-              requisitionService.getAvailableSupplyingDepots(requisition.getId())
-                  .stream().filter(f -> userManagedFacilities.contains(f.getId()))
-                  .collect(Collectors.toList());
-          return new RequisitionWithSupplyingDepotsDto(requisition, facilities);
-        }).collect(Collectors.toList());
+        if (facilities.size() > 0) {
+          response.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
+        }
+      }
 
-    return new ResponseEntity<>(response, HttpStatus.OK);
+      return new ResponseEntity<>(response, HttpStatus.OK);
+    } catch (AuthorizationException err) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
   }
 }
