@@ -1,12 +1,7 @@
 package org.openlmis.requisition.web;
 
-import static java.lang.Integer.valueOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,8 +31,6 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +42,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static java.lang.Integer.valueOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -167,7 +170,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisitionTemplateRepository.save(template);
   }
-
 
   @Test
   public void shouldFindRequisitions() {
@@ -355,7 +357,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals("Second comment", commentList.get(1).getBody());
   }
 
-
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
@@ -407,7 +408,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals("Previous comment", commentList.get(0).getBody());
     assertEquals("User comment", commentList.get(1).getBody());
   }
-
 
   @Test
   public void shouldGetChosenComment() {
@@ -672,86 +672,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private void testApproveRequisition(Requisition requisition) {
-
-    Requisition response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisition.getId())
-        .when()
-        .post(APPROVE_REQUISITION)
-        .then()
-        .statusCode(200)
-        .extract().as(Requisition.class);
-
-    assertNotNull(response.getId());
-    assertEquals(requisition.getId(), response.getId());
-    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  private Requisition configureRequisition(Requisition requisition) {
-    requisition.setFacilityId(facility.getId());
-    requisition.setProcessingPeriodId(period.getId());
-    requisition.setProgramId(program.getId());
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setSupervisoryNodeId(supervisoryNode.getId());
-    requisition.setCreatedDate(localDateTime);
-    requisition.setEmergency(false);
-
-    return requisitionRepository.save(requisition);
-  }
-
-  private Comment createComment(UserDto author, Requisition req, String commentText) {
-    Comment comment = new Comment();
-    comment.setAuthorId(author.getId());
-    comment.setRequisition(req);
-    comment.setBody(commentText);
-    commentRepository.save(comment);
-    return comment;
-  }
-
-  private void generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setFacilityId(facility);
-    requisition.setProcessingPeriodId(UUID.randomUUID());
-    requisition.setProgramId(UUID.randomUUID());
-    requisition.setCreatedDate(LocalDateTime.now());
-    requisition.setStatus(requisitionStatus);
-    requisition.setEmergency(true);
-    requisitionRepository.save(requisition);
-  }
-
-  private void generateRequisitions() {
-    for (int i = 0; i < 4; i++) {
-      UUID facility1 = getSharedFacilityId();
-      UUID facility2 = UUID.randomUUID();
-      generateRequisition(RequisitionStatus.APPROVED, facility2);
-      generateRequisition(RequisitionStatus.SUBMITTED, facility1);
-      for (int j = 0; j < 4; j++) {
-        generateRequisition(RequisitionStatus.APPROVED, facility1);
-      }
-    }
-  }
-
-
-  private Map<String, RequisitionTemplateColumn> generateTemplateColumns() {
-    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-
-    for (AvailableRequisitionColumn columnDefinition :
-        availableRequisitionColumnRepository.findAll()) {
-      RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-      column.setColumnDefinition(columnDefinition);
-      column.setName(columnDefinition.getName());
-      column.setIsDisplayed(true);
-      columns.put(columnDefinition.getName(), column);
-    }
-    return columns;
-  }
-
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
-    generateRequisitions();
+    generateRequisitions(20);
     Integer pageSize = 10;
     String filterValue = "facilityNameA";
 
@@ -804,7 +727,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
-    generateRequisitions();
+    generateRequisitions(30);
     Integer pageSize = 20;
 
     RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
@@ -852,5 +775,150 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetApprovedRequisitionsIfUserHasNoFulfillmentRightsForFacility() {
+    // given
+    generateRequisitions(5);
+    final String fulfillmentFacilitiesResult = "[]";
+
+    wireMockRule.stubFor(
+        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(fulfillmentFacilitiesResult)));
+
+    // when
+    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(APPROVED_REQUISITIONS_SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
+
+    // then
+    assertEquals(response.length, 0);
+  }
+
+  @Test
+  public void shouldGetApprovedRequisitionsWithUserFulfillmentRights() {
+    // given
+    int requisitionsAmount = 5;
+    generateRequisitions(requisitionsAmount);
+
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/facilities/supplying.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("[]")));
+
+    for (Requisition requisition : requisitionRepository.findAll()) {
+      if (requisition.getFacilityId().toString().equals(FACILITY_ID)) {
+        ValueMatchingStrategy strategy = new ValueMatchingStrategy();
+        strategy.setMatches(requisition.getProgramId().toString());
+
+        // This mocks searching for supplying facilities
+        wireMockRule.stubFor(get(
+            urlMatching("/referencedata/api/facilities/supplying.*"))
+            .withQueryParam("programId", strategy)
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(MOCK_SEARCH_SUPPLYING_FACILITY_RESULT)));
+      }
+    }
+
+    // when
+    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(APPROVED_REQUISITIONS_SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
+
+    // then
+    assertEquals(response.length, requisitionsAmount);
+
+    for (RequisitionWithSupplyingDepotsDto dto : response) {
+      Assert.assertTrue(dto.getRequisition().getStatus().equals(RequisitionStatus.APPROVED));
+    }
+  }
+
+  private void testApproveRequisition(Requisition requisition) {
+
+    Requisition response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_REQUISITION)
+        .then()
+        .statusCode(200)
+        .extract().as(Requisition.class);
+
+    assertNotNull(response.getId());
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private Requisition configureRequisition(Requisition requisition) {
+    requisition.setFacilityId(facility.getId());
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setProgramId(program.getId());
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setCreatedDate(localDateTime);
+    requisition.setEmergency(false);
+
+    return requisitionRepository.save(requisition);
+  }
+
+  private Comment createComment(UserDto author, Requisition req, String commentText) {
+    Comment comment = new Comment();
+    comment.setAuthorId(author.getId());
+    comment.setRequisition(req);
+    comment.setBody(commentText);
+    commentRepository.save(comment);
+    return comment;
+  }
+
+  private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    requisition.setFacilityId(facility);
+    requisition.setProcessingPeriodId(UUID.randomUUID());
+    requisition.setProgramId(UUID.randomUUID());
+    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setStatus(requisitionStatus);
+    requisition.setEmergency(true);
+    requisitionRepository.save(requisition);
+
+    return requisition;
+  }
+
+  private void generateRequisitions(int amount) {
+    for (int i = 0; i < amount; i++) {
+      generateRequisition(RequisitionStatus.APPROVED, UUID.fromString(FACILITY_ID));
+      generateRequisition(RequisitionStatus.APPROVED, getSharedFacilityId());
+      generateRequisition(RequisitionStatus.SUBMITTED, UUID.randomUUID());
+    }
+  }
+
+  private Map<String, RequisitionTemplateColumn> generateTemplateColumns() {
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+
+    for (AvailableRequisitionColumn columnDefinition :
+        availableRequisitionColumnRepository.findAll()) {
+      RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+      column.setColumnDefinition(columnDefinition);
+      column.setName(columnDefinition.getName());
+      column.setIsDisplayed(true);
+      columns.put(columnDefinition.getName(), column);
+    }
+    return columns;
   }
 }

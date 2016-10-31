@@ -1,15 +1,7 @@
 package org.openlmis.requisition.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +22,7 @@ import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
+import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
@@ -50,10 +43,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -338,26 +337,68 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldReleaseRequisitionsAsOrder() throws RequisitionException {
-    final UUID userUuid = UUID.randomUUID();
-    final UserDto user = mock(UserDto.class);
-    final FacilityDto facility = mock(FacilityDto.class);
-    when(user.getId()).thenReturn(userUuid);
+    // given
+    UserDto user = mock(UserDto.class);
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
 
-    Set<FacilityDto> facilities = new HashSet<>();
-    facilities.add(facility);
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
+    List<FacilityDto> facilities = requisitions.stream()
+        .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+        .collect(Collectors.toList());
 
-    when(facility.getId()).thenReturn(facilityId);
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(any(UUID.class)))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId))
         .thenReturn(facilities);
-    when(facilityReferenceDataService.searchSupplyingDepots(
-        requisition.getProgramId(), requisition.getSupervisoryNodeId())).thenReturn(facilities);
 
-    requisition.setStatus(RequisitionStatus.APPROVED);
-    List<ConvertToOrderDto> requisitions =
-        Collections.singletonList(new ConvertToOrderDto(requisition.getId(), facilityId));
+    // when
     List<Requisition> expectedRequisitions = requisitionService
-          .releaseRequisitionsAsOrder(requisitions, user);
-    assertEquals(RequisitionStatus.RELEASED, expectedRequisitions.get(0).getStatus());
+        .releaseRequisitionsAsOrder(requisitions, user);
+
+    // then
+    for (Requisition requisition : expectedRequisitions) {
+      assertEquals(RequisitionStatus.RELEASED, requisition.getStatus());
+    }
+  }
+
+  @Test(expected = InvalidRequisitionStateException.class)
+  public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided()
+      throws RequisitionException {
+    // given
+    UserDto user = mock(UserDto.class);
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
+
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
+    List<FacilityDto> facilities = requisitions.stream()
+        .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+        .collect(Collectors.toList());
+
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId))
+        .thenReturn(facilities);
+
+    for (ConvertToOrderDto requisition : requisitions) {
+      requisition.setSupplyingDepotId(null);
+    }
+
+    // when
+    requisitionService.releaseRequisitionsAsOrder(requisitions, user);
+  }
+
+  @Test(expected = InvalidRequisitionStateException.class)
+  public void shouldNotReleaseRequisitionsAsOrderIfUserHasNoFulfillmentRightsForFacility()
+      throws RequisitionException {
+    // given
+    UserDto user = mock(UserDto.class);
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
+
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
+
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId))
+        .thenReturn(new ArrayList<>());
+
+    // when
+    requisitionService.releaseRequisitionsAsOrder(requisitions, user);
   }
 
   @Test
@@ -475,6 +516,36 @@ public class RequisitionServiceTest {
     );
 
     assertEquals(initiatedRequisition.getStatus(), RequisitionStatus.INITIATED);
+  }
+
+  private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
+    if (amount < 1) {
+      throw new IllegalArgumentException("Amount must be a positive number");
+    }
+
+    List<ConvertToOrderDto> result = new ArrayList<>();
+
+    for (int i = 0; i < amount; i++) {
+      FacilityDto facility = mock(FacilityDto.class);
+      when(facility.getId()).thenReturn(UUID.randomUUID());
+
+      Requisition requisition = new Requisition();
+      requisition.setId(UUID.randomUUID());
+      requisition.setProgramId(UUID.randomUUID());
+      requisition.setSupervisoryNodeId(UUID.randomUUID());
+      requisition.setSupplyingFacilityId(facility.getId());
+      requisition.setStatus(RequisitionStatus.APPROVED);
+
+      when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+      when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+      when(facilityReferenceDataService
+          .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId()))
+          .thenReturn(Collections.singletonList(facility));
+
+      result.add(new ConvertToOrderDto(requisition.getId(), facility.getId()));
+    }
+
+    return result;
   }
 
   private Requisition generateRequisition() {

@@ -1,13 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,17 +43,23 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
-
-  @Mock
-  private OrderableProductDto orderableProductDto;
 
   @Mock
   private RequisitionService requisitionService;
@@ -99,130 +97,68 @@ public class OrderServiceTest {
   @InjectMocks
   private OrderService orderService;
 
-  private List<Order> orders;
-  private List<Requisition> requisitions;
-  private List<SupplyLineDto> supplyLines;
-
   @Before
   public void setUp() {
-    orders = new ArrayList<>();
-    requisitions = new ArrayList<>();
-    supplyLines = new ArrayList<>();
     generateMocks();
-    generateInstances();
-
   }
 
   @Test
   public void shouldConvertRequisitionsToOrders() throws RequisitionException {
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
-    when(userService.findOne(userId)).thenReturn(user);
+    // given
+    int requisitionsCount = 5;
 
-    for (int i = 0; i < requisitions.size(); i++) {
-      when(requisitionRepository
-              .findOne(requisitions.get(i).getId()))
-              .thenReturn(requisitions.get(i));
-      when(supplyLineService.search(
-              requisitions.get(i).getProgramId(),
-              requisitions.get(i).getSupervisoryNodeId()))
-              .thenReturn(Arrays.asList(supplyLines.get(i)));
-    }
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(UUID.randomUUID());
+    when(userService.findOne(user.getId())).thenReturn(user);
+
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration("prefix", true, true, true);
     when(orderNumberConfigurationRepository.findAll())
-        .thenReturn(Arrays.asList(orderNumberConfiguration));
-    when(program.getCode()).thenReturn("code");
+        .thenReturn(Collections.singletonList(orderNumberConfiguration));
 
-    when(requisitionService.releaseRequisitionsAsOrder(anyObject(), anyObject()))
-        .thenReturn(requisitions);
-    orders = orderService.convertToOrder(requisitions.stream()
+    List<Requisition> requisitions = setUpReleaseRequisitionsAsOrder(requisitionsCount);
+
+    // when
+    List<Order> orders = orderService.convertToOrder(requisitions.stream()
         .map(r -> new ConvertToOrderDto(r.getId(), UUID.randomUUID()))
-        .collect(Collectors.toList()), userId);
+        .collect(Collectors.toList()), user.getId());
 
-    assertEquals(2, orders.size());
-    for (Order order : orders) {
-      Requisition requisition = requisitions.get(0);
-      if (!requisition.getId().equals(order.getRequisition().getId())) {
-        requisition = requisitions.get(1);
-      }
-
-      assertEquals(
-              OrderStatus.ORDERED,
-              order.getStatus());
-      assertEquals(
-              order.getRequisition().getId(),
-              requisition.getId());
-      assertEquals(
-              order.getReceivingFacilityId(),
-              requisition.getFacilityId());
-      assertEquals(
-              order.getRequestingFacilityId(),
-              requisition.getFacilityId());
-      assertEquals(
-              order.getProgramId(),
-              requisition.getProgramId());
-      assertEquals(
-              order.getSupplyingFacilityId(),
-              requisition.getSupplyingFacilityId());
-      assertEquals(1, order.getOrderLineItems().size());
-      assertEquals(1, requisition.getRequisitionLineItems().size());
-
-      OrderLineItem orderLineItem = order.getOrderLineItems().iterator().next();
-      RequisitionLineItem requisitionLineItem =
-          requisition.getRequisitionLineItems().iterator().next();
-      assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
-              orderLineItem.getOrderedQuantity().longValue());
-      assertEquals(requisitionLineItem.getOrderableProductId(),
-          orderLineItem.getOrderableProductId());
-    }
-
+    // then
+    validateOrdersBasedOnRequisitions(orders, requisitions);
     verify(orderRepository, atLeastOnce()).save(any(Order.class));
   }
 
   @Test
   public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
-    Order order = orders.get(0);
-    when(orderRepository
-            .searchOrders(
-                    order.getSupplyingFacilityId(),
-                    order.getRequestingFacilityId(),
-                    order.getProgramId()))
-            .thenReturn(Arrays.asList(order));
+    // given
+    Order order = generateOrder();
 
+    when(orderRepository.searchOrders(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId()))
+        .thenReturn(Collections.singletonList(order));
+
+    // when
     List<Order> receivedOrders = orderService.searchOrders(
-            order.getSupplyingFacilityId(),
-            order.getRequestingFacilityId(),
-            order.getProgramId());
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId());
 
+    // then
     assertEquals(1, receivedOrders.size());
-    assertEquals(
-            receivedOrders.get(0).getSupplyingFacilityId(),
-            order.getSupplyingFacilityId());
-    assertEquals(
-            receivedOrders.get(0).getRequestingFacilityId(),
-            order.getRequestingFacilityId());
-    assertEquals(
-            receivedOrders.get(0).getProgramId(),
-            order.getProgramId());
+    assertEquals(receivedOrders.get(0).getSupplyingFacilityId(), order.getSupplyingFacilityId());
+    assertEquals(receivedOrders.get(0).getRequestingFacilityId(), order.getRequestingFacilityId());
+    assertEquals(receivedOrders.get(0).getProgramId(), order.getProgramId());
+
     verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject());
   }
 
   @Test
   public void shouldConvertOrderToCsvIfItExists()
           throws IOException, URISyntaxException, OrderCsvWriteException {
-    Order order = orders.get(0);
+    // given
+    Order order = generateOrder();
     when(order.getRequestingFacilityId()).thenReturn(UUID.randomUUID());
-    when(orderableProductReferenceDataService
-        .findOne(any())).thenReturn(orderableProductDto);
-    when(orderableProductDto.getProductCode()).thenReturn("productCode");
-    when(orderableProductDto.getName()).thenReturn("product");
 
-    //Creation date has to be static cuz we read expected csv from file
-    ZonedDateTime zdt = ZonedDateTime.parse("2016-08-27T11:30Z");
-    LocalDateTime ldt = zdt.toLocalDateTime();
-    order.setCreatedDate(ldt);
+    //Creation date has to be static because we need to read expected csv from file
+    order.setCreatedDate(ZonedDateTime.parse("2016-08-27T11:30Z").toLocalDateTime());
 
     List<String> header = new ArrayList<>();
     header.add(OrderService.DEFAULT_COLUMNS[0]);
@@ -231,55 +167,35 @@ public class OrderServiceTest {
     header.add(OrderService.DEFAULT_COLUMNS[4]);
     header.add(OrderService.DEFAULT_COLUMNS[5]);
 
-    StringWriter writer = new StringWriter();
-    orderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
+    OrderableProductDto orderableProductDto = mock(OrderableProductDto.class);
+    when(orderableProductReferenceDataService.findOne(any())).thenReturn(orderableProductDto);
+    when(orderableProductDto.getProductCode()).thenReturn("productCode");
+    when(orderableProductDto.getName()).thenReturn("product");
 
-    String received = writer.toString().replace("\r\n","\n");
-    String expected = prepareExpectedCsvOutput(order, header);
-    assertEquals(expected, received);
-  }
+    String expectedOutput =  prepareExpectedCsvOutput(order, header);
 
-  private void generateInstances() {
-    generateOrders();
-    generateRequisitions();
-    generateSupplyLines();
-  }
-
-  private void generateRequisitions() {
-    final int requisitionCount = 2;
-    for (int i = 0; i < requisitionCount; i++) {
-      requisitions.add(generateRequisition());
+    // when
+    String receivedOutput;
+    try (StringWriter writer = new StringWriter()) {
+      orderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
+      receivedOutput = writer.toString().replace("\r\n","\n");
     }
+
+    // then
+    assertEquals(expectedOutput, receivedOutput);
   }
 
-  private void generateSupplyLines() {
-    for (Requisition requisition : requisitions) {
-      SupplyLineDto supplyLine = generateSupplyLine(
-              requisition.getProgramId(),
-              requisition.getSupervisoryNodeId(),
-              requisition.getSupervisoryNodeId());
-      supplyLines.add(supplyLine);
-    }
-  }
-
-  private void generateOrders() {
-    final int instancesCount = 5;
-    for (int i = 0; i < instancesCount; i++) {
-      orders.add(generateOrder(i));
-    }
-  }
-
-  private Order generateOrder(int instanceNumber) {
+  private Order generateOrder() {
+    int number = new Random().nextInt();
     Order order = new Order();
     order.setProgramId(program.getId());
-    order.setCreatedDate(LocalDateTime.now().plusDays(instanceNumber));
+    order.setCreatedDate(LocalDateTime.now().plusDays(number));
     order.setCreatedById(UUID.randomUUID());
     order.setQuotedCost(BigDecimal.valueOf(1));
-    order.setOrderCode("OrderCode" + instanceNumber);
+    order.setOrderCode("OrderCode " + number);
     order.setStatus(OrderStatus.ORDERED);
-    List<OrderLineItem> orderLineItems = new ArrayList<>();
-    orderLineItems.add(generateOrderLineItem(order));
-    order.setOrderLineItems(orderLineItems);
+    order.setOrderLineItems(new ArrayList<>());
+    order.getOrderLineItems().add(generateOrderLineItem(order));
     return order;
   }
 
@@ -327,6 +243,60 @@ public class OrderServiceTest {
         Thread.currentThread().getContextClassLoader().getResource("OrderServiceTest_expected.csv");
     byte[] encoded = Files.readAllBytes(Paths.get(url.getPath()));
     return new String(encoded, Charset.defaultCharset());
+  }
+
+  private List<Requisition> setUpReleaseRequisitionsAsOrder(int amount)
+      throws RequisitionException {
+    if (amount < 1) {
+      throw new IllegalArgumentException("Amount must be a positive number");
+    }
+
+    List<Requisition> requisitions = new ArrayList<>();
+
+    for (int i = 0; i < amount; i++) {
+      Requisition requisition = generateRequisition();
+      SupplyLineDto supplyLine = generateSupplyLine(requisition.getProgramId(),
+          requisition.getSupervisoryNodeId(), requisition.getFacilityId());
+
+      requisitions.add(requisition);
+
+      when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+      when(supplyLineService.search(requisition.getProgramId(), requisition.getSupervisoryNodeId()))
+          .thenReturn(Collections.singletonList(supplyLine));
+    }
+
+    when(program.getCode()).thenReturn("code");
+    when(requisitionService.releaseRequisitionsAsOrder(anyObject(), anyObject()))
+        .thenReturn(requisitions);
+
+    return requisitions;
+  }
+
+  private void validateOrdersBasedOnRequisitions(
+      List<Order> orders, List<Requisition> requisitions) {
+    assertEquals(requisitions.size(), orders.size());
+
+    for (int i = 0; i < requisitions.size(); i++) {
+      Requisition requisition = requisitions.get(i);
+      Order order = orders.get(i);
+
+      assertEquals(OrderStatus.ORDERED, order.getStatus());
+      assertEquals(order.getRequisition().getId(), requisition.getId());
+      assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
+      assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
+      assertEquals(order.getProgramId(), requisition.getProgramId());
+      assertEquals(order.getSupplyingFacilityId(), requisition.getSupplyingFacilityId());
+      assertEquals(1, order.getOrderLineItems().size());
+      assertEquals(1, requisition.getRequisitionLineItems().size());
+
+      OrderLineItem orderLineItem = order.getOrderLineItems().iterator().next();
+      RequisitionLineItem requisitionLineItem =
+          requisition.getRequisitionLineItems().iterator().next();
+      assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
+          orderLineItem.getOrderedQuantity().longValue());
+      assertEquals(requisitionLineItem.getOrderableProductId(),
+          orderLineItem.getOrderableProductId());
+    }
   }
 
   private void generateMocks() {

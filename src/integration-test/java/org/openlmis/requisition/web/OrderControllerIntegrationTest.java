@@ -1,5 +1,8 @@
 package org.openlmis.requisition.web;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -235,6 +238,44 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
     assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
     assertEquals(order.getProgramId(), requisition.getProgramId());
+  }
+
+  @Test
+  public void shouldNotConvertRequisitionToOrderIfSupplyingDepotsNotProvided() {
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(Collections.singletonList(convertToOrderDto))
+        .when()
+        .post("/api/orders/requisitions")
+        .then()
+        .statusCode(400);
+  }
+
+  @Test
+  public void shouldNotConvertRequisitionToOrderIfUserHasNoFulfillmentRightsForFacility() {
+    final String fulfillmentFacilitiesResult = "[]";
+
+    wireMockRule.stubFor(
+        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(fulfillmentFacilitiesResult)));
+
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), supplyingFacility);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(Collections.singletonList(convertToOrderDto))
+        .when()
+        .post("/api/orders/requisitions")
+        .then()
+        .statusCode(400);
   }
 
   @Test

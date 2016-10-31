@@ -1,15 +1,10 @@
 package org.openlmis.requisition.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
-
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -20,11 +15,14 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
-
 import java.util.UUID;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -47,6 +45,8 @@ public abstract class BaseWebIntegrationTest {
   protected static final String CONTENT_TYPE = "Content-Type";
 
   protected static final String APPLICATION_JSON = "application/json";
+
+  protected static final String FACILITY_ID = "1d5bdd9c-8702-11e6-ae22-56b6b6499611";
 
   private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
@@ -86,7 +86,7 @@ public abstract class BaseWebIntegrationTest {
       + "}";
 
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
-      + " \"id\":\"1d5bdd9c-8702-11e6-ae22-56b6b6499611\",\n"
+      + " \"id\":\"" + FACILITY_ID + "\",\n"
       + " \"code\":\"facilityCode\",\n"
       + " \"name\":\"facilityNameA\",\n"
       + " \"active\":true,\n"
@@ -168,9 +168,6 @@ public abstract class BaseWebIntegrationTest {
       + " \"supplyingFacility\":\"aa66b762-871a-11e6-ae22-56b6b6499611\"\n"
       + "}]";
 
-  private static final String MOCK_SEARCH_SUPPLYING_FACILITY_RESULT = "["
-      + MOCK_FIND_FACILITY_RESULT + "]";
-
   private static final String MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE = "{"
       + " \"id\":\"7b34f06e-895c-11e6-ae22-56b6b6499611\","
       + " \"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE
@@ -196,6 +193,9 @@ public abstract class BaseWebIntegrationTest {
       + " \"enabled\":true\n"
       + "}"
       + "]";
+
+  protected static final String MOCK_SEARCH_SUPPLYING_FACILITY_RESULT = "["
+      + MOCK_FIND_FACILITY_RESULT + "]";
 
   @Autowired
   private CleanRepositoryHelper cleanRepositoryHelper;
