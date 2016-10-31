@@ -16,10 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Component
 public class RequisitionValidator extends AbstractRequisitionValidator {
 
@@ -52,45 +55,21 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
           "A requisitionLineItems" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     } else {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
-          requisition.getProgramId()
-      );
+          requisition.getProgramId());
 
       requisition.getRequisitionLineItems()
-          .forEach(i -> validateRequisitionLineItem(errors, template, requisition, i));
+          .forEach(lineItem ->
+              validateRequisitionLineItem(errors, template, requisition, lineItem));
     }
   }
 
   private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
                                            Requisition requisition, RequisitionLineItem item) {
-    rejectIfNull(errors, template, item.getRequestedQuantity(),
-        RequisitionLineItem.REQUESTED_QUANTITY);
-    rejectIfLessThanZero(errors, template, item.getRequestedQuantity(),
-        RequisitionLineItem.REQUESTED_QUANTITY);
 
-    rejectIfNull(errors, template, item.getBeginningBalance(),
-        RequisitionLineItem.BEGINNING_BALANCE);
-    rejectIfLessThanZero(errors, template, item.getBeginningBalance(),
-        RequisitionLineItem.BEGINNING_BALANCE);
+    Map<String, Integer> fieldsForNotNegativeValidation = addFieldsForNotNegativeValidation(item);
 
-    rejectIfNull(errors, template, item.getTotalReceivedQuantity(),
-        RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
-    rejectIfLessThanZero(errors, template, item.getTotalReceivedQuantity(),
-        RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
-
-    rejectIfNull(errors, template, item.getStockOnHand(),
-        RequisitionLineItem.STOCK_ON_HAND);
-    rejectIfLessThanZero(errors, template, item.getStockOnHand(),
-        RequisitionLineItem.STOCK_ON_HAND);
-
-    rejectIfNull(errors, template, item.getTotalConsumedQuantity(),
-        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
-    rejectIfLessThanZero(errors, template, item.getTotalConsumedQuantity(),
-        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
-
-    rejectIfNull(errors, template, item.getTotalStockoutDays(),
-        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
-    rejectIfLessThanZero(errors, template, item.getTotalStockoutDays(),
-        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
+    fieldsForNotNegativeValidation.entrySet().forEach(entry -> rejectIfNullOrNegative(errors,
+        template, entry.getValue(), entry.getKey()));
 
     validateApprovedQuantity(errors, template, requisition, item);
 
@@ -100,6 +79,40 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     validateCalculations(errors, template, item);
 
     validateStockAdjustments(errors, requisition, item);
+  }
+
+  private Map<String, Integer> addFieldsForNotNegativeValidation(RequisitionLineItem
+                                                               requisitionLineItem) {
+    Map<String, Integer> fieldsForValidation = new HashMap<>();
+    fieldsForValidation.put(RequisitionLineItem.REQUESTED_QUANTITY,
+        requisitionLineItem.getRequestedQuantity());
+
+    fieldsForValidation.put(RequisitionLineItem.BEGINNING_BALANCE,
+        requisitionLineItem.getBeginningBalance());
+
+    fieldsForValidation.put(RequisitionLineItem.STOCK_ON_HAND,
+        requisitionLineItem.getStockOnHand());
+
+    fieldsForValidation.put(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY,
+        requisitionLineItem.getTotalConsumedQuantity());
+
+    fieldsForValidation.put(RequisitionLineItem.TOTAL,
+        requisitionLineItem.getTotal());
+
+    fieldsForValidation.put(RequisitionLineItem.TOTAL_STOCKOUT_DAYS,
+        requisitionLineItem.getTotalStockoutDays());
+
+    fieldsForValidation.put(RequisitionLineItem.TOTAL_RECEIVED_QUANTITY,
+        requisitionLineItem.getTotalReceivedQuantity());
+
+    return fieldsForValidation;
+
+  }
+
+  private void rejectIfNullOrNegative(Errors errors, RequisitionTemplate template,
+                              Integer value, String field) {
+    rejectIfLessThanZero(errors, template, value, field);
+    rejectIfNull(errors, template, value, field);
   }
 
   private void rejectIfLessThanZero(Errors errors, RequisitionTemplate template,

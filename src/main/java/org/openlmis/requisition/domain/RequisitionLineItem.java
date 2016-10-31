@@ -25,6 +25,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
@@ -39,6 +40,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String APPROVED_QUANTITY = "approvedQuantity";
   public static final String REMARKS = "remarks";
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
+  public static final String TOTAL = "total";
 
   private static final String UUID = "pg-uuid";
 
@@ -82,6 +84,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   private Integer totalConsumedQuantity;
+
+  @Column
+  @Getter
+  @Setter
+  private Integer total;
 
   @Column
   @Getter
@@ -146,6 +153,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.requestedQuantity = requisitionLineItem.getRequestedQuantity();
       this.requestedQuantityExplanation = requisitionLineItem.getRequestedQuantityExplanation();
       this.totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
+      this.total = requisitionLineItem.getTotal();
 
       if (null == this.stockAdjustments) {
         this.stockAdjustments = new ArrayList<>();
@@ -202,6 +210,10 @@ public class RequisitionLineItem extends BaseEntity {
   void calculateTotalConsumedQuantity() {
     totalConsumedQuantity = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
         + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
+  }
+
+  void calculateTotal() {
+    total = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity);
   }
 
   /**
@@ -281,6 +293,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setRemarks(importer.getRemarks());
     requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
     requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
+    requisitionLineItem.setTotal(importer.getTotal());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     if (importer.getStockAdjustments() != null) {
@@ -312,6 +325,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setApprovedQuantity(approvedQuantity);
     exporter.setStockAdjustments(stockAdjustments);
     exporter.setTotalStockoutDays(totalStockoutDays);
+    exporter.setTotal(total);
   }
 
   public interface Exporter {
@@ -338,6 +352,9 @@ public class RequisitionLineItem extends BaseEntity {
     void setStockAdjustments(List<StockAdjustment> stockAdjustments);
 
     void setTotalStockoutDays(Integer totalStockoutDays);
+
+    void setTotal(Integer total);
+
   }
 
   public interface Importer {
@@ -366,5 +383,7 @@ public class RequisitionLineItem extends BaseEntity {
     List<StockAdjustment.Importer> getStockAdjustments();
 
     Integer getTotalStockoutDays();
+
+    Integer getTotal();
   }
 }

@@ -30,6 +30,7 @@ public class RequisitionLineItemDto
   private String remarks;
   private Integer approvedQuantity;
   private Integer totalStockoutDays;
+  private Integer total;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;

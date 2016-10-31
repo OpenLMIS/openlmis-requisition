@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
@@ -138,7 +139,12 @@ public class Requisition extends BaseEntity {
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     updateReqLines(requisition.getRequisitionLineItems());
+    calculateTemplateFields(template, stockAdjustmentReasons);
+  }
 
+  private void calculateTemplateFields(RequisitionTemplate template,
+                                        Collection<StockAdjustmentReasonDto>
+                                            stockAdjustmentReasons) {
     try {
       forEachLine(line -> line.calculateTotalLossesAndAdjustments(stockAdjustmentReasons));
 
@@ -157,8 +163,13 @@ public class Requisition extends BaseEntity {
       } else {
         forEachLine(line -> line.setTotalConsumedQuantity(null));
       }
+
+      if (template.isColumnDisplayed(TOTAL)) {
+        forEachLine(RequisitionLineItem::calculateTotal);
+      }
+
     } catch (RequisitionTemplateColumnException ex) {
-      LOGGER.debug("stockOnHand, totalLossesAndAdjustments or totalConsumedQuantity"
+      LOGGER.debug("stockOnHand, totalLossesAndAdjustments, totalConsumedQuantity or total"
           + " column not present in template, skipping calculation");
     }
   }

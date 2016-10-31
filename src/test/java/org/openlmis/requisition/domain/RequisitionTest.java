@@ -79,6 +79,24 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldCalculateTotalValueWhenUpdatingRequisition()
+      throws RequisitionException, RequisitionTemplateColumnException {
+    RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+
+    when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
+
+    requisition.setRequisitionLineItems(new ArrayList<>(
+        Collections.singletonList(requisitionLineItem)));
+
+    Requisition newRequisition = new Requisition();
+
+    requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
+    verify(requisitionLineItem).calculateTotal();
+  }
+
+
+  @Test
   public void shouldFindRequisitionLineItemByProductId() {
     RequisitionLineItem found = requisition.findLineByProductId(productId);
 

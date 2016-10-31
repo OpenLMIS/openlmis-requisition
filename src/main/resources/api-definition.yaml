@@ -283,7 +283,8 @@ schemas:
               "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
               "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
               "remarks": {"type": "string", "required": true, "title": "remarks" },
-              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" }
+              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
+              "total": {"type": "integer", "required": false, "title": "total" }
           }
       }
 
@@ -303,7 +304,8 @@ schemas:
               "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
               "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
               "remarks": {"type": "string", "required": true, "title": "remarks" },
-              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" }
+              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
+              "total": {"type": "integer", "required": false, "title": "total" }
           }
 
       }

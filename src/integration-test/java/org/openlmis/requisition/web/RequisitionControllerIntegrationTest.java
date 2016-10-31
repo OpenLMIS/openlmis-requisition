@@ -156,6 +156,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalLossesAndAdjustments(1);
     requisitionLineItem.setApprovedQuantity(1);
     requisitionLineItem.setTotalStockoutDays(0);
+    requisitionLineItem.setTotal(0);
     requisitionLineItem.setRequisition(requisition);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
