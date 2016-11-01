@@ -6,6 +6,7 @@
 
 DIRECTORY=${1}
 GENERATOR=${2}
+OUTPUT_DIR=${DIRECTORY}/../build/demo-data
 
 # Get list of JSON files in current directory
 FILES=`find ${DIRECTORY} -name "*.json"`
@@ -13,9 +14,9 @@ FILES=`find ${DIRECTORY} -name "*.json"`
 # Run database input generation
 ${GENERATOR} ${FILES}
 
-# TODO: Automatically populate the database with seed file
-mv input.sql ${DIRECTORY}
+mkdir ${OUTPUT_DIR}
+mv input.sql ${OUTPUT_DIR}/data.sql
 
 echo "Generated ${DIRECTORY}/input.sql"
 echo "To insert the data into database, first run the service, and then from outside of container type:"
-echo "docker exec -i openlmisrequisition_db_1 psql -Upostgres open_lmis < demo-data/input.sql"
+echo "docker exec -i openlmisrequisition_db_1 psql -Upostgres open_lmis < ${OUTPUT_DIR}/input.sql"

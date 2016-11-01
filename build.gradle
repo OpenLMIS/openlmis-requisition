@@ -232,4 +232,5 @@ build {
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
+    dependsOn demoDataSeed
 }
