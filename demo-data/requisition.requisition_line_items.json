@@ -8,7 +8,8 @@
     "totalReceivedQuantity": 5,
     "requestedQuantity": 15,
     "totalConsumedQuantity": 10,
-    "requestedQuantityExplanation": "Some test explanation"
+    "requestedQuantityExplanation": "Some test explanation",
+    "totalStockoutDays": 0
   },
   {
     "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
@@ -19,7 +20,8 @@
     "totalReceivedQuantity": 800,
     "requestedQuantity": 800,
     "totalConsumedQuantity": 1200,
-    "requestedQuantityExplanation": "Some test explanation"
+    "requestedQuantityExplanation": "Some test explanation",
+    "totalStockoutDays": 0
   },
   {
     "id": "f27415c4-7049-46a6-9e59-818990c85390",
@@ -30,7 +32,8 @@
     "totalReceivedQuantity": 16,
     "requestedQuantity": 500,
     "totalConsumedQuantity": 16,
-    "requestedQuantityExplanation": "Too few left to make any use out of it."
+    "requestedQuantityExplanation": "Too few left to make any use out of it.",
+    "totalStockoutDays": 0
   },
   {
     "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
@@ -40,7 +43,8 @@
     "beginningBalance": 300,
     "totalReceivedQuantity": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 100
+    "totalConsumedQuantity": 100,
+    "totalStockoutDays": 0
   },
   {
     "id": "ac49b686-c74c-4684-a635-d777ee298cd2",
@@ -51,7 +55,8 @@
     "totalReceivedQuantity": 250,
     "requestedQuantity": 250,
     "totalConsumedQuantity": 300,
-    "requestedQuantityExplanation": "Some test explanation"
+    "requestedQuantityExplanation": "Some test explanation",
+    "totalStockoutDays": 0
   },
   {
     "id": "1d0d970f-c619-40db-ae81-6d8990505502",
@@ -62,7 +67,8 @@
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
     "totalConsumedQuantity": 31000,
-    "requestedQuantityExplanation": "Some test explanation"
+    "requestedQuantityExplanation": "Some test explanation",
+    "totalStockoutDays": 0
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
@@ -72,7 +78,8 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 31000
+    "totalConsumedQuantity": 31000,
+    "totalStockoutDays": 0
   },
   {
     "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
@@ -82,7 +89,8 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 31000
+    "totalConsumedQuantity": 31000,
+    "totalStockoutDays": 0
   },
   {
     "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
@@ -92,7 +100,8 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 31000
+    "totalConsumedQuantity": 31000,
+    "totalStockoutDays": 0
   },
   {
     "id": "f2ccd66c-f608-4eaa-8eea-22daba187a5a",
@@ -102,7 +111,8 @@
     "beginningBalance": 1000,
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
-    "totalConsumedQuantity": 31000
+    "totalConsumedQuantity": 31000,
+    "totalStockoutDays": 0
   },
   {
     "id": "682baaa0-9a68-40a2-97a4-a2cafb8fcce6",
@@ -116,7 +126,8 @@
     "requestedQuantityExplanation": "we need more",
     "totalConsumedQuantity": 50,
     "remarks": "fudge",
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "a2ab1bea-5833-4fa6-9c8f-ea4cba43a6da",
@@ -130,7 +141,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 200,
     "remarks": "",
-    "approvedQuantity": 999
+    "approvedQuantity": 999,
+    "totalStockoutDays": 0
   },
   {
     "id": "d2529049-6e96-4ca0-870e-6d9819bfb17d",
@@ -144,7 +156,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 10,
     "remarks": "",
-    "approvedQuantity": 1278
+    "approvedQuantity": 1278,
+    "totalStockoutDays": 0
   },
   {
     "id": "818b66c2-27c3-4662-9644-db8da5afacbe",
@@ -158,7 +171,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 500,
     "remarks": "",
-    "approvedQuantity": 2019
+    "approvedQuantity": 2019,
+    "totalStockoutDays": 0
   },
   {
     "id": "982943fe-c8a7-468c-9622-dd1a345ce459",
@@ -172,7 +186,8 @@
     "requestedQuantityExplanation": "we need more",
     "totalConsumedQuantity": 50,
     "remarks": "fudge",
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "14e25f19-1857-4ab0-b426-2893cef14663",
@@ -186,7 +201,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 200,
     "remarks": "",
-    "approvedQuantity": 999
+    "approvedQuantity": 999,
+    "totalStockoutDays": 0
   },
   {
     "id": "a9280f48-5d7f-48b8-9064-10e4d4c567fb",
@@ -200,7 +216,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 10,
     "remarks": "",
-    "approvedQuantity": 1278
+    "approvedQuantity": 1278,
+    "totalStockoutDays": 0
   },
   {
     "id": "21297efb-af7c-4342-8b00-d15c324d5282",
@@ -214,7 +231,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 500,
     "remarks": "",
-    "approvedQuantity": 2019
+    "approvedQuantity": 2019,
+    "totalStockoutDays": 0
   },
   {
     "id": "2efd35db-fa98-4a1a-b711-1aaa9d6b1fcc",
@@ -228,7 +246,8 @@
     "requestedQuantityExplanation": "we need more",
     "totalConsumedQuantity": 50,
     "remarks": "fudge",
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "90df5393-16e8-419b-8a36-3f5daf9a0f89",
@@ -242,7 +261,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 200,
     "remarks": "",
-    "approvedQuantity": 999
+    "approvedQuantity": 999,
+    "totalStockoutDays": 0
   },
   {
     "id": "4b5cde6e-2771-4b64-afd1-5ee4f4452fda",
@@ -256,7 +276,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 10,
     "remarks": "",
-    "approvedQuantity": 1278
+    "approvedQuantity": 1278,
+    "totalStockoutDays": 0
   },
   {
     "id": "6e3b9044-eb81-45a9-9567-3461cfa6e1d7",
@@ -270,7 +291,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 500,
     "remarks": "",
-    "approvedQuantity": 2019
+    "approvedQuantity": 2019,
+    "totalStockoutDays": 0
   },
   {
     "id": "8e724d8f-d714-409b-baa9-fe732d7175a7",
@@ -284,7 +306,8 @@
     "requestedQuantityExplanation": "we need more",
     "totalConsumedQuantity": 50,
     "remarks": "fudge",
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "46c607b1-a8da-40de-93d6-9dcae3a34068",
@@ -298,7 +321,8 @@
     "requestedQuantityExplanation": "",
     "totalConsumedQuantity": 200,
     "remarks": "",
-    "approvedQuantity": 999
+    "approvedQuantity": 999,
+    "totalStockoutDays": 0
   },
   {
     "id": "8c8026b8-0ae8-4adb-b2ca-bfb0dfb030a5",
@@ -309,7 +333,8 @@
     "totalLossesAndAdjustments": 0,
     "stockOnHand": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 0
+    "totalConsumedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "552eb0f7-fc57-4916-bb54-0c3c9540420a",
@@ -320,7 +345,8 @@
     "totalLossesAndAdjustments": 0,
     "stockOnHand": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 0
+    "totalConsumedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "bcbd9a7c-6068-40d9-90ab-cb090fd6ed8c",
@@ -331,7 +357,8 @@
     "totalLossesAndAdjustments": 0,
     "stockOnHand": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 0
+    "totalConsumedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "502eb011-27bc-4f7f-bb1f-6425ae66a5d5",
@@ -342,7 +369,8 @@
     "totalLossesAndAdjustments": 0,
     "stockOnHand": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 0
+    "totalConsumedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "5b449a32-aedf-4a8b-a9d7-c3b665ad76e2",
@@ -353,7 +381,8 @@
     "totalLossesAndAdjustments": 0,
     "stockOnHand": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 0
+    "totalConsumedQuantity": 0,
+    "totalStockoutDays": 0
   },
   {
     "id": "89e46600-aa5a-4cc9-8bfd-67be8e907778",
@@ -364,6 +393,7 @@
     "totalLossesAndAdjustments": 0,
     "stockOnHand": 0,
     "requestedQuantity": 0,
-    "totalConsumedQuantity": 0
+    "totalConsumedQuantity": 0,
+    "totalStockoutDays": 0
   }
 ]
