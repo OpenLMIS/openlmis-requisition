@@ -34,6 +34,10 @@ repositories {
     maven { url "http://jasperreports.sourceforge.net/maven2/" }
 }
 
+configurations {
+    webjars
+}
+
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.projectlombok:lombok:1.16.8"
@@ -52,6 +56,8 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.springframework:spring-context-support'
     compile 'commons-jxpath:commons-jxpath:1.3'
+
+    webjars 'org.webjars:swagger-ui:2.2.6'
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'
@@ -148,6 +154,32 @@ task demoDataSeed(type:Exec) {
     args "./demo-data", "node ./demo-data/seed_generator.js"
 }
 
+task webjarExtraction(type: Copy) {
+    configurations.webjars.each {jar ->
+
+        def config = configurations.webjars.resolvedConfiguration
+        def artifact = config.resolvedArtifacts.find {
+            it.file.toString() == jar.absolutePath
+        }
+
+        def upStreamVersion = "${artifact.moduleVersion.id.version}"
+        upStreamVersion = upStreamVersion.replaceAll(/(-[\d.-]+)/, '')
+
+        copy {
+            from zipTree(jar)
+            into file("${buildDir}/webjars-content/${artifact.name}")
+        }
+        copy {
+            from "${buildDir}/webjars-content/${artifact.name}/META-INF/resources/webjars/${artifact.name}/${upStreamVersion}",
+                    "${buildDir}/webjars-content/${artifact.name}/META-INF/resources/webjars/${artifact.name}/${artifact.moduleVersion.id.version}"
+
+            into file("${buildDir}/resources/main/static/")
+            exclude '**/*.gz'
+            exclude '**/index.html'
+        }
+    }
+}
+
 configure(checkApiIsRaml) {
     group = JavaBasePlugin.VERIFICATION_GROUP
     description = 'Verify that the api-specification is valid RAML'
@@ -229,6 +261,7 @@ check {
 build {
     dependsOn jacocoTestReport
     dependsOn check
+    dependsOn webjarExtraction
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
