@@ -1142,7 +1142,7 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-    /requisitions-for-approval:
+    /requisitionsForApproval:
         get:
             is: [ secured ]
             description: Get requisitions to approve for right supervisor.
@@ -1158,7 +1158,7 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-    /requisitions-for-convert:
+    /requisitionsForConvert:
         get:
             is: [ secured ]
             description: Get requisitions to approve for right supervisor.
@@ -1310,7 +1310,7 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
 
-    /periods-for-initiate:
+    /periodsForInitiate:
             get:
                 is: [ secured ]
                 description: Find periods for initiate requisition.

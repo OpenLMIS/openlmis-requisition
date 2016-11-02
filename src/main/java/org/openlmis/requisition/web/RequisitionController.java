@@ -1,5 +1,8 @@
 package org.openlmis.requisition.web;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -55,9 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -140,7 +140,7 @@ public class RequisitionController extends BaseController {
    * @param emergency true for periods to initiate an emergency requisition; false otherwise.
    * @return ResponseEntity containing processing periods
    */
-  @RequestMapping(value = "/requisitions/periods-for-initiate", method = GET)
+  @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") Boolean emergency) {
@@ -359,7 +359,7 @@ public class RequisitionController extends BaseController {
   /**
    * Get requisitions to approve for right supervisor.
    */
-  @RequestMapping(value = "/requisitions/requisitions-for-approval", method = RequestMethod.GET)
+  @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
   public ResponseEntity<?> listForApproval() {
     String userName =
         (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -436,7 +436,7 @@ public class RequisitionController extends BaseController {
    *
    * @return ResponseEntity with list of approved requisitions.
    */
-  @RequestMapping(value = "/requisitions/requisitions-for-convert", method = RequestMethod.GET)
+  @RequestMapping(value = "/requisitions/requisitionsForConvert", method = RequestMethod.GET)
   public ResponseEntity<?> listForConvertToOrder(
       @RequestParam(required = false) String filterValue,
       @RequestParam(required = false) String filterBy,
