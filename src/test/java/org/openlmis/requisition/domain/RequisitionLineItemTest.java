@@ -148,6 +148,7 @@ public class RequisitionLineItemTest {
     item.setBeginningBalance(3);
     item.setTotalReceivedQuantity(4);
     item.setRequestedQuantity(5);
+    item.setTotalStockoutDays(6);
 
     RequisitionLineItem updateItem = new RequisitionLineItem();
     updateItem.setStockOnHand(11);
@@ -155,6 +156,7 @@ public class RequisitionLineItemTest {
     updateItem.setBeginningBalance(33);
     updateItem.setTotalReceivedQuantity(44);
     updateItem.setRequestedQuantity(55);
+    updateItem.setTotalStockoutDays(66);
 
     item.updateFrom(updateItem);
 
@@ -163,6 +165,7 @@ public class RequisitionLineItemTest {
     assertThat(item.getBeginningBalance(), is(33));
     assertThat(item.getTotalReceivedQuantity(), is(44));
     assertThat(item.getRequestedQuantity(), is(55));
+    assertThat(item.getTotalStockoutDays(), is(66));
   }
 
   @Test
