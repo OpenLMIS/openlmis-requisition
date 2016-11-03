@@ -18,4 +18,5 @@ public class ProgramProductDto {
   private Integer displayOrder;
   private Integer maxMonthsOfStock;
   private Integer dosesPerMonth;
+  private MoneyDto value;
 }

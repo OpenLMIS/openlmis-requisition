@@ -142,7 +142,7 @@ schemas:
               "supplyingFacilityId": { "type": "string", "required": true, "title": "supplyingFacilityId" },
               "orderCode": { "type": "string", "required": true, "title": "orderCode" },
               "status": { "type": "object", "$ref": "#/schemas/orderStatus", "required": true, "title": "status" },
-              "quotedCost": { "type": "integer", "required": true, "title": "quotedCost" },
+              "quotedCost": { "type": "number", "required": true, "title": "quotedCost" },
               "orderLineItems": { "type": "array", "required": false, "title": "orderLineItems", "items": { "type": "object", "$ref": "#/schemas/orderLineItem" }, "uniqueItems": false }
           }
       }
