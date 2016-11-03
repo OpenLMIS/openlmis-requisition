@@ -13,7 +13,8 @@ public class AuthenticationHelper {
   private UserReferenceDataService userReferenceDataService;
 
   /**
-   * Method returns current user based on Spring context.
+   * Method returns current user based on Spring context
+   * and fetches his data from referencedata service.
    * @return UserDto entity of current user.
    */
   public UserDto getCurrentUser() {
