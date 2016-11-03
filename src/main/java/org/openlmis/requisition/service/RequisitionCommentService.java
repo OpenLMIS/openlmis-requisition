@@ -1,5 +1,7 @@
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toList;
+
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.CommentDto;
@@ -17,8 +19,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Service for managing requisition comments.

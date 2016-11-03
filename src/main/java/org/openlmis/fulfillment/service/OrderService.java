@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.service;
 
+import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -48,8 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
 
 @Service
 public class OrderService {

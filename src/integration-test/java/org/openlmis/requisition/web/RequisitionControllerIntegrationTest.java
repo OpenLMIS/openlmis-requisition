@@ -41,8 +41,6 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,6 +52,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
