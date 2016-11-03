@@ -2,7 +2,6 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -279,7 +278,12 @@ public class Requisition extends BaseEntity {
 
   @JsonIgnore
   public boolean isPreAuthorize() {
-    return status == INITIATED || status == SUBMITTED;
+    return status.isPreAuthorize();
+  }
+
+  @JsonIgnore
+  public boolean isPostSubmitted() {
+    return status.isPostSubmitted();
   }
 
   /**

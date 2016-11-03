@@ -144,19 +144,23 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") Boolean emergency) {
+    Collection<ProcessingPeriodDto> periods;
 
-    Collection<ProcessingPeriodDto> periods =
-          periodReferenceDataService.searchByProgramAndFacility(program, facility);
+    if (emergency) {
+      periods = requisitionService.getCurrentPeriods(program, facility);
+    } else {
+      periods = periodReferenceDataService.searchByProgramAndFacility(program, facility);
 
-    for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext();) {
-      ProcessingPeriodDto periodDto = iterator.next();
-      List<Requisition> requisitions =
-              requisitionRepository.searchByProcessingPeriod(periodDto.getId());
+      for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext(); ) {
+        ProcessingPeriodDto periodDto = iterator.next();
+        List<Requisition> requisitions =
+            requisitionRepository.searchByProcessingPeriod(periodDto.getId(), false);
 
-      if (requisitions != null && !requisitions.isEmpty()
+        if (requisitions != null && !requisitions.isEmpty()
             && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
             && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
-        iterator.remove();
+          iterator.remove();
+        }
       }
     }
 
@@ -298,10 +302,11 @@ public class RequisitionController extends BaseController {
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
-              RequisitionStatus requisitionStatus) {
-
+              RequisitionStatus requisitionStatus,
+      @RequestParam(value = "emergency", required = false) Boolean emergency) {
     List<Requisition> result = requisitionService.searchRequisitions(facility, program,
-        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
+        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatus,
+        emergency);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
@@ -381,7 +386,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getSubmittedRequisitions() {
 
     Iterable<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
-                null, null, null, null, null, null, RequisitionStatus.SUBMITTED);
+                null, null, null, null, null, null, RequisitionStatus.SUBMITTED, null);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

@@ -43,6 +43,7 @@ import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -108,6 +109,8 @@ public class RequisitionControllerTest {
 
     when(periodReferenceDataService.searchByProgramAndFacility(
             programUuid, facilityUuid)).thenReturn(processingPeriods);
+    when(requisitionService.getCurrentPeriods(programUuid, facilityUuid))
+        .thenReturn(Collections.singletonList(processingPeriods.get(0)));
 
     mockRequsitionRepository();
   }
@@ -122,7 +125,7 @@ public class RequisitionControllerTest {
     List<ProcessingPeriodDto> periods = (List<ProcessingPeriodDto>) response.getBody();
 
     verify(periodReferenceDataService).searchByProgramAndFacility(programUuid, facilityUuid);
-    verify(requisitionRepository, times(5)).searchByProcessingPeriod(any(UUID.class));
+    verify(requisitionRepository, times(5)).searchByProcessingPeriod(any(UUID.class), any());
 
     assertNotNull(periods);
     assertEquals(3, periods.size());
@@ -133,6 +136,28 @@ public class RequisitionControllerTest {
     assertTrue(periodUuids.contains(uuid1));
     assertTrue(periodUuids.contains(uuid2));
     assertTrue(periodUuids.contains(uuid3));
+  }
+
+  @Test
+  public void shouldReturnCurrentPeriodForEmergency() throws Exception {
+    ResponseEntity<?> response =
+        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    List<ProcessingPeriodDto> periods = (List<ProcessingPeriodDto>) response.getBody();
+
+    verify(requisitionService).getCurrentPeriods(programUuid, facilityUuid);
+    verifyZeroInteractions(periodReferenceDataService, requisitionRepository);
+
+    assertNotNull(periods);
+    assertEquals(1, periods.size());
+
+    List<UUID> periodUuids = periods
+        .stream()
+        .map(ProcessingPeriodDto::getId)
+        .collect(Collectors.toList());
+
+    assertTrue(periodUuids.contains(uuid1));
   }
 
   @Test
@@ -243,15 +268,15 @@ public class RequisitionControllerTest {
   }
 
   private void mockRequsitionRepository() {
-    when(requisitionRepository.searchByProcessingPeriod(uuid1))
+    when(requisitionRepository.searchByProcessingPeriod(uuid1, false))
             .thenReturn(new ArrayList<>());
-    when(requisitionRepository.searchByProcessingPeriod(uuid2))
+    when(requisitionRepository.searchByProcessingPeriod(uuid2, false))
             .thenReturn(Arrays.asList(initiatedRequsition));
-    when(requisitionRepository.searchByProcessingPeriod(uuid3))
+    when(requisitionRepository.searchByProcessingPeriod(uuid3, false))
             .thenReturn(Arrays.asList(submittedRequsition));
-    when(requisitionRepository.searchByProcessingPeriod(uuid4))
+    when(requisitionRepository.searchByProcessingPeriod(uuid4, false))
             .thenReturn(Arrays.asList(authorizedRequsition));
-    when(requisitionRepository.searchByProcessingPeriod(uuid5))
+    when(requisitionRepository.searchByProcessingPeriod(uuid5, false))
             .thenReturn(Arrays.asList(approvedRequsition));
     when(requisitionRepository.save(initiatedRequsition))
             .thenReturn(initiatedRequsition);

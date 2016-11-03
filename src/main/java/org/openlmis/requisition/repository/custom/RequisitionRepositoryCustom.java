@@ -15,13 +15,14 @@ public interface RequisitionRepositoryCustom {
                                        LocalDateTime createdDateTo,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
-                                       RequisitionStatus requisitionStatus);
+                                       RequisitionStatus requisitionStatus,
+                                       Boolean emergency);
 
   List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize);
 
-  List<Requisition> searchByProcessingPeriod(UUID processingPeriod);
+  List<Requisition> searchByProcessingPeriod(UUID processingPeriod, Boolean emergency);
 
   Requisition getLastRegularRequisition(UUID facility, UUID program);
 }

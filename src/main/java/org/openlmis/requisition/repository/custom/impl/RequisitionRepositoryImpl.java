@@ -61,7 +61,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                               LocalDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
-                                              RequisitionStatus requisitionStatus) {
+                                              RequisitionStatus requisitionStatus,
+                                              Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
@@ -92,6 +93,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       predicate = builder.and(predicate,
           builder.equal(root.get("status"), requisitionStatus));
     }
+    if (null != emergency) {
+      predicate = builder.and(predicate,
+          builder.equal(root.get("emergency"), emergency));
+    }
 
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
@@ -102,13 +107,21 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * Method returns all Requisitions with matched parameters.
    *
    * @param processingPeriod processingPeriod of searched Requisitions.
+   * @param emergency if {@code true}, the method will look only for emergency requisitions,
+   *                  if {@code false}, the method will look only for standard requisitions,
+   *                  if {@code null} the method will check all requisitions
    * @return list of Requisitions with matched parameters.
    */
-  public List<Requisition> searchByProcessingPeriod(UUID processingPeriod) {
+  public List<Requisition> searchByProcessingPeriod(UUID processingPeriod, Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
     Predicate predicate = builder.conjunction();
+
+    if (null != emergency) {
+      predicate = builder.and(predicate, builder.equal(root.get("emergency"), emergency));
+    }
+
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
             builder.equal(root.get("processingPeriodId"), processingPeriod));

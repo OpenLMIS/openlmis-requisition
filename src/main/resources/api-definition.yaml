@@ -1106,6 +1106,11 @@ resourceTypes:
                     type: string
                     required: false
                     repeat: false
+                emergency:
+                    displayName: emergency
+                    type: boolean
+                    required: false
+                    repeat: false
             responses:
                 "200":
                     headers:

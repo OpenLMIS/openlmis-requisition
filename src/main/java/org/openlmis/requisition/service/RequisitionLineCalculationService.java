@@ -111,7 +111,7 @@ public class RequisitionLineCalculationService {
   private Requisition findPreviousRequisition(Requisition requisition, ProcessingPeriodDto period) {
     List<Requisition> list = requisitionService.searchRequisitions(
         requisition.getFacilityId(), requisition.getProgramId(),
-        null, null, period.getId(), null, null
+        null, null, period.getId(), null, null, null
     );
 
     return null == list ? null : (list.isEmpty() ? null : list.get(0));

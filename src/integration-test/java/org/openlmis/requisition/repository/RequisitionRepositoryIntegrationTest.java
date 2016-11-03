@@ -33,14 +33,14 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
+    requisition.setEmergency(getNextInstanceNumber() % 2 == 0);
     return requisition;
   }
 
   @Before
   public void setUp() {
     requisitions = new ArrayList<>();
-    for (int requisitionLineItemsCount = 0; requisitionLineItemsCount < 5;
-         requisitionLineItemsCount++) {
+    for (int count = 0; count < 5; ++count) {
       requisitions.add(repository.save(generateInstance()));
     }
   }
@@ -54,6 +54,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setProcessingPeriodId(requisitions.get(0).getProcessingPeriodId());
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setStatus(requisitions.get(0).getStatus());
+    requisition.setEmergency(requisitions.get(0).getEmergency());
     repository.save(requisition);
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             requisitions.get(0).getFacilityId(),
@@ -62,7 +63,8 @@ public class RequisitionRepositoryIntegrationTest
             requisitions.get(0).getCreatedDate().plusDays(2),
             requisitions.get(0).getProcessingPeriodId(),
             requisitions.get(0).getSupervisoryNodeId(),
-            requisitions.get(0).getStatus());
+            requisitions.get(0).getStatus(),
+            requisitions.get(0).getEmergency());
 
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -103,7 +105,7 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             requisitions.get(0).getFacilityId(),
             requisitions.get(0).getProgramId(),
-            null, null, null, null, null);
+            null, null, null, null, null, null);
 
     Assert.assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -119,7 +121,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-            null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null, null);
 
     Assert.assertEquals(5, receivedRequisitions.size());
   }

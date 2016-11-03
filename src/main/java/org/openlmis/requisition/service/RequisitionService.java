@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,7 +148,20 @@ public class RequisitionService {
           + " Requisition with such parameters already exists");
     }
 
-    ProcessingPeriodDto period = findTheOldestPeriod(programId, facilityId, suggestedPeriodId);
+    ProcessingPeriodDto period;
+
+    if (emergency) {
+      Collection<ProcessingPeriodDto> periods = getCurrentPeriods(programId, facilityId);
+
+      if (periods.isEmpty()) {
+        throw new InvalidPeriodException("Cannot find current period");
+      }
+
+      period = periods.iterator().next();
+    } else {
+      period = findTheOldestPeriod(programId, facilityId, suggestedPeriodId);
+    }
+
     requisition.setProcessingPeriodId(period.getId());
 
     Collection<FacilityTypeApprovedProductDto> facilityTypeApprovedProducts =
@@ -287,10 +301,11 @@ public class RequisitionService {
                                               LocalDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
-                                              RequisitionStatus requisitionStatus) {
+                                              RequisitionStatus requisitionStatus,
+                                              Boolean emergency) {
     return requisitionRepository.searchRequisitions(
         facility, program, createdDateFrom,
-        createdDateTo, processingPeriod, supervisoryNode, requisitionStatus);
+        createdDateTo, processingPeriod, supervisoryNode, requisitionStatus, emergency);
   }
 
   /**
@@ -323,7 +338,7 @@ public class RequisitionService {
   public List<Requisition> getAuthorizedRequisitions(ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
     List<Requisition> reqList = searchRequisitions(null, program.getId(),
-        null, null, null, null, null);
+        null, null, null, null, null, null);
     if (reqList != null) {
       for (Requisition req : reqList) {
         if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
@@ -439,7 +454,7 @@ public class RequisitionService {
 
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {
-        requisitions = requisitionRepository.searchByProcessingPeriod(dto.getId());
+        requisitions = requisitionRepository.searchByProcessingPeriod(dto.getId(), false);
         if (requisitions == null || requisitions.isEmpty()) {
           result = dto;
           break;
@@ -457,4 +472,38 @@ public class RequisitionService {
 
     return result;
   }
+
+  /**
+   * Find and return a list of current processing periods.
+   *
+   * @param programId  UUID of Program.
+   * @param facilityId UUID of Facility.
+   * @return a list of current processing periods
+   */
+  public List<ProcessingPeriodDto> getCurrentPeriods(UUID programId, UUID facilityId) {
+    Collection<ProcessingPeriodDto> periods =
+        periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
+
+    return periods
+        .stream()
+        .filter(period -> {
+          // check if period is in current date
+          LocalDate currentDate = LocalDate.now();
+          LocalDate startDate = period.getStartDate();
+          LocalDate endDate = period.getEndDate();
+
+          return (currentDate.isEqual(startDate) || currentDate.isAfter(startDate))
+              && (currentDate.isEqual(endDate) || currentDate.isBefore(endDate));
+        })
+        .filter(period -> {
+          // check if requisitions with the period are submitted
+          List<Requisition> requisitions =
+              requisitionRepository.searchByProcessingPeriod(period.getId(), false);
+
+          return !(null == requisitions || requisitions.isEmpty())
+              && requisitions.stream().allMatch(Requisition::isPostSubmitted);
+        })
+        .collect(Collectors.toList());
+  }
+
 }

@@ -210,7 +210,7 @@ public class RequisitionLineCalculationServiceTest {
         .thenReturn(Lists.newArrayList(periodDto3, periodDto2, periodDto1));
     when(requisitionService
         .searchRequisitions(requisition.getFacilityId(), requisition.getProgramId(),
-            null, null, period2, null, null))
+            null, null, period2, null, null, null))
         .thenReturn(Collections.singletonList(requisition));
     when(programReferenceDataService
         .findOne(any()))
