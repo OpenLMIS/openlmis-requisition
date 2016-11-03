@@ -12,7 +12,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.AuthorizationException;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -24,10 +23,10 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -52,10 +50,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -86,9 +82,6 @@ public class RequisitionController extends BaseController {
   private ConfigurationSettingService configurationSettingService;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
-
-  @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Autowired
@@ -96,6 +89,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
 
 
   @InitBinder("requisition")
@@ -366,13 +362,9 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
   public ResponseEntity<?> listForApproval() {
-    String userName =
-        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("username", userName);
-    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
+    UserDto user = authenticationHelper.getCurrentUser();
     Collection<RequisitionDto> requisitions =
-        requisitionService.getRequisitionForApprovalDtos(users.get(0).getId());
+        requisitionService.getRequisitionForApprovalDtos(user.getId());
     return new ResponseEntity<>(requisitions, HttpStatus.OK);
   }
 
@@ -449,33 +441,27 @@ public class RequisitionController extends BaseController {
       @RequestParam(required = false, defaultValue = "true") boolean descending,
       @RequestParam(required = false) Integer pageNumber,
       @RequestParam(required = false) Integer pageSize) {
-    try {
-      String username =
-          (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      UserDto user = userReferenceDataService.findUser(username);
+    UserDto user = authenticationHelper.getCurrentUser();
 
-      Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
-          .getFulfillmentFacilities(user.getId())
-          .stream().map(FacilityDto::getId).collect(Collectors.toList());
+    Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId())
+        .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
-      Collection<RequisitionDto> approvedRequisitionList =
-          requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-              filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+    Collection<RequisitionDto> approvedRequisitionList =
+        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+            filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
 
-      List<RequisitionWithSupplyingDepotsDto> response = new ArrayList<>();
-      for (RequisitionDto requisition : approvedRequisitionList) {
-        List<FacilityDto> facilities = requisitionService
-            .getAvailableSupplyingDepots(requisition.getId()).stream()
-            .filter(f -> userManagedFacilities.contains(f.getId())).collect(Collectors.toList());
+    List<RequisitionWithSupplyingDepotsDto> response = new ArrayList<>();
+    for (RequisitionDto requisition : approvedRequisitionList) {
+      List<FacilityDto> facilities = requisitionService
+          .getAvailableSupplyingDepots(requisition.getId()).stream()
+          .filter(f -> userManagedFacilities.contains(f.getId())).collect(Collectors.toList());
 
-        if (facilities.size() > 0) {
-          response.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
-        }
+      if (facilities.size() > 0) {
+        response.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
       }
-
-      return new ResponseEntity<>(response, HttpStatus.OK);
-    } catch (AuthorizationException err) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

@@ -1,7 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static java.util.stream.Collectors.toList;
-
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.CommentDto;
@@ -10,18 +8,17 @@ import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.utils.AuthenticationHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Service for managing requisition comments.
@@ -39,7 +36,7 @@ public class RequisitionCommentService {
   private CommentRepository commentRepository;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
+  private AuthenticationHelper authenticationHelper;
 
 
   /**
@@ -54,12 +51,8 @@ public class RequisitionCommentService {
           throws RequisitionNotFoundException {
     Requisition requisition = findRequisition(requisitionId);
 
-    String userName =
-        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("username", userName);
-    List<UserDto> users = new ArrayList<>(userReferenceDataService.findUsers(parameters));
-    comment.setAuthorId(users.get(0).getId());
+    UserDto user = authenticationHelper.getCurrentUser();
+    comment.setAuthorId(user.getId());
     comment.setRequisition(requisition);
 
     commentRepository.save(comment);

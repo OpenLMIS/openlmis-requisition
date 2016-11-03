@@ -1,8 +1,13 @@
 package org.openlmis.errorhandling;
 
+import org.openlmis.requisition.exception.AuthenticationException;
 import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Base classes for controller advices dealing with error handling.
@@ -10,6 +15,13 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractErrorHandling {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  @ExceptionHandler(AuthenticationException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  @ResponseBody
+  public ErrorResponse handleAuthenticationException(AuthenticationException ex) {
+    return logErrorAndRespond("Could not authenticate user", ex);
+  }
 
   /**
    * Logs an error message and returns an error response.

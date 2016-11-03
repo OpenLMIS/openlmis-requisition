@@ -11,17 +11,15 @@ import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.AuthorizationException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.BaseController;
+import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,10 +30,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class OrderController extends BaseController {
@@ -55,7 +54,7 @@ public class OrderController extends BaseController {
   private OrderFileTemplateService orderFileTemplateService;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
+  private AuthenticationHelper authenticationHelper;
 
   /**
    * Allows creating new orders.
@@ -200,9 +199,7 @@ public class OrderController extends BaseController {
   public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> convertToOrderDtos,
                                           OAuth2Authentication auth) {
     try {
-      String username =
-          (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      UserDto user = userReferenceDataService.findUser(username);
+      UserDto user = authenticationHelper.getCurrentUser();
       orderService.convertToOrder(convertToOrderDtos, user);
       return new ResponseEntity<>(HttpStatus.CREATED);
     } catch (RequisitionException err) {
@@ -210,8 +207,6 @@ public class OrderController extends BaseController {
           "An error occurred while converting requisitions to order", err.getMessage());
       LOGGER.error(errorResponse.getMessage(), err);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    } catch (AuthorizationException err) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
   }
 
