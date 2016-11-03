@@ -6,20 +6,28 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.doNothing;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 
+@PrepareForTest({LineItemFieldsCalculator.class})
+@RunWith(PowerMockRunner.class)
 public class RequisitionTest {
 
   private Requisition requisition;
@@ -59,14 +67,16 @@ public class RequisitionTest {
   @Test
   public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing()
           throws RequisitionException, RequisitionTemplateColumnException {
-    RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    mockStatic(LineItemFieldsCalculator.class);
+    RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
+
+    requisition.setRequisitionLineItems(new ArrayList<>(
+        Collections.singletonList(requisitionLineItem)));
 
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(true);
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
-
-    requisition.setRequisitionLineItems(new ArrayList<>(
-            Collections.singletonList(requisitionLineItem)));
+    doNothing().when(LineItemFieldsCalculator.class);
 
     Requisition newRequisition = new Requisition();
 
@@ -75,16 +85,18 @@ public class RequisitionTest {
     requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
-    verify(requisitionLineItem).calculateStockOnHand();
+    verifyStatic(times(1));
   }
 
   @Test
   public void shouldCalculateTotalValueWhenUpdatingRequisition()
       throws RequisitionException, RequisitionTemplateColumnException {
-    RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    mockStatic(LineItemFieldsCalculator.class);
+    RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
 
     when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
+    doNothing().when(LineItemFieldsCalculator.class);
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         Collections.singletonList(requisitionLineItem)));
@@ -92,7 +104,7 @@ public class RequisitionTest {
     Requisition newRequisition = new Requisition();
 
     requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
-    verify(requisitionLineItem).calculateTotal();
+    verifyStatic(times(1));
   }
 
 

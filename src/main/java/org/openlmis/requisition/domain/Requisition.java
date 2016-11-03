@@ -145,11 +145,13 @@ public class Requisition extends BaseEntity {
                                         Collection<StockAdjustmentReasonDto>
                                             stockAdjustmentReasons) {
     try {
-      forEachLine(line -> line.calculateTotalLossesAndAdjustments(stockAdjustmentReasons));
+      forEachLine(line ->
+          LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(line,
+              stockAdjustmentReasons));
 
       if (template.isColumnDisplayed(STOCK_ON_HAND)) {
         if (template.isColumnCalculated(STOCK_ON_HAND)) {
-          forEachLine(RequisitionLineItem::calculateStockOnHand);
+          forEachLine(line -> LineItemFieldsCalculator.calculateStockOnHand(line));
         }
       } else {
         forEachLine(line -> line.setStockOnHand(null));
@@ -157,19 +159,18 @@ public class Requisition extends BaseEntity {
 
       if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
         if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
-          forEachLine(RequisitionLineItem::calculateTotalConsumedQuantity);
+          forEachLine(line -> LineItemFieldsCalculator.calculateTotalConsumedQuantity(line));
         }
       } else {
         forEachLine(line -> line.setTotalConsumedQuantity(null));
       }
 
       if (template.isColumnDisplayed(TOTAL)) {
-        forEachLine(RequisitionLineItem::calculateTotal);
+        forEachLine(line -> LineItemFieldsCalculator.calculateTotal(line));
       }
 
     } catch (RequisitionTemplateColumnException ex) {
-      LOGGER.debug("stockOnHand, totalLossesAndAdjustments, totalConsumedQuantity or total"
-          + " column not present in template, skipping calculation");
+      LOGGER.warn(ex.getMessage());
     }
   }
 

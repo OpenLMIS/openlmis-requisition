@@ -3,6 +3,7 @@ package org.openlmis.requisition.service;
 import static java.util.stream.Collectors.toList;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.openlmis.requisition.domain.LineItemFieldsCalculator;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -74,7 +75,7 @@ public class RequisitionLineCalculationService {
               .findLineByProductId(currentLine.getOrderableProductId());
 
           // ... and in the end we use it to calculate beginning balance in a new line.
-          currentLine.calculateBeginningBalance(previousLine);
+          LineItemFieldsCalculator.calculateBeginningBalance(currentLine, previousLine);
         });
       }
     }

@@ -1,19 +1,14 @@
 package org.openlmis.requisition.domain;
 
-import static org.apache.commons.lang.BooleanUtils.isTrue;
-
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -25,7 +20,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
@@ -167,93 +161,6 @@ public class RequisitionLineItem extends BaseEntity {
     }
   }
 
-  /**
-   * Calculates beginningBalance (A) value of current requsition line item based on previous one
-   * and sets the field in this item to that value.
-   * The formula is A = E + K
-   * E = Stock on Hand
-   * K = Approved Quantity
-   *
-   * @param previous line item from previous requsition
-   */
-  public void calculateBeginningBalance(RequisitionLineItem previous) {
-    this.beginningBalance = 0;
-
-    if (null != previous) {
-      this.beginningBalance = zeroIfNull(previous.getStockOnHand())
-          + zeroIfNull(previous.getApprovedQuantity());
-    }
-  }
-
-  /**
-   * Calculates StockOnHand (E) value and sets the field in this item to that value.
-   * The formula is E = A + B (+/-) D - C
-   * A = Beginning Balance
-   * B = Total Received Quantity
-   * C = Total Consumed Quantity
-   * D = Total Losses/Adjustments
-   * E = Stock on Hand
-   */
-  void calculateStockOnHand() {
-    stockOnHand = calculateStockOnHandValue();
-  }
-
-  /**
-   * Calculates TotalConsumedQuantity (C) value and sets the field in this item to that value.
-   * The formula is C = A + B (+/-) D - E
-   * A = Beginning Balance
-   * B = Total Received Quantity
-   * C = Total Consumed Quantity
-   * D = Total Losses/Adjustments
-   * E = Stock on Hand
-   */
-  void calculateTotalConsumedQuantity() {
-    totalConsumedQuantity = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
-        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(stockOnHand);
-  }
-
-  void calculateTotal() {
-    total = zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity);
-  }
-
-  /**
-   * Calculates StockOnHand (E) value and returns it.
-   * The formula is E = A + B (+/-) D - C
-   * A = Beginning Balance
-   * B = Total Received Quantity
-   * C = Total Consumed Quantity
-   * D = Total Losses/Adjustments
-   * E = Stock on Hand
-   */
-  public Integer calculateStockOnHandValue() {
-    return zeroIfNull(beginningBalance) + zeroIfNull(totalReceivedQuantity)
-        + zeroIfNull(totalLossesAndAdjustments) - zeroIfNull(totalConsumedQuantity);
-  }
-
-  /**
-   * Calculates TotalLossesAndAdjustments (D) value and sets the field in this item to that value.
-   * The property is calculated by taking all item's StockAdjustments and adding their quantities.
-   * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
-   */
-  public void calculateTotalLossesAndAdjustments(Collection<StockAdjustmentReasonDto> reasons) {
-    totalLossesAndAdjustments = 0;
-
-    if (null != stockAdjustments) {
-      for (StockAdjustment adjustment : stockAdjustments) {
-        Optional<StockAdjustmentReasonDto> reason = reasons
-            .stream()
-            .filter(r -> r.getId().equals(adjustment.getReasonId()))
-            .findFirst();
-
-        if (reason.isPresent()) {
-          int sign = isTrue(reason.get().getAdditive()) ? 1 : -1;
-
-          totalLossesAndAdjustments += adjustment.getQuantity() * sign;
-        }
-      }
-    }
-  }
-
   boolean allRequiredCalcFieldsNotFilled(String field) {
     switch (field) {
       case TOTAL_CONSUMED_QUANTITY:
@@ -263,10 +170,6 @@ public class RequisitionLineItem extends BaseEntity {
       default:
         return false;
     }
-  }
-
-  private int zeroIfNull(Integer value) {
-    return null == value ? 0 : value;
   }
 
   /**
