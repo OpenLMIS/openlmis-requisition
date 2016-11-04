@@ -82,7 +82,7 @@ public class PeriodService {
    * @return a list of periods.
    */
   public Collection<ProcessingPeriodDto> getPeriods(UUID program, UUID facility,
-                                                    Boolean emergency) {
+                                                    boolean emergency) {
     Collection<ProcessingPeriodDto> periods;
 
     if (emergency) {

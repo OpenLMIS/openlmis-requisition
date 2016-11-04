@@ -111,7 +111,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
                    @RequestParam(value = "facility") UUID facility,
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                   @RequestParam(value = "emergency", defaultValue = "false") boolean emergency)
+                   @RequestParam(value = "emergency") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
     try {
       Requisition newRequisition = requisitionService.initiate(program,
@@ -137,7 +137,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
-                                    @RequestParam(value = "emergency") Boolean emergency) {
+                                    @RequestParam(value = "emergency") boolean emergency) {
     Collection<ProcessingPeriodDto> periods = periodService.getPeriods(
         program, facility, emergency
     );
