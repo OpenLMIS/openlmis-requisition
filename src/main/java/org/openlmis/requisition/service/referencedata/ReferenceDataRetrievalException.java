@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
  * Signals we were unable to retrieve reference data
  * due to a communication error.
  */
-
 public class ReferenceDataRetrievalException extends RuntimeException {
 
   @Getter
