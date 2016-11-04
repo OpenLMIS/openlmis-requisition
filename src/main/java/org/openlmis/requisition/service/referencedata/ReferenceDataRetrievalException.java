@@ -21,7 +21,7 @@ public class ReferenceDataRetrievalException extends RuntimeException {
 
   /**
    * Constructs the exception.
-    * @param resource the resource that we were trying to retrieve
+   * @param resource the resource that we were trying to retrieve
    * @param status the http status that was returned
    * @param response the response from referencedata service
    */
