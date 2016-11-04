@@ -72,7 +72,8 @@ public class RequisitionLineCalculationService {
               .findLineByProductId(currentLine.getOrderableProductId());
 
           // ... and in the end we use it to calculate beginning balance in a new line.
-          LineItemFieldsCalculator.calculateBeginningBalance(currentLine, previousLine);
+          currentLine.setBeginningBalance(
+              LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
         });
       }
     }

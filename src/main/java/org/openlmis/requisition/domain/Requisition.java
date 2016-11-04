@@ -146,12 +146,14 @@ public class Requisition extends BaseEntity {
                                             stockAdjustmentReasons) {
     try {
       forEachLine(line ->
-          LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(line,
-              stockAdjustmentReasons));
+          line.setTotalLossesAndAdjustments(
+              LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
+                  line, stockAdjustmentReasons)));
 
       if (template.isColumnDisplayed(STOCK_ON_HAND)) {
         if (template.isColumnCalculated(STOCK_ON_HAND)) {
-          forEachLine(line -> LineItemFieldsCalculator.calculateStockOnHand(line));
+          forEachLine(line ->  line.setStockOnHand(
+              LineItemFieldsCalculator.calculateStockOnHand(line)));
         }
       } else {
         forEachLine(line -> line.setStockOnHand(null));
@@ -159,14 +161,16 @@ public class Requisition extends BaseEntity {
 
       if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
         if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
-          forEachLine(line -> LineItemFieldsCalculator.calculateTotalConsumedQuantity(line));
+          forEachLine(line -> line.setTotalConsumedQuantity(
+              LineItemFieldsCalculator.calculateTotalConsumedQuantity(line)));
         }
       } else {
         forEachLine(line -> line.setTotalConsumedQuantity(null));
       }
 
       if (template.isColumnDisplayed(TOTAL)) {
-        forEachLine(line -> LineItemFieldsCalculator.calculateTotal(line));
+        forEachLine(line -> line.setTotal(
+            LineItemFieldsCalculator.calculateTotal(line)));
       }
 
     } catch (RequisitionTemplateColumnException ex) {

@@ -125,8 +125,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         RequisitionLineItem.STOCK_ON_HAND) && checkTemplate(errors, template,
         item.getTotalConsumedQuantity(), RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
-    if (templateValid && !LineItemFieldsCalculator.calculateStockOnHandValue(item).equals(item
-        .getStockOnHand())) {
+    if (templateValid && !item.getStockOnHand()
+        .equals(LineItemFieldsCalculator.calculateStockOnHand(item))) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, RequisitionLineItem.STOCK_ON_HAND + " or "
           + RequisitionLineItem.TOTAL_CONSUMED_QUANTITY  + VALUE_IS_INCORRECTLY_CALCULATED);
     }

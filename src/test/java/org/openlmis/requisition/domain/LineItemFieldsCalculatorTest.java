@@ -54,8 +54,9 @@ public class LineItemFieldsCalculatorTest {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setStockAdjustments(Lists.newArrayList(adjustment1,adjustment2,
         adjustment3,adjustment4));
-    LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(requisitionLineItem,
-        Lists.newArrayList(reason1, reason2, reason3, reason4));
+    requisitionLineItem.setTotalLossesAndAdjustments(
+        LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
+            requisitionLineItem, Lists.newArrayList(reason1, reason2, reason3, reason4)));
 
     // then
     assertThat(requisitionLineItem.getTotalLossesAndAdjustments(), is(6));
@@ -67,26 +68,18 @@ public class LineItemFieldsCalculatorTest {
     previous.setStockOnHand(3789);
     previous.setApprovedQuantity(714);
 
-    RequisitionLineItem current = new RequisitionLineItem();
-    LineItemFieldsCalculator.calculateBeginningBalance(current, previous);
-
-    assertThat(current.getBeginningBalance(), is(4503));
+    assertThat(LineItemFieldsCalculator.calculateBeginningBalance(previous), is(4503));
   }
 
   @Test
   public void shouldSetZeroToBeginningBalanceIfPreviousNotExist() throws Exception {
-    RequisitionLineItem current = new RequisitionLineItem();
-    LineItemFieldsCalculator.calculateBeginningBalance(current, null);
-
-    assertThat(current.getBeginningBalance(), is(0));
+    assertThat(LineItemFieldsCalculator.calculateBeginningBalance(null), is(0));
   }
 
   @Test
   public void shouldSetZeroToBeginningBalanceIfPreviousNotHasData() throws Exception {
-    RequisitionLineItem current = new RequisitionLineItem();
-    LineItemFieldsCalculator.calculateBeginningBalance(current, new RequisitionLineItem());
-
-    assertThat(current.getBeginningBalance(), is(0));
+    assertThat(LineItemFieldsCalculator.calculateBeginningBalance(new RequisitionLineItem()),
+        is(0));
   }
 
   @Test
@@ -97,9 +90,7 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalReceivedQuantity(500);
     requisitionLineItem.setBeginningBalance(1000);
 
-    LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem);
-
-    assertEquals(1200, requisitionLineItem.getStockOnHand().intValue());
+    assertEquals(1200, LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem));
   }
 
   @Test
@@ -110,9 +101,7 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalReceivedQuantity(500);
     requisitionLineItem.setBeginningBalance(1000);
 
-    LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem);
-
-    assertEquals(1300, requisitionLineItem.getStockOnHand().intValue());
+    assertEquals(1300, LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem));
   }
 
   @Test
@@ -121,9 +110,7 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalReceivedQuantity(500);
     requisitionLineItem.setBeginningBalance(1000);
 
-    LineItemFieldsCalculator.calculateTotal(requisitionLineItem);
-
-    assertEquals(1500, requisitionLineItem.getTotal().intValue());
+    assertEquals(1500, LineItemFieldsCalculator.calculateTotal(requisitionLineItem));
   }
 
   @Test
@@ -134,8 +121,6 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalReceivedQuantity(500);
     requisitionLineItem.setBeginningBalance(1000);
 
-    LineItemFieldsCalculator.calculateTotalConsumedQuantity(requisitionLineItem);
-
-    assertEquals(400, requisitionLineItem.getTotalConsumedQuantity().intValue());
+    assertEquals(400, LineItemFieldsCalculator.calculateTotalConsumedQuantity(requisitionLineItem));
   }
 }

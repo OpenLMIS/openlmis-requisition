@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
@@ -17,6 +16,7 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -76,7 +76,8 @@ public class RequisitionTest {
 
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(true);
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
-    doNothing().when(LineItemFieldsCalculator.class);
+    BDDMockito.given(LineItemFieldsCalculator.calculateTotal(requisitionLineItem))
+        .willReturn(1);
 
     Requisition newRequisition = new Requisition();
 
@@ -96,7 +97,8 @@ public class RequisitionTest {
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
 
     when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
-    doNothing().when(LineItemFieldsCalculator.class);
+    BDDMockito.given(LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem))
+        .willReturn(1);
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         Collections.singletonList(requisitionLineItem)));
