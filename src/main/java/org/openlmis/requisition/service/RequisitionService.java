@@ -146,21 +146,7 @@ public class RequisitionService {
           + " Requisition with such parameters already exists");
     }
 
-    ProcessingPeriodDto period;
-
-    if (emergency) {
-      Collection<ProcessingPeriodDto> periods = periodService.getCurrentPeriods(
-          programId, facilityId
-      );
-
-      if (periods.isEmpty()) {
-        throw new InvalidPeriodException("Cannot find current period");
-      }
-
-      period = periods.iterator().next();
-    } else {
-      period = findTheOldestPeriod(programId, facilityId, suggestedPeriodId);
-    }
+    ProcessingPeriodDto period = findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
 
@@ -184,25 +170,6 @@ public class RequisitionService {
 
     requisitionRepository.save(requisition);
     return requisition;
-  }
-
-  private void checkPeriod(UUID programId, UUID facilityId, ProcessingPeriodDto period)
-      throws RequisitionException {
-    RequisitionGroupProgramScheduleDto dto =
-          referenceDataService.searchByProgramAndFacility(programId, facilityId);
-
-    if (dto == null) {
-      throw new RequisitionInitializationException(
-            "Cannot initiate requisition. Requisition group program schedule"
-            + " with given program and facility does not exist");
-    }
-
-    if (!dto.getProcessingSchedule().getId().equals(
-        period.getProcessingSchedule().getId())) {
-      throw new InvalidPeriodException("Cannot initiate requisition."
-          + " Period for the requisition must belong to the same schedule"
-          + " that belongs to the program selected for that requisition");
-    }
   }
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
@@ -426,16 +393,57 @@ public class RequisitionService {
         filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
   }
 
+  private ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId, UUID suggestedPeriodId,
+                                         Boolean emergency) throws RequisitionException {
+    ProcessingPeriodDto period;
+
+    if (emergency) {
+      List<ProcessingPeriodDto> periods = periodService.getCurrentPeriods(
+          programId, facilityId
+      );
+
+      if (periods.isEmpty()) {
+        throw new InvalidPeriodException("Cannot find current period");
+      }
+
+      period = periods.get(0);
+    } else {
+      period = findTheOldestPeriod(programId, facilityId);
+    }
+
+    if (period == null
+        || (null != suggestedPeriodId && !suggestedPeriodId.equals(period.getId()))) {
+      throw new InvalidPeriodException(
+          "Period should be the oldest and not associated with any requisitions");
+    }
+
+    RequisitionGroupProgramScheduleDto dto =
+          referenceDataService.searchByProgramAndFacility(programId, facilityId);
+
+    if (dto == null) {
+      throw new RequisitionInitializationException(
+            "Cannot initiate requisition. Requisition group program schedule"
+            + " with given program and facility does not exist");
+    }
+
+    if (!dto.getProcessingSchedule().getId().equals(
+        period.getProcessingSchedule().getId())) {
+      throw new InvalidPeriodException("Cannot initiate requisition."
+          + " Period for the requisition must belong to the same schedule"
+          + " that belongs to the program selected for that requisition");
+    }
+
+    return period;
+  }
+
   /**
    * Return the oldest period which is not associated with any requisition.
    *
    * @param programId Program for Requisition
    * @param facilityId Facility for Requisition
-   * @param suggestedPeriodId Suggested period ID
    * @return ProcessingPeriodDto.
    */
-  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId,
-                                                  UUID suggestedPeriodId)
+  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId)
       throws RequisitionException {
 
     Requisition lastRequisition = requisitionRepository.getLastRegularRequisition(
@@ -454,21 +462,13 @@ public class RequisitionService {
 
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {
-        requisitions = requisitionRepository.searchByProcessingPeriod(dto.getId(), false);
+        requisitions = requisitionRepository.searchByProcessingPeriodAndType(dto.getId(), false);
         if (requisitions == null || requisitions.isEmpty()) {
           result = dto;
           break;
         }
       }
     }
-
-    if (result == null
-        || (null != suggestedPeriodId && !suggestedPeriodId.equals(result.getId()))) {
-      throw new InvalidPeriodException(
-          "Period should be the oldest and not associated with any requisitions");
-    }
-
-    checkPeriod(programId, facilityId, result);
 
     return result;
   }

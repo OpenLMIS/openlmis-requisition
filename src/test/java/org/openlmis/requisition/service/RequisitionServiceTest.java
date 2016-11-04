@@ -603,7 +603,7 @@ public class RequisitionServiceTest {
     when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriodDto));
 
-    when(requisitionRepository.searchByProcessingPeriod(any(), any()))
+    when(requisitionRepository.searchByProcessingPeriodAndType(any(), any()))
         .thenReturn(new ArrayList<>());
   }
 }

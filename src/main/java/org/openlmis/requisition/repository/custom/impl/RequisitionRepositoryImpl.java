@@ -112,7 +112,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    *                  if {@code null} the method will check all requisitions
    * @return list of Requisitions with matched parameters.
    */
-  public List<Requisition> searchByProcessingPeriod(UUID processingPeriod, Boolean emergency) {
+  public List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod,
+                                                           Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);

@@ -90,19 +90,19 @@ public class PeriodServiceTest {
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period1.getId(), false);
+        .searchByProcessingPeriodAndType(period1.getId(), false);
     doReturn(Collections.singletonList(initiatedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period2.getId(), false);
+        .searchByProcessingPeriodAndType(period2.getId(), false);
     doReturn(Collections.singletonList(submittedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period3.getId(), false);
+        .searchByProcessingPeriodAndType(period3.getId(), false);
     doReturn(Collections.singletonList(authorizedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period4.getId(), false);
+        .searchByProcessingPeriodAndType(period4.getId(), false);
     doReturn(Collections.singletonList(approvedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period5.getId(), false);
+        .searchByProcessingPeriodAndType(period5.getId(), false);
   }
 
   @Test
@@ -116,7 +116,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period1.getId(), false);
+        .searchByProcessingPeriodAndType(period1.getId(), false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -141,10 +141,10 @@ public class PeriodServiceTest {
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period1.getId(), false);
+        .searchByProcessingPeriodAndType(period1.getId(), false);
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period6.getId(), false);
+        .searchByProcessingPeriodAndType(period6.getId(), false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -166,7 +166,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period1.getId(), false);
+        .searchByProcessingPeriodAndType(period1.getId(), false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -197,7 +197,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriod(period1.getId(), false);
+        .searchByProcessingPeriodAndType(period1.getId(), false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -218,7 +218,7 @@ public class PeriodServiceTest {
     Collection<ProcessingPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, false);
 
-    verify(requisitionRepository, times(5)).searchByProcessingPeriod(any(UUID.class), any());
+    verify(requisitionRepository, times(5)).searchByProcessingPeriodAndType(any(UUID.class), any());
 
     assertNotNull(periods);
     assertEquals(3, periods.size());

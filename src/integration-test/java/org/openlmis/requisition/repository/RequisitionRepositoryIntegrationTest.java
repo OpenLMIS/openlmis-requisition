@@ -156,7 +156,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequsitionsByPeriodAndEmergencyFlag() throws Exception {
     requisitions.forEach(requisition -> {
-      List<Requisition> found = repository.searchByProcessingPeriod(
+      List<Requisition> found = repository.searchByProcessingPeriodAndType(
           requisition.getProcessingPeriodId(), requisition.getEmergency()
       );
 

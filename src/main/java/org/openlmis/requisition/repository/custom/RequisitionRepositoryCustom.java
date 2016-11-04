@@ -22,7 +22,7 @@ public interface RequisitionRepositoryCustom {
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize);
 
-  List<Requisition> searchByProcessingPeriod(UUID processingPeriod, Boolean emergency);
+  List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod, Boolean emergency);
 
   Requisition getLastRegularRequisition(UUID facility, UUID program);
 }

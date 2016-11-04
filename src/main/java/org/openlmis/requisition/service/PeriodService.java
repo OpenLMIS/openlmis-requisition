@@ -61,11 +61,11 @@ public class PeriodService {
               && !currentDate.isAfter(period.getEndDate());
         })
         .filter(period -> {
-          // check if requisitions with the period are submitted. If the given period does not have
-          // requisition or a requsition has pre submitted status then that period should be
-          // omitted.
+          // check if regular requisition with the period are submitted. If the given period does
+          // not have a regular requisition or the regular requisition has pre submitted status
+          // then that period should be omitted.
           List<Requisition> requisitions =
-              requisitionRepository.searchByProcessingPeriod(period.getId(), false);
+              requisitionRepository.searchByProcessingPeriodAndType(period.getId(), false);
 
           return !(null == requisitions || requisitions.isEmpty())
               && requisitions.stream().allMatch(Requisition::isPostSubmitted);
@@ -93,7 +93,7 @@ public class PeriodService {
       for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext(); ) {
         ProcessingPeriodDto periodDto = iterator.next();
         List<Requisition> requisitions =
-            requisitionRepository.searchByProcessingPeriod(periodDto.getId(), false);
+            requisitionRepository.searchByProcessingPeriodAndType(periodDto.getId(), false);
 
         if (requisitions != null && !requisitions.isEmpty()
             && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
