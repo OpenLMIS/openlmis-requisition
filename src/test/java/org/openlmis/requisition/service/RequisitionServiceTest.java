@@ -323,7 +323,7 @@ public class RequisitionServiceTest {
   @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
       throws RequisitionException, RequisitionTemplateColumnException {
-    requisitionService.initiate(null, null, null, null);
+    requisitionService.initiate(null, null, null, false);
   }
 
   @Test(expected = RequisitionException.class)

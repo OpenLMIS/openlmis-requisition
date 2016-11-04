@@ -111,12 +111,12 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
                    @RequestParam(value = "facility") UUID facility,
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                   @RequestParam(value = "emergency") Boolean emergency)
+                   @RequestParam(value = "emergency", defaultValue = "false") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
-    Requisition newRequisition = null;
     try {
-      newRequisition = requisitionService.initiate(program,
+      Requisition newRequisition = requisitionService.initiate(program,
           facility, suggestedPeriod, emergency);
+      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
     } catch (InvalidPeriodException ipe) {
       ErrorResponse errorResponse = new ErrorResponse(
           "Error occurred while initiating requisition - incorrect suggested period.",
@@ -124,7 +124,6 @@ public class RequisitionController extends BaseController {
       LOGGER.error(errorResponse.getMessage(), ipe);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
   }
 
   /**

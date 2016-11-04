@@ -116,8 +116,7 @@ public class RequisitionService {
     if (requisition == null) {
       return null;
     }
-    RequisitionDto requisitionDto =  requisitionDtoBuilder.build(requisition);
-    return requisitionDto;
+    return requisitionDtoBuilder.build(requisition);
 
   }
 
@@ -133,7 +132,7 @@ public class RequisitionService {
    *                              requisition.
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                              Boolean emergency)
+                              boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
     Requisition requisition = RequisitionBuilder.newRequisition(programId, facilityId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
