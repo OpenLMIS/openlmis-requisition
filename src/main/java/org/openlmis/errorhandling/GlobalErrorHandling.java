@@ -1,5 +1,6 @@
 package org.openlmis.errorhandling;
 
+import org.openlmis.requisition.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.utils.ErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -27,5 +28,12 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public ErrorResponse handleDataIntegrityViolation(DataIntegrityViolationException ex) {
     return logErrorAndRespond("Data integrity violation", ex);
+  }
+
+  @ExceptionHandler(ReferenceDataRetrievalException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
+    return logErrorAndRespond("Error fetching from reference data", ex);
   }
 }

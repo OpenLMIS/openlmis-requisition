@@ -9,7 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -56,13 +56,13 @@ public abstract class BaseReferenceDataService<T> {
       ResponseEntity<T> responseEntity = restTemplate.exchange(
               buildUri(url, params), HttpMethod.GET, null, getResultClass());
       return responseEntity.getBody();
-    } catch (HttpClientErrorException ex) {
+    } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
       if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
         logger.warn("{} with id {} does not exist. ", getResultClass().getSimpleName(), id);
         return null;
       } else {
-        throw ex;
+        throw buildRefDataException(ex);
       }
     }
   }
@@ -81,10 +81,20 @@ public abstract class BaseReferenceDataService<T> {
     params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
-    ResponseEntity<T> responseEntity =
-          restTemplate.getForEntity(buildUri(url, params), getResultClass());
-
-    return responseEntity.getBody();
+    try {
+      ResponseEntity<T> responseEntity =
+              restTemplate.getForEntity(buildUri(url, params), getResultClass());
+      return responseEntity.getBody();
+    } catch (HttpStatusCodeException ex) {
+      // rest template will handle 404 as an exception, instead of returning null
+      if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+        logger.warn("{} matching params does not exist. Params: {}",
+                getResultClass().getSimpleName(), parameters);
+        return null;
+      } else {
+        throw buildRefDataException(ex);
+      }
+    }
   }
 
   public Collection<T> findAll() {
@@ -109,10 +119,14 @@ public abstract class BaseReferenceDataService<T> {
     params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
-    ResponseEntity<T[]> responseEntity =
-        restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
+    try {
+      ResponseEntity<T[]> responseEntity =
+              restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
 
-    return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
+      return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
+    } catch (HttpStatusCodeException ex) {
+      throw buildRefDataException(ex);
+    }
   }
 
   protected abstract String getUrl();
@@ -154,5 +168,12 @@ public abstract class BaseReferenceDataService<T> {
     params.entrySet().forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
 
     return builder.build(true).toUri();
+  }
+
+  private ReferenceDataRetrievalException buildRefDataException(HttpStatusCodeException ex) {
+    // TODO: replace with whatever error handling we decide on
+    return new ReferenceDataRetrievalException(getResultClass().getSimpleName(),
+             ex.getStatusCode(),
+             ex.getResponseBodyAsString());
   }
 }
