@@ -63,8 +63,7 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
         .antMatchers(
             "/",
             "/webjars/**",
-            "/index.html",
-            "/generated/api-definition.json"
+            "/docs/**"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }
