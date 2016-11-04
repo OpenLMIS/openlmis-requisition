@@ -19,8 +19,8 @@ import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
@@ -50,7 +50,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -82,7 +81,7 @@ public class RequisitionController extends BaseController {
   private ConfigurationSettingService configurationSettingService;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
@@ -140,26 +139,9 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") Boolean emergency) {
-    Collection<ProcessingPeriodDto> periods;
-
-    if (emergency) {
-      periods = requisitionService.getCurrentPeriods(program, facility);
-    } else {
-      periods = periodReferenceDataService.searchByProgramAndFacility(program, facility);
-
-      for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext(); ) {
-        ProcessingPeriodDto periodDto = iterator.next();
-        List<Requisition> requisitions =
-            requisitionRepository.searchByProcessingPeriod(periodDto.getId(), false);
-
-        if (requisitions != null && !requisitions.isEmpty()
-            && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
-            && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
-          iterator.remove();
-        }
-      }
-    }
-
+    Collection<ProcessingPeriodDto> periods = periodService.getPeriods(
+        program, facility, emergency
+    );
     return new ResponseEntity<>(periods, HttpStatus.OK);
   }
 

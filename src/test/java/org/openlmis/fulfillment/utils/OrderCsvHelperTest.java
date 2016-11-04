@@ -19,9 +19,9 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -51,7 +51,7 @@ public class OrderCsvHelperTest {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Mock
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
@@ -69,7 +69,7 @@ public class OrderCsvHelperTest {
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(createFacility());
 
     UUID periodId = order.getRequisition().getProcessingPeriodId();
-    when(periodReferenceDataService.findOne(periodId)).thenReturn(createPeriod());
+    when(periodService.getPeriod(periodId)).thenReturn(createPeriod());
 
     UUID productId = order.getRequisition().getRequisitionLineItems()
         .get(0).getOrderableProductId();

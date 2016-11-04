@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +21,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.time.LocalDate;
@@ -59,7 +56,7 @@ public class RequisitionLineCalculationServiceTest {
   private ProgramReferenceDataService programReferenceDataService;
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Mock
   private ProcessingPeriodDto periodDto1;
@@ -205,9 +202,9 @@ public class RequisitionLineCalculationServiceTest {
     when(requisitionTemplateService
         .getTemplateForProgram(program))
         .thenReturn(requisitionTemplate);
-    when(periodReferenceDataService
-        .search(any(), any()))
-        .thenReturn(Lists.newArrayList(periodDto3, periodDto2, periodDto1));
+    when(periodService
+        .findPreviousPeriod(any()))
+        .thenReturn(periodDto2);
     when(requisitionService
         .searchRequisitions(requisition.getFacilityId(), requisition.getProgramId(),
             null, null, period2, null, null, null))
@@ -215,9 +212,6 @@ public class RequisitionLineCalculationServiceTest {
     when(programReferenceDataService
         .findOne(any()))
         .thenReturn(new ProgramDto());
-    when(periodReferenceDataService
-        .findOne(any()))
-        .thenReturn(periodDto1);
     when(periodDto1.getProcessingSchedule())
         .thenReturn(new ProcessingScheduleDto());
     when(periodDto1.getStartDate())

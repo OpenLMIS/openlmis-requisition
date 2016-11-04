@@ -4,10 +4,10 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ public class RequisitionDtoBuilder {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -50,7 +50,7 @@ public class RequisitionDtoBuilder {
 
     requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
     requisitionDto.setProgram(programReferenceDataService.findOne(requisition.getProgramId()));
-    requisitionDto.setProcessingPeriod(periodReferenceDataService.findOne(
+    requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()));
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
     requisitionDto.setComments(commentDtoList);

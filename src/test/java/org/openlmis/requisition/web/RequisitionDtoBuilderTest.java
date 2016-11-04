@@ -1,8 +1,8 @@
 package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,10 +22,10 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class RequisitionDtoBuilderTest {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -94,7 +94,7 @@ public class RequisitionDtoBuilderTest {
   public void shouldBuildDtoFromRequisition() {
     when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facilityDto);
     when(programReferenceDataService.findOne(programUuid)).thenReturn(programDto);
-    when(periodReferenceDataService.findOne(processingPeriodUuid)).thenReturn(processingPeriodDto);
+    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(processingPeriodDto);
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
@@ -116,7 +116,7 @@ public class RequisitionDtoBuilderTest {
   public void shouldBuildDtoFromRequisitionWhenReferenceDataInstancesDoNotExist() {
     when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(null);
     when(programReferenceDataService.findOne(programUuid)).thenReturn(null);
-    when(periodReferenceDataService.findOne(processingPeriodUuid)).thenReturn(null);
+    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(null);
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 

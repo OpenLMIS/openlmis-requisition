@@ -1,12 +1,6 @@
 package org.openlmis.requisition.service;
 
-import static java.time.temporal.TemporalAdjusters.firstDayOfMonth;
-import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -50,7 +44,6 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -58,7 +51,6 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,7 +110,7 @@ public class RequisitionServiceTest {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Mock
   private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
@@ -531,108 +523,6 @@ public class RequisitionServiceTest {
     assertEquals(initiatedRequisition.getStatus(), INITIATED);
   }
 
-  @Test
-  public void shouldReturnCurrentPeriod() throws Exception {
-    LocalDate now = LocalDate.now();
-
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-    period.setId(UUID.randomUUID());
-    period.setStartDate(now.with(firstDayOfMonth()));
-    period.setEndDate(now.with(lastDayOfMonth()));
-
-    Requisition requisition = new Requisition();
-    requisition.setStatus(SUBMITTED);
-
-    doReturn(Collections.singletonList(period))
-        .when(periodReferenceDataService)
-        .searchByProgramAndFacility(programId, facilityId);
-
-    doReturn(Collections.singletonList(requisition))
-        .when(requisitionRepository)
-        .searchByProcessingPeriod(period.getId(), false);
-
-    List<ProcessingPeriodDto> currentPeriods =
-        requisitionService.getCurrentPeriods(programId, facilityId);
-
-    assertThat(currentPeriods, hasSize(1));
-    assertThat(currentPeriods.iterator().next().getId(), is(equalTo(period.getId())));
-  }
-
-  @Test
-  public void shouldNotReturnCurrentPeriodIfThereIsNoRequisition() throws Exception {
-    LocalDate now = LocalDate.now();
-
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-    period.setId(UUID.randomUUID());
-    period.setStartDate(now.with(firstDayOfMonth()));
-    period.setEndDate(now.with(lastDayOfMonth()));
-
-    Requisition requisition = new Requisition();
-    requisition.setStatus(INITIATED);
-
-    doReturn(Collections.singletonList(period))
-        .when(periodReferenceDataService)
-        .searchByProgramAndFacility(programId, facilityId);
-
-    doReturn(Collections.singletonList(requisition))
-        .when(requisitionRepository)
-        .searchByProcessingPeriod(period.getId(), false);
-
-    List<ProcessingPeriodDto> currentPeriods =
-        requisitionService.getCurrentPeriods(programId, facilityId);
-
-    assertThat(currentPeriods, hasSize(0));
-  }
-
-  @Test
-  public void shouldNotReturnCurrentPeriodIfItDoesNotExist() throws Exception {
-    LocalDate now = LocalDate.now().plusMonths(1);
-
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-    period.setId(UUID.randomUUID());
-    period.setStartDate(now.with(firstDayOfMonth()));
-    period.setEndDate(now.with(lastDayOfMonth()));
-
-    Requisition requisition = new Requisition();
-    requisition.setStatus(SUBMITTED);
-
-    doReturn(Collections.singletonList(period))
-        .when(periodReferenceDataService)
-        .searchByProgramAndFacility(programId, facilityId);
-
-    doReturn(Collections.singletonList(requisition))
-        .when(requisitionRepository)
-        .searchByProcessingPeriod(period.getId(), false);
-
-    List<ProcessingPeriodDto> currentPeriods =
-        requisitionService.getCurrentPeriods(programId, facilityId);
-
-    assertThat(currentPeriods, hasSize(0));
-  }
-
-  @Test
-  public void shouldNotReturnCurrentPeriodIfThereIsNonSubmittedRequisition() throws Exception {
-    LocalDate now = LocalDate.now();
-
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-    period.setId(UUID.randomUUID());
-    period.setStartDate(now.with(firstDayOfMonth()));
-    period.setEndDate(now.with(lastDayOfMonth()));
-
-    doReturn(Collections.singletonList(period))
-        .when(periodReferenceDataService)
-        .searchByProgramAndFacility(programId, facilityId);
-
-    doReturn(Collections.emptyList())
-        .when(requisitionRepository)
-        .searchByProcessingPeriod(period.getId(), false);
-
-    List<ProcessingPeriodDto> currentPeriods =
-        requisitionService.getCurrentPeriods(programId, facilityId);
-
-    assertThat(currentPeriods, hasSize(0));
-  }
-
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
@@ -700,8 +590,8 @@ public class RequisitionServiceTest {
     processingPeriodDto = new ProcessingPeriodDto();
     processingPeriodDto.setProcessingSchedule(processingScheduleDto);
     processingPeriodDto.setId(suggestedPeriodId);
-    when(periodReferenceDataService
-        .findOne(any()))
+    when(periodService
+        .getPeriod(any()))
         .thenReturn(processingPeriodDto);
 
     RequisitionGroupProgramScheduleDto requisitionGroupProgramScheduleDto =
@@ -710,7 +600,7 @@ public class RequisitionServiceTest {
     when(referenceDataService.searchByProgramAndFacility(any(), any()))
         .thenReturn(requisitionGroupProgramScheduleDto);
 
-    when(periodReferenceDataService.searchByProgramAndFacility(any(), any()))
+    when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriodDto));
 
     when(requisitionRepository.searchByProcessingPeriod(any(), any()))

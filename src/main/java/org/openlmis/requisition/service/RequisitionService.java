@@ -27,7 +27,6 @@ import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,7 +67,7 @@ public class RequisitionService {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Autowired
   private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
@@ -151,7 +149,9 @@ public class RequisitionService {
     ProcessingPeriodDto period;
 
     if (emergency) {
-      Collection<ProcessingPeriodDto> periods = getCurrentPeriods(programId, facilityId);
+      Collection<ProcessingPeriodDto> periods = periodService.getCurrentPeriods(
+          programId, facilityId
+      );
 
       if (periods.isEmpty()) {
         throw new InvalidPeriodException("Cannot find current period");
@@ -448,7 +448,7 @@ public class RequisitionService {
 
     ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods =
-          periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
+          periodService.searchByProgramAndFacility(programId, facilityId);
 
     List<Requisition> requisitions;
 
@@ -471,39 +471,6 @@ public class RequisitionService {
     checkPeriod(programId, facilityId, result);
 
     return result;
-  }
-
-  /**
-   * Find and return a list of current processing periods.
-   *
-   * @param programId  UUID of Program.
-   * @param facilityId UUID of Facility.
-   * @return a list of current processing periods
-   */
-  public List<ProcessingPeriodDto> getCurrentPeriods(UUID programId, UUID facilityId) {
-    Collection<ProcessingPeriodDto> periods =
-        periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
-
-    return periods
-        .stream()
-        .filter(period -> {
-          // check if period is in current date
-          LocalDate currentDate = LocalDate.now();
-          LocalDate startDate = period.getStartDate();
-          LocalDate endDate = period.getEndDate();
-
-          return (currentDate.isEqual(startDate) || currentDate.isAfter(startDate))
-              && (currentDate.isEqual(endDate) || currentDate.isBefore(endDate));
-        })
-        .filter(period -> {
-          // check if requisitions with the period are submitted
-          List<Requisition> requisitions =
-              requisitionRepository.searchByProcessingPeriod(period.getId(), false);
-
-          return !(null == requisitions || requisitions.isEmpty())
-              && requisitions.stream().allMatch(Requisition::isPostSubmitted);
-        })
-        .collect(Collectors.toList());
   }
 
 }

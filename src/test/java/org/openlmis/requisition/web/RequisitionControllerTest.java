@@ -10,7 +10,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -31,8 +30,8 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -57,7 +56,7 @@ public class RequisitionControllerTest {
   private RequisitionService requisitionService;
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Mock
   private Requisition initiatedRequsition;
@@ -107,35 +106,12 @@ public class RequisitionControllerTest {
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
     when(approvedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
-    when(periodReferenceDataService.searchByProgramAndFacility(
-            programUuid, facilityUuid)).thenReturn(processingPeriods);
-    when(requisitionService.getCurrentPeriods(programUuid, facilityUuid))
+    when(periodService.getPeriods(programUuid, facilityUuid, false))
+        .thenReturn(processingPeriods);
+    when(periodService.getPeriods(programUuid, facilityUuid, true))
         .thenReturn(Collections.singletonList(processingPeriods.get(0)));
 
     mockRequsitionRepository();
-  }
-
-  @Test
-  public void shouldReturnOnlyValidPeriodsForRequisitionInitiate() {
-    ResponseEntity<?> response =
-            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-
-    List<ProcessingPeriodDto> periods = (List<ProcessingPeriodDto>) response.getBody();
-
-    verify(periodReferenceDataService).searchByProgramAndFacility(programUuid, facilityUuid);
-    verify(requisitionRepository, times(5)).searchByProcessingPeriod(any(UUID.class), any());
-
-    assertNotNull(periods);
-    assertEquals(3, periods.size());
-
-    List<UUID> periodUuids = periods.stream().map(period -> period.getId())
-            .collect(Collectors.toList());
-
-    assertTrue(periodUuids.contains(uuid1));
-    assertTrue(periodUuids.contains(uuid2));
-    assertTrue(periodUuids.contains(uuid3));
   }
 
   @Test
@@ -146,8 +122,8 @@ public class RequisitionControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     List<ProcessingPeriodDto> periods = (List<ProcessingPeriodDto>) response.getBody();
 
-    verify(requisitionService).getCurrentPeriods(programUuid, facilityUuid);
-    verifyZeroInteractions(periodReferenceDataService, requisitionRepository);
+    verify(periodService).getPeriods(programUuid, facilityUuid, true);
+    verifyZeroInteractions(periodService, requisitionRepository);
 
     assertNotNull(periods);
     assertEquals(1, periods.size());

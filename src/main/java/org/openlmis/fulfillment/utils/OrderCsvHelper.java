@@ -12,9 +12,9 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +42,7 @@ public class OrderCsvHelper {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
@@ -170,7 +170,7 @@ public class OrderCsvHelper {
         columnValue = getValue(product, orderFileColumn.getRelatedKeyPath());
         break;
       case PERIOD:
-        ProcessingPeriodDto period = periodReferenceDataService.findOne(relatedId);
+        ProcessingPeriodDto period = periodService.getPeriod(relatedId);
         columnValue = getValue(period, orderFileColumn.getRelatedKeyPath());
         break;
       default:

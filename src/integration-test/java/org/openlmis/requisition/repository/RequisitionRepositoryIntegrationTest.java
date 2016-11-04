@@ -1,6 +1,9 @@
 package org.openlmis.requisition.repository;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
@@ -66,29 +69,33 @@ public class RequisitionRepositoryIntegrationTest
             requisitions.get(0).getStatus(),
             requisitions.get(0).getEmergency());
 
-    Assert.assertEquals(2, receivedRequisitions.size());
+    assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getProgramId(),
               requisitions.get(0).getProgramId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getProcessingPeriodId(),
               requisitions.get(0).getProcessingPeriodId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getFacilityId(),
               requisitions.get(0).getFacilityId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getSupervisoryNodeId(),
               requisitions.get(0).getSupervisoryNodeId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getStatus(),
               requisitions.get(0).getStatus());
-      Assert.assertTrue(
+      assertTrue(
               receivedRequisition.getCreatedDate().isBefore(
                       requisitions.get(0).getCreatedDate().plusDays(2)));
-      Assert.assertTrue(
+      assertTrue(
               receivedRequisition.getCreatedDate().isAfter(
                       requisitions.get(0).getCreatedDate().minusDays(1)));
+      assertEquals(
+          receivedRequisition.getEmergency(),
+          requisitions.get(0).getEmergency()
+      );
     }
   }
 
@@ -107,12 +114,12 @@ public class RequisitionRepositoryIntegrationTest
             requisitions.get(0).getProgramId(),
             null, null, null, null, null, null);
 
-    Assert.assertEquals(2, receivedRequisitions.size());
+    assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getProgramId(),
               requisitions.get(0).getProgramId());
-      Assert.assertEquals(
+      assertEquals(
               receivedRequisition.getFacilityId(),
               requisitions.get(0).getFacilityId());
     }
@@ -123,6 +130,40 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             null, null, null, null, null, null, null, null);
 
-    Assert.assertEquals(5, receivedRequisitions.size());
+    assertEquals(5, receivedRequisitions.size());
+  }
+
+  @Test
+  public void testSearchEmergencyRequsitions() throws Exception {
+    List<Requisition> emergency = repository.searchRequisitions(
+        null,null,null,null,null,null,null, true
+    );
+
+    assertEquals(2, emergency.size());
+    emergency.forEach(requisition -> assertTrue(requisition.getEmergency()));
+  }
+
+  @Test
+  public void testSearchStandardRequisitions() throws Exception {
+    List<Requisition> standard = repository.searchRequisitions(
+        null,null,null,null,null,null,null, false
+    );
+
+    assertEquals(3, standard.size());
+    standard.forEach(requisition -> assertFalse(requisition.getEmergency()));
+  }
+
+  @Test
+  public void testSearchRequsitionsByPeriodAndEmergencyFlag() throws Exception {
+    requisitions.forEach(requisition -> {
+      List<Requisition> found = repository.searchByProcessingPeriod(
+          requisition.getProcessingPeriodId(), requisition.getEmergency()
+      );
+
+      found.forEach(element -> {
+        assertEquals(requisition.getProcessingPeriodId(), element.getProcessingPeriodId());
+        assertEquals(requisition.getEmergency(), element.getEmergency());
+      });
+    });
   }
 }

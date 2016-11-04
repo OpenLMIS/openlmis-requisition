@@ -2,7 +2,6 @@ package org.openlmis.requisition.service;
 
 import static java.util.stream.Collectors.toList;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.LineItemFieldsCalculator;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -11,14 +10,10 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class RequisitionLineCalculationService {
@@ -28,7 +23,7 @@ public class RequisitionLineCalculationService {
   private RequisitionService requisitionService;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
+  private PeriodService periodService;
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
@@ -61,7 +56,9 @@ public class RequisitionLineCalculationService {
     // Secondly, if we display the column ...
     if (template.isColumnDisplayed(BEGINNING_BALANCE_COLUMN)) {
       // ... we try to find previous period and requisition ...
-      ProcessingPeriodDto previousPeriod = findPreviousPeriod(requisition.getProcessingPeriodId());
+      ProcessingPeriodDto previousPeriod = periodService.findPreviousPeriod(
+          requisition.getProcessingPeriodId()
+      );
       Requisition previousRequisition = null != previousPeriod
           ? findPreviousRequisition(requisition, previousPeriod)
           : null;
@@ -79,34 +76,6 @@ public class RequisitionLineCalculationService {
         });
       }
     }
-
-
-  }
-
-  private ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
-    // retrieve data from reference-data
-    ProcessingPeriodDto period = periodReferenceDataService.findOne(periodId);
-
-    if (null == period) {
-      return null;
-    }
-
-    Collection<ProcessingPeriodDto> collection = periodReferenceDataService
-        .search(period.getProcessingSchedule().getId(), period.getStartDate());
-
-    if (null == collection || collection.isEmpty()) {
-      return null;
-    }
-
-    // create a list...
-    List<ProcessingPeriodDto> list = new ArrayList<>(collection);
-    // ...remove the latest period from the list because it is not previous...
-    list.removeIf(p -> p.getId().equals(periodId));
-    // .. and sort elements by startDate property DESC.
-    list.sort((one, two) -> ObjectUtils.compare(two.getStartDate(), one.getStartDate()));
-
-    // The latest previous date should be first.
-    return list.isEmpty() ? null : list.get(0);
   }
 
   private Requisition findPreviousRequisition(Requisition requisition, ProcessingPeriodDto period) {
