@@ -32,7 +32,6 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
@@ -46,7 +45,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
@@ -70,21 +69,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private ProgramDto program;
-
-  @Mock
-  private ProcessingPeriodDto period;
-
-  @Mock
-  private ProcessingPeriodDto period2;
-
-  @Mock
-  private ProcessingScheduleDto schedule;
-
-  @Mock
-  private ProcessingScheduleDto schedule2;
-
-  @Mock
-  private RequisitionGroupProgramScheduleDto requisitionGroupProgramSchedule;
 
   @Mock
   private SupervisoryNodeDto supervisoryNode;
@@ -114,7 +98,7 @@ public class RequisitionServiceTest {
   private PeriodService periodService;
 
   @Mock
-  private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
+  private ScheduleReferenceDataService scheduleReferenceDataService;
 
   @Mock
   private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
@@ -252,7 +236,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldInitiateRequisitionIfItNotAlreadyExist()
+  public void shouldInitiateRequisitionIfItDoesNotAlreadyExist()
       throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
@@ -286,7 +270,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionInitializationException.class)
-  public void shouldThrowExceptionIfRequisitionGroupProgramScheduleDoesNotExist()
+  public void shouldThrowExceptionIfScheduleDoesNotExist()
       throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
@@ -298,7 +282,7 @@ public class RequisitionServiceTest {
         .findOne(requisition.getId()))
         .thenReturn(null);
 
-    when(referenceDataService.searchByProgramAndFacility(programId, facilityId))
+    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(null);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
@@ -460,19 +444,15 @@ public class RequisitionServiceTest {
         ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
     );
 
-    RequisitionGroupProgramScheduleDto requisitionGroupProgramScheduleDto =
-        new RequisitionGroupProgramScheduleDto();
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
-    requisitionGroupProgramScheduleDto.setProcessingSchedule(processingScheduleDto);
-    when(referenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(requisitionGroupProgramScheduleDto);
+    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(processingScheduleDto);
 
     requisition.setStatus(null);
     when(requisitionRepository
         .findOne(requisition.getId()))
         .thenReturn(null);
-    when(requisitionGroupProgramSchedule.getProcessingSchedule()).thenReturn(schedule2);
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
     when(requisitionTemplateService.getTemplateForProgram(programId))
@@ -595,11 +575,8 @@ public class RequisitionServiceTest {
         .getPeriod(any()))
         .thenReturn(processingPeriodDto);
 
-    RequisitionGroupProgramScheduleDto requisitionGroupProgramScheduleDto =
-        new RequisitionGroupProgramScheduleDto();
-    requisitionGroupProgramScheduleDto.setProcessingSchedule(processingScheduleDto);
-    when(referenceDataService.searchByProgramAndFacility(any(), any()))
-        .thenReturn(requisitionGroupProgramScheduleDto);
+    when(scheduleReferenceDataService.searchByProgramAndFacility(any(), any()))
+        .thenReturn(processingScheduleDto);
 
     when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriodDto));

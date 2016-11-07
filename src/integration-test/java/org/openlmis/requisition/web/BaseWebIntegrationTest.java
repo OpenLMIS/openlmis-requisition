@@ -20,11 +20,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.UUID;
-
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
+
+import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -170,11 +170,6 @@ public abstract class BaseWebIntegrationTest {
       + " \"supplyingFacility\":\"aa66b762-871a-11e6-ae22-56b6b6499611\"\n"
       + "}]";
 
-  private static final String MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE = "{"
-      + " \"id\":\"7b34f06e-895c-11e6-ae22-56b6b6499611\","
-      + " \"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE
-      + "}";
-
   private static final String MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS = "[{"
       + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
       + " \"facilityType\":" + MOCK_FIND_FACILITY_TYPE + ","
@@ -292,6 +287,13 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_SUPPLYING_FACILITY_RESULT)));
 
+    // This mocks searching for processingSchedules
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/processingSchedules/.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_FIND_PROCESSING_SCHEDULE)));
+
     // This mocks searching for processingPeriods
     wireMockRule.stubFor(get(
         urlMatching("/referencedata/api/processingPeriods/" + UUID_REGEX + ".*"))
@@ -304,13 +306,6 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_SUPPLY_LINE_RESULT)));
-
-    // This mocks searching for requisitionGroupProgramSchedules
-    wireMockRule.stubFor(get(
-        urlMatching("/referencedata/api/requisitionGroupProgramSchedules/search.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_SEARCH_REQUISITION_GROUP_PROGRAM_SCHEDULE)));
 
     // This mocks searching for facilityTypeApprovedProducts
     wireMockRule.stubFor(get(

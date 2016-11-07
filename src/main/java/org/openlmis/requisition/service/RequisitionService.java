@@ -10,9 +10,9 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.RequisitionGroupProgramScheduleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
@@ -28,7 +28,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.RequisitionGroupProgramScheduleReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.requisition.web.RequisitionDtoBuilder;
@@ -70,7 +70,7 @@ public class RequisitionService {
   private PeriodService periodService;
 
   @Autowired
-  private RequisitionGroupProgramScheduleReferenceDataService referenceDataService;
+  private ScheduleReferenceDataService scheduleReferenceDataService;
 
   @Autowired
   private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
@@ -416,17 +416,16 @@ public class RequisitionService {
           "Period should be the oldest and not associated with any requisitions");
     }
 
-    RequisitionGroupProgramScheduleDto dto =
-          referenceDataService.searchByProgramAndFacility(programId, facilityId);
+    ProcessingScheduleDto scheduleDto =
+          scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId);
 
-    if (dto == null) {
+    if (scheduleDto == null) {
       throw new RequisitionInitializationException(
             "Cannot initiate requisition. Requisition group program schedule"
             + " with given program and facility does not exist");
     }
 
-    if (!dto.getProcessingSchedule().getId().equals(
-        period.getProcessingSchedule().getId())) {
+    if (!scheduleDto.getId().equals(period.getProcessingSchedule().getId())) {
       throw new InvalidPeriodException("Cannot initiate requisition."
           + " Period for the requisition must belong to the same schedule"
           + " that belongs to the program selected for that requisition");
