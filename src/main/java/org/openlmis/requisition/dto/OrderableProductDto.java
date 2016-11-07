@@ -10,6 +10,7 @@ import java.util.UUID;
 @Setter
 public class OrderableProductDto {
   private UUID id;
+  private String dispensingUnit;
   private String productCode;
   private String name;
   private Set<ProgramProductDto> programs;
