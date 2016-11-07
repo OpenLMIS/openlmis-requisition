@@ -15,7 +15,7 @@ public interface RequisitionRepositoryCustom {
                                        LocalDateTime createdDateTo,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
-                                       RequisitionStatus requisitionStatus,
+                                       RequisitionStatus[] requisitionStatuses,
                                        Boolean emergency);
 
   List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(

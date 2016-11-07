@@ -25,6 +25,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -415,7 +416,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        requisition.getStatus(), null))
+        new RequisitionStatus[]{requisition.getStatus()}, null))
         .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
@@ -425,7 +426,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        requisition.getStatus(), null);
+        new RequisitionStatus[]{requisition.getStatus()}, null);
 
     assertEquals(1, receivedRequisitions.size());
     assertEquals(

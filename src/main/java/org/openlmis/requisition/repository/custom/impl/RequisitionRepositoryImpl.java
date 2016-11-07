@@ -29,6 +29,7 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @Autowired
@@ -53,7 +54,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param createdDateTo     Before what date should searched Requisition be created.
    * @param processingPeriod  processingPeriod of searched Requisitions.
    * @param supervisoryNode   supervisoryNode of searched Requisitions.
-   * @param requisitionStatus status of searched Requisitions.
+   * @param requisitionStatuses statuses of searched Requisitions.
    * @return list of Requisitions with matched parameters.
    */
   public List<Requisition> searchRequisitions(UUID facility, UUID program,
@@ -61,7 +62,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                               LocalDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
-                                              RequisitionStatus requisitionStatus,
+                                              RequisitionStatus[] requisitionStatuses,
                                               Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
@@ -89,9 +90,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       predicate = builder.and(predicate,
               builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
     }
-    if (requisitionStatus != null) {
-      predicate = builder.and(predicate,
-          builder.equal(root.get("status"), requisitionStatus));
+    if (requisitionStatuses != null && requisitionStatuses.length > 0) {
+      Predicate statusPredicate = builder.equal(root.get("status"), requisitionStatuses[0]);
+      if (requisitionStatuses.length > 1) {
+        for (RequisitionStatus status : requisitionStatuses) {
+          statusPredicate = builder.or(statusPredicate,
+                  builder.equal(root.get("status"), status));
+        }
+      }
+      predicate = builder.and(predicate, statusPredicate);
     }
     if (null != emergency) {
       predicate = builder.and(predicate,

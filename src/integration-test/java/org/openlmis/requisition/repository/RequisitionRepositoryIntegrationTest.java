@@ -66,7 +66,7 @@ public class RequisitionRepositoryIntegrationTest
             requisitions.get(0).getCreatedDate().plusDays(2),
             requisitions.get(0).getProcessingPeriodId(),
             requisitions.get(0).getSupervisoryNodeId(),
-            requisitions.get(0).getStatus(),
+            new RequisitionStatus[]{requisitions.get(0).getStatus()},
             requisitions.get(0).getEmergency());
 
     assertEquals(2, receivedRequisitions.size());

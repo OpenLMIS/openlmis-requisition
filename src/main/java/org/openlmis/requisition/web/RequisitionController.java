@@ -278,11 +278,11 @@ public class RequisitionController extends BaseController {
       @RequestParam(value = "processingPeriod", required = false)
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
-      @RequestParam(value = "requisitionStatus", required = false)
-              RequisitionStatus requisitionStatus,
+      @RequestParam(value = "requisitionStatus[]", required = false)
+              RequisitionStatus[] requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency) {
     List<Requisition> result = requisitionService.searchRequisitions(facility, program,
-        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatus,
+        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency);
 
     return new ResponseEntity<>(result, HttpStatus.OK);
@@ -359,7 +359,8 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getSubmittedRequisitions() {
 
     Iterable<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
-                null, null, null, null, null, null, RequisitionStatus.SUBMITTED, null);
+                null, null, null, null, null, null,
+                new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

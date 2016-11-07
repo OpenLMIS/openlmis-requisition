@@ -267,11 +267,11 @@ public class RequisitionService {
                                               LocalDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
-                                              RequisitionStatus requisitionStatus,
+                                              RequisitionStatus[] requisitionStatuses,
                                               Boolean emergency) {
     return requisitionRepository.searchRequisitions(
         facility, program, createdDateFrom,
-        createdDateTo, processingPeriod, supervisoryNode, requisitionStatus, emergency);
+        createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency);
   }
 
   /**
