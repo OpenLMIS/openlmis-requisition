@@ -48,7 +48,7 @@
         url = decodeURIComponent(url[1]);
       } else {
         var token = $.urlParam('access_token');
-        url = baseUrl + 'generated/api-definition.json';
+        url = baseUrl + 'docs/api-definition.json';
         if (token) {
           url += '?access_token=' + token;
         }
