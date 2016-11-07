@@ -29,7 +29,6 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-@SuppressWarnings("PMD.CyclomaticComplexity")
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @Autowired
@@ -90,15 +89,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       predicate = builder.and(predicate,
               builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
     }
+
     if (requisitionStatuses != null && requisitionStatuses.length > 0) {
-      Predicate statusPredicate = builder.equal(root.get("status"), requisitionStatuses[0]);
-      if (requisitionStatuses.length > 1) {
-        for (RequisitionStatus status : requisitionStatuses) {
-          statusPredicate = builder.or(statusPredicate,
-                  builder.equal(root.get("status"), status));
-        }
-      }
-      predicate = builder.and(predicate, statusPredicate);
+      predicate = builder.and(predicate,
+              buildStatusPredicate(builder, requisitionStatuses, root));
     }
     if (null != emergency) {
       predicate = builder.and(predicate,
@@ -303,5 +297,17 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return requisitions.subList(firstPageRecordListIndex, lastPageRecordListIndex);
+  }
+
+  private Predicate buildStatusPredicate(CriteriaBuilder builder,
+                     RequisitionStatus[] requisitionStatuses, Root<Requisition> root) {
+    Predicate statusPredicate = builder.equal(root.get("status"), requisitionStatuses[0]);
+    if (requisitionStatuses.length > 1) {
+      for (RequisitionStatus status : requisitionStatuses) {
+        statusPredicate = builder.or(statusPredicate,
+                builder.equal(root.get("status"), status));
+      }
+    }
+    return statusPredicate;
   }
 }

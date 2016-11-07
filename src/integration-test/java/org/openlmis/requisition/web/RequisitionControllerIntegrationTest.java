@@ -79,6 +79,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String FACILITY = "facility";
   private static final String APPROVED_REQUISITIONS_SEARCH_URL =
       RESOURCE_URL + "/requisitionsForConvert";
+  private static final UUID PERIOD_UUID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
+  private static final UUID PROGRAM_UUID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
+  private static final UUID FACILITY_UUID = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -100,6 +103,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
+  private Requisition requisitionForSearch = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
   private OrderableProductDto product = new OrderableProductDto();
   private ProgramDto program = new ProgramDto();
@@ -147,6 +151,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNode.setFacility(facility);
 
     configureRequisition(requisition);
+    configureRequisitionForSearch(requisitionForSearch);
 
     requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setRequestedQuantity(1);
@@ -176,11 +181,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldFindRequisitions() {
-    Requisition[] response = restAssured.given()
+    RequisitionDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("program", program.getId())
-        .queryParam("processingPeriod", period.getId())
-        .queryParam(FACILITY, facility.getId())
+        .queryParam("program", PROGRAM_UUID)
+        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
         .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
@@ -189,22 +194,22 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Requisition[].class);
+        .extract().as(RequisitionDto[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, response.length);
-    for ( Requisition receivedRequisition : response ) {
+    for ( RequisitionDto receivedRequisition : response ) {
       assertEquals(
-              receivedRequisition.getProgramId(),
-              program.getId());
+              receivedRequisition.getProgram().getId(),
+              PROGRAM_UUID);
       assertEquals(
-              receivedRequisition.getProcessingPeriodId(),
-              period.getId());
+              receivedRequisition.getProcessingPeriod().getId(),
+              PERIOD_UUID);
       assertEquals(
-              receivedRequisition.getFacilityId(),
-              facility.getId());
+              receivedRequisition.getFacility().getId(),
+              FACILITY_UUID);
       assertEquals(
-              receivedRequisition.getSupervisoryNodeId(),
+              receivedRequisition.getSupervisoryNode(),
               supervisoryNode.getId());
       assertEquals(
           receivedRequisition.getStatus(),
@@ -571,6 +576,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldInitializeRequisition() {
 
     requisitionRepository.delete(requisition);
+    requisitionRepository.delete(requisitionForSearch);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -872,6 +878,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setFacilityId(facility.getId());
     requisition.setProcessingPeriodId(period.getId());
     requisition.setProgramId(program.getId());
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setCreatedDate(localDateTime);
+    requisition.setEmergency(false);
+
+    return requisitionRepository.save(requisition);
+  }
+
+  private Requisition configureRequisitionForSearch(Requisition requisition) {
+    requisition.setFacilityId(FACILITY_UUID);
+    requisition.setProcessingPeriodId(PERIOD_UUID);
+    requisition.setProgramId(PROGRAM_UUID);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
