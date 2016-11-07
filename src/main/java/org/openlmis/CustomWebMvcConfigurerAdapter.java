@@ -8,12 +8,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
 
-  @Value("${server.url}")
-  private String serverUrl;
+  @Value("${service.url}")
+  private String serviceUrl;
 
   @Override
   public void addViewControllers(ViewControllerRegistry registry) {
-    registry.addViewController("/docs").setViewName("redirect:" + serverUrl + "/docs/");
+    registry.addViewController("/docs").setViewName("redirect:" + serviceUrl + "/docs/");
     registry.addViewController("/docs/").setViewName("forward:/docs/index.html");
     super.addViewControllers(registry);
   }
