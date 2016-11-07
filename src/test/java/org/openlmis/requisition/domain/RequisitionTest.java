@@ -16,7 +16,6 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -76,8 +75,8 @@ public class RequisitionTest {
 
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(true);
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
-    BDDMockito.given(LineItemFieldsCalculator.calculateTotal(requisitionLineItem))
-        .willReturn(1);
+    when(LineItemFieldsCalculator.calculateTotal(requisitionLineItem))
+        .thenReturn(1);
 
     Requisition newRequisition = new Requisition();
 
@@ -97,8 +96,8 @@ public class RequisitionTest {
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
 
     when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
-    BDDMockito.given(LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem))
-        .willReturn(1);
+    when(LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem))
+        .thenReturn(1);
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         Collections.singletonList(requisitionLineItem)));
