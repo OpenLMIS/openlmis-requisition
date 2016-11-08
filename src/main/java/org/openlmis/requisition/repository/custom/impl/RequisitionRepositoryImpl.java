@@ -89,11 +89,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       predicate = builder.and(predicate,
               builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
     }
-
-    if (requisitionStatuses != null && requisitionStatuses.length > 0) {
-      predicate = builder.and(predicate,
-              buildStatusPredicate(builder, requisitionStatuses, root));
-    }
+    predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
     if (null != emergency) {
       predicate = builder.and(predicate,
           builder.equal(root.get("emergency"), emergency));
@@ -299,15 +295,17 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return requisitions.subList(firstPageRecordListIndex, lastPageRecordListIndex);
   }
 
-  private Predicate buildStatusPredicate(CriteriaBuilder builder,
+  private Predicate filterByStatuses(CriteriaBuilder builder, Predicate predicate,
                      RequisitionStatus[] requisitionStatuses, Root<Requisition> root) {
-    Predicate statusPredicate = builder.equal(root.get("status"), requisitionStatuses[0]);
-    if (requisitionStatuses.length > 1) {
+    if (requisitionStatuses != null && requisitionStatuses.length > 0) {
+      Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
         statusPredicate = builder.or(statusPredicate,
                 builder.equal(root.get("status"), status));
       }
+      predicate = builder.and(predicate, statusPredicate);
     }
-    return statusPredicate;
+
+    return predicate;
   }
 }
