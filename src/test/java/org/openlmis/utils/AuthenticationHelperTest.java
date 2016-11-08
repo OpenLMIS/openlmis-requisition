@@ -1,7 +1,11 @@
 package org.openlmis.utils;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,8 +15,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationException;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -23,6 +29,9 @@ public class AuthenticationHelperTest {
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  private RightReferenceDataService rightReferenceDataService;
 
   @InjectMocks
   private AuthenticationHelper authenticationHelper;
@@ -58,5 +67,28 @@ public class AuthenticationHelperTest {
 
     // when
     authenticationHelper.getCurrentUser();
+  }
+
+  @Test
+  public void shouldReturnRight() throws Exception {
+    // given
+    RightDto right = mock(RightDto.class);
+    doReturn(right).when(rightReferenceDataService).findRight(anyString());
+
+    // when
+    RightDto dto = authenticationHelper.getRight("rightName");
+
+    // then
+    assertNotNull(right);
+    assertThat(dto, is(right));
+  }
+
+  @Test(expected = AuthenticationException.class)
+  public void shouldThrowExceptionIfRightDoesNotExist() {
+    // given
+    when(rightReferenceDataService.findRight(anyString())).thenReturn(null);
+
+    // when
+    authenticationHelper.getRight("rightName");
   }
 }

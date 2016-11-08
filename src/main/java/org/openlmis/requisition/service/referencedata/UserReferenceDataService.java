@@ -1,5 +1,6 @@
 package org.openlmis.requisition.service.referencedata;
 
+import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class UserReferenceDataService extends BaseReferenceDataService<UserDto> {
@@ -44,4 +46,30 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     List<UserDto> users = new ArrayList<>(findAll("search", parameters));
     return users.size() > 0 ? users.get(0) : null;
   }
+
+  /**
+   * Check if user has a right with certain criteria.
+   *
+   * @param user     id of user to check for right
+   * @param right    right to check
+   * @param program  program to check (for supervision rights, can be {@code null})
+   * @param facility facility to check (for supervision rights, can be {@code null})
+   * @return an instance of {@link BooleanResultDto} with true or false depending on if user has the
+   *         right.
+   */
+  public BooleanResultDto hasRight(UUID user, UUID right, UUID program, UUID facility) {
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("rightId", right);
+
+    if (null != program) {
+      parameters.put("programId", program);
+    }
+
+    if (null != facility) {
+      parameters.put("facilityId", facility);
+    }
+
+    return get(BooleanResultDto.class, user + "/hasRight", parameters);
+  }
+
 }

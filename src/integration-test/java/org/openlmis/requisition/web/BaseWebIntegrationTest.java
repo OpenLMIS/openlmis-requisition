@@ -34,6 +34,8 @@ public abstract class BaseWebIntegrationTest {
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
 
+  private static final String REFERENCEDATA_API_USERS = "/referencedata/api/users/";
+
   protected RestAssuredClient restAssured;
 
   protected static final RamlDefinition ramlDefinition =
@@ -191,6 +193,15 @@ public abstract class BaseWebIntegrationTest {
       + "}"
       + "]";
 
+  private static final String MOCK_RIGHT_SEARCH = "["
+      + "{"
+      + "\"id\":\"00fb0d27-7ea7-4196-adf0-61103058e0e8\",\n"
+      + "\"name\":\"rightName\"\n"
+      + "}"
+      + "]";
+
+  private static final String MOCK_HAS_RIGHT = "{ \"result\":\"true\" }";
+
   protected static final String MOCK_SEARCH_SUPPLYING_FACILITY_RESULT = "["
       + MOCK_FIND_FACILITY_RESULT + "]";
 
@@ -236,20 +247,20 @@ public abstract class BaseWebIntegrationTest {
             .withBody(MOCK_USER_SEARCH_RESULT)));
 
     // This mocks for find one user
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + ".*"))
+    wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_USER_RESULT)));
 
     // This mocks the call to retrieve programs supervised by the user
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/programs.*"))
+    wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/programs.*"))
             .willReturn(aResponse()
                     .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                     .withBody(MOCK_FIND_USER_SUPERVISED_PROGRAMS)));
 
     // This mocks the call to retrieve fulfillment facilities of the user
     wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/fulfillmentFacilities.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody("[" + MOCK_FIND_FACILITY_RESULT + "]")));
@@ -333,6 +344,22 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME)));
+
+    // This mocks for checking if a user has a right
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(MOCK_HAS_RIGHT))
+    );
+
+    // This mocks searching for right by name
+    wireMockRule.stubFor(
+        get(urlMatching("/referencedata/api/rights/search.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(MOCK_RIGHT_SEARCH))
+    );
   }
 
   @After

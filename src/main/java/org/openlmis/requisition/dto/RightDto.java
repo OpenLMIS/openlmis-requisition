@@ -11,6 +11,7 @@ import java.util.UUID;
 public class RightDto {
   private UUID id;
   private String name;
+  private RightType type;
+  private String description;
   private Set<RightDto> attachments;
-  private RightDto parent;
 }

@@ -1,7 +1,10 @@
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -36,6 +39,7 @@ import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonRefer
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.ErrorResponse;
+import org.openlmis.utils.PermissionHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -47,6 +51,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerTest {
 
   @Mock
@@ -85,6 +90,9 @@ public class RequisitionControllerTest {
   @Mock
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
+  @Mock
+  private PermissionHelper permissionHelper;
+
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
 
@@ -111,7 +119,15 @@ public class RequisitionControllerTest {
     when(periodService.getPeriods(programUuid, facilityUuid, true))
         .thenReturn(Collections.singletonList(processingPeriods.get(0)));
 
-    mockRequsitionRepository();
+    when(permissionHelper.canInitRequisition(any(), any())).thenReturn(true);
+    when(permissionHelper.canUpdateRequisition()).thenReturn(true);
+    when(permissionHelper.canSubmitRequisition()).thenReturn(true);
+    when(permissionHelper.canApproveRequisition()).thenReturn(true);
+    when(permissionHelper.canAuthorizeRequisition()).thenReturn(true);
+    when(permissionHelper.canDeleteRequisition()).thenReturn(true);
+    when(permissionHelper.canViewRequisition()).thenReturn(true);
+
+    mockRequisitionRepository();
   }
 
   @Test
@@ -221,6 +237,29 @@ public class RequisitionControllerTest {
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
+  @Test
+  public void shouldRejectRequestIfUserHasNoCorrectPermission() throws Exception {
+    when(permissionHelper.canInitRequisition(any(), any())).thenReturn(false);
+    when(permissionHelper.canUpdateRequisition()).thenReturn(false);
+    when(permissionHelper.canSubmitRequisition()).thenReturn(false);
+    when(permissionHelper.canApproveRequisition()).thenReturn(false);
+    when(permissionHelper.canAuthorizeRequisition()).thenReturn(false);
+    when(permissionHelper.canDeleteRequisition()).thenReturn(false);
+    when(permissionHelper.canViewRequisition()).thenReturn(false);
+
+    assertPermissionResponse(
+        requisitionController.initiate(programUuid, facilityUuid, null, false)
+    );
+    assertPermissionResponse(requisitionController.submitRequisition(UUID.randomUUID()));
+    assertPermissionResponse(requisitionController.deleteRequisition(UUID.randomUUID()));
+    assertPermissionResponse(
+        requisitionController.updateRequisition(mock(RequisitionDto.class), UUID.randomUUID())
+    );
+    assertPermissionResponse(requisitionController.getRequisition(UUID.randomUUID()));
+    assertPermissionResponse(requisitionController.approveRequisition(UUID.randomUUID()));
+    assertPermissionResponse(requisitionController.authorizeRequisition(UUID.randomUUID()));
+  }
+
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
     ProcessingPeriodDto period = new ProcessingPeriodDto();
     period.setId(uuid1);
@@ -243,7 +282,7 @@ public class RequisitionControllerTest {
     return periods;
   }
 
-  private void mockRequsitionRepository() {
+  private void mockRequisitionRepository() {
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid1, false))
             .thenReturn(new ArrayList<>());
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid2, false))
@@ -266,5 +305,11 @@ public class RequisitionControllerTest {
     verify(requisition, never()).updateFrom(any(Requisition.class),
             any(RequisitionTemplate.class), anyList());
     verify(requisition, never()).submit(any(RequisitionTemplate.class));
+  }
+
+  private void assertPermissionResponse(ResponseEntity response) {
+    assertNotNull(response);
+    assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
+    assertThat(response.getBody().toString(), startsWith("You do not have permission to "));
   }
 }
