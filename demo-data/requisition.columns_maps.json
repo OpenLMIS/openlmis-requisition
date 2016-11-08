@@ -429,6 +429,16 @@
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
+  },
+  {
+    "requisitionTemplate": "852a53bf-a710-4b6e-906e-983010aeefce",
+    "key": "dispensingUnit",
+    "name": "orderableProduct.dispensingUnit",
+    "label": "Unit/Unit of Issue",
+    "indicator": "U",
+    "displayOrder": 14,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "61e6d059-10ef-40c4-a6e3-fa7b9ad741ec"
   }
-  
 ]
