@@ -218,7 +218,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                        @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException {
-    if (!permissionHelper.canUpdateRequisition()) {
+    if (!permissionHelper.canUpdateRequisition(requisitionDto.getStatus())) {
       return new ResponseEntity<>(
           "You do not have permission to update a requisition.", HttpStatus.FORBIDDEN
       );

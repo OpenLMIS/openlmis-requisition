@@ -1,5 +1,6 @@
 package org.openlmis.utils;
 
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -35,13 +36,15 @@ public class PermissionHelper {
 
   /**
    * Checks if current user has permission to update a requisition.
+   * Permissions needed to perform update action depend on the requisition status.
    *
+   * @param requisitionStatus status of a requisition to update.
    * @return true if current user has permission; otherwise false.
    */
-  public boolean canUpdateRequisition() {
-    return hasPermission(REQUISITION_CREATE)
-        || hasPermission(REQUISITION_APPROVE)
-        || hasPermission(REQUISITION_AUTHORIZE);
+  public boolean canUpdateRequisition(RequisitionStatus requisitionStatus) {
+    return requisitionStatus == RequisitionStatus.INITIATED && hasPermission(REQUISITION_CREATE)
+        || requisitionStatus == RequisitionStatus.SUBMITTED && hasPermission(REQUISITION_AUTHORIZE)
+        || requisitionStatus == RequisitionStatus.AUTHORIZED && hasPermission(REQUISITION_APPROVE);
   }
 
   /**

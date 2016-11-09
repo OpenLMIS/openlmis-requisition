@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -73,13 +72,13 @@ public class AuthenticationHelperTest {
   public void shouldReturnRight() throws Exception {
     // given
     RightDto right = mock(RightDto.class);
-    doReturn(right).when(rightReferenceDataService).findRight(anyString());
+    when(rightReferenceDataService.findRight(anyString())).thenReturn(right);
 
     // when
     RightDto dto = authenticationHelper.getRight("rightName");
 
     // then
-    assertNotNull(right);
+    assertNotNull(dto);
     assertThat(dto, is(right));
   }
 

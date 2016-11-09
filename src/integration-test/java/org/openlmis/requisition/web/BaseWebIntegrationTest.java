@@ -35,6 +35,7 @@ public abstract class BaseWebIntegrationTest {
       "HTTP request/response should match RAML definition.";
 
   private static final String REFERENCEDATA_API_USERS = "/referencedata/api/users/";
+  private static final String REFERENCEDATA_API_RIGHTS = "/referencedata/api/rights/";
 
   protected RestAssuredClient restAssured;
 
@@ -366,7 +367,7 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks searching for right by name
     wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/rights/search.*"))
+        get(urlMatching(REFERENCEDATA_API_RIGHTS + "search.*"))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody(MOCK_RIGHT_SEARCH))

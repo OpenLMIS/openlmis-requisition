@@ -120,7 +120,7 @@ public class RequisitionControllerTest {
         .thenReturn(Collections.singletonList(processingPeriods.get(0)));
 
     when(permissionHelper.canInitRequisition(any(), any())).thenReturn(true);
-    when(permissionHelper.canUpdateRequisition()).thenReturn(true);
+    when(permissionHelper.canUpdateRequisition(any())).thenReturn(true);
     when(permissionHelper.canSubmitRequisition()).thenReturn(true);
     when(permissionHelper.canApproveRequisition()).thenReturn(true);
     when(permissionHelper.canAuthorizeRequisition()).thenReturn(true);
@@ -240,7 +240,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldRejectRequestIfUserHasNoCorrectPermission() throws Exception {
     when(permissionHelper.canInitRequisition(any(), any())).thenReturn(false);
-    when(permissionHelper.canUpdateRequisition()).thenReturn(false);
+    when(permissionHelper.canUpdateRequisition(any())).thenReturn(false);
     when(permissionHelper.canSubmitRequisition()).thenReturn(false);
     when(permissionHelper.canApproveRequisition()).thenReturn(false);
     when(permissionHelper.canAuthorizeRequisition()).thenReturn(false);
