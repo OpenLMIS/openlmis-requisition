@@ -13,5 +13,8 @@ public class OrderableProductDto {
   private String dispensable;
   private String productCode;
   private String name;
+  private long packSize;
+  private long packRoundingThreshold;
+  private boolean roundToZero;
   private Set<ProgramProductDto> programs;
 }

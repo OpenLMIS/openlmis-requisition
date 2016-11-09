@@ -20,6 +20,7 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -95,6 +96,8 @@ public class RequisitionController extends BaseController {
   @Autowired
   private PermissionHelper permissionHelper;
 
+  @Autowired
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -179,6 +182,9 @@ public class RequisitionController extends BaseController {
     }
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
+
+    requisitionLineCalculationService.calculatePacksToShip(requisition);
+
     RequisitionTemplate template =
         requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
     requisition.submit(template);
@@ -367,6 +373,9 @@ public class RequisitionController extends BaseController {
     if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
+
+      requisitionLineCalculationService.calculatePacksToShip(requisition);
+
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
@@ -438,6 +447,8 @@ public class RequisitionController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+
+    requisitionLineCalculationService.calculatePacksToShip(requisition);
 
     requisition.authorize();
     requisitionRepository.save(requisition);

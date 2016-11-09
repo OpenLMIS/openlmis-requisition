@@ -144,11 +144,22 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "packsToShip",
+    "name": "packsToShip",
+    "label": "Packs To Ship",
+    "indicator": "V",
+    "displayOrder": 14,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
+  },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "dispensable",
     "name": "orderableProduct.dispensable",
     "label": "Unit/Unit of Issue",
     "indicator": "U",
-    "displayOrder": 14,
+    "displayOrder": 15,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "61e6d059-10ef-40c4-a6e3-fa7b9ad741ec"
@@ -297,6 +308,17 @@
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "packsToShip",
+    "name": "packsToShip",
+    "label": "Packs To Ship",
+    "indicator": "V",
+    "displayOrder": 14,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
+  },
   
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
@@ -440,5 +462,16 @@
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "packsToShip",
+    "name": "packsToShip",
+    "label": "Packs To Ship",
+    "indicator": "V",
+    "displayOrder": 14,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   }
 ]

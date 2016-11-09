@@ -104,6 +104,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Integer totalStockoutDays;
 
+  @Column
+  @Getter
+  @Setter
+  private Long packsToShip;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,

@@ -132,7 +132,10 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_FIND_PRODUCT_RESULT = "{"
       + " \"id\":\"cd9e1412-8703-11e6-ae22-56b6b6499611\",\n"
       + " \"productCode\":\"Product Code\",\n"
-      + " \"productName\":\"Product Name\"\n"
+      + " \"productName\":\"Product Name\",\n"
+      + " \"packSize\":10,\n"
+      + " \"packRoundingThreshold\":5,\n"
+      + " \"roundToZero\":false\n"
       + "}";
 
   private static final String MOCK_FIND_PROCESSING_SCHEDULE = "{"

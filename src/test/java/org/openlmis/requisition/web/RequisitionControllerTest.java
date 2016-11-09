@@ -34,6 +34,7 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
@@ -89,6 +90,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
+
+  @Mock
+  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Mock
   private PermissionHelper permissionHelper;
@@ -161,6 +165,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
+    verify(requisitionLineCalculationService).calculatePacksToShip(initiatedRequsition);
     verify(initiatedRequsition).submit(template);
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
