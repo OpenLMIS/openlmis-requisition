@@ -447,7 +447,7 @@ public class RequisitionServiceTest {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(processingScheduleDto);
+        .thenReturn(Arrays.asList(processingScheduleDto));
 
     requisition.setStatus(null);
     when(requisitionRepository
@@ -576,7 +576,7 @@ public class RequisitionServiceTest {
         .thenReturn(processingPeriodDto);
 
     when(scheduleReferenceDataService.searchByProgramAndFacility(any(), any()))
-        .thenReturn(processingScheduleDto);
+        .thenReturn(Arrays.asList(processingScheduleDto));
 
     when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriodDto));

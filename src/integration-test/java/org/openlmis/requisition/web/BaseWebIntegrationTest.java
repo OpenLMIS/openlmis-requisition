@@ -140,6 +140,10 @@ public abstract class BaseWebIntegrationTest {
       + " \"name\":\"Schedule Name\""
       + "}";
 
+  private static final String MOCK_SEARCH_PROCESSING_SCHEDULE = "["
+      + MOCK_FIND_PROCESSING_SCHEDULE
+      + "]";
+
   private static final String MOCK_FIND_PROCESSING_PERIOD = "{"
       + " \"id\":\"4c6b05c2-894b-11e6-ae22-56b6b6499611\","
       + " \"name\":\"Period Name\","
@@ -300,7 +304,14 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks searching for processingSchedules
     wireMockRule.stubFor(get(
-        urlMatching("/referencedata/api/processingSchedules/.*"))
+        urlMatching("/referencedata/api/processingSchedules/search.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_PROCESSING_SCHEDULE)));
+
+    // This mocks retrieving single processing schedule
+    wireMockRule.stubFor(get(
+        urlMatching("/referencedata/api/processingSchedules/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROCESSING_SCHEDULE)));

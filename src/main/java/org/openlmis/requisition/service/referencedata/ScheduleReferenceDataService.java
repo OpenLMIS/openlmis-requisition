@@ -3,6 +3,7 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,12 +32,12 @@ public class ScheduleReferenceDataService extends BaseReferenceDataService<Proce
    * @param facilityId UUID of the facility
    * @return schedule matching search criteria
    */
-  public ProcessingScheduleDto searchByProgramAndFacility(
+  public Collection<ProcessingScheduleDto> searchByProgramAndFacility(
       UUID programId, UUID facilityId) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("programId", programId);
     parameters.put("facilityId", facilityId);
 
-    return findOne("search", parameters);
+    return findAll("search", parameters);
   }
 }
