@@ -65,7 +65,7 @@
                     prod.fullsupply,
                     prod.code,
                     prod.primaryname,
-                    prod.dispensingunit,
+                    prod.dispensable,
                     prodc.name
              FROM requisition.proof_of_delivery_line_items podl
              INNER JOIN  requisition.order_line_items ol on  podl.orderlineitemid = ol.id
@@ -83,7 +83,7 @@
 	<field name="fullsupply" class="java.lang.Boolean"/>
 	<field name="code" class="java.lang.String"/>
 	<field name="primaryname" class="java.lang.String"/>
-	<field name="dispensingunit" class="java.lang.String"/>
+	<field name="dispensable" class="java.lang.String"/>
 	<field name="name" class="java.lang.String"/>
 	<group name="productCategory">
 		<groupExpression><![CDATA[$F{name}]]></groupExpression>
@@ -436,7 +436,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dispensingunit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dispensable}]]></textFieldExpression>
 			</textField>
 			<frame>
 				<reportElement x="13" y="0" width="50" height="30" uuid="36a94773-1b3a-415b-ad76-25a0c0810bfd"/>

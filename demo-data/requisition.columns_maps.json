@@ -142,6 +142,17 @@
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "dispensable",
+    "name": "orderableProduct.dispensable",
+    "label": "Unit/Unit of Issue",
+    "indicator": "U",
+    "displayOrder": 14,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "61e6d059-10ef-40c4-a6e3-fa7b9ad741ec"
+  },
 
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",

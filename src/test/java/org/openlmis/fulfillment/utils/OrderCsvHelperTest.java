@@ -222,7 +222,7 @@ public class OrderCsvHelperTest {
     OrderableProductDto product = new OrderableProductDto();
     product.setProductCode("productCode");
     product.setName("productName");
-    product.setDispensingUnit("each");
+    product.setDispensable("each");
 
     return product;
   }
