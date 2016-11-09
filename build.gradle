@@ -202,15 +202,6 @@ tasks.withType(Pmd){
     }
 }
 
-
-processResources {
-    // update version information in build
-    filesMatching('**/version.properties') {
-        expand(project.properties)
-    }
-}
-
-
 test {
     testLogging {
         events 'started', 'passed'
@@ -221,6 +212,15 @@ test {
 apply from: "documentation.gradle"
 integrationTest {
     dependsOn ramlToSwagger
+}
+
+processResources {
+    // we want the generated swagger spec file included in the output jar
+    finalizedBy ramlToSwagger
+    // update version information in build
+    filesMatching('**/version.properties') {
+        expand(project.properties)
+    }
 }
 
 check {
@@ -234,9 +234,4 @@ build {
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
     dependsOn demoDataSeed
-}
-
-jar {
-    // we want the generated swagger spec file included in the output jar
-    dependsOn ramlToSwagger
 }
