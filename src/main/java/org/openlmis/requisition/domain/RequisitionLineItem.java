@@ -4,11 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
+import org.openlmis.requisition.dto.MoneyDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.ProgramProductDto;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +40,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String REMARKS = "remarks";
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   public static final String TOTAL = "total";
+  private static final int PRICE_PER_PACK_IF_NULL = 0;
 
   private static final String UUID = "pg-uuid";
 
@@ -239,7 +243,7 @@ public class RequisitionLineItem extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(Exporter exporter) {
+  public void export(Exporter exporter, OrderableProductDto orderableProductDto) {
     exporter.setId(id);
     exporter.setBeginningBalance(beginningBalance);
     exporter.setTotalReceivedQuantity(totalReceivedQuantity);
@@ -254,6 +258,18 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
+    exporter.setOrderableProduct(orderableProductDto);
+
+    ProgramProductDto programProductDto =
+        orderableProductDto.findProgramProductDto(requisition.getProgramId());
+
+    if (programProductDto != null) {
+      if (programProductDto.getPricePerPack() != null) {
+        exporter.setPricePerPack(programProductDto.getPricePerPack());
+      } else {
+        exporter.setPricePerPack(new MoneyDto(new BigDecimal(PRICE_PER_PACK_IF_NULL)));
+      }
+    }
   }
 
   public interface Exporter {
@@ -284,6 +300,10 @@ public class RequisitionLineItem extends BaseEntity {
     void setTotal(Integer total);
 
     void setPacksToShip(Long packsToShip);
+
+    void setOrderableProduct(OrderableProductDto orderableProductDto);
+
+    void setPricePerPack(MoneyDto pricePerPack);
   }
 
   public interface Importer {

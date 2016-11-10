@@ -18,6 +18,7 @@ import java.util.List;
 
 @Service
 public class RequisitionLineCalculationService {
+
   private static final String BEGINNING_BALANCE_COLUMN = "beginningBalance";
 
   @Autowired
@@ -130,10 +131,9 @@ public class RequisitionLineCalculationService {
 
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    requisitionLineItem.export(dto);
-    dto.setOrderableProduct(orderableProductReferenceDataService.findOne(
-        requisitionLineItem.getOrderableProductId()));
+    OrderableProductDto orderableProductDto = orderableProductReferenceDataService.findOne(
+        requisitionLineItem.getOrderableProductId());
+    requisitionLineItem.export(dto, orderableProductDto);
     return dto;
   }
-
 }

@@ -127,8 +127,8 @@ schemas:
               "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
               "displayOrder": { "type": "integer", "required": true, "title": "displayOrder" },
               "maxMonthsOfStock": { "type": "integer", "required": true, "title": "maxMonthsOfStock" },
-              "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" }
-
+              "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" },
+              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" }
           }
       }
 
@@ -212,7 +212,8 @@ schemas:
               "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
               "remarks": {"type": "string", "required": true, "title": "remarks" },
               "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
-              "total": {"type": "integer", "required": false, "title": "total" }
+              "total": {"type": "integer", "required": false, "title": "total" },
+              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" }
           }
 
       }

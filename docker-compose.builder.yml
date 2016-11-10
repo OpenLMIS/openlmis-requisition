@@ -43,7 +43,7 @@ services:
 
   image:
     build: .
-    image: openlmis/requisition
+    image: openlmis/requisition:3.0.0-SNAPSHOT
 
   db:
     image: openlmis/postgres

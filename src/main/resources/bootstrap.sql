@@ -25,6 +25,8 @@ INSERT INTO requisition.available_requisition_columns (id, name, label, indicato
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('ef524868-9d0a-11e6-80f5-76304dec7eb7', 'total', 'Total', 'Y', false, false, true, false, 'NUMERIC');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES ('61e6d059-10ef-40c4-a6e3-fa7b9ad741ec', 'dispensingUnit', 'Unit/Unit of Issue', 'U', false, false, true, false, 'TEXT');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('dc9dde56-593d-4929-81be-d1faec7025a8', 'packsToShip', 'Packs To Ship', 'V', false, false, true, false, 'NUMERIC');
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('ef524868-9d0a-11e6-80f5-76304dec7eb7', 'total', 'Total', 'Y', false, false, true,false, 'NUMERIC');
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('df524868-9d0a-18e6-80f5-76304ded7ab9', 'pricePerPack', 'Price Per Pack', 'T', false, false, true, false, 'NUMERIC');
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT'); -- requestedQuantity
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT'); -- totalReceivedQuantity
@@ -43,3 +45,4 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('ef524868-9d0a-11e6-80f5-76304dec7eb7', 'CALCULATED'); -- total
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('61e6d059-10ef-40c4-a6e3-fa7b9ad741ec', 'REFERENCE_DATA'); -- dispensingUnit
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('dc9dde56-593d-4929-81be-d1faec7025a8', 'CALCULATED'); -- packsToShip
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('df524868-9d0a-18e6-80f5-76304ded7ab9', 'REFERENCE_DATA'); -- pricePerPack
