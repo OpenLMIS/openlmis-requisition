@@ -1,10 +1,7 @@
 package org.openlmis.requisition.web;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -18,7 +15,9 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -29,6 +28,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.exception.PermissionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -97,6 +97,9 @@ public class RequisitionControllerTest {
   @Mock
   private PermissionHelper permissionHelper;
 
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
+  
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
 
@@ -252,17 +255,20 @@ public class RequisitionControllerTest {
     when(permissionHelper.canDeleteRequisition()).thenReturn(false);
     when(permissionHelper.canViewRequisition()).thenReturn(false);
 
-    assertPermissionResponse(
-        requisitionController.initiate(programUuid, facilityUuid, null, false)
-    );
-    assertPermissionResponse(requisitionController.submitRequisition(UUID.randomUUID()));
-    assertPermissionResponse(requisitionController.deleteRequisition(UUID.randomUUID()));
-    assertPermissionResponse(
-        requisitionController.updateRequisition(mock(RequisitionDto.class), UUID.randomUUID())
-    );
-    assertPermissionResponse(requisitionController.getRequisition(UUID.randomUUID()));
-    assertPermissionResponse(requisitionController.approveRequisition(UUID.randomUUID()));
-    assertPermissionResponse(requisitionController.authorizeRequisition(UUID.randomUUID()));
+    exception.expect(PermissionException.class);
+    requisitionController.initiate(programUuid, facilityUuid, null, false);
+    exception.expect(PermissionException.class);
+    requisitionController.submitRequisition(UUID.randomUUID());
+    exception.expect(PermissionException.class);
+    requisitionController.deleteRequisition(UUID.randomUUID());
+    exception.expect(PermissionException.class);
+    requisitionController.updateRequisition(mock(RequisitionDto.class), UUID.randomUUID());
+    exception.expect(PermissionException.class);
+    requisitionController.getRequisition(UUID.randomUUID());
+    exception.expect(PermissionException.class);
+    requisitionController.approveRequisition(UUID.randomUUID());
+    exception.expect(PermissionException.class);
+    requisitionController.authorizeRequisition(UUID.randomUUID());
   }
 
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
@@ -310,11 +316,5 @@ public class RequisitionControllerTest {
     verify(requisition, never()).updateFrom(any(Requisition.class),
             any(RequisitionTemplate.class), anyList());
     verify(requisition, never()).submit(any(RequisitionTemplate.class));
-  }
-
-  private void assertPermissionResponse(ResponseEntity response) {
-    assertNotNull(response);
-    assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
-    assertThat(response.getBody().toString(), startsWith("You do not have permission to "));
   }
 }
