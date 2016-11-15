@@ -58,39 +58,12 @@ public class RequisitionLineCalculationService {
     OrderableProductDto orderableProductDto =
         orderableProductReferenceDataService.findOne(lineItem.getOrderableProductId());
 
-    Integer orderQuantity = getOrderQuantity(lineItem);
-    long packSize = orderableProductDto.getPackSize();
-    long packRoundingThreshold = orderableProductDto.getPackRoundingThreshold();
-    boolean roundToZero = orderableProductDto.isRoundToZero();
+    Integer orderQuantity = lineItem.getOrderQuantity();
 
-    if (orderQuantity != null && orderQuantity == 0) {
-      lineItem.setPacksToShip(0L);
-    } else if (orderQuantity != null && packSize != 0) {
-      long packsToShip = orderQuantity / packSize;
-      long remainderQuantity = orderQuantity % packSize;
-
-      if (remainderQuantity >= packRoundingThreshold) {
-        packsToShip += 1;
-      }
-
-      if (packsToShip == 0 && !roundToZero) {
-        packsToShip = 1;
-      }
-
+    if (orderQuantity != null) {
+      long packsToShip = orderableProductDto.packsToOrder(orderQuantity.longValue());
       lineItem.setPacksToShip(packsToShip);
     }
-  }
-
-  private Integer getOrderQuantity(RequisitionLineItem lineItem) {
-    if (lineItem.getApprovedQuantity() != null) {
-      return lineItem.getApprovedQuantity();
-    }
-
-    if (lineItem.getRequestedQuantity() != null) {
-      return lineItem.getRequestedQuantity();
-    }
-
-    return 0;
   }
 
   private void initiateBeginningBalance(Requisition requisition, RequisitionTemplate template)

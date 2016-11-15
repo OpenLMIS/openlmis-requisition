@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
@@ -178,6 +180,22 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
+   * Returns order quantity.
+   */
+  @JsonIgnore
+  public Integer getOrderQuantity() {
+    if (approvedQuantity != null) {
+      return approvedQuantity;
+    }
+
+    if (requestedQuantity != null) {
+      return requestedQuantity;
+    }
+
+    return 0;
+  }
+
+  /**
    * Creates new instantion of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}
    *
@@ -202,6 +220,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
     requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
     requisitionLineItem.setTotal(importer.getTotal());
+    requisitionLineItem.setPacksToShip(importer.getPacksToShip());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     if (importer.getStockAdjustments() != null) {
@@ -234,6 +253,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setStockAdjustments(stockAdjustments);
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
+    exporter.setPacksToShip(packsToShip);
   }
 
   public interface Exporter {
@@ -263,6 +283,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setTotal(Integer total);
 
+    void setPacksToShip(Long packsToShip);
   }
 
   public interface Importer {
@@ -293,5 +314,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getTotalStockoutDays();
 
     Integer getTotal();
+
+    Long getPacksToShip();
   }
 }

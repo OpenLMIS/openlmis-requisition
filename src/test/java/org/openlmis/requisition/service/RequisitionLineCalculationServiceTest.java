@@ -1,7 +1,6 @@
 package org.openlmis.requisition.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -18,12 +17,10 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.time.LocalDate;
@@ -53,9 +50,6 @@ public class RequisitionLineCalculationServiceTest {
 
   @Mock
   private RequisitionTemplateService requisitionTemplateService;
-
-  @Mock
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -164,123 +158,6 @@ public class RequisitionLineCalculationServiceTest {
         .get(TOTAL_QUANTITY_RECEIVED_FIELD).getDisplayOrder());
     assertEquals(2, testRequisitionTemplateColumnHashMap
         .get(BEGINNING_BALANCE_FIELD).getDisplayOrder());
-  }
-
-  @Test
-  public void shouldCalculatePacksToShipWhenPackRoundingThresholdIsSmallerThanRemainder() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(26);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackSize(10);
-    productDto.setPackRoundingThreshold(4);
-    productDto.setRoundToZero(false);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertEquals(3, lineItem.getPacksToShip().intValue());
-  }
-
-  @Test
-  public void shouldCalculatePacksToShipWhenPackRoundingThresholdIsGreaterThanRemainder() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(26);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackSize(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(false);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertEquals(2, lineItem.getPacksToShip().intValue());
-  }
-
-  @Test
-  public void shouldCalculatePacksToShipWhenCanRoundToZero() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(6);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackSize(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(true);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertEquals(0, lineItem.getPacksToShip().intValue());
-  }
-
-  @Test
-  public void shouldCalculatePacksToShipWhenCanNotRoundToZero() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(6);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackSize(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(false);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertEquals(1, lineItem.getPacksToShip().intValue());
-  }
-
-  @Test
-  public void shouldReturnNullPacksToShipIfPackSizeIsNull() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(6);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(true);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertNull(lineItem.getPacksToShip());
-  }
-
-  @Test
-  public void shouldReturnZeroPackToShipIfOrderQuantityIsZero() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(0);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackSize(10);
-    productDto.setRoundToZero(false);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertEquals(0, lineItem.getPacksToShip().intValue());
-  }
-
-  @Test
-  public void shouldReturnZeroPackToShipIfOrderQuantityIsOneAndRoundToZeroTrueWithPackSizeTen() {
-    RequisitionLineItem lineItem = requisition.getRequisitionLineItems().get(0);
-    lineItem.setRequestedQuantity(1);
-
-    OrderableProductDto productDto = new OrderableProductDto();
-    productDto.setPackSize(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(true);
-
-    when(orderableProductReferenceDataService.findOne(productId)).thenReturn(productDto);
-
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
-
-    assertEquals(0, lineItem.getPacksToShip().intValue());
   }
 
   private void generateInstances() {

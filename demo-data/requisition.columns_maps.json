@@ -160,7 +160,7 @@
     "label": "Packs To Ship",
     "indicator": "V",
     "displayOrder": 15,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
@@ -315,7 +315,7 @@
     "label": "Packs To Ship",
     "indicator": "V",
     "displayOrder": 14,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
@@ -470,7 +470,7 @@
     "label": "Packs To Ship",
     "indicator": "V",
     "displayOrder": 14,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   }

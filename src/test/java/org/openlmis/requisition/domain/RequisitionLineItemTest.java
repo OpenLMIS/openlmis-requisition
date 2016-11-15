@@ -86,6 +86,32 @@ public class RequisitionLineItemTest {
     assertThat(item.getOrderableProductId(), is(product1));
   }
 
+  @Test
+  public void shouldReturnApprovedQuantityWhenItIsNotNull() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setApprovedQuantity(4);
+
+    assertEquals(4, item.getOrderQuantity().intValue());
+  }
+
+  @Test
+  public void shouldReturnRequestedQuantityWhenItIsNotNullAndApprovedQuantityIsNull() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequestedQuantity(5);
+    item.setApprovedQuantity(null);
+
+    assertEquals(5, item.getOrderQuantity().intValue());
+  }
+
+  @Test
+  public void shouldReturnZeroWhenApprovedQuantityAndRequestedQuantityIsNull() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setApprovedQuantity(null);
+    item.setRequestedQuantity(null);
+
+    assertEquals(0, item.getOrderQuantity().intValue());
+  }
+
   private Requisition mockReq(RequisitionStatus status) {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(status);
