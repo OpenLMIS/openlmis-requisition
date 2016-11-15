@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "ProcessingPeriodDto",
+  "description": "A single processingPeriodDto",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "processingSchedule": {
+      "type": "object",
+      "$ref": "#/schemas/processingSchedule",
+      "title": "processingSchedule"
+    },
+    "name": {
+      "type": "string",
+      "title": "name"
+    },
+    "description": {
+      "type": "string",
+      "title": "description"
+    },
+    "startDate": {
+      "type": "string",
+      "title": "startDate"
+    },
+    "endDate": {
+      "type": "string",
+      "title": "endDate"
+    }
+  },
+  "required": [
+    "id",
+    "processingSchedule",
+    "name",
+    "description",
+    "startDate",
+    "endDate"
+  ]
+}

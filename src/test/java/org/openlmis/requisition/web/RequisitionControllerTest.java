@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
 
   @Mock
@@ -98,7 +98,7 @@ public class RequisitionControllerTest {
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
-  
+
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
 
@@ -124,14 +124,6 @@ public class RequisitionControllerTest {
         .thenReturn(processingPeriods);
     when(periodService.getPeriods(programUuid, facilityUuid, true))
         .thenReturn(Collections.singletonList(processingPeriods.get(0)));
-
-    when(permissionHelper.canInitRequisition(any(), any())).thenReturn(true);
-    when(permissionHelper.canUpdateRequisition(any())).thenReturn(true);
-    when(permissionHelper.canSubmitRequisition()).thenReturn(true);
-    when(permissionHelper.canApproveRequisition()).thenReturn(true);
-    when(permissionHelper.canAuthorizeRequisition()).thenReturn(true);
-    when(permissionHelper.canDeleteRequisition()).thenReturn(true);
-    when(permissionHelper.canViewRequisition()).thenReturn(true);
 
     mockRequisitionRepository();
   }
@@ -160,7 +152,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldSubmitValidInitiatedRequisition()
-          throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
     when(initiatedRequsition.getProgramId()).thenReturn(uuid2);
     when(templateRepository.getTemplateForProgram(uuid2)).thenReturn(template);
@@ -171,12 +163,12 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(template);
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
-            any(RequisitionTemplate.class), anyList());
+        any(RequisitionTemplate.class), anyList());
   }
 
   @Test
   public void shouldNotSubmitInvalidRequisition()
-          throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
     doAnswer(invocation -> {
       Errors errors = (Errors) invocation.getArguments()[1];
       errors.reject("requisitionLineItems",
@@ -226,7 +218,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotUpdateWithInvalidRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
@@ -242,32 +234,6 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     verifyNoSubmitOrUpdate(initiatedRequsition);
-  }
-
-  @Test
-  public void shouldRejectRequestIfUserHasNoCorrectPermission() throws Exception {
-    when(permissionHelper.canInitRequisition(any(), any())).thenReturn(false);
-    when(permissionHelper.canUpdateRequisition(any())).thenReturn(false);
-    when(permissionHelper.canSubmitRequisition()).thenReturn(false);
-    when(permissionHelper.canApproveRequisition()).thenReturn(false);
-    when(permissionHelper.canAuthorizeRequisition()).thenReturn(false);
-    when(permissionHelper.canDeleteRequisition()).thenReturn(false);
-    when(permissionHelper.canViewRequisition()).thenReturn(false);
-
-    exception.expect(AuthorizationException.class);
-    requisitionController.initiate(programUuid, facilityUuid, null, false);
-    exception.expect(AuthorizationException.class);
-    requisitionController.submitRequisition(UUID.randomUUID());
-    exception.expect(AuthorizationException.class);
-    requisitionController.deleteRequisition(UUID.randomUUID());
-    exception.expect(AuthorizationException.class);
-    requisitionController.updateRequisition(mock(RequisitionDto.class), UUID.randomUUID());
-    exception.expect(AuthorizationException.class);
-    requisitionController.getRequisition(UUID.randomUUID());
-    exception.expect(AuthorizationException.class);
-    requisitionController.approveRequisition(UUID.randomUUID());
-    exception.expect(AuthorizationException.class);
-    requisitionController.authorizeRequisition(UUID.randomUUID());
   }
 
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
@@ -294,26 +260,26 @@ public class RequisitionControllerTest {
 
   private void mockRequisitionRepository() {
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid1, false))
-            .thenReturn(new ArrayList<>());
+        .thenReturn(new ArrayList<>());
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid2, false))
-            .thenReturn(Arrays.asList(initiatedRequsition));
+        .thenReturn(Arrays.asList(initiatedRequsition));
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid3, false))
-            .thenReturn(Arrays.asList(submittedRequsition));
+        .thenReturn(Arrays.asList(submittedRequsition));
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid4, false))
-            .thenReturn(Arrays.asList(authorizedRequsition));
+        .thenReturn(Arrays.asList(authorizedRequsition));
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid5, false))
-            .thenReturn(Arrays.asList(approvedRequsition));
+        .thenReturn(Arrays.asList(approvedRequsition));
     when(requisitionRepository.save(initiatedRequsition))
-            .thenReturn(initiatedRequsition);
+        .thenReturn(initiatedRequsition);
     when(requisitionRepository.findOne(uuid1))
-            .thenReturn(initiatedRequsition);
+        .thenReturn(initiatedRequsition);
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition)
-          throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class),
-            any(RequisitionTemplate.class), anyList());
+        any(RequisitionTemplate.class), anyList());
     verify(requisition, never()).submit(any(RequisitionTemplate.class));
   }
 }

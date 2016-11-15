@@ -36,82 +36,15 @@ schemas:
           }
       }
 
-  - facilityDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "FacilityDto",
-          "description": "A single facilityDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "description": { "type": "string", "required": false, "title": "description" },
-              "active": { "type": "boolean", "required": true, "title": "active" },
-              "goLiveDate": { "type": "string", "required": false, "title": "goLiveDate" },
-              "goDownDate": { "type": "string", "required": false, "title": "goDownDate" },
-              "comment": { "type": "string", "required": false, "title": "comment" },
-              "enabled": { "type": "boolean", "required": false, "title": "enabled" },
-              "openLmisAccessible": { "type": "boolean", "required": false, "title": "openLmisAccessible" },
-              "supportedPrograms": { "type": "array", "required": false, "title": "supportedPrograms", "items": {"type": "object", "$ref": "#/schemas/programDto"}, "uniqueItems": false },
-              "geographicZone": { "type": "object", "$ref": "#/schemas/geographicZoneDto", "required": false, "title": "geographicZone" },
-              "operator": { "type": "object", "$ref": "#/schemas/facilityOperatorDto", "required": false, "title": "operator" },
-              "type": { "type": "object", "$ref": "#/schemas/facilityTypeDto", "required": false, "title": "type" }
-          }
-      }
+  - facilityDto: !include schemas/facilityDto.json
 
-  - facilityOperatorDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "FacilityOperatorDto",
-          "description": "A single facilityOperatorDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": true, "title": "name" }
-          }
-      }
+  - facilityOperatorDto: !include schemas/facilityOperatorDto.json
 
-  - facilityTypeDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "FacilityTypeDto",
-          "description": "A single facilityTypeDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "description": { "type": "string", "required": true, "title": "description" },
-              "displayOrder": {"type": "integer", "required": true, "title": "displayOrder" },
-              "active": { "type": "boolean", "required": true, "title": "active" }
-          }
-      }
+  - facilityTypeDto: !include schemas/facilityTypeDto.json
 
-  - geographicLevelDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "GeographicLevelDto",
-          "description": "A single geographicLevelDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "levelNumber": { "type": "integer", "required": true, "title": "levelNumber" }
-          }
-      }
+  - geographicLevelDto: !include schemas/geographicLevelDto.json
 
-  - geographicZoneDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "GeographicZoneDto",
-          "description": "A single geographicZoneDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "level": { "type": "object", "$ref": "#/schemas/geographicLevelDto", "required": true, "title": "level" },
-              "parent": {"type": "object", "$ref": "#/schemas/geographicZoneDto", "required": true, "title": "parent" }
-          }
-      }
+  - geographicZoneDto: !include schemas/geographicZoneDto.json
 
   - orderableProductDto: |
       {    "type": "object",
@@ -161,20 +94,7 @@ schemas:
           }
       }
 
-  - processingPeriodDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "ProcessingPeriodDto",
-          "description": "A single processingPeriodDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "processingSchedule": { "type": "object", "$ref": "#/schemas/processingSchedule" ,"required": true, "title": "processingSchedule" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "description": { "type": "string", "required": true, "title": "description" },
-              "startDate": { "type": "string", "required": true, "title": "startDate" },
-              "endDate": { "type": "string", "required": true, "title": "endDate" }
-          }
-      }
+  - processingPeriodDto: !include schemas/processingPeriodDto.json
 
   - processingScheduleDto: |
       {   "type": "object",
@@ -190,21 +110,7 @@ schemas:
           }
       }
 
-  - programDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "ProgramDto",
-          "description": "A single programDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "name": { "type": "string", "required": true, "title": "name" },
-              "description": { "type": "string", "required": true, "title": "description" },
-              "active": { "type": "boolean", "required": true, "title": "active" },
-              "periodsSkippable": { "type": "boolean", "required": true, "title": "periodsSkippable" },
-              "showNonFullSupplyTab": { "type": "boolean", "required": true, "title": "showNonFullSupplyTab" }
-          }
-      }
+  - programDto: !include schemas/programDto.json
 
   - programProductDto: |
       {   "type": "object",
@@ -248,22 +154,23 @@ schemas:
 
   - requisitionDto: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "RequisitionDto",
           "description": "A single requisitionDto",
           "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "facility": { "type": "object", "$ref": "#/schemas/facilityDto", "required": true, "title": "facility" },
-              "program": { "type": "object", "$ref": "#/schemas/programDto", "required": true, "title": "program" },
-              "processingPeriod": { "type": "object", "$ref": "#/schemas/processingPeriodDto", "required": true, "title": "processingPeriod" },
-              "supplyingFacility" : {"type": "string", "required": false, "title": "supplyingFacility"},
-              "status": { "type": "string", "required": true, "title": "status" },
-              "emergency": { "type": "boolean", "required": false, "title": "emergency" },
-              "supervisoryNode": { "type": "string", "required": true, "title": "supervisoryNode" },
-              "requisitionLineItems": { "type": "array", "required": false, "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItemDto" }, "uniqueItems": false },
-              "comments": {"type": "array", "required": false, "title": "comments", "items": {"type": "object", "$ref": "#/schemas/commentDto" }, "uniqueItems": false }
-          }
+              "id": { "type": "string", "title": "id" },
+              "createdDate": {"type": "array", "title": "createdDate", "items": {"type": "integer" }, "uniqueItems": false },
+              "facility": { "type": "object", "$ref": "schemas/facilityDto.json", "title": "facility" },
+              "program": { "type": "object", "$ref": "schemas/programDto.json", "title": "program" },
+              "processingPeriod": { "type": "object", "$ref": "schemas/processingPeriodDto.json", "title": "processingPeriod" },
+              "supplyingFacility" : {"type": ["string", "null"], "title": "supplyingFacility"},
+              "status": { "type": "string", "title": "status" },
+              "emergency": { "type": "boolean", "title": "emergency" },
+              "supervisoryNode": { "type": "string", "title": "supervisoryNode" },
+              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItemDto" }, "uniqueItems": false },
+              "comments": {"type": "array", "title": "comments", "items": {"type": "object", "$ref": "#/schemas/commentDto" }, "uniqueItems": false }
+          },
+          "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
       }
 
   - requisitionLineItem: |
@@ -898,6 +805,12 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                "403":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
     /submitted:
         get:
             is: [ secured ]
@@ -913,6 +826,12 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "403":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
     /{id}:
         uriParameters:
             id:
@@ -944,6 +863,12 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "403":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
         get:
             is: [ secured ]
             description: Get chosen requisition.
@@ -958,6 +883,12 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "403":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
         put:
             is: [ secured ]
             description: Update existing requisition.
@@ -973,6 +904,12 @@ resourceTypes:
                       application/json:
                         schema: requisitionDto
                 "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "403":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -1039,6 +976,12 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
+                    "403":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
     /{id}/authorize:
             uriParameters:
                 id:
@@ -1066,6 +1009,12 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
+                    "403":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
     /search:
         get:
             is: [ secured ]
@@ -1147,6 +1096,12 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "403":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
     /requisitionsForApproval:
         get:
             is: [ secured ]

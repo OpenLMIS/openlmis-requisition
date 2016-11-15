@@ -41,6 +41,8 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,8 +54,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -82,6 +82,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID PERIOD_UUID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
   private static final UUID PROGRAM_UUID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
   private static final UUID FACILITY_UUID = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
+  private static final String PROGRAM = "program";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -183,7 +184,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldFindRequisitions() {
     RequisitionDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("program", PROGRAM_UUID)
+        .queryParam(PROGRAM, PROGRAM_UUID)
         .queryParam("processingPeriod", PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
@@ -560,7 +561,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("program", program.getId())
+        .queryParam(PROGRAM, program.getId())
         .queryParam(FACILITY, facility.getId())
         .queryParam("suggestedPeriod", UUID.randomUUID())
         .queryParam("emergency", false)
@@ -580,7 +581,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("program", program.getId())
+        .queryParam(PROGRAM, program.getId())
         .queryParam(FACILITY, facility.getId())
         .queryParam("suggestedPeriod", period.getId())
         .queryParam("emergency", false)
@@ -857,6 +858,102 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
   }
 
+  @Test
+  public void shouldNotInitiateIfUserHasNoRight() throws Exception {
+    userHasNoRight();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, program.getId())
+        .queryParam(FACILITY, facility.getId())
+        .queryParam("suggestedPeriod", UUID.randomUUID())
+        .queryParam("emergency", false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitIfUserHasNoRight() throws Exception {
+    userHasNoRight();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteIfUserHasNoRight() throws Exception {
+    userHasNoRight();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotRetrieveIfUserHasNoRight() throws Exception {
+    userHasNoRight();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveIfUserHasNoRight() throws Exception {
+    userHasNoRight();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_REQUISITION)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeIfUserHasNoRight() throws Exception {
+    userHasNoRight();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   private void testApproveRequisition(Requisition requisition) {
 
     Requisition response = restAssured.given()
@@ -941,5 +1038,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       columns.put(columnDefinition.getName(), column);
     }
     return columns;
+  }
+
+  private void userHasNoRight() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{ \"result\":\"false\" }"))
+    );
   }
 }

@@ -119,9 +119,7 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                    @RequestParam(value = "emergency") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
-    if (!permissionHelper.canInitRequisition(program, facility)) {
-      throw new AuthorizationException("You do not have permission to initiate a requisition.");
-    }
+    permissionHelper.canInitRequisition(program, facility);
 
     try {
       Requisition newRequisition = requisitionService.initiate(program,
@@ -159,11 +157,8 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
   public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId)
-          throws RequisitionException, RequisitionTemplateColumnException {
-    if (!permissionHelper.canSubmitRequisition()) {
-      throw new AuthorizationException("You do not have permission to submit this requisition.");
-    }
-
+      throws RequisitionException, RequisitionTemplateColumnException {
+    permissionHelper.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -198,11 +193,8 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId)
-          throws RequisitionException {
-    if (!permissionHelper.canDeleteRequisition()) {
-      throw new AuthorizationException("You do not have permission to delete this requisition.");
-    }
-
+      throws RequisitionException {
+    permissionHelper.canDeleteRequisition(requisitionId);
     requisitionService.delete(requisitionId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
@@ -218,9 +210,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                        @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException {
-    if (!permissionHelper.canUpdateRequisition(requisitionDto.getStatus())) {
-      throw new AuthorizationException("You do not have permission to update a requisition.");
-    }
+    permissionHelper.canUpdateRequisition(requisitionId);
 
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
@@ -279,10 +269,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionNotFoundException {
-    if (!permissionHelper.canViewRequisition()) {
-      throw new AuthorizationException("You do not have permission to view this requisition.");
-    }
-
+    permissionHelper.canViewRequisition(requisitionId);
     RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
     if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -340,11 +327,9 @@ public class RequisitionController extends BaseController {
    * Approve specified by id requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
-  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
-    if (!permissionHelper.canApproveRequisition()) {
-      throw new AuthorizationException("You do not have permission to approve this requisition.");
-    }
-
+  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId)
+      throws RequisitionNotFoundException {
+    permissionHelper.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -411,10 +396,8 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
   public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId)
-          throws RequisitionException {
-    if (!permissionHelper.canAuthorizeRequisition()) {
-      throw new AuthorizationException("You do not have permission to authorize this requisition.");
-    }
+      throws RequisitionException {
+    permissionHelper.canAuthorizeRequisition(requisitionId);
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
       return new ResponseEntity<>("Requisition authorization is configured to be skipped",

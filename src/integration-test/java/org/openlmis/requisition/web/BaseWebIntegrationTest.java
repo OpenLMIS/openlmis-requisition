@@ -34,8 +34,8 @@ public abstract class BaseWebIntegrationTest {
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
 
-  private static final String REFERENCEDATA_API_USERS = "/referencedata/api/users/";
-  private static final String REFERENCEDATA_API_RIGHTS = "/referencedata/api/rights/";
+  protected static final String REFERENCEDATA_API_USERS = "/referencedata/api/users/";
+  protected static final String REFERENCEDATA_API_RIGHTS = "/referencedata/api/rights/";
 
   protected RestAssuredClient restAssured;
 
