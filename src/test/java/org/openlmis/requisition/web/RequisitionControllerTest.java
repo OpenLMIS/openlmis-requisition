@@ -236,6 +236,15 @@ public class RequisitionControllerTest {
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
+  @Test
+  public void shouldThrowExceptionWhenFacilityOrProgramIdNotFound()
+      throws RequisitionException, RequisitionTemplateColumnException {
+    exception.expect(RequisitionException.class);
+    requisitionController.initiate(programUuid, null, null, false);
+    exception.expect(RequisitionException.class);
+    requisitionController.initiate(null, facilityUuid, null, false);
+  }
+
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
     ProcessingPeriodDto period = new ProcessingPeriodDto();
     period.setId(uuid1);

@@ -17,7 +17,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.RequisitionAlreadyExistsException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -139,11 +138,6 @@ public class RequisitionService {
 
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     ProgramDto program = programReferenceDataService.findOne(programId);
-
-    if (null == facility || null == program) {
-      throw new RequisitionAlreadyExistsException("Cannot initiate requisition."
-          + " Requisition with such parameters already exists");
-    }
 
     ProcessingPeriodDto period = findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 

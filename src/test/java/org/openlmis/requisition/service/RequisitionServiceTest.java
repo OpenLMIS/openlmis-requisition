@@ -3,7 +3,6 @@ package org.openlmis.requisition.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
@@ -309,20 +308,6 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
       throws RequisitionException, RequisitionTemplateColumnException {
     requisitionService.initiate(null, null, null, false);
-  }
-
-  @Test(expected = RequisitionException.class)
-  public void shouldThrowExceptionWhenInitiatingAlreadyExistingRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException {
-    doReturn(null)
-        .when(facilityReferenceDataService)
-        .findOne(any(UUID.class));
-
-    doReturn(null)
-        .when(programReferenceDataService)
-        .findOne(any(UUID.class));
-
-    requisitionService.initiate(programId, facilityId, suggestedPeriodId, false);
   }
 
   @Test

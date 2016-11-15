@@ -119,6 +119,9 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                    @RequestParam(value = "emergency") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
+    if (null == facility || null == program) {
+      throw new MissingParameterException("Facility or program id not found");
+    }
     permissionHelper.canInitRequisition(program, facility);
 
     try {
