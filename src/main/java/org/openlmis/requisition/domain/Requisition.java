@@ -85,16 +85,19 @@ public class Requisition extends BaseEntity {
   @Setter
   private List<Comment> comments;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID facilityId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID programId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
@@ -111,7 +114,7 @@ public class Requisition extends BaseEntity {
   @Setter
   private RequisitionStatus status;
 
-  @Column
+  @Column(nullable = false)
   @Getter
   @Setter
   private Boolean emergency;

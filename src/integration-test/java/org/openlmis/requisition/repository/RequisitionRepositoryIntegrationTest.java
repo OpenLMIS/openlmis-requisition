@@ -108,6 +108,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setProcessingPeriodId(requisitions.get(0).getProcessingPeriodId());
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setStatus(requisitions.get(0).getStatus());
+    requisition.setEmergency(false);
     repository.save(requisition);
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             requisitions.get(0).getFacilityId(),

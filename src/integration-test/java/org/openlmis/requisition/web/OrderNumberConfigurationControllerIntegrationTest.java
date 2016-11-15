@@ -55,6 +55,8 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     requisition.setEmergency(true);
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisition.setProgramId(programDto.getId());
+    requisition.setFacilityId(facility);
+    requisition.setProcessingPeriodId(UUID.fromString("a510d22f-f370-46c7-88e2-981573c427f5"));
     requisition = requisitionRepository.save(requisition);
   }
 
