@@ -28,7 +28,6 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.exception.PermissionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -255,19 +254,19 @@ public class RequisitionControllerTest {
     when(permissionHelper.canDeleteRequisition()).thenReturn(false);
     when(permissionHelper.canViewRequisition()).thenReturn(false);
 
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.initiate(programUuid, facilityUuid, null, false);
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.submitRequisition(UUID.randomUUID());
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.deleteRequisition(UUID.randomUUID());
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.updateRequisition(mock(RequisitionDto.class), UUID.randomUUID());
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.getRequisition(UUID.randomUUID());
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.approveRequisition(UUID.randomUUID());
-    exception.expect(PermissionException.class);
+    exception.expect(AuthorizationException.class);
     requisitionController.authorizeRequisition(UUID.randomUUID());
   }
 

@@ -1,7 +1,7 @@
 package org.openlmis.errorhandling;
 
 import org.openlmis.requisition.exception.AuthenticationException;
-import org.openlmis.requisition.exception.PermissionException;
+import org.openlmis.requisition.web.AuthorizationException;
 import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +24,10 @@ public abstract class AbstractErrorHandling {
     return logErrorAndRespond("Could not authenticate user", ex);
   }
 
-  @ExceptionHandler(PermissionException.class)
+  @ExceptionHandler(AuthorizationException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   @ResponseBody
-  public ErrorResponse handlePermissionException(PermissionException ex) {
+  public ErrorResponse handlePermissionException(AuthorizationException ex) {
     return logErrorAndRespond("User is lacking permission to access the resource", ex);
   }
 

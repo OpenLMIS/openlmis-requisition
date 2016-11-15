@@ -14,7 +14,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.PermissionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
@@ -121,7 +120,7 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "emergency") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
     if (!permissionHelper.canInitRequisition(program, facility)) {
-      throw new PermissionException("You do not have permission to initiate a requisition.");
+      throw new AuthorizationException("You do not have permission to initiate a requisition.");
     }
 
     try {
@@ -162,7 +161,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException, RequisitionTemplateColumnException {
     if (!permissionHelper.canSubmitRequisition()) {
-      throw new PermissionException("You do not have permission to submit this requisition.");
+      throw new AuthorizationException("You do not have permission to submit this requisition.");
     }
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -201,7 +200,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException {
     if (!permissionHelper.canDeleteRequisition()) {
-      throw new PermissionException("You do not have permission to delete this requisition.");
+      throw new AuthorizationException("You do not have permission to delete this requisition.");
     }
 
     requisitionService.delete(requisitionId);
@@ -220,7 +219,7 @@ public class RequisitionController extends BaseController {
                                        @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException {
     if (!permissionHelper.canUpdateRequisition(requisitionDto.getStatus())) {
-      throw new PermissionException("You do not have permission to update a requisition.");
+      throw new AuthorizationException("You do not have permission to update a requisition.");
     }
 
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
@@ -281,7 +280,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionNotFoundException {
     if (!permissionHelper.canViewRequisition()) {
-      throw new PermissionException("You do not have permission to view this requisition.");
+      throw new AuthorizationException("You do not have permission to view this requisition.");
     }
 
     RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
@@ -343,7 +342,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     if (!permissionHelper.canApproveRequisition()) {
-      throw new PermissionException("You do not have permission to approve this requisition.");
+      throw new AuthorizationException("You do not have permission to approve this requisition.");
     }
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -414,7 +413,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException {
     if (!permissionHelper.canAuthorizeRequisition()) {
-      throw new PermissionException("You do not have permission to authorize this requisition.");
+      throw new AuthorizationException("You do not have permission to authorize this requisition.");
     }
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
