@@ -38,7 +38,6 @@ public class PermissionService {
    * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canInitRequisition(UUID program, UUID facility) {
-    hasPermission(REQUISITION_VIEW, program, facility);
     hasPermission(REQUISITION_CREATE, program, facility);
   }
 
@@ -51,8 +50,6 @@ public class PermissionService {
    * @throws IllegalStateException        if requisition has incorrect status.
    */
   public void canUpdateRequisition(UUID requisitionId) {
-    canViewRequisition(requisitionId);
-
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     switch (requisition.getStatus()) {
@@ -76,7 +73,6 @@ public class PermissionService {
    * @throws MissingPermissionException   if the current user has not a permission.
    */
   public void canSubmitRequisition(UUID requisitionId) {
-    canViewRequisition(requisitionId);
     hasPermission(REQUISITION_CREATE, requisitionId);
   }
 
@@ -86,7 +82,6 @@ public class PermissionService {
    * @throws MissingPermissionException   if the current user has not a permission.
    */
   public void canApproveRequisition(UUID requisitionId) {
-    canViewRequisition(requisitionId);
     hasPermission(REQUISITION_APPROVE, requisitionId);
   }
 
@@ -96,7 +91,6 @@ public class PermissionService {
    * @throws MissingPermissionException   if the current user has not a permission.
    */
   public void canAuthorizeRequisition(UUID requisitionId) {
-    canViewRequisition(requisitionId);
     hasPermission(REQUISITION_AUTHORIZE, requisitionId);
   }
 
@@ -106,7 +100,6 @@ public class PermissionService {
    * @throws MissingPermissionException   if the current user has not a permission.
    */
   public void canDeleteRequisition(UUID requisitionId) {
-    canViewRequisition(requisitionId);
     hasPermission(REQUISITION_DELETE, requisitionId);
   }
 
