@@ -1,8 +1,8 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.openlmis.requisition.domain.LineItemFieldsCalculator;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -58,22 +59,22 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
                                            Requisition requisition, RequisitionLineItem item) {
 
     rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
-            RequisitionLineItem.REQUESTED_QUANTITY);
+        RequisitionLineItem.REQUESTED_QUANTITY);
 
     rejectIfNullOrNegative(errors, template, item.getBeginningBalance(),
-            RequisitionLineItem.BEGINNING_BALANCE);
+        RequisitionLineItem.BEGINNING_BALANCE);
 
     rejectIfNullOrNegative(errors, template, item.getTotalReceivedQuantity(),
-            RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
+        RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
 
     rejectIfNullOrNegative(errors, template, item.getStockOnHand(),
-            RequisitionLineItem.STOCK_ON_HAND);
+        RequisitionLineItem.STOCK_ON_HAND);
 
     rejectIfNullOrNegative(errors, template, item.getTotalConsumedQuantity(),
-            RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
     rejectIfNullOrNegative(errors, template, item.getTotalStockoutDays(),
-            RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
+        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
 
     rejectIfNullOrNegative(errors, template, item.getTotal(), RequisitionLineItem.TOTAL);
 
@@ -120,15 +121,14 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   }
 
   private void validateCalculations(Errors errors, RequisitionTemplate template,
-                                   RequisitionLineItem item) {
+                                    RequisitionLineItem item) {
     boolean templateValid = checkTemplate(errors, template, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND) && checkTemplate(errors, template,
         item.getTotalConsumedQuantity(), RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
 
-    if (templateValid && !item.getStockOnHand()
-        .equals(LineItemFieldsCalculator.calculateStockOnHand(item))) {
+    if (templateValid && !Objects.equals(item.getStockOnHand(), calculateStockOnHand(item))) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, RequisitionLineItem.STOCK_ON_HAND + " or "
-          + RequisitionLineItem.TOTAL_CONSUMED_QUANTITY  + VALUE_IS_INCORRECTLY_CALCULATED);
+          + RequisitionLineItem.TOTAL_CONSUMED_QUANTITY + VALUE_IS_INCORRECTLY_CALCULATED);
     }
   }
 
