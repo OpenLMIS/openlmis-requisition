@@ -237,8 +237,7 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenFacilityOrProgramIdNotFound()
-      throws RequisitionException, RequisitionTemplateColumnException {
+  public void shouldThrowExceptionWhenFacilityOrProgramIdNotFound() throws Exception {
     exception.expect(RequisitionException.class);
     requisitionController.initiate(programUuid, null, null, false);
     exception.expect(RequisitionException.class);
