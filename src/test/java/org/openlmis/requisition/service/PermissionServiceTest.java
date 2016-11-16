@@ -107,19 +107,16 @@ public class PermissionServiceTest {
 
   @Test
   public void canInitRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     hasRight(requisitionCreateRightId, true);
 
     permissionService.canInitRequisition(programId, facilityId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
     verifyRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
   public void cannotInitRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_CREATE);
 
     permissionService.canInitRequisition(programId, facilityId);
@@ -127,7 +124,6 @@ public class PermissionServiceTest {
 
   @Test
   public void canUpdateRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     hasRight(requisitionCreateRightId, true);
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
@@ -135,13 +131,11 @@ public class PermissionServiceTest {
     permissionService.canUpdateRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
     verifyRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
   public void cannotUpdateRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_CREATE);
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
@@ -151,19 +145,16 @@ public class PermissionServiceTest {
 
   @Test
   public void canSubmitRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     hasRight(requisitionCreateRightId, true);
 
     permissionService.canSubmitRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
     verifyRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
   public void cannotSubmitRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_CREATE);
 
     permissionService.canSubmitRequisition(requisitionId);
@@ -171,19 +162,16 @@ public class PermissionServiceTest {
 
   @Test
   public void canApproveRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     hasRight(requisitionApproveRightId, true);
 
     permissionService.canApproveRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
     verifyRight(order, REQUISITION_APPROVE, requisitionApproveRightId);
   }
 
   @Test
   public void cannotApproveRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_APPROVE);
 
     permissionService.canApproveRequisition(requisitionId);
@@ -191,19 +179,16 @@ public class PermissionServiceTest {
 
   @Test
   public void canAuthorizeRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     hasRight(requisitionAuthorizeRightId, true);
 
     permissionService.canAuthorizeRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
     verifyRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRightId);
   }
 
   @Test
   public void cannotAuthorizeRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_AUTHORIZE);
 
     permissionService.canAuthorizeRequisition(requisitionId);
@@ -211,19 +196,16 @@ public class PermissionServiceTest {
 
   @Test
   public void canDeleteRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     hasRight(requisitionDeleteRightId, true);
 
     permissionService.canDeleteRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
     verifyRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
   }
 
   @Test
   public void cannotDeleteRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_DELETE);
 
     permissionService.canDeleteRequisition(requisitionId);
