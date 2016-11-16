@@ -383,6 +383,8 @@ schemas:
           }
       }
 
+  - errorResponse: !include schemas/errorResponse.json
+
 traits:
     - secured:
           queryParameters:
@@ -811,6 +813,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: errorResponse
     /submitted:
         get:
             is: [ secured ]
@@ -832,6 +835,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: errorResponse
     /{id}:
         uriParameters:
             id:
@@ -869,6 +873,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: errorResponse
         get:
             is: [ secured ]
             description: Get chosen requisition.
@@ -889,6 +894,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: errorResponse
         put:
             is: [ secured ]
             description: Update existing requisition.
@@ -915,6 +921,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: errorResponse
     /{id}/skip:
         uriParameters:
             id:
@@ -982,6 +989,7 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
+                              schema: errorResponse
     /{id}/authorize:
             uriParameters:
                 id:
@@ -1015,6 +1023,7 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
+                              schema: errorResponse
     /search:
         get:
             is: [ secured ]
@@ -1102,6 +1111,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                          schema: errorResponse
     /requisitionsForApproval:
         get:
             is: [ secured ]
