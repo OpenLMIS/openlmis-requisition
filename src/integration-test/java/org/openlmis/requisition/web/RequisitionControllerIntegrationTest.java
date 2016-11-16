@@ -860,7 +860,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotInitiateIfUserHasNoRight() throws Exception {
-    userHasNoRight();
+    denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -878,7 +878,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotSubmitIfUserHasNoRight() throws Exception {
-    userHasNoRight();
+    denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -894,7 +894,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotDeleteIfUserHasNoRight() throws Exception {
-    userHasNoRight();
+    denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -910,7 +910,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotRetrieveIfUserHasNoRight() throws Exception {
-    userHasNoRight();
+    denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -926,7 +926,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotApproveIfUserHasNoRight() throws Exception {
-    userHasNoRight();
+    denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -941,7 +941,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotAuthorizeIfUserHasNoRight() throws Exception {
-    userHasNoRight();
+    denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -1040,7 +1040,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return columns;
   }
 
-  private void userHasNoRight() {
+  private void denyUserAllRights() {
     wireMockRule.stubFor(
         get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
             .willReturn(aResponse()
