@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 public class OrderController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
+  private static final String DISPOSITION_BASE = "attachment; filename=";
 
   @Autowired
   private OrderRepository orderRepository;
@@ -113,7 +115,7 @@ public class OrderController extends BaseController {
   public ResponseEntity<?> getOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
       return new ResponseEntity<>(order, HttpStatus.OK);
     }
@@ -132,7 +134,7 @@ public class OrderController extends BaseController {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
       orderRepository.delete(order);
-      return new ResponseEntity<Order>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
   }
 
@@ -163,19 +165,19 @@ public class OrderController extends BaseController {
   or ResponseEntity containing the error description and "#400 Bad Request" status
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
-  public ResponseEntity<?> finalize(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<?> finalizeOrder(@PathVariable("id") UUID orderId) {
 
     Order order = orderRepository.findOne(orderId);
 
     if (order == null || order.getStatus() != OrderStatus.ORDERED) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     LOGGER.debug("Finalizing the order with id: {}", order);
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
 
-    return new ResponseEntity<>(HttpStatus.OK);
+    return new ResponseEntity(HttpStatus.OK);
   }
 
   /**
@@ -199,15 +201,15 @@ public class OrderController extends BaseController {
     }
 
     String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
-    if (format.equals("pdf")) {
+    if ("pdf".equals(format)) {
       response.setContentType("application/pdf");
-      response.addHeader("Content-Disposition",
-              "attachment; filename=order-" + order.getOrderCode() + ".pdf");
+      response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+          DISPOSITION_BASE + "order-" + order.getOrderCode() + ".pdf");
       orderService.orderToPdf(order, columns, response.getOutputStream());
     } else {
       response.setContentType("text/csv");
-      response.addHeader("Content-Disposition",
-              "attachment; filename=order" + order.getOrderCode() + ".csv");
+      response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+          DISPOSITION_BASE + "order" + order.getOrderCode() + ".csv");
       orderService.orderToCsv(order, columns, response.getWriter());
     }
   }
@@ -247,8 +249,8 @@ public class OrderController extends BaseController {
     }
 
     response.setContentType("text/csv");
-    response.addHeader("Content-Disposition", "attachment; filename="
-        + orderFileTemplate.getFilePrefix() + order.getOrderCode() + ".csv");
+    response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+        DISPOSITION_BASE + orderFileTemplate.getFilePrefix() + order.getOrderCode() + ".csv");
 
     try {
       csvHelper.writeCsvFile(order, orderFileTemplate, response.getWriter());
