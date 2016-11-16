@@ -29,7 +29,7 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
-import org.openlmis.utils.PermissionHelper;
+import org.openlmis.requisition.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +94,7 @@ public class RequisitionController extends BaseController {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
-  private PermissionHelper permissionHelper;
+  private PermissionService permissionService;
 
   @Autowired
   private RequisitionLineCalculationService requisitionLineCalculationService;
@@ -123,7 +123,8 @@ public class RequisitionController extends BaseController {
       throw new MissingParameterException(
           "Facility and program must be specified when initiating a requisition.");
     }
-    permissionHelper.canInitRequisition(program, facility);
+
+    permissionService.canInitRequisition(program, facility);
 
     try {
       Requisition newRequisition = requisitionService.initiate(program,
@@ -162,7 +163,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
   public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionException, RequisitionTemplateColumnException {
-    permissionHelper.canSubmitRequisition(requisitionId);
+    permissionService.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -198,7 +199,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionException {
-    permissionHelper.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisitionId);
     requisitionService.delete(requisitionId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
@@ -214,7 +215,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                        @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException {
-    permissionHelper.canUpdateRequisition(requisitionId);
+    permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
@@ -273,7 +274,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionNotFoundException {
-    permissionHelper.canViewRequisition(requisitionId);
+    permissionService.canViewRequisition(requisitionId);
     RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
     if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -333,7 +334,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionNotFoundException {
-    permissionHelper.canApproveRequisition(requisitionId);
+    permissionService.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -401,7 +402,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
   public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionException {
-    permissionHelper.canAuthorizeRequisition(requisitionId);
+    permissionService.canAuthorizeRequisition(requisitionId);
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
       return new ResponseEntity<>("Requisition authorization is configured to be skipped",

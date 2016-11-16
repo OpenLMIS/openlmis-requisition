@@ -1,12 +1,12 @@
-package org.openlmis.utils;
+package org.openlmis.requisition.service;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
-import static org.openlmis.utils.PermissionHelper.REQUISITION_APPROVE;
-import static org.openlmis.utils.PermissionHelper.REQUISITION_AUTHORIZE;
-import static org.openlmis.utils.PermissionHelper.REQUISITION_CREATE;
-import static org.openlmis.utils.PermissionHelper.REQUISITION_DELETE;
-import static org.openlmis.utils.PermissionHelper.REQUISITION_VIEW;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,15 +22,16 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.web.MissingPermissionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.web.MissingPermissionException;
+import org.openlmis.utils.AuthenticationHelper;
 
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
-public class PermissionHelperTest {
+public class PermissionServiceTest {
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
@@ -45,7 +46,7 @@ public class PermissionHelperTest {
   private RequisitionRepository requisitionRepository;
 
   @InjectMocks
-  private PermissionHelper permissionHelper;
+  private PermissionService permissionService;
 
   @Mock
   private UserDto user;
@@ -109,7 +110,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     hasRight(requisitionCreateRightId, true);
 
-    permissionHelper.canInitRequisition(programId, facilityId);
+    permissionService.canInitRequisition(programId, facilityId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -121,7 +122,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_CREATE);
 
-    permissionHelper.canInitRequisition(programId, facilityId);
+    permissionService.canInitRequisition(programId, facilityId);
   }
 
   @Test
@@ -131,7 +132,7 @@ public class PermissionHelperTest {
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    permissionHelper.canUpdateRequisition(requisitionId);
+    permissionService.canUpdateRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -145,7 +146,7 @@ public class PermissionHelperTest {
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    permissionHelper.canUpdateRequisition(requisitionId);
+    permissionService.canUpdateRequisition(requisitionId);
   }
 
   @Test
@@ -153,7 +154,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     hasRight(requisitionCreateRightId, true);
 
-    permissionHelper.canSubmitRequisition(requisitionId);
+    permissionService.canSubmitRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -165,7 +166,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_CREATE);
 
-    permissionHelper.canSubmitRequisition(requisitionId);
+    permissionService.canSubmitRequisition(requisitionId);
   }
 
   @Test
@@ -173,7 +174,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     hasRight(requisitionApproveRightId, true);
 
-    permissionHelper.canApproveRequisition(requisitionId);
+    permissionService.canApproveRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -185,7 +186,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_APPROVE);
 
-    permissionHelper.canApproveRequisition(requisitionId);
+    permissionService.canApproveRequisition(requisitionId);
   }
 
   @Test
@@ -193,7 +194,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     hasRight(requisitionAuthorizeRightId, true);
 
-    permissionHelper.canAuthorizeRequisition(requisitionId);
+    permissionService.canAuthorizeRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -205,7 +206,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_AUTHORIZE);
 
-    permissionHelper.canAuthorizeRequisition(requisitionId);
+    permissionService.canAuthorizeRequisition(requisitionId);
   }
 
   @Test
@@ -213,7 +214,7 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     hasRight(requisitionDeleteRightId, true);
 
-    permissionHelper.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -225,14 +226,14 @@ public class PermissionHelperTest {
     hasRight(requisitionViewRightId, true);
     expectException(REQUISITION_DELETE);
 
-    permissionHelper.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisitionId);
   }
 
   @Test
   public void canViewRequisition() throws Exception {
     hasRight(requisitionViewRightId, true);
 
-    permissionHelper.canViewRequisition(requisitionId);
+    permissionService.canViewRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
@@ -242,7 +243,7 @@ public class PermissionHelperTest {
   public void cannotViewRequisition() throws Exception {
     expectException(REQUISITION_VIEW);
 
-    permissionHelper.canViewRequisition(requisitionId);
+    permissionService.canViewRequisition(requisitionId);
   }
 
   private void hasRight(UUID rightId, boolean assign) {

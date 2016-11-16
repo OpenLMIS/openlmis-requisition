@@ -1,4 +1,4 @@
-package org.openlmis.utils;
+package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.BooleanResultDto;
@@ -7,13 +7,14 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.web.MissingPermissionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.utils.AuthenticationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
-public class PermissionHelper {
+public class PermissionService {
   private static final String REQUISITION_BASE = "REQUISITION_";
 
   static final String REQUISITION_CREATE = REQUISITION_BASE + "CREATE";

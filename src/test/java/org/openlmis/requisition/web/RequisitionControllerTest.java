@@ -39,7 +39,7 @@ import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonRefer
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.ErrorResponse;
-import org.openlmis.utils.PermissionHelper;
+import org.openlmis.requisition.service.PermissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -94,7 +94,7 @@ public class RequisitionControllerTest {
   private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Mock
-  private PermissionHelper permissionHelper;
+  private PermissionService permissionService;
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
