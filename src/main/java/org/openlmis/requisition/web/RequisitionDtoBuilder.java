@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class RequisitionDtoBuilder {
@@ -33,12 +34,27 @@ public class RequisitionDtoBuilder {
   private RequisitionCommentService requisitionCommentService;
 
   /**
+   * Create a list of {@link RequisitionDto} based on passed data.
+   *
+   * @param requisitions a list of requisitions that will be converted into DTOs.
+   * @return a list of {@link RequisitionDto}
+   */
+  public List<RequisitionDto> build(List<Requisition> requisitions) {
+    return requisitions.stream().map(this::build).collect(Collectors.toList());
+  }
+
+  /**
    * Create a new instance of RequisitionDto based on data from {@link Requisition}.
    *
-   * @param requisition instance used to create {@link RequisitionDto}
-   * @return new instance of {@link RequisitionDto}
+   * @param requisition instance used to create {@link RequisitionDto} (can be {@code null})
+   * @return new instance of {@link RequisitionDto}.
+   *         {@code null} if passed argument is {@code null}.
    */
   public RequisitionDto build(Requisition requisition) {
+    if (null == requisition) {
+      return null;
+    }
+
     RequisitionDto requisitionDto = new RequisitionDto();
 
     requisition.export(requisitionDto);

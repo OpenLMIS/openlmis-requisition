@@ -663,21 +663,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-    /requisitions:
-        post:
-            is: [ secured ]
-            description: Convert Requisition list to orders.
-            body:
-              application/json:
-            responses:
-                "201":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
 
 /orderLineItems:
     displayName: Order Line Items
@@ -1182,6 +1167,21 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+    /convertToOrder:
+        post:
+            is: [ secured ]
+            description: Convert Requisition list to orders.
+            body:
+              application/json:
+            responses:
+                "201":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
                 "500":
                     headers:
                       X-Content-Type-Options:

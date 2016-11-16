@@ -3,7 +3,9 @@ package org.openlmis.requisition.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
@@ -21,7 +23,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.dto.ConvertToOrderDto;
+import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -32,8 +36,8 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -46,6 +50,7 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProduc
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
@@ -108,6 +113,12 @@ public class RequisitionServiceTest {
   @Mock
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
+  @Mock
+  private SupplyLineReferenceDataService supplyLineService;
+
+  @Mock
+  private OrderService orderService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -117,7 +128,7 @@ public class RequisitionServiceTest {
   private UUID suggestedPeriodId = UUID.randomUUID();
 
   @Before
-  public void setUp() {
+  public void setUp() throws RequisitionException {
     generateRequisition();
     mockRepositories();
   }
@@ -269,42 +280,6 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionInitializationException.class)
-  public void shouldThrowExceptionIfScheduleDoesNotExist()
-      throws RequisitionException, RequisitionTemplateColumnException {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(
-        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
-    );
-
-    requisition.setStatus(null);
-    when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(null);
-
-    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(null);
-    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
-    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.getTemplateForProgram(programId))
-        .thenReturn(requisitionTemplate);
-
-    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
-        any(Requisition.class), any(RequisitionTemplate.class)))
-        .thenAnswer(invocation -> {
-          Requisition req = (Requisition) invocation.getArguments()[0];
-          req.setRequisitionLineItems(Lists.newArrayList());
-
-          return null;
-        });
-
-    Requisition initiatedRequisition = requisitionService.initiate(
-        programId, facilityId, suggestedPeriodId, false
-    );
-
-    assertEquals(initiatedRequisition.getStatus(), INITIATED);
-  }
-
-  @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
       throws RequisitionException, RequisitionTemplateColumnException {
     requisitionService.initiate(null, null, null, false);
@@ -421,72 +396,28 @@ public class RequisitionServiceTest {
         requisition.getStatus());
   }
 
-  @Test(expected = InvalidPeriodException.class)
-  public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram()
-      throws RequisitionException, RequisitionTemplateColumnException {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(
-        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
-    );
+  @Test
+  public void shouldConvertRequisitionsToOrders() throws RequisitionException {
+    // given
+    int requisitionsCount = 5;
 
-    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
-    processingScheduleDto.setId(UUID.randomUUID());
-    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Arrays.asList(processingScheduleDto));
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(UUID.randomUUID());
 
-    requisition.setStatus(null);
-    when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(null);
-    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
-    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.getTemplateForProgram(programId))
-        .thenReturn(requisitionTemplate);
+    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount);
 
-    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
-        any(Requisition.class), any(RequisitionTemplate.class)))
-        .thenAnswer(invocation -> {
-          Requisition req = (Requisition) invocation.getArguments()[0];
-          req.setRequisitionLineItems(Lists.newArrayList());
+    List<FacilityDto> facilities = list.stream()
+        .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+        .collect(Collectors.toList());
 
-          return null;
-        });
-    requisitionService.initiate(programId, facilityId, suggestedPeriodId, false);
-  }
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
+        .thenReturn(facilities);
 
-  @Test(expected = InvalidPeriodException.class)
-  public void shouldThrowExceptionIfPeriodIsNotTheOldest()
-      throws RequisitionException, RequisitionTemplateColumnException {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(
-        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
-    );
+    // when
+    requisitionService.convertToOrder(list, user);
 
-    requisition.setStatus(null);
-    when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(null);
-
-    processingPeriodDto.setId(UUID.randomUUID());
-    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
-    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.getTemplateForProgram(programId))
-        .thenReturn(requisitionTemplate);
-
-    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
-        any(Requisition.class), any(RequisitionTemplate.class)))
-        .thenAnswer(invocation -> {
-          Requisition req = (Requisition) invocation.getArguments()[0];
-          req.setRequisitionLineItems(Lists.newArrayList());
-
-          return null;
-        });
-
-    Requisition initiatedRequisition = requisitionService.initiate(
-        programId, facilityId, suggestedPeriodId, false
-    );
-
-    assertEquals(initiatedRequisition.getStatus(), INITIATED);
+    // then
+    verify(orderService, atLeastOnce()).save(any(Order.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
@@ -506,6 +437,7 @@ public class RequisitionServiceTest {
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
       requisition.setStatus(APPROVED);
+      requisition.setRequisitionLineItems(Lists.newArrayList());
 
       when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
       when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
@@ -536,7 +468,16 @@ public class RequisitionServiceTest {
     return requisition;
   }
 
-  private void mockRepositories() {
+  private SupplyLineDto generateSupplyLine(
+      UUID program, UUID supervisoryNode, UUID facility) {
+    SupplyLineDto supplyLine = new SupplyLineDto();
+    supplyLine.setProgram(program);
+    supplyLine.setSupervisoryNode(supervisoryNode);
+    supplyLine.setSupplyingFacility(facility);
+    return supplyLine;
+  }
+
+  private void mockRepositories() throws RequisitionException {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
 
@@ -558,6 +499,10 @@ public class RequisitionServiceTest {
     processingPeriodDto.setId(suggestedPeriodId);
     when(periodService
         .getPeriod(any()))
+        .thenReturn(processingPeriodDto);
+
+    when(periodService
+        .findPeriod(programId,facilityId,suggestedPeriodId,false))
         .thenReturn(processingPeriodDto);
 
     when(scheduleReferenceDataService.searchByProgramAndFacility(any(), any()))

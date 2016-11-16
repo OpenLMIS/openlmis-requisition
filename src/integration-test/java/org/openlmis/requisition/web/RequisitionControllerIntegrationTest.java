@@ -15,6 +15,10 @@ import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
@@ -48,6 +52,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +106,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private OrderRepository orderRepository;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -952,6 +960,85 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(403);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldConvertRequisitionToOrder() {
+    Requisition requisition = new Requisition();
+    requisition.setProgramId(program.getId());
+    requisition.setFacilityId(facility.getId());
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisition.setEmergency(false);
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+
+    requisitionRepository.save(requisition);
+
+    UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
+    ConvertToOrderDto convertToOrderDto = new ConvertToOrderDto(
+        requisition.getId(), supplyingFacility
+    );
+
+    orderRepository.deleteAll();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(Collections.singletonList(convertToOrderDto))
+        .when()
+        .post("/api/requisitions/convertToOrder")
+        .then()
+        .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertEquals(1, orderRepository.count());
+    Order order = orderRepository.findAll().iterator().next();
+
+    assertEquals(user.getId(), order.getCreatedById());
+    assertEquals(OrderStatus.ORDERED, order.getStatus());
+    assertEquals(order.getRequisition().getId(), requisition.getId());
+    assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
+    assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
+    assertEquals(order.getProgramId(), requisition.getProgramId());
+  }
+
+  @Test
+  public void shouldNotConvertRequisitionToOrderIfSupplyingDepotsNotProvided() {
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(Collections.singletonList(convertToOrderDto))
+        .when()
+        .post("/api/requisitions/convertToOrder")
+        .then()
+        .statusCode(400);
+  }
+
+  @Test
+  public void shouldNotConvertRequisitionToOrderIfUserHasNoFulfillmentRightsForFacility() {
+    final String fulfillmentFacilitiesResult = "[]";
+    UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
+
+    wireMockRule.stubFor(
+        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(fulfillmentFacilitiesResult)));
+
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), supplyingFacility);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(Collections.singletonList(convertToOrderDto))
+        .when()
+        .post("/api/requisitions/convertToOrder")
+        .then()
+        .statusCode(400);
   }
 
   private void testApproveRequisition(Requisition requisition) {

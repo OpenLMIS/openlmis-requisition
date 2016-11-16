@@ -3,6 +3,7 @@ package org.openlmis.requisition.web;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -20,6 +21,7 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
@@ -29,7 +31,6 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
-import org.openlmis.requisition.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionLineCalculationService requisitionLineCalculationService;
+
+  @Autowired
+  private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -189,7 +193,7 @@ public class RequisitionController extends BaseController {
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
     return new ResponseEntity<Object>(
-        requisitionService.getRequisition(requisition), HttpStatus.OK
+        requisitionDtoBuilder.build(requisition), HttpStatus.OK
     );
   }
 
@@ -258,7 +262,7 @@ public class RequisitionController extends BaseController {
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
       return new ResponseEntity<>(
-          requisitionService.getRequisition(requisitionToUpdate), HttpStatus.OK
+          requisitionDtoBuilder.build(requisitionToUpdate), HttpStatus.OK
       );
     } else {
       throw new InvalidRequisitionStatusException("Cannot update a requisition "
@@ -276,11 +280,11 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
       throws RequisitionNotFoundException, MissingPermissionException {
     permissionService.canViewRequisition(requisitionId);
-    RequisitionDto requisition = requisitionService.getRequisition(requisitionId);
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(requisition, HttpStatus.OK);
+      return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
     }
   }
 
@@ -306,7 +310,7 @@ public class RequisitionController extends BaseController {
         emergency);
 
 
-    return new ResponseEntity<>(requisitionService.getRequisitions(result), HttpStatus.OK);
+    return new ResponseEntity<>(requisitionDtoBuilder.build(result), HttpStatus.OK);
   }
 
   /**
@@ -370,9 +374,9 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
   public ResponseEntity<?> listForApproval() {
     UserDto user = authenticationHelper.getCurrentUser();
-    Collection<RequisitionDto> requisitions =
-        requisitionService.getRequisitionForApprovalDtos(user.getId());
-    return new ResponseEntity<>(requisitions, HttpStatus.OK);
+    List<Requisition> approvalRequisitions = requisitionService
+        .getRequisitionsForApproval(user.getId());
+    return new ResponseEntity<>(requisitionDtoBuilder.build(approvalRequisitions), HttpStatus.OK);
   }
 
   /**
@@ -429,7 +433,7 @@ public class RequisitionController extends BaseController {
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
-    return new ResponseEntity<>(requisitionService.getRequisition(requisition), HttpStatus.OK);
+    return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
   }
 
   /**
@@ -474,5 +478,25 @@ public class RequisitionController extends BaseController {
     }
 
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  /**
+   * Converting Requisition list to orders.
+   *
+   * @param list List of Requisitions with their supplyingDepots that will be converted to Orders
+   * @return ResponseEntity with the "#200 OK" HTTP response status on success
+   */
+  @RequestMapping(value = "/requisitions/convertToOrder", method = RequestMethod.POST)
+  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
+    try {
+      UserDto user = authenticationHelper.getCurrentUser();
+      requisitionService.convertToOrder(list, user);
+      return new ResponseEntity<>(HttpStatus.CREATED);
+    } catch (RequisitionException err) {
+      ErrorResponse errorResponse = new ErrorResponse(
+          "An error occurred while converting requisitions to order", err.getMessage());
+      LOGGER.error(errorResponse.getMessage(), err);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
   }
 }

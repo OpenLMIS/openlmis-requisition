@@ -1,7 +1,9 @@
 package org.openlmis.requisition.service;
 
 
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.dto.ConvertToOrderDto;
+import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -10,15 +12,12 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
@@ -27,14 +26,13 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
-import org.openlmis.requisition.web.RequisitionDtoBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -69,9 +67,6 @@ public class RequisitionService {
   private PeriodService periodService;
 
   @Autowired
-  private ScheduleReferenceDataService scheduleReferenceDataService;
-
-  @Autowired
   private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
 
   @Autowired
@@ -81,43 +76,7 @@ public class RequisitionService {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private RequisitionDtoBuilder requisitionDtoBuilder;
-
-  /**
-   * Return list of requisitionDtos with information about facility, program and period.
-   * @param requisitions List of requisitions to be returned
-   * @return list of RequisitionDto objects
-   */
-  public List<RequisitionDto> getRequisitions(List<Requisition> requisitions) {
-    List<RequisitionDto> requisitionDtos = new ArrayList<>();
-    for (Requisition requisition : requisitions) {
-      requisitionDtos.add(getRequisition(requisition));
-    }
-    return requisitionDtos;
-  }
-
-  /**
-   * Return requisitionDto with information about facility, program and period.
-   * @param requisitionId Id of the requisition to be returned
-   * @return RequisitionDto object
-   */
-  public RequisitionDto getRequisition(UUID requisitionId) throws RequisitionNotFoundException {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    return getRequisition(requisition);
-  }
-
-  /**
-   * Return requisitionDto with information about facility, program and period.
-   * @param requisition Requisition to be returned
-   * @return RequisitionDto object
-   */
-  public RequisitionDto getRequisition(Requisition requisition) {
-    if (requisition == null) {
-      return null;
-    }
-    return requisitionDtoBuilder.build(requisition);
-
-  }
+  private OrderService orderService;
 
   /**
    * Initiated given requisition if possible.
@@ -139,7 +98,8 @@ public class RequisitionService {
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     ProgramDto program = programReferenceDataService.findOne(programId);
 
-    ProcessingPeriodDto period = findPeriod(programId, facilityId, suggestedPeriodId, emergency);
+    ProcessingPeriodDto period = periodService
+        .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
 
@@ -285,14 +245,6 @@ public class RequisitionService {
   }
 
   /**
-   * Get requisition Dtos to approve for specified user.
-   */
-  public List<RequisitionDto> getRequisitionForApprovalDtos(UUID userId) {
-    List<Requisition> requisitionsForApproval = getRequisitionsForApproval(userId);
-    return getRequisitions(requisitionsForApproval);
-  }
-
-  /**
    * Get authorized requisitions for specified program.
    */
   public List<Requisition> getAuthorizedRequisitions(ProgramDto program) {
@@ -386,85 +338,19 @@ public class RequisitionService {
         filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
   }
 
-  private ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                                         Boolean emergency) throws RequisitionException {
-    ProcessingPeriodDto period;
-
-    if (emergency) {
-      List<ProcessingPeriodDto> periods = periodService.getCurrentPeriods(
-          programId, facilityId
-      );
-
-      if (periods.isEmpty()) {
-        throw new InvalidPeriodException("Cannot find current period");
-      }
-
-      period = periods.get(0);
-    } else {
-      period = findTheOldestPeriod(programId, facilityId);
-    }
-
-    if (period == null
-        || (null != suggestedPeriodId && !suggestedPeriodId.equals(period.getId()))) {
-      throw new InvalidPeriodException(
-          "Period should be the oldest and not associated with any requisitions");
-    }
-
-    Collection<ProcessingScheduleDto> schedules =
-          scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId);
-
-    if (schedules == null || schedules.isEmpty()) {
-      throw new RequisitionInitializationException(
-            "Cannot initiate requisition. Requisition group program schedule"
-            + " with given program and facility does not exist");
-    }
-
-    ProcessingScheduleDto scheduleDto = schedules.iterator().next();
-
-    if (!scheduleDto.getId().equals(period.getProcessingSchedule().getId())) {
-      throw new InvalidPeriodException("Cannot initiate requisition."
-          + " Period for the requisition must belong to the same schedule"
-          + " that belongs to the program selected for that requisition");
-    }
-
-    return period;
-  }
-
   /**
-   * Return the oldest period which is not associated with any requisition.
-   *
-   * @param programId Program for Requisition
-   * @param facilityId Facility for Requisition
-   * @return ProcessingPeriodDto.
+   * Converting Requisition list to Orders.
    */
-  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId)
+  @Transactional
+  public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
       throws RequisitionException {
+    List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
+    List<Order> orders = releasedRequisitions
+        .stream()
+        .map(r -> Order.newOrder(r, user))
+        .collect(Collectors.toList());
 
-    Requisition lastRequisition = requisitionRepository.getLastRegularRequisition(
-        facilityId, programId
-    );
-
-    if (null != lastRequisition && lastRequisition.isPreAuthorize()) {
-      throw new InvalidRequisitionStatusException("Please finish previous requisition");
-    }
-
-    ProcessingPeriodDto result = null;
-    Collection<ProcessingPeriodDto> periods =
-          periodService.searchByProgramAndFacility(programId, facilityId);
-
-    List<Requisition> requisitions;
-
-    if (periods != null) {
-      for (ProcessingPeriodDto dto : periods) {
-        requisitions = requisitionRepository.searchByProcessingPeriodAndType(dto.getId(), false);
-        if (requisitions == null || requisitions.isEmpty()) {
-          result = dto;
-          break;
-        }
-      }
-    }
-
-    return result;
+    orders.forEach(orderService::save);
   }
 
 }

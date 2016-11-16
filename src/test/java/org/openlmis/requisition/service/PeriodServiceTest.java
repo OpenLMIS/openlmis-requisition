@@ -15,6 +15,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -31,8 +32,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.exception.InvalidPeriodException;
+import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -43,6 +49,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class PeriodServiceTest {
 
   @Mock
@@ -62,6 +69,9 @@ public class PeriodServiceTest {
 
   @Mock
   private RequisitionRepository requisitionRepository;
+
+  @Mock
+  private ScheduleReferenceDataService scheduleReferenceDataService;
 
   @InjectMocks
   private PeriodService periodService;
@@ -255,6 +265,47 @@ public class PeriodServiceTest {
     dto.setEndDate(LocalDate.now().plusMonths(plusMonth).with(lastDayOfMonth()));
 
     return dto;
+  }
+
+  @Test(expected = RequisitionInitializationException.class)
+  public void shouldThrowExceptionIfScheduleDoesNotExist()
+      throws RequisitionException, RequisitionTemplateColumnException {
+    when(periodReferenceDataService.searchByProgramAndFacility(programId,facilityId))
+        .thenReturn(Lists.newArrayList(period1));
+    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(null);
+
+    periodService.findPeriod(programId, facilityId, null, false);
+  }
+
+  @Test(expected = InvalidPeriodException.class)
+  public void shouldThrowExceptionIfPeriodIsNotTheOldest()
+      throws RequisitionException, RequisitionTemplateColumnException {
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
+    processingScheduleDto.setId(UUID.randomUUID());
+
+    period1.setProcessingSchedule(processingScheduleDto);
+    period1.setId(UUID.randomUUID());
+
+    when(periodReferenceDataService.searchByProgramAndFacility(programId,facilityId))
+        .thenReturn(Lists.newArrayList(period1));
+
+    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Collections.singletonList(processingScheduleDto));
+
+    periodService.findPeriod(programId, facilityId, UUID.randomUUID(), false);
+  }
+
+  @Test(expected = InvalidPeriodException.class)
+  public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram()
+      throws RequisitionException, RequisitionTemplateColumnException {
+
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
+    processingScheduleDto.setId(UUID.randomUUID());
+    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Collections.singletonList(processingScheduleDto));
+
+    periodService.findPeriod(programId, facilityId, null, false);
   }
 
 }

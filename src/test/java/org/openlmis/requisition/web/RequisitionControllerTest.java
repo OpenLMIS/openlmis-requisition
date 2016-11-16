@@ -96,6 +96,9 @@ public class RequisitionControllerTest {
   @Mock
   private PermissionService permissionService;
 
+  @Mock
+  private RequisitionDtoBuilder requisitionDtoBuilder;
+
   @Rule
   public final ExpectedException exception = ExpectedException.none();
 

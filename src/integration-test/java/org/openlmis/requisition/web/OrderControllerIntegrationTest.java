@@ -1,8 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -13,9 +10,9 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -49,16 +46,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
   private UUID facility2 = UUID.randomUUID();
-  private UUID program = UUID.fromString("aa66b58c-871a-11e6-ae22-56b6b6499611");
   private UUID program1 = UUID.randomUUID();
   private UUID program2 = UUID.randomUUID();
-  private UUID period = UUID.randomUUID();
   private UUID period1 = UUID.randomUUID();
   private UUID period2 = UUID.randomUUID();
   private UUID product1 = UUID.randomUUID();
   private UUID product2 = UUID.randomUUID();
-  private UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
-  private UUID supervisoryNode = UUID.randomUUID();
   private UUID user = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
 
@@ -69,12 +62,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private OrderRepository orderRepository;
 
   @Autowired
+  private OrderService orderService;
+
+  @Autowired
   private RequisitionRepository requisitionRepository;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
-  private Requisition requisition;
 
   @Before
   public void setUp() {
@@ -110,11 +105,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     List<OrderLineItem> orderLineItems = new ArrayList<>();
     orderLineItems.add(orderLineItem);
     firstOrder.setOrderLineItems(orderLineItems);
+    firstOrder.setRequisition(requisition1);
 
     firstOrder = orderRepository.save(firstOrder);
-
-    requisition = addRequisition(program, facility, period,
-            RequisitionStatus.APPROVED, supervisoryNode);
   }
 
   private Order addOrder(Requisition requisition, String orderCode, UUID program, UUID user,
@@ -211,71 +204,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldConvertRequisitionToOrder() {
-    orderRepository.deleteAll();
-    ConvertToOrderDto convertToOrderDto =
-        new ConvertToOrderDto(requisition.getId(), supplyingFacility);
-
-    restAssured.given()
-            .queryParam(ACCESS_TOKEN, getToken())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body(Collections.singletonList(convertToOrderDto))
-            .when()
-            .post("/api/orders/requisitions")
-            .then()
-            .statusCode(201);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(1, orderRepository.count());
-    Order order = orderRepository.findAll().iterator().next();
-
-    assertEquals(user, order.getCreatedById());
-    assertEquals(OrderStatus.ORDERED, order.getStatus());
-    assertEquals(order.getRequisition().getId(), requisition.getId());
-    assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
-    assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
-    assertEquals(order.getProgramId(), requisition.getProgramId());
-  }
-
-  @Test
-  public void shouldNotConvertRequisitionToOrderIfSupplyingDepotsNotProvided() {
-    ConvertToOrderDto convertToOrderDto =
-        new ConvertToOrderDto(requisition.getId(), null);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(Collections.singletonList(convertToOrderDto))
-        .when()
-        .post("/api/orders/requisitions")
-        .then()
-        .statusCode(400);
-  }
-
-  @Test
-  public void shouldNotConvertRequisitionToOrderIfUserHasNoFulfillmentRightsForFacility() {
-    final String fulfillmentFacilitiesResult = "[]";
-
-    wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .withBody(fulfillmentFacilitiesResult)));
-
-    ConvertToOrderDto convertToOrderDto =
-        new ConvertToOrderDto(requisition.getId(), supplyingFacility);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(Collections.singletonList(convertToOrderDto))
-        .when()
-        .post("/api/orders/requisitions")
-        .then()
-        .statusCode(400);
   }
 
   @Test
@@ -498,7 +426,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldReturnConflictForExistingOrderCode() {
     firstOrder.getOrderLineItems().clear();
 
-    orderRepository.save(firstOrder);
+    orderService.save(firstOrder);
     firstOrder.setOrderLineItems(null);
 
     restAssured.given()

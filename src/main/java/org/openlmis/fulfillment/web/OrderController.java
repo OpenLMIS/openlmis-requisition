@@ -3,24 +3,18 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
-import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.web.BaseController;
-import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
@@ -53,9 +46,6 @@ public class OrderController extends BaseController {
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
 
-  @Autowired
-  private AuthenticationHelper authenticationHelper;
-
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -69,7 +59,7 @@ public class OrderController extends BaseController {
   public Order createOrder(@RequestBody Order order) {
     LOGGER.debug("Creating new order");
     order.setId(null);
-    Order newOrder = orderRepository.save(order);
+    Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
     return newOrder;
   }
@@ -186,28 +176,6 @@ public class OrderController extends BaseController {
     orderRepository.save(order);
 
     return new ResponseEntity<>(HttpStatus.OK);
-  }
-
-  /**
-   * Converting Requisition list to orders.
-   *
-   * @param convertToOrderDtos List of Requisitions with their supplyingDepots
-   *                           that will be converted to Orders
-   * @return ResponseEntity with the "#200 OK" HTTP response status on success
-   */
-  @RequestMapping(value = "/orders/requisitions", method = RequestMethod.POST)
-  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> convertToOrderDtos,
-                                          OAuth2Authentication auth) {
-    try {
-      UserDto user = authenticationHelper.getCurrentUser();
-      orderService.convertToOrder(convertToOrderDtos, user);
-      return new ResponseEntity<>(HttpStatus.CREATED);
-    } catch (RequisitionException err) {
-      ErrorResponse errorResponse = new ErrorResponse(
-          "An error occurred while converting requisitions to order", err.getMessage());
-      LOGGER.error(errorResponse.getMessage(), err);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
   }
 
   /**

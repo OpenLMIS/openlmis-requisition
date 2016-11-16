@@ -15,25 +15,18 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.dto.ConvertToOrderDto;
 import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapWriter;
 import org.supercsv.prefs.CsvPreference;
@@ -49,22 +42,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
-
-  @Autowired
-  private RequisitionService requisitionService;
 
   @Autowired
   private OrderRepository orderRepository;
 
   @Autowired
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
-
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -76,26 +62,28 @@ public class OrderService {
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
-    "productName", "productCode", "orderedQuantity", "filledQuantity"};
+      "productName", "productCode", "orderedQuantity", "filledQuantity"};
 
   /**
    * Finds orders matching all of provided parameters.
-   * @param supplyingFacility supplyingFacility of searched Orders.
+   *
+   * @param supplyingFacility  supplyingFacility of searched Orders.
    * @param requestingFacility requestingFacility of searched Orders.
-   * @param program program of searched Orders.
+   * @param program            program of searched Orders.
    * @return ist of Orders with matched parameters.
    */
   public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
                                   UUID program) {
     return orderRepository.searchOrders(
-            supplyingFacility,
-            requestingFacility,
-            program);
+        supplyingFacility,
+        requestingFacility,
+        program);
   }
 
   /**
    * Changes order to CSV formatted file.
-   * @param order Order type object to be transformed into CSV
+   *
+   * @param order         Order type object to be transformed into CSV
    * @param chosenColumns String array containing names of columns to be taken from order
    */
   public void orderToCsv(Order order, String[] chosenColumns,
@@ -123,12 +111,13 @@ public class OrderService {
 
   /**
    * Changes order to PDF formatted file given at OutputStream.
-   * @param order Order type object to be transformed into CSV
+   *
+   * @param order         Order type object to be transformed into CSV
    * @param chosenColumns String array containing names of columns to be taken from order
-   * @param out OutputStream to which the pdf file content will be written
+   * @param out           OutputStream to which the pdf file content will be written
    */
   public void orderToPdf(Order order, String[] chosenColumns, OutputStream out)
-          throws OrderPdfWriteException {
+      throws OrderPdfWriteException {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
       try {
@@ -146,8 +135,8 @@ public class OrderService {
                         OutputStream out) throws JRException, IOException {
     ClassLoader classLoader = getClass().getClassLoader();
     File template = new File(
-            classLoader.getResource(
-                    "jasperTemplates/ordersJasperTemplate.jrxml").getFile());
+        classLoader.getResource(
+            "jasperTemplates/ordersJasperTemplate.jrxml").getFile());
 
     try (FileInputStream fis = new FileInputStream(template)) {
       JasperReport pdfTemplate = JasperCompileManager.compileReport(fis);
@@ -162,7 +151,7 @@ public class OrderService {
       }
       JRMapArrayDataSource dataSource = new JRMapArrayDataSource(params);
       JasperPrint jasperPrint = JasperFillManager.fillReport(pdfTemplate, new HashMap<>(),
-              dataSource);
+          dataSource);
       JRPdfExporter exporter = new JRPdfExporter();
       exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
       exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
@@ -177,7 +166,7 @@ public class OrderService {
     String orderNum = order.getOrderCode();
 
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
-            order.getRequestingFacilityId());
+        order.getRequestingFacilityId());
     String facilityCode = requestingFacility.getCode();
     LocalDateTime createdDate = order.getCreatedDate();
 
@@ -204,44 +193,23 @@ public class OrderService {
   }
 
   /**
-   * Converting Requisition list to Orders.
+   * Saves a new instance of order.
+   *
+   * @param order instance
+   * @return passed instance after save.
    */
-  @Transactional
-  public List<Order> convertToOrder(List<ConvertToOrderDto> convertToOrderDtos, UserDto user)
-          throws RequisitionException {
-    List<Requisition> releasedRequisitions =
-        requisitionService.releaseRequisitionsAsOrder(convertToOrderDtos, user);
-
-    return releasedRequisitions.stream().map(r -> createFromRequisition(r, user))
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * Converting Requisition list to Orders.
-   */
-  @Transactional
-  public List<Order> convertToOrder(List<ConvertToOrderDto> convertToOrderDtos, UUID userId)
-      throws RequisitionException {
-    UserDto user = userReferenceDataService.findOne(userId);
-    return convertToOrder(convertToOrderDtos, user);
-  }
-
-  /**
-   * Creates an order based on given requisition.
-   * @param requisition requisition to initialize order
-   * @return created order
-   */
-  private Order createFromRequisition(Requisition requisition, UserDto user) {
-    Order order = Order.newOrder(requisition);
-    order.setCreatedById(user.getId());
-
+  public Order save(Order order) {
     ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
 
-    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(requisition, program));
+    order.setOrderCode(
+        orderNumberConfiguration.generateOrderNumber(order.getRequisition(), program)
+    );
 
     orderRepository.save(order);
+
     return order;
   }
+
 }

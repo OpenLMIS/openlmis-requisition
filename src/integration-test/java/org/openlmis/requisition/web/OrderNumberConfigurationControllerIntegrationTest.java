@@ -103,7 +103,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(Collections.singletonList(convertToOrderDto))
         .when()
-        .post("/api/orders/requisitions")
+        .post("/api/requisitions/convertToOrder")
         .then()
         .statusCode(201);
 
@@ -137,7 +137,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(Collections.singletonList(convertToOrderDto))
         .when()
-        .post("/api/orders/requisitions")
+        .post("/api/requisitions/convertToOrder")
         .then()
         .statusCode(201);
 

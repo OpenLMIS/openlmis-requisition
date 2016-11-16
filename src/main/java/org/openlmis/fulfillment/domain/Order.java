@@ -14,6 +14,7 @@ import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.dto.UserDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -133,6 +134,18 @@ public class Order extends BaseEntity {
     }
 
     order.setOrderLineItems(orderLineItems);
+
+    return order;
+  }
+
+  /**
+   * Static factory method for constructing new Order based on Requisition and User.
+   * @param requisition Requisition to create instance from.
+   * @param user User details
+   */
+  public static Order newOrder(Requisition requisition, UserDto user) {
+    Order order = Order.newOrder(requisition);
+    order.setCreatedById(user.getId());
 
     return order;
   }
