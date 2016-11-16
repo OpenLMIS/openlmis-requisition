@@ -144,8 +144,8 @@
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
-    "key": "dispensable",
-    "name": "orderableProduct.dispensable",
+    "key": "dispensingUnit",
+    "name": "orderableProduct.dispensable.dispensingUnit",
     "label": "Unit/Unit of Issue",
     "indicator": "U",
     "displayOrder": 14,

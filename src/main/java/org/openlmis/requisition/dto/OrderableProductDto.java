@@ -10,13 +10,13 @@ import java.util.UUID;
 @Setter
 public class OrderableProductDto {
   private UUID id;
-  private String dispensable;
   private String productCode;
   private String name;
   private long packSize;
   private long packRoundingThreshold;
   private boolean roundToZero;
   private Set<ProgramProductDto> programs;
+  private DispensableDto dispensable;
 
   /**
    * Returns the number of packs to order. For this OrderableProduct given a desired number of

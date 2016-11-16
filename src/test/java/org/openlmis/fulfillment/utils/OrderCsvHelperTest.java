@@ -16,6 +16,7 @@ import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.DispensableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -222,7 +223,7 @@ public class OrderCsvHelperTest {
     OrderableProductDto product = new OrderableProductDto();
     product.setProductCode("productCode");
     product.setName("productName");
-    product.setDispensable("each");
+    product.setDispensable(new DispensableDto("each"));
 
     return product;
   }

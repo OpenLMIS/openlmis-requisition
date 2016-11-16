@@ -64,7 +64,7 @@ public class RequisitionTemplateColumn {
   }
 
   private boolean validateString(String string) {
-    Pattern pattern = Pattern.compile("^[a-zA-z0-9]+[a-zA-Z0-9 ]+$");
+    Pattern pattern = Pattern.compile("^[a-zA-z0-9/]+[a-zA-Z0-9/ ]+$");
     Matcher matcher = pattern.matcher(string);
     return matcher.find();
   }
