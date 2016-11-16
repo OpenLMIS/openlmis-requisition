@@ -63,7 +63,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String INSERT_COMMENT = RESOURCE_URL + "/{id}/comments";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
-  private static final String APPROVE_REQUISITION = RESOURCE_URL + "/{id}/approve";
+  private static final String APPROVE_URL = RESOURCE_URL + "/{id}/approve";
   private static final String SKIP_URL = RESOURCE_URL + "/{id}/skip";
   private static final String REJECT_URL = RESOURCE_URL + "/{id}/reject";
   private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
@@ -932,7 +932,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
         .when()
-        .post(APPROVE_REQUISITION)
+        .post(APPROVE_URL)
         .then()
         .statusCode(403);
 
@@ -960,7 +960,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
         .when()
-        .post(APPROVE_REQUISITION)
+        .post(APPROVE_URL)
         .then()
         .statusCode(200)
         .extract().as(Requisition.class);
