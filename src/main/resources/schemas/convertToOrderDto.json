@@ -2,7 +2,7 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
   "title": "ConvertToOrderDto",
-  "description": "This ConvertToOrderDto object is used to convert a requisition into an order.",
+  "description": "The ConvertToOrderDto object is used to convert a requisition into an order.",
   "properties": {
     "message": {
       "type": "string",
