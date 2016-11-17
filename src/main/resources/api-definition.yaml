@@ -385,6 +385,14 @@ schemas:
 
   - errorResponse: !include schemas/errorResponse.json
 
+  - convertToOrderDto: !include schemas/convertToOrderDto.json
+
+  - convertToOrderDtoArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref":"schemas/convertToOrderDto.json" }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -1177,6 +1185,7 @@ resourceTypes:
             description: Convert Requisition list to orders.
             body:
               application/json:
+                schema: convertToOrderDtoArray
             responses:
                 "201":
                     headers:
