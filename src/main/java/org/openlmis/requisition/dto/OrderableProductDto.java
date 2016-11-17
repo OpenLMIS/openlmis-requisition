@@ -43,4 +43,21 @@ public class OrderableProductDto {
 
     return packsToOrder;
   }
+
+  /**
+   * Find ProgramProductDto in programs using programId.
+   *
+   * @param programId programId
+   * @return programProduct
+   */
+  public ProgramProductDto findProgramProductDto(UUID programId) {
+    if (programs != null) {
+      for (ProgramProductDto programProductDto : programs) {
+        if (programProductDto.getProgramId().equals(programId)) {
+          return programProductDto;
+        }
+      }
+    }
+    return null;
+  }
 }

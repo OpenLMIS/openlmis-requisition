@@ -1,6 +1,7 @@
 package org.openlmis.requisition.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -17,18 +18,26 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramProductDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -44,6 +53,7 @@ public class RequisitionLineCalculationServiceTest {
 
   private Requisition requisition;
   private RequisitionTemplate requisitionTemplate;
+  private OrderableProductDto orderableProductDto;
 
   @Mock
   private RequisitionService requisitionService;
@@ -65,6 +75,9 @@ public class RequisitionLineCalculationServiceTest {
 
   @Mock
   private ProcessingPeriodDto periodDto3;
+
+  @Mock
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @InjectMocks
   private RequisitionLineCalculationService requisitionLineCalculationService;
@@ -160,6 +173,56 @@ public class RequisitionLineCalculationServiceTest {
         .get(BEGINNING_BALANCE_FIELD).getDisplayOrder());
   }
 
+  @Test
+  public void shouldExportRequisitionLinesToDtos() {
+    RequisitionLineItem requisitionLineItem =
+        generateRequisitionLineItemToExport(orderableProductDto.getId());
+    List<RequisitionLineItemDto> items =
+        requisitionLineCalculationService.exportToDtos(Arrays.asList(requisitionLineItem));
+    RequisitionLineItemDto item = items.get(0);
+    assertNotNull(item);
+    assertEquals(item.getId(), requisitionLineItem.getId());
+    assertEquals(item.getOrderableProduct().getId(), requisitionLineItem.getOrderableProductId());
+    assertEquals(item.getBeginningBalance(), requisitionLineItem.getBeginningBalance());
+    assertEquals(item.getTotalReceivedQuantity(), requisitionLineItem.getTotalReceivedQuantity());
+    assertEquals(item.getTotalLossesAndAdjustments(),
+        requisitionLineItem.getTotalLossesAndAdjustments());
+    assertEquals(item.getStockOnHand(), requisitionLineItem.getStockOnHand());
+    assertEquals(item.getRequestedQuantity(), requisitionLineItem.getRequestedQuantity());
+    assertEquals(item.getTotalConsumedQuantity(), requisitionLineItem.getTotalConsumedQuantity());
+    assertEquals(item.getRequestedQuantityExplanation(),
+        requisitionLineItem.getRequestedQuantityExplanation());
+    assertEquals(item.getRemarks(), requisitionLineItem.getRemarks());
+    assertEquals(item.getApprovedQuantity(), requisitionLineItem.getApprovedQuantity());
+    assertEquals(item.getTotalStockoutDays(), requisitionLineItem.getTotalStockoutDays());
+    assertEquals(item.getTotal(), requisitionLineItem.getTotal());
+    assertNotNull(item.getPricePerPack());
+  }
+
+  private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {
+    ProgramProductDto programProductDto = new ProgramProductDto();
+    programProductDto.setProductId(orderableProductDto.getId());
+    programProductDto.setProgramId(program);
+    Set<ProgramProductDto> programs = new HashSet<>();
+    programs.add(programProductDto);
+    orderableProductDto.setPrograms(programs);
+
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setOrderableProductId(orderableProductDtoUuid);
+    requisitionLineItem.setId(UUID.randomUUID());
+    requisitionLineItem.setBeginningBalance(3);
+    requisitionLineItem.setTotalReceivedQuantity(4);
+    requisitionLineItem.setTotalLossesAndAdjustments(0);
+    requisitionLineItem.setStockOnHand(1);
+    requisitionLineItem.setRequestedQuantity(5);
+    requisitionLineItem.setTotalConsumedQuantity(2);
+    requisitionLineItem.setTotal(7);
+    requisitionLineItem.setApprovedQuantity(5);
+    requisitionLineItem.setTotalStockoutDays(6);
+    return requisitionLineItem;
+  }
+
   private void generateInstances() {
     requisition = createTestRequisition(UUID.randomUUID(), period1, program,
         RequisitionStatus.INITIATED);
@@ -171,6 +234,8 @@ public class RequisitionLineCalculationServiceTest {
             Collections.singletonList(requisitionLineItem)));
     requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setProgramId(program);
+    orderableProductDto = new OrderableProductDto();
+    orderableProductDto.setId(UUID.randomUUID());
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
@@ -227,5 +292,7 @@ public class RequisitionLineCalculationServiceTest {
         .thenReturn(period3);
     when(availableRequisitionColumn.getCanChangeOrder()).thenReturn(true);
     when(availableRequisitionColumn.getCanBeChangedByUser()).thenReturn(true);
+    when(orderableProductReferenceDataService.findOne(orderableProductDto.getId()))
+        .thenReturn(orderableProductDto);
   }
 }

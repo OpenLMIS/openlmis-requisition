@@ -164,6 +164,17 @@
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "pricePerPack",
+    "name": "pricePerPack",
+    "label": "Price Per Pack",
+    "indicator": "T",
+    "displayOrder": 16,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
+  },
 
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
@@ -319,6 +330,17 @@
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "pricePerPack",
+    "name": "pricePerPack",
+    "label": "Price Per Pack",
+    "indicator": "T",
+    "displayOrder": 15,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
+  },
   
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
@@ -473,5 +495,16 @@
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "pricePerPack",
+    "name": "pricePerPack",
+    "label": "Price Per Pack",
+    "indicator": "T",
+    "displayOrder": 15,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   }
 ]
