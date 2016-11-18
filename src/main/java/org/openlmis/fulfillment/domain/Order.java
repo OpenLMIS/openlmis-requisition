@@ -112,7 +112,7 @@ public class Order extends BaseEntity {
    */
   public static Order newOrder(OrderDto dto) {
     Order order = new Order();
-    order.setRequisitionId(dto.getRequisitionId());
+    order.setRequisitionId(dto.getExternalId());
     order.setCreatedDate(dto.getCreatedDate());
     order.setCreatedById(dto.getCreatedById());
     order.setProgramId(dto.getProgramId());

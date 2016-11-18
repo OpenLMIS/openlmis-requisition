@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Data
 public class OrderDto {
   private UUID id;
-  private UUID requisitionId;
+  private UUID externalId;
   private boolean emergency;
   private UUID facilityId;
   private UUID processingPeriodId;
@@ -36,7 +36,7 @@ public class OrderDto {
    */
   public static OrderDto newOrder(Requisition requisition) {
     OrderDto order = new OrderDto();
-    order.setRequisitionId(requisition.getId());
+    order.setExternalId(requisition.getId());
     order.setEmergency(requisition.getEmergency());
     order.setFacilityId(requisition.getFacilityId());
     order.setProcessingPeriodId(requisition.getProcessingPeriodId());
