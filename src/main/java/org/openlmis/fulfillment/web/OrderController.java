@@ -7,7 +7,7 @@ import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
-import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.InternalOrderService;
 import org.openlmis.fulfillment.utils.OrderCsvHelper;
 import org.openlmis.requisition.web.BaseController;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class OrderController extends BaseController {
   private OrderRepository orderRepository;
 
   @Autowired
-  private OrderService orderService;
+  private InternalOrderService internalOrderService;
 
   @Autowired
   private OrderCsvHelper csvHelper;
@@ -61,7 +61,7 @@ public class OrderController extends BaseController {
   public Order createOrder(@RequestBody Order order) {
     LOGGER.debug("Creating new order");
     order.setId(null);
-    Order newOrder = orderService.save(order);
+    Order newOrder = internalOrderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
     return newOrder;
   }
@@ -154,7 +154,7 @@ public class OrderController extends BaseController {
               UUID requestingFacility,
           @RequestParam(value = "program", required = false) UUID program) {
 
-    return orderService.searchOrders(supplyingFacility, requestingFacility, program);
+    return internalOrderService.searchOrders(supplyingFacility, requestingFacility, program);
   }
 
   /**
@@ -205,12 +205,12 @@ public class OrderController extends BaseController {
       response.setContentType("application/pdf");
       response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
           DISPOSITION_BASE + "order-" + order.getOrderCode() + ".pdf");
-      orderService.orderToPdf(order, columns, response.getOutputStream());
+      internalOrderService.orderToPdf(order, columns, response.getOutputStream());
     } else {
       response.setContentType("text/csv");
       response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
           DISPOSITION_BASE + "order" + order.getOrderCode() + ".csv");
-      orderService.orderToCsv(order, columns, response.getWriter());
+      internalOrderService.orderToCsv(order, columns, response.getWriter());
     }
   }
 

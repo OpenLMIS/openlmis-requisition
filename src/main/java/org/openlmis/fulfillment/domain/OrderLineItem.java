@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.domain;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.domain.BaseEntity;
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.dto.OrderLineItemDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,16 +45,22 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long filledQuantity;
 
+  @Column
+  @Getter
+  @Setter
+  private Long approvedQuantity;
+
   /**
    * Static factory method for constructing new OrderLineItem based on RequisitionLineItem.
    * @param lineItem RequisitionLineItem to create instance from.
    */
-  public static OrderLineItem newOrderLineItem(RequisitionLineItem lineItem, Order order) {
+  public static OrderLineItem newOrderLineItem(OrderLineItemDto lineItem, Order order) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setOrder(order);
     orderLineItem.setOrderableProductId(lineItem.getOrderableProductId());
-    orderLineItem.setFilledQuantity(0L);
-    orderLineItem.setOrderedQuantity(lineItem.getRequestedQuantity().longValue());
+    orderLineItem.setFilledQuantity(lineItem.getFilledQuantity());
+    orderLineItem.setOrderedQuantity(lineItem.getOrderedQuantity());
+    orderLineItem.setApprovedQuantity(lineItem.getApprovedQuantity());
 
     return orderLineItem;
   }

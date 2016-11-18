@@ -23,15 +23,14 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.dto.ConvertToOrderDto;
-import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -45,6 +44,7 @@ import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.order.OrderService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -417,7 +417,7 @@ public class RequisitionServiceTest {
     requisitionService.convertToOrder(list, user);
 
     // then
-    verify(orderService, atLeastOnce()).save(any(Order.class));
+    verify(orderService, atLeastOnce()).save(any(OrderDto.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
@@ -437,6 +437,7 @@ public class RequisitionServiceTest {
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
       requisition.setStatus(APPROVED);
+      requisition.setEmergency(false);
       requisition.setRequisitionLineItems(Lists.newArrayList());
 
       when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);

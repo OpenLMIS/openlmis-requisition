@@ -112,7 +112,7 @@ public class ProofOfDeliveryLineItemControllerIntegrationTest extends BaseWebInt
     requisitionRepository.save(requisition);
 
     Order order = new Order();
-    order.setRequisition(requisition);
+    order.setRequisitionId(requisition.getId());
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
     order.setStatus(OrderStatus.ORDERED);

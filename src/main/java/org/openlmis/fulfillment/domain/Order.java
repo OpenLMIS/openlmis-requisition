@@ -12,9 +12,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.requisition.domain.BaseEntity;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.OrderDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,9 +20,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,9 +31,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
@@ -47,11 +43,10 @@ public class Order extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
-  @OneToOne
-  @JoinColumn(name = "requisitionId")
   @Getter
   @Setter
-  private Requisition requisition;
+  @Type(type = UUID)
+  private UUID requisitionId;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -113,39 +108,26 @@ public class Order extends BaseEntity {
 
   /**
    * Static factory method for constructing new Order based on Requisition.
-   * @param requisition Requisition to create instance from.
+   * @param dto Requisition to create instance from.
    */
-  public static Order newOrder(Requisition requisition) {
+  public static Order newOrder(OrderDto dto) {
     Order order = new Order();
-    order.setRequisition(requisition);
-    order.setStatus(OrderStatus.ORDERED);
-    order.setQuotedCost(BigDecimal.ZERO);
-
-    order.setReceivingFacilityId(requisition.getFacilityId());
-    order.setRequestingFacilityId(requisition.getFacilityId());
-
-    order.setSupplyingFacilityId(requisition.getSupplyingFacilityId());
-    order.setProgramId(requisition.getProgramId());
-
-    List<OrderLineItem> orderLineItems = new ArrayList<>();
-
-    for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
-      orderLineItems.add(OrderLineItem.newOrderLineItem(lineItem, order));
-    }
-
-    order.setOrderLineItems(orderLineItems);
-
-    return order;
-  }
-
-  /**
-   * Static factory method for constructing new Order based on Requisition and User.
-   * @param requisition Requisition to create instance from.
-   * @param user User details
-   */
-  public static Order newOrder(Requisition requisition, UserDto user) {
-    Order order = Order.newOrder(requisition);
-    order.setCreatedById(user.getId());
+    order.setRequisitionId(dto.getRequisitionId());
+    order.setCreatedDate(dto.getCreatedDate());
+    order.setCreatedById(dto.getCreatedById());
+    order.setProgramId(dto.getProgramId());
+    order.setRequestingFacilityId(dto.getRequestingFacilityId());
+    order.setReceivingFacilityId(dto.getReceivingFacilityId());
+    order.setSupplyingFacilityId(dto.getSupplyingFacilityId());
+    order.setOrderCode(dto.getOrderCode());
+    order.setStatus(dto.getStatus());
+    order.setQuotedCost(dto.getQuotedCost());
+    order.setOrderLineItems(
+        dto.getOrderLineItems()
+            .stream()
+            .map(e -> OrderLineItem.newOrderLineItem(e, order))
+            .collect(Collectors.toList())
+    );
 
     return order;
   }
@@ -161,7 +143,7 @@ public class Order extends BaseEntity {
    * @param order Order with new values.
    */
   public void updateFrom(Order order) {
-    this.requisition = order.requisition;
+    this.requisitionId = order.requisitionId;
     this.createdById = order.createdById;
     this.programId = order.programId;
     this.requestingFacilityId = order.requestingFacilityId;

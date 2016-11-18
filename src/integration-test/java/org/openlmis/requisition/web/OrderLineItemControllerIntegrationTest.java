@@ -100,7 +100,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
 
-    order.setRequisition(requisition);
+    order.setRequisitionId(requisition.getId());
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
     order.setStatus(OrderStatus.ORDERED);

@@ -19,9 +19,11 @@ import org.openlmis.fulfillment.exception.OrderCsvWriteException;
 import org.openlmis.fulfillment.exception.OrderPdfWriteException;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -44,7 +46,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class OrderService {
+public class InternalOrderService {
 
   @Autowired
   private OrderRepository orderRepository;
@@ -60,6 +62,9 @@ public class OrderService {
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
+  @Autowired
+  private RequisitionRepository requisitionRepository;
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
       "productName", "productCode", "orderedQuantity", "filledQuantity"};
@@ -203,8 +208,10 @@ public class OrderService {
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
 
+    Requisition requisition = requisitionRepository.findOne(order.getRequisitionId());
+
     order.setOrderCode(
-        orderNumberConfiguration.generateOrderNumber(order.getRequisition(), program)
+        orderNumberConfiguration.generateOrderNumber(requisition, program)
     );
 
     orderRepository.save(order);

@@ -8,10 +8,12 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
@@ -47,6 +49,9 @@ public class OrderCsvHelper {
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
+  @Autowired
+  private RequisitionRepository requisitionRepository;
+
   /**
    * Exporting order to csv.
    */
@@ -58,7 +63,9 @@ public class OrderCsvHelper {
       writeHeader(orderFileColumns, writer);
     }
 
-    writeLineItems(order, order.getRequisition().getRequisitionLineItems(),
+    Requisition requisition = requisitionRepository.findOne(order.getRequisitionId());
+
+    writeLineItems(order, requisition.getRequisitionLineItems(),
         orderFileColumns, writer);
   }
 

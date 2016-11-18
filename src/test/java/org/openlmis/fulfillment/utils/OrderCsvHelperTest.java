@@ -20,6 +20,7 @@ import org.openlmis.requisition.dto.DispensableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
@@ -45,7 +46,6 @@ public class OrderCsvHelperTest {
   private static final String ORDER_NUMBER = "Order number";
   private static final String PRODUCT_CODE = "Product code";
   private static final String APPROVED_QUANTITY = "Approved quantity";
-  private static final String PERIOD = "Period";
   private static final String ORDER_DATE = "Order date";
 
   @Mock
@@ -57,24 +57,31 @@ public class OrderCsvHelperTest {
   @Mock
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
+  @Mock
+  private RequisitionRepository requisitionRepository;
+
   @InjectMocks
   private OrderCsvHelper orderCsvHelper;
 
+  private Requisition requisition;
   private Order order;
 
   @Before
   public void setUp() {
     order = createOrder();
 
-    UUID facilityId = order.getRequisition().getFacilityId();
+    UUID facilityId = requisition.getFacilityId();
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(createFacility());
 
-    UUID periodId = order.getRequisition().getProcessingPeriodId();
+    UUID periodId = requisition.getProcessingPeriodId();
     when(periodService.getPeriod(periodId)).thenReturn(createPeriod());
 
-    UUID productId = order.getRequisition().getRequisitionLineItems()
+    UUID productId = requisition.getRequisitionLineItems()
         .get(0).getOrderableProductId();
     when(orderableProductReferenceDataService.findOne(productId)).thenReturn(createProduct());
+
+    UUID requisitionId = requisition.getId();
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
   }
 
   @Test
@@ -98,13 +105,11 @@ public class OrderCsvHelperTest {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null, null, null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.status", "Status",
-        true, 2, null, ORDER, "requisition/status", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("code," + RequisitionStatus.SUBMITTED));
+    assertTrue(csv.startsWith("code"));
   }
 
   @Test
@@ -119,7 +124,7 @@ public class OrderCsvHelperTest {
 
     String csv = writeCsvFile(order, orderFileTemplate);
 
-    assertTrue(csv.startsWith(order.getRequisition()
+    assertTrue(csv.startsWith(requisition
         .getRequisitionLineItems().get(0).getOrderableProductId()
         + ",1"));
   }
@@ -133,47 +138,39 @@ public class OrderCsvHelperTest {
         true, 2, null, LINE_ITEM, ORDERABLE_PRODUCT, null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.approved.quantity", APPROVED_QUANTITY,
         false, 3, null, LINE_ITEM, "approvedQuantity", null, null, null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.status", "Status",
-        true, 4, "MM/yy", ORDER, "requisition/status", null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
         false, 5, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", true, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith(ORDER_NUMBER + ",Product,Status"));
+    assertTrue(csv.startsWith(ORDER_NUMBER + ",Product"));
   }
 
   @Test
   public void shouldExportRelatedFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
-    orderFileColumns.add(new OrderFileColumn(true, "header.facility.code", "Facility code",
-        true, 1, null, ORDER, "requisition/facilityId", "Facility", "code", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
         true, 2, null, LINE_ITEM, ORDERABLE_PRODUCT, "OrderableProduct", "productCode", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.product.name", "Product name",
         true, 3, null, LINE_ITEM, ORDERABLE_PRODUCT, "OrderableProduct", "name", null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 4,
-        "MM/yy", ORDER, "requisition/processingPeriodId", "ProcessingPeriod", "startDate", null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("facilityCode,productCode,productName,01/16"));
+    assertTrue(csv.startsWith("productCode,productName"));
   }
 
   @Test
   public void shouldFormatDates() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
-    orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 1,
-        "MM/yy", ORDER, "requisition/processingPeriodId", "ProcessingPeriod", "startDate", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
         true, 2, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("01/16,01/01/16"));
+    assertTrue(csv.startsWith("01/01/16"));
   }
 
   private String writeCsvFile(Order order, OrderFileTemplate orderFileTemplate)
@@ -190,7 +187,8 @@ public class OrderCsvHelperTest {
     requisitionLineItem.setOrderableProductId(UUID.randomUUID());
     requisitionLineItem.setApprovedQuantity(1);
 
-    Requisition requisition = new Requisition();
+    requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setProcessingPeriodId(UUID.randomUUID());
@@ -199,7 +197,7 @@ public class OrderCsvHelperTest {
     Order order = new Order();
     order.setOrderCode("code");
     order.setCreatedDate(LocalDateTime.of(2016, Month.JANUARY, 1, 0, 0));
-    order.setRequisition(requisition);
+    order.setRequisitionId(requisition.getId());
 
     return order;
   }

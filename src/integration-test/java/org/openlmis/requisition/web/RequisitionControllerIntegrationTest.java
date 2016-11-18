@@ -996,7 +996,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertEquals(user.getId(), order.getCreatedById());
     assertEquals(OrderStatus.ORDERED, order.getStatus());
-    assertEquals(order.getRequisition().getId(), requisition.getId());
+    assertEquals(order.getRequisitionId(), requisition.getId());
     assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
     assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
     assertEquals(order.getProgramId(), requisition.getProgramId());

@@ -26,6 +26,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
@@ -56,7 +57,7 @@ import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
-public class OrderServiceTest {
+public class InternalOrderServiceTest {
 
   @Mock
   private RequisitionService requisitionService;
@@ -92,7 +93,7 @@ public class OrderServiceTest {
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @InjectMocks
-  private OrderService orderService;
+  private InternalOrderService internalOrderService;
 
   @Before
   public void setUp() {
@@ -108,11 +109,13 @@ public class OrderServiceTest {
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
 
     Requisition requisition = generateRequisition();
-    Order order = Order.newOrder(requisition);
+    Order order = Order.newOrder(OrderDto.newOrder(requisition));
     order.setCreatedById(UUID.randomUUID());
 
+    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+
     // when
-    Order created = orderService.save(order);
+    Order created = internalOrderService.save(order);
 
     // then
     validateOrderBasedOnRequisition(created, requisition);
@@ -129,7 +132,7 @@ public class OrderServiceTest {
         .thenReturn(Collections.singletonList(order));
 
     // when
-    List<Order> receivedOrders = orderService.searchOrders(
+    List<Order> receivedOrders = internalOrderService.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId());
 
     // then
@@ -152,11 +155,11 @@ public class OrderServiceTest {
     order.setCreatedDate(ZonedDateTime.parse("2016-08-27T11:30Z").toLocalDateTime());
 
     List<String> header = new ArrayList<>();
-    header.add(OrderService.DEFAULT_COLUMNS[0]);
-    header.add(OrderService.DEFAULT_COLUMNS[1]);
-    header.add(OrderService.DEFAULT_COLUMNS[3]);
-    header.add(OrderService.DEFAULT_COLUMNS[4]);
-    header.add(OrderService.DEFAULT_COLUMNS[5]);
+    header.add(InternalOrderService.DEFAULT_COLUMNS[0]);
+    header.add(InternalOrderService.DEFAULT_COLUMNS[1]);
+    header.add(InternalOrderService.DEFAULT_COLUMNS[3]);
+    header.add(InternalOrderService.DEFAULT_COLUMNS[4]);
+    header.add(InternalOrderService.DEFAULT_COLUMNS[5]);
 
     OrderableProductDto orderableProductDto = mock(OrderableProductDto.class);
     when(orderableProductReferenceDataService.findOne(any())).thenReturn(orderableProductDto);
@@ -168,7 +171,7 @@ public class OrderServiceTest {
     // when
     String receivedOutput;
     try (StringWriter writer = new StringWriter()) {
-      orderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
+      internalOrderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
       receivedOutput = writer.toString().replace("\r\n", "\n");
     }
 
@@ -216,6 +219,7 @@ public class OrderServiceTest {
   private RequisitionLineItem generateRequisitionLineItem() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequestedQuantity(1000);
+    requisitionLineItem.setApprovedQuantity(0);
     return requisitionLineItem;
   }
 
@@ -265,7 +269,7 @@ public class OrderServiceTest {
 
   private void validateOrderBasedOnRequisition(Order order, Requisition requisition) {
     assertEquals(OrderStatus.ORDERED, order.getStatus());
-    assertEquals(order.getRequisition().getId(), requisition.getId());
+    assertEquals(order.getRequisitionId(), requisition.getId());
     assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
     assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
     assertEquals(order.getProgramId(), requisition.getProgramId());

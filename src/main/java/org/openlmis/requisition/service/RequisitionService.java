@@ -1,9 +1,7 @@
 package org.openlmis.requisition.service;
 
 
-import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.dto.ConvertToOrderDto;
-import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -11,6 +9,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
+import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -23,6 +22,7 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.order.OrderService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -345,9 +345,9 @@ public class RequisitionService {
   public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
       throws RequisitionException {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
-    List<Order> orders = releasedRequisitions
+    List<OrderDto> orders = releasedRequisitions
         .stream()
-        .map(r -> Order.newOrder(r, user))
+        .map(r -> OrderDto.newOrder(r, user))
         .collect(Collectors.toList());
 
     orders.forEach(orderService::save);
