@@ -19,7 +19,7 @@ public class OrderDto {
   private UUID facilityId;
   private UUID processingPeriodId;
   private LocalDateTime createdDate;
-  private java.util.UUID createdById;
+  private UUID createdById;
   private UUID programId;
   private UUID requestingFacilityId;
   private UUID receivingFacilityId;
