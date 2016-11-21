@@ -276,7 +276,7 @@ public class RequisitionServiceTest {
         programId, facilityId, suggestedPeriodId, false
     );
 
-    verify(periodService).findPeriod(programId,facilityId,suggestedPeriodId,false);
+    verify(periodService).findPeriod(programId, facilityId, suggestedPeriodId, false);
     assertEquals(initiatedRequisition.getStatus(), INITIATED);
   }
 
@@ -504,7 +504,7 @@ public class RequisitionServiceTest {
         .thenReturn(processingPeriodDto);
 
     when(periodService
-        .findPeriod(programId,facilityId,suggestedPeriodId,false))
+        .findPeriod(programId, facilityId, suggestedPeriodId, false))
         .thenReturn(processingPeriodDto);
 
     when(scheduleReferenceDataService.searchByProgramAndFacility(any(), any()))

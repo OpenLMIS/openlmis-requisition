@@ -315,7 +315,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = getRequsition(INITIATED);
+    Requisition requisition = getRequisition(INITIATED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
             .thenReturn(requisition);
 
@@ -326,7 +326,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = getRequsition(SUBMITTED);
+    Requisition requisition = getRequisition(SUBMITTED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
             .thenReturn(requisition);
 
@@ -337,7 +337,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasAuthorizedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = getRequsition(AUTHORIZED);
+    Requisition requisition = getRequisition(AUTHORIZED);
     setMockForFindPeriod(requisition);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
@@ -348,7 +348,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasApprovedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = getRequsition(APPROVED);
+    Requisition requisition = getRequisition(APPROVED);
     setMockForFindPeriod(requisition);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
@@ -359,14 +359,14 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasSkippedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = getRequsition(SKIPPED);
+    Requisition requisition = getRequisition(SKIPPED);
     setMockForFindPeriod(requisition);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
     assertEquals(period1, period);
   }
 
-  private Requisition getRequsition(RequisitionStatus status) {
+  private Requisition getRequisition(RequisitionStatus status) {
     Requisition requisition = new Requisition();
     requisition.setStatus(status);
     return requisition;
