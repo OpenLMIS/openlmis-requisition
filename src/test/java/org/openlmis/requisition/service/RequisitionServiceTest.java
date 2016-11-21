@@ -276,6 +276,7 @@ public class RequisitionServiceTest {
         programId, facilityId, suggestedPeriodId, false
     );
 
+    verify(periodService).findPeriod(programId,facilityId,suggestedPeriodId,false);
     assertEquals(initiatedRequisition.getStatus(), INITIATED);
   }
 

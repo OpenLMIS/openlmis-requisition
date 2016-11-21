@@ -31,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
@@ -314,9 +315,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = new Requisition();
-    requisition.setStatus(INITIATED);
-
+    Requisition requisition = getRequsition(INITIATED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
             .thenReturn(requisition);
 
@@ -327,52 +326,50 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = new Requisition();
-    requisition.setStatus(SUBMITTED);
-
+    Requisition requisition = getRequsition(SUBMITTED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
             .thenReturn(requisition);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
 
-  @Test()
+  @Test
   public void shouldSucceedWhenPreviousReqHasAuthorizedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = new Requisition();
-    requisition.setStatus(AUTHORIZED);
-
+    Requisition requisition = getRequsition(AUTHORIZED);
     setMockForFindPeriod(requisition);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
     assertEquals(period1, period);
   }
 
-  @Test()
+  @Test
   public void shouldSucceedWhenPreviousReqHasApprovedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = new Requisition();
-    requisition.setStatus(APPROVED);
-
+    Requisition requisition = getRequsition(APPROVED);
     setMockForFindPeriod(requisition);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
     assertEquals(period1, period);
   }
 
-  @Test()
+  @Test
   public void shouldSucceedWhenPreviousReqHasSkippedStatus()
           throws RequisitionException, RequisitionTemplateColumnException {
 
-    Requisition requisition = new Requisition();
-    requisition.setStatus(SKIPPED);
-
+    Requisition requisition = getRequsition(SKIPPED);
     setMockForFindPeriod(requisition);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
     assertEquals(period1, period);
+  }
+
+  private Requisition getRequsition(RequisitionStatus status) {
+    Requisition requisition = new Requisition();
+    requisition.setStatus(status);
+    return requisition;
   }
 
   private void setMockForFindPeriod(Requisition requisition) {
