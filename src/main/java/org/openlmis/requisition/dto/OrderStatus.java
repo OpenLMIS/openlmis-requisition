@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.domain;
+package org.openlmis.requisition.dto;
 
 public enum OrderStatus {
   ORDERED,

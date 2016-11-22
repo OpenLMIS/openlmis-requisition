@@ -2,12 +2,9 @@ package org.openlmis.requisition.service.fulfillment;
 
 
 import org.apache.commons.codec.binary.Base64;
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.service.InternalOrderService;
 import org.openlmis.requisition.dto.OrderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,9 +27,6 @@ public class OrderFulfillmentService {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Autowired
-  private InternalOrderService internalOrderService;
-
   @Value("${auth.server.clientId}")
   private String clientId;
 
@@ -54,29 +48,19 @@ public class OrderFulfillmentService {
   }
 
   /**
-   * Saves a new instance of order.
-   *
-   * @param orderDto instance that contain data required to save order
-   */
-  public void save(OrderDto orderDto) {
-    internalOrderService.save(Order.newOrder(orderDto));
-  }
-
-  /**
    * Creates a new instance of order
-   * @param orderDto instance that contain data required to save order
+   * @param order instance that contain data required to save order
    * @return true if success, false if failed.
    */
-  public boolean create(OrderDto orderDto) {
+  public boolean create(OrderDto order) {
     String url = fulfillmentUrl + "/api/orders/";
 
     Map<String, String> params = new HashMap<>();
     params.put(ACCESS_TOKEN, obtainAccessToken());
-    Order order = Order.newOrder(orderDto);
-    HttpEntity<Order> body = new HttpEntity<>(order);
+    HttpEntity<OrderDto> body = new HttpEntity<>(order);
 
     try {
-      restTemplate.postForObject(buildUri(url, params), body, Order.class);
+      restTemplate.postForObject(buildUri(url, params), body, OrderDto.class);
     } catch (RestClientException ex) {
       logger.error("Can not create Order ");
       return false;

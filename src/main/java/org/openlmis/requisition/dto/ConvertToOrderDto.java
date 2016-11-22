@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.dto;
+package org.openlmis.requisition.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

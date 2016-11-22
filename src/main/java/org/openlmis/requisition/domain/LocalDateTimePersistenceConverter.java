@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.utils;
+package org.openlmis.requisition.domain;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

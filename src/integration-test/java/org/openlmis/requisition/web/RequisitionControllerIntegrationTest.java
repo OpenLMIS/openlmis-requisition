@@ -15,10 +15,6 @@ import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.dto.ConvertToOrderDto;
-import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
@@ -26,6 +22,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -106,9 +103,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
-
-  @Autowired
-  private OrderRepository orderRepository;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -207,19 +201,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, response.length);
-    for ( RequisitionDto receivedRequisition : response ) {
+    for (RequisitionDto receivedRequisition : response) {
       assertEquals(
-              receivedRequisition.getProgram().getId(),
-              PROGRAM_UUID);
+          receivedRequisition.getProgram().getId(),
+          PROGRAM_UUID);
       assertEquals(
-              receivedRequisition.getProcessingPeriod().getId(),
-              PERIOD_UUID);
+          receivedRequisition.getProcessingPeriod().getId(),
+          PERIOD_UUID);
       assertEquals(
-              receivedRequisition.getFacility().getId(),
-              FACILITY_UUID);
+          receivedRequisition.getFacility().getId(),
+          FACILITY_UUID);
       assertEquals(
-              receivedRequisition.getSupervisoryNode(),
-              supervisoryNode.getId());
+          receivedRequisition.getSupervisoryNode(),
+          supervisoryNode.getId());
       assertEquals(
           receivedRequisition.getStatus(),
           RequisitionStatus.INITIATED);
@@ -979,8 +973,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         requisition.getId(), supplyingFacility
     );
 
-    orderRepository.deleteAll();
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -991,15 +983,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(1, orderRepository.count());
-    Order order = orderRepository.findAll().iterator().next();
-
-    assertEquals(user.getId(), order.getCreatedById());
-    assertEquals(OrderStatus.ORDERED, order.getStatus());
-    assertEquals(order.getRequisitionId(), requisition.getId());
-    assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
-    assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
-    assertEquals(order.getProgramId(), requisition.getProgramId());
   }
 
   @Test

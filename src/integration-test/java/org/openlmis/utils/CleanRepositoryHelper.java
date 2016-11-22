@@ -1,11 +1,5 @@
 package org.openlmis.utils;
 
-import org.openlmis.fulfillment.repository.OrderLineItemRepository;
-import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.reporting.repository.TemplateParameterRepository;
-import org.openlmis.reporting.repository.TemplateRepository;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -34,38 +28,14 @@ public class CleanRepositoryHelper {
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
 
-  @Autowired
-  private OrderLineItemRepository orderLineItemRepository;
-
-  @Autowired
-  private OrderRepository orderRepository;
-
-  @Autowired
-  private ProofOfDeliveryLineItemRepository proofOfDeliveryLineItemRepository;
-
-  @Autowired
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @Autowired
-  private TemplateParameterRepository templateParameterRepository;
-
-  @Autowired
-  private TemplateRepository templateRepository;
-
   /**
    * Delete all entities from most of repositories.
    */
   @Transactional
   public void cleanAll() {
-    templateParameterRepository.deleteAll();
-    templateRepository.deleteAll();
-    proofOfDeliveryLineItemRepository.deleteAll();
-    proofOfDeliveryRepository.deleteAll();
     configurationSettingRepository.deleteAll();
     commentRepository.deleteAll();
-    orderLineItemRepository.deleteAll();
     requisitionRepository.deleteAll();
     requisitionTemplateRepository.deleteAll();
-    orderRepository.deleteAll();
   }
 }

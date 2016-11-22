@@ -12,9 +12,6 @@ var query = "INSERT INTO %s (SELECT * FROM json_populate_recordset(NULL::%s, '%s
 var filesOrdered = [
     "requisition.requisition_group_program_schedules",
     "requisition.requisitions",
-    "requisition.orders",
-    "requisition.order_line_items",
-    "requisition.proof_of_deliveries",
     "requisition.requisition_template_columns",
     "requisition.requisition_templates",
     "requisition.columns_maps"

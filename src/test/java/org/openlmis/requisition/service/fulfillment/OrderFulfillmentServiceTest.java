@@ -1,19 +1,17 @@
 package org.openlmis.requisition.service.fulfillment;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.requisition.dto.OrderDto;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -21,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -70,7 +67,7 @@ public class OrderFulfillmentServiceTest {
 
     verify(restTemplate, times(1)).postForObject(Matchers.eq(buildUri(
         "https://localhost/fulfillment/api/orders/", paramsCreate)), any(),
-        Matchers.eq(Order.class));
+        Matchers.eq(OrderDto.class));
   }
 
   private OrderDto generate() {
@@ -80,7 +77,7 @@ public class OrderFulfillmentServiceTest {
     order.setRequestingFacilityId(UUID.randomUUID());
     order.setReceivingFacilityId(UUID.randomUUID());
     order.setSupplyingFacilityId(UUID.randomUUID());
-    order.setOrderLineItems(new ArrayList());
+    order.setOrderLineItems(new ArrayList<>());
     return order;
   }
 

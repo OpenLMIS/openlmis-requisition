@@ -1,6 +1,5 @@
 package org.openlmis.requisition.dto;
 
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.requisition.domain.Requisition;
 
 import lombok.Data;

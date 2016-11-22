@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.fulfillment.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -418,7 +418,7 @@ public class RequisitionServiceTest {
     requisitionService.convertToOrder(list, user);
 
     // then
-    verify(orderFulfillmentService, atLeastOnce()).save(any(OrderDto.class));
+    verify(orderFulfillmentService, atLeastOnce()).create(any(OrderDto.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {

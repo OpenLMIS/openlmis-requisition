@@ -1,7 +1,7 @@
 package org.openlmis.requisition.service;
 
 
-import org.openlmis.fulfillment.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -350,7 +350,7 @@ public class RequisitionService {
         .map(r -> OrderDto.newOrder(r, user))
         .collect(Collectors.toList());
 
-    orders.forEach(orderFulfillmentService::save);
+    orders.forEach(orderFulfillmentService::create);
   }
 
 }

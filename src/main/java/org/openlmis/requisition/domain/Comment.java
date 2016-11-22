@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
-import org.openlmis.fulfillment.utils.LocalDateTimePersistenceConverter;
 import org.openlmis.view.View;
 
 import javax.persistence.Convert;
