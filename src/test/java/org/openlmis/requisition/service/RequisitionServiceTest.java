@@ -44,7 +44,7 @@ import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.order.OrderService;
+import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -117,7 +117,7 @@ public class RequisitionServiceTest {
   private SupplyLineReferenceDataService supplyLineService;
 
   @Mock
-  private OrderService orderService;
+  private OrderFulfillmentService orderFulfillmentService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -418,7 +418,7 @@ public class RequisitionServiceTest {
     requisitionService.convertToOrder(list, user);
 
     // then
-    verify(orderService, atLeastOnce()).save(any(OrderDto.class));
+    verify(orderFulfillmentService, atLeastOnce()).save(any(OrderDto.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {

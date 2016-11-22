@@ -22,7 +22,7 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.order.OrderService;
+import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -76,7 +76,7 @@ public class RequisitionService {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private OrderService orderService;
+  private OrderFulfillmentService orderFulfillmentService;
 
   /**
    * Initiated given requisition if possible.
@@ -350,7 +350,7 @@ public class RequisitionService {
         .map(r -> OrderDto.newOrder(r, user))
         .collect(Collectors.toList());
 
-    orders.forEach(orderService::save);
+    orders.forEach(orderFulfillmentService::save);
   }
 
 }
