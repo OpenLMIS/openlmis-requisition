@@ -1,19 +1,15 @@
 package org.openlmis.requisition.service.referencedata;
 
-import org.apache.commons.codec.binary.Base64;
+import org.openlmis.requisition.service.BaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,23 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class BaseReferenceDataService<T> {
+public abstract class BaseReferenceDataService<T> extends BaseService {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
-
-  private static final String ACCESS_TOKEN = "access_token";
-
-  @Value("${auth.server.clientId}")
-  private String clientId;
-
-  @Value("${auth.server.clientSecret}")
-  private String clientSecret;
 
   @Value("${referencedata.url}")
   private String referenceDataUrl;
 
-  @Value("${auth.server.authorizationUrl}")
-  private String authorizationUrl;
 
   /**
    * Return one object from Reference data service.
@@ -173,37 +159,6 @@ public abstract class BaseReferenceDataService<T> {
 
   protected String getReferenceDataUrl() {
     return referenceDataUrl;
-  }
-
-  private String obtainAccessToken() {
-    RestTemplate restTemplate = new RestTemplate();
-
-    String plainCreds = clientId + ":" + clientSecret;
-    byte[] plainCredsBytes = plainCreds.getBytes();
-    byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-    String base64Creds = new String(base64CredsBytes);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + base64Creds);
-
-    HttpEntity<String> request = new HttpEntity<>(headers);
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("grant_type", "client_credentials");
-
-    ResponseEntity<?> response = restTemplate.exchange(
-        buildUri(authorizationUrl, params), HttpMethod.POST, request, Object.class);
-
-
-    return ((Map<String, String>) response.getBody()).get(ACCESS_TOKEN);
-  }
-
-  private URI buildUri(String url, Map<String, ?> params) {
-    UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
-
-    params.entrySet().forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
-
-    return builder.build(true).toUri();
   }
 
   private ReferenceDataRetrievalException buildRefDataException(HttpStatusCodeException ex) {
