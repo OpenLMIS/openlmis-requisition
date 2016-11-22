@@ -7,7 +7,7 @@ Each .json file contains demo data that corresponds to one database table.
 
 ## Requisition Templates
 
-In requisition.requisition_templates.json and .columns_maps.json.
+Defined in requisition.requisition_templates.json and requisition.columns_maps.json.
 
 1. Family Planning
   * Product Code
@@ -74,4 +74,4 @@ to log in and approve these to clear them out before beginning your demo.
 Currently, all those requisitions are Normal, not Emergency requisitions.
 
 Facilities, Programs, Products, Requisition Groups and User Roles & Rights come from the
-[Reference Data demo data](https://github.com/OpenLMIS/openlmis-referencedata/tree/master/demo-data).
+[Reference Data service's demo data](https://github.com/OpenLMIS/openlmis-referencedata/tree/master/demo-data).
