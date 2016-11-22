@@ -254,7 +254,7 @@ schemas:
   - convertToOrderDtoArray: |
       {
           "type": "array",
-          "items": { "type": "object", "$ref":"schemas/convertToOrderDto.json" }
+          "items": { "type": "object" }
       }
 
 traits:

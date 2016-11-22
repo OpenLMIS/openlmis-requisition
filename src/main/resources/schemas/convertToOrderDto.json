@@ -4,11 +4,11 @@
   "title": "ConvertToOrderDto",
   "description": "The ConvertToOrderDto object is used to convert a requisition into an order.",
   "properties": {
-    "message": {
+    "requisitionId": {
       "type": "string",
       "title": "requisitionId"
     },
-    "description": {
+    "supplyingDepotId": {
       "type": "string",
       "title": "supplyingDepotId"
     }
