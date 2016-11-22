@@ -113,15 +113,39 @@ public abstract class BaseReferenceDataService<T> {
    * @return all reference data T objects.
    */
   public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
+    return findAllWithMethod(resourceUrl, parameters, null, HttpMethod.GET);
+  }
+
+  /**
+   * Return all reference data T objects that need to be retrieved with POST request.
+   *
+   * @param resourceUrl Endpoint url.
+   * @param uriParameters  Map of query parameters.
+   * @param payload  body to include with the outgoing request.
+   * @return all reference data T objects.
+   */
+  public Collection<T> postFindAll(String resourceUrl, Map<String, Object> uriParameters,
+                                   Map<String, Object> payload) {
+    return findAllWithMethod(resourceUrl, uriParameters, payload, HttpMethod.POST);
+  }
+
+  private Collection<T> findAllWithMethod(String resourceUrl, Map<String, Object> uriParameters,
+                                       Map<String, Object> payload, HttpMethod method) {
     String url = getReferenceDataUrl() + getUrl() + resourceUrl;
     RestTemplate restTemplate = new RestTemplate();
+
     Map<String, Object> params = new HashMap<>();
-    params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
+    params.putAll(uriParameters);
 
     try {
-      ResponseEntity<T[]> responseEntity =
-          restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
+      ResponseEntity<T[]> responseEntity;
+      if (HttpMethod.GET == method) {
+        responseEntity = restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
+      } else {
+        responseEntity = restTemplate.postForEntity(buildUri(url, params), payload,
+            getArrayResultClass());
+      }
 
       return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
     } catch (HttpStatusCodeException ex) {

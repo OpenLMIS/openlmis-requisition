@@ -249,7 +249,7 @@ public abstract class BaseWebIntegrationTest {
             .withStatus(200)));
 
     // This mocks searching for users
-    wireMockRule.stubFor(get(urlMatching("/referencedata/api/users/search.*"))
+    wireMockRule.stubFor(post(urlMatching("/referencedata/api/users/search.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_USER_SEARCH_RESULT)));
