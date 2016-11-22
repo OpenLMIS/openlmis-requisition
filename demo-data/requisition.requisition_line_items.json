@@ -79,7 +79,8 @@
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
     "totalConsumedQuantity": 31000,
-    "totalStockoutDays": 0
+    "totalStockoutDays": 0,
+    "approvedQuantity": 0
   },
   {
     "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
@@ -90,7 +91,8 @@
     "totalReceivedQuantity": 30000,
     "requestedQuantity": 35000,
     "totalConsumedQuantity": 31000,
-    "totalStockoutDays": 0
+    "totalStockoutDays": 0,
+    "approvedQuantity": 0
   },
   {
     "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
