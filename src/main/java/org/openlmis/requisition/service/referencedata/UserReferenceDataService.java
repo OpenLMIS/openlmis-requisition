@@ -1,12 +1,12 @@
 package org.openlmis.requisition.service.referencedata;
 
-import org.apache.commons.collections.MapUtils;
 import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +41,11 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    * @return UserDto containing user's data, or null if such user was not found.
    */
   public UserDto findUser(String name) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("username", name);
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("username", name);
 
-    List<UserDto> users = new ArrayList<>(postFindAll("search", parameters, MapUtils.EMPTY_MAP));
+    List<UserDto> users = new ArrayList<>(postFindAll("search", Collections.emptyMap(),
+        requestBody));
     return users.size() > 0 ? users.get(0) : null;
   }
 
