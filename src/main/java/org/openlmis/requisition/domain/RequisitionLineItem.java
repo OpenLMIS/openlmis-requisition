@@ -6,10 +6,11 @@ import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.MoneyDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.ProgramProductDto;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.requisition.dto.ProgramProductDto;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "requisition_line_items")
@@ -124,6 +126,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   @JoinColumn(name = "requisitionLineItemId")
   private List<StockAdjustment> stockAdjustments;
+
+  @Transient
+  @Setter
+  @Getter(AccessLevel.PACKAGE)
+  private boolean nonFullSupply;
 
   public RequisitionLineItem() {
     stockAdjustments = new ArrayList<>();

@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -65,7 +66,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing()
-          throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     mockStatic(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
@@ -108,6 +109,54 @@ public class RequisitionTest {
     verifyStatic(times(1));
   }
 
+  @Test
+  public void shouldAddOnlyAddNonFullSupplyLines() throws Exception {
+    requisition.getRequisitionLineItems().clear();
+
+    RequisitionTemplate template = mock(RequisitionTemplate.class);
+
+    RequisitionLineItem fullSupply = new RequisitionLineItem();
+    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
+    nonFullSupply.setNonFullSupply(true);
+
+    Requisition newRequisition = new Requisition();
+    newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
+
+    requisition.updateFrom(newRequisition, template, Lists.newArrayList());
+
+    assertThat(requisition.getRequisitionLineItems(), hasSize(1));
+
+    RequisitionLineItem item = requisition.getRequisitionLineItems().get(0);
+    assertThat(item.isNonFullSupply(), is(true));
+  }
+
+  @Test
+  public void shouldNotRemoveFullSupplyLines() throws Exception {
+    RequisitionTemplate template = mock(RequisitionTemplate.class);
+
+    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
+    nonFullSupply.setNonFullSupply(true);
+
+    Requisition newRequisition = new Requisition();
+    newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
+
+    int count = requisition.getRequisitionLineItems().size();
+    requisition.updateFrom(newRequisition, template, Lists.newArrayList());
+
+    assertThat(requisition.getRequisitionLineItems(), hasSize(count + 1));
+
+    assertThat(
+        requisition.getRequisitionLineItems().stream()
+            .filter(RequisitionLineItem::isNonFullSupply).count(),
+        is(1L)
+    );
+
+    assertThat(
+        requisition.getRequisitionLineItems().stream()
+            .filter(line -> !line.isNonFullSupply()).count(),
+        is((long) count)
+    );
+  }
 
   @Test
   public void shouldFindRequisitionLineItemByProductId() {

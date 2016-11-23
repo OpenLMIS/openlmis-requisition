@@ -181,23 +181,50 @@ public class Requisition extends BaseEntity {
   }
 
   private void updateReqLines(Collection<RequisitionLineItem> lineItems) {
+    if (null == lineItems) {
+      return;
+    }
+
     if (null == requisitionLineItems) {
       this.requisitionLineItems = new ArrayList<>();
     }
 
-    if (lineItems != null) {
-      for (RequisitionLineItem existing : requisitionLineItems) {
-        RequisitionLineItem item = lineItems
-                .stream()
-                .filter(l -> l.getId().equals(existing.getId()))
-                .findFirst().orElse(null);
+    List<RequisitionLineItem> updatedList = new ArrayList<>();
 
-        if (null != item) {
-          existing.setRequisition(this);
-          existing.updateFrom(item);
+    for (RequisitionLineItem item : lineItems) {
+      RequisitionLineItem existing = requisitionLineItems
+          .stream()
+          .filter(l -> l.getId().equals(item.getId()))
+          .findFirst().orElse(null);
+
+      if (null == existing) {
+        if (item.isNonFullSupply()) {
+          item.setRequisition(this);
+          updatedList.add(item);
         }
+      } else {
+        existing.setRequisition(this);
+        existing.updateFrom(item);
+        updatedList.add(existing);
       }
     }
+
+    // is there a full supply line that is not in update list
+    // it should be added. Those lines should not be removed
+    // during update. Only non full supply lines can be
+    // added/updated/removed.
+    requisitionLineItems
+        .stream()
+        .filter(line -> !line.isNonFullSupply())
+        .filter(line -> updatedList
+            .stream()
+            .map(BaseEntity::getId)
+            .noneMatch(id -> Objects.equals(id, line.getId()))
+        )
+        .forEach(updatedList::add);
+
+    this.requisitionLineItems.clear();
+    this.requisitionLineItems.addAll(updatedList);
   }
 
   /**
