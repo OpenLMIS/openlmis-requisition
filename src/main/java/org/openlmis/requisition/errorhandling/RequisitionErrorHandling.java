@@ -3,11 +3,10 @@ package org.openlmis.requisition.errorhandling;
 import org.openlmis.errorhandling.AbstractErrorHandling;
 import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.web.MissingParameterException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionLineItemNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
+import org.openlmis.requisition.web.MissingParameterException;
 import org.openlmis.utils.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -38,8 +37,7 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
     return logErrorAndRespond("Operation cannot be executed on requisition", ex);
   }
 
-  @ExceptionHandler({RequisitionNotFoundException.class,
-          RequisitionLineItemNotFoundException.class})
+  @ExceptionHandler({RequisitionNotFoundException.class})
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
   public ErrorResponse handleRequisitionOrItemNotFound(
