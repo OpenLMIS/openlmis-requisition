@@ -171,8 +171,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
+    List<Comment> comments = new ArrayList<>();
 
     requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition.setComments(comments);
     requisition = requisitionRepository.save(requisition);
 
     RequisitionTemplate template = new RequisitionTemplate();

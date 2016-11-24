@@ -79,7 +79,10 @@ public class Requisition extends BaseEntity {
   @Setter
   private List<RequisitionLineItem> requisitionLineItems;
 
-  @OneToMany(mappedBy = "requisition", cascade = CascadeType.REMOVE)
+  @OneToMany(
+      mappedBy = "requisition",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+      orphanRemoval = true)
   @Getter
   @Setter
   private List<Comment> comments;

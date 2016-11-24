@@ -11,6 +11,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.view.View;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -27,7 +28,7 @@ public class Comment extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.MERGE)
   @JoinColumn(name = "requisitionId", nullable = false)
   @JsonView(View.BasicInformation.class)
   @Getter
