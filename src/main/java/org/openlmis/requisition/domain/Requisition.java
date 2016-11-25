@@ -2,6 +2,7 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -139,7 +140,16 @@ public class Requisition extends BaseEntity {
    */
   public void updateFrom(Requisition requisition, RequisitionTemplate template,
                          Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
-    this.comments = requisition.getComments();
+    if (null == this.comments) {
+      this.comments = new ArrayList<>();
+    }
+
+    this.comments.clear();
+
+    if (!isEmpty(requisition.getComments())) {
+      this.comments.addAll(requisition.getComments());
+    }
+
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     updateReqLines(requisition.getRequisitionLineItems());
