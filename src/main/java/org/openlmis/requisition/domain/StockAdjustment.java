@@ -25,6 +25,11 @@ public class StockAdjustment extends BaseEntity {
   @Setter
   private Integer quantity;
 
+  public StockAdjustment(UUID reasonId, Integer quantity) {
+    this.reasonId = reasonId;
+    this.quantity = quantity;
+  }
+
   /**
    * Creates new StockAdjustment object based on data from {@link Importer}
    *
@@ -32,10 +37,9 @@ public class StockAdjustment extends BaseEntity {
    * @return new instance of StockAdjustment.
    */
   public static StockAdjustment newStockAdjustment(Importer importer) {
-    StockAdjustment stockAdjustment = new StockAdjustment();
+    StockAdjustment stockAdjustment = new StockAdjustment(
+        importer.getReasonId(), importer.getQuantity());
     stockAdjustment.id = importer.getId();
-    stockAdjustment.reasonId = importer.getReasonId();
-    stockAdjustment.quantity = importer.getQuantity();
 
     return stockAdjustment;
   }

@@ -32,13 +32,7 @@ public final class RequisitionBuilder {
           "Requisition cannot be initiated with null id"
       );
     }
-
-    Requisition requisition = new Requisition();
-    requisition.setEmergency(emergency);
-    requisition.setFacilityId(facilityId);
-    requisition.setProgramId(programId);
-
-    return requisition;
+    return new Requisition(programId, facilityId, null, null, emergency);
   }
 
   /**
@@ -48,21 +42,23 @@ public final class RequisitionBuilder {
    * @return new instance of requisition.
    */
   public static Requisition newRequisition(Requisition.Importer importer) {
-    Requisition requisition = new Requisition();
+    UUID facilityId = null;
+    UUID programId = null;
+    UUID processingPeriodId = null;
+    if (importer.getFacility() != null) {
+      facilityId = importer.getFacility().getId();
+    }
+    if (importer.getProgram() != null) {
+      programId = importer.getProgram().getId();
+    }
+    if (importer.getProcessingPeriod() != null) {
+      processingPeriodId = importer.getProcessingPeriod().getId();
+    }
+    Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
+        importer.getStatus(), importer.getEmergency());
     requisition.setId(importer.getId());
     requisition.setCreatedDate(importer.getCreatedDate());
 
-    if (importer.getFacility() != null) {
-      requisition.setFacilityId(importer.getFacility().getId());
-    }
-    if (importer.getProgram() != null) {
-      requisition.setProgramId(importer.getProgram().getId());
-    }
-    if (importer.getProcessingPeriod() != null) {
-      requisition.setProcessingPeriodId(importer.getProcessingPeriod().getId());
-    }
-    requisition.setStatus(importer.getStatus());
-    requisition.setEmergency(importer.getEmergency());
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
     requisition.setRequisitionLineItems(new ArrayList<>());

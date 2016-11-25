@@ -130,16 +130,12 @@ public class RequisitionDtoBuilderTest {
   }
 
   private Requisition buildRequisition() {
-    Requisition requisition = new Requisition();
+    Requisition requisition = new Requisition(facilityUuid, programUuid, processingPeriodUuid,
+        RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
-    requisition.setFacilityId(facilityUuid);
-    requisition.setProcessingPeriodId(processingPeriodUuid);
-    requisition.setProgramId(programUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
-    requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setComments(Arrays.asList(comment));
     requisition.setRequisitionLineItems(Arrays.asList(requisitionLineItem));
-    requisition.setEmergency(false);
 
     return requisition;
   }

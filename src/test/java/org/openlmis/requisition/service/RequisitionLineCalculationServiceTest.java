@@ -241,12 +241,8 @@ public class RequisitionLineCalculationServiceTest {
   private Requisition createTestRequisition(UUID facility, UUID period,
                                             UUID program,
                                             RequisitionStatus requisitionStatus) {
-    Requisition requisition = new Requisition();
+    Requisition requisition = new Requisition(facility, program, period, requisitionStatus, false);
     requisition.setId(UUID.randomUUID());
-    requisition.setFacilityId(facility);
-    requisition.setProcessingPeriodId(period);
-    requisition.setProgramId(program);
-    requisition.setStatus(requisitionStatus);
     return requisition;
   }
 

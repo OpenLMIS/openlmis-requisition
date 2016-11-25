@@ -58,6 +58,10 @@ public class Comment extends BaseEntity {
     this.createdDate = LocalDateTime.now();
   }
 
+  public Comment(Requisition requisition) {
+    this.requisition = requisition;
+  }
+
   /**
    * Copy values of attributes into new or updated Comment.
    *
@@ -77,7 +81,7 @@ public class Comment extends BaseEntity {
    */
 
   public static Comment newComment(Importer importer) {
-    Comment comment =  new Comment();
+    Comment comment = new Comment();
     comment.setId(importer.getId());
     comment.setAuthorId(importer.getAuthorId());
     comment.setBody(importer.getBody());

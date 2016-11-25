@@ -49,8 +49,8 @@ public class RequisitionValidationTestUtils {
     columnDefinition.setName(name);
     columnDefinition.setIndicator(indicator);
 
-    RequisitionTemplateColumn requisitionTemplateColumn = new RequisitionTemplateColumn();
-    requisitionTemplateColumn.setColumnDefinition(columnDefinition);
+    RequisitionTemplateColumn requisitionTemplateColumn =
+        new RequisitionTemplateColumn(columnDefinition);
     requisitionTemplateColumn.setSource(sourceType);
     requisitionTemplateColumn.setName(name);
     requisitionTemplateColumn.setIsDisplayed(true);

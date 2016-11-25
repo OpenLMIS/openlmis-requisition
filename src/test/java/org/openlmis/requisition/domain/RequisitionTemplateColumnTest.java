@@ -10,7 +10,7 @@ public class RequisitionTemplateColumnTest {
 
   @Before
   public void setUp() {
-    requisitionTemplateColumn = new RequisitionTemplateColumn();
+    requisitionTemplateColumn = new RequisitionTemplateColumn(null);
     requisitionTemplateColumn.setName("Test Column");
   }
 

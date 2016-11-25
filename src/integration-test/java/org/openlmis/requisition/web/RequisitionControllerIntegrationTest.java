@@ -402,7 +402,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.save(requisition);
 
     createComment(user, requisition, "Previous comment");
-    Comment userPostComment = new Comment();
+    Comment userPostComment = new Comment(requisition);
     userPostComment.setBody("User comment");
 
     Comment[] response = restAssured.given()
@@ -465,10 +465,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
-    Comment comment = new Comment();
+    Comment comment = new Comment(requisition);
     comment.setBody(COMMENT_TEXT);
     comment.setAuthorId(user.getId());
-    comment.setRequisition(requisition);
 
     Comment response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -855,7 +854,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(RequisitionWithSupplyingDepotsDto[].class);
 
     // then
-    assertEquals(response.length, requisitionsAmount);
+    assertEquals(requisitionsAmount, response.length);
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {
       Assert.assertTrue(dto.getRequisition().getStatus().equals(RequisitionStatus.APPROVED));
@@ -1068,23 +1067,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private Comment createComment(UserDto author, Requisition req, String commentText) {
-    Comment comment = new Comment();
+    Comment comment = new Comment(req);
     comment.setAuthorId(author.getId());
-    comment.setRequisition(req);
     comment.setBody(commentText);
     commentRepository.save(comment);
     return comment;
   }
 
   private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
-    Requisition requisition = new Requisition();
+    Requisition requisition = new Requisition(facility, UUID.randomUUID(), UUID.randomUUID(),
+        requisitionStatus, true);
     requisition.setId(UUID.randomUUID());
-    requisition.setFacilityId(facility);
-    requisition.setProcessingPeriodId(UUID.randomUUID());
-    requisition.setProgramId(UUID.randomUUID());
     requisition.setCreatedDate(LocalDateTime.now());
-    requisition.setStatus(requisitionStatus);
-    requisition.setEmergency(true);
     requisitionRepository.save(requisition);
 
     return requisition;
@@ -1103,8 +1097,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     for (AvailableRequisitionColumn columnDefinition :
         availableRequisitionColumnRepository.findAll()) {
-      RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-      column.setColumnDefinition(columnDefinition);
+      RequisitionTemplateColumn column = new RequisitionTemplateColumn(columnDefinition);
       column.setName(columnDefinition.getName());
       column.setIsDisplayed(true);
       columns.put(columnDefinition.getName(), column);

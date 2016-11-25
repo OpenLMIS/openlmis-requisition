@@ -133,6 +133,24 @@ public class Requisition extends BaseEntity {
   }
 
   /**
+   * Constructor.
+   *
+   * @param facilityId id of the Facility
+   * @param programId id of the Program
+   * @param processingPeriodId id of the ProcessingPeriod
+   * @param status status of the Requisition
+   * @param emergency whether this Requisition is emergency
+   */
+  public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId,
+                     RequisitionStatus status, Boolean emergency) {
+    this.facilityId = facilityId;
+    this.programId = programId;
+    this.processingPeriodId = processingPeriodId;
+    this.status = status;
+    this.emergency = emergency;
+  }
+
+  /**
    * Copy values of attributes into new or updated Requisition.
    *
    * @param requisition         Requisition with new values.

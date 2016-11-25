@@ -250,7 +250,7 @@ public class RequisitionServiceTest {
       throws RequisitionException, RequisitionTemplateColumnException {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(
-        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn())
+        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn(null))
     );
 
     requisition.setStatus(null);
@@ -432,13 +432,11 @@ public class RequisitionServiceTest {
       FacilityDto facility = mock(FacilityDto.class);
       when(facility.getId()).thenReturn(UUID.randomUUID());
 
-      Requisition requisition = new Requisition();
+      Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+          UUID.randomUUID(), APPROVED, false);
       requisition.setId(UUID.randomUUID());
-      requisition.setProgramId(UUID.randomUUID());
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
-      requisition.setStatus(APPROVED);
-      requisition.setEmergency(false);
       requisition.setRequisitionLineItems(Lists.newArrayList());
 
       when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
@@ -454,19 +452,14 @@ public class RequisitionServiceTest {
   }
 
   private Requisition generateRequisition() {
-    requisition = new Requisition();
+    requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+        INITIATED, false);
     requisition.setId(UUID.randomUUID());
-    requisition.setEmergency(false);
     requisition.setCreatedDate(LocalDateTime.now());
-    requisition.setStatus(INITIATED);
     requisition.setSupplyingFacilityId(facilityId);
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(mock(RequisitionLineItem.class));
     requisition.setRequisitionLineItems(requisitionLineItems);
-    UUID facilityId = UUID.randomUUID();
-    requisition.setFacilityId(facilityId);
-    UUID programId = UUID.randomUUID();
-    requisition.setProgramId(programId);
     return requisition;
   }
 

@@ -276,72 +276,65 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
     columnDefinition.setIsDisplayRequired(false);
 
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(REQUESTED_QUANTITY);
     column.setLabel("Requested Quantity");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")
     ));
     Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
     columnMap.put(REQUESTED_QUANTITY, column);
 
-    column = new RequisitionTemplateColumn();
+    column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(REQUESTED_QUANTITY_EXPLANATION);
     column.setLabel("Requested Quantity Explanation");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5")
     ));
     columnMap.put(REQUESTED_QUANTITY_EXPLANATION, column);
 
-    column = new RequisitionTemplateColumn();
+    column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(TOTAL_CONSUMED_QUANTITY);
     column.setLabel("Total Consumed Quantity");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("9e825396-269d-4873-baa4-89054e2722f4")
     ));
     columnMap.put(TOTAL_CONSUMED_QUANTITY, column);
 
-    column = new RequisitionTemplateColumn();
+    column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(BEGINNING_BALANCE);
     column.setLabel("Beginning Balance");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("33b2d2e9-3167-46b0-95d4-1295be9afc22")
     ));
     columnMap.put(BEGINNING_BALANCE, column);
 
-    column = new RequisitionTemplateColumn();
+    column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(TOTAL_RECEIVED_QUANTITY);
     column.setLabel("Total Received Quantity");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("5ba8b72d-277a-4da8-b10a-23f0cda23cb4")
     ));
     columnMap.put(TOTAL_RECEIVED_QUANTITY, column);
 
-    column = new RequisitionTemplateColumn();
+    column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(TOTAL_LOSSES_AND_ADJUSTMENTS);
     column.setLabel("Total Losses And Adjustments");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("cd57f329-f549-4717-882e-ecbf98122c38")
     ));
     columnMap.put(TOTAL_LOSSES_AND_ADJUSTMENTS, column);
 
-    column = new RequisitionTemplateColumn();
+    column = new RequisitionTemplateColumn(columnDefinition);
     column.setName(STOCK_ON_HAND);
     column.setLabel("Stock On Hand");
     column.setIsDisplayed(true);
-    column.setColumnDefinition(columnDefinition);
     column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
         UUID.fromString("752cda76-0db5-4b6e-bb79-0f531ab78e2c")
     ));

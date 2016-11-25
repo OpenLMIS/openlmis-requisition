@@ -38,6 +38,10 @@ public class RequisitionTemplateColumn {
   @JoinColumn(name = "requisitionColumnId", nullable = false)
   private AvailableRequisitionColumn columnDefinition;
 
+  public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
+    this.columnDefinition = columnDefinition;
+  }
+
   /**
    * Validate name of new label and change it if it's alphanumeric.
    * @throws RequisitionTemplateColumnException Exception thrown when

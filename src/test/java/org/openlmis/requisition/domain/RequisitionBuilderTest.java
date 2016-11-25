@@ -82,7 +82,7 @@ public class RequisitionBuilderTest {
   @Test
   public void shouldInitializeRequisitionWithGivenProgramFacilityAndEmergencyFlag()
       throws RequisitionInitializationException {
-    Requisition requisition = RequisitionBuilder.newRequisition(programUuid, facilityUuid, false);
+    Requisition requisition = RequisitionBuilder.newRequisition(facilityUuid, programUuid, false);
 
     assertFalse(requisition.getEmergency());
     assertEquals(programUuid, requisition.getProgramId());
