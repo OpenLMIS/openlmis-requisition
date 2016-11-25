@@ -1,12 +1,12 @@
 package org.openlmis.requisition.service;
 
 
-import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderDto;
@@ -28,6 +28,9 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProduc
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.utils.ConvertHelper;
+import org.openlmis.utils.PaginationHelper;
+import org.openlmis.utils.RequisitionDtoComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -77,6 +81,13 @@ public class RequisitionService {
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
+
+  @Autowired
+  private PaginationHelper paginationHelper;
+
+  @Autowired
+  private ConvertHelper convertHelper;
+
 
   /**
    * Initiated given requisition if possible.
@@ -234,7 +245,7 @@ public class RequisitionService {
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     List<Requisition> requisitionsForApproval = new ArrayList<>();
     Collection<ProgramDto> supervisedPrograms =
-            userSupervisedProgramsReferenceDataService.getProgramsSupervisedByUser(userId);
+        userSupervisedProgramsReferenceDataService.getProgramsSupervisedByUser(userId);
 
     if (supervisedPrograms != null) {
       for (ProgramDto program : supervisedPrograms) {
@@ -322,8 +333,8 @@ public class RequisitionService {
    * Get approved requisitions matching all of provided parameters.
    *
    * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
-   *                    "all".
+   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName"
+   *                    or "all".
    * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
    * @param descending  Descending direction for sort.
    * @param pageNumber  Page number to return.
@@ -334,8 +345,45 @@ public class RequisitionService {
       String filterValue, String filterBy, String sortBy, Boolean descending,
       Integer pageNumber, Integer pageSize) {
 
-    return requisitionRepository.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+    List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
+    List<Requisition> requisitions =
+        requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
+    List<RequisitionDto> requisitionDtos = convertHelper
+        .convertRequisitionListToRequisitionDtoList(requisitions);
+
+    requisitionDtos.sort(new RequisitionDtoComparator(sortBy));
+    if (descending) {
+      Collections.reverse(requisitionDtos);
+    }
+    if (pageNumber != null && pageSize != null) {
+      requisitionDtos = paginationHelper.pageCollection(requisitionDtos, pageNumber,
+          pageSize);
+    }
+
+    return requisitionDtos;
+  }
+
+  List<UUID> findDesiredUuids(String filterValue, String filterBy) {
+    List<UUID> uuidsToReturn = new ArrayList<>();
+
+    boolean filterAll = "all".equals(filterBy);
+
+    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
+      Collection<ProgramDto> foundPrograms =
+          programReferenceDataService.search(filterValue);
+      foundPrograms.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
+    }
+    if (filterAll || "facilityCode".equals(filterBy)) {
+      Collection<FacilityDto> foundFacilities =
+          facilityReferenceDataService.search(filterValue, null);
+      foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
+    }
+    if (filterAll || "facilityName".equals(filterBy)) {
+      Collection<FacilityDto> foundFacilities =
+          facilityReferenceDataService.search(null, filterValue);
+      foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
+    }
+    return uuidsToReturn;
   }
 
   /**

@@ -1,24 +1,8 @@
 package org.openlmis.requisition.repository.custom.impl;
 
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.web.RequisitionDtoBuilder;
-import org.openlmis.utils.RequisitionDtoComparator;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -28,18 +12,11 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
-
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private RequisitionDtoBuilder requisitionDtoBuilder;
-
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -47,14 +24,14 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   /**
    * Method returns all Requisitions with matched parameters.
    *
-   * @param facility          facility of searched Requisitions.
-   * @param program           program of searched Requisitions.
-   * @param createdDateFrom   After what date should searched Requisition be created.
-   * @param createdDateTo     Before what date should searched Requisition be created.
-   * @param processingPeriod  processingPeriod of searched Requisitions.
-   * @param supervisoryNode   supervisoryNode of searched Requisitions.
-   * @param requisitionStatuses statuses of searched Requisitions.
-   * @return list of Requisitions with matched parameters.
+   * @param facility            Facility of searched Requisitions.
+   * @param program             Program of searched Requisitions.
+   * @param createdDateFrom     After what date should searched Requisition be created.
+   * @param createdDateTo       Before what date should searched Requisition be created.
+   * @param processingPeriod    ProcessingPeriod of searched Requisitions.
+   * @param supervisoryNode     SupervisoryNode of searched Requisitions.
+   * @param requisitionStatuses Statuses of searched Requisitions.
+   * @return List of Requisitions with matched parameters.
    */
   public List<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDateTime createdDateFrom,
@@ -83,11 +60,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get("processingPeriodId"), processingPeriod));
+          builder.equal(root.get("processingPeriodId"), processingPeriod));
     }
     if (supervisoryNode != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
+          builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
     }
     predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
     if (null != emergency) {
@@ -103,11 +80,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   /**
    * Method returns all Requisitions with matched parameters.
    *
-   * @param processingPeriod processingPeriod of searched Requisitions.
-   * @param emergency if {@code true}, the method will look only for emergency requisitions,
-   *                  if {@code false}, the method will look only for standard requisitions,
-   *                  if {@code null} the method will check all requisitions
-   * @return list of Requisitions with matched parameters.
+   * @param processingPeriod ProcessingPeriod of searched Requisitions.
+   * @param emergency        if {@code true}, the method will look only for emergency requisitions,
+   *                         if {@code false}, the method will look only for standard requisitions,
+   *                         if {@code null} the method will check all requisitions.
+   * @return List of Requisitions with matched parameters.
    */
   public List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod,
                                                            Boolean emergency) {
@@ -122,7 +99,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-            builder.equal(root.get("processingPeriodId"), processingPeriod));
+          builder.equal(root.get("processingPeriodId"), processingPeriod));
     }
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
@@ -131,41 +108,34 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName","facilityCode","facilityName" or "all".
-   * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
-   * @param descending  Descending direction for sort.
-   * @param pageNumber  Page number to return.
-   * @param pageSize    Quantity for one page.
+   * @param filterBy     Field used to filter: "programName","facilityCode","facilityName" or "all".
+   * @param desiredUuids Desired UUID list.
    * @return List of requisitions.
    */
   @Override
-  public List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
-      String filterValue, String filterBy, String sortBy, Boolean descending,
-      Integer pageNumber, Integer pageSize) {
+  public List<Requisition> searchApprovedRequisitions(String filterBy, List<UUID> desiredUuids) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
 
-    List<Requisition> filteredRequisitions = filterRequisitions(filterValue, filterBy);
-    List<RequisitionDto> filteredRequisitionDtos =
-        convertRequisitionListToRequisitionDtoList(filteredRequisitions);
+    Root<Requisition> root = criteriaQuery.from(Requisition.class);
 
-    filteredRequisitionDtos.sort(new RequisitionDtoComparator(sortBy));
-    if (descending) {
-      Collections.reverse(filteredRequisitionDtos);
-    }
+    Path<UUID> facility = root.get("facilityId");
+    Path<UUID> program = root.get("programId");
 
-    if (pageNumber != null && pageSize != null) {
-      filteredRequisitionDtos = pageCollection(filteredRequisitionDtos, pageNumber,
-              pageSize);
-    }
+    Predicate predicate =
+        setFiltering(filterBy, builder, root, facility, program, desiredUuids);
 
-    return filteredRequisitionDtos;
+    criteriaQuery = criteriaQuery.where(predicate);
+    Query query = entityManager.createQuery(criteriaQuery);
+
+    return query.getResultList();
   }
 
   /**
    * Get last regular requisition for the given facility and program.
    *
-   * @param facility UUID of facility
-   * @param program  UUID of program
+   * @param facility UUID of facility.
+   * @param program  UUID of program.
    * @return last regular requisition for the given facility and program. {@code null} if not found.
    * @throws IllegalArgumentException if any of arguments is {@code null}.
    */
@@ -193,41 +163,20 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return null == list || list.isEmpty() ? null : list.get(0);
   }
 
-  private List<Requisition> filterRequisitions(String filterValue, String filterBy) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
-
-    Root<Requisition> root = criteriaQuery.from(Requisition.class);
-
-    Path<UUID> facility = root.get("facilityId");
-    Path<UUID> program = root.get("programId");
-
-
-    Predicate predicate =
-        setFiltering(filterValue, filterBy, builder, root, facility, program);
-
-    criteriaQuery = criteriaQuery.where(predicate);
-    Query query = entityManager.createQuery(criteriaQuery);
-
-    return query.getResultList();
-  }
-
-  private Predicate setFiltering(String filterValue, String filterBy, CriteriaBuilder builder,
-                                 Root<Requisition> root, Path<UUID> facility, Path<UUID> program) {
+  private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,
+                                 Path<UUID> facility, Path<UUID> program, List<UUID> desiredUuids) {
 
     //Add first important filter
     Predicate predicate = builder.equal(root.get("status"), RequisitionStatus.APPROVED);
 
     if (filterBy != null && !filterBy.isEmpty()) {
       //Add second important filter
-      List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
       Predicate predicateFilterBy = builder.disjunction();
 
       if (!desiredUuids.isEmpty()) {
         predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
         predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
       }
-
       //Connector filters
       predicate = builder.and(predicate, predicateFilterBy);
     }
@@ -235,73 +184,14 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return predicate;
   }
 
-  private Query setPaging(Query query, Integer pageNumber, Integer pageSize) {
-    query.setFirstResult((pageNumber - 1) * pageSize);
-    query.setMaxResults(pageSize);
-    return query;
-  }
-
-  private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
-    List<UUID> uuidsToReturn = new ArrayList<>();
-
-    boolean filterAll = "all".equals(filterBy);
-
-    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
-      Collection<ProgramDto> foundPrograms =
-          programReferenceDataService.search(filterValue);
-      foundPrograms.forEach(program -> uuidsToReturn.add(program.getId()));
-    }
-    if (filterAll || "facilityCode".equals(filterBy)) {
-      Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.search(filterValue, null);
-      foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
-    }
-    if (filterAll || "facilityName".equals(filterBy)) {
-      Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.search(null, filterValue);
-      foundFacilities.forEach(facilityDto -> {
-        if (!uuidsToReturn.add(facilityDto.getId())) {
-          uuidsToReturn.add(facilityDto.getId());
-        }
-      });
-    }
-    return uuidsToReturn;
-  }
-
-  private List<RequisitionDto> convertRequisitionListToRequisitionDtoList(
-      List<Requisition> requisitions) {
-    List<RequisitionDto> requisitionsConvertedToDto = new ArrayList<>();
-
-    for (Requisition requisition : requisitions) {
-      RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
-      requisitionsConvertedToDto.add(requisitionDto);
-    }
-
-    return requisitionsConvertedToDto;
-  }
-
-  private List<RequisitionDto> pageCollection(List<RequisitionDto> requisitions,
-                                              int pageNumber, int pageSize) {
-    int firstPageRecordListIndex = (pageNumber - 1) * pageSize;
-    int lastPageRecordListIndex = (pageNumber * pageSize) - 1;
-
-    if (firstPageRecordListIndex > requisitions.size()) {
-      return Collections.emptyList();
-    }
-    if (lastPageRecordListIndex > requisitions.size()) {
-      lastPageRecordListIndex = requisitions.size() - 1;
-    }
-
-    return requisitions.subList(firstPageRecordListIndex, lastPageRecordListIndex);
-  }
-
   private Predicate filterByStatuses(CriteriaBuilder builder, Predicate predicate,
-                     RequisitionStatus[] requisitionStatuses, Root<Requisition> root) {
+                                     RequisitionStatus[] requisitionStatuses,
+                                     Root<Requisition> root) {
     if (requisitionStatuses != null && requisitionStatuses.length > 0) {
       Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
         statusPredicate = builder.or(statusPredicate,
-                builder.equal(root.get("status"), status));
+            builder.equal(root.get("status"), status));
       }
       predicate = builder.and(predicate, statusPredicate);
     }

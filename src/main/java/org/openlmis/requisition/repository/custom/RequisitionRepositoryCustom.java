@@ -2,7 +2,6 @@ package org.openlmis.requisition.repository.custom;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.RequisitionDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,11 +17,9 @@ public interface RequisitionRepositoryCustom {
                                        RequisitionStatus[] requisitionStatuses,
                                        Boolean emergency);
 
-  List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
-      String filterValue, String filterBy, String sortBy, Boolean descending,
-      Integer pageNumber, Integer pageSize);
-
   List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod, Boolean emergency);
+
+  List<Requisition> searchApprovedRequisitions(String filterBy, List<UUID> desiredUuids);
 
   Requisition getLastRegularRequisition(UUID facility, UUID program);
 }

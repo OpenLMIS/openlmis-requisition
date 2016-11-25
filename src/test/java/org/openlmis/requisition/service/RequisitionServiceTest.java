@@ -3,6 +3,7 @@ package org.openlmis.requisition.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -34,6 +35,7 @@ import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -54,6 +56,9 @@ import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataSer
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.ConvertHelper;
+import org.openlmis.utils.PaginationHelper;
+import org.openlmis.utils.RequisitionDtoComparator;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -118,6 +123,12 @@ public class RequisitionServiceTest {
 
   @Mock
   private OrderFulfillmentService orderFulfillmentService;
+
+  @Mock
+  private ConvertHelper convertHelper;
+
+  @Mock
+  private PaginationHelper paginationHelper;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -398,6 +409,30 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldFindAndSortAndPageApprovedRequisitions() {
+    // given
+    List<RequisitionDto> requisitionDtos = getRequisitionDtoList();
+    String filterAndSortBy = "programName";
+    int pageNumber = 1;
+    int pageSize = 5;
+
+    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, null,
+        pageNumber, pageSize);
+
+    requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
+    Collections.reverse(requisitionDtos);
+
+    //when
+    List<RequisitionDto> requisitionDtosRetrieved =
+        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
+            filterAndSortBy, filterAndSortBy, true, pageNumber, pageSize);
+
+    //then
+    verify(paginationHelper).pageCollection(requisitionDtos, pageNumber, pageSize);
+    assertEquals(requisitionDtos, requisitionDtosRetrieved);
+  }
+
+  @Test
   public void shouldConvertRequisitionsToOrders() throws RequisitionException {
     // given
     int requisitionsCount = 5;
@@ -470,6 +505,35 @@ public class RequisitionServiceTest {
     supplyLine.setSupervisoryNode(supervisoryNode);
     supplyLine.setSupplyingFacility(facility);
     return supplyLine;
+  }
+
+  private List<RequisitionDto> getRequisitionDtoList() {
+    List<RequisitionDto> requisitionDtos = new ArrayList<>();
+    String[] programNames = {"one", "two", "three", "four", "five"};
+
+    for (String programName : programNames) {
+      RequisitionDto requisitionDto = new RequisitionDto();
+      ProgramDto programDto = new ProgramDto();
+      programDto.setName(programName);
+      requisitionDto.setProgram(programDto);
+      requisitionDtos.add(requisitionDto);
+    }
+    return requisitionDtos;
+  }
+
+  private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
+                                                    String filterBy, String filterValue,
+                                                    int pageNumber, int pageSize) {
+    List<UUID> desiredUuids = new ArrayList<>();
+    List<Requisition> requisitions = new ArrayList<>();
+    when(requisitionService.findDesiredUuids(filterValue, filterBy))
+        .thenReturn(desiredUuids);
+    when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
+        .thenReturn(requisitions);
+    when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
+        .thenReturn(requisitionDtos);
+    when(paginationHelper.pageCollection(any(), eq(pageNumber), eq(pageSize)))
+        .then(i -> i.getArgumentAt(0, List.class));
   }
 
   private void mockRepositories() throws RequisitionException {
