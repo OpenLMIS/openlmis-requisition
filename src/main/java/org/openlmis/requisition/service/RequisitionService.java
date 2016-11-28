@@ -103,7 +103,7 @@ public class RequisitionService {
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
-    Requisition requisition = RequisitionBuilder.newRequisition(programId, facilityId, emergency);
+    Requisition requisition = RequisitionBuilder.newRequisition(facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);

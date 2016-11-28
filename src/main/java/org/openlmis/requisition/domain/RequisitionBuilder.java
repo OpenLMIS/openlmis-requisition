@@ -17,22 +17,22 @@ public final class RequisitionBuilder {
   }
 
   /**
-   * Create a new instance of Requisition with given program and facility IDs and emergency flag.
+   * Create a new instance of Requisition with given facility and program IDs and emergency flag.
    *
-   * @param programId  UUID of program
    * @param facilityId UUID of facility
+   * @param programId  UUID of program
    * @param emergency  flag
    * @return a new instance of Requisition
    * @throws RequisitionInitializationException if any of arguments is {@code null}
    */
-  public static Requisition newRequisition(UUID programId, UUID facilityId, Boolean emergency)
+  public static Requisition newRequisition(UUID facilityId, UUID programId, Boolean emergency)
       throws RequisitionInitializationException {
     if (facilityId == null || programId == null || emergency == null) {
       throw new RequisitionInitializationException(
           "Requisition cannot be initiated with null id"
       );
     }
-    return new Requisition(programId, facilityId, null, null, emergency);
+    return new Requisition(facilityId, programId, null, null, emergency);
   }
 
   /**
