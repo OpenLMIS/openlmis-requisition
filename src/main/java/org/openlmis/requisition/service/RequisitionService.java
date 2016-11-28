@@ -363,7 +363,22 @@ public class RequisitionService {
     return requisitionDtos;
   }
 
-  List<UUID> findDesiredUuids(String filterValue, String filterBy) {
+  /**
+   * Converting Requisition list to Orders.
+   */
+  @Transactional
+  public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
+      throws RequisitionException {
+    List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
+    List<OrderDto> orders = releasedRequisitions
+        .stream()
+        .map(r -> OrderDto.newOrder(r, user))
+        .collect(Collectors.toList());
+
+    orders.forEach(orderFulfillmentService::create);
+  }
+
+  private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
     List<UUID> uuidsToReturn = new ArrayList<>();
 
     boolean filterAll = "all".equals(filterBy);
@@ -385,20 +400,4 @@ public class RequisitionService {
     }
     return uuidsToReturn;
   }
-
-  /**
-   * Converting Requisition list to Orders.
-   */
-  @Transactional
-  public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
-      throws RequisitionException {
-    List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
-    List<OrderDto> orders = releasedRequisitions
-        .stream()
-        .map(r -> OrderDto.newOrder(r, user))
-        .collect(Collectors.toList());
-
-    orders.forEach(orderFulfillmentService::create);
-  }
-
 }

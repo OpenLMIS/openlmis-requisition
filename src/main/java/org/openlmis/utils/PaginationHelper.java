@@ -16,7 +16,7 @@ public class PaginationHelper {
     int firstPageRecordListIndex = (pageNumber - 1) * pageSize;
     int lastPlusOnePageRecordListIndex = (pageNumber * pageSize);
 
-    if (firstPageRecordListIndex > requisitions.size()) {
+    if (firstPageRecordListIndex >= requisitions.size()) {
       return Collections.emptyList();
     }
     if (lastPlusOnePageRecordListIndex > requisitions.size()) {
@@ -25,5 +25,4 @@ public class PaginationHelper {
 
     return requisitions.subList(firstPageRecordListIndex, lastPlusOnePageRecordListIndex);
   }
-
 }

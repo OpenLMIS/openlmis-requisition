@@ -417,7 +417,7 @@ public class RequisitionServiceTest {
     int pageSize = 5;
 
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, null,
-        pageNumber, pageSize);
+        pageNumber, pageSize, filterAndSortBy);
 
     requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
     Collections.reverse(requisitionDtos);
@@ -523,11 +523,12 @@ public class RequisitionServiceTest {
 
   private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
                                                     String filterBy, String filterValue,
-                                                    int pageNumber, int pageSize) {
+                                                    int pageNumber, int pageSize, String
+                                                        programName) {
     List<UUID> desiredUuids = new ArrayList<>();
     List<Requisition> requisitions = new ArrayList<>();
-    when(requisitionService.findDesiredUuids(filterValue, filterBy))
-        .thenReturn(desiredUuids);
+    when(programReferenceDataService.search(programName))
+        .thenReturn(Collections.emptyList());
     when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
         .thenReturn(requisitions);
     when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
