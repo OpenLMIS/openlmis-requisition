@@ -28,7 +28,7 @@ public class Comment extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
-  @ManyToOne(cascade = CascadeType.MERGE)
+  @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
   @JoinColumn(name = "requisitionId", nullable = false)
   @JsonView(View.BasicInformation.class)
   @Getter
