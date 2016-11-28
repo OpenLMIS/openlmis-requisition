@@ -49,7 +49,7 @@ public class PaginationHelperTest {
   }
 
   @Test
-  public void shouldReturnAppropriateSubListFromRequisitionDtoListWithEdgeCase() throws
+  public void shouldReturnAppropriateSubListForLastPage() throws
       Exception {
     List<RequisitionDto> requisitionDtoListRetrieved =
         paginationHelper.pageCollection(requisitionDtoList, 2, 4);
