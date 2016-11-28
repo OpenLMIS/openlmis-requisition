@@ -47,4 +47,13 @@ public class PaginationHelperTest {
     assertEquals(requisitionDtoList.get(2).getId(), requisitionDtoListRetrieved.get(0).getId());
     assertEquals(requisitionDtoList.get(3).getId(), requisitionDtoListRetrieved.get(1).getId());
   }
+
+  @Test
+  public void shouldReturnAppropriateSubListFromRequisitionDtoList2() throws Exception {
+    List<RequisitionDto> requisitionDtoListRetrieved =
+        paginationHelper.pageCollection(requisitionDtoList, 2, 4);
+
+    assertEquals(1, requisitionDtoListRetrieved.size());
+    assertEquals(requisitionDtoList.get(4).getId(), requisitionDtoListRetrieved.get(0).getId());
+  }
 }

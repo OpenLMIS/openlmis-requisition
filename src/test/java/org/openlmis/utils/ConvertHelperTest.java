@@ -14,7 +14,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +41,9 @@ public class ConvertHelperTest {
         .convertRequisitionListToRequisitionDtoList(requisitions);
 
     //then
-    verify(requisitionDtoBuilder, times(listSize)).build(any(Requisition.class));
+    for (int i = 0; i < listSize; i++) {
+      verify(requisitionDtoBuilder).build(requisitions.get(i));
+    }
     assertEquals(listSize, requisitionDtos.size());
   }
 }
