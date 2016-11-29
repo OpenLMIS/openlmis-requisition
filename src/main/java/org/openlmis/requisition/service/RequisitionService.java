@@ -17,6 +17,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
@@ -312,7 +313,6 @@ public class RequisitionService {
       releasedRequisitions.add(loadedRequisition);
     }
 
-    releasedRequisitions.forEach(r -> requisitionRepository.save(r));
     return releasedRequisitions;
   }
 
@@ -374,6 +374,12 @@ public class RequisitionService {
         .stream()
         .map(r -> OrderDto.newOrder(r, user))
         .collect(Collectors.toList());
+
+    for (OrderDto order :orders) {
+      if (!orderFulfillmentService.create(order)) {
+        throw new RequisitionInitializationException("lipa");
+      }
+    }
 
     orders.forEach(orderFulfillmentService::create);
   }

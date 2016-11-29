@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
@@ -966,6 +967,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisition.setEmergency(false);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
+
+    wireMockRule.stubFor(
+        post(urlMatching("/fulfillment/api/orders.*"))
+        .willReturn(aResponse().withStatus(200)));
 
     requisitionRepository.save(requisition);
 

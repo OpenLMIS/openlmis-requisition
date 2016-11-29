@@ -4,6 +4,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
@@ -20,6 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.BooleanResultDto;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -27,6 +29,8 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.MissingPermissionException;
 import org.openlmis.utils.AuthenticationHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -67,6 +71,9 @@ public class PermissionServiceTest {
   private RightDto requisitionViewRight;
 
   @Mock
+  private RightDto requisitionConvertRight;
+
+  @Mock
   private Requisition requisition;
 
   private UUID userId = UUID.randomUUID();
@@ -75,12 +82,19 @@ public class PermissionServiceTest {
   private UUID requisitionAuthorizeRightId = UUID.randomUUID();
   private UUID requisitionDeleteRightId = UUID.randomUUID();
   private UUID requisitionViewRightId = UUID.randomUUID();
+  private UUID requisitionConvertRightId = UUID.randomUUID();
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
+  private ConvertToOrderDto convertToOrderDto =  new ConvertToOrderDto();
+  private List<ConvertToOrderDto> convertToOrderDtos = new ArrayList<>();
 
   @Before
   public void setUp() {
+    convertToOrderDto.setRequisitionId(requisitionId);
+    convertToOrderDto.setSupplyingDepotId(facilityId);
+    convertToOrderDtos.add(convertToOrderDto);
+
     when(user.getId()).thenReturn(userId);
 
     when(requisitionCreateRight.getId()).thenReturn(requisitionCreateRightId);
@@ -88,6 +102,7 @@ public class PermissionServiceTest {
     when(requisitionAuthorizeRight.getId()).thenReturn(requisitionAuthorizeRightId);
     when(requisitionDeleteRight.getId()).thenReturn(requisitionDeleteRightId);
     when(requisitionViewRight.getId()).thenReturn(requisitionViewRightId);
+    when(requisitionConvertRight.getId()).thenReturn(requisitionConvertRightId);
 
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
@@ -101,6 +116,8 @@ public class PermissionServiceTest {
         .thenReturn(requisitionAuthorizeRight);
     when(authenticationHelper.getRight(REQUISITION_DELETE)).thenReturn(requisitionDeleteRight);
     when(authenticationHelper.getRight(REQUISITION_VIEW)).thenReturn(requisitionViewRight);
+    when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
+        requisitionConvertRight);
 
     when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
   }
@@ -226,6 +243,23 @@ public class PermissionServiceTest {
     expectException(REQUISITION_VIEW);
 
     permissionService.canViewRequisition(requisitionId);
+  }
+
+  @Test
+  public void canConvertToOrder() throws Exception {
+    hasRight(requisitionConvertRightId, true);
+
+    permissionService.canConvertToOrder(convertToOrderDtos);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
+  }
+
+  @Test
+  public void cannotConvertToOrder() throws Exception {
+    expectException(REQUISITION_CONVERT_TO_ORDER);
+
+    permissionService.canConvertToOrder(convertToOrderDtos);
   }
 
   private void hasRight(UUID rightId, boolean assign) {

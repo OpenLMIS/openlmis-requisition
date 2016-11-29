@@ -753,6 +753,10 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "403":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
                 "500":
                     headers:
                       X-Content-Type-Options:

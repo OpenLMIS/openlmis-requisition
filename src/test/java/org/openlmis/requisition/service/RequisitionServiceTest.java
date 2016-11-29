@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -448,6 +449,7 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
         .thenReturn(facilities);
+    when(orderFulfillmentService.create(any())).thenReturn(true);
 
     // when
     requisitionService.convertToOrder(list, user);

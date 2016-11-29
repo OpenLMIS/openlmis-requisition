@@ -490,6 +490,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
     try {
       UserDto user = authenticationHelper.getCurrentUser();
+      permissionService.canConvertToOrder(list);
       requisitionService.convertToOrder(list, user);
       return new ResponseEntity<>(HttpStatus.CREATED);
     } catch (RequisitionException err) {
@@ -497,6 +498,11 @@ public class RequisitionController extends BaseController {
           "An error occurred while converting requisitions to order", err.getMessage());
       LOGGER.error(errorResponse.getMessage(), err);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    } catch (MissingPermissionException ex) {
+      ErrorResponse errorResponse = new ErrorResponse(
+          "User do not have right to convert to order requisition", ex.getMessage());
+      LOGGER.error(errorResponse.getMessage(), ex);
+      return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
   }
 }
