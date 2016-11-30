@@ -80,7 +80,6 @@ public class OrderableProductDtoTest {
     productDto.setPackSize(0);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
-
     long packsToOrder = productDto.packsToOrder(6);
 
     assertEquals(0, packsToOrder);
@@ -107,6 +106,19 @@ public class OrderableProductDtoTest {
     long packsToOrder = productDto.packsToOrder(1);
 
     assertEquals(0, packsToOrder);
+  }
+
+  @Test
+  public void shouldNotRoundUpWhenEqualToThreshold() {
+    OrderableProductDto product = new OrderableProductDto();
+    product.setPackSize(100);
+    product.setPackRoundingThreshold(50);
+
+    long packsToOrder = product.packsToOrder(250);
+    assertEquals(2, packsToOrder);
+
+    packsToOrder = product.packsToOrder(251);
+    assertEquals(3, packsToOrder);
   }
 
   @Test
