@@ -381,7 +381,7 @@ public class RequisitionService {
       }
     }
 
-    orders.forEach(orderFulfillmentService::create);
+    releasedRequisitions.forEach(r -> requisitionRepository.save(r));
   }
 
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
