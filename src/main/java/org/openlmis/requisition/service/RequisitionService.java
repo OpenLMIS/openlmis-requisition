@@ -16,8 +16,8 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
+import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
@@ -377,11 +377,12 @@ public class RequisitionService {
 
     for (OrderDto order :orders) {
       if (!orderFulfillmentService.create(order)) {
-        throw new RequisitionInitializationException("lipa");
+        throw new RequisitionConversionException("Error while converting requisition: "
+            + order.getExternalId() + " to order.");
       }
     }
 
-    orders.forEach(orderFulfillmentService::create);
+    releasedRequisitions.forEach(r -> requisitionRepository.save(r));
   }
 
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {

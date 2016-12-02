@@ -1,6 +1,7 @@
 package org.openlmis.requisition.service;
 
 import org.apache.commons.codec.binary.Base64;
+import org.openlmis.utils.HttpContextHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 public abstract class BaseService {
@@ -33,6 +36,13 @@ public abstract class BaseService {
   }
 
   protected String obtainAccessToken() {
+    HttpServletRequest httpServletRequest = HttpContextHelper.getCurrentHttpRequest();
+    if (httpServletRequest != null) {
+      String token = httpServletRequest.getParameter("access_token");
+      if (token != null ) {
+        return token;
+      }
+    }
     String plainCreds = clientId + ":" + clientSecret;
     byte[] plainCredsBytes = plainCreds.getBytes();
     byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
