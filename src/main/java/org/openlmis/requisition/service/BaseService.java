@@ -38,7 +38,7 @@ public abstract class BaseService {
   protected String obtainAccessToken() {
     HttpServletRequest httpServletRequest = HttpContextHelper.getCurrentHttpRequest();
     if (httpServletRequest != null) {
-      String token = httpServletRequest.getParameter("access_token");
+      String token = httpServletRequest.getParameter(ACCESS_TOKEN);
       if (token != null ) {
         return token;
       }

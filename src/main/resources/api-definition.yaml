@@ -757,6 +757,10 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: errorResponse
+
                 "500":
                     headers:
                       X-Content-Type-Options:

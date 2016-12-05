@@ -487,7 +487,8 @@ public class RequisitionController extends BaseController {
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
   @RequestMapping(value = "/requisitions/convertToOrder", method = RequestMethod.POST)
-  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
+  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list)
+      throws MissingPermissionException {
     try {
       UserDto user = authenticationHelper.getCurrentUser();
       permissionService.canConvertToOrder(list);
@@ -498,11 +499,6 @@ public class RequisitionController extends BaseController {
           "An error occurred while converting requisitions to order", err.getMessage());
       LOGGER.error(errorResponse.getMessage(), err);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    } catch (MissingPermissionException ex) {
-      ErrorResponse errorResponse = new ErrorResponse(
-          "User do not have right to convert to order requisition", ex.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
   }
 }

@@ -15,10 +15,8 @@ public class HttpContextHelper {
 
   public static HttpServletRequest getCurrentHttpRequest() {
     RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-    if ( requestAttributes instanceof ServletRequestAttributes) {
-      HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
-      return request;
-    }
-    return null;
+
+    return requestAttributes instanceof ServletRequestAttributes
+        ? ((ServletRequestAttributes) requestAttributes).getRequest() : null;
   }
 }
