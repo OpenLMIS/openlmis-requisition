@@ -6,7 +6,6 @@ def ramlToCopy = copySpec {
         rename { 'api-definition-raml.yaml' }
         filter(ReplaceTokens, tokens: [
                 baseUrl: System.env.BASE_URL,
-                prefix: System.env.VIRTUAL_LOCATION ? "/" + System.env.VIRTUAL_LOCATION : "",
                 version: version])
     }
     from('src/main/resources/schemas') {

@@ -2,7 +2,7 @@
 ---
 title: OpenLMIS Requisition API
 version: "@version@"
-baseUri: "@baseUrl@@prefix@/api"
+baseUri: "@baseUrl@"
 
 documentation:
     - title: Getting Started
@@ -322,708 +322,707 @@ resourceTypes:
             responses:
                 200:
 
-/requisitions:
-    displayName: Requisition
-    /initiate:
-        post:
-            is: [ secured ]
-            description: Initiate requisition.
-            queryParameters:
-                program:
-                    displayName: program
-                    type: string
-                    required: true
-                    repeat: false
-                facility:
-                    displayName: facility
-                    type: string
-                    required: true
-                    repeat: false
-                suggestedPeriod:
-                    displayName: suggestedPeriod
-                    type: string
-                    required: false
-                    repeat: false
-                emergency:
-                    displayName: emergency
-                    type: boolean
-                    required: true
-                    repeat: false
-            responses:
-                "201":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: errorResponse
-    /submitted:
-        get:
-            is: [ secured ]
-            description: Get all requisitions with submitted status.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: errorResponse
-    /{id}:
-        uriParameters:
-            id:
-                displayName: id
-                type: string
-                required: true
-                repeat: false
-        delete:
-            is: [ secured ]
-            description: Delete chosen requisition.
-            responses:
-                "204":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "409":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: errorResponse
-        get:
-            is: [ secured ]
-            description: Get chosen requisition.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: errorResponse
-        put:
-            is: [ secured ]
-            description: Update existing requisition.
-            body:
-                application/json:
-                  schema: requisitionDto
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: requisitionDto
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: errorResponse
-    /{id}/skip:
-        uriParameters:
-            id:
-                displayName: id
-                type: string
-                required: true
-                repeat: false
-        put:
-            is: [ secured ]
-            description: Skip chosen requisition period.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-    /{id}/reject:
-        uriParameters:
-            id:
-                displayName: id
-                type: string
-                required: true
-                repeat: false
-        put:
-            is: [ secured ]
-            description: Reject requisition which is waiting for approval.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-    /{id}/submit:
-            post:
-                is: [ secured ]
-                description: Submit earlier initiated requisition.
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "400":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "403":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                              schema: errorResponse
-    /{id}/authorize:
-            uriParameters:
-                id:
-                    displayName: requisition Id
-                    type: string
-                    required: true
-                    repeat: false
-            post:
-                is: [ secured ]
-                description: Authorize submitted requisition.
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                    "400":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          text/plain:
-                    "404":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                    "403":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                              schema: errorResponse
-    /search:
-        get:
-            is: [ secured ]
-            description: Find requisitions matching all of provided parameters.
-            queryParameters:
-                facility:
-                    displayName: facility
-                    type: string
-                    required: false
-                    repeat: false
-                program:
-                    displayName: program
-                    type: string
-                    required: false
-                    repeat: false
-                createdDateFrom:
-                    displayName: createdDateFrom
-                    type: string
-                    required: false
-                    repeat: false
-                createdDateTo:
-                    displayName: createdDateTo
-                    type: string
-                    required: false
-                    repeat: false
-                processingPeriod:
-                    displayName: processingPeriod
-                    type: string
-                    required: false
-                    repeat: false
-                supervisoryNode:
-                    displayName: supervisoryNode
-                    type: string
-                    required: false
-                    repeat: false
-                requisitionStatus:
-                    displayName: supervisoryNode
-                    type: string
-                    required: false
-                    repeat: false
-                emergency:
-                    displayName: emergency
-                    type: boolean
-                    required: false
-                    repeat: false
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-    /{id}/approve:
-        uriParameters:
-            id:
-                displayName: id
-                type: string
-                required: true
-                repeat: false
-        post:
-            is: [ secured ]
-            description: Approve specified by id requisition.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: errorResponse
-    /requisitionsForApproval:
-        get:
-            is: [ secured ]
-            description: Get requisitions to approve for right supervisor.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                          schema: convertedRequisitionMap
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-    /requisitionsForConvert:
-        get:
-            is: [ secured ]
-            description: Get requisitions to approve for right supervisor.
-            queryParameters:
-                filterValue:
-                    displayName: filterValue
-                    description: This parameter contains filter value.
-                    type: string
-                    required: false
-                    repeat: false
-                filterBy:
-                    displayName: filterBy
-                    description: This parameter contains field which we are going to filter by.
-                      There is four possibilities - facilityCode, facilityName, programName
-                      and all
-                    type: string
-                    required: false
-                    repeat: false
-                sortBy:
-                    displayName: sortBy
-                    description: This parameter contains field which we are going to sort by.
-                      There is three possibilities -  facilityCode, facilityName and programName
-                    type: string
-                    required: false
-                    repeat: false
-                descending:
-                    displayName: descending
-                    description: This parameter contains sorting order. Default it is descending,
-                      but if user want to have ascending order there should be false.
-                    type: boolean
-                    required: false
-                    repeat: false
-                pageNumber:
-                    displayName: pageNumber
-                    description: This parameter defines what page number should be returned. For
-                      example if you want to display second page you should set here 2.
-                    type: integer
-                    required: false
-                    repeat: false
-                pageSize:
-                    displayName: pageSize
-                    description: This parameter defines size of page. If you want to have, for
-                      example, ten records per one page you should set here 10.
-                    type: integer
-                    required: false
-                    repeat: false
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-    /convertToOrder:
-        post:
-            is: [ secured ]
-            description: Convert Requisition list to orders.
-            body:
-              application/json:
-                schema: convertToOrderDtoArray
-            responses:
-                "201":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "403":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: errorResponse
-
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-
-    /{id}/comments:
-        uriParameters:
-            id:
-                displayName: id
-                description: requisition id
-                type: string
-                required: true
-                repeat: false
-        get:
-            is: [ secured ]
-            description: Get all comments for specified requisition.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-        post:
-            is: [ secured ]
-            description: Add comment to the requisition.
-            body:
-                application/json:
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-    /comments/{id}:
-        uriParameters:
-            id:
-                displayName: id
-                description: comment id
-                type: string
-                required: true
-                repeat: false
-        delete:
-            is: [ secured ]
-            description: Delete comment from requisition.
-            responses:
-                "204":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "409":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-        get:
-            is: [ secured ]
-            description: Get chosen comment from requisition.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-        put:
-            is: [ secured ]
-            description: Update comment.
-            body:
-                application/json:
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-
-    /periodsForInitiate:
-            get:
-                is: [ secured ]
-                description: Find periods for initiate requisition.
-                queryParameters:
-                    programId:
-                        displayName: program
-                        type: string
-                        required: true
-                        repeat: false
-                    facilityId:
-                        displayName: facility
-                        type: string
-                        required: true
-                        repeat: false
-                    emergency:
-                        displayName: emergency
-                        type: boolean
-                        required: true
-                        repeat: false
-                responses:
-                    "200":
-                        headers:
-                          X-Content-Type-Options:
-                          X-XSS-Protection:
-                        body:
-                          application/json:
-                            schema: processingPeriodDto
-
-/requisitionTemplates:
-    displayName: Requisition Template
-    get:
-        is: [ secured ]
-        description: Get all requisitionTemplates.
-        responses:
-            "200":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
-            "404":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-    post:
-        is: [ secured ]
-        description: Creates new requisitionTemplate.
-        body:
-            application/json:
-        responses:
-            "201":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
-    /{id}:
-        uriParameters:
-            id:
-                displayName: id
-                type: string
-                required: true
-                repeat: false
-        delete:
-            is: [ secured ]
-            description: Delete chosen requisitionTemplate.
-            responses:
-                "204":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "409":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-        get:
-            is: [ secured ]
-            description: Get chosen requisitionTemplate.
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-        put:
-            is: [ secured ]
-            description: Update existing requisitionTemplate.
-            body:
-                application/json:
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-    /search:
-        get:
-            is: [ secured ]
-            description: Find requisition templates with matched parameters.
-            queryParameters:
-                program:
-                    displayName: program
-                    description: program ID
-                    type: string
-                    required: false
-                    repeat: false
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-
-/settings:
-    displayName: Settings.
-    /{key}:
-          uriParameters:
-            key:
-                displayName: key
-                type: string
-                required: true
-                repeat: false
+/api:
+  /requisitions:
+      displayName: Requisition
+      /initiate:
+          post:
+              is: [ secured ]
+              description: Initiate requisition.
+              queryParameters:
+                  program:
+                      displayName: program
+                      type: string
+                      required: true
+                      repeat: false
+                  facility:
+                      displayName: facility
+                      type: string
+                      required: true
+                      repeat: false
+                  suggestedPeriod:
+                      displayName: suggestedPeriod
+                      type: string
+                      required: false
+                      repeat: false
+                  emergency:
+                      displayName: emergency
+                      type: boolean
+                      required: true
+                      repeat: false
+              responses:
+                  "201":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+      /submitted:
           get:
-             is: [ secured ]
-             description: Get chosen setting.
-             responses:
-                 "200":
-                     headers:
-                       X-Content-Type-Options:
-                       X-XSS-Protection:
-                     body:
-                         application/json:
-                 "404":
-                     headers:
-                       X-Content-Type-Options:
-                       X-XSS-Protection:
+              is: [ secured ]
+              description: Get all requisitions with submitted status.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          delete:
+              is: [ secured ]
+              description: Delete chosen requisition.
+              responses:
+                  "204":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "409":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+          get:
+              is: [ secured ]
+              description: Get chosen requisition.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+          put:
+              is: [ secured ]
+              description: Update existing requisition.
+              body:
+                  application/json:
+                    schema: requisitionDto
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                          schema: requisitionDto
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+      /{id}/skip:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          put:
+              is: [ secured ]
+              description: Skip chosen requisition period.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+      /{id}/reject:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          put:
+              is: [ secured ]
+              description: Reject requisition which is waiting for approval.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+      /{id}/submit:
+              post:
+                  is: [ secured ]
+                  description: Submit earlier initiated requisition.
+                  responses:
+                      "200":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                      "400":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                      "403":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                                schema: errorResponse
+      /{id}/authorize:
+              uriParameters:
+                  id:
+                      displayName: requisition Id
+                      type: string
+                      required: true
+                      repeat: false
+              post:
+                  is: [ secured ]
+                  description: Authorize submitted requisition.
+                  responses:
+                      "200":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                      "400":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            text/plain:
+                      "404":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                      "403":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                                schema: errorResponse
+      /search:
+          get:
+              is: [ secured ]
+              description: Find requisitions matching all of provided parameters.
+              queryParameters:
+                  facility:
+                      displayName: facility
+                      type: string
+                      required: false
+                      repeat: false
+                  program:
+                      displayName: program
+                      type: string
+                      required: false
+                      repeat: false
+                  createdDateFrom:
+                      displayName: createdDateFrom
+                      type: string
+                      required: false
+                      repeat: false
+                  createdDateTo:
+                      displayName: createdDateTo
+                      type: string
+                      required: false
+                      repeat: false
+                  processingPeriod:
+                      displayName: processingPeriod
+                      type: string
+                      required: false
+                      repeat: false
+                  supervisoryNode:
+                      displayName: supervisoryNode
+                      type: string
+                      required: false
+                      repeat: false
+                  requisitionStatus:
+                      displayName: supervisoryNode
+                      type: string
+                      required: false
+                      repeat: false
+                  emergency:
+                      displayName: emergency
+                      type: boolean
+                      required: false
+                      repeat: false
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+      /{id}/approve:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          post:
+              is: [ secured ]
+              description: Approve specified by id requisition.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+      /requisitionsForApproval:
+          get:
+              is: [ secured ]
+              description: Get requisitions to approve for right supervisor.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: convertedRequisitionMap
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+      /requisitionsForConvert:
+          get:
+              is: [ secured ]
+              description: Get requisitions to approve for right supervisor.
+              queryParameters:
+                  filterValue:
+                      displayName: filterValue
+                      description: This parameter contains filter value.
+                      type: string
+                      required: false
+                      repeat: false
+                  filterBy:
+                      displayName: filterBy
+                      description: This parameter contains field which we are going to filter by.
+                        There is four possibilities - facilityCode, facilityName, programName
+                        and all
+                      type: string
+                      required: false
+                      repeat: false
+                  sortBy:
+                      displayName: sortBy
+                      description: This parameter contains field which we are going to sort by.
+                        There is three possibilities -  facilityCode, facilityName and programName
+                      type: string
+                      required: false
+                      repeat: false
+                  descending:
+                      displayName: descending
+                      description: This parameter contains sorting order. Default it is descending,
+                        but if user want to have ascending order there should be false.
+                      type: boolean
+                      required: false
+                      repeat: false
+                  pageNumber:
+                      displayName: pageNumber
+                      description: This parameter defines what page number should be returned. For
+                        example if you want to display second page you should set here 2.
+                      type: integer
+                      required: false
+                      repeat: false
+                  pageSize:
+                      displayName: pageSize
+                      description: This parameter defines size of page. If you want to have, for
+                        example, ten records per one page you should set here 10.
+                      type: integer
+                      required: false
+                      repeat: false
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+      /convertToOrder:
+          post:
+              is: [ secured ]
+              description: Convert Requisition list to orders.
+              body:
+                application/json:
+                  schema: convertToOrderDtoArray
+              responses:
+                  "201":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                          schema: errorResponse
+
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+
+      /{id}/comments:
+          uriParameters:
+              id:
+                  displayName: id
+                  description: requisition id
+                  type: string
+                  required: true
+                  repeat: false
+          get:
+              is: [ secured ]
+              description: Get all comments for specified requisition.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+          post:
+              is: [ secured ]
+              description: Add comment to the requisition.
+              body:
+                  application/json:
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+      /comments/{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  description: comment id
+                  type: string
+                  required: true
+                  repeat: false
+          delete:
+              is: [ secured ]
+              description: Delete comment from requisition.
+              responses:
+                  "204":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "409":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+          get:
+              is: [ secured ]
+              description: Get chosen comment from requisition.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+          put:
+              is: [ secured ]
+              description: Update comment.
+              body:
+                  application/json:
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+
+      /periodsForInitiate:
+              get:
+                  is: [ secured ]
+                  description: Find periods for initiate requisition.
+                  queryParameters:
+                      programId:
+                          displayName: program
+                          type: string
+                          required: true
+                          repeat: false
+                      facilityId:
+                          displayName: facility
+                          type: string
+                          required: true
+                          repeat: false
+                      emergency:
+                          displayName: emergency
+                          type: boolean
+                          required: true
+                          repeat: false
+                  responses:
+                      "200":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                              schema: processingPeriodDto
+  /requisitionTemplates:
+      displayName: Requisition Template
+      get:
+          is: [ secured ]
+          description: Get all requisitionTemplates.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+      post:
+          is: [ secured ]
+          description: Creates new requisitionTemplate.
+          body:
+              application/json:
+          responses:
+              "201":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+              "400":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          delete:
+              is: [ secured ]
+              description: Delete chosen requisitionTemplate.
+              responses:
+                  "204":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "409":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+          get:
+              is: [ secured ]
+              description: Get chosen requisitionTemplate.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+          put:
+              is: [ secured ]
+              description: Update existing requisitionTemplate.
+              body:
+                  application/json:
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+      /search:
+          get:
+              is: [ secured ]
+              description: Find requisition templates with matched parameters.
+              queryParameters:
+                  program:
+                      displayName: program
+                      description: program ID
+                      type: string
+                      required: false
+                      repeat: false
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "500":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+  /settings:
+      displayName: Settings.
+      /{key}:
+            uriParameters:
+              key:
+                  displayName: key
+                  type: string
+                  required: true
+                  repeat: false
+            get:
+               is: [ secured ]
+               description: Get chosen setting.
+               responses:
+                   "200":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:
+                       body:
+                           application/json:
+                   "404":
+                       headers:
+                         X-Content-Type-Options:
+                         X-XSS-Protection:

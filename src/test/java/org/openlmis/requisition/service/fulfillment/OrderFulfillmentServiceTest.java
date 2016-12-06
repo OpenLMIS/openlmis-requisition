@@ -42,7 +42,7 @@ public class OrderFulfillmentServiceTest {
       }
     };
     ReflectionTestUtils.setField(orderFulfillmentService, "fulfillmentUrl",
-        "https://localhost/fulfillment");
+        "https://localhost");
   }
 
   @Test
@@ -54,7 +54,7 @@ public class OrderFulfillmentServiceTest {
     paramsCreate.put("access_token", getToken());
 
     verify(restTemplate, times(1)).postForObject(Matchers.eq(buildUri(
-        "https://localhost/fulfillment/api/orders/", paramsCreate)), any(),
+        "https://localhost/api/orders/", paramsCreate)), any(),
         Matchers.eq(OrderDto.class));
   }
 

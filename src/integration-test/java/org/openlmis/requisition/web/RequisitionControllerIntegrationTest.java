@@ -798,7 +798,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     final String fulfillmentFacilitiesResult = "[]";
 
     wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+        get(urlMatching("/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody(fulfillmentFacilitiesResult)));
@@ -824,7 +824,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     generateRequisitions(requisitionsAmount);
 
     wireMockRule.stubFor(get(
-        urlMatching("/referencedata/api/facilities/supplying.*"))
+        urlMatching("/api/facilities/supplying.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody("[]")));
@@ -836,7 +836,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
         // This mocks searching for supplying facilities
         wireMockRule.stubFor(get(
-            urlMatching("/referencedata/api/facilities/supplying.*"))
+            urlMatching("/api/facilities/supplying.*"))
             .withQueryParam("programId", strategy)
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -969,7 +969,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
 
     wireMockRule.stubFor(
-        post(urlMatching("/fulfillment/api/orders.*"))
+        post(urlMatching("/api/orders.*"))
         .willReturn(aResponse().withStatus(200)));
 
     requisitionRepository.save(requisition);
@@ -1012,7 +1012,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
 
     wireMockRule.stubFor(
-        get(urlMatching("/referencedata/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+        get(urlMatching("/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody(fulfillmentFacilitiesResult)));
