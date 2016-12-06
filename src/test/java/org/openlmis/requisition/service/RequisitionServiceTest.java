@@ -41,6 +41,7 @@ import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
+import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -449,6 +450,32 @@ public class RequisitionServiceTest {
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
         .thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(true);
+
+    // when
+    requisitionService.convertToOrder(list, user);
+
+    // then
+    verify(orderFulfillmentService, atLeastOnce()).create(any(OrderDto.class));
+  }
+
+  @Test(expected = RequisitionConversionException.class)
+  public void shouldNotConvertRequisitionToOrderWhenFulfillmentServiceReturnsFalse()
+      throws RequisitionException {
+    // given
+    int requisitionsCount = 5;
+
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(UUID.randomUUID());
+
+    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount);
+
+    List<FacilityDto> facilities = list.stream()
+        .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+        .collect(Collectors.toList());
+
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
+        .thenReturn(facilities);
+    when(orderFulfillmentService.create(any())).thenReturn(false);
 
     // when
     requisitionService.convertToOrder(list, user);

@@ -370,19 +370,16 @@ public class RequisitionService {
   public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
       throws RequisitionException {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
-    List<OrderDto> orders = releasedRequisitions
-        .stream()
-        .map(r -> OrderDto.newOrder(r, user))
-        .collect(Collectors.toList());
 
-    for (OrderDto order :orders) {
-      if (!orderFulfillmentService.create(order)) {
+    for (Requisition requisition: releasedRequisitions) {
+      OrderDto order = OrderDto.newOrder(requisition, user);
+      if (orderFulfillmentService.create(order)) {
+        requisitionRepository.save(requisition);
+      } else {
         throw new RequisitionConversionException("Error while converting requisition: "
             + order.getExternalId() + " to order.");
       }
     }
-
-    releasedRequisitions.forEach(r -> requisitionRepository.save(r));
   }
 
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
