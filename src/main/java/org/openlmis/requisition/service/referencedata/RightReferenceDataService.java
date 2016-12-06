@@ -37,7 +37,7 @@ public class RightReferenceDataService extends BaseReferenceDataService<RightDto
     parameters.put("name", name);
 
     List<RightDto> rights = new ArrayList<>(findAll("search", parameters));
-    return rights.size() > 0 ? rights.get(0) : null;
+    return rights.isEmpty() ? null : rights.get(0);
   }
 
 }

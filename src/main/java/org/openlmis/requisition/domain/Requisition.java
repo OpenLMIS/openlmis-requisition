@@ -211,18 +211,18 @@ public class Requisition extends BaseEntity {
     }
   }
 
-  private void updateReqLines(Collection<RequisitionLineItem> lineItems) {
-    if (null == lineItems) {
+  private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {
+    if (null == newLineItems) {
       return;
     }
 
     if (null == requisitionLineItems) {
-      this.requisitionLineItems = new ArrayList<>();
+      requisitionLineItems = new ArrayList<>();
     }
 
     List<RequisitionLineItem> updatedList = new ArrayList<>();
 
-    for (RequisitionLineItem item : lineItems) {
+    for (RequisitionLineItem item : newLineItems) {
       RequisitionLineItem existing = requisitionLineItems
           .stream()
           .filter(l -> l.getId().equals(item.getId()))
@@ -254,8 +254,8 @@ public class Requisition extends BaseEntity {
         )
         .forEach(updatedList::add);
 
-    this.requisitionLineItems.clear();
-    this.requisitionLineItems.addAll(updatedList);
+    requisitionLineItems.clear();
+    requisitionLineItems.addAll(updatedList);
   }
 
   /**

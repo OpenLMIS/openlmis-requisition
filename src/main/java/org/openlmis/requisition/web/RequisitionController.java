@@ -3,6 +3,7 @@ package org.openlmis.requisition.web;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import org.bouncycastle.ocsp.Req;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -192,7 +193,7 @@ public class RequisitionController extends BaseController {
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
-    return new ResponseEntity<Object>(
+    return new ResponseEntity<>(
         requisitionDtoBuilder.build(requisition), HttpStatus.OK
     );
   }
@@ -317,7 +318,7 @@ public class RequisitionController extends BaseController {
    * Skipping chosen requisition period.
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
-  public ResponseEntity<?> skipRequisition(@PathVariable("id") UUID requisitionId)
+  public ResponseEntity<Requisition> skipRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException {
     Requisition requisition = requisitionService.skip(requisitionId);
     return new ResponseEntity<>(requisition, HttpStatus.OK);
@@ -327,7 +328,7 @@ public class RequisitionController extends BaseController {
    * Rejecting requisition which is waiting for approve.
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
-  public ResponseEntity<?> rejectRequisition(@PathVariable("id") UUID id)
+  public ResponseEntity<Requisition> rejectRequisition(@PathVariable("id") UUID id)
           throws RequisitionException {
     Requisition rejectedRequisition = requisitionService.reject(id);
     return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
@@ -372,7 +373,7 @@ public class RequisitionController extends BaseController {
    * Get requisitions to approve for right supervisor.
    */
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
-  public ResponseEntity<?> listForApproval() {
+  public ResponseEntity<Collection<RequisitionDto>> listForApproval() {
     UserDto user = authenticationHelper.getCurrentUser();
     List<Requisition> approvalRequisitions = requisitionService
         .getRequisitionsForApproval(user.getId());
@@ -472,7 +473,7 @@ public class RequisitionController extends BaseController {
           .getAvailableSupplyingDepots(requisition.getId()).stream()
           .filter(f -> userManagedFacilities.contains(f.getId())).collect(Collectors.toList());
 
-      if (facilities.size() > 0) {
+      if (!facilities.isEmpty()) {
         response.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
       }
     }

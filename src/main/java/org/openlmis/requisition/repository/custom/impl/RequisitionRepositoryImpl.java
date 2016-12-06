@@ -187,15 +187,18 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private Predicate filterByStatuses(CriteriaBuilder builder, Predicate predicate,
                                      RequisitionStatus[] requisitionStatuses,
                                      Root<Requisition> root) {
+
+    Predicate predicateToUse = predicate;
+
     if (requisitionStatuses != null && requisitionStatuses.length > 0) {
       Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
         statusPredicate = builder.or(statusPredicate,
             builder.equal(root.get("status"), status));
       }
-      predicate = builder.and(predicate, statusPredicate);
+      predicateToUse = builder.and(predicate, statusPredicate);
     }
 
-    return predicate;
+    return predicateToUse;
   }
 }

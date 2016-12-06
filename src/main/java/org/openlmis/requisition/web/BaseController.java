@@ -11,12 +11,12 @@ import java.util.Map;
 public abstract class BaseController {
 
   protected Map<String, String> getErrors(BindingResult bindingResult) {
-    return new HashMap<String, String>() {
-      {
-        for (FieldError error : bindingResult.getFieldErrors()) {
-          put(error.getField(), error.getCode());
-        }
-      }
-    };
+    Map<String, String> errors = new HashMap<>();
+
+    for (FieldError error : bindingResult.getFieldErrors()) {
+      errors.put(error.getField(), error.getCode());
+    }
+
+    return errors;
   }
 }

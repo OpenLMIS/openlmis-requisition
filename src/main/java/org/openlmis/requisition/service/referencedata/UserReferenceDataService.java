@@ -46,7 +46,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
 
     List<UserDto> users = new ArrayList<>(postFindAll("search", Collections.emptyMap(),
         requestBody));
-    return users.size() > 0 ? users.get(0) : null;
+    return users.isEmpty() ? null : users.get(0);
   }
 
   /**
