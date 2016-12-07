@@ -459,7 +459,8 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionConversionException.class)
-  public void shouldNotConvertRequisitionToOrderWhenFulfillmentServiceReturnsFalse()
+  public void
+      shouldNotConvertRequisitionToOrderWhenFulfillmentServiceReturnsFalseUponCreatingOrder()
       throws RequisitionException {
     // given
     int requisitionsCount = 5;
@@ -479,9 +480,6 @@ public class RequisitionServiceTest {
 
     // when
     requisitionService.convertToOrder(list, user);
-
-    // then
-    verify(orderFulfillmentService, atLeastOnce()).create(any(OrderDto.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
