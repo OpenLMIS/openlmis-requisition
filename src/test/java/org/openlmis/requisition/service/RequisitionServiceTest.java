@@ -459,8 +459,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = RequisitionConversionException.class)
-  public void
-      shouldNotConvertRequisitionToOrderWhenFulfillmentServiceReturnsFalseUponCreatingOrder()
+  public void shouldNotConvertRequisitionToOrderWhenCreatingOrderInFulfillmentServiceFailed()
       throws RequisitionException {
     // given
     int requisitionsCount = 5;
