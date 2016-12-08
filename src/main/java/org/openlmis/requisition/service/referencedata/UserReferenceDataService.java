@@ -59,7 +59,8 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    * @return an instance of {@link BooleanResultDto} with true or false depending on if user has the
    *         right.
    */
-  public BooleanResultDto hasRight(UUID user, UUID right, UUID program, UUID facility) {
+  public BooleanResultDto hasRight(UUID user, UUID right, UUID program, UUID facility,
+                                   UUID warehouse) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("rightId", right);
 
@@ -69,6 +70,10 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
 
     if (null != facility) {
       parameters.put("facilityId", facility);
+    }
+
+    if (null != warehouse) {
+      parameters.put("warehouseId", warehouse);
     }
 
     return get(BooleanResultDto.class, user + "/hasRight", parameters);

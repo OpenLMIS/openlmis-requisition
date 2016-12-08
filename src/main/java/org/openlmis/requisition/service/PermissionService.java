@@ -43,7 +43,7 @@ public class PermissionService {
    * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canInitRequisition(UUID program, UUID facility) throws MissingPermissionException {
-    hasPermission(REQUISITION_CREATE, program, facility);
+    hasPermission(REQUISITION_CREATE, program, facility, null);
   }
 
   /**
@@ -129,7 +129,7 @@ public class PermissionService {
       if (requisition == null) {
         throw new RequisitionNotFoundException(convertToOrder.getRequisitionId());
       }
-      hasPermission(REQUISITION_CONVERT_TO_ORDER, requisition.getProgramId(),
+      hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
           convertToOrder.getSupplyingDepotId());
     }
   }
@@ -139,16 +139,16 @@ public class PermissionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (null != requisition) {
-      hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId());
+      hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
     }
   }
 
-  private void hasPermission(String rightName, UUID program, UUID facility)
+  private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)
       throws MissingPermissionException {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     BooleanResultDto result = userReferenceDataService.hasRight(
-        user.getId(), right.getId(), program, facility
+        user.getId(), right.getId(), program, facility, warehouse
     );
 
     if (null == result || !result.isResult()) {

@@ -107,6 +107,7 @@ public class PermissionServiceTest {
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getFacilityId()).thenReturn(facilityId);
+    when(requisition.getSupplyingFacilityId()).thenReturn(facilityId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
@@ -252,7 +253,7 @@ public class PermissionServiceTest {
     permissionService.canConvertToOrder(convertToOrderDtos);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
+    verifyRightForConvertToOrder(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
   }
 
   @Test
@@ -265,7 +266,10 @@ public class PermissionServiceTest {
   private void hasRight(UUID rightId, boolean assign) {
     BooleanResultDto resultDto = new BooleanResultDto(assign);
     when(userReferenceDataService
-        .hasRight(userId, rightId, programId, facilityId)
+        .hasRight(userId, rightId, programId, facilityId, null)
+    ).thenReturn(resultDto);
+    when(userReferenceDataService
+        .hasRight(userId, rightId, null, null, facilityId)
     ).thenReturn(resultDto);
   }
 
@@ -279,7 +283,15 @@ public class PermissionServiceTest {
   private void verifyRight(InOrder order, String rightName, UUID rightId) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, programId, facilityId);
+    order.verify(userReferenceDataService).hasRight(userId, rightId, programId, facilityId,
+        null);
+  }
+
+  private void verifyRightForConvertToOrder(InOrder order, String rightName, UUID rightId) {
+    order.verify(authenticationHelper).getCurrentUser();
+    order.verify(authenticationHelper).getRight(rightName);
+    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null,
+        facilityId);
   }
 
 }
