@@ -130,7 +130,7 @@ public class PermissionServiceTest {
     permissionService.canInitRequisition(programId, facilityId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_CREATE, requisitionCreateRightId);
+    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
@@ -149,7 +149,7 @@ public class PermissionServiceTest {
     permissionService.canUpdateRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_CREATE, requisitionCreateRightId);
+    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
@@ -168,7 +168,7 @@ public class PermissionServiceTest {
     permissionService.canSubmitRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_CREATE, requisitionCreateRightId);
+    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
@@ -185,7 +185,7 @@ public class PermissionServiceTest {
     permissionService.canApproveRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_APPROVE, requisitionApproveRightId);
+    verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRightId);
   }
 
   @Test
@@ -202,7 +202,7 @@ public class PermissionServiceTest {
     permissionService.canAuthorizeRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRightId);
+    verifySupervisionRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRightId);
   }
 
   @Test
@@ -219,7 +219,7 @@ public class PermissionServiceTest {
     permissionService.canDeleteRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
+    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
   }
 
   @Test
@@ -236,7 +236,7 @@ public class PermissionServiceTest {
     permissionService.canViewRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_VIEW, requisitionViewRightId);
+    verifySupervisionRight(order, REQUISITION_VIEW, requisitionViewRightId);
   }
 
   @Test
@@ -253,7 +253,7 @@ public class PermissionServiceTest {
     permissionService.canConvertToOrder(convertToOrderDtos);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRightForConvertToOrder(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
+    verifyFulfillmentRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
   }
 
   @Test
@@ -280,14 +280,14 @@ public class PermissionServiceTest {
     );
   }
 
-  private void verifyRight(InOrder order, String rightName, UUID rightId) {
+  private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
     order.verify(userReferenceDataService).hasRight(userId, rightId, programId, facilityId,
         null);
   }
 
-  private void verifyRightForConvertToOrder(InOrder order, String rightName, UUID rightId) {
+  private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
     order.verify(userReferenceDataService).hasRight(userId, rightId, null, null,
