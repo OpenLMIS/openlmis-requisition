@@ -11,6 +11,9 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.view.View;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -18,8 +21,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "comments", schema = "requisition")
@@ -28,7 +29,7 @@ public class Comment extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
-  @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+  @ManyToOne(cascade = {CascadeType.REFRESH})
   @JoinColumn(name = "requisitionId", nullable = false)
   @JsonView(View.BasicInformation.class)
   @Getter

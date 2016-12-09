@@ -96,7 +96,7 @@ public class RequisitionCommentController extends BaseController {
     if (comment == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
-      commentRepository.delete(comment);
+      commentService.deleteComment(commentId);
     }
     return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
   }

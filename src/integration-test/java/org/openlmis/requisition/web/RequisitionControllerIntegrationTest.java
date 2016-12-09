@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +42,7 @@ import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -443,6 +442,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  @Transactional
   public void shouldNotGetNonexistentComment() {
 
     Comment comment = createComment(user, requisition, COMMENT);
@@ -523,11 +523,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(204);
 
-    assertFalse(commentRepository.exists(requisition.getId()));
+    assertFalse(commentRepository.exists(comment.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
+  @Transactional
   public void shouldNotDeleteNonexistentComment() {
 
     Comment comment = createComment(user, requisition, COMMENT);

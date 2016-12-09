@@ -82,7 +82,7 @@ public class Requisition extends BaseEntity {
 
   @OneToMany(
       mappedBy = "requisition",
-      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       orphanRemoval = true)
   @Getter
   @Setter
