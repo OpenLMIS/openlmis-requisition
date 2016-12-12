@@ -42,7 +42,6 @@ import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -442,11 +441,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  @Transactional
   public void shouldNotGetNonexistentComment() {
 
-    Comment comment = createComment(user, requisition, COMMENT);
-    commentRepository.delete(comment);
+    Comment comment = new Comment(requisition);
+    comment.setId(UUID.randomUUID());
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -528,11 +526,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  @Transactional
   public void shouldNotDeleteNonexistentComment() {
 
-    Comment comment = createComment(user, requisition, COMMENT);
-    commentRepository.delete(comment);
+    Comment comment = new Comment(requisition);
+    comment.setId(UUID.randomUUID());
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
