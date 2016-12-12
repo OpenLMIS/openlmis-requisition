@@ -442,14 +442,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotGetNonexistentComment() {
-
-    Comment comment = new Comment(requisition);
-    comment.setId(UUID.randomUUID());
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", comment.getId())
+        .pathParam("id", UUID.randomUUID())
         .when()
         .get(ID_COMMENT_URL)
         .then()
@@ -527,14 +523,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotDeleteNonexistentComment() {
-
-    Comment comment = new Comment(requisition);
-    comment.setId(UUID.randomUUID());
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", comment.getId())
+        .pathParam("id", UUID.randomUUID())
         .when()
         .delete(ID_COMMENT_URL)
         .then()
