@@ -26,6 +26,7 @@ public class OrderDto {
   private String orderCode;
   private OrderStatus status;
   private BigDecimal quotedCost;
+  private UUID supervisoryNodeId;
   private List<OrderLineItemDto> orderLineItems;
 
   /**
@@ -47,6 +48,7 @@ public class OrderDto {
 
     order.setSupplyingFacilityId(requisition.getSupplyingFacilityId());
     order.setProgramId(requisition.getProgramId());
+    order.setSupervisoryNodeId(requisition.getSupervisoryNodeId());
 
     order.setOrderLineItems(
         requisition
