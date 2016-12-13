@@ -36,7 +36,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     Requisition requisition = (Requisition) target;
     Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
 
-    validateRequisition(errors, requisition, savedRequisition);
+    validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
     if (!isEmpty(requisition.getRequisitionLineItems())) {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
@@ -47,7 +47,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     }
   }
 
-  private void validateRequisition(Errors errors, Requisition requisition,
+  private void validateInvariantsDidntChange(Errors errors, Requisition requisition,
                                    Requisition savedRequisition) {
     rejectIfValueChanged(errors, requisition.getFacilityId(),
         savedRequisition.getFacilityId(), Requisition.FACILITY_ID);
