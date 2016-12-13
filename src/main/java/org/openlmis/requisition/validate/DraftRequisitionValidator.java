@@ -36,6 +36,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     Requisition requisition = (Requisition) target;
     Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
 
+    validateRequisition(errors, requisition, savedRequisition);
+
     if (!isEmpty(requisition.getRequisitionLineItems())) {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
           savedRequisition.getProgramId()
@@ -43,6 +45,18 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
       requisition.getRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, template, savedRequisition, i));
     }
+  }
+
+  private void validateRequisition(Errors errors, Requisition requisition,
+                                   Requisition savedRequisition) {
+    rejectIfValueChanged(errors, requisition.getFacilityId(),
+        savedRequisition.getFacilityId(), Requisition.FACILITY_ID);
+    rejectIfValueChanged(errors, requisition.getProgramId(),
+        savedRequisition.getProgramId(), Requisition.PROGRAM_ID);
+    rejectIfValueChanged(errors, requisition.getProcessingPeriodId(),
+        savedRequisition.getProcessingPeriodId(), Requisition.PROCESSING_PERIOD_ID);
+    rejectIfValueChanged(errors, requisition.getEmergency(),
+        savedRequisition.getEmergency(), Requisition.EMERGENCY);
   }
 
   private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
@@ -89,6 +103,13 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
                                                RequisitionStatus expectedStatus, String errorCode) {
     if (requisition.getStatus() != expectedStatus && value != null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, errorCode);
+    }
+  }
+
+  private void rejectIfValueChanged(Errors errors, Object value,
+                                        Object savedValue, String field) {
+    if (savedValue != null && !savedValue.equals(value)) {
+      errors.rejectValue(field, field + IS_INVARIANT);
     }
   }
 }

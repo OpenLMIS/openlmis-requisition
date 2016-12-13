@@ -23,6 +23,8 @@ abstract class AbstractRequisitionValidator implements Validator {
       " must be entered prior to submission of a requisition.";
   static final String TEMPLATE_COLUMN_IS_HIDDEN =
       " is hidden in template and should not contain a value.";
+  static final String IS_INVARIANT =
+      " is an invariant and should not change.";
 
   public boolean supports(Class<?> clazz) {
     return Requisition.class.equals(clazz);

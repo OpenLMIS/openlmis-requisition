@@ -56,6 +56,11 @@ import javax.persistence.Table;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseEntity {
 
+  public static final String FACILITY_ID = "facilityId";
+  public static final String PROGRAM_ID = "programId";
+  public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
+  public static final String EMERGENCY = "emergency";
+
   private static final String UUID = "pg-uuid";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);

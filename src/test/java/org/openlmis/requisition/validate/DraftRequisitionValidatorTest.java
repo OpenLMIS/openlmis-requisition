@@ -1,5 +1,6 @@
 package org.openlmis.requisition.validate;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,12 +44,16 @@ public class DraftRequisitionValidatorTest {
   @InjectMocks
   private DraftRequisitionValidator draftRequisitionValidator;
 
-  private Requisition requisition = mock(Requisition.class);
   private Errors errors = mock(Errors.class);
 
   private List<RequisitionLineItem> requisitionLineItems;
   private RequisitionTemplate requisitionTemplate;
   private Map<String, RequisitionTemplateColumn> columnsMap;
+  private Requisition requisition;
+  private UUID requisitionId = UUID.randomUUID();
+  private UUID programId = UUID.randomUUID();
+  private UUID facilityId = UUID.randomUUID();
+  private UUID processingPeriodId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -56,9 +61,34 @@ public class DraftRequisitionValidatorTest {
     columnsMap = RequisitionValidationTestUtils.initiateColumns();
     requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(columnsMap);
+    requisition = generateRequisition();
     mockRepositoriesAndObjects();
   }
 
+  @Test
+  public void shouldRejectIfInvariantValueChanged() {
+    Requisition updatedRequisition = generateRequisition();
+
+    updatedRequisition.setProgramId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getProgramId(), updatedRequisition.getProgramId());
+    updatedRequisition.setFacilityId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getFacilityId(), updatedRequisition.getFacilityId());
+    updatedRequisition.setProcessingPeriodId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getProcessingPeriodId(),
+        updatedRequisition.getProcessingPeriodId());
+    updatedRequisition.setEmergency(false);
+
+    draftRequisitionValidator.validate(updatedRequisition, errors);
+
+    verify(errors).rejectValue(eq(Requisition.PROGRAM_ID),
+        contains(RequisitionValidator.IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.FACILITY_ID),
+        contains(RequisitionValidator.IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.PROCESSING_PERIOD_ID),
+        contains(RequisitionValidator.IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.EMERGENCY),
+        contains(RequisitionValidator.IS_INVARIANT));
+  }
 
   @Test
   public void shouldRejectIfColumnIsCalculatedAndValueNotEmpty() {
@@ -76,7 +106,7 @@ public class DraftRequisitionValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsPresentWithInvalidRequisitionStatus() {
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    requisition.setStatus(RequisitionStatus.INITIATED);
 
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setApprovedQuantity(1);
@@ -106,13 +136,15 @@ public class DraftRequisitionValidatorTest {
     return lineItem;
   }
 
+  private Requisition generateRequisition() {
+    Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
+        RequisitionStatus.AUTHORIZED, true);
+    requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition.setId(requisitionId);
+    return requisition;
+  }
+
   private void mockRepositoriesAndObjects() {
-    UUID programId = UUID.randomUUID();
-
-    when(requisition.getProgramId()).thenReturn(programId);
-    when(requisition.getRequisitionLineItems()).thenReturn(requisitionLineItems);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
-
     when(requisitionTemplateRepository
         .getTemplateForProgram(programId)).thenReturn(requisitionTemplate);
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
