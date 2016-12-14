@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -13,10 +14,12 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
+import org.openlmis.requisition.dto.ProgramProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -24,16 +27,21 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTest {
 
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
 
   private UUID productId = UUID.randomUUID();
+
+  @Mock
+  private RequisitionTemplate template;
 
   @Before
   public void setUp() {
@@ -218,5 +226,75 @@ public class RequisitionTest {
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
 
+  }
+
+  @Test
+  public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided()
+          throws RequisitionTemplateColumnException {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    Requisition previousRequisition = mock(Requisition.class);
+    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
+    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
+
+    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
+
+    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
+    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
+
+    // when
+    Requisition req = new Requisition();
+    req.initiate(template, asList(product1, product2), previousRequisition);
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+  }
+
+  @Test
+  public void shouldInitiateBeginningBalanceToZeroIfNoPreviousRequisition()
+          throws RequisitionTemplateColumnException {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
+    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
+
+    // when
+    Requisition req = new Requisition();
+    req.initiate(template, asList(product1, product2), null);
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(0));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(0));
+  }
+
+  private void mockReqLine(Requisition requisition, UUID productId,
+                           int stockOnHand, int approvedQuantity) {
+    RequisitionLineItem item = mock(RequisitionLineItem.class);
+    when(item.getOrderableProductId()).thenReturn(productId);
+    when(item.getStockOnHand()).thenReturn(stockOnHand);
+    when(item.getApprovedQuantity()).thenReturn(approvedQuantity);
+
+    when(requisition.findLineByProductId(productId)).thenReturn(item);
+  }
+
+  private FacilityTypeApprovedProductDto mockFtap(UUID orderableProductId) {
+    FacilityTypeApprovedProductDto ftap = mock(FacilityTypeApprovedProductDto.class);
+    ProgramProductDto programProduct = mock(ProgramProductDto.class);
+    when(ftap.getProgramProduct()).thenReturn(programProduct);
+    when(programProduct.getProductId()).thenReturn(orderableProductId);
+    return ftap;
   }
 }

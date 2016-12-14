@@ -7,15 +7,14 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
@@ -26,10 +25,14 @@ import org.openlmis.requisition.web.RequisitionController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,23 +41,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.Table;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Requisition extends BaseEntity {
+public class Requisition extends BaseTimestampedEntity {
 
   public static final String FACILITY_ID = "facilityId";
   public static final String PROGRAM_ID = "programId";
@@ -66,13 +59,6 @@ public class Requisition extends BaseEntity {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
   private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   private static final String STOCK_ON_HAND = "stockOnHand";
-
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
-  @Getter
-  @Setter
-  private LocalDateTime createdDate;
 
   // TODO: determine why it has to be set explicitly
   @OneToMany(
@@ -131,11 +117,6 @@ public class Requisition extends BaseEntity {
   @Setter
   @Type(type = UUID)
   private UUID supervisoryNodeId;
-
-  @PrePersist
-  private void prePersist() {
-    this.createdDate = LocalDateTime.now();
-  }
 
   /**
    * Constructor.
@@ -346,6 +327,52 @@ public class Requisition extends BaseEntity {
         .ifPresent(list -> list.forEach(consumer));
   }
 
+  /**
+   * Initiates the state of a requisition by creating line items based on products
+   * @param template the requisition template for this requisition to use (based on program)
+   * @param products the full supply products for this requisitions facility to build
+   *                 requisition lines for
+   * @param previousRequisition the previous requisition for this program/facility.
+   *                            Used for field calculations.Pass null if there are no
+   *                            previous requisitions.
+   * @throws RequisitionTemplateColumnException if there are issues with template definitions.
+   */
+  public void initiate(RequisitionTemplate template,
+                       Collection<FacilityTypeApprovedProductDto> products,
+                       Requisition previousRequisition) throws RequisitionTemplateColumnException {
+    setRequisitionLineItems(
+        products
+            .stream()
+            .map(ftap -> new RequisitionLineItem(this, ftap))
+            .collect(Collectors.toList())
+    );
+
+    forEachLine(line -> {
+      if (null == line.getBeginningBalance()) {
+        // Firstly, we set the Beginning Balance to zero for all lines.
+        line.setBeginningBalance(0);
+        // same for total received quantity
+        line.setTotalReceivedQuantity(0);
+      }
+    });
+
+    // Secondly, if we display the column ...
+    // ... and if the previous requisition exists ...
+    if (template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)
+            && null != previousRequisition) {
+      // .. for each line from the current requisition ...
+      forEachLine(currentLine -> {
+        // ... we try to find line in the previous requisition for the same product ...
+        RequisitionLineItem previousLine = previousRequisition
+                .findLineByProductId(currentLine.getOrderableProductId());
+
+        // ... and in the end we use it to calculate beginning balance in a new line.
+        currentLine.setBeginningBalance(
+                LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
+      });
+    }
+  }
+
   @JsonIgnore
   public boolean isPreAuthorize() {
     return status.isPreAuthorize();
@@ -363,7 +390,7 @@ public class Requisition extends BaseEntity {
    */
   public void export(Requisition.Exporter exporter) {
     exporter.setId(id);
-    exporter.setCreatedDate(createdDate);
+    exporter.setCreatedDate(getCreatedDate());
     exporter.setStatus(status);
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);

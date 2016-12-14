@@ -3,7 +3,6 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -48,6 +47,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+// TODO: split this up in OLMIS-1102
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
 
@@ -58,9 +59,6 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
-
-  @Autowired
-  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -119,19 +117,11 @@ public class RequisitionService {
         facilityTypeApprovedProductService.getFullSupply(
             facility.getId(), program.getId()
         );
-
-    requisition.setRequisitionLineItems(
-        facilityTypeApprovedProducts
-            .stream()
-            .map(ftap -> new RequisitionLineItem(requisition, ftap))
-            .collect(Collectors.toList())
-    );
-
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+    Requisition previousRequisition = findPreviousRequisition(requisition);
 
-    requisitionLineCalculationService.initiateRequisitionLineItemFields(
-        requisition, requisitionTemplate
-    );
+    requisition.initiate(requisitionTemplate, facilityTypeApprovedProducts,
+            previousRequisition);
 
     requisitionRepository.save(requisition);
     return requisition;
@@ -149,7 +139,7 @@ public class RequisitionService {
       throw new RequisitionTemplateNotFoundException("RequisitionTemplate not found");
     }
 
-    if (template.getColumnsMap().isEmpty()) {
+    if (!template.hasColumnsDefined()) {
       throw new RequisitionTemplateNotFoundException("RequisitionTemplate is not defined");
     } else {
       return template;
@@ -403,5 +393,26 @@ public class RequisitionService {
       foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
     return uuidsToReturn;
+  }
+
+  private Requisition findPreviousRequisition(Requisition currentRequisition) {
+    // ... we try to find previous period and requisition ...
+    ProcessingPeriodDto previousPeriod = periodService.findPreviousPeriod(
+            currentRequisition.getProcessingPeriodId()
+    );
+    return null != previousPeriod
+            ? findPreviousRequisition(currentRequisition, previousPeriod)
+            : null;
+
+  }
+
+  private Requisition findPreviousRequisition(Requisition currentRequisition,
+                                              ProcessingPeriodDto previousPeriod) {
+    List<Requisition> list = searchRequisitions(
+            currentRequisition.getFacilityId(), currentRequisition.getProgramId(),
+            null, null, previousPeriod.getId(), null, null, null
+    );
+
+    return null == list ? null : (list.isEmpty() ? null : list.get(0));
   }
 }

@@ -15,21 +15,18 @@ import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -73,8 +70,6 @@ import java.util.stream.Collectors;
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
-  private static final String BEGINNING_BALANCE = "beginningBalance";
-
   private Requisition requisition;
 
   @Mock
@@ -82,9 +77,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private SupervisoryNodeDto supervisoryNode;
-
-  @Mock
-  private RequisitionLineCalculationService requisitionLineCalculationService;
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
@@ -260,10 +252,8 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateRequisitionIfItDoesNotAlreadyExist()
       throws RequisitionException, RequisitionTemplateColumnException {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(
-        ImmutableMap.of(BEGINNING_BALANCE, new RequisitionTemplateColumn(null))
-    );
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
 
     requisition.setStatus(null);
     when(requisitionRepository
@@ -274,15 +264,6 @@ public class RequisitionServiceTest {
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
     when(requisitionTemplateService.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
-
-    when(requisitionLineCalculationService.initiateRequisitionLineItemFields(
-        any(Requisition.class), any(RequisitionTemplate.class)))
-        .thenAnswer(invocation -> {
-          Requisition req = (Requisition) invocation.getArguments()[0];
-          req.setRequisitionLineItems(Lists.newArrayList());
-
-          return null;
-        });
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false

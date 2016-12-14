@@ -7,6 +7,9 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class RequisitionTemplateTest {
 
   private RequisitionTemplate requisitionTemplate;
@@ -67,5 +70,11 @@ public class RequisitionTemplateTest {
     Assert.assertEquals(2, mapAfterChange.get(COLUMN_NAMES[1]).getDisplayOrder());
     Assert.assertEquals(3, mapAfterChange.get(COLUMN_NAMES[2]).getDisplayOrder());
     Assert.assertEquals(4, mapAfterChange.get(COLUMN_NAMES[3]).getDisplayOrder());
+  }
+
+  @Test
+  public void shouldCheckIfItHasColumnsDefined() {
+    assertTrue(requisitionTemplate.hasColumnsDefined());
+    assertFalse(new RequisitionTemplate(new HashMap<>()).hasColumnsDefined());
   }
 }

@@ -1,31 +1,24 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.view.View;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import javax.persistence.CascadeType;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "comments", schema = "requisition")
 @NoArgsConstructor
-public class Comment extends BaseEntity {
+public class Comment extends BaseTimestampedEntity {
 
   private static final String UUID = "pg-uuid";
 
@@ -45,19 +38,6 @@ public class Comment extends BaseEntity {
   @Getter
   @Setter
   private String body;
-
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
-  @JsonView(View.BasicInformation.class)
-  @Getter
-  @Setter
-  private LocalDateTime createdDate;
-
-  @PrePersist
-  private void prePersist() {
-    this.createdDate = LocalDateTime.now();
-  }
 
   public Comment(Requisition requisition) {
     this.requisition = requisition;
@@ -99,7 +79,7 @@ public class Comment extends BaseEntity {
     exporter.setId(id);
     exporter.setAuthorId(authorId);
     exporter.setBody(body);
-    exporter.setCreatedDate(createdDate);
+    exporter.setCreatedDate(getCreatedDate());
 
   }
 
