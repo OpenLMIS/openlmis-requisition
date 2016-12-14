@@ -90,12 +90,32 @@ public abstract class BaseWebIntegrationTest {
       + " \"periodsSkippable\":true"
       + "}";
 
+  private static final String MOCK_FIND_SUPPORTED_PROGRAM_RESULT = "{"
+      + " \"id\":\"86191d25-4846-4775-a968-12df732e6004\","
+      + " \"code\":\"Program Code\","
+      + " \"name\":\"Program Name\","
+      + " \"programActive\": true,"
+      + " \"periodsSkippable\": false,"
+      + " \"showNonFullSupplyTab\": false,"
+      + " \"supportActive\": true,"
+      + " \"supportStartDate\": \"2011-12-03\""
+      + "}";
+
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"" + FACILITY_ID + "\",\n"
       + " \"code\":\"facilityCode\",\n"
       + " \"name\":\"facilityNameA\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
+      + "}";
+
+  private static final String MOCK_FIND_FACILITY_RESULT_WITH_SUPPORTED_PROGRAMS = "{"
+      + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+      + " \"name\":\"facilityNameA\",\n"
+      + " \"code\":\"facilityCode\",\n"
+      + " \"active\":true,\n"
+      + " \"enabled\":true,\n"
+      + " \"supportedPrograms\": [" + MOCK_FIND_SUPPORTED_PROGRAM_RESULT + "]"
       + "}";
 
   private static final String MOCK_FIND_STOCK_ADJUSTMENT_REASONS_RESULT = "[{"
@@ -290,6 +310,12 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_FACILITY_RESULT)));
+
+    // This mocks for find one facility
+    wireMockRule.stubFor(get(urlMatching("/api/facilities/aaf12a5a-8b16-11e6-ae22-56b6b6499611.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_FIND_FACILITY_RESULT_WITH_SUPPORTED_PROGRAMS)));
 
     // This mocks for find one orderableproduct
     wireMockRule.stubFor(get(urlMatching("/api/orderableProducts/" + UUID_REGEX + ".*"))

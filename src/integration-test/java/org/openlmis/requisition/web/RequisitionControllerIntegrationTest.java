@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static java.lang.Integer.valueOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -84,6 +85,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final UUID PROGRAM_UUID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
   private static final UUID FACILITY_UUID = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
   private static final String PROGRAM = "program";
+  private static final String SUGGESTED_PERIOD = "suggestedPeriod";
+  private static final String EMERGENCY = "emergency";
+  private static final String MESSAGE = "message";
+  private static final String OPERATION_CANNOT_BE_EXECUTED = "Operation cannot be executed.";
+  private static final String FACILITY_CODE = "facilityCode";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -108,11 +114,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Requisition requisitionForSearch = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
   private OrderableProductDto product = new OrderableProductDto();
-  private ProgramDto program = new ProgramDto();
-  private FacilityDto facility = new FacilityDto();
+  private ProgramDto programDto = new ProgramDto();
+  private FacilityDto facilityDto = new FacilityDto();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private UserDto user;
   private LocalDateTime localDateTime = LocalDateTime.now();
+  private RequisitionTemplate template;
 
   @Before
   public void setUp() throws IOException {
@@ -125,14 +132,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     product.setId(UUID.randomUUID());
 
-    program.setId(UUID.randomUUID());
-    program.setCode(REQUISITION_REPOSITORY_NAME);
-    program.setPeriodsSkippable(true);
+    programDto.setId(UUID.fromString("86191d25-4846-4775-a968-12df732e6004"));
+    programDto.setCode(REQUISITION_REPOSITORY_NAME);
+    programDto.setPeriodsSkippable(true);
 
-    facility.setId(getSharedFacilityId());
-    facility.setCode("facilityCode");
-    facility.setActive(true);
-    facility.setEnabled(true);
+    facilityDto.setId(getSharedFacilityId());
+    facilityDto.setCode(FACILITY_CODE);
+    facilityDto.setActive(true);
+    facilityDto.setEnabled(true);
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611"));
@@ -150,7 +157,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNode.setName("name");
     supervisoryNode.setCode("code");
     supervisoryNode.setDescription("description");
-    supervisoryNode.setFacility(facility);
+    supervisoryNode.setFacility(facilityDto);
 
     configureRequisition(requisition);
     configureRequisitionForSearch(requisitionForSearch);
@@ -176,9 +183,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setComments(comments);
     requisition = requisitionRepository.save(requisition);
 
-    RequisitionTemplate template = new RequisitionTemplate();
+    template = new RequisitionTemplate();
     template.setColumnsMap(generateTemplateColumns());
-    template.setProgramId(program.getId());
+    template.setProgramId(programDto.getId());
 
     requisitionTemplateRepository.save(template);
   }
@@ -555,10 +562,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, program.getId())
-        .queryParam(FACILITY, facility.getId())
-        .queryParam("suggestedPeriod", UUID.randomUUID())
-        .queryParam("emergency", false)
+        .queryParam(PROGRAM, programDto.getId())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
         .when()
         .post(INITIATE_URL)
         .then()
@@ -575,10 +582,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, program.getId())
-        .queryParam(FACILITY, facility.getId())
-        .queryParam("suggestedPeriod", period.getId())
-        .queryParam("emergency", false)
+        .queryParam(PROGRAM, programDto.getId())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, period.getId())
+        .queryParam(EMERGENCY, false)
         .when()
         .post(INITIATE_URL)
         .then()
@@ -686,7 +693,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", "facilityName")
-        .queryParam("sortBy", "facilityCode")
+        .queryParam("sortBy", FACILITY_CODE)
         .queryParam("descending", Boolean.FALSE.toString())
         .queryParam("pageNumber", valueOf(2))
         .queryParam("pageSize", pageSize)
@@ -737,7 +744,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", FACILITY)
-        .queryParam("filterBy", "facilityCode")
+        .queryParam("filterBy", FACILITY_CODE)
         .queryParam("sortBy", "programName")
         .queryParam("descending", Boolean.TRUE.toString())
         .queryParam("pageNumber", valueOf(1))
@@ -853,15 +860,80 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotInitiateIfFacilityNotSupportsProgram() throws Exception {
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, UUID.randomUUID())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitIfFacilityNotSupportsProgram() throws Exception {
+    changeProgramIdInRequisitionAndTemplateToRandom();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE, equalTo(OPERATION_CANNOT_BE_EXECUTED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeIfFacilityNotSupportsProgram() throws Exception {
+    changeProgramIdInRequisitionAndTemplateToRandom();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE, equalTo(OPERATION_CANNOT_BE_EXECUTED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveIfFacilityNotSupportsProgram() throws Exception {
+    changeProgramIdInRequisitionAndTemplateToRandom();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE, equalTo(OPERATION_CANNOT_BE_EXECUTED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotInitiateIfUserHasNoRight() throws Exception {
     denyUserAllRights();
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, program.getId())
-        .queryParam(FACILITY, facility.getId())
-        .queryParam("suggestedPeriod", UUID.randomUUID())
-        .queryParam("emergency", false)
+        .queryParam(PROGRAM, programDto.getId())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
         .when()
         .post(INITIATE_URL)
         .then()
@@ -951,8 +1023,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldConvertRequisitionToOrder() {
     Requisition requisition = new Requisition();
-    requisition.setProgramId(program.getId());
-    requisition.setFacilityId(facility.getId());
+    requisition.setProgramId(programDto.getId());
+    requisition.setFacilityId(facilityDto.getId());
     requisition.setProcessingPeriodId(period.getId());
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisition.setEmergency(false);
@@ -964,7 +1036,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisitionRepository.save(requisition);
 
-    UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
+    UUID supplyingFacility = FACILITY_UUID;
     ConvertToOrderDto convertToOrderDto = new ConvertToOrderDto(
         requisition.getId(), supplyingFacility
     );
@@ -999,7 +1071,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotConvertRequisitionToOrderIfUserHasNoFulfillmentRightsForFacility() {
     final String fulfillmentFacilitiesResult = "[]";
-    UUID supplyingFacility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
+    UUID supplyingFacility = FACILITY_UUID;
 
     wireMockRule.stubFor(
         get(urlMatching("/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
@@ -1038,9 +1110,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private Requisition configureRequisition(Requisition requisition) {
-    requisition.setFacilityId(facility.getId());
+    requisition.setFacilityId(facilityDto.getId());
     requisition.setProcessingPeriodId(period.getId());
-    requisition.setProgramId(program.getId());
+    requisition.setProgramId(programDto.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
@@ -1107,5 +1179,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("{ \"result\":\"false\" }"))
     );
+  }
+
+  private void changeProgramIdInRequisitionAndTemplateToRandom() {
+    requisition.setProgramId(UUID.randomUUID());
+    requisitionRepository.save(requisition);
+    template.setProgramId(requisition.getProgramId());
+    requisitionTemplateRepository.save(template);
   }
 }

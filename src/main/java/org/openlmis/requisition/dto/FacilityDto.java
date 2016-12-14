@@ -19,7 +19,7 @@ public class FacilityDto {
   private String comment;
   private Boolean enabled;
   private Boolean openLmisAccessible;
-  private List<ProgramDto> supportedPrograms;
+  private List<SupportedProgramDto> supportedPrograms;
   private GeographicZoneDto geographicZone;
   private FacilityOperatorDto operator;
   private FacilityTypeDto type;

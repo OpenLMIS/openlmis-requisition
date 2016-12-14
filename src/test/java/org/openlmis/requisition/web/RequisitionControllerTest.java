@@ -40,6 +40,7 @@ import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.ErrorResponse;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -98,6 +99,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionDtoBuilder requisitionDtoBuilder;
+
+  @Mock
+  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();

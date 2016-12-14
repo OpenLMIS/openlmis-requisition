@@ -13,6 +13,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.FacilityNotSupportsProgramException;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -31,6 +32,7 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
+import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +105,9 @@ public class RequisitionController extends BaseController {
   @Autowired
   private RequisitionDtoBuilder requisitionDtoBuilder;
 
+  @Autowired
+  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
@@ -129,6 +134,7 @@ public class RequisitionController extends BaseController {
     }
 
     permissionService.canInitRequisition(program, facility);
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
     try {
       Requisition newRequisition = requisitionService.initiate(program,
@@ -154,7 +160,16 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
-                                    @RequestParam(value = "emergency") boolean emergency) {
+                                    @RequestParam(value = "emergency") boolean emergency)
+      throws FacilityNotSupportsProgramException, MissingParameterException {
+    if (null == facility || null == program) {
+      throw new MissingParameterException(
+          "Facility and program must be specified when returns processing periods for unprocessed"
+              + " requisitions.");
+    }
+
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
+
     Collection<ProcessingPeriodDto> periods = periodService.getPeriods(
         program, facility, emergency
     );
@@ -180,6 +195,8 @@ public class RequisitionController extends BaseController {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
+        requisition.getProgramId());
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
@@ -309,7 +326,6 @@ public class RequisitionController extends BaseController {
         createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency);
 
-
     return new ResponseEntity<>(requisitionDtoBuilder.build(result), HttpStatus.OK);
   }
 
@@ -338,7 +354,7 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
   public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionNotFoundException, MissingPermissionException {
+      throws MissingPermissionException, RequisitionException {
     permissionService.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -352,6 +368,8 @@ public class RequisitionController extends BaseController {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
+        requisition.getProgramId());
 
     if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
         || (configurationSettingService.getBoolValue("skipAuthorization")
@@ -426,6 +444,8 @@ public class RequisitionController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
+        requisition.getProgramId());
 
     requisitionLineCalculationService.calculatePacksToShip(requisition);
 

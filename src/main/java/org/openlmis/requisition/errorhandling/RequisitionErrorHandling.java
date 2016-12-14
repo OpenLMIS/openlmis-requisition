@@ -2,6 +2,7 @@ package org.openlmis.requisition.errorhandling;
 
 import org.openlmis.errorhandling.AbstractErrorHandling;
 import org.openlmis.requisition.exception.CommentNotFoundException;
+import org.openlmis.requisition.exception.FacilityNotSupportsProgramException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
@@ -29,11 +30,11 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
 
   @ExceptionHandler({InvalidRequisitionStatusException.class,
       MissingParameterException.class,
-          SkipNotAllowedException.class})
+      SkipNotAllowedException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   public ErrorResponse handleBadRequisitionRequest(
-          RequisitionException ex) {
+      RequisitionException ex) {
     return logErrorAndRespond("Operation cannot be executed on requisition", ex);
   }
 
@@ -41,7 +42,15 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
   public ErrorResponse handleRequisitionOrItemNotFound(
-          RequisitionException ex) {
+      RequisitionException ex) {
     return logErrorAndRespond("Requisition not found.", ex);
+  }
+
+  @ExceptionHandler({FacilityNotSupportsProgramException.class})
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ResponseBody
+  public ErrorResponse handleFacilityNotSupportsProgramException(
+      RequisitionException ex) {
+    return logErrorAndRespond("Operation cannot be executed.", ex);
   }
 }
