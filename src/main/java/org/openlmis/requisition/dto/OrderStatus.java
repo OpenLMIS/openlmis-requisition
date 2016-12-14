@@ -6,5 +6,8 @@ public enum OrderStatus {
   PICKING,
   PICKED,
   SHIPPED,
-  RECEIVED
+  RECEIVED,
+  TRANSFER_FAILED,
+  IN_ROUTE,
+  READY_TO_PACK
 }
