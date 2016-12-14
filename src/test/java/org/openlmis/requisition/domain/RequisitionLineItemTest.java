@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.MoneyDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramProductDto;
@@ -132,7 +131,7 @@ public class RequisitionLineItemTest {
   public void shouldExportWithPricePerPack() {
     ProgramDto program = new ProgramDto();
     ProgramProductDto programProductDto = new ProgramProductDto();
-    MoneyDto pricePerPack = new MoneyDto("5.7986");
+    Money pricePerPack = new Money("5.7986");
     programProductDto.setPricePerPack(pricePerPack);
     OrderableProductDto orderableProductDto =
         generateOrderableProductDto(program, programProductDto);

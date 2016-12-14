@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
-import org.openlmis.requisition.dto.MoneyDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramProductDto;
 
@@ -275,7 +274,7 @@ public class RequisitionLineItem extends BaseEntity {
       if (programProductDto.getPricePerPack() != null) {
         exporter.setPricePerPack(programProductDto.getPricePerPack());
       } else {
-        exporter.setPricePerPack(new MoneyDto(new BigDecimal(PRICE_PER_PACK_IF_NULL)));
+        exporter.setPricePerPack(new Money(new BigDecimal(PRICE_PER_PACK_IF_NULL)));
       }
     }
   }
@@ -311,7 +310,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setOrderableProduct(OrderableProductDto orderableProductDto);
 
-    void setPricePerPack(MoneyDto pricePerPack);
+    void setPricePerPack(Money pricePerPack);
   }
 
   public interface Importer {

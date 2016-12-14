@@ -3,6 +3,7 @@ package org.openlmis.requisition.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.StockAdjustment;
 
@@ -32,7 +33,7 @@ public class RequisitionLineItemDto
   private Integer totalStockoutDays;
   private Integer total;
   private Long packsToShip;
-  private MoneyDto pricePerPack;
+  private Money pricePerPack;
 
 
   @JsonProperty

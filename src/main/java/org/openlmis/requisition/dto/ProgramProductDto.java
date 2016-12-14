@@ -2,6 +2,7 @@ package org.openlmis.requisition.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.openlmis.requisition.domain.Money;
 
 import java.util.UUID;
 
@@ -18,5 +19,5 @@ public class ProgramProductDto {
   private Integer displayOrder;
   private Integer maxMonthsOfStock;
   private Integer dosesPerMonth;
-  private MoneyDto pricePerPack;
+  private Money pricePerPack;
 }

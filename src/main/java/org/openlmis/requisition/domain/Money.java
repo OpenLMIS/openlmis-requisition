@@ -1,4 +1,4 @@
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.domain;
 
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
@@ -7,24 +7,24 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.utils.MoneyDtoDeserializer;
-import org.openlmis.utils.MoneyDtoSerializer;
+import org.openlmis.utils.MoneyDeserializer;
+import org.openlmis.utils.MoneySerializer;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
-@JsonSerialize(using = MoneyDtoSerializer.class)
-@JsonDeserialize(using = MoneyDtoDeserializer.class)
-public class MoneyDto extends Number {
+@JsonSerialize(using = MoneySerializer.class)
+@JsonDeserialize(using = MoneyDeserializer.class)
+public class Money extends Number {
 
   private BigDecimal value;
 
-  public MoneyDto(String value) {
+  public Money(String value) {
     this.value = new BigDecimal(value).setScale(2, ROUND_HALF_UP);
   }
 
-  public MoneyDto(BigDecimal value) {
+  public Money(BigDecimal value) {
     this(value.toString());
   }
 
