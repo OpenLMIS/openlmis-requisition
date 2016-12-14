@@ -90,6 +90,8 @@ public class RequisitionCommentService {
     }
 
     requisitionComment.updateFrom(comment);
+    UserDto user = authenticationHelper.getCurrentUser();
+    requisitionComment.setAuthorId(user.getId());
     Comment updatedComment = commentRepository.save(requisitionComment);
 
     LOGGER.debug("Updated comment with id: " + commentId);
