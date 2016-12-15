@@ -568,6 +568,8 @@ resourceTypes:
                             X-Content-Type-Options:
                             X-XSS-Protection:
                           body:
+                            application/json:
+                                schema: errorResponse
                             text/plain:
                       "404":
                           headers:
@@ -661,6 +663,9 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
                   "403":
                       headers:
                         X-Content-Type-Options:

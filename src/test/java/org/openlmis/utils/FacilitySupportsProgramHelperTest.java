@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
-import org.openlmis.requisition.exception.FacilityNotSupportsProgramException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 
@@ -41,14 +41,14 @@ public class FacilitySupportsProgramHelperTest {
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
   }
 
-  @Test(expected = FacilityNotSupportsProgramException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenNoSupportedPrograms() throws RequisitionException {
     facilityDto.setSupportedPrograms(Collections.emptyList());
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
   }
 
-  @Test(expected = FacilityNotSupportsProgramException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenProgramIsNotSupported() throws RequisitionException {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(UUID.randomUUID());
@@ -74,7 +74,7 @@ public class FacilitySupportsProgramHelperTest {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
   }
 
-  @Test(expected = FacilityNotSupportsProgramException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSupportIsNotActive() throws RequisitionException {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
@@ -87,7 +87,7 @@ public class FacilitySupportsProgramHelperTest {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
   }
 
-  @Test(expected = FacilityNotSupportsProgramException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenProgramIsNotActive() throws RequisitionException {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
@@ -100,7 +100,7 @@ public class FacilitySupportsProgramHelperTest {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
   }
 
-  @Test(expected = FacilityNotSupportsProgramException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenStartDateIsAfterCurrentDate() throws RequisitionException {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);

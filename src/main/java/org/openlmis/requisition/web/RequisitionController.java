@@ -13,7 +13,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.FacilityNotSupportsProgramException;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -161,7 +160,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
                                     @RequestParam(value = "emergency") boolean emergency)
-      throws FacilityNotSupportsProgramException, MissingParameterException {
+      throws MissingParameterException {
     if (null == facility || null == program) {
       throw new MissingParameterException(
           "Facility and program must be specified when returns processing periods for unprocessed"

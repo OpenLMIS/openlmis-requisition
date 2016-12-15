@@ -11,6 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -34,6 +35,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.i18n.ExposedMessageSource;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -42,6 +44,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
@@ -88,7 +91,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SUGGESTED_PERIOD = "suggestedPeriod";
   private static final String EMERGENCY = "emergency";
   private static final String MESSAGE = "message";
-  private static final String OPERATION_CANNOT_BE_EXECUTED = "Operation cannot be executed.";
   private static final String FACILITY_CODE = "facilityCode";
 
   @Autowired
@@ -108,6 +110,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private ExposedMessageSource messageSource;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -860,24 +865,27 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotInitiateIfFacilityNotSupportsProgram() throws Exception {
+  public void shouldNotInitiateIfFacilityDoesNotSupportProgram() throws Exception {
+    UUID programId = UUID.randomUUID();
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, UUID.randomUUID())
+        .queryParam(PROGRAM, programId)
         .queryParam(FACILITY, facilityDto.getId())
         .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
         .queryParam(EMERGENCY, false)
         .when()
         .post(INITIATE_URL)
         .then()
-        .statusCode(403);
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(facilityDto.getId(), programId)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotSubmitIfFacilityNotSupportsProgram() throws Exception {
-    changeProgramIdInRequisitionAndTemplateToRandom();
+    UUID programId = UUID.randomUUID();
+    setProgramIdInRequisitionAndTemplate(programId);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -886,15 +894,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .post(SUBMIT_URL)
         .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(OPERATION_CANNOT_BE_EXECUTED));
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(getSharedFacilityId(), programId)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotAuthorizeIfFacilityNotSupportsProgram() throws Exception {
-    changeProgramIdInRequisitionAndTemplateToRandom();
+    UUID programId = UUID.randomUUID();
+    setProgramIdInRequisitionAndTemplate(programId);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -902,24 +911,25 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .post(AUTHORIZATION_URL)
         .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(OPERATION_CANNOT_BE_EXECUTED));
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(getSharedFacilityId(), programId)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotApproveIfFacilityNotSupportsProgram() throws Exception {
-    changeProgramIdInRequisitionAndTemplateToRandom();
+    UUID programId = UUID.randomUUID();
+    setProgramIdInRequisitionAndTemplate(programId);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
         .when()
-        .post(AUTHORIZATION_URL)
+        .post(APPROVE_URL)
         .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(OPERATION_CANNOT_BE_EXECUTED));
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(getSharedFacilityId(), programId)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1181,10 +1191,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     );
   }
 
-  private void changeProgramIdInRequisitionAndTemplateToRandom() {
-    requisition.setProgramId(UUID.randomUUID());
+  private void setProgramIdInRequisitionAndTemplate(UUID programId) {
+    requisition.setProgramId(programId);
     requisitionRepository.save(requisition);
     template.setProgramId(requisition.getProgramId());
     requisitionTemplateRepository.save(template);
+  }
+
+  private String getMessage(UUID facilityId, UUID programId) {
+    return messageSource.getMessage("requisition.error.facility-does-not-support-program",
+        new Object[] {facilityId, programId}, LocaleContextHolder.getLocale());
   }
 }
