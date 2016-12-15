@@ -893,6 +893,14 @@ resourceTypes:
                           body:
                             application/json:
                               schema: processingPeriodDto
+                      "400":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                                schema: errorResponse
+
   /requisitionTemplates:
       displayName: Requisition Template
       get:

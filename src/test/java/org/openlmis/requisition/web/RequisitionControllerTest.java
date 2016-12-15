@@ -30,6 +30,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
@@ -245,9 +246,9 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldThrowExceptionWhenFacilityOrProgramIdNotFound() throws Exception {
-    exception.expect(RequisitionException.class);
+    exception.expect(ValidationMessageException.class);
     requisitionController.initiate(programUuid, null, null, false);
-    exception.expect(RequisitionException.class);
+    exception.expect(ValidationMessageException.class);
     requisitionController.initiate(null, facilityUuid, null, false);
   }
 

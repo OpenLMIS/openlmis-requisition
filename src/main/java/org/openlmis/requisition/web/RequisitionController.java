@@ -18,6 +18,7 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
@@ -32,6 +33,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
+import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,8 +130,8 @@ public class RequisitionController extends BaseController {
                    @RequestParam(value = "emergency") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
     if (null == facility || null == program) {
-      throw new MissingParameterException(
-          "Facility and program must be specified when initiating a requisition.");
+      throw new ValidationMessageException(
+          new Message("requisition.error.initiate.missing-parameters"));
     }
 
     permissionService.canInitRequisition(program, facility);
@@ -159,12 +161,10 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
                                     @RequestParam(value = "facilityId") UUID facility,
-                                    @RequestParam(value = "emergency") boolean emergency)
-      throws MissingParameterException {
+                                    @RequestParam(value = "emergency") boolean emergency) {
     if (null == facility || null == program) {
-      throw new MissingParameterException(
-          "Facility and program must be specified when returns processing periods for unprocessed"
-              + " requisitions.");
+      throw new ValidationMessageException(
+          new Message("requisition.error.periods-for-initiate.missing-parameters"));
     }
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);

@@ -6,7 +6,6 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
-import org.openlmis.requisition.web.MissingParameterException;
 import org.openlmis.utils.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,7 +27,6 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
   }
 
   @ExceptionHandler({InvalidRequisitionStatusException.class,
-      MissingParameterException.class,
       SkipNotAllowedException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
