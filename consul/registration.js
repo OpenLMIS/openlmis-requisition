@@ -1,10 +1,11 @@
-const fs = require('fs');
-const ip = require('ip');
+const commandLineArgs = require('command-line-args');
+const sleep = require('system-sleep');
+const raml = require('raml-parser');
+const deasync = require('deasync');
 const http = require('http');
 const uuid = require('uuid');
-const deasync = require('deasync');
-const raml = require('raml-parser');
-const commandLineArgs = require('command-line-args');
+const fs = require('fs');
+const ip = require('ip');
 
 function ServiceRAMLParser() {
   var self = this;
@@ -19,6 +20,8 @@ function ServiceRAMLParser() {
         })
       });
       return resources;
+    }, function(error) {
+      throw new Error(error);
     });
   }
 
@@ -44,6 +47,8 @@ function ServiceConsulRegistrator(host, port) {
   self = this;
   self.host = host;
   self.port = port;
+  self.attempts = 10;
+  self.attemptTimeout = 500;
 
   self.registerService = function(serviceData) {
     return registerServiceBase(serviceData, 'PUT');
@@ -63,42 +68,97 @@ function ServiceConsulRegistrator(host, port) {
 
   function registerServiceBase(serviceData, mode) {
     var requestPath = mode === 'PUT' ? 'register' : 'deregister/' + serviceData.ID;
-    var request = http.request({
+    var data = JSON.stringify(serviceData);
+    var settings = {
       host: self.host,
       port: self.port,
       path: '/v1/agent/service/' + requestPath,
       method: 'PUT'
-    });
+    }
 
-    request.write(JSON.stringify(serviceData));
-    request.end();
+    // Send the request
+    for (var i = 0; i < self.attempts; i++) {
+      var response = awaitRequest(settings, data);
 
-    return request;
+      if (response.statusCode === 200) {
+        break;
+      }
+
+      sleep(self.attemptTimeout);
+    }
   }
 
   function registerResourcesBase(serviceData, resourceArray, mode) {
-    var requests = [];
+    var settings = [];
+    var data = [];
 
-    // Customize each request parameters
+    // Prepare settings and data for requests
     resourceArray.forEach(function(resource) {
-      var path = '/v1/kv/resources' + resource;
-      var request = http.request({
+      var setting = {
         host: self.host,
         port: self.port,
-        path: path,
+        path: '/v1/kv/resources' + resource,
         method: mode
-      });
+      }
 
-      requests.push(request);
+      settings.push(setting);
+      data.push(serviceData.Name);
     });
 
-    // Start sending requests
-    requests.forEach(function(request) {
-      request.write(serviceData.Name);
-      request.end();
+    // Send all requests at once
+    for (var i = 0; i < self.attempts; i++) {
+      var responses = awaitRequests(settings, data);
+      var success = !responses.some(function(response) { return response.statusCode !== 200 });
+
+      if (success) {
+        break;
+      }
+
+      sleep(self.attemptTimeout);
+    }
+  }
+
+  function awaitRequests(settingArray, dataArray) {
+    // Runs multiple parallel HTTP requests and waits for their completion
+    var size = settingArray.length;
+    var results = settingArray.map(function() { return null; });
+    var completed = 0;
+
+    for (var i = 0; i < size; i++) {
+      (function(i) {
+        var request = http.request(settingArray[i], function(response) {
+          // This operation is safe in node.js
+          completed++;
+          results[i] = response;
+        });
+
+        request.write(dataArray[i]);
+        request.end();
+      })(i);
+    };
+
+    while(completed !== size) {
+      deasync.runLoopOnce();
+    }
+
+    return results;
+  }
+
+  function awaitRequest(settings, data) {
+    // Runs a single HTTP request synchronously
+    var result;
+    var request = http.request(settings, function(response) {
+      result = response;
     });
 
-    return requests;
+    request.write(data);
+    request.end();
+
+    while(!result) {
+      deasync.runLoopOnce();
+    }
+
+    return result;
   }
 }
 function RegistrationService(host, port) {
@@ -106,74 +166,78 @@ function RegistrationService(host, port) {
 
   self.consulHost = host;
   self.consulPort = port;
-  self.filename = '.consul_service_id';
+  self.filename = '.consul_service_id~';
 
   self.registrator = new ServiceConsulRegistrator(self.consulHost, self.consulPort);;
   self.parser = new ServiceRAMLParser();
 
   self.register = function(args) {
-    registration.registerService(args.name);
-
-    if (args.raml) {
-      registration.registerRaml(args.name, args.raml);
-    }
-
-    if (args.path) {
-      registration.registerPath(args.name, args.path);
-    }
+    console.log("Registering service...");
+    registrationBase(args, 'register');
+    console.log("Registration finished!");
   }
-
-  self.registerService = function(serviceName) {
-    return serviceRegistrationBase(serviceName, 'register');
-  }
-
-  self.registerRaml = function(serviceName, filename) {
-    return ramlRegistrationBase(serviceName, filename, 'register');
-  }
-
-  self.registerPath = function(serviceName, paths) {
-    return pathRegistrationBase(serviceName, paths, 'register');
-  }
-
   self.deregister = function(args) {
-    registration.deregisterService(args.name);
+    console.log("Deregistering service...");
+    registrationBase(args, 'deregister');
+    console.log("Deregistration finished!");
+  }
+
+  function registrationBase(args, mode) {
+    registerService(args.service, mode);
 
     if (args.raml) {
-      registration.deregisterRaml(args.name, args.raml);
+      registerRaml(args.service, args.raml, mode);
     }
 
     if (args.path) {
-      registration.deregisterPath(args.name, args.path);
+      registerPath(args.service, args.path, mode);
+    }
+  }
+  function registerService(service, mode) {
+    service.ID = generateServiceId(service.Name);
+
+    if (mode === 'register') {
+      self.registrator.registerService(service);
+    } else {
+      self.registrator.deregisterService(service);
+    }
+  }
+  function registerRaml(service, filename, mode) {
+    var completed = false;
+    service.ID = generateServiceId(service.Name);
+
+    self.parser.extractResources(filename).then(function(resources) {
+      if (mode === 'register') {
+        self.registrator.registerResources(service, resources);
+      } else {
+        self.registrator.deregisterResources(service, resources);
+      }
+
+      completed = true;
+    });
+
+    // Wait for RAML parsing
+    while(!completed) {
+      deasync.runLoopOnce();
+    }
+  }
+  function registerPath(service, paths, mode) {
+    service.ID = generateServiceId(service.Name);
+
+    for (var i = 0; i < paths.length; i++) {
+      if (paths[i].indexOf("/") !== 0) {
+        paths[i] = "/" + paths[i];
+      }
     }
 
-    clearServiceId();
+    if (mode === 'register') {
+      self.registrator.registerResources(service, paths);
+    } else {
+      self.registrator.deregisterResources(service, paths);
+    }
   }
 
-  self.deregisterService = function(serviceName) {
-    return serviceRegistrationBase(serviceName, 'deregister');
-  }
-
-  self.deregisterRaml = function(serviceName, filename) {
-    return ramlRegistrationBase(serviceName, filename, 'deregister');
-  }
-
-  self.deregisterPath = function(serviceName, paths) {
-    return pathRegistrationBase(serviceName, paths, 'deregister');
-  }
-
-  function getServiceData(serviceName) {
-    var serviceId = getServiceId(serviceName);
-    return {
-      'ID': serviceId,
-      'Name': serviceName,
-      'Port': 8080,
-      'Address': ip.address(),
-      'Tags': ['openlmis-service'],
-      'EnableTagOverride': false
-    };
-  }
-
-  function getServiceId(serviceName) {
+  function generateServiceId(serviceName) {
     var serviceId = null;
 
     try {
@@ -186,93 +250,87 @@ function RegistrationService(host, port) {
 
     return serviceId;
   }
-
   function clearServiceId() {
     try {
       fs.unlinkSync(self.filename);
     } catch (err) {
       console.error("Service ID file could not be found or accessed.");
     }
-
-  }
-
-  function serviceRegistrationBase(serviceName, mode) {
-    var serviceData = getServiceData(serviceName, mode);
-    if (mode === 'register') {
-      return self.registrator.registerService(serviceData);
-    } else {
-      return self.registrator.deregisterService(serviceData);
-    }
-  }
-
-  function ramlRegistrationBase(serviceName, filename, mode) {
-    var serviceData = getServiceData(serviceName, mode);
-    var resourceRequests;
-
-    self.parser.extractResources(filename).then(function(resources) {
-      if (mode === 'register') {
-        resourceRequests = self.registrator.registerResources(serviceData, resources);
-      } else {
-        resourceRequests = self.registrator.deregisterResources(serviceData, resources);
-      }
-    });
-
-    // Wait for RAML parsing
-    while(!resourceRequests) {
-      deasync.runLoopOnce();
-    }
-
-    return Promise.all(resourceRequests);
-  }
-
-  function pathRegistrationBase(serviceName, paths, mode) {
-    var serviceData = getServiceData(serviceName, mode);
-
-    for (var i = 0; i < paths.length; i++) {
-      if (!paths[i].startsWith("/")) {
-        paths[i] = "/" + paths[i];
-      }
-    }
-
-    if (mode === 'register') {
-      return self.registrator.registerResources(serviceData, paths);
-    } else {
-      return self.registrator.deregisterResources(serviceData, paths);
-    }
   }
 }
+function CommandLineResolver() {
+  var self = this;
 
-function processArgs() {
-  var args = commandLineArgs([
-    { name: 'config-file', alias: 'f', type: String },
-    { name: 'name', alias: 'n', type: String },
-    { name: 'command', alias: 'c', type: String },
-    { name: 'raml', alias: 'r', type: String },
-    { name: 'path', alias: 'p', type: String, multiple: true }
-  ]);
+  self.processArgs = function(mapping) {
+    mapping = mapping || getCommandArgsMapping();
 
-  if (args['config-file']) {
-    // If other arguments are not present, override them with config file values
-    var config = JSON.parse(fs.readFileSync(fs.openSync(args['config-file'], 'r+')).toString());
-    var values = ['name', 'command', 'path', 'raml'];
+    var args = commandLineArgs(mapping);
+    var settings = getSettings(args);
+    validateSettings(settings);
 
-    for (var i = 0; i < values.length; i++) {
-      var keyword = values[i];
-      if (!(args[keyword])) {
-        args[keyword] = config[keyword];
+    return settings;
+  }
+
+  function validateSettings(settings) {
+    if (!settings.command) {
+      throw new Error("Command parameter is missing.");
+    } else if (!(settings.raml || settings.path)) {
+      throw new Error("You must either provide path or file parameter.");
+    }
+  }
+  function getSettings(args) {
+    var settings = {
+      service: getDefaultServiceValues()
+    };
+
+    // Fill config file data
+    if (args['config-file']) {
+      var config = JSON.parse(fs.readFileSync(args['config-file']).toString());
+      fillBaseSettings(settings, config);
+
+      if (config['service']) {
+        for (var key in config.service) {
+          settings.service[key] = config.service[key];
+        }
+      }
+    }
+
+    // Fill command line arguments
+    fillBaseSettings(settings, args);
+    if (args['name']) {
+      settings.service.Name = args.name;
+    }
+
+    return settings;
+  }
+  function getCommandArgsMapping() {
+    return [
+      { name: 'config-file', alias: 'f', type: String },
+      { name: 'command', alias: 'c', type: String },
+      { name: 'name', alias: 'n', type: String },
+      { name: 'raml', alias: 'r', type: String },
+      { name: 'path', alias: 'p', type: String, multiple: true }
+    ];
+  }
+  function getDefaultServiceValues() {
+    return {
+      'ID': null,
+      'Name': null,
+      'Port': 80,
+      'Address': ip.address(),
+      'Tags': [],
+      'EnableTagOverride': false
+    };
+  }
+  function fillBaseSettings(settings, args) {
+    var keys = ['command', 'path', 'raml'];
+    for (var i = 0; i < keys.length; i++) {
+      var keyword = keys[i];
+      if (args[keyword]) {
+        settings[keyword] = args[keyword];
       }
     }
   }
-
-  if (!args.name) {
-    throw new Error("Name parameter is missing.");
-  } else if (!args.command) {
-    throw new Error("Command parameter is missing.");
-  } else if (!(args.raml || args.path)) {
-    throw new Error("You must either provide path or file parameter.");
-  }
-
-  return args;
 }
 
 try {
@@ -280,22 +338,16 @@ try {
   var consulPort = process.env.CONSUL_PORT || '8500';
 
   // Retrieve arguments passed to script
-  var args = processArgs();
-
+  var args = new CommandLineResolver().processArgs();
   var registration = new RegistrationService(consulHost, consulPort);
-  var initialMessage = "Starting service " + args.command + "...";
 
   if (args.command === 'register') {
-    console.log(initialMessage);
     registration.register(args);
   } else if (args.command === 'deregister') {
-    console.log(initialMessage);
     registration.deregister(args);
   } else {
     throw new Error("Invalid command. It should be either 'register' or 'deregister'.")
   }
-
-  console.log("Service " + args.command + " successful!");
 } catch(err) {
   console.error("Error during service registration:")
   console.error(err.message);
