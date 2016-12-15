@@ -238,5 +238,3 @@ build {
     dependsOn demoDataSeed
     dependsOn copyConsulRegistrationToBuild
 }
-
-bootRun.dependsOn consulRegistration
