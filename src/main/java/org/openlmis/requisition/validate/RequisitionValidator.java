@@ -76,7 +76,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     rejectIfNullOrNegative(errors, template, item.getTotalStockoutDays(),
         RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
 
-    rejectIfNullOrNegative(errors, template, item.getTotal(), RequisitionLineItem.TOTAL);
+    rejectIfNullOrNegative(errors, template, item.getTotal(), RequisitionLineItem.TOTAL_COLUMN);
 
     validateApprovedQuantity(errors, template, requisition, item);
 

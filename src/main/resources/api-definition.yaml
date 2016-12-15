@@ -55,7 +55,7 @@ schemas:
                "id": { "type": "string", "required": true, "title": "id" },
                "productCode": { "type": "string", "required": true, "title": "code" },
                "name": { "type": "string", "required": true, "title": "name" },
-               "programs": {"type": "array", "required": false, "title": "programs", "items": { "type": "object", "$ref": "#/schemas/programProductDto"}, "uniqueItems": false}
+               "programs": {"type": "array", "required": false, "title": "programs", "items": { "type": "object", "$ref": "#/schemas/productDto"}, "uniqueItems": false}
            }
       }
 
@@ -77,11 +77,11 @@ schemas:
 
   - programDto: !include schemas/programDto.json
 
-  - programProductDto: |
+  - productDto: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
           "title": "ProgramProductDto",
-          "description": "A single programProductDto",
+          "description": "A single productDto",
           "properties": {
               "programId": { "type": "string", "required": true, "title": "programId" },
               "productId": { "type": "string", "required": true, "title": "productId" },

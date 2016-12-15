@@ -1,13 +1,20 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.hibernate.annotations.Type;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.ProductDto;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.ProgramProductDto;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -19,10 +26,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_line_items")
@@ -36,10 +39,9 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   public static final String APPROVED_QUANTITY = "approvedQuantity";
-  public static final String REMARKS = "remarks";
+  public static final String REMARKS_COLUMN = "remarks";
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
-  public static final String TOTAL = "total";
-
+  public static final String TOTAL_COLUMN = "total";
   static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
 
   private static final String UUID = "pg-uuid";
@@ -142,19 +144,19 @@ public class RequisitionLineItem extends BaseEntity {
    * Initiates a requisition line item with specified requisition and product.
    *
    * @param requisition                 requisition to apply
-   * @param facilityTypeApprovedProduct facilityTypeApprovedProduct to apply
+   * @param approvedProduct facilityTypeApprovedProduct to apply
    */
-  public RequisitionLineItem(
-      Requisition requisition, FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
+  public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct) {
     this();
     this.requisition = requisition;
 
-    ProgramProductDto programProduct = facilityTypeApprovedProduct.getProgramProduct();
-    this.orderableProductId = programProduct.getProductId();
+    ProductDto product = approvedProduct.getProduct();
+    this.orderableProductId = product.getProductId();
 
-    Money priceFromProduct = programProduct.getPricePerPack();
+    Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
             ? new Money(PRICE_PER_PACK_IF_NULL) : priceFromProduct;
+    this.orderableProductId = approvedProduct.getProduct().getProductId();
   }
 
   /**

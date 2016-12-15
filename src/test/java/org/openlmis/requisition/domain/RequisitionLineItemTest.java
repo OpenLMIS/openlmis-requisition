@@ -10,10 +10,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramProductDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 
 import java.util.HashSet;
@@ -130,7 +130,6 @@ public class RequisitionLineItemTest {
   @Test
   public void shouldBuildFromConstructorAndExport() {
     Money pricePerPack = new Money("5.7986");
-
     RequisitionLineItemDto lineItemDto = testConstructionAndExport(pricePerPack);
 
     assertThat(lineItemDto.getPricePerPack(), is(pricePerPack));
@@ -149,11 +148,11 @@ public class RequisitionLineItemTest {
     UUID programId = UUID.randomUUID();
     ProgramDto program = new ProgramDto();
     program.setId(programId);
-    ProgramProductDto programProduct = new ProgramProductDto();
+    ProductDto programProduct = new ProductDto();
     programProduct.setPricePerPack(pricePerPack);
     programProduct.setProductId(productId);
-    FacilityTypeApprovedProductDto ftap = new FacilityTypeApprovedProductDto();
-    ftap.setProgramProduct(programProduct);
+    ApprovedProductDto ftap = new ApprovedProductDto();
+    ftap.setProduct(programProduct);
     when(initiatedRequisition.getProgramId()).thenReturn(programId);
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem(initiatedRequisition, ftap);
@@ -197,13 +196,14 @@ public class RequisitionLineItemTest {
   }
 
   private OrderableProductDto generateOrderableProductDto(ProgramDto program,
-                                                          ProgramProductDto programProductDto) {
+                                                          ProductDto productDto) {
     OrderableProductDto orderableProductDto = new OrderableProductDto();
-    orderableProductDto.setId(programProductDto.getProductId());
+    orderableProductDto.setId(productDto.getProductId());
     program.setId(UUID.randomUUID());
-    programProductDto.setProgramId(program.getId());
-    Set<ProgramProductDto> programs = new HashSet<>();
-    programs.add(programProductDto);
+    productDto.setProductId(orderableProductDto.getId());
+    productDto.setProgramId(program.getId());
+    Set<ProductDto> programs = new HashSet<>();
+    programs.add(productDto);
     orderableProductDto.setPrograms(programs);
     return orderableProductDto;
   }

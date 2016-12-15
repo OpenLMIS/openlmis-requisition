@@ -15,7 +15,7 @@ public class OrderableProductDto {
   private long packSize;
   private long packRoundingThreshold;
   private boolean roundToZero;
-  private Set<ProgramProductDto> programs;
+  private Set<ProductDto> programs;
   private DispensableDto dispensable;
 
   /**
@@ -45,16 +45,16 @@ public class OrderableProductDto {
   }
 
   /**
-   * Find ProgramProductDto in programs using programId.
+   * Find ProductDto in programs using programId.
    *
    * @param programId programId
-   * @return programProduct
+   * @return product
    */
-  public ProgramProductDto findProgramProductDto(UUID programId) {
+  public ProductDto findProgramProductDto(UUID programId) {
     if (programs != null) {
-      for (ProgramProductDto programProductDto : programs) {
-        if (programProductDto.getProgramId().equals(programId)) {
-          return programProductDto;
+      for (ProductDto productDto : programs) {
+        if (productDto.getProgramId().equals(programId)) {
+          return productDto;
         }
       }
     }

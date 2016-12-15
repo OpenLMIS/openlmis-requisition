@@ -1,20 +1,18 @@
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
@@ -25,14 +23,10 @@ import org.openlmis.requisition.web.RequisitionController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +36,15 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "requisitions")
@@ -187,7 +190,7 @@ public class Requisition extends BaseTimestampedEntity {
         forEachLine(line -> line.setTotalConsumedQuantity(null));
       }
 
-      if (template.isColumnDisplayed(TOTAL)) {
+      if (template.isColumnDisplayed(TOTAL_COLUMN)) {
         forEachLine(line -> line.setTotal(
             LineItemFieldsCalculator.calculateTotal(line)));
       }
@@ -338,7 +341,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @throws RequisitionTemplateColumnException if there are issues with template definitions.
    */
   public void initiate(RequisitionTemplate template,
-                       Collection<FacilityTypeApprovedProductDto> products,
+                       Collection<ApprovedProductDto> products,
                        Requisition previousRequisition) throws RequisitionTemplateColumnException {
     setRequisitionLineItems(
         products

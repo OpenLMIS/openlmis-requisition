@@ -82,7 +82,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
             + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
 
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getRemarks(),
-        expectedStatus, RequisitionLineItem.REMARKS
+        expectedStatus, RequisitionLineItem.REMARKS_COLUMN
             + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
 
   }

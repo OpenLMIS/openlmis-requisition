@@ -14,12 +14,13 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
-import org.openlmis.requisition.dto.ProgramProductDto;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -241,8 +242,8 @@ public class RequisitionTest {
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
-    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
-    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
 
     // when
     Requisition req = new Requisition();
@@ -263,8 +264,8 @@ public class RequisitionTest {
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
 
-    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
-    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -294,8 +295,8 @@ public class RequisitionTest {
     // should not initiate beginning balance because of this
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(false);
 
-    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
-    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
 
     // when
     Requisition req = new Requisition();
@@ -319,11 +320,11 @@ public class RequisitionTest {
     when(requisition.findLineByProductId(productId)).thenReturn(item);
   }
 
-  private FacilityTypeApprovedProductDto mockFtap(UUID orderableProductId) {
-    FacilityTypeApprovedProductDto ftap = mock(FacilityTypeApprovedProductDto.class);
-    ProgramProductDto programProduct = mock(ProgramProductDto.class);
-    when(ftap.getProgramProduct()).thenReturn(programProduct);
+  private ApprovedProductDto mockApprovedProduct(UUID orderableProductId) {
+    ApprovedProductDto approvedProductDto = mock(ApprovedProductDto.class);
+    ProductDto programProduct = mock(ProductDto.class);
+    when(approvedProductDto.getProduct()).thenReturn(programProduct);
     when(programProduct.getProductId()).thenReturn(orderableProductId);
-    return ftap;
+    return approvedProductDto;
   }
 }

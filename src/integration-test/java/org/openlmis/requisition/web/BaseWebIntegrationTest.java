@@ -177,11 +177,6 @@ public abstract class BaseWebIntegrationTest {
       + " \"endDate\":\"2017-03-01\""
       + " }";
 
-  private static final String MOCK_FIND_FACILITY_TYPE = "{"
-      + " \"id\":\"7fbef45e-8961-11e6-ae22-56b6b6499611\","
-      + " \"code\":\"Facility Type Code\""
-      + "}";
-
   private static final String MOCK_FIND_PRODUCT_CATEGORY = "{"
       + " \"id\":\"6d469a06-8962-11e6-ae22-56b6b6499611\""
       + "}";
@@ -200,10 +195,9 @@ public abstract class BaseWebIntegrationTest {
       + " \"supplyingFacility\":\"aa66b762-871a-11e6-ae22-56b6b6499611\"\n"
       + "}]";
 
-  private static final String MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS = "[{"
+  private static final String MOCK_SEARCH_APPROVED_PRODUCTS = "[{"
       + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
-      + " \"facilityType\":" + MOCK_FIND_FACILITY_TYPE + ","
-      + " \"programProduct\":" + MOCK_FIND_PROGRAM_PRODUCT + ","
+      + " \"product\":" + MOCK_FIND_PROGRAM_PRODUCT + ","
       + " \"maxMonthStock\": 2"
       + "}]";
 
@@ -317,6 +311,12 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_FACILITY_RESULT_WITH_SUPPORTED_PROGRAMS)));
 
+    // This mocks searching for approvedProducts
+    wireMockRule.stubFor(get(urlMatching("/api/facilities/" + UUID_REGEX + "/approvedProducts.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_APPROVED_PRODUCTS)));
+
     // This mocks for find one orderableproduct
     wireMockRule.stubFor(get(urlMatching("/api/orderableProducts/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
@@ -352,12 +352,6 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_SUPPLY_LINE_RESULT)));
-
-    // This mocks searching for facilityTypeApprovedProducts
-    wireMockRule.stubFor(get(urlMatching("/api/facilityTypeApprovedProducts/search.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_SEARCH_FACILITY_TYPE_APPROVED_PRODUCTS)));
 
     // This mocks searching for processingPeriods
     wireMockRule.stubFor(get(urlMatching("/api/processingPeriods/search.*"))

@@ -2,7 +2,7 @@ package org.openlmis.requisition.domain;
 
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 
-import org.openlmis.requisition.dto.ProgramProductDto;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public final class RequisitionBuilder {
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
-        Optional<ProgramProductDto> program = requisitionLineItem
+        Optional<ProductDto> program = requisitionLineItem
             .getOrderableProduct()
             .getPrograms()
             .stream()

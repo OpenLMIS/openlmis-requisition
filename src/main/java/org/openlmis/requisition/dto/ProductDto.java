@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class ProgramProductDto {
+public class ProductDto {
   private UUID programId;
   private UUID productId;
   private UUID productCategoryId;

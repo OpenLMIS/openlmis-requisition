@@ -1,5 +1,11 @@
 package org.openlmis.requisition.validate;
 
+import static org.mockito.Matchers.contains;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.mockito.Matchers.contains;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DraftRequisitionValidatorTest {
@@ -120,7 +120,7 @@ public class DraftRequisitionValidatorTest {
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionLineItem.REMARKS
+        eq(RequisitionLineItem.REMARKS_COLUMN
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
   }
 

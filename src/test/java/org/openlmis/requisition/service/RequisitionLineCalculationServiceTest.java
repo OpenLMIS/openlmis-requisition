@@ -19,8 +19,8 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramProductDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -100,11 +100,11 @@ public class RequisitionLineCalculationServiceTest {
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {
-    ProgramProductDto programProductDto = new ProgramProductDto();
-    programProductDto.setProductId(orderableProductDto.getId());
-    programProductDto.setProgramId(program);
-    Set<ProgramProductDto> programs = new HashSet<>();
-    programs.add(programProductDto);
+    ProductDto productDto = new ProductDto();
+    productDto.setProductId(orderableProductDto.getId());
+    productDto.setProgramId(program);
+    Set<ProductDto> programs = new HashSet<>();
+    programs.add(productDto);
     orderableProductDto.setPrograms(programs);
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();

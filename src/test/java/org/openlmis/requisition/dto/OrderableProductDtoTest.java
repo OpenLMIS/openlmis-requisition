@@ -11,9 +11,9 @@ import java.util.UUID;
 
 public class OrderableProductDtoTest {
 
-  OrderableProductDto orderableProductDto;
-  Set<ProgramProductDto> programs;
-  ProgramDto program;
+  private OrderableProductDto orderableProductDto;
+  private Set<ProductDto> programs;
+  private ProgramDto program;
 
   @Before
   public void setUp() {
@@ -123,31 +123,31 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldFindProgramProduct() {
-    ProgramProductDto programProductDto = new ProgramProductDto();
-    programProductDto.setProductId(orderableProductDto.getId());
-    programProductDto.setProgramId(program.getId());
-    programs.add(programProductDto);
+    ProductDto productDto = new ProductDto();
+    productDto.setProductId(orderableProductDto.getId());
+    productDto.setProgramId(program.getId());
+    programs.add(productDto);
     orderableProductDto.setPrograms(programs);
 
-    ProgramProductDto programProductDtoAfterFind =
+    ProductDto productDtoAfterFind =
         orderableProductDto.findProgramProductDto(program.getId());
 
-    assertEquals(programProductDtoAfterFind, programProductDto);
-    assertEquals(programProductDtoAfterFind.getProgramId(), programProductDto.getProgramId());
-    assertEquals(programProductDtoAfterFind.getProductId(), programProductDto.getProductId());
+    assertEquals(productDtoAfterFind, productDto);
+    assertEquals(productDtoAfterFind.getProgramId(), productDto.getProgramId());
+    assertEquals(productDtoAfterFind.getProductId(), productDto.getProductId());
   }
 
-  private Set<ProgramProductDto> genereteProgram(int instances) {
-    Set<ProgramProductDto> programs = new HashSet<>();
+  private Set<ProductDto> genereteProgram(int instances) {
+    Set<ProductDto> programs = new HashSet<>();
     for (int i = 0; i < instances; i++) {
       ProgramDto program = new ProgramDto();
       program.setId(UUID.randomUUID());
       OrderableProductDto orderableProductDto = new OrderableProductDto();
       orderableProductDto.setId(UUID.randomUUID());
-      ProgramProductDto programProductDto = new ProgramProductDto();
-      programProductDto.setProductId(orderableProductDto.getId());
-      programProductDto.setProgramId(program.getId());
-      programs.add(programProductDto);
+      ProductDto productDto = new ProductDto();
+      productDto.setProductId(orderableProductDto.getId());
+      productDto.setProgramId(program.getId());
+      programs.add(productDto);
     }
     return programs;
   }

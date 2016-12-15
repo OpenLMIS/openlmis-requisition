@@ -45,8 +45,8 @@ import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -103,7 +103,7 @@ public class RequisitionServiceTest {
   private ScheduleReferenceDataService scheduleReferenceDataService;
 
   @Mock
-  private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Mock
   private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;

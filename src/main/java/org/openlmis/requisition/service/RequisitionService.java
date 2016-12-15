@@ -5,9 +5,9 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -23,8 +23,8 @@ import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
@@ -70,7 +70,7 @@ public class RequisitionService {
   private PeriodService periodService;
 
   @Autowired
-  private FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedProductService;
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Autowired
   private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
@@ -113,14 +113,14 @@ public class RequisitionService {
 
     requisition.setProcessingPeriodId(period.getId());
 
-    Collection<FacilityTypeApprovedProductDto> facilityTypeApprovedProducts =
-        facilityTypeApprovedProductService.getFullSupply(
-            facility.getId(), program.getId()
+    Collection<ApprovedProductDto> approvedProducts =
+        approvedProductReferenceDataService.getApprovedProducts(
+            facility.getId(), program.getId(), true
         );
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
     Requisition previousRequisition = findPreviousRequisition(requisition);
 
-    requisition.initiate(requisitionTemplate, facilityTypeApprovedProducts,
+    requisition.initiate(requisitionTemplate, approvedProducts,
             previousRequisition);
 
     requisitionRepository.save(requisition);
