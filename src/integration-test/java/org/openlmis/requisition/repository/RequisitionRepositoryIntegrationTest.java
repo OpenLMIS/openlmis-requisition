@@ -1,13 +1,22 @@
 package org.openlmis.requisition.repository;
 
+import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
+import org.openlmis.requisition.dto.ProgramProductDto;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
@@ -156,5 +165,34 @@ public class RequisitionRepositoryIntegrationTest
         assertEquals(requisition.getEmergency(), element.getEmergency());
       });
     });
+  }
+
+  @Test
+  public void shouldPersistWithMoney() throws RequisitionTemplateColumnException {
+    Money pricePerPack = new Money("14.57");
+    UUID productId = UUID.randomUUID();
+
+    ProgramProductDto programProduct = new ProgramProductDto();
+    programProduct.setPricePerPack(pricePerPack);
+    programProduct.setProductId(productId);
+
+    FacilityTypeApprovedProductDto ftap = new FacilityTypeApprovedProductDto();
+    ftap.setProgramProduct(programProduct);
+
+    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+    requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap), null);
+
+    requisition = repository.save(requisition);
+    requisition = repository.findOne(requisition.getId());
+
+    assertEquals(pricePerPack, requisition.getRequisitionLineItems().get(0).getPricePerPack());
+  }
+
+  private RequisitionTemplate setUpTemplateWithBeginningBalance()
+          throws RequisitionTemplateColumnException {
+    RequisitionTemplate template = mock(RequisitionTemplate.class);
+    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
+    return template;
   }
 }

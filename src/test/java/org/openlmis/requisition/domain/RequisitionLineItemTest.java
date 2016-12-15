@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramProductDto;
@@ -19,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemTest {
 
   private Requisition initiatedRequisition;
@@ -49,7 +51,6 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldUpdateSubmissionFields() {
-    initiatedRequisition = mockReq(RequisitionStatus.INITIATED);
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
 
@@ -87,7 +88,6 @@ public class RequisitionLineItemTest {
     final UUID product1 = UUID.randomUUID();
     final UUID product2 = UUID.randomUUID();
 
-    initiatedRequisition = mockReq(RequisitionStatus.INITIATED);
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
     item.setOrderableProductId(product1);
@@ -128,17 +128,36 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldExportWithPricePerPack() {
-    ProgramDto program = new ProgramDto();
-    ProgramProductDto programProductDto = new ProgramProductDto();
+  public void shouldBuildFromConstructorAndExport() {
     Money pricePerPack = new Money("5.7986");
-    programProductDto.setPricePerPack(pricePerPack);
-    OrderableProductDto orderableProductDto =
-        generateOrderableProductDto(program, programProductDto);
 
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setRequisition(initiatedRequisition);
-    requisitionLineItem.setOrderableProductId(orderableProductDto.getId());
+    RequisitionLineItemDto lineItemDto = testConstructionAndExport(pricePerPack);
+
+    assertThat(lineItemDto.getPricePerPack(), is(pricePerPack));
+  }
+
+  @Test
+  public void shouldBuildFromConstructorAndExportWithDefaultPrice() {
+    RequisitionLineItemDto lineItemDto = testConstructionAndExport(null);
+
+    assertThat(lineItemDto.getPricePerPack(),
+            is(new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
+  }
+
+  private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
+    UUID productId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    ProgramDto program = new ProgramDto();
+    program.setId(programId);
+    ProgramProductDto programProduct = new ProgramProductDto();
+    programProduct.setPricePerPack(pricePerPack);
+    programProduct.setProductId(productId);
+    FacilityTypeApprovedProductDto ftap = new FacilityTypeApprovedProductDto();
+    ftap.setProgramProduct(programProduct);
+    when(initiatedRequisition.getProgramId()).thenReturn(programId);
+
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem(initiatedRequisition, ftap);
+
     requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setBeginningBalance(3);
     requisitionLineItem.setTotalReceivedQuantity(4);
@@ -152,17 +171,18 @@ public class RequisitionLineItemTest {
     requisitionLineItem.setRemarks("remarks");
     requisitionLineItem.setRequestedQuantityExplanation("explanation");
 
-    when(initiatedRequisition.getProgramId()).thenReturn(program.getId());
+    OrderableProductDto orderableProductDto = generateOrderableProductDto(program, programProduct);
 
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
     requisitionLineItem.export(dto, orderableProductDto);
+
     assertNotNull(dto);
     assertThat(dto.getOrderableProduct().getId(), is(requisitionLineItem.getOrderableProductId()));
     assertThat(dto.getId(), is(requisitionLineItem.getId()));
     assertThat(dto.getBeginningBalance(), is(requisitionLineItem.getBeginningBalance()));
     assertThat(dto.getTotalReceivedQuantity(), is(requisitionLineItem.getTotalReceivedQuantity()));
     assertThat(dto.getTotalLossesAndAdjustments(),
-        is(requisitionLineItem.getTotalLossesAndAdjustments()));
+            is(requisitionLineItem.getTotalLossesAndAdjustments()));
     assertThat(dto.getStockOnHand(), is(requisitionLineItem.getStockOnHand()));
     assertThat(dto.getRequestedQuantity(), is(requisitionLineItem.getRequestedQuantity()));
     assertThat(dto.getTotalConsumedQuantity(), is(requisitionLineItem.getTotalConsumedQuantity()));
@@ -171,40 +191,16 @@ public class RequisitionLineItemTest {
     assertThat(dto.getTotalStockoutDays(), is(requisitionLineItem.getTotalStockoutDays()));
     assertThat(dto.getRemarks(), is(requisitionLineItem.getRemarks()));
     assertThat(dto.getRequestedQuantityExplanation(),
-        is(requisitionLineItem.getRequestedQuantityExplanation()));
-    assertThat(dto.getPricePerPack(), is(pricePerPack));
-  }
+            is(requisitionLineItem.getRequestedQuantityExplanation()));
 
-  @Test
-  public void shouldExportIfPricePerPackIsNull() {
-    ProgramDto program = new ProgramDto();
-    ProgramProductDto programProductDto = new ProgramProductDto();
-    programProductDto.setPricePerPack(null);
-    OrderableProductDto orderableProductDto =
-        generateOrderableProductDto(program, programProductDto);
-
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setRequisition(initiatedRequisition);
-    requisitionLineItem.setOrderableProductId(orderableProductDto.getId());
-    requisitionLineItem.setId(UUID.randomUUID());
-
-    when(initiatedRequisition.getProgramId()).thenReturn(program.getId());
-
-    RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    requisitionLineItem.export(dto, orderableProductDto);
-    assertNotNull(dto);
-    assertThat(dto.getId(), is(requisitionLineItem.getId()));
-    assertThat(dto.getOrderableProduct().getId(), is(requisitionLineItem.getOrderableProductId()));
-    assertNotNull(dto.getPricePerPack());
-    assertThat(dto.getPricePerPack().toString(), is("0.00"));
+    return dto;
   }
 
   private OrderableProductDto generateOrderableProductDto(ProgramDto program,
                                                           ProgramProductDto programProductDto) {
     OrderableProductDto orderableProductDto = new OrderableProductDto();
-    orderableProductDto.setId(UUID.randomUUID());
+    orderableProductDto.setId(programProductDto.getProductId());
     program.setId(UUID.randomUUID());
-    programProductDto.setProductId(orderableProductDto.getId());
     programProductDto.setProgramId(program.getId());
     Set<ProgramProductDto> programs = new HashSet<>();
     programs.add(programProductDto);

@@ -1,23 +1,17 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramProductDto;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -25,6 +19,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "requisition_line_items")
@@ -41,8 +39,8 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String REMARKS = "remarks";
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   public static final String TOTAL = "total";
-  private static final int PRICE_PER_PACK_IF_NULL = 0;
 
+  static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
 
   private static final String UUID = "pg-uuid";
 
@@ -117,6 +115,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Long packsToShip;
 
+  @Getter
+  @Setter
+  @Embedded
+  private Money pricePerPack;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -145,7 +148,13 @@ public class RequisitionLineItem extends BaseEntity {
       Requisition requisition, FacilityTypeApprovedProductDto facilityTypeApprovedProduct) {
     this();
     this.requisition = requisition;
-    this.orderableProductId = facilityTypeApprovedProduct.getProgramProduct().getProductId();
+
+    ProgramProductDto programProduct = facilityTypeApprovedProduct.getProgramProduct();
+    this.orderableProductId = programProduct.getProductId();
+
+    Money priceFromProduct = programProduct.getPricePerPack();
+    this.pricePerPack = priceFromProduct == null
+            ? new Money(PRICE_PER_PACK_IF_NULL) : priceFromProduct;
   }
 
   /**
@@ -207,7 +216,7 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Creates new instantion of RequisitionLineItem object based on data from
+   * Creates new instance of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}
    *
    * @param importer instance of {@link Importer}
@@ -232,6 +241,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
     requisitionLineItem.setTotal(importer.getTotal());
     requisitionLineItem.setPacksToShip(importer.getPacksToShip());
+    requisitionLineItem.setPricePerPack(importer.getPricePerPack());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     if (importer.getStockAdjustments() != null) {
@@ -266,17 +276,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
     exporter.setOrderableProduct(orderableProductDto);
-
-    ProgramProductDto programProductDto =
-        orderableProductDto.findProgramProductDto(requisition.getProgramId());
-
-    if (programProductDto != null) {
-      if (programProductDto.getPricePerPack() != null) {
-        exporter.setPricePerPack(programProductDto.getPricePerPack());
-      } else {
-        exporter.setPricePerPack(new Money(new BigDecimal(PRICE_PER_PACK_IF_NULL)));
-      }
-    }
+    exporter.setPricePerPack(pricePerPack);
   }
 
   public interface Exporter {
@@ -343,5 +343,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getTotal();
 
     Long getPacksToShip();
+
+    Money getPricePerPack();
   }
 }

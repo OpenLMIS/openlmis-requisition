@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -36,6 +37,8 @@ import java.util.UUID;
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionLineCalculationServiceTest {
+
+  private static final Money PRICE_PER_PACK = new Money("9");
 
   private Requisition requisition;
   private OrderableProductDto orderableProductDto;
@@ -93,7 +96,7 @@ public class RequisitionLineCalculationServiceTest {
     assertEquals(item.getApprovedQuantity(), requisitionLineItem.getApprovedQuantity());
     assertEquals(item.getTotalStockoutDays(), requisitionLineItem.getTotalStockoutDays());
     assertEquals(item.getTotal(), requisitionLineItem.getTotal());
-    assertNotNull(item.getPricePerPack());
+    assertEquals(PRICE_PER_PACK, item.getPricePerPack());
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {
@@ -117,6 +120,8 @@ public class RequisitionLineCalculationServiceTest {
     requisitionLineItem.setTotal(7);
     requisitionLineItem.setApprovedQuantity(5);
     requisitionLineItem.setTotalStockoutDays(6);
+    requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
+
     return requisitionLineItem;
   }
 
