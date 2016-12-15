@@ -166,7 +166,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(requisitionLineCalculationService).calculatePacksToShip(initiatedRequsition);
+    verify(requisitionLineCalculationService).calculateFields(initiatedRequsition);
     verify(initiatedRequsition).submit(template);
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),

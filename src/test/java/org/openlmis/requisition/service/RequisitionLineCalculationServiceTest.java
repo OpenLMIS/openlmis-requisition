@@ -39,6 +39,7 @@ import java.util.UUID;
 public class RequisitionLineCalculationServiceTest {
 
   private static final Money PRICE_PER_PACK = new Money("9");
+  private static final long PACK_SIZE = 2;
 
   private Requisition requisition;
   private OrderableProductDto orderableProductDto;
@@ -99,6 +100,17 @@ public class RequisitionLineCalculationServiceTest {
     assertEquals(PRICE_PER_PACK, item.getPricePerPack());
   }
 
+  @Test
+  public void shouldCalculateLineItems() {
+    when(orderableProductReferenceDataService.findOne(productId))
+            .thenReturn(orderableProductDto);
+
+    requisitionLineCalculationService.calculateFields(requisition);
+
+    RequisitionLineItem item = requisition.getRequisitionLineItems().get(0);
+    assertEquals(new Money("45"), item.getTotalCost());
+  }
+
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {
     ProgramProductDto programProductDto = new ProgramProductDto();
     programProductDto.setProductId(orderableProductDto.getId());
@@ -136,6 +148,7 @@ public class RequisitionLineCalculationServiceTest {
             singletonList(requisitionLineItem)));
     orderableProductDto = new OrderableProductDto();
     orderableProductDto.setId(UUID.randomUUID());
+    orderableProductDto.setPackSize(PACK_SIZE);
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
@@ -155,6 +168,7 @@ public class RequisitionLineCalculationServiceTest {
     requisitionLineItem.setStockOnHand(stockOnHand);
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setOrderableProductId(productId);
+    requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
     return requisitionLineItem;
   }
 

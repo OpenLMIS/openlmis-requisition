@@ -19,6 +19,9 @@ import java.util.Objects;
 @JsonDeserialize(using = MoneyDeserializer.class)
 public class Money extends Number {
 
+  public static final Money ZERO = new Money(BigDecimal.ZERO);
+  public static final String VALUE_FIELD = "value";
+
   private BigDecimal value;
 
   public Money() {
@@ -56,6 +59,26 @@ public class Money extends Number {
   @Override
   public double doubleValue() {
     return value.doubleValue();
+  }
+
+  /**
+   * Multiplication, multiplies the value represented by this money object
+   * by the provided value.
+   * @param multiplyBy the value to multiply by
+   * @return a new Money object representing the result of the multiplication
+   */
+  public Money mul(int multiplyBy) {
+    return new Money(value.multiply(new BigDecimal(multiplyBy)));
+  }
+
+  /**
+   * Multiplication, multiplies the value represented by this money object
+   * by the provided value.
+   * @param multiplyBy the value to multiply by
+   * @return a new Money object representing the result of the multiplication
+   */
+  public Money mul(long multiplyBy) {
+    return new Money(value.multiply(new BigDecimal(multiplyBy)));
   }
 
   @Override

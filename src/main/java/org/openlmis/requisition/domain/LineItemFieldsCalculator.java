@@ -1,12 +1,12 @@
 package org.openlmis.requisition.domain;
 
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
+
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import java.util.Collection;
 import java.util.Optional;
-
-import static org.apache.commons.lang.BooleanUtils.isTrue;
 
 public final class LineItemFieldsCalculator {
 
@@ -99,8 +99,28 @@ public final class LineItemFieldsCalculator {
     return totalLossesAndAdjustments;
   }
 
+  /**
+   * Calculates the total cost of the requisition line item, by multiplying price per pack
+   * and packs to ship. If either one is null, zero will be returned.
+   * @param lineItem the line item to calculate the value for
+   * @return a {@link Money} object representing the total cost for this line
+   */
+  public static Money calculateTotalCost(RequisitionLineItem lineItem) {
+    Money pricePerPack = lineItem.getPricePerPack();
+    if (pricePerPack == null) {
+      pricePerPack = new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
+    }
+
+    long packsToShip = zeroIfNull(lineItem.getPacksToShip());
+
+    return pricePerPack.mul(packsToShip);
+  }
+
   private static int zeroIfNull(Integer value) {
     return null == value ? 0 : value;
   }
 
+  private static long zeroIfNull(Long value) {
+    return null == value ? 0 : value;
+  }
 }

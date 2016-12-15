@@ -170,6 +170,7 @@ public class RequisitionLineItemTest {
     requisitionLineItem.setTotalStockoutDays(6);
     requisitionLineItem.setRemarks("remarks");
     requisitionLineItem.setRequestedQuantityExplanation("explanation");
+    requisitionLineItem.setTotalCost(new Money("30"));
 
     OrderableProductDto orderableProductDto = generateOrderableProductDto(program, programProduct);
 
@@ -192,6 +193,7 @@ public class RequisitionLineItemTest {
     assertThat(dto.getRemarks(), is(requisitionLineItem.getRemarks()));
     assertThat(dto.getRequestedQuantityExplanation(),
             is(requisitionLineItem.getRequestedQuantityExplanation()));
+    assertThat(dto.getTotalCost(), is(requisitionLineItem.getTotalCost()));
 
     return dto;
   }

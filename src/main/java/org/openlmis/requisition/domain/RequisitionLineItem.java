@@ -9,6 +9,7 @@ import org.openlmis.requisition.dto.FacilityTypeApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProgramProductDto;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -118,7 +119,14 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @Embedded
+  @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "pricePerPack"))
   private Money pricePerPack;
+
+  @Getter
+  @Setter
+  @Embedded
+  @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "totalCost"))
+  private Money totalCost;
 
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -242,12 +250,11 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setTotal(importer.getTotal());
     requisitionLineItem.setPacksToShip(importer.getPacksToShip());
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
+    requisitionLineItem.setTotalCost(importer.getTotalCost());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
-    if (importer.getStockAdjustments() != null) {
-      for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
-        stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
-      }
+    for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
+      stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
     }
 
     requisitionLineItem.setStockAdjustments(stockAdjustments);
@@ -277,6 +284,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setPacksToShip(packsToShip);
     exporter.setOrderableProduct(orderableProductDto);
     exporter.setPricePerPack(pricePerPack);
+    exporter.setTotalCost(totalCost);
   }
 
   public interface Exporter {
@@ -311,6 +319,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setOrderableProduct(OrderableProductDto orderableProductDto);
 
     void setPricePerPack(Money pricePerPack);
+
+    void setTotalCost(Money totalCost);
   }
 
   public interface Importer {
@@ -345,5 +355,7 @@ public class RequisitionLineItem extends BaseEntity {
     Long getPacksToShip();
 
     Money getPricePerPack();
+
+    Money getTotalCost();
   }
 }
