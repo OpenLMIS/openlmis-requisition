@@ -28,13 +28,13 @@ public class FacilitySupportsProgramHelper {
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     List<SupportedProgramDto> supportedPrograms = facility.getSupportedPrograms();
 
-    if (!facilitySupportsProgram(supportedPrograms, programId)) {
+    if (!isProgramSupported(supportedPrograms, programId)) {
       throw new ValidationMessageException(new Message(
           "requisition.error.facility-does-not-support-program", facilityId, programId));
     }
   }
 
-  private boolean facilitySupportsProgram(
+  private boolean isProgramSupported(
       List<SupportedProgramDto> supportedPrograms, UUID programId) {
     return supportedPrograms.stream()
         .anyMatch(supportedProgram -> supportedProgram.getId().equals(programId)

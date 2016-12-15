@@ -883,7 +883,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotSubmitIfFacilityNotSupportsProgram() throws Exception {
+  public void shouldNotSubmitIfFacilityDoesNotSupportProgram() throws Exception {
     UUID programId = UUID.randomUUID();
     setProgramIdInRequisitionAndTemplate(programId);
 
@@ -901,7 +901,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotAuthorizeIfFacilityNotSupportsProgram() throws Exception {
+  public void shouldNotAuthorizeIfFacilityDoesNotSupportProgram() throws Exception {
     UUID programId = UUID.randomUUID();
     setProgramIdInRequisitionAndTemplate(programId);
 
@@ -918,7 +918,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldNotApproveIfFacilityNotSupportsProgram() throws Exception {
+  public void shouldNotApproveIfFacilityDoesNotSupportProgram() throws Exception {
     UUID programId = UUID.randomUUID();
     setProgramIdInRequisitionAndTemplate(programId);
 
