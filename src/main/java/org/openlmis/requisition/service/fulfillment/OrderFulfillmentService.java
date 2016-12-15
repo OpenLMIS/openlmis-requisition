@@ -1,7 +1,7 @@
 package org.openlmis.requisition.service.fulfillment;
 
 import org.openlmis.requisition.dto.OrderDto;
-import org.openlmis.requisition.service.BaseService;
+import org.openlmis.requisition.service.BaseCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class OrderFulfillmentService extends BaseService {
+public class OrderFulfillmentService extends BaseCommunicationService {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Value("${fulfillment.url}")

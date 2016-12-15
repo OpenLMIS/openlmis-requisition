@@ -17,7 +17,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 
-public abstract class BaseService {
+public abstract class BaseCommunicationService {
   protected static final String ACCESS_TOKEN = "access_token";
 
   protected RestTemplate restTemplate;
@@ -31,7 +31,7 @@ public abstract class BaseService {
   @Value("${auth.server.authorizationUrl}")
   private String authorizationUrl;
 
-  public BaseService() {
+  public BaseCommunicationService() {
     this.restTemplate = new RestTemplate();
   }
 
