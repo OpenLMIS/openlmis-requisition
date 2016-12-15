@@ -287,15 +287,15 @@ public class RequisitionTest {
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
 
-    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
-    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
-
     Requisition previousRequisition = mock(Requisition.class);
     mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
     mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
 
     // should not initiate beginning balance because of this
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(false);
+
+    FacilityTypeApprovedProductDto product1 = mockFtap(productId1);
+    FacilityTypeApprovedProductDto product2 = mockFtap(productId2);
 
     // when
     Requisition req = new Requisition();
