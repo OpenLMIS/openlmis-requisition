@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +36,7 @@ public class RequisitionLineItemDto
   private Long packsToShip;
   private Money pricePerPack;
   private Integer numberOfNewPatientsAdded;
+  private Money totalCost;
 
 
   @JsonProperty
@@ -44,7 +46,7 @@ public class RequisitionLineItemDto
   @Override
   public List<StockAdjustment.Importer> getStockAdjustments() {
     if (stockAdjustments == null) {
-      return null;
+      return Collections.emptyList();
     }
 
     List<StockAdjustment.Importer> stockAdjustmentImporters = new ArrayList<>();

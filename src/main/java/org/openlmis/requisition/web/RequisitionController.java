@@ -199,7 +199,7 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
+    requisitionLineCalculationService.calculateFields(requisition);
 
     RequisitionTemplate template =
         requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
@@ -374,7 +374,7 @@ public class RequisitionController extends BaseController {
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
-      requisitionLineCalculationService.calculatePacksToShip(requisition);
+      requisitionLineCalculationService.calculateFields(requisition);
 
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
@@ -446,7 +446,7 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    requisitionLineCalculationService.calculatePacksToShip(requisition);
+    requisitionLineCalculationService.calculateFields(requisition);
 
     requisition.authorize();
     requisitionRepository.save(requisition);

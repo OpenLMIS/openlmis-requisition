@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -121,7 +122,14 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @Embedded
+  @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "pricePerPack"))
   private Money pricePerPack;
+
+  @Getter
+  @Setter
+  @Embedded
+  @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "totalCost"))
+  private Money totalCost;
 
   @Column
   @Setter
@@ -262,12 +270,11 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setPacksToShip(importer.getPacksToShip());
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
+    requisitionLineItem.setTotalCost(importer.getTotalCost());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
-    if (importer.getStockAdjustments() != null) {
-      for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
-        stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
-      }
+    for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
+      stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
     }
 
     requisitionLineItem.setStockAdjustments(stockAdjustments);
@@ -298,6 +305,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setOrderableProduct(orderableProductDto);
     exporter.setPricePerPack(pricePerPack);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
+    exporter.setTotalCost(totalCost);
   }
 
   public interface Exporter {
@@ -334,6 +342,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setPricePerPack(Money pricePerPack);
 
     void setNumberOfNewPatientsAdded(Integer numberOfNewPatientsAdded);
+
+    void setTotalCost(Money totalCost);
   }
 
   public interface Importer {
@@ -370,5 +380,7 @@ public class RequisitionLineItem extends BaseEntity {
     Money getPricePerPack();
 
     Integer getNumberOfNewPatientsAdded();
+
+    Money getTotalCost();
   }
 }

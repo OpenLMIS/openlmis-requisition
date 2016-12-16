@@ -1,5 +1,9 @@
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toList;
+
+import org.openlmis.requisition.domain.LineItemFieldsCalculator;
+import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.OrderableProductDto;
@@ -10,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 @Service
 public class RequisitionLineCalculationService {
 
@@ -21,14 +23,14 @@ public class RequisitionLineCalculationService {
   /**
    * Calculates Packs to Ship for all RequisitionLineItems in this Requisition.
    */
-  public void calculatePacksToShip(Requisition requisition) {
-    requisition.forEachLine(this::calculatePacksToShip);
+  public void calculateFields(Requisition requisition) {
+    requisition.forEachLine(this::calculateFields);
   }
 
   /**
    * Calculates Packs to Ship (V) value.
    */
-  private void calculatePacksToShip(RequisitionLineItem lineItem) {
+  private void calculateFields(RequisitionLineItem lineItem) {
     OrderableProductDto orderableProductDto =
         orderableProductReferenceDataService.findOne(lineItem.getOrderableProductId());
 
@@ -38,6 +40,9 @@ public class RequisitionLineCalculationService {
       long packsToShip = orderableProductDto.packsToOrder(orderQuantity.longValue());
       lineItem.setPacksToShip(packsToShip);
     }
+
+    Money totalCost = LineItemFieldsCalculator.calculateTotalCost(lineItem);
+    lineItem.setTotalCost(totalCost);
   }
 
   /**

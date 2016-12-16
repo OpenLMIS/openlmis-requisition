@@ -188,6 +188,20 @@
     "optionName" : "newPatientCount",
     "optionLabel" : "New Patient Count"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "totalCost",
+    "name": "totalCost",
+    "label": "Total Cost",
+    "indicator": "Q",
+    "displayOrder": 17,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
+  },
+
+
+
 
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
@@ -367,7 +381,21 @@
     "optionName" : "newPatientCount",
     "optionLabel" : "New Patient Count"
   },
-  
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "totalCost",
+    "name": "totalCost",
+    "label": "Total Cost",
+    "indicator": "Q",
+    "displayOrder": 16,
+    "isDisplayed": false,
+    "source": 2,
+    "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
+  },
+
+
+
+
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productCode",
@@ -543,7 +571,18 @@
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
-    "optionName" : "newPatientCount",
-    "optionLabel" : "New Patient Count"
+    "optionName": "newPatientCount",
+    "optionLabel": "New Patient Count"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "totalCost",
+    "name": "totalCost",
+    "label": "Total Cost",
+    "indicator": "Q",
+    "displayOrder": 16,
+    "isDisplayed": true,
+    "source": 2,
+    "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   }
 ]

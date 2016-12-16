@@ -1,16 +1,16 @@
 package org.openlmis.requisition.domain;
 
-import com.google.common.collect.Lists;
-import org.junit.Test;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-
-import java.util.UUID;
-
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+
+import com.google.common.collect.Lists;
+import org.junit.Test;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+
+import java.util.UUID;
 
 public class LineItemFieldsCalculatorTest {
 
@@ -122,5 +122,34 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setBeginningBalance(1000);
 
     assertEquals(400, LineItemFieldsCalculator.calculateTotalConsumedQuantity(requisitionLineItem));
+  }
+
+  @Test
+  public void shouldCalculateTotalCost() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setPricePerPack(new Money("3.25"));
+    requisitionLineItem.setPacksToShip(40L);
+
+    Money totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+
+    assertEquals(new Money("130"), totalCost);
+  }
+
+  @Test
+  public void shouldCalculateTotalCostAsZeroIfValuesAreMissing() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setPricePerPack(new Money("3.25"));
+    requisitionLineItem.setPacksToShip(null);
+
+    Money totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+    assertEquals(Money.ZERO, totalCost);
+
+    requisitionLineItem.setPricePerPack(null);
+    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+    assertEquals(Money.ZERO, totalCost);
+
+    requisitionLineItem.setPacksToShip(20L);
+    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+    assertEquals(Money.ZERO, totalCost);
   }
 }
