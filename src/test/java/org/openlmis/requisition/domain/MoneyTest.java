@@ -29,6 +29,9 @@ public class MoneyTest {
 
     money = new Money("3.14934252663");
     assertThat(money, is(new Money("3.15")));
+
+    money = new Money("3.145");
+    assertThat(money, is(new Money("3.15")));
   }
 
   @Test
