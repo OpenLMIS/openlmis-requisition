@@ -55,7 +55,7 @@ schemas:
                "id": { "type": "string", "required": true, "title": "id" },
                "productCode": { "type": "string", "required": true, "title": "code" },
                "name": { "type": "string", "required": true, "title": "name" },
-               "programs": {"type": "array", "required": false, "title": "programs", "items": { "type": "object", "$ref": "#/schemas/productDto"}, "uniqueItems": false}
+               "programs": {"type": "array", "required": false, "title": "programs", "items": {"type": "object", "$ref": "schemas/productDto.json"}, "uniqueItems": false}
            }
       }
 
@@ -77,25 +77,7 @@ schemas:
 
   - programDto: !include schemas/programDto.json
 
-  - productDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "ProgramProductDto",
-          "description": "A single productDto",
-          "properties": {
-              "programId": { "type": "string", "required": true, "title": "programId" },
-              "productId": { "type": "string", "required": true, "title": "productId" },
-              "productCategoryId": { "type": "string", "required": true, "title": "productCategoryId" },
-              "productCategoryDisplayName": { "type": "string", "required": true, "title": "productCategoryDisplayName" },
-              "productCategoryDisplayOrder": { "type": "integer", "required": true, "title": "productCategoryDisplayOrder" },
-              "active": { "type": "boolean", "required": true, "title": "active" },
-              "fullSupply": { "type": "boolean", "required": true, "title": "fullSupply" },
-              "displayOrder": { "type": "integer", "required": true, "title": "displayOrder" },
-              "maxMonthsOfStock": { "type": "integer", "required": true, "title": "maxMonthsOfStock" },
-              "dosesPerMonth": { "type": "integer", "required": true, "title": "dosesPerMonth" },
-              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" }
-          }
-      }
+  - productDto: !include schemas/productDto.json
 
   - requisition: |
       {   "type": "object",
