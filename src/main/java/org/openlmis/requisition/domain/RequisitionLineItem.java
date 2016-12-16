@@ -43,6 +43,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   public static final String TOTAL_COLUMN = "total";
   static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
+  public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
 
   private static final String UUID = "pg-uuid";
 
@@ -122,6 +123,10 @@ public class RequisitionLineItem extends BaseEntity {
   @Embedded
   private Money pricePerPack;
 
+  @Column
+  @Setter
+  private Integer numberOfNewPatientsAdded;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -138,6 +143,7 @@ public class RequisitionLineItem extends BaseEntity {
 
   public RequisitionLineItem() {
     stockAdjustments = new ArrayList<>();
+    this.numberOfNewPatientsAdded = 0;
   }
 
   /**
@@ -177,6 +183,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.requestedQuantityExplanation = requisitionLineItem.getRequestedQuantityExplanation();
       this.totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
       this.total = requisitionLineItem.getTotal();
+      this.numberOfNewPatientsAdded = requisitionLineItem.getNumberOfNewPatientsAdded();
 
       if (null == this.stockAdjustments) {
         this.stockAdjustments = new ArrayList<>();
@@ -199,6 +206,16 @@ public class RequisitionLineItem extends BaseEntity {
       default:
         return false;
     }
+  }
+
+  /**
+   * Returns numberOfNewPatientsAdded, if is null return 0.
+   */
+  public Integer getNumberOfNewPatientsAdded() {
+    if (numberOfNewPatientsAdded != null) {
+      return numberOfNewPatientsAdded;
+    }
+    return 0;
   }
 
   /**
@@ -244,6 +261,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setTotal(importer.getTotal());
     requisitionLineItem.setPacksToShip(importer.getPacksToShip());
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
+    requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     if (importer.getStockAdjustments() != null) {
@@ -279,6 +297,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setPacksToShip(packsToShip);
     exporter.setOrderableProduct(orderableProductDto);
     exporter.setPricePerPack(pricePerPack);
+    exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
   }
 
   public interface Exporter {
@@ -313,6 +332,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setOrderableProduct(OrderableProductDto orderableProductDto);
 
     void setPricePerPack(Money pricePerPack);
+
+    void setNumberOfNewPatientsAdded(Integer numberOfNewPatientsAdded);
   }
 
   public interface Importer {
@@ -347,5 +368,7 @@ public class RequisitionLineItem extends BaseEntity {
     Long getPacksToShip();
 
     Money getPricePerPack();
+
+    Integer getNumberOfNewPatientsAdded();
   }
 }

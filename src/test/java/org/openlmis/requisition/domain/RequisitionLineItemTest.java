@@ -143,6 +143,22 @@ public class RequisitionLineItemTest {
             is(new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
   }
 
+  @Test
+  public void shouldReturnNumberOfNewPatientsAddedWhenItIsNotNull() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setNumberOfNewPatientsAdded(10);
+
+    assertEquals(10, item.getNumberOfNewPatientsAdded().intValue());
+  }
+
+  @Test
+  public void shouldReturnZeroWhenNumberOfNewPatientsAddedIsNull() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setNumberOfNewPatientsAdded(null);
+
+    assertEquals(0, item.getNumberOfNewPatientsAdded().intValue());
+  }
+
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
     UUID productId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();

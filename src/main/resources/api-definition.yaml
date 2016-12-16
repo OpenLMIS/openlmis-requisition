@@ -207,7 +207,9 @@ schemas:
               "indicator": { "type": "string", "required": false, "title": "indicator" },
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "isDisplayed": { "type": "boolean", "required": false, "title": "isDisplayed" },
-              "source": { "type": "string", "required": false, "title": "source" }
+              "source": { "type": "string", "required": false, "title": "source" },
+              "optionName": { "type": "string", "required": false, "title": "optionName" },
+              "optionLabel": { "type": "string", "required": false, "title": "optionLabel" }
           }
       }
 

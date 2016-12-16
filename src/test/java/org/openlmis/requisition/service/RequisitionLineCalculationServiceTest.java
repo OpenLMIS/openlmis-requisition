@@ -97,6 +97,8 @@ public class RequisitionLineCalculationServiceTest {
     assertEquals(item.getTotalStockoutDays(), requisitionLineItem.getTotalStockoutDays());
     assertEquals(item.getTotal(), requisitionLineItem.getTotal());
     assertEquals(PRICE_PER_PACK, item.getPricePerPack());
+    assertEquals(item.getNumberOfNewPatientsAdded(),
+        requisitionLineItem.getNumberOfNewPatientsAdded());
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {
@@ -121,6 +123,7 @@ public class RequisitionLineCalculationServiceTest {
     requisitionLineItem.setApprovedQuantity(5);
     requisitionLineItem.setTotalStockoutDays(6);
     requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
+    requisitionLineItem.setNumberOfNewPatientsAdded(8);
 
     return requisitionLineItem;
   }

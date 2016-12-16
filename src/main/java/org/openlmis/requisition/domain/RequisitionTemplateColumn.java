@@ -1,18 +1,18 @@
 package org.openlmis.requisition.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 
 @Embeddable
@@ -37,6 +37,9 @@ public class RequisitionTemplateColumn {
   @OneToOne
   @JoinColumn(name = "requisitionColumnId", nullable = false)
   private AvailableRequisitionColumn columnDefinition;
+
+  @Embedded
+  private RequisitionTemplateColumnOption option;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
     this.columnDefinition = columnDefinition;

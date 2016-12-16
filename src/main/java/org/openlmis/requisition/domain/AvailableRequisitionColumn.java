@@ -34,6 +34,14 @@ public class AvailableRequisitionColumn extends BaseEntity {
   )
   private Set<SourceType> sources;
 
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = RequisitionTemplateColumnOption.class)
+  @Column(name = "option")
+  @CollectionTable(
+      name = "available_requisition_column_options",
+      joinColumns = @JoinColumn(name = "columnId")
+  )
+  private Set<RequisitionTemplateColumnOption> options;
+
   private String label;
 
   private String indicator;

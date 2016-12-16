@@ -40,6 +40,9 @@ public class RequisitionValidationTestUtils {
     columns.put(RequisitionLineItem.TOTAL_COLUMN,
         generateTemplateColumn(RequisitionLineItem.TOTAL_COLUMN,
             SourceType.CALCULATED, "Y"));
+    columns.put(RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED,
+        generateTemplateColumn(RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED,
+            SourceType.USER_INPUT, "F"));
     return columns;
   }
 

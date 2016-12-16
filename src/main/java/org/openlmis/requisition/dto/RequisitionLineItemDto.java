@@ -34,6 +34,7 @@ public class RequisitionLineItemDto
   private Integer total;
   private Long packsToShip;
   private Money pricePerPack;
+  private Integer numberOfNewPatientsAdded;
 
 
   @JsonProperty
