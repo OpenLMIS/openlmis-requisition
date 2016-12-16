@@ -11,7 +11,6 @@ import org.openlmis.utils.MoneyDeserializer;
 import org.openlmis.utils.MoneySerializer;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -66,11 +65,11 @@ public class Money extends Number {
 
     Money otherMoney = (Money) other;
 
-    return Objects.equals(value, otherMoney.value);
+    return value.equals(otherMoney.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(value);
+    return value.hashCode();
   }
 }
