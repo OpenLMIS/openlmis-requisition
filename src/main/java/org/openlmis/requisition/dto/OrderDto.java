@@ -5,28 +5,22 @@ import org.openlmis.requisition.domain.Requisition;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
 public class OrderDto {
-  private UUID id;
   private UUID externalId;
   private boolean emergency;
   private UUID facilityId;
   private UUID processingPeriodId;
-  private LocalDateTime createdDate;
   private UUID createdById;
   private UUID programId;
   private UUID requestingFacilityId;
   private UUID receivingFacilityId;
   private UUID supplyingFacilityId;
-  private String orderCode;
-  private OrderStatus status;
   private BigDecimal quotedCost;
-  private UUID supervisoryNodeId;
   private List<OrderLineItemDto> orderLineItems;
 
   /**
@@ -40,7 +34,6 @@ public class OrderDto {
     order.setEmergency(requisition.getEmergency());
     order.setFacilityId(requisition.getFacilityId());
     order.setProcessingPeriodId(requisition.getProcessingPeriodId());
-    order.setStatus(OrderStatus.ORDERED);
     order.setQuotedCost(BigDecimal.ZERO);
 
     order.setReceivingFacilityId(requisition.getFacilityId());
@@ -48,7 +41,6 @@ public class OrderDto {
 
     order.setSupplyingFacilityId(requisition.getSupplyingFacilityId());
     order.setProgramId(requisition.getProgramId());
-    order.setSupervisoryNodeId(requisition.getSupervisoryNodeId());
 
     order.setOrderLineItems(
         requisition
