@@ -388,7 +388,7 @@
     "label": "Total Cost",
     "indicator": "Q",
     "displayOrder": 16,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
@@ -581,7 +581,7 @@
     "label": "Total Cost",
     "indicator": "Q",
     "displayOrder": 16,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   }
