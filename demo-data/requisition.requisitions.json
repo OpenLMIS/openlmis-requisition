@@ -8,7 +8,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "AUTHORIZED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "c6ce0209-6caf-4f40-bea8-01ce529fdc67",
@@ -19,7 +20,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "AUTHORIZED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "074a49af-12c3-429f-b5da-ed3f9e65787c",
@@ -30,7 +32,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "AUTHORIZED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21",
@@ -41,7 +44,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "INITIATED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "8c7f1a6d-d139-483a-ad60-4288016f3d23",
@@ -52,7 +56,8 @@
     "supplyingFacilityId": "ab95f1cf-ae8d-4888-ba9d-05141d3f50de",
     "status": "AUTHORIZED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29"
   },
   {
     "id": "21d138bc-f2c2-4188-adf3-a3aae381abde",
@@ -63,7 +68,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "APPROVED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "122508c9-f77b-4401-8dd7-00272c7f7919",
@@ -74,7 +80,8 @@
     "supplyingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "status": "SKIPPED",
     "emergency": "false",
-    "supervisoryNodeId": "9f470265-0770-4dd1-bd5a-cf8fe3734d79"
+    "supervisoryNodeId": "9f470265-0770-4dd1-bd5a-cf8fe3734d79",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "f152b9bb-c1e2-40b6-b381-28d739208662",
@@ -85,7 +92,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "RELEASED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "89bd3422-9ada-4369-8ee3-5747fa79c92d",
@@ -96,7 +104,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "RELEASED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29"
   },
   {
     "id": "276353fb-970f-4638-8ead-3e97c9450aa3",
@@ -107,7 +116,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "RELEASED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a",
@@ -118,7 +128,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "RELEASED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29"
   },
   {
     "id": "2a5a3b0c-9769-11e6-ae22-56b6b6499611",
@@ -129,7 +140,8 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "APPROVED",
     "emergency": "false",
-    "supervisoryNodeId": "9f470265-0770-4dd1-bd5a-cf8fe3734d79"
+    "supervisoryNodeId": "9f470265-0770-4dd1-bd5a-cf8fe3734d79",
+    "templateId": "5a268780-fafd-4243-9551-5c7daa824913"
   },
   {
     "id": "05883300-976a-11e6-ae22-56b6b6499611",
@@ -140,6 +152,7 @@
     "supplyingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "status": "APPROVED",
     "emergency" : "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10"
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
+    "templateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29"
   }
 ]
