@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -164,6 +166,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNode.setDescription("description");
     supervisoryNode.setFacility(facilityDto);
 
+    template = new RequisitionTemplate();
+    template.setColumnsMap(generateTemplateColumns());
+    template.setProgramId(programDto.getId());
+
+    requisitionTemplateRepository.save(template);
+
     configureRequisition(requisition);
     configureRequisitionForSearch(requisitionForSearch);
 
@@ -188,12 +196,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setComments(comments);
     requisition = requisitionRepository.save(requisition);
-
-    template = new RequisitionTemplate();
-    template.setColumnsMap(generateTemplateColumns());
-    template.setProgramId(programDto.getId());
-
-    requisitionTemplateRepository.save(template);
   }
 
   @Test
@@ -1040,6 +1042,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisition.setEmergency(false);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setTemplateId(template.getId());
 
     wireMockRule.stubFor(
         post(urlMatching("/api/orders.*"))
@@ -1128,6 +1131,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
     requisition.setEmergency(false);
+    requisition.setTemplateId(template.getId());
 
     return requisitionRepository.save(requisition);
   }
@@ -1140,6 +1144,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
     requisition.setEmergency(false);
+    requisition.setTemplateId(template.getId());
 
     return requisitionRepository.save(requisition);
   }
@@ -1157,6 +1162,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         requisitionStatus, true);
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setTemplateId(template.getId());
     requisitionRepository.save(requisition);
 
     return requisition;

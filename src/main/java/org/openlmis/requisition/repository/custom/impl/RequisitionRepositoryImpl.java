@@ -132,6 +132,23 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   /**
+   * Get requisitions bound to given template.
+   *
+   * @param template UUID of requisition template to search by.
+   * @return List of matched requisitions.
+   */
+  @Override
+  public List<Requisition> searchByTemplate(UUID template) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    Root<Requisition> root = query.from(Requisition.class);
+    Predicate predicate = builder.equal(root.get("templateId"), template);
+
+    query.where(predicate);
+    return entityManager.createQuery(query).getResultList();
+  }
+
+  /**
    * Get last regular requisition for the given facility and program.
    *
    * @param facility UUID of facility.

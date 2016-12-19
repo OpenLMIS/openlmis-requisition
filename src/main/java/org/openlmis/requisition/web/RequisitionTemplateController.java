@@ -106,7 +106,7 @@ public class RequisitionTemplateController extends BaseController {
     }
 
     requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
-    requisitionTemplateToUpdate = requisitionTemplateRepository.save(requisitionTemplateToUpdate);
+    requisitionTemplateToUpdate = requisitionTemplateService.save(requisitionTemplateToUpdate);
 
     LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
     return new ResponseEntity<>(requisitionTemplateToUpdate, HttpStatus.OK);

@@ -100,6 +100,12 @@ public class Requisition extends BaseTimestampedEntity {
   @Type(type = UUID)
   private UUID processingPeriodId;
 
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  @Type(type = UUID)
+  private UUID templateId;
+
   @Getter
   @Setter
   @Type(type = UUID)
@@ -343,6 +349,8 @@ public class Requisition extends BaseTimestampedEntity {
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
                        Requisition previousRequisition) throws RequisitionTemplateColumnException {
+    this.templateId = template.getId();
+
     setRequisitionLineItems(
         products
             .stream()

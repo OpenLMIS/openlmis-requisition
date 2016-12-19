@@ -114,7 +114,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-
   @Test
   public void shouldCreateRequisitionTemplate() {
 

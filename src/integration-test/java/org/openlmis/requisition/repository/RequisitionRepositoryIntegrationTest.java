@@ -42,6 +42,7 @@ public class RequisitionRepositoryIntegrationTest
         UUID.randomUUID(), RequisitionStatus.INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
+    requisition.setTemplateId(UUID.randomUUID());
     return requisition;
   }
 
@@ -60,7 +61,9 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getStatus(), requisitions.get(0).getEmergency());
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
+    requisition.setTemplateId(UUID.randomUUID());
     repository.save(requisition);
+
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             requisitions.get(0).getFacilityId(),
             requisitions.get(0).getProgramId(),
@@ -108,7 +111,9 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getStatus(), false);
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
+    requisition.setTemplateId(UUID.randomUUID());
     repository.save(requisition);
+
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
             requisitions.get(0).getFacilityId(),
             requisitions.get(0).getProgramId(),
@@ -165,6 +170,21 @@ public class RequisitionRepositoryIntegrationTest
         assertEquals(requisition.getEmergency(), element.getEmergency());
       });
     });
+  }
+
+  @Test
+  public void testSearchRequisitionsByTemplate() {
+    // given
+    UUID templateId = UUID.randomUUID();
+    requisitions.get(0).setTemplateId(UUID.randomUUID());
+    requisitions.stream().skip(1).forEach(r -> r.setTemplateId(templateId));
+    requisitions.forEach(r -> repository.save(r));
+
+    // when
+    List<Requisition> result = repository.searchByTemplate(templateId);
+
+    // then
+    assertEquals(result.size(), requisitions.stream().skip(1).count());
   }
 
   @Test

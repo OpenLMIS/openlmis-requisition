@@ -96,30 +96,6 @@ public class RequisitionTemplate extends BaseEntity {
     }
   }
 
-  private void moveDownAllColumnsBelowIndex(int beginIndex) {
-    for (RequisitionTemplateColumn column : columnsMap.values()) {
-      if (column.getDisplayOrder() >= beginIndex) {
-        column.setDisplayOrder(column.getDisplayOrder() + 1);
-      }
-    }
-  }
-
-  private void moveUpAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
-    for (RequisitionTemplateColumn column : columnsMap.values()) {
-      if (column.getDisplayOrder() <= beginIndex && column.getDisplayOrder() > endIndex) {
-        column.setDisplayOrder(column.getDisplayOrder() - 1);
-      }
-    }
-  }
-
-  private void moveDownAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
-    for (RequisitionTemplateColumn column : columnsMap.values()) {
-      if (column.getDisplayOrder() >= beginIndex && column.getDisplayOrder() < endIndex) {
-        column.setDisplayOrder(column.getDisplayOrder() + 1);
-      }
-    }
-  }
-
   /**
    *
    * @param key Key to column which needs a new display property.
@@ -168,6 +144,30 @@ public class RequisitionTemplate extends BaseEntity {
 
   public boolean hasColumnsDefined() {
     return columnsMap != null && !columnsMap.isEmpty();
+  }
+
+  private void moveDownAllColumnsBelowIndex(int beginIndex) {
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() >= beginIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() + 1);
+      }
+    }
+  }
+
+  private void moveUpAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() <= beginIndex && column.getDisplayOrder() > endIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() - 1);
+      }
+    }
+  }
+
+  private void moveDownAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() >= beginIndex && column.getDisplayOrder() < endIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() + 1);
+      }
+    }
   }
 
   /**

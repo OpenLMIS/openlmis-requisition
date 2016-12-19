@@ -4,6 +4,7 @@ import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,6 +42,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private ProgramDto program;
+
+  @Getter
+  @Setter
+  private RequisitionTemplate template;
 
   @Getter
   @Setter
