@@ -11,9 +11,9 @@ var query = "INSERT INTO %s (SELECT * FROM json_populate_recordset(NULL::%s, '%s
 // Tables not included here are populated in random order
 var filesOrdered = [
     "requisition.requisition_group_program_schedules",
-    "requisition.requisitions",
     "requisition.requisition_template_columns",
     "requisition.requisition_templates",
+    "requisition.requisitions",
     "requisition.columns_maps"
 ]
 
