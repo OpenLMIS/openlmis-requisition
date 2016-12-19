@@ -4,12 +4,6 @@ import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +11,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,10 +44,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private RequisitionTemplate template;
-
-  @Getter
-  @Setter
   private ProcessingPeriodDto processingPeriod;
 
   @Getter
@@ -66,6 +61,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private UUID supervisoryNode;
+
+  @Getter
+  @Setter
+  private UUID template;
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {

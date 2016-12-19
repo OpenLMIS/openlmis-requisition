@@ -61,6 +61,7 @@ public final class RequisitionBuilder {
 
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
+    requisition.setTemplateId(importer.getTemplate());
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setComments(new ArrayList<>());
 

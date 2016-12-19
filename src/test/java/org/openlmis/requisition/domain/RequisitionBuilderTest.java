@@ -27,6 +27,7 @@ public class RequisitionBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
+  private UUID templateUuid = UUID.randomUUID();
 
   @Mock
   private RequisitionDto requisitionDto;
@@ -52,6 +53,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getProgram()).thenReturn(programDto);
     when(requisitionDto.getProcessingPeriod()).thenReturn(processingPeriodDto);
     when(requisitionDto.getSupervisoryNode()).thenReturn(supervisoryNodeUuid);
+    when(requisitionDto.getTemplate()).thenReturn(templateUuid);
     when(requisitionDto.getComments()).thenReturn(commentDtos);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
@@ -99,6 +101,7 @@ public class RequisitionBuilderTest {
     assertEquals(programUuid, requisition.getProgramId());
     assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());
     assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
+    assertEquals(templateUuid, requisition.getTemplateId());
     assertEquals(commentDtos, requisition.getComments());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());

@@ -420,6 +420,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setSupplyingFacility(UUID supplyingFacility);
 
     void setSupervisoryNode(UUID supervisoryNode);
+
+    void setTemplate(UUID template);
   }
 
   public interface Importer {
@@ -444,6 +446,8 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getSupplyingFacility();
 
     UUID getSupervisoryNode();
+
+    UUID getTemplate();
   }
 
 }

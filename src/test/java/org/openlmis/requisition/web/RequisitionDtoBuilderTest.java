@@ -29,7 +29,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,6 +78,7 @@ public class RequisitionDtoBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
+  private UUID templateUuid = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -104,6 +105,7 @@ public class RequisitionDtoBuilderTest {
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
+    assertEquals(requisition.getTemplateId(), requisitionDto.getTemplate());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(programDto, requisitionDto.getProgram());
@@ -134,8 +136,9 @@ public class RequisitionDtoBuilderTest {
         RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
-    requisition.setComments(Arrays.asList(comment));
-    requisition.setRequisitionLineItems(Arrays.asList(requisitionLineItem));
+    requisition.setTemplateId(templateUuid);
+    requisition.setComments(Collections.singletonList(comment));
+    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
     return requisition;
   }
