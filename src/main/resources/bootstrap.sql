@@ -39,6 +39,6 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('5708ebf9-9317-4420-85aa-71b2ae92643d', 'USER_INPUT'); -- numberOfNewPatientsAdded
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('e3a0c1fc-c2d5-11e6-af2d-3417eb83144e', 'CALCULATED'); -- totalCost
 
-INSERT INTO requisition.available_requisition_column_options (columnId, optionName, optionLabel) VALUES ('5708ebf9-9317-4420-85aa-71b2ae92643d', 'newPatientCount', 'New Patient Count'); -- numberOfNewPatientsAdded
-INSERT INTO requisition.available_requisition_column_options (columnId, optionName, optionLabel) VALUES ('5708ebf9-9317-4420-85aa-71b2ae92643d', 'dispensingUnitsForNewPatients', 'Dispensing units for new patients'); -- numberOfNewPatientsAdded
+INSERT INTO requisition.available_requisition_column_options (id, columnId, optionName, optionLabel) VALUES ('34b8e763-71a0-41f1-86b4-1829963f0704', '5708ebf9-9317-4420-85aa-71b2ae92643d', 'newPatientCount', 'New Patient Count'); -- numberOfNewPatientsAdded
+INSERT INTO requisition.available_requisition_column_options (id, columnId, optionName, optionLabel) VALUES ('4957ebb4-297c-459e-a291-812e72286eff', '5708ebf9-9317-4420-85aa-71b2ae92643d', 'dispensingUnitsForNewPatients', 'Dispensing units for new patients'); -- numberOfNewPatientsAdded
 

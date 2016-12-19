@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -15,6 +16,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -34,13 +36,13 @@ public class AvailableRequisitionColumn extends BaseEntity {
   )
   private Set<SourceType> sources;
 
-  @ElementCollection(fetch = FetchType.EAGER, targetClass = RequisitionTemplateColumnOption.class)
-  @Column(name = "option")
-  @CollectionTable(
-      name = "available_requisition_column_options",
-      joinColumns = @JoinColumn(name = "columnId")
-  )
-  private Set<RequisitionTemplateColumnOption> options;
+  @OneToMany(
+      mappedBy = "requisitionColumn",
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      orphanRemoval = true)
+  @Getter
+  @Setter
+  private Set<AvailableRequisitionColumnOption> options;
 
   private String label;
 

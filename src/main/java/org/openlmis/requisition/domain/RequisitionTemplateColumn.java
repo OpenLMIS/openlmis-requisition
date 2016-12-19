@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
@@ -38,8 +37,9 @@ public class RequisitionTemplateColumn {
   @JoinColumn(name = "requisitionColumnId", nullable = false)
   private AvailableRequisitionColumn columnDefinition;
 
-  @Embedded
-  private RequisitionTemplateColumnOption option;
+  @OneToOne
+  @JoinColumn(name = "requisitionColumnOptionId")
+  private AvailableRequisitionColumnOption option;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
     this.columnDefinition = columnDefinition;
