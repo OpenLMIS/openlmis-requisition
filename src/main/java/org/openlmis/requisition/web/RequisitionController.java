@@ -3,6 +3,7 @@ package org.openlmis.requisition.web;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -449,6 +450,7 @@ public class RequisitionController extends BaseController {
     requisitionLineCalculationService.calculateFields(requisition);
 
     requisition.authorize();
+    nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
 
@@ -518,6 +520,25 @@ public class RequisitionController extends BaseController {
           "An error occurred while converting requisitions to order", err.getMessage());
       LOGGER.error(errorResponse.getMessage(), err);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private void nullDataValuesOfRequisitionLineItems(
+      List<RequisitionLineItem> requisitionLineItems) {
+    for (RequisitionLineItem requisitionLineItem: requisitionLineItems) {
+      requisitionLineItem.setApprovedQuantity(null);
+      requisitionLineItem.setRequestedQuantity(null);
+      requisitionLineItem.setRequestedQuantityExplanation(null);
+      requisitionLineItem.setTotalConsumedQuantity(null);
+      requisitionLineItem.setTotalReceivedQuantity(null);
+      requisitionLineItem.setTotal(null);
+      requisitionLineItem.setBeginningBalance(null);
+      requisitionLineItem.setPacksToShip(null);
+      requisitionLineItem.setPricePerPack(null);
+      requisitionLineItem.setStockAdjustments(null);
+      requisitionLineItem.setStockOnHand(null);
+      requisitionLineItem.setTotalLossesAndAdjustments(null);
+      requisitionLineItem.setTotalStockoutDays(null);
     }
   }
 }

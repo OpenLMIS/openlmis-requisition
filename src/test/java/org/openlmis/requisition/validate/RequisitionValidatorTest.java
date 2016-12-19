@@ -222,7 +222,7 @@ public class RequisitionValidatorTest {
     UUID programId = UUID.randomUUID();
 
     when(requisition.getProgramId()).thenReturn(programId);
-    when(requisition.getRequisitionLineItems()).thenReturn(requisitionLineItems);
+    when(requisition.getNonSkippedRequisitionLineItems()).thenReturn(requisitionLineItems);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
 
     when(requisitionTemplateRepository

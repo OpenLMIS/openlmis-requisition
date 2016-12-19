@@ -42,14 +42,14 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   public void validate(Object target, Errors errors) {
     Requisition requisition = (Requisition) target;
 
-    if (isEmpty(requisition.getRequisitionLineItems())) {
+    if (isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
       errors.rejectValue(REQUISITION_LINE_ITEMS,
           "A requisitionLineItems" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     } else {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
           requisition.getProgramId());
 
-      requisition.getRequisitionLineItems()
+      requisition.getNonSkippedRequisitionLineItems()
           .forEach(lineItem ->
               validateRequisitionLineItem(errors, template, requisition, lineItem));
     }

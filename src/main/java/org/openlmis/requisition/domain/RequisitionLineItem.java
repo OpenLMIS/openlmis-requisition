@@ -45,6 +45,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String TOTAL_COLUMN = "total";
   static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
   public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
+  public static final String SKIPPED = "skipped";
 
   private static final String UUID = "pg-uuid";
 
@@ -119,6 +120,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Long packsToShip;
 
+  @Column
+  @Getter
+  @Setter
+  private Boolean skipped;
+
   @Getter
   @Setter
   @Embedded
@@ -150,9 +156,13 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private boolean nonFullSupply;
 
+  /**
+   * Initiates a requisition line item.
+   */
   public RequisitionLineItem() {
     stockAdjustments = new ArrayList<>();
     this.numberOfNewPatientsAdded = 0;
+    this.skipped = false;
   }
 
   /**
@@ -193,6 +203,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
       this.total = requisitionLineItem.getTotal();
       this.numberOfNewPatientsAdded = requisitionLineItem.getNumberOfNewPatientsAdded();
+      this.skipped = requisitionLineItem.getSkipped();
 
       if (null == this.stockAdjustments) {
         this.stockAdjustments = new ArrayList<>();
@@ -262,6 +273,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotalCost(importer.getTotalCost());
+    requisitionLineItem.setSkipped(importer.getSkipped());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -297,6 +309,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setPricePerPack(pricePerPack);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setTotalCost(totalCost);
+    exporter.setSkipped(skipped);
   }
 
   public interface Exporter {
@@ -335,6 +348,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setNumberOfNewPatientsAdded(Integer numberOfNewPatientsAdded);
 
     void setTotalCost(Money totalCost);
+
+    void setSkipped(Boolean skipped);
   }
 
   public interface Importer {
@@ -373,5 +388,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getNumberOfNewPatientsAdded();
 
     Money getTotalCost();
+
+    Boolean getSkipped();
   }
 }

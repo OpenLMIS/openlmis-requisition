@@ -395,6 +395,30 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Filter requisitionLineItems that are skipped.
+   *
+   * @return requisitionLineItems that are not skipped
+   */
+  @JsonIgnore
+  public List<RequisitionLineItem> getNonSkippedRequisitionLineItems() {
+    return this.requisitionLineItems.stream()
+        .filter(line -> !line.getSkipped())
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Filter requisitionLineItems that are not skipped.
+   *
+   * @return requisitionLineItems that are skipped
+   */
+  @JsonIgnore
+  public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
+    return this.requisitionLineItems.stream()
+        .filter(line -> line.getSkipped())
+        .collect(Collectors.toList());
+  }
+
+  /**
    * Export this object to the specified exporter (DTO).
    *
    * @param exporter exporter to export to

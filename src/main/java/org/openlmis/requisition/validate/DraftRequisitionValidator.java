@@ -38,11 +38,11 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
-    if (!isEmpty(requisition.getRequisitionLineItems())) {
+    if (!isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
       RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
           savedRequisition.getProgramId()
       );
-      requisition.getRequisitionLineItems()
+      requisition.getNonSkippedRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, template, savedRequisition, i));
     }
   }

@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
