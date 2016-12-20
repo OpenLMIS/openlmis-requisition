@@ -387,7 +387,7 @@
     "indicator": "Q",
     "displayOrder": 17,
     "isDisplayed": false,
-    "source": 2,
+    "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
 
@@ -579,7 +579,7 @@
     "indicator": "Q",
     "displayOrder": 17,
     "isDisplayed": true,
-    "source": 2,
+    "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   }
 ]
