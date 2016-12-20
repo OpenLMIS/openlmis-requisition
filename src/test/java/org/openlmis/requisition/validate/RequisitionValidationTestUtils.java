@@ -43,8 +43,8 @@ public class RequisitionValidationTestUtils {
     columns.put(RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED,
         generateTemplateColumn(RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED,
             SourceType.USER_INPUT, "F"));
-    columns.put(RequisitionLineItem.SKIPPED,
-        generateTemplateColumn(RequisitionLineItem.SKIPPED,
+    columns.put(RequisitionLineItem.SKIPPED_COLUMN,
+        generateTemplateColumn(RequisitionLineItem.SKIPPED_COLUMN,
             SourceType.USER_INPUT, "S"));
     return columns;
   }

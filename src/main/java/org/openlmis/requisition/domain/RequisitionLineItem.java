@@ -45,7 +45,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String TOTAL_COLUMN = "total";
   static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
   public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
-  public static final String SKIPPED = "skipped";
+  public static final String SKIPPED_COLUMN = "skipped";
 
   private static final String UUID = "pg-uuid";
 
@@ -121,7 +121,6 @@ public class RequisitionLineItem extends BaseEntity {
   private Long packsToShip;
 
   @Column
-  @Getter
   @Setter
   private Boolean skipped;
 
@@ -245,6 +244,17 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
+   * Return skipped, if is null return false
+   */
+  public Boolean getSkipped() {
+    if (skipped != null) {
+      return skipped;
+    }
+
+    return false;
+  }
+
+  /**
    * Creates new instance of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}
    *
@@ -309,7 +319,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setPricePerPack(pricePerPack);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setTotalCost(totalCost);
-    exporter.setSkipped(skipped);
+    exporter.setSkipped(getSkipped());
   }
 
   public interface Exporter {
