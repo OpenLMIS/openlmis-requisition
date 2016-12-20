@@ -27,6 +27,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -231,7 +232,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided()
-          throws RequisitionTemplateColumnException {
+      throws RequisitionTemplateColumnException {
     // given
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
@@ -259,7 +260,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldInitiateBeginningBalanceToZeroIfNoPreviousRequisition()
-          throws RequisitionTemplateColumnException {
+      throws RequisitionTemplateColumnException {
     // given
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
@@ -283,7 +284,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldInitiateBeginningBalanceToZeroIfNotVisible()
-          throws RequisitionTemplateColumnException {
+      throws RequisitionTemplateColumnException {
     // given
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
@@ -310,6 +311,36 @@ public class RequisitionTest {
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(0));
   }
 
+  @Test
+  public void shouldReturnNonSkippedRequisitionLineItems() {
+    RequisitionLineItem notSkipped = getRequisitionLineItem(false);
+    RequisitionLineItem skipped = getRequisitionLineItem(true);
+
+    Requisition requisition = getRequisition(notSkipped, skipped);
+    List<RequisitionLineItem> nonSkippedRequisitionLineItems =
+        requisition.getNonSkippedRequisitionLineItems();
+    RequisitionLineItem requisitionLineItem =
+        nonSkippedRequisitionLineItems.get(0);
+
+    assertEquals(1, nonSkippedRequisitionLineItems.size());
+    assertEquals(notSkipped.getId(), requisitionLineItem.getId());
+  }
+
+  @Test
+  public void shouldReturnSkippedRequisitionLineItems() {
+    RequisitionLineItem notSkipped = getRequisitionLineItem(false);
+    RequisitionLineItem skipped = getRequisitionLineItem(true);
+
+    Requisition requisition = getRequisition(notSkipped, skipped);
+    List<RequisitionLineItem> skippedRequisitionLineItems =
+        requisition.getSkippedRequisitionLineItems();
+    RequisitionLineItem requisitionLineItem =
+        skippedRequisitionLineItems.get(0);
+
+    assertEquals(1, skippedRequisitionLineItems.size());
+    assertEquals(skipped.getId(), requisitionLineItem.getId());
+  }
+
   private void mockReqLine(Requisition requisition, UUID productId,
                            int stockOnHand, int approvedQuantity) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
@@ -326,5 +357,18 @@ public class RequisitionTest {
     when(approvedProductDto.getProduct()).thenReturn(programProduct);
     when(programProduct.getProductId()).thenReturn(orderableProductId);
     return approvedProductDto;
+  }
+
+  private RequisitionLineItem getRequisitionLineItem(boolean skipped) {
+    RequisitionLineItem notSkipped = new RequisitionLineItem();
+    notSkipped.setSkipped(skipped);
+    notSkipped.setId(UUID.randomUUID());
+    return notSkipped;
+  }
+
+  private Requisition getRequisition(RequisitionLineItem notSkipped, RequisitionLineItem skipped) {
+    Requisition requisition = new Requisition();
+    requisition.setRequisitionLineItems(Arrays.asList(notSkipped, skipped));
+    return requisition;
   }
 }

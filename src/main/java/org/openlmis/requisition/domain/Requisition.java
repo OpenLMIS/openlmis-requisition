@@ -414,7 +414,7 @@ public class Requisition extends BaseTimestampedEntity {
   @JsonIgnore
   public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
     return this.requisitionLineItems.stream()
-        .filter(line -> line.getSkipped())
+        .filter(RequisitionLineItem::getSkipped)
         .collect(Collectors.toList());
   }
 

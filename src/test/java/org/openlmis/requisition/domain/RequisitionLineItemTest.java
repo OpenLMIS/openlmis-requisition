@@ -142,7 +142,7 @@ public class RequisitionLineItemTest {
     RequisitionLineItemDto lineItemDto = testConstructionAndExport(null);
 
     assertThat(lineItemDto.getPricePerPack(),
-            is(new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
+        is(new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
   }
 
   @Test
@@ -158,6 +158,14 @@ public class RequisitionLineItemTest {
     RequisitionLineItem item = new RequisitionLineItem();
 
     assertEquals(0, item.getNumberOfNewPatientsAdded().intValue());
+  }
+
+  @Test
+  public void shouldSetSkippedToFalseIfNull() {
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    RequisitionLineItem requisitionLineItem =
+        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
+    assertEquals(false, requisitionLineItem.getSkipped());
   }
 
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
@@ -200,7 +208,7 @@ public class RequisitionLineItemTest {
     assertThat(dto.getBeginningBalance(), is(requisitionLineItem.getBeginningBalance()));
     assertThat(dto.getTotalReceivedQuantity(), is(requisitionLineItem.getTotalReceivedQuantity()));
     assertThat(dto.getTotalLossesAndAdjustments(),
-            is(requisitionLineItem.getTotalLossesAndAdjustments()));
+        is(requisitionLineItem.getTotalLossesAndAdjustments()));
     assertThat(dto.getStockOnHand(), is(requisitionLineItem.getStockOnHand()));
     assertThat(dto.getRequestedQuantity(), is(requisitionLineItem.getRequestedQuantity()));
     assertThat(dto.getTotalConsumedQuantity(), is(requisitionLineItem.getTotalConsumedQuantity()));
@@ -209,7 +217,7 @@ public class RequisitionLineItemTest {
     assertThat(dto.getTotalStockoutDays(), is(requisitionLineItem.getTotalStockoutDays()));
     assertThat(dto.getRemarks(), is(requisitionLineItem.getRemarks()));
     assertThat(dto.getRequestedQuantityExplanation(),
-            is(requisitionLineItem.getRequestedQuantityExplanation()));
+        is(requisitionLineItem.getRequestedQuantityExplanation()));
     assertThat(dto.getTotalCost(), is(requisitionLineItem.getTotalCost()));
     assertThat(dto.getNumberOfNewPatientsAdded(),
         is(requisitionLineItem.getNumberOfNewPatientsAdded()));
