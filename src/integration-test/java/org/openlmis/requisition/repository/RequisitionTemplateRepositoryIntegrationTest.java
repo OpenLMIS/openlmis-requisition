@@ -188,8 +188,10 @@ public class RequisitionTemplateRepositoryIntegrationTest
       createdDate = createdDate.plusDays(1);
       RequisitionTemplate requisitionTemplate = generateInstance();
       requisitionTemplate.setProgramId(programId);
-      requisitionTemplate.setCreatedDate(createdDate);
       requisitionTemplates.add(repository.save(requisitionTemplate));
+
+      requisitionTemplate.setCreatedDate(createdDate);
+      repository.save(requisitionTemplate);
     }
 
     // when
