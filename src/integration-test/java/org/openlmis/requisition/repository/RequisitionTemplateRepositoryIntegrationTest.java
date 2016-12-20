@@ -12,6 +12,7 @@ import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -181,9 +182,13 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void shouldFindLastTemplateByProgram() {
     // given
     UUID programId = UUID.randomUUID();
+    LocalDateTime createdDate = LocalDateTime.now().minusMonths(1);
+
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
+      createdDate = createdDate.plusDays(1);
       RequisitionTemplate requisitionTemplate = generateInstance();
       requisitionTemplate.setProgramId(programId);
+      requisitionTemplate.setCreatedDate(createdDate);
       requisitionTemplates.add(repository.save(requisitionTemplate));
     }
 

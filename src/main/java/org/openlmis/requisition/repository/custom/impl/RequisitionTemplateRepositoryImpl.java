@@ -38,7 +38,10 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
                     root.get("programId"), program));
 
     query.where(predicate);
-    List<RequisitionTemplate> templates = entityManager.createQuery(query).getResultList();
-    return templates.get(templates.size() - 1);
+    query.orderBy(builder.desc(root.get("createdDate")));
+
+    List<RequisitionTemplate> templates = entityManager.createQuery(query)
+        .setMaxResults(1).getResultList();
+    return templates.isEmpty() ? null : templates.get(0);
   }
 }

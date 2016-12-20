@@ -20,7 +20,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
-public class RequisitionTemplate extends BaseEntity {
+public class RequisitionTemplate extends BaseTimestampedEntity {
 
   private static final String UUID = "pg-uuid";
 
