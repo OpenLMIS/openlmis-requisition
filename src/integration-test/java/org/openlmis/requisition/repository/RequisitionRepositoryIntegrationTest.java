@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -175,16 +176,21 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByTemplate() {
     // given
+    Requisition nonMatchingRequisition = requisitions.get(0);
+    nonMatchingRequisition.setTemplateId(UUID.randomUUID());
+
     UUID templateId = UUID.randomUUID();
-    requisitions.get(0).setTemplateId(UUID.randomUUID());
-    requisitions.stream().skip(1).forEach(r -> r.setTemplateId(templateId));
+    List<Requisition> matchingRequisitions =
+        requisitions.stream().skip(1).collect(Collectors.toList());
+    matchingRequisitions.forEach(r -> r.setTemplateId(templateId));
+
     requisitions.forEach(r -> repository.save(r));
 
     // when
-    List<Requisition> result = repository.searchByTemplate(templateId);
+    List<Requisition> result = repository.findByTemplateId(templateId);
 
     // then
-    assertEquals(result.size(), requisitions.stream().skip(1).count());
+    assertEquals(result.size(), matchingRequisitions.size());
   }
 
   @Test

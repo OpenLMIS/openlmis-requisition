@@ -177,6 +177,25 @@ public class RequisitionTemplateRepositoryIntegrationTest
             template.getProgramId());
   }
 
+  @Test
+  public void shouldFindLastTemplateByProgram() {
+    // given
+    UUID programId = UUID.randomUUID();
+    for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
+      RequisitionTemplate requisitionTemplate = generateInstance();
+      requisitionTemplate.setProgramId(programId);
+      requisitionTemplates.add(repository.save(requisitionTemplate));
+    }
+
+    // when
+    RequisitionTemplate result = repository.getTemplateForProgram(programId);
+
+    // then
+    assertEquals(
+        requisitionTemplates.get(requisitionTemplates.size() - 1).getId(), result.getId());
+    assertEquals(programId, result.getProgramId());
+  }
+
   private AvailableRequisitionColumn getColumn() {
     return availableRequisitionColumnRepository.findOne(
         UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")

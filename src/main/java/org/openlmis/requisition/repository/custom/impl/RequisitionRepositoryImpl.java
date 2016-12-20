@@ -4,6 +4,10 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -12,9 +16,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -129,23 +130,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Query query = entityManager.createQuery(criteriaQuery);
 
     return query.getResultList();
-  }
-
-  /**
-   * Get requisitions bound to given template.
-   *
-   * @param template UUID of requisition template to search by.
-   * @return List of matched requisitions.
-   */
-  @Override
-  public List<Requisition> searchByTemplate(UUID template) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    Root<Requisition> root = query.from(Requisition.class);
-    Predicate predicate = builder.equal(root.get("templateId"), template);
-
-    query.where(predicate);
-    return entityManager.createQuery(query).getResultList();
   }
 
   /**

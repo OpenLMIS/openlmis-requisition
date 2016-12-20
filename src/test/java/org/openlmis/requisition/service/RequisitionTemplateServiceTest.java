@@ -1,8 +1,8 @@
 package org.openlmis.requisition.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -56,7 +56,7 @@ public class RequisitionTemplateServiceTest {
     requisitionTemplate.setId(templateId);
 
     when(requisitionTemplateRepository.save(requisitionTemplate)).thenReturn(requisitionTemplate);
-    when(requisitionRepository.searchByTemplate(templateId)).thenReturn(Collections.emptyList());
+    when(requisitionRepository.findByTemplateId(templateId)).thenReturn(Collections.emptyList());
 
     // when
     RequisitionTemplate result = requisitionTemplateService.save(requisitionTemplate);
@@ -72,13 +72,13 @@ public class RequisitionTemplateServiceTest {
     requisitionTemplate.setId(UUID.randomUUID());
 
     when(requisitionTemplateRepository.save(requisitionTemplate)).thenReturn(requisitionTemplate);
-    when(requisitionRepository.searchByTemplate(requisitionTemplate.getId()))
+    when(requisitionRepository.findByTemplateId(requisitionTemplate.getId()))
         .thenReturn(Collections.singletonList(mock(Requisition.class)));
 
     // when
     RequisitionTemplate result = requisitionTemplateService.save(requisitionTemplate);
 
     // then
-    assertNull(result.getId());
+    assertNotEquals(requisitionTemplate, result);
   }
 }

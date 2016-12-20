@@ -24,7 +24,6 @@ public class RequisitionTemplate extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
-  @Column(unique = true)
   @Getter
   @Setter
   @Type(type = UUID)

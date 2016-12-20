@@ -21,7 +21,5 @@ public interface RequisitionRepositoryCustom {
 
   List<Requisition> searchApprovedRequisitions(String filterBy, List<UUID> desiredUuids);
 
-  List<Requisition> searchByTemplate(UUID template);
-
   Requisition getLastRegularRequisition(UUID facility, UUID program);
 }

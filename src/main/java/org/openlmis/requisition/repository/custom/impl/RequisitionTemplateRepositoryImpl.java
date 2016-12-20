@@ -3,13 +3,15 @@ package org.openlmis.requisition.repository.custom.impl;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryCustom;
 
+import java.util.List;
+import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.UUID;
 
 public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRepositoryCustom {
 
@@ -36,6 +38,7 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
                     root.get("programId"), program));
 
     query.where(predicate);
-    return entityManager.createQuery(query).getSingleResult();
+    List<RequisitionTemplate> templates = entityManager.createQuery(query).getResultList();
+    return templates.get(templates.size() - 1);
   }
 }
