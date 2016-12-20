@@ -121,6 +121,7 @@ public class RequisitionLineItem extends BaseEntity {
   private Long packsToShip;
 
   @Column
+  @Getter
   @Setter
   private Boolean skipped;
 
@@ -244,17 +245,6 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Return skipped, if is null return false
-   */
-  public Boolean getSkipped() {
-    if (skipped != null) {
-      return skipped;
-    }
-
-    return false;
-  }
-
-  /**
    * Creates new instance of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}
    *
@@ -283,7 +273,11 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotalCost(importer.getTotalCost());
-    requisitionLineItem.setSkipped(importer.getSkipped());
+    if (importer.getSkipped() != null) {
+      requisitionLineItem.setSkipped(importer.getSkipped());
+    } else {
+      requisitionLineItem.setSkipped(false);
+    }
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -319,7 +313,11 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setPricePerPack(pricePerPack);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setTotalCost(totalCost);
-    exporter.setSkipped(getSkipped());
+    exporter.setSkipped(skipped);
+  }
+
+  public void clearStockAdjustments() {
+    stockAdjustments.clear();
   }
 
   public interface Exporter {
