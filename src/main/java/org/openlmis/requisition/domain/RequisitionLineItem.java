@@ -133,6 +133,7 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Column
   @Setter
+  @Getter
   private Integer numberOfNewPatientsAdded;
 
   @OneToMany(
@@ -214,16 +215,6 @@ public class RequisitionLineItem extends BaseEntity {
       default:
         return false;
     }
-  }
-
-  /**
-   * Returns numberOfNewPatientsAdded, if is null return 0.
-   */
-  public Integer getNumberOfNewPatientsAdded() {
-    if (numberOfNewPatientsAdded != null) {
-      return numberOfNewPatientsAdded;
-    }
-    return 0;
   }
 
   /**

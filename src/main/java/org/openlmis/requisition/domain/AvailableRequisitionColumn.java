@@ -25,6 +25,7 @@ import javax.persistence.Table;
 @Getter
 @Setter
 public class AvailableRequisitionColumn extends BaseEntity {
+
   private String name;
 
   @ElementCollection(fetch = FetchType.EAGER, targetClass = SourceType.class)

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,4 +37,23 @@ public class AvailableRequisitionColumnOption extends BaseEntity {
   @Getter
   @Setter
   private String optionLabel;
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+
+    if (!(obj instanceof AvailableRequisitionColumnOption)) {
+      return false;
+    }
+
+    AvailableRequisitionColumnOption columnOption = (AvailableRequisitionColumnOption) obj;
+    return Objects.equals(columnOption.getOptionName(), getOptionName());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getOptionName());
+  }
 }

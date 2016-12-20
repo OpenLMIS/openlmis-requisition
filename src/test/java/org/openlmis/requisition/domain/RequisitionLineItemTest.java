@@ -61,6 +61,7 @@ public class RequisitionLineItemTest {
     item.setRequestedQuantity(5);
     item.setTotalStockoutDays(6);
     item.setTotal(7);
+    item.setNumberOfNewPatientsAdded(1);
 
     RequisitionLineItem updateItem = new RequisitionLineItem();
     updateItem.setStockOnHand(11);
@@ -70,6 +71,7 @@ public class RequisitionLineItemTest {
     updateItem.setRequestedQuantity(55);
     updateItem.setTotalStockoutDays(66);
     updateItem.setTotal(77);
+    updateItem.setNumberOfNewPatientsAdded(2);
 
     item.updateFrom(updateItem);
 
@@ -80,7 +82,7 @@ public class RequisitionLineItemTest {
     assertThat(item.getRequestedQuantity(), is(55));
     assertThat(item.getTotalStockoutDays(), is(66));
     assertThat(item.getTotal(), is(77));
-
+    assertThat(item.getNumberOfNewPatientsAdded(), is(2));
   }
 
   @Test
@@ -152,9 +154,8 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldReturnZeroWhenNumberOfNewPatientsAddedIsNull() {
+  public void shouldReturnZeroWhenNumberOfNewPatientsAddedIsNotSet() {
     RequisitionLineItem item = new RequisitionLineItem();
-    item.setNumberOfNewPatientsAdded(null);
 
     assertEquals(0, item.getNumberOfNewPatientsAdded().intValue());
   }
@@ -186,6 +187,7 @@ public class RequisitionLineItemTest {
     requisitionLineItem.setRemarks("remarks");
     requisitionLineItem.setRequestedQuantityExplanation("explanation");
     requisitionLineItem.setTotalCost(new Money("30"));
+    requisitionLineItem.setNumberOfNewPatientsAdded(10);
 
     OrderableProductDto orderableProductDto = generateOrderableProductDto(program, programProduct);
 
@@ -209,6 +211,8 @@ public class RequisitionLineItemTest {
     assertThat(dto.getRequestedQuantityExplanation(),
             is(requisitionLineItem.getRequestedQuantityExplanation()));
     assertThat(dto.getTotalCost(), is(requisitionLineItem.getTotalCost()));
+    assertThat(dto.getNumberOfNewPatientsAdded(),
+        is(requisitionLineItem.getNumberOfNewPatientsAdded()));
 
     return dto;
   }

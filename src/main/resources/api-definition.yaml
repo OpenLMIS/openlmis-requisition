@@ -138,7 +138,9 @@ schemas:
               "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
               "remarks": {"type": "string", "required": true, "title": "remarks" },
               "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
-              "total": {"type": "integer", "required": false, "title": "total" }
+              "total": {"type": "integer", "required": false, "title": "total" },
+              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
+              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" }
           }
       }
 
@@ -160,9 +162,9 @@ schemas:
               "remarks": {"type": "string", "required": true, "title": "remarks" },
               "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
               "total": {"type": "integer", "required": false, "title": "total" },
-              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" }
+              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
+              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" }
           }
-
       }
 
   - requisitionTemplate: |
@@ -190,8 +192,41 @@ schemas:
               "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
               "isDisplayed": { "type": "boolean", "required": false, "title": "isDisplayed" },
               "source": { "type": "string", "required": false, "title": "source" },
-              "optionName": { "type": "string", "required": false, "title": "optionName" },
-              "optionLabel": { "type": "string", "required": false, "title": "optionLabel" }
+              "columnDefinition": { "type": "object", "$ref": "#/schemas/availableRequisitionColumn", "required": true, "title": "columnDefinition" },
+              "option": { "type": "object", "$ref": "#/schemas/availableRequisitionColumnOption", "required": false, "title": "option" }
+          }
+      }
+
+  - availableRequisitionColumn: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "AvailableRequisitionColumn",
+          "description": "A single availableRequisitionColumn",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "name": { "type": "string", "required": false, "title": "name" },
+              "sources": {"type": "array", "required": false, "title": "sources", "items": {"type": "string" }, "uniqueItems": true },
+              "options": {"type": "array", "required": false, "title": "options", "items": {"type": "object", "$ref": "#/schemas/availableRequisitionColumnOption" }, "uniqueItems": true },
+              "label": { "type": "string", "required": false, "title": "label" },
+              "indicator": { "type": "string", "required": false, "title": "indicator" },
+              "mandatory": { "type": "boolean", "required": false, "title": "mandatory" },
+              "isDisplayRequired": { "type": "boolean", "required": false, "title": "isDisplayRequired" },
+              "canChangeOrder": { "type": "boolean", "required": false, "title": "canChangeOrder" },
+              "canBeChangedByUser": { "type": "boolean", "required": false, "title": "canBeChangedByUser" },
+              "columnType": { "type": "string", "required": false, "title": "columnType" }
+          }
+      }
+
+  - availableRequisitionColumnOption: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "title": "AvailableRequisitionColumnOption",
+          "description": "A single availableRequisitionColumnOption",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "requisitionColumn": { "type": "object", "$ref": "#/schemas/availableRequisitionColumn", "required": true, "title": "requisitionColumn" },
+              "optionName": { "type": "string", "required": true, "title": "name" },
+              "optionLabel": { "type": "string", "required": true, "title": "label" }
           }
       }
 

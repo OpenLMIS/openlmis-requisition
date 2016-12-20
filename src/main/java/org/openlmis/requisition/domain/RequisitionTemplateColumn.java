@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 
 
 @Embeddable
@@ -33,11 +33,11 @@ public class RequisitionTemplateColumn {
 
   private SourceType source;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "requisitionColumnId", nullable = false)
   private AvailableRequisitionColumn columnDefinition;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "requisitionColumnOptionId")
   private AvailableRequisitionColumnOption option;
 
