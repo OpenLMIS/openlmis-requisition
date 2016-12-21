@@ -56,6 +56,7 @@ public class RequisitionValidatorTest {
   private List<RequisitionLineItem> requisitionLineItems;
   private RequisitionTemplate requisitionTemplate;
   private Map<String, RequisitionTemplateColumn> columnsMap;
+  private UUID programId;
 
   @Before
   public void setUp() {
@@ -205,6 +206,22 @@ public class RequisitionValidatorTest {
         contains(RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
   }
 
+  @Test
+  public void shouldNotValidateSkippedLineItems() {
+    Requisition requisition = getRequisition();
+
+    RequisitionLineItem lineItem = getSkippedAndIncorrectRequisitionLineItem();
+
+    RequisitionLineItem lineItem2 = generateLineItem();
+
+    requisitionLineItems.add(lineItem);
+    requisitionLineItems.add(lineItem2);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(any(), any());
+  }
+
   private RequisitionLineItem generateLineItem() {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setRequestedQuantity(1);
@@ -213,13 +230,15 @@ public class RequisitionValidatorTest {
     lineItem.setStockOnHand(1);
     lineItem.setTotalConsumedQuantity(1);
     lineItem.setTotalLossesAndAdjustments(0);
+    lineItem.setTotalStockoutDays(1);
+    lineItem.setTotal(1);
     lineItem.setRequisition(requisition);
     lineItem.setStockAdjustments(new ArrayList<>());
     return lineItem;
   }
 
   private void mockRepositoriesAndObjects() {
-    UUID programId = UUID.randomUUID();
+    programId = UUID.randomUUID();
 
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getNonSkippedRequisitionLineItems()).thenReturn(requisitionLineItems);
@@ -231,5 +250,20 @@ public class RequisitionValidatorTest {
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
     when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))
         .thenReturn(new ArrayList<>());
+  }
+
+  private RequisitionLineItem getSkippedAndIncorrectRequisitionLineItem() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setTotalConsumedQuantity(2);
+    lineItem.setSkipped(true);
+    return lineItem;
+  }
+
+  private Requisition getRequisition() {
+    Requisition requisition = new Requisition();
+    requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition.setProgramId(programId);
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    return requisition;
   }
 }

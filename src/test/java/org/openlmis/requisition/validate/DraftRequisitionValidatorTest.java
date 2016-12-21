@@ -1,8 +1,10 @@
 package org.openlmis.requisition.validate;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -107,10 +109,8 @@ public class DraftRequisitionValidatorTest {
   @Test
   public void shouldRejectIfValueIsPresentWithInvalidRequisitionStatus() {
     requisition.setStatus(RequisitionStatus.INITIATED);
+    RequisitionLineItem lineItem = getInvalidRequisitionLineItemForInitializedStatus();
 
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setApprovedQuantity(1);
-    lineItem.setRemarks("Remarks");
     requisitionLineItems.add(lineItem);
 
     draftRequisitionValidator.validate(requisition, errors);
@@ -122,6 +122,22 @@ public class DraftRequisitionValidatorTest {
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         eq(RequisitionLineItem.REMARKS_COLUMN
             + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
+  }
+
+  @Test
+  public void shouldNotValidateSkippedLineItems() {
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    RequisitionLineItem lineItem = getInvalidRequisitionLineItemForInitializedStatus();
+    lineItem.setSkipped(true);
+
+    RequisitionLineItem lineItem2 = generateLineItem();
+
+    requisitionLineItems.add(lineItem);
+    requisitionLineItems.add(lineItem2);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(any(), any());
   }
 
   private RequisitionLineItem generateLineItem() {
@@ -150,5 +166,12 @@ public class DraftRequisitionValidatorTest {
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
 
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+  }
+
+  private RequisitionLineItem getInvalidRequisitionLineItemForInitializedStatus() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setApprovedQuantity(1);
+    lineItem.setRemarks("Remarks");
+    return lineItem;
   }
 }

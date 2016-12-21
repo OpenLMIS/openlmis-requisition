@@ -395,7 +395,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Filter requisitionLineItems that are skipped.
+   * Filter out requisitionLineItems that are skipped.
    *
    * @return requisitionLineItems that are not skipped
    */
@@ -407,7 +407,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Filter requisitionLineItems that are not skipped.
+   * Filter out requisitionLineItems that are not skipped.
    *
    * @return requisitionLineItems that are skipped
    */
