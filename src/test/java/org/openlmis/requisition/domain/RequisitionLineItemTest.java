@@ -161,7 +161,7 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldSetSkippedToFalseIfNull() {
+  public void shouldReturnFalseWhenSkippedIsNotSet() {
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
     RequisitionLineItem requisitionLineItem =
         RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
