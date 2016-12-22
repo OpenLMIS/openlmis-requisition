@@ -63,6 +63,7 @@ public class RequisitionValidatorTest {
     requisitionLineItems = new ArrayList<>();
     columnsMap = RequisitionValidationTestUtils.initiateColumns();
     requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate.setId(UUID.randomUUID());
     requisitionTemplate.setColumnsMap(columnsMap);
     mockRepositoriesAndObjects();
   }
@@ -245,7 +246,7 @@ public class RequisitionValidatorTest {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
 
     when(requisitionTemplateRepository
-        .getTemplateForProgram(programId)).thenReturn(requisitionTemplate);
+        .findOne(requisition.getTemplateId())).thenReturn(requisitionTemplate);
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
     when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))

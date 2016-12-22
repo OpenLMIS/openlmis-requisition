@@ -203,7 +203,7 @@ public class RequisitionController extends BaseController {
     requisitionLineCalculationService.calculateFields(requisition);
 
     RequisitionTemplate template =
-        requisitionTemplateRepository.getTemplateForProgram(requisition.getProgramId());
+        requisitionTemplateRepository.findOne(requisition.getTemplateId());
     requisition.submit(template);
 
     requisitionRepository.save(requisition);
@@ -270,8 +270,7 @@ public class RequisitionController extends BaseController {
       }
 
       requisitionToUpdate.updateFrom(requisition,
-              requisitionTemplateRepository.getTemplateForProgram(
-                      requisitionToUpdate.getProgramId()),
+              requisitionTemplateRepository.findOne(requisition.getTemplateId()),
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
                   requisition.getProgramId()));
 

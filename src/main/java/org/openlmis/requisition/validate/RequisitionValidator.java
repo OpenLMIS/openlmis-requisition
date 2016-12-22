@@ -46,8 +46,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       errors.rejectValue(REQUISITION_LINE_ITEMS,
           "A requisitionLineItems" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     } else {
-      RequisitionTemplate template = requisitionTemplateRepository.getTemplateForProgram(
-          requisition.getProgramId());
+      RequisitionTemplate template = requisitionTemplateRepository
+          .findOne(requisition.getTemplateId());
 
       requisition.getNonSkippedRequisitionLineItems()
           .forEach(lineItem ->

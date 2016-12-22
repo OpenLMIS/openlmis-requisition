@@ -161,9 +161,9 @@ public class RequisitionControllerTest {
   @Test
   public void shouldSubmitValidInitiatedRequisition()
       throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+    when(initiatedRequsition.getTemplateId()).thenReturn(UUID.randomUUID());
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
-    when(initiatedRequsition.getProgramId()).thenReturn(uuid2);
-    when(templateRepository.getTemplateForProgram(uuid2)).thenReturn(template);
+    when(templateRepository.findOne(initiatedRequsition.getTemplateId())).thenReturn(template);
 
     requisitionController.submitRequisition(uuid1);
 
