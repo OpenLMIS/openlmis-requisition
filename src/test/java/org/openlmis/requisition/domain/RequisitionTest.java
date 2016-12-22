@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
@@ -37,8 +39,12 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTest {
 
+  private static final Money PRICE_PER_PACK = new Money("9");
+  private static final long PACK_SIZE = 2;
+
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
+  private OrderableProductDto orderableProductDto;
 
   private UUID productId = UUID.randomUUID();
 
@@ -47,12 +53,17 @@ public class RequisitionTest {
 
   @Before
   public void setUp() {
+    orderableProductDto = new OrderableProductDto();
+    orderableProductDto.setId(productId);
+    orderableProductDto.setPackSize(PACK_SIZE);
+
     requisition = new Requisition();
     requisitionLineItem = new RequisitionLineItem();
 
     requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setRequestedQuantity(10);
     requisitionLineItem.setStockOnHand(20);
+    requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setOrderableProductId(productId);
 
@@ -339,6 +350,16 @@ public class RequisitionTest {
 
     assertEquals(1, skippedRequisitionLineItems.size());
     assertEquals(skipped.getId(), requisitionLineItem.getId());
+  }
+
+  @Test
+  public void shouldCalculateLineItems() {
+    RequisitionLineItem item = requisition.getRequisitionLineItems().get(0);
+    assertNull(item.getTotalCost());
+
+    item.calculatePacksToShip(Collections.singletonList(orderableProductDto));
+
+    assertEquals(new Money("45"), item.getTotalCost());
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,

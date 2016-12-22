@@ -137,7 +137,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     user.setLastName("User");
     user.setEmail("example@mail.com");
 
-    product.setId(UUID.randomUUID());
+    product.setId(UUID.fromString("cd9e1412-8703-11e6-ae22-56b6b6499611"));
 
     programDto.setId(UUID.fromString("86191d25-4846-4775-a968-12df732e6004"));
     programDto.setCode(REQUISITION_REPOSITORY_NAME);
@@ -242,7 +242,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldSubmitCorrectRequisition() {
-
     RequisitionDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -624,7 +623,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldAuthorizeRequisition() {
-
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 

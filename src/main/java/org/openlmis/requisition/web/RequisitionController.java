@@ -10,6 +10,7 @@ import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
@@ -24,8 +25,8 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
@@ -102,13 +103,13 @@ public class RequisitionController extends BaseController {
   private PermissionService permissionService;
 
   @Autowired
-  private RequisitionLineCalculationService requisitionLineCalculationService;
-
-  @Autowired
   private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -200,7 +201,11 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    requisitionLineCalculationService.calculateFields(requisition);
+    Collection<OrderableProductDto> orderableProducts
+        = orderableProductReferenceDataService.findAll();
+    requisition.forEachLine(
+        line -> line.calculatePacksToShip(orderableProducts)
+    );
 
     RequisitionTemplate template =
         requisitionTemplateRepository.findOne(requisition.getTemplateId());
@@ -374,7 +379,11 @@ public class RequisitionController extends BaseController {
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
-      requisitionLineCalculationService.calculateFields(requisition);
+      Collection<OrderableProductDto> orderableProducts
+          = orderableProductReferenceDataService.findAll();
+      requisition.forEachLine(
+          line -> line.calculatePacksToShip(orderableProducts)
+      );
 
       requisition.setStatus(RequisitionStatus.APPROVED);
       requisitionRepository.save(requisition);
@@ -446,7 +455,11 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    requisitionLineCalculationService.calculateFields(requisition);
+    Collection<OrderableProductDto> orderableProducts
+        = orderableProductReferenceDataService.findAll();
+    requisition.forEachLine(
+        line -> line.calculatePacksToShip(orderableProducts)
+    );
 
     requisition.authorize();
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());

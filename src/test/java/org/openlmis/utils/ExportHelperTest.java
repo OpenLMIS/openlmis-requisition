@@ -1,4 +1,4 @@
-package org.openlmis.requisition.service;
+package org.openlmis.utils;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
@@ -36,7 +36,7 @@ import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
-public class RequisitionLineCalculationServiceTest {
+public class ExportHelperTest {
 
   private static final Money PRICE_PER_PACK = new Money("9");
   private static final long PACK_SIZE = 2;
@@ -60,7 +60,7 @@ public class RequisitionLineCalculationServiceTest {
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @InjectMocks
-  private RequisitionLineCalculationService requisitionLineCalculationService;
+  private ExportHelper exportHelper;
 
   private UUID program = UUID.randomUUID();
   private UUID period1 = UUID.randomUUID();
@@ -79,7 +79,7 @@ public class RequisitionLineCalculationServiceTest {
     RequisitionLineItem requisitionLineItem =
         generateRequisitionLineItemToExport(orderableProductDto.getId());
     List<RequisitionLineItemDto> items =
-        requisitionLineCalculationService.exportToDtos(singletonList(requisitionLineItem));
+        exportHelper.exportToDtos(singletonList(requisitionLineItem));
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
     assertEquals(item.getId(), requisitionLineItem.getId());
@@ -100,17 +100,6 @@ public class RequisitionLineCalculationServiceTest {
     assertEquals(PRICE_PER_PACK, item.getPricePerPack());
     assertEquals(item.getNumberOfNewPatientsAdded(),
         requisitionLineItem.getNumberOfNewPatientsAdded());
-  }
-
-  @Test
-  public void shouldCalculateLineItems() {
-    when(orderableProductReferenceDataService.findOne(productId))
-            .thenReturn(orderableProductDto);
-
-    requisitionLineCalculationService.calculateFields(requisition);
-
-    RequisitionLineItem item = requisition.getRequisitionLineItems().get(0);
-    assertEquals(new Money("45"), item.getTotalCost());
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {

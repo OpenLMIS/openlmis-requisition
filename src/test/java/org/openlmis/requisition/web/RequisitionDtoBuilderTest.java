@@ -24,9 +24,9 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionCommentService;
-import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.utils.ExportHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public class RequisitionDtoBuilderTest {
   private ProgramReferenceDataService programReferenceDataService;
 
   @Mock
-  private RequisitionLineCalculationService requisitionLineCalculationService;
+  private ExportHelper exportHelper;
 
   @Mock
   private RequisitionCommentService requisitionCommentService;
@@ -84,7 +84,7 @@ public class RequisitionDtoBuilderTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    when(requisitionLineCalculationService.exportToDtos(anyListOf(RequisitionLineItem.class)))
+    when(exportHelper.exportToDtos(anyListOf(RequisitionLineItem.class)))
         .thenReturn(lineItemDtos);
     when(requisitionCommentService.exportToDtos(anyListOf(Comment.class))).thenReturn(commentDtos);
 
@@ -99,7 +99,7 @@ public class RequisitionDtoBuilderTest {
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
-    verify(requisitionLineCalculationService).exportToDtos(anyListOf(RequisitionLineItem.class));
+    verify(exportHelper).exportToDtos(anyListOf(RequisitionLineItem.class));
     verify(requisitionCommentService).exportToDtos(anyListOf(Comment.class));
 
     assertNotNull(requisitionDto);
@@ -122,7 +122,7 @@ public class RequisitionDtoBuilderTest {
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
-    verify(requisitionLineCalculationService).exportToDtos(anyListOf(RequisitionLineItem.class));
+    verify(exportHelper).exportToDtos(anyListOf(RequisitionLineItem.class));
     verify(requisitionCommentService).exportToDtos(anyListOf(Comment.class));
 
     assertNotNull(requisitionDto);

@@ -34,8 +34,8 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
-import org.openlmis.requisition.service.RequisitionLineCalculationService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -93,9 +93,6 @@ public class RequisitionControllerTest {
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @Mock
-  private RequisitionLineCalculationService requisitionLineCalculationService;
-
-  @Mock
   private PermissionService permissionService;
 
   @Mock
@@ -103,6 +100,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @Mock
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
@@ -167,7 +167,6 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(requisitionLineCalculationService).calculateFields(initiatedRequsition);
     verify(initiatedRequsition).submit(template);
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),

@@ -317,7 +317,13 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_APPROVED_PRODUCTS)));
 
-    // This mocks for find one orderableproduct
+    // This mocks for find all orderableProducts
+    wireMockRule.stubFor(get(urlPathEqualTo("/api/orderableProducts/"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("[" + MOCK_FIND_PRODUCT_RESULT + "]")));
+
+    // This mocks for find one orderableProduct
     wireMockRule.stubFor(get(urlMatching("/api/orderableProducts/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
