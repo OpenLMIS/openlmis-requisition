@@ -640,6 +640,91 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNullSkippedRequisitionLineItems() {
+
+    RequisitionDto response = getRequisitionDtoForCheckNullingLineItemsValues();
+
+    List<RequisitionLineItem.Importer> requisitionLineItemsRetrieved =
+        response.getRequisitionLineItems();
+
+    requisitionLineItemsRetrieved.stream()
+        .filter(RequisitionLineItem.Importer::getSkipped)
+        .forEach(line -> {
+          assertEquals(null, line.getBeginningBalance());
+          assertEquals(null, line.getTotalReceivedQuantity());
+          assertEquals(null, line.getTotalLossesAndAdjustments());
+          assertEquals(null, line.getStockOnHand());
+          assertEquals(null, line.getRequestedQuantityExplanation());
+          assertEquals(null, line.getRemarks());
+          assertEquals(null, line.getApprovedQuantity());
+          assertEquals(null, line.getRequestedQuantity());
+          assertEquals(null, line.getTotalConsumedQuantity());
+          assertEquals(null, line.getTotal());
+          assertEquals(null, line.getRequestedQuantityExplanation());
+          assertEquals(null, line.getTotalStockoutDays());
+          assertEquals(null, line.getPacksToShip());
+          assertEquals(null, line.getPricePerPack());
+          assertEquals(null, line.getTotalCost());
+          assertEquals(null, line.getNumberOfNewPatientsAdded());
+          assertEquals(0, line.getStockAdjustments().size());
+        });
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotNullnotSkippedRequisitionLineItems() {
+
+    RequisitionDto response = getRequisitionDtoForCheckNullingLineItemsValues();
+
+    List<RequisitionLineItem.Importer> requisitionLineItemsRetrieved =
+        response.getRequisitionLineItems();
+
+    requisitionLineItemsRetrieved.stream()
+        .filter(line -> !line.getSkipped())
+        .forEach(line -> {
+          assertNotNull(line.getBeginningBalance());
+          assertNotNull(line.getTotalReceivedQuantity());
+          assertNotNull(line.getTotalLossesAndAdjustments());
+          assertNotNull(line.getStockOnHand());
+          assertNotNull(line.getRequestedQuantityExplanation());
+          assertNotNull(line.getApprovedQuantity());
+          assertNotNull(line.getRequestedQuantity());
+          assertNotNull(line.getTotalConsumedQuantity());
+          assertNotNull(line.getTotal());
+          assertNotNull(line.getRequestedQuantityExplanation());
+          assertNotNull(line.getTotalStockoutDays());
+          assertNotNull(line.getPacksToShip());
+          assertNotNull(line.getNumberOfNewPatientsAdded());
+        });
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private RequisitionDto getRequisitionDtoForCheckNullingLineItemsValues() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    requisitionLineItem.setSkipped(true);
+
+    List<RequisitionLineItem> requisitionLineItems =
+        requisition.getRequisitionLineItems();
+    requisitionLineItems.add(requisitionLineItem);
+
+    requisition.setRequisitionLineItems(requisitionLineItems);
+
+    requisitionRepository.save(requisition);
+
+    return restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+  }
+
+  @Test
   public void shouldNotAuthorizeIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
 
@@ -1046,7 +1131,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     wireMockRule.stubFor(
         post(urlMatching("/api/orders.*"))
-        .willReturn(aResponse().withStatus(200)));
+            .willReturn(aResponse().withStatus(200)));
 
     requisitionRepository.save(requisition);
 
@@ -1207,6 +1292,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private String getMessage(UUID facilityId, UUID programId) {
     return messageSource.getMessage("requisition.error.facility-does-not-support-program",
-        new Object[] {facilityId, programId}, LocaleContextHolder.getLocale());
+        new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
   }
 }
