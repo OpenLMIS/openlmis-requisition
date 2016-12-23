@@ -30,6 +30,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -73,8 +74,10 @@ public class RequisitionTest {
 
   @Test
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() throws RequisitionException {
+    Collection<OrderableProductDto> orderableProducts =
+        Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize();
+    requisition.authorize(orderableProducts);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -82,7 +85,9 @@ public class RequisitionTest {
   @Test(expected = RequisitionException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus()
       throws RequisitionException {
-    requisition.authorize();
+    Collection<OrderableProductDto> orderableProducts =
+        Collections.singletonList(orderableProductDto);
+    requisition.authorize(orderableProducts);
   }
 
   @Test
@@ -102,8 +107,10 @@ public class RequisitionTest {
 
     Requisition newRequisition = new Requisition();
 
+    Collection<OrderableProductDto> orderableProducts =
+        Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize();
+    requisition.authorize(orderableProducts);
     requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -353,13 +360,41 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateLineItems() {
-    RequisitionLineItem item = requisition.getRequisitionLineItems().get(0);
-    assertNull(item.getTotalCost());
+  public void shouldCalculatePacksToShip() {
+    List<RequisitionLineItem> items = requisition.getRequisitionLineItems();
+    RequisitionLineItem requisitionLineItem = items.get(0);
 
-    item.calculatePacksToShip(Collections.singletonList(orderableProductDto));
+    assertNull(requisitionLineItem.getPacksToShip());
+    assertNull(requisitionLineItem.getTotalCost());
 
-    assertEquals(new Money("45"), item.getTotalCost());
+    RequisitionLineItem requisitionLineItem2 = new RequisitionLineItem();
+
+    OrderableProductDto orderableProductDto2 = new OrderableProductDto();
+    orderableProductDto2.setId(UUID.randomUUID());
+    orderableProductDto2.setPackSize(20);
+
+    requisitionLineItem2.setOrderableProductId(orderableProductDto2.getId());
+    requisitionLineItem2.setId(UUID.randomUUID());
+    requisitionLineItem2.setRequestedQuantity(20);
+    requisitionLineItem2.setStockOnHand(5);
+    requisitionLineItem2.setPricePerPack(new Money("25"));
+    requisitionLineItem2.setRequisition(requisition);
+
+    assertNull(requisitionLineItem2.getPacksToShip());
+    assertNull(requisitionLineItem2.getTotalCost());
+
+    items.add(requisitionLineItem2);
+    requisition.setRequisitionLineItems(items);
+
+    Collection<OrderableProductDto> orderableProducts = Arrays.asList(
+        orderableProductDto, orderableProductDto2);
+    requisition.calculatePacksToShip(orderableProducts);
+
+    assertEquals(5, requisitionLineItem.getPacksToShip().longValue());
+    assertEquals(new Money("45"), requisitionLineItem.getTotalCost());
+
+    assertEquals(1, requisitionLineItem2.getPacksToShip().longValue());
+    assertEquals(new Money("25"), requisitionLineItem2.getTotalCost());
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,

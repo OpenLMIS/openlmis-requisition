@@ -13,7 +13,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -328,14 +327,9 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Calculates Packs to Ship (V) value.
    *
-   * @param orderableProducts list of orderable products from referencedata
+   * @param orderableProduct this lineItem's orderable product
    */
-  public void calculatePacksToShip(Collection<OrderableProductDto> orderableProducts) {
-    OrderableProductDto orderableProduct = orderableProducts
-        .stream()
-        .filter(product -> product.getId().equals(getOrderableProductId()))
-        .findFirst()
-        .orElse(null);
+  public void calculatePacksToShip(OrderableProductDto orderableProduct) {
     Integer orderQuantity = this.getOrderQuantity();
 
     if (orderQuantity != null) {

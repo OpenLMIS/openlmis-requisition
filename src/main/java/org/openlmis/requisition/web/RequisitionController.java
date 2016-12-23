@@ -201,15 +201,11 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    Collection<OrderableProductDto> orderableProducts
-        = orderableProductReferenceDataService.findAll();
-    requisition.forEachLine(
-        line -> line.calculatePacksToShip(orderableProducts)
-    );
-
     RequisitionTemplate template =
         requisitionTemplateRepository.findOne(requisition.getTemplateId());
-    requisition.submit(template);
+    Collection<OrderableProductDto> orderableProducts
+        = orderableProductReferenceDataService.findAll();
+    requisition.submit(template, orderableProducts);
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -381,12 +377,9 @@ public class RequisitionController extends BaseController {
 
       Collection<OrderableProductDto> orderableProducts
           = orderableProductReferenceDataService.findAll();
-      requisition.forEachLine(
-          line -> line.calculatePacksToShip(orderableProducts)
-      );
-
-      requisition.setStatus(RequisitionStatus.APPROVED);
+      requisition.approve(orderableProducts);
       requisitionRepository.save(requisition);
+
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return new ResponseEntity<>(requisition, HttpStatus.OK);
     } else {
@@ -457,11 +450,8 @@ public class RequisitionController extends BaseController {
 
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
-    requisition.forEachLine(
-        line -> line.calculatePacksToShip(orderableProducts)
-    );
 
-    requisition.authorize();
+    requisition.authorize(orderableProducts);
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " +  requisitionId + " authorized.");

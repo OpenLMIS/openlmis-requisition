@@ -167,7 +167,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(template);
+    verify(initiatedRequsition).submit(template, orderableProductReferenceDataService.findAll());
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
         any(RequisitionTemplate.class), anyList());
@@ -295,6 +295,6 @@ public class RequisitionControllerTest {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class),
         any(RequisitionTemplate.class), anyList());
-    verify(requisition, never()).submit(any(RequisitionTemplate.class));
+    verify(requisition, never()).submit(any(RequisitionTemplate.class), any());
   }
 }
