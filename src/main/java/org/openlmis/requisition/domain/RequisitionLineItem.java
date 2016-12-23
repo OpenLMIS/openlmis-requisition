@@ -169,7 +169,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Initiates a requisition line item with specified requisition and product.
    *
-   * @param requisition                 requisition to apply
+   * @param requisition     requisition to apply
    * @param approvedProduct facilityTypeApprovedProduct to apply
    */
   public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct) {
@@ -181,7 +181,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
-            ? new Money(PRICE_PER_PACK_IF_NULL) : priceFromProduct;
+        ? new Money(PRICE_PER_PACK_IF_NULL) : priceFromProduct;
     this.orderableProductId = approvedProduct.getProduct().getProductId();
   }
 
@@ -204,7 +204,11 @@ public class RequisitionLineItem extends BaseEntity {
       this.totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
       this.total = requisitionLineItem.getTotal();
       this.numberOfNewPatientsAdded = requisitionLineItem.getNumberOfNewPatientsAdded();
-      this.skipped = requisitionLineItem.getSkipped();
+      if (requisitionLineItem.getSkipped() != null) {
+        this.skipped = requisitionLineItem.getSkipped();
+      } else {
+        this.skipped = false;
+      }
 
       if (null == this.stockAdjustments) {
         this.stockAdjustments = new ArrayList<>();
