@@ -140,14 +140,12 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
 
-    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getSource(), SOURCE);
 
     requisitionTemplate.changeColumnSource(COLUMN_KEY, SourceType.USER_INPUT);
     requisitionTemplate = repository.save(requisitionTemplate);
 
-    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getSource(), SourceType.USER_INPUT);
   }
@@ -166,7 +164,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
 
-    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getOption(), option);
     assertEquals(column.getOption().getOptionName(), option.getOptionName());
@@ -175,7 +172,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
     requisitionTemplate.changeColumnOption(COLUMN_KEY, option2);
     requisitionTemplate = repository.save(requisitionTemplate);
 
-    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getOption(), option2);
     assertEquals(column.getOption().getOptionName(), option2.getOptionName());

@@ -115,8 +115,8 @@ public class RequisitionTemplateValidator implements Validator {
     SourceType chosenSource = column.getSource();
     if (chosenSource != null
         && !column.getColumnDefinition().getSources().contains(chosenSource)) {
-      errors.rejectValue(COLUMNS_MAP, "Source " + chosenSource.toString()
-          + " is not available of this column.");
+      errors.rejectValue(COLUMNS_MAP, RequisitionTemplate.SOURCE + chosenSource.toString()
+          + RequisitionTemplate.WARNING_SUFFIX);
     }
   }
 
@@ -124,8 +124,8 @@ public class RequisitionTemplateValidator implements Validator {
     AvailableRequisitionColumnOption chosenOption = column.getOption();
     if (chosenOption != null
         && !column.getColumnDefinition().getOptions().contains(chosenOption)) {
-      errors.rejectValue(COLUMNS_MAP, "Option " + chosenOption.getOptionName()
-          + " is not available of this column.");
+      errors.rejectValue(COLUMNS_MAP, RequisitionTemplate.OPTION + chosenOption.getOptionName()
+          + RequisitionTemplate.WARNING_SUFFIX);
     }
   }
 }
