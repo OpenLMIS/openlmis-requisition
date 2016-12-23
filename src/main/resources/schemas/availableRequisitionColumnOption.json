@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "AvailableRequisitionColumnOption",
+  "description": "A single availableRequisitionColumnOption",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "requisitionColumn": {
+      "type": "object",
+      "$ref": "availableRequisitionColumn.json",
+      "title": "requisitionColumn"
+    },
+    "optionName": {
+      "type": "string",
+      "title": "optionName"
+    },
+    "optionLabel": {
+      "type": "string",
+      "title": "optionLabel"
+    }
+  },
+  "required": [
+    "id",
+    "requisitionColumn",
+    "optionName",
+    "optionLabel"
+  ]
+}

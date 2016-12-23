@@ -6,6 +6,10 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -13,16 +17,17 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseTimestampedEntity {
 
   private static final String UUID = "pg-uuid";
+  public static final String SOURCE = "Source ";
+  public static final String OPTION = "Option ";
+  public static final String WARNING_SUFFIX = " is not available of this column.";
 
   @Getter
   @Setter
@@ -122,13 +127,51 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   *
-   * @param key Key to column which needs a new name.
+   * Validate source of column and change it if it's available.
+   * @param key Key to column which needs a new source.
    * @param source New source for column.
+   * @throws RequisitionTemplateColumnException Exception thrown when
+   *      given source is not available.
    */
-  public void changeColumnSource(String key, SourceType source) {
-    RequisitionTemplateColumn column = columnsMap.get(key);
+  public void changeColumnSource(String key, SourceType source)
+      throws RequisitionTemplateColumnException {
+
+    RequisitionTemplateColumn column = findColumn(key);
+
+    if (column.getColumnDefinition().getSources() == null) {
+      throw new RequisitionTemplateColumnException(SOURCE + source.toString()
+          + WARNING_SUFFIX);
+    }
+
+    if (!column.getColumnDefinition().getSources().contains(source)) {
+      throw new RequisitionTemplateColumnException(SOURCE + source.toString()
+          + WARNING_SUFFIX);
+    }
     column.setSource(source);
+  }
+
+  /**
+   * Validate option of column and change it if it's available.
+   * @param key Key to column which needs a new option.
+   * @param option New option for column.
+   * @throws RequisitionTemplateColumnException Exception thrown when
+   *      given option is not available.
+   */
+  public void changeColumnOption(String key, AvailableRequisitionColumnOption option)
+      throws RequisitionTemplateColumnException {
+
+    RequisitionTemplateColumn column = findColumn(key);
+
+    if (column.getColumnDefinition().getOptions() == null) {
+      throw new RequisitionTemplateColumnException(OPTION + option.getOptionName()
+          + WARNING_SUFFIX);
+    }
+
+    if (!column.getColumnDefinition().getOptions().contains(option)) {
+      throw new RequisitionTemplateColumnException(OPTION + option.getOptionName()
+          + WARNING_SUFFIX);
+    }
+    column.setOption(option);
   }
 
   /**

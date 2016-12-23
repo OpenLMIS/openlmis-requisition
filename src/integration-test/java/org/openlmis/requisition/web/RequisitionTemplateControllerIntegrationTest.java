@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -18,8 +19,6 @@ import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -248,7 +247,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void shouldNotSaveWhenTotalConsumedQuantityCalculatedAndStockOnHandIsNotDisplayed() {
+  public void shouldNotSaveWhenTotalConsumedQuantityCalculatedAndStockOnHandIsNotDisplayed()
+      throws RequisitionTemplateColumnException {
     requisitionTemplate.changeColumnDisplay(STOCK_ON_HAND, false);
     requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
 
@@ -340,6 +340,13 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     columnMap.put(STOCK_ON_HAND, column);
 
     RequisitionTemplate reqTemplate = new RequisitionTemplate(columnMap);
+    reqTemplate.changeColumnSource(REQUESTED_QUANTITY, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(STOCK_ON_HAND, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(REQUESTED_QUANTITY_EXPLANATION, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(BEGINNING_BALANCE, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(TOTAL_RECEIVED_QUANTITY, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(TOTAL_LOSSES_AND_ADJUSTMENTS, SourceType.USER_INPUT);
     reqTemplate.setProgramId(generateProgram().getId());
     requisitionTemplateRepository.save(reqTemplate);
     return reqTemplate;

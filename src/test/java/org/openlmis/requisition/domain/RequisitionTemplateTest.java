@@ -1,16 +1,22 @@
 package org.openlmis.requisition.domain;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class RequisitionTemplateTest {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   private RequisitionTemplate requisitionTemplate;
 
@@ -76,5 +82,28 @@ public class RequisitionTemplateTest {
   public void shouldCheckIfItHasColumnsDefined() {
     assertTrue(requisitionTemplate.hasColumnsDefined());
     assertFalse(new RequisitionTemplate(new HashMap<>()).hasColumnsDefined());
+  }
+
+  @Test
+  public void shouldThrowIfSourceIsNotAvailableInColumn()
+      throws RequisitionTemplateColumnException {
+    expectedException.expect(RequisitionTemplateColumnException.class);
+    requisitionTemplate.changeColumnSource(COLUMN_NAMES[0], SourceType.REFERENCE_DATA);
+
+    expectedException.expectMessage(RequisitionTemplate.SOURCE + SourceType.REFERENCE_DATA
+        + RequisitionTemplate.WARNING_SUFFIX);
+  }
+
+  @Test
+  public void shouldThrowIfOptionIsNotAvailableInColumn()
+      throws RequisitionTemplateColumnException {
+    expectedException.expect(RequisitionTemplateColumnException.class);
+    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
+        requisitionTemplate.getColumnsMap().get(COLUMN_NAMES[0])
+            .getColumnDefinition(), "option1", "label1");
+    requisitionTemplate.changeColumnOption(COLUMN_NAMES[0], option);
+
+    expectedException.expectMessage(RequisitionTemplate.OPTION + option.getOptionName()
+        + RequisitionTemplate.WARNING_SUFFIX);
   }
 }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -33,6 +34,9 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private AvailableRequisitionColumnOptionRepository availableRequisitionColumnOptionRepository;
 
   private List<RequisitionTemplate> requisitionTemplates;
 
@@ -127,21 +131,54 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void testChangeRequisitionTemplateSource() {
+  public void testChangeRequisitionTemplateSource() throws RequisitionTemplateColumnException {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn column =
-            new RequisitionTemplateColumn("name", "label", "I", 1,
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn("column1", "label1", "I", 1,
                 false, SourceType.CALCULATED, getColumn(), null);
     columns.put(COLUMN_KEY, column);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
     requisitionTemplate = repository.save(requisitionTemplate);
+
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getSource(), SOURCE);
+
     requisitionTemplate.changeColumnSource(COLUMN_KEY, SourceType.USER_INPUT);
     requisitionTemplate = repository.save(requisitionTemplate);
+
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
     column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
     assertEquals(column.getSource(), SourceType.USER_INPUT);
+  }
+
+  @Test
+  public void testChangeRequisitionTemplateOption() throws RequisitionTemplateColumnException {
+    AvailableRequisitionColumnOption option = getOption("34b8e763-71a0-41f1-86b4-1829963f0704");
+
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+    RequisitionTemplateColumn column =
+        new RequisitionTemplateColumn("column2", "label2", "I", 1,
+            false, SourceType.CALCULATED, getColumnWithOption(), option);
+    columns.put(COLUMN_KEY, column);
+
+    RequisitionTemplate requisitionTemplate = generateInstance();
+    requisitionTemplate.setColumnsMap(columns);
+    requisitionTemplate = repository.save(requisitionTemplate);
+
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
+    assertEquals(column.getOption(), option);
+    assertEquals(column.getOption().getOptionName(), option.getOptionName());
+
+    AvailableRequisitionColumnOption option2 = getOption("4957ebb4-297c-459e-a291-812e72286eff");
+    requisitionTemplate.changeColumnOption(COLUMN_KEY, option2);
+    requisitionTemplate = repository.save(requisitionTemplate);
+
+    requisitionTemplate = repository.findOne(requisitionTemplate.getId());
+    column = requisitionTemplate.getColumnsMap().get(COLUMN_KEY);
+    assertEquals(column.getOption(), option2);
+    assertEquals(column.getOption().getOptionName(), option2.getOptionName());
   }
 
   @Test
@@ -205,7 +242,15 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   private AvailableRequisitionColumn getColumn() {
     return availableRequisitionColumnRepository.findOne(
-        UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")
-    );
+        UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999"));
+  }
+
+  private AvailableRequisitionColumn getColumnWithOption() {
+    return availableRequisitionColumnRepository.findOne(
+        UUID.fromString("5708ebf9-9317-4420-85aa-71b2ae92643d"));
+  }
+
+  private AvailableRequisitionColumnOption getOption(String uuid ) {
+    return availableRequisitionColumnOptionRepository.findOne(UUID.fromString(uuid));
   }
 }

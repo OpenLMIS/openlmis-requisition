@@ -1,9 +1,9 @@
 package org.openlmis.requisition.domain;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -21,7 +21,6 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "available_requisition_columns", schema = "requisition")
-@NoArgsConstructor
 @Getter
 @Setter
 public class AvailableRequisitionColumn extends BaseEntity {
@@ -40,9 +39,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
   @OneToMany(
       mappedBy = "requisitionColumn",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
-      orphanRemoval = true)
-  @Getter
-  @Setter
+      fetch = FetchType.EAGER)
   private Set<AvailableRequisitionColumnOption> options;
 
   private String label;
@@ -60,6 +57,10 @@ public class AvailableRequisitionColumn extends BaseEntity {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private ColumnType columnType;
+
+  public AvailableRequisitionColumn() {
+    this.sources = new HashSet<>();
+  }
 
   @Override
   public boolean equals(Object obj) {

@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,36 +10,53 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
 
 @Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class RequisitionTemplateColumn {
 
+  @Getter
+  @Setter
   private String name;
 
+  @Getter
   private String label;
 
+  @Getter
+  @Setter
   private String indicator;
 
+  @Getter
+  @Setter
   private int displayOrder;
 
+  @Getter
   private Boolean isDisplayed;
 
+  @Getter
+  @Setter(AccessLevel.PACKAGE)
   private SourceType source;
 
-  @ManyToOne
+  @ManyToOne(
+      cascade = { CascadeType.REFRESH},
+      fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnId", nullable = false)
+  @Getter
+  @Setter
   private AvailableRequisitionColumn columnDefinition;
 
-  @ManyToOne
+  @ManyToOne(
+      cascade = { CascadeType.REFRESH},
+      fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnOptionId")
+  @Getter
+  @Setter(AccessLevel.PACKAGE)
   private AvailableRequisitionColumnOption option;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {

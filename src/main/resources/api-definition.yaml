@@ -197,38 +197,9 @@ schemas:
           }
       }
 
-  - availableRequisitionColumn: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "AvailableRequisitionColumn",
-          "description": "A single availableRequisitionColumn",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "name": { "type": "string", "required": false, "title": "name" },
-              "sources": {"type": "array", "required": false, "title": "sources", "items": {"type": "string" }, "uniqueItems": true },
-              "options": {"type": "array", "required": false, "title": "options", "items": {"type": "object", "$ref": "#/schemas/availableRequisitionColumnOption" }, "uniqueItems": true },
-              "label": { "type": "string", "required": false, "title": "label" },
-              "indicator": { "type": "string", "required": false, "title": "indicator" },
-              "mandatory": { "type": "boolean", "required": false, "title": "mandatory" },
-              "isDisplayRequired": { "type": "boolean", "required": false, "title": "isDisplayRequired" },
-              "canChangeOrder": { "type": "boolean", "required": false, "title": "canChangeOrder" },
-              "canBeChangedByUser": { "type": "boolean", "required": false, "title": "canBeChangedByUser" },
-              "columnType": { "type": "string", "required": false, "title": "columnType" }
-          }
-      }
+  - availableRequisitionColumn: !include schemas/availableRequisitionColumn.json
 
-  - availableRequisitionColumnOption: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "AvailableRequisitionColumnOption",
-          "description": "A single availableRequisitionColumnOption",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "requisitionColumn": { "type": "object", "$ref": "#/schemas/availableRequisitionColumn", "required": true, "title": "requisitionColumn" },
-              "optionName": { "type": "string", "required": true, "title": "name" },
-              "optionLabel": { "type": "string", "required": true, "title": "label" }
-          }
-      }
+  - availableRequisitionColumnOption: !include schemas/availableRequisitionColumnOption.json
 
   - convertedRequisitionMap: |
       {

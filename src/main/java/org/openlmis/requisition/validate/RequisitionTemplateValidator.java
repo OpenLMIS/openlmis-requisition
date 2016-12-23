@@ -1,6 +1,9 @@
 package org.openlmis.requisition.validate;
 
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -34,6 +37,7 @@ public class RequisitionTemplateValidator implements Validator {
     RequisitionTemplate requisitionTemplate = (RequisitionTemplate) target;
 
     validateRequestedQuantity(errors, requisitionTemplate);
+    validateChosenSourcesAndOptions(errors, requisitionTemplate);
     validateCalculatedFields(errors, requisitionTemplate);
 
     if (!errors.hasErrors()) {
@@ -97,6 +101,31 @@ public class RequisitionTemplateValidator implements Validator {
       throws RequisitionTemplateColumnException {
     if (!template.isColumnDisplayed(field)) {
       errors.rejectValue(COLUMNS_MAP, field + suffix);
+    }
+  }
+
+  private void validateChosenSourcesAndOptions(Errors errors, RequisitionTemplate template) {
+    for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+      validateChosenSources(errors, column);
+      validateChosenOptions(errors, column);
+    }
+  }
+
+  private void validateChosenSources(Errors errors, RequisitionTemplateColumn column) {
+    SourceType chosenSource = column.getSource();
+    if (chosenSource != null
+        && !column.getColumnDefinition().getSources().contains(chosenSource)) {
+      errors.rejectValue(COLUMNS_MAP, "Source " + chosenSource.toString()
+          + " is not available of this column.");
+    }
+  }
+
+  private void validateChosenOptions(Errors errors, RequisitionTemplateColumn column) {
+    AvailableRequisitionColumnOption chosenOption = column.getOption();
+    if (chosenOption != null
+        && !column.getColumnDefinition().getOptions().contains(chosenOption)) {
+      errors.rejectValue(COLUMNS_MAP, "Option " + chosenOption.getOptionName()
+          + " is not available of this column.");
     }
   }
 }
