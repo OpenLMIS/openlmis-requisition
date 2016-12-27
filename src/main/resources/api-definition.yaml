@@ -244,7 +244,7 @@ schemas:
   - convertToOrderDtoArray: |
       {
           "type": "array",
-          "items": { "type": "object" }
+          "items": { "type": "object", "$ref": "schemas/convertToOrderDto.json" }
       }
 
 traits:
@@ -756,7 +756,6 @@ resourceTypes:
                       body:
                         application/json:
                           schema: errorResponse
-
                   "500":
                       headers:
                         X-Content-Type-Options:
