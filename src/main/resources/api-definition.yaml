@@ -140,7 +140,9 @@ schemas:
               "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
               "total": {"type": "integer", "required": false, "title": "total" },
               "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
-              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" }
+              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
+              "skipped": {"type": "boolean", "required": false, "title": "boolean" },
+              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" }
           }
       }
 
@@ -163,7 +165,9 @@ schemas:
               "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
               "total": {"type": "integer", "required": false, "title": "total" },
               "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
-              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" }
+              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
+              "skipped": {"type": "boolean", "required": false, "title": "boolean" },
+              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" }
           }
       }
 
