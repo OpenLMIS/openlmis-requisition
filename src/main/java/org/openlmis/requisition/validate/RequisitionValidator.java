@@ -9,7 +9,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +29,6 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   static final String VALUE_NOT_FOUND = " could not be found.";
 
   @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
-  @Autowired
   private ConfigurationSettingService configurationSettingService;
 
   @Autowired
@@ -46,18 +42,15 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       errors.rejectValue(REQUISITION_LINE_ITEMS,
           "A requisitionLineItems" + VALUE_MUST_BE_ENTERED_NOTIFICATION);
     } else {
-      RequisitionTemplate template = requisitionTemplateRepository
-          .findOne(requisition.getTemplateId());
-
       requisition.getNonSkippedRequisitionLineItems()
           .forEach(lineItem ->
-              validateRequisitionLineItem(errors, template, requisition, lineItem));
+              validateRequisitionLineItem(errors, requisition, lineItem));
     }
   }
 
-  private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
-                                           Requisition requisition, RequisitionLineItem item) {
-
+  private void validateRequisitionLineItem(
+      Errors errors, Requisition requisition, RequisitionLineItem item) {
+    RequisitionTemplate template = requisition.getTemplate();
     rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
         RequisitionLineItem.REQUESTED_QUANTITY);
 

@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -106,12 +106,13 @@ public class RequisitionTest {
         .thenReturn(1);
 
     Requisition newRequisition = new Requisition();
+    newRequisition.setTemplate(requisitionTemplate);
 
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.authorize(orderableProducts);
-    requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
+    requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -132,8 +133,9 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     Requisition newRequisition = new Requisition();
+    newRequisition.setTemplate(requisitionTemplate);
 
-    requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
+    requisition.updateFrom(newRequisition, Lists.newArrayList());
     verifyStatic(times(1));
   }
 
@@ -141,16 +143,15 @@ public class RequisitionTest {
   public void shouldAddOnlyAddNonFullSupplyLines() throws Exception {
     requisition.getRequisitionLineItems().clear();
 
-    RequisitionTemplate template = mock(RequisitionTemplate.class);
-
     RequisitionLineItem fullSupply = new RequisitionLineItem();
     RequisitionLineItem nonFullSupply = new RequisitionLineItem();
     nonFullSupply.setNonFullSupply(true);
 
     Requisition newRequisition = new Requisition();
+    newRequisition.setTemplate(mock(RequisitionTemplate.class));
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
-    requisition.updateFrom(newRequisition, template, Lists.newArrayList());
+    requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
 
@@ -160,16 +161,15 @@ public class RequisitionTest {
 
   @Test
   public void shouldNotRemoveFullSupplyLines() throws Exception {
-    RequisitionTemplate template = mock(RequisitionTemplate.class);
-
     RequisitionLineItem nonFullSupply = new RequisitionLineItem();
     nonFullSupply.setNonFullSupply(true);
 
     Requisition newRequisition = new Requisition();
+    newRequisition.setTemplate(mock(RequisitionTemplate.class));
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     int count = requisition.getRequisitionLineItems().size();
-    requisition.updateFrom(newRequisition, template, Lists.newArrayList());
+    requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(count + 1));
 
@@ -216,13 +216,14 @@ public class RequisitionTest {
 
     newRequisition.setId(UUID.randomUUID());
     newRequisition.setStatus(RequisitionStatus.INITIATED);
+    newRequisition.setTemplate(template);
     newRequisition.setRequisitionLineItems(
         Lists.newArrayList(firstRequisitionLineItem, secondRequisitionLineItem)
     );
 
     // when
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, mock(RequisitionTemplate.class), Lists.newArrayList());
+    requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     // then
     requisition
@@ -241,7 +242,8 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
 
     Requisition newRequisition = new Requisition();
-    requisition.updateFrom(newRequisition, requisitionTemplate, Lists.newArrayList());
+    newRequisition.setTemplate(requisitionTemplate);
+    requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));

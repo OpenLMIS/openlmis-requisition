@@ -63,7 +63,7 @@ public class RequisitionDtoBuilder {
     List<CommentDto> commentDtoList =
         requisitionCommentService.exportToDtos(requisition.getComments());
 
-    requisitionDto.setTemplate(requisition.getTemplateId());
+    requisitionDto.setTemplate(requisition.getTemplate().getId());
     requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
     requisitionDto.setProgram(programReferenceDataService.findOne(requisition.getProgramId()));
     requisitionDto.setProcessingPeriod(periodService.getPeriod(

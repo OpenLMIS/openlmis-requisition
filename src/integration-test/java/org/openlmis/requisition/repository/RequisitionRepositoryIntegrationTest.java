@@ -4,8 +4,6 @@ import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +12,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
@@ -21,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,6 +31,11 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private RequisitionRepository repository;
+
+  @Autowired
+  private RequisitionTemplateRepository templateRepository;
+
+  private RequisitionTemplate testTemplate;
 
   private List<Requisition> requisitions;
 
@@ -43,12 +48,13 @@ public class RequisitionRepositoryIntegrationTest
         UUID.randomUUID(), RequisitionStatus.INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
-    requisition.setTemplateId(UUID.randomUUID());
+    requisition.setTemplate(testTemplate);
     return requisition;
   }
 
   @Before
   public void setUp() {
+    testTemplate = templateRepository.save(new RequisitionTemplate());
     requisitions = new ArrayList<>();
     for (int count = 0; count < 5; ++count) {
       requisitions.add(repository.save(generateInstance()));
@@ -62,7 +68,7 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getStatus(), requisitions.get(0).getEmergency());
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
-    requisition.setTemplateId(UUID.randomUUID());
+    requisition.setTemplate(testTemplate);
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
@@ -112,7 +118,7 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getStatus(), false);
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
-    requisition.setTemplateId(UUID.randomUUID());
+    requisition.setTemplate(testTemplate);
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
@@ -176,21 +182,21 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByTemplate() {
     // given
+    RequisitionTemplate nonMatchingTemplate = templateRepository.save(new RequisitionTemplate());
     Requisition nonMatchingRequisition = requisitions.get(0);
-    nonMatchingRequisition.setTemplateId(UUID.randomUUID());
+    nonMatchingRequisition.setTemplate(nonMatchingTemplate);
 
-    UUID templateId = UUID.randomUUID();
     List<Requisition> matchingRequisitions =
         requisitions.stream().skip(1).collect(Collectors.toList());
-    matchingRequisitions.forEach(r -> r.setTemplateId(templateId));
+    matchingRequisitions.forEach(r -> r.setTemplate(testTemplate));
 
     requisitions.forEach(r -> repository.save(r));
 
     // when
-    List<Requisition> result = repository.findByTemplateId(templateId);
+    List<Requisition> result = repository.findByTemplateId(testTemplate.getId());
 
     // then
-    assertEquals(result.size(), matchingRequisitions.size());
+    assertEquals(matchingRequisitions.size(), result.size());
   }
 
   @Test
@@ -217,8 +223,11 @@ public class RequisitionRepositoryIntegrationTest
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance()
           throws RequisitionTemplateColumnException {
-    RequisitionTemplate template = mock(RequisitionTemplate.class);
-    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
-    return template;
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+    column.setName(RequisitionLineItem.BEGINNING_BALANCE);
+    column.setIsDisplayed(true);
+
+    return templateRepository.save(new RequisitionTemplate(
+        Collections.singletonMap(RequisitionLineItem.BEGINNING_BALANCE, column)));
   }
 }

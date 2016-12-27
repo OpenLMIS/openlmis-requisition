@@ -141,7 +141,13 @@ public class RequisitionCommentService {
     return comments.stream().map(this::exportToDto).collect(toList());
   }
 
-  private CommentDto exportToDto(Comment comment) {
+  /**
+   * Return a CommentDto for a given Comment.
+   *
+   * @param comment Comment to be exported to Dto.
+   * @return Exported CommentDto.
+   */
+  public CommentDto exportToDto(Comment comment) {
     CommentDto dto = new CommentDto();
     comment.export(dto);
     return dto;

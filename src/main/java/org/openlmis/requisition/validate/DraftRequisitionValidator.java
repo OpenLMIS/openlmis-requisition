@@ -8,7 +8,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,10 +15,6 @@ import org.springframework.validation.Errors;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
-
-  @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
@@ -39,10 +34,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
     if (!isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
-      RequisitionTemplate template = requisitionTemplateRepository
-          .findOne(savedRequisition.getTemplateId());
       requisition.getNonSkippedRequisitionLineItems()
-          .forEach(i -> validateRequisitionLineItem(errors, template, savedRequisition, i));
+          .forEach(i -> validateRequisitionLineItem(errors, savedRequisition, i));
     }
   }
 
@@ -58,8 +51,9 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         savedRequisition.getEmergency(), Requisition.EMERGENCY);
   }
 
-  private void validateRequisitionLineItem(Errors errors, RequisitionTemplate template,
-                                           Requisition requisition, RequisitionLineItem item) {
+  private void validateRequisitionLineItem(
+      Errors errors, Requisition requisition, RequisitionLineItem item) {
+    RequisitionTemplate template = requisition.getTemplate();
     rejectIfCalculatedAndNotNull(errors, template, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND);
     rejectIfCalculatedAndNotNull(errors, template, item.getTotalConsumedQuantity(),

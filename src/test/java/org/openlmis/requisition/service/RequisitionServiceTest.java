@@ -16,6 +16,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

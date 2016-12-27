@@ -10,10 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public final class RequisitionBuilder {
-
-
   private RequisitionBuilder() {
-    
+
   }
 
   /**
@@ -41,7 +39,8 @@ public final class RequisitionBuilder {
    * @param importer instance of {@link Requisition.Importer}
    * @return new instance of requisition.
    */
-  public static Requisition newRequisition(Requisition.Importer importer) {
+  public static Requisition newRequisition(
+      Requisition.Importer importer, RequisitionTemplate template) {
     UUID facilityId = null;
     UUID programId = null;
     UUID processingPeriodId = null;
@@ -54,6 +53,7 @@ public final class RequisitionBuilder {
     if (importer.getProcessingPeriod() != null) {
       processingPeriodId = importer.getProcessingPeriod().getId();
     }
+
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
         importer.getStatus(), importer.getEmergency());
     requisition.setId(importer.getId());
@@ -61,7 +61,7 @@ public final class RequisitionBuilder {
 
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
-    requisition.setTemplateId(importer.getTemplate());
+    requisition.setTemplate(template);
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setComments(new ArrayList<>());
 

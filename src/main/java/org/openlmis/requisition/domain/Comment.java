@@ -78,6 +78,7 @@ public class Comment extends BaseTimestampedEntity {
   public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setAuthorId(authorId);
+    exporter.setRequisitionId(requisition.getId());
     exporter.setBody(body);
     exporter.setCreatedDate(getCreatedDate());
 
@@ -88,6 +89,8 @@ public class Comment extends BaseTimestampedEntity {
 
     void setAuthorId(UUID authorId);
 
+    void setRequisitionId(UUID requisitionId);
+
     void setBody(String body);
 
     void setCreatedDate(LocalDateTime createdDate);
@@ -97,6 +100,8 @@ public class Comment extends BaseTimestampedEntity {
     UUID getId();
 
     UUID getAuthorId();
+
+    UUID getRequisitionId();
 
     String getBody();
 

@@ -24,10 +24,6 @@ import org.openlmis.requisition.web.RequisitionController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,8 +40,13 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -84,6 +85,11 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private List<Comment> comments;
 
+  @ManyToOne
+  @Getter
+  @Setter
+  private RequisitionTemplate template;
+
   @Column(nullable = false)
   @Getter
   @Setter
@@ -101,12 +107,6 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   @Type(type = UUID)
   private UUID processingPeriodId;
-
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  @Type(type = UUID)
-  private UUID templateId;
 
   @Getter
   @Setter
@@ -150,11 +150,11 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Copy values of attributes into new or updated Requisition.
    *
-   * @param requisition         Requisition with new values.
-   * @param template Requisition template
+   * @param requisition Requisition with new values.
+   * @param stockAdjustmentReasons Collection of stockAdjustmentReasons.
    */
-  public void updateFrom(Requisition requisition, RequisitionTemplate template,
-                         Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
+  public void updateFrom(
+      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
     if (null == this.comments) {
       this.comments = new ArrayList<>();
     }
@@ -168,7 +168,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     updateReqLines(requisition.getRequisitionLineItems());
-    calculateTemplateFields(template, stockAdjustmentReasons);
+    calculateTemplateFields(requisition.getTemplate(), stockAdjustmentReasons);
   }
 
   private void calculateTemplateFields(RequisitionTemplate template,
@@ -258,11 +258,9 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Submits given requisition.
    *
-   * @param template Requisition template
    * @param orderableProducts list of orderable products from referencedata
    */
-  public void submit(RequisitionTemplate template,
-                     Collection<OrderableProductDto> orderableProducts)
+  public void submit(Collection<OrderableProductDto> orderableProducts)
       throws RequisitionException, RequisitionTemplateColumnException {
     if (!INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
@@ -367,7 +365,7 @@ public class Requisition extends BaseTimestampedEntity {
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
                        Requisition previousRequisition) throws RequisitionTemplateColumnException {
-    this.templateId = template.getId();
+    this.template = template;
 
     setRequisitionLineItems(
         products

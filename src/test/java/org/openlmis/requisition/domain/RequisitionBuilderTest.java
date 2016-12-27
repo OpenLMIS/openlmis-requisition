@@ -22,13 +22,6 @@ import java.util.UUID;
 
 public class RequisitionBuilderTest {
 
-  private UUID requisitionUuid = UUID.randomUUID();
-  private UUID facilityUuid = UUID.randomUUID();
-  private UUID processingPeriodUuid = UUID.randomUUID();
-  private UUID programUuid = UUID.randomUUID();
-  private UUID supervisoryNodeUuid = UUID.randomUUID();
-  private UUID templateUuid = UUID.randomUUID();
-
   @Mock
   private RequisitionDto requisitionDto;
 
@@ -40,6 +33,16 @@ public class RequisitionBuilderTest {
 
   @Mock
   private ProcessingPeriodDto processingPeriodDto;
+
+  @Mock
+  private RequisitionTemplate requisitionTemplate;
+
+  private UUID requisitionUuid = UUID.randomUUID();
+  private UUID facilityUuid = UUID.randomUUID();
+  private UUID processingPeriodUuid = UUID.randomUUID();
+  private UUID programUuid = UUID.randomUUID();
+  private UUID supervisoryNodeUuid = UUID.randomUUID();
+  private UUID templateUuid = UUID.randomUUID();
 
   private List<Comment.Importer> commentDtos = new ArrayList<>();
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
@@ -93,7 +96,9 @@ public class RequisitionBuilderTest {
 
   @Test
   public void shouldInitializeRequisitionFromDtoImporter() {
-    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
+    when(requisitionTemplate.getId()).thenReturn(templateUuid);
+    Requisition requisition = RequisitionBuilder
+        .newRequisition(requisitionDto, requisitionTemplate);
 
     assertNotNull(requisition);
     assertEquals(requisitionUuid, requisition.getId());
@@ -101,7 +106,7 @@ public class RequisitionBuilderTest {
     assertEquals(programUuid, requisition.getProgramId());
     assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());
     assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
-    assertEquals(templateUuid, requisition.getTemplateId());
+    assertEquals(templateUuid, requisition.getTemplate().getId());
     assertEquals(commentDtos, requisition.getComments());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());
@@ -113,7 +118,8 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getProgram()).thenReturn(null);
     when(requisitionDto.getProcessingPeriod()).thenReturn(null);
 
-    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
+    Requisition requisition = RequisitionBuilder
+        .newRequisition(requisitionDto, requisitionTemplate);
 
     assertNotNull(requisition);
     assertNull(requisition.getFacilityId());

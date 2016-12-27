@@ -16,6 +16,7 @@ import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -62,6 +63,9 @@ public class RequisitionDtoBuilderTest {
   private Comment comment;
 
   @Mock
+  private RequisitionTemplate requisitionTemplate;
+
+  @Mock
   private FacilityDto facilityDto;
 
   @Mock
@@ -78,7 +82,6 @@ public class RequisitionDtoBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
-  private UUID templateUuid = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -105,7 +108,7 @@ public class RequisitionDtoBuilderTest {
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
-    assertEquals(requisition.getTemplateId(), requisitionDto.getTemplate());
+    assertEquals(requisition.getTemplate().getId(), requisitionDto.getTemplate());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(programDto, requisitionDto.getProgram());
@@ -136,7 +139,7 @@ public class RequisitionDtoBuilderTest {
         RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
-    requisition.setTemplateId(templateUuid);
+    requisition.setTemplate(requisitionTemplate);
     requisition.setComments(Collections.singletonList(comment));
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 

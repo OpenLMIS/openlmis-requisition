@@ -13,8 +13,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto implements Comment.Exporter, Comment.Importer {
-
   private UUID id;
+  private UUID requisitionId;
   private UUID authorId;
   private String body;
   private LocalDateTime createdDate;

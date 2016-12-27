@@ -1,14 +1,16 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Comment;
+import org.openlmis.requisition.domain.CommentBuilder;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.exception.CommentNotFoundException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionCommentService;
-import org.openlmis.view.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,29 +26,34 @@ import java.util.UUID;
  */
 @Controller
 public class RequisitionCommentController extends BaseController {
-
   @Autowired
   private RequisitionCommentService commentService;
+
+  @Autowired
+  private RequisitionRepository requisitionRepository;
 
   /**
    * Add comment to the requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
-  public ResponseEntity<MappingJacksonValue> insertComment(@RequestBody Comment comment,
-                                                           @PathVariable("id") UUID id)
+  public ResponseEntity<?> insertComment(
+      @RequestBody CommentDto comment, @PathVariable("id") UUID id)
           throws RequisitionNotFoundException {
-    List<Comment> comments = commentService.insertComment(id, comment);
-    return commentResponse(comments);
+    Requisition requisition = requisitionRepository.findOne(comment.getRequisitionId());
+    Comment updatedComment = CommentBuilder.newComment(comment, requisition);
+
+    List<Comment> comments = commentService.insertComment(id, updatedComment);
+    return new ResponseEntity<>(commentService.exportToDtos(comments), HttpStatus.OK);
   }
 
   /**s
    * Get all comments for specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
-  public ResponseEntity<MappingJacksonValue> getCommentsForRequisition(
+  public ResponseEntity<?> getCommentsForRequisition(
           @PathVariable("id") UUID id) throws RequisitionNotFoundException {
     List<Comment> comments = commentService.findCommentsForRequisition(id);
-    return commentResponse(comments);
+    return new ResponseEntity<>(commentService.exportToDtos(comments), HttpStatus.OK);
   }
 
   /**
@@ -57,10 +64,13 @@ public class RequisitionCommentController extends BaseController {
    * @return ResponseEntity containing the updated requisition
    */
   @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisitionComment(@RequestBody Comment comment,
-                                                    @PathVariable("id") UUID commentId) {
-    Comment updatedComment = commentService.updateComment(comment, commentId);
-    return commentResponse(updatedComment);
+  public ResponseEntity<?> updateRequisitionComment(
+      @RequestBody CommentDto comment, @PathVariable("id") UUID commentId) {
+    Requisition requisition = requisitionRepository.findOne(comment.getRequisitionId());
+    Comment updatedComment = CommentBuilder.newComment(comment, requisition);
+
+    Comment result = commentService.updateComment(updatedComment, commentId);
+    return new ResponseEntity<>(commentService.exportToDto(result), HttpStatus.OK);
   }
 
   /**
@@ -75,7 +85,7 @@ public class RequisitionCommentController extends BaseController {
     if (comment == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return commentResponse(comment);
+      return new ResponseEntity<>(commentService.exportToDto(comment), HttpStatus.OK);
     }
   }
 
@@ -95,11 +105,5 @@ public class RequisitionCommentController extends BaseController {
       commentService.deleteComment(commentId);
     }
     return new ResponseEntity<Comment>(HttpStatus.NO_CONTENT);
-  }
-
-  private ResponseEntity<MappingJacksonValue> commentResponse(Object comments) {
-    MappingJacksonValue value = new MappingJacksonValue(comments);
-    value.setSerializationView(View.BasicInformation.class);
-    return new ResponseEntity<>(value, HttpStatus.OK);
   }
 }

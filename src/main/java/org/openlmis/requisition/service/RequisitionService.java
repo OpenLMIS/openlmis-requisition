@@ -86,7 +86,6 @@ public class RequisitionService {
   @Autowired
   private ConvertHelper convertHelper;
 
-
   /**
    * Initiated given requisition if possible.
    *

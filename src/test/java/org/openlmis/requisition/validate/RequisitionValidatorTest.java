@@ -22,7 +22,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
@@ -35,10 +34,6 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionValidatorTest {
-
-  @Mock
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
   @Mock
   private RequisitionRepository requisitionRepository;
 
@@ -245,9 +240,8 @@ public class RequisitionValidatorTest {
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getNonSkippedRequisitionLineItems()).thenReturn(requisitionLineItems);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+    when(requisition.getTemplate()).thenReturn(requisitionTemplate);
 
-    when(requisitionTemplateRepository
-        .findOne(requisition.getTemplateId())).thenReturn(requisitionTemplate);
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
     when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))
@@ -266,6 +260,7 @@ public class RequisitionValidatorTest {
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setProgramId(programId);
     requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setTemplate(requisitionTemplate);
     return requisition;
   }
 }

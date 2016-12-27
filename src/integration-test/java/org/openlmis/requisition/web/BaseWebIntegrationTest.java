@@ -177,15 +177,11 @@ public abstract class BaseWebIntegrationTest {
       + " \"endDate\":\"2017-03-01\""
       + " }";
 
-  private static final String MOCK_FIND_PRODUCT_CATEGORY = "{"
-      + " \"id\":\"6d469a06-8962-11e6-ae22-56b6b6499611\""
-      + "}";
-
   private static final String MOCK_FIND_PROGRAM_PRODUCT = "{"
       + " \"id\":\"047cb32a-8962-11e6-ae22-56b6b6499611\","
-      + " \"program\":" + MOCK_FIND_PROGRAM_RESULT + ","
-      + " \"product\":" + MOCK_FIND_PRODUCT_RESULT + ","
-      + " \"productCategory\":" + MOCK_FIND_PRODUCT_CATEGORY
+      + " \"programId\": \"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
+      + " \"productId\": \"cd9e1412-8703-11e6-ae22-56b6b6499611\","
+      + " \"productCategoryId\": \"6d469a06-8962-11e6-ae22-56b6b6499611\""
       + "}";
 
   private static final String MOCK_SEARCH_SUPPLY_LINE_RESULT = "[{\n"
@@ -198,7 +194,7 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_SEARCH_APPROVED_PRODUCTS = "[{"
       + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
       + " \"product\":" + MOCK_FIND_PROGRAM_PRODUCT + ","
-      + " \"maxMonthStock\": 2"
+      + " \"maxMonthOfStock\": 2"
       + "}]";
 
   private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["

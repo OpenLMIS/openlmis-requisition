@@ -23,7 +23,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
 
@@ -34,10 +33,6 @@ import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DraftRequisitionValidatorTest {
-
-  @Mock
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
   @Mock
   private RequisitionRepository requisitionRepository;
 
@@ -161,13 +156,11 @@ public class DraftRequisitionValidatorTest {
         RequisitionStatus.AUTHORIZED, true);
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setId(requisitionId);
-    requisition.setTemplateId(requisitionTemplate.getId());
+    requisition.setTemplate(requisitionTemplate);
     return requisition;
   }
 
   private void mockRepositoriesAndObjects() {
-    when(requisitionTemplateRepository
-        .findOne(requisition.getTemplateId())).thenReturn(requisitionTemplate);
     when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
 
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);

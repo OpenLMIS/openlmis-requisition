@@ -3,12 +3,11 @@ package org.openlmis.requisition.web;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -140,9 +139,9 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
     try {
-      Requisition newRequisition = requisitionService.initiate(program,
-          facility, suggestedPeriod, emergency);
-      return new ResponseEntity<>(newRequisition, HttpStatus.CREATED);
+      Requisition newRequisition = requisitionService
+          .initiate(program, facility, suggestedPeriod, emergency);
+      return new ResponseEntity<>(requisitionDtoBuilder.build(newRequisition), HttpStatus.CREATED);
     } catch (InvalidPeriodException ipe) {
       ErrorResponse errorResponse = new ErrorResponse(
           "Error occurred while initiating requisition - incorrect suggested period.",
@@ -201,11 +200,9 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    RequisitionTemplate template =
-        requisitionTemplateRepository.findOne(requisition.getTemplateId());
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
-    requisition.submit(template, orderableProducts);
+    requisition.submit(orderableProducts);
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -240,7 +237,8 @@ public class RequisitionController extends BaseController {
       MissingPermissionException {
     permissionService.canUpdateRequisition(requisitionId);
 
-    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplateRepository.findOne(requisitionDto.getTemplate()));
 
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);
@@ -271,7 +269,6 @@ public class RequisitionController extends BaseController {
       }
 
       requisitionToUpdate.updateFrom(requisition,
-              requisitionTemplateRepository.findOne(requisition.getTemplateId()),
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
                   requisition.getProgramId()));
 
@@ -333,20 +330,20 @@ public class RequisitionController extends BaseController {
    * Skipping chosen requisition period.
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
-  public ResponseEntity<Requisition> skipRequisition(@PathVariable("id") UUID requisitionId)
+  public ResponseEntity<RequisitionDto> skipRequisition(@PathVariable("id") UUID requisitionId)
           throws RequisitionException {
     Requisition requisition = requisitionService.skip(requisitionId);
-    return new ResponseEntity<>(requisition, HttpStatus.OK);
+    return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
   }
 
   /**
    * Rejecting requisition which is waiting for approve.
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
-  public ResponseEntity<Requisition> rejectRequisition(@PathVariable("id") UUID id)
+  public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id)
           throws RequisitionException {
     Requisition rejectedRequisition = requisitionService.reject(id);
-    return new ResponseEntity<>(rejectedRequisition, HttpStatus.OK);
+    return new ResponseEntity<>(requisitionDtoBuilder.build(rejectedRequisition), HttpStatus.OK);
   }
 
   /**
@@ -381,7 +378,7 @@ public class RequisitionController extends BaseController {
       requisitionRepository.save(requisition);
 
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
-      return new ResponseEntity<>(requisition, HttpStatus.OK);
+      return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
     } else {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -406,14 +403,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
-
-    Iterable<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
+    List<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
                 null, null, null, null, null, null,
                 new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(submittedRequisitions, HttpStatus.OK);
+      return new ResponseEntity<>(
+          requisitionDtoBuilder.build(submittedRequisitions), HttpStatus.OK);
     }
   }
 

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -34,13 +33,13 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.ErrorResponse;
-import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +54,8 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
 
   @Mock
   private RequisitionRepository requisitionRepository;
@@ -104,8 +105,8 @@ public class RequisitionControllerTest {
   @Mock
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
-  @Rule
-  public final ExpectedException exception = ExpectedException.none();
+  @InjectMocks
+  private RequisitionController requisitionController;
 
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
@@ -115,9 +116,6 @@ public class RequisitionControllerTest {
   private UUID uuid3 = UUID.fromString("00000000-0000-0000-0000-000000000003");
   private UUID uuid4 = UUID.fromString("00000000-0000-0000-0000-000000000004");
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
-
-  @InjectMocks
-  private RequisitionController requisitionController;
 
   @Before
   public void setUp() {
@@ -161,16 +159,14 @@ public class RequisitionControllerTest {
   @Test
   public void shouldSubmitValidInitiatedRequisition()
       throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
-    when(initiatedRequsition.getTemplateId()).thenReturn(UUID.randomUUID());
+    when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
-    when(templateRepository.findOne(initiatedRequsition.getTemplateId())).thenReturn(template);
 
     requisitionController.submitRequisition(uuid1);
+    verify(initiatedRequsition).submit(orderableProductReferenceDataService.findAll());
 
-    verify(initiatedRequsition).submit(template, orderableProductReferenceDataService.findAll());
     // we do not update in this endpoint
-    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
-        any(RequisitionTemplate.class), anyList());
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
   }
 
   @Test
@@ -193,9 +189,11 @@ public class RequisitionControllerTest {
   public void shouldReturnBadRequestWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
+    when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
+    when(templateRepository.findOne(any(UUID.class))).thenReturn(template);
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid2);
 
@@ -210,14 +208,16 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
 
     when(requisitionDto.getId()).thenReturn(uuid1);
+    when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
+    when(templateRepository.findOne(any(UUID.class))).thenReturn(template);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid1);
     assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyObject(), anyList());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(stockAdjustmentReasonReferenceDataService)
         .getStockAdjustmentReasonsByProgram(any(UUID.class));
@@ -227,6 +227,7 @@ public class RequisitionControllerTest {
   public void shouldNotUpdateWithInvalidRequisition()
       throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
+    when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
@@ -293,8 +294,7 @@ public class RequisitionControllerTest {
   private void verifyNoSubmitOrUpdate(Requisition requisition)
       throws RequisitionException, RequisitionTemplateColumnException {
     verifyZeroInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class),
-        any(RequisitionTemplate.class), anyList());
-    verify(requisition, never()).submit(any(RequisitionTemplate.class), any());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
+    verify(requisition, never()).submit(any());
   }
 }
