@@ -1,8 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -59,6 +56,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -114,17 +114,17 @@ public class RequisitionController extends BaseController {
   /**
    * Allows creating new requisitions.
    *
-   * @param program UUID of Program.
-   * @param facility UUID of Facility.
-   * @param emergency Emergency status.
+   * @param program         UUID of Program.
+   * @param facility        UUID of Facility.
+   * @param emergency       Emergency status.
    * @param suggestedPeriod Period for requisition.
    * @return ResponseEntity containing the created requisition
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
-                   @RequestParam(value = "facility") UUID facility,
-                   @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                   @RequestParam(value = "emergency") boolean emergency)
+                    @RequestParam(value = "facility") UUID facility,
+                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
+                    @RequestParam(value = "emergency") boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
@@ -150,15 +150,15 @@ public class RequisitionController extends BaseController {
   /**
    * Returns processing periods for unprocessed requisitions.
    *
-   * @param program UUID of the Program.
-   * @param facility UUID of the Facility.
+   * @param program   UUID of the Program.
+   * @param facility  UUID of the Facility.
    * @param emergency true for periods to initiate an emergency requisition; false otherwise.
    * @return ResponseEntity containing processing periods
    */
   @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
   public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
-                                    @RequestParam(value = "facilityId") UUID facility,
-                                    @RequestParam(value = "emergency") boolean emergency) {
+                                            @RequestParam(value = "facilityId") UUID facility,
+                                            @RequestParam(value = "emergency") boolean emergency) {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
           new Message("requisition.error.periods-for-initiate.missing-parameters"));
@@ -198,7 +198,10 @@ public class RequisitionController extends BaseController {
 
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
-    requisition.submit(orderableProducts);
+    ProcessingPeriodDto period = periodService.getPeriod(
+        requisition.getProcessingPeriodId());
+
+    requisition.submit(orderableProducts, period);
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -223,12 +226,12 @@ public class RequisitionController extends BaseController {
    * Allows updating requisitions.
    *
    * @param requisitionDto A requisitionDto bound to the request body
-   * @param requisitionId UUID of requisition which we want to update
+   * @param requisitionId  UUID of requisition which we want to update
    * @return ResponseEntity containing the updated requisition
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
-                                       @PathVariable("id") UUID requisitionId)
+                                             @PathVariable("id") UUID requisitionId)
       throws InvalidRequisitionStatusException, RequisitionNotFoundException,
       MissingPermissionException {
     permissionService.canUpdateRequisition(requisitionId);
@@ -265,7 +268,7 @@ public class RequisitionController extends BaseController {
 
       requisitionToUpdate.updateFrom(requisition,
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-                  requisition.getProgramId()));
+              requisition.getProgramId()));
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
@@ -275,7 +278,7 @@ public class RequisitionController extends BaseController {
       );
     } else {
       throw new InvalidRequisitionStatusException("Cannot update a requisition "
-              + "with status: " + requisition.getStatus());
+          + "with status: " + requisition.getStatus());
     }
   }
 
@@ -312,7 +315,7 @@ public class RequisitionController extends BaseController {
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
-              RequisitionStatus[] requisitionStatuses,
+          RequisitionStatus[] requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency) {
     List<Requisition> result = requisitionService.searchRequisitions(facility, program,
         createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
@@ -369,7 +372,11 @@ public class RequisitionController extends BaseController {
 
       Collection<OrderableProductDto> orderableProducts
           = orderableProductReferenceDataService.findAll();
-      requisition.approve(orderableProducts);
+      ProcessingPeriodDto period = periodService.getPeriod(
+          requisition.getProcessingPeriodId());
+
+      requisition.approve(orderableProducts, period);
+
       requisitionRepository.save(requisition);
 
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
@@ -442,11 +449,13 @@ public class RequisitionController extends BaseController {
 
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
+    ProcessingPeriodDto period = periodService.getPeriod(
+        requisition.getProcessingPeriodId());
 
-    requisition.authorize(orderableProducts);
+    requisition.authorize(orderableProducts, period);
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
     requisitionRepository.save(requisition);
-    LOGGER.debug("Requisition: " +  requisitionId + " authorized.");
+    LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 
     return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
   }
@@ -455,12 +464,12 @@ public class RequisitionController extends BaseController {
    * Get approved requisitions matching all of provided parameters.
    *
    * @param filterValue Value to be used to filter.
-   * @param filterBy Field used to filter: "programName", "facilityCode", "facilityName" or "all".
-   * @param sortBy Field used to sort: "programName", "facilityCode" or "facilityName".
-   * @param descending Descending direction for sort.
-   * @param pageNumber Page number to return.
-   * @param pageSize Quantity for one page.
-   *
+   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName"
+   *                    or "all".
+   * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
+   * @param descending  Descending direction for sort.
+   * @param pageNumber  Page number to return.
+   * @param pageSize    Quantity for one page.
    * @return ResponseEntity with list of approved requisitions.
    */
   @RequestMapping(value = "/requisitions/requisitionsForConvert", method = RequestMethod.GET)
@@ -519,7 +528,7 @@ public class RequisitionController extends BaseController {
 
   private void nullDataValuesOfRequisitionLineItems(
       List<RequisitionLineItem> requisitionLineItems) {
-    for (RequisitionLineItem requisitionLineItem: requisitionLineItems) {
+    for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
       requisitionLineItem.setBeginningBalance(null);
       requisitionLineItem.setTotalReceivedQuantity(null);
       requisitionLineItem.setTotalLossesAndAdjustments(null);

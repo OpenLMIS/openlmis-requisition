@@ -1,5 +1,27 @@
 package org.openlmis.requisition.domain;
 
+import com.google.common.collect.Lists;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -8,32 +30,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-
-import com.google.common.collect.Lists;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.ProductDto;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
@@ -42,10 +45,13 @@ public class RequisitionTest {
 
   private static final Money PRICE_PER_PACK = new Money("9");
   private static final long PACK_SIZE = 2;
+  private static final int ADJUSTED_CONSUMPTION = 1;
+  private static final int MONTHS_IN_PERIOD = 1;
 
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
   private OrderableProductDto orderableProductDto;
+  private ProcessingPeriodDto periodDto;
 
   private UUID productId = UUID.randomUUID();
 
@@ -57,6 +63,10 @@ public class RequisitionTest {
     orderableProductDto = new OrderableProductDto();
     orderableProductDto.setId(productId);
     orderableProductDto.setPackSize(PACK_SIZE);
+
+    periodDto = new ProcessingPeriodDto();
+    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
+    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
 
     requisition = new Requisition();
     requisitionLineItem = new RequisitionLineItem();
@@ -77,7 +87,7 @@ public class RequisitionTest {
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(orderableProducts);
+    requisition.authorize(orderableProducts, periodDto);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -87,7 +97,7 @@ public class RequisitionTest {
       throws RequisitionException {
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
-    requisition.authorize(orderableProducts);
+    requisition.authorize(orderableProducts, periodDto);
   }
 
   @Test
@@ -111,8 +121,8 @@ public class RequisitionTest {
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(orderableProducts);
     requisition.updateFrom(newRequisition, Lists.newArrayList());
+    requisition.authorize(orderableProducts, periodDto);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -397,6 +407,60 @@ public class RequisitionTest {
 
     assertEquals(1, requisitionLineItem2.getPacksToShip().longValue());
     assertEquals(new Money("25"), requisitionLineItem2.getTotalCost());
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionWhenSubmit()
+      throws RequisitionTemplateColumnException, RequisitionException {
+    // given
+    Collection<OrderableProductDto> orderableProducts = prepareForTestAdjustedConcumption();
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+
+    //when
+    requisition.submit(orderableProducts, periodDto);
+
+    //then
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionWhenAuthorize()
+      throws RequisitionTemplateColumnException, RequisitionException {
+    // given
+    Collection<OrderableProductDto> orderableProducts = prepareForTestAdjustedConcumption();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    //when
+    requisition.authorize(orderableProducts, periodDto);
+
+    //then
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionWhenApprove()
+      throws RequisitionTemplateColumnException, RequisitionException {
+    // given
+    Collection<OrderableProductDto> orderableProducts = prepareForTestAdjustedConcumption();
+    requisition.setStatus(RequisitionStatus.APPROVED);
+
+    //when
+    requisition.approve(orderableProducts, periodDto);
+
+    //then
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+  }
+
+  private Collection<OrderableProductDto> prepareForTestAdjustedConcumption() {
+    requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(productId);
+    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
+
+    mockStatic(LineItemFieldsCalculator.class);
+    when(LineItemFieldsCalculator.calculateAdjustedConsumption(any(), eq(MONTHS_IN_PERIOD)))
+        .thenReturn(ADJUSTED_CONSUMPTION);
+
+    return Collections.singletonList(orderableProductDto);
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,

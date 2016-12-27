@@ -1,15 +1,13 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -46,6 +44,7 @@ public class RequisitionLineItem extends BaseEntity {
   static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
   public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   public static final String SKIPPED_COLUMN = "skipped";
+  public static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
 
   private static final String UUID = "pg-uuid";
 
@@ -142,6 +141,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private Integer numberOfNewPatientsAdded;
 
+  @Column
+  @Setter
+  @Getter
+  private Integer adjustedConsumption;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -218,6 +222,7 @@ public class RequisitionLineItem extends BaseEntity {
       if (null != requisitionLineItem.getStockAdjustments()) {
         stockAdjustments.addAll(requisitionLineItem.getStockAdjustments());
       }
+      this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
     }
   }
 
@@ -282,6 +287,7 @@ public class RequisitionLineItem extends BaseEntity {
     } else {
       requisitionLineItem.setSkipped(false);
     }
+    requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -318,6 +324,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setTotalCost(totalCost);
     exporter.setSkipped(skipped);
+    exporter.setAdjustedConsumption(adjustedConsumption);
   }
 
   public void clearStockAdjustments() {
@@ -379,6 +386,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setTotalCost(Money totalCost);
 
     void setSkipped(Boolean skipped);
+
+    void setAdjustedConsumption(Integer adjustedConsumption);
   }
 
   public interface Importer {
@@ -419,5 +428,7 @@ public class RequisitionLineItem extends BaseEntity {
     Money getTotalCost();
 
     Boolean getSkipped();
+
+    Integer getAdjustedConsumption();
   }
 }

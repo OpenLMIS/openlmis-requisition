@@ -12,8 +12,8 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class LineItemFieldsCalculatorTest {
-
   @Test
   public void shouldCalculateTotalLossesAndAdjustments() throws Exception {
     // given
@@ -151,5 +151,23 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setPacksToShip(20L);
     totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
     assertEquals(Money.ZERO, totalCost);
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumption() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setTotalStockoutDays(5);
+    requisitionLineItem.setTotalConsumedQuantity(20);
+
+    assertEquals(40, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionWhenNonStockoutDaysIsZero() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setTotalStockoutDays(90);
+    requisitionLineItem.setTotalConsumedQuantity(20);
+
+    assertEquals(20, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
   }
 }

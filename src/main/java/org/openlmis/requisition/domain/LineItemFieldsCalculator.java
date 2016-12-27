@@ -1,12 +1,13 @@
 package org.openlmis.requisition.domain;
 
-
-import static org.apache.commons.lang.BooleanUtils.isTrue;
-
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Optional;
+
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 
 public final class LineItemFieldsCalculator {
 
@@ -79,8 +80,8 @@ public final class LineItemFieldsCalculator {
    * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
    */
   public static int calculateTotalLossesAndAdjustments(RequisitionLineItem lineItem,
-                                                               Collection<StockAdjustmentReasonDto>
-                                                               reasons) {
+                                                       Collection<StockAdjustmentReasonDto>
+                                                           reasons) {
     int totalLossesAndAdjustments = 0;
     if (null != lineItem.getStockAdjustments()) {
       for (StockAdjustment adjustment : lineItem.getStockAdjustments()) {
@@ -102,6 +103,7 @@ public final class LineItemFieldsCalculator {
   /**
    * Calculates the total cost of the requisition line item, by multiplying price per pack
    * and packs to ship. If either one is null, zero will be returned.
+   *
    * @param lineItem the line item to calculate the value for
    * @return a {@link Money} object representing the total cost for this line
    */
@@ -114,6 +116,41 @@ public final class LineItemFieldsCalculator {
     long packsToShip = zeroIfNull(lineItem.getPacksToShip());
 
     return pricePerPack.mul(packsToShip);
+  }
+
+  /**
+   * Calculates StockOnHand (E) value and returns it.
+   * The formula is N = C * RoundUp((M * 30) / ((M * 30) - X))
+   * C = Total Consumed Quantity
+   * M = Months in the previous period
+   * N = Adjusted Consumption
+   * X = Total Stockout Days
+   * If non-stockout days is zero the formula is N = C
+   */
+  public static int calculateAdjustedConsumption(RequisitionLineItem lineItem,
+                                                 int monthsInThePeriod) {
+    int consumedQuantity = zeroIfNull(lineItem.getTotalConsumedQuantity());
+
+    if (consumedQuantity == 0) {
+      return 0;
+    }
+
+    int totalDays = 30 * monthsInThePeriod;
+    int stockoutDays = zeroIfNull(lineItem.getTotalStockoutDays());
+    int nonStockoutDays = totalDays - stockoutDays;
+
+    if (nonStockoutDays == 0) {
+      return consumedQuantity;
+    }
+
+    BigDecimal adjustedConsumption = new BigDecimal(consumedQuantity).multiply(
+        divideAndRoundUp(totalDays, new BigDecimal(nonStockoutDays)));
+
+    return adjustedConsumption.intValue();
+  }
+
+  private static BigDecimal divideAndRoundUp(int totalDays, BigDecimal nonStockoutDays) {
+    return new BigDecimal(totalDays).divide(nonStockoutDays, 0, RoundingMode.CEILING);
   }
 
   private static int zeroIfNull(Integer value) {

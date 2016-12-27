@@ -45,6 +45,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -162,9 +163,15 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
 
-    requisitionController.submitRequisition(uuid1);
-    verify(initiatedRequsition).submit(orderableProductReferenceDataService.findAll());
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
+    periodDto.setStartDate(LocalDate.of(2016, 11 ,1));
+    periodDto.setEndDate(LocalDate.of(2016, 12 ,1));
 
+    when(periodService.getPeriod(any())).thenReturn(periodDto);
+
+    requisitionController.submitRequisition(uuid1);
+
+    verify(initiatedRequsition).submit(orderableProductReferenceDataService.findAll(), periodDto);
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
   }
@@ -298,6 +305,6 @@ public class RequisitionControllerTest {
       throws RequisitionException, RequisitionTemplateColumnException {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
-    verify(requisition, never()).submit(any());
+    verify(requisition, never()).submit(any(), any());
   }
 }
