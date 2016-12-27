@@ -21,7 +21,6 @@ import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -70,9 +69,6 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
-
-  @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
   private RequisitionValidator validator;
@@ -237,8 +233,7 @@ public class RequisitionController extends BaseController {
       MissingPermissionException {
     permissionService.canUpdateRequisition(requisitionId);
 
-    Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplateRepository.findOne(requisitionDto.getTemplate()));
+    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);

@@ -193,7 +193,7 @@ public class RequisitionControllerTest {
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
-    when(templateRepository.findOne(any(UUID.class))).thenReturn(template);
+    when(initiatedRequsition.getTemplate()).thenReturn(template);
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid2);
 
@@ -212,11 +212,14 @@ public class RequisitionControllerTest {
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
-    when(templateRepository.findOne(any(UUID.class))).thenReturn(template);
+    when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid1);
+
     assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    assertEquals(template, initiatedRequsition.getTemplate());
+
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(stockAdjustmentReasonReferenceDataService)

@@ -39,8 +39,7 @@ public final class RequisitionBuilder {
    * @param importer instance of {@link Requisition.Importer}
    * @return new instance of requisition.
    */
-  public static Requisition newRequisition(
-      Requisition.Importer importer, RequisitionTemplate template) {
+  public static Requisition newRequisition(Requisition.Importer importer) {
     UUID facilityId = null;
     UUID programId = null;
     UUID processingPeriodId = null;
@@ -61,7 +60,6 @@ public final class RequisitionBuilder {
 
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
-    requisition.setTemplate(template);
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setComments(new ArrayList<>());
 

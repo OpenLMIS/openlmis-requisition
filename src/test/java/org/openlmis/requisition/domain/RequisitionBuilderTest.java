@@ -97,8 +97,7 @@ public class RequisitionBuilderTest {
   @Test
   public void shouldInitializeRequisitionFromDtoImporter() {
     when(requisitionTemplate.getId()).thenReturn(templateUuid);
-    Requisition requisition = RequisitionBuilder
-        .newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
     assertNotNull(requisition);
     assertEquals(requisitionUuid, requisition.getId());
@@ -106,7 +105,6 @@ public class RequisitionBuilderTest {
     assertEquals(programUuid, requisition.getProgramId());
     assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());
     assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
-    assertEquals(templateUuid, requisition.getTemplate().getId());
     assertEquals(commentDtos, requisition.getComments());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());
@@ -118,8 +116,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getProgram()).thenReturn(null);
     when(requisitionDto.getProcessingPeriod()).thenReturn(null);
 
-    Requisition requisition = RequisitionBuilder
-        .newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
     assertNotNull(requisition);
     assertNull(requisition.getFacilityId());
