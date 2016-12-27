@@ -115,14 +115,13 @@ public class RequisitionTest {
     when(LineItemFieldsCalculator.calculateTotal(requisitionLineItem))
         .thenReturn(1);
 
-    Requisition newRequisition = new Requisition();
-    newRequisition.setTemplate(requisitionTemplate);
-
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
+    requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.updateFrom(newRequisition, Lists.newArrayList());
+
     requisition.authorize(orderableProducts, periodDto);
+    requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -142,10 +141,8 @@ public class RequisitionTest {
     requisition.setRequisitionLineItems(new ArrayList<>(
         Collections.singletonList(requisitionLineItem)));
 
-    Requisition newRequisition = new Requisition();
-    newRequisition.setTemplate(requisitionTemplate);
-
-    requisition.updateFrom(newRequisition, Lists.newArrayList());
+    requisition.setTemplate(requisitionTemplate);
+    requisition.updateFrom(new Requisition(), Lists.newArrayList());
     verifyStatic(times(1));
   }
 
@@ -158,9 +155,9 @@ public class RequisitionTest {
     nonFullSupply.setNonFullSupply(true);
 
     Requisition newRequisition = new Requisition();
-    newRequisition.setTemplate(mock(RequisitionTemplate.class));
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
+    requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
@@ -175,10 +172,10 @@ public class RequisitionTest {
     nonFullSupply.setNonFullSupply(true);
 
     Requisition newRequisition = new Requisition();
-    newRequisition.setTemplate(mock(RequisitionTemplate.class));
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     int count = requisition.getRequisitionLineItems().size();
+    requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.updateFrom(newRequisition, Lists.newArrayList());
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(count + 1));
@@ -226,12 +223,12 @@ public class RequisitionTest {
 
     newRequisition.setId(UUID.randomUUID());
     newRequisition.setStatus(RequisitionStatus.INITIATED);
-    newRequisition.setTemplate(template);
     newRequisition.setRequisitionLineItems(
         Lists.newArrayList(firstRequisitionLineItem, secondRequisitionLineItem)
     );
 
     // when
+    requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
     requisition.updateFrom(newRequisition, Lists.newArrayList());
 
@@ -251,9 +248,8 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(false);
     when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
 
-    Requisition newRequisition = new Requisition();
-    newRequisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, Lists.newArrayList());
+    requisition.setTemplate(requisitionTemplate);
+    requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));

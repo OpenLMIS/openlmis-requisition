@@ -174,7 +174,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     updateReqLines(requisition.getRequisitionLineItems());
-    calculateTemplateFields(requisition.getTemplate(), stockAdjustmentReasons);
+    calculateTemplateFields(this.template, stockAdjustmentReasons);
   }
 
   private void calculateTemplateFields(RequisitionTemplate template,
