@@ -17,6 +17,7 @@ INSERT INTO requisition.available_requisition_columns (id, name, label, indicato
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('5708ebf9-9317-4420-85aa-71b2ae92643d', 'numberOfNewPatientsAdded', 'Number Of New Patients Added', 'F', false, false, true, false, 'NUMERIC');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('e3a0c1fc-c2d5-11e6-af2d-3417eb83144e', 'pricePerPack', 'Total Cost', 'Q', false, false, true, false, 'NUMERIC');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('c6dffdee-3813-40d9-8737-f531d5adf420', 'skipped', 'skipped', 'S', false, false, true, false, 'BOOLEAN');
+INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType) VALUES('720dd95b-b765-4afb-b7f2-7b22261c32f3', 'adjustedConsumption', 'adjustedConsumption', 'N', false, false, true, false, 'NUMERIC');
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT'); -- requestedQuantity
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT'); -- totalReceivedQuantity
@@ -39,7 +40,7 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('5708ebf9-9317-4420-85aa-71b2ae92643d', 'USER_INPUT'); -- numberOfNewPatientsAdded
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('e3a0c1fc-c2d5-11e6-af2d-3417eb83144e', 'CALCULATED'); -- totalCost
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('c6dffdee-3813-40d9-8737-f531d5adf420', 'USER_INPUT'); -- skipped
+INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('720dd95b-b765-4afb-b7f2-7b22261c32f3', 'CALCULATED'); -- adjustedConsumption
 
 INSERT INTO requisition.available_requisition_column_options (id, columnId, optionName, optionLabel) VALUES ('34b8e763-71a0-41f1-86b4-1829963f0704', '5708ebf9-9317-4420-85aa-71b2ae92643d', 'newPatientCount', 'New Patient Count'); -- numberOfNewPatientsAdded
 INSERT INTO requisition.available_requisition_column_options (id, columnId, optionName, optionLabel) VALUES ('4957ebb4-297c-459e-a291-812e72286eff', '5708ebf9-9317-4420-85aa-71b2ae92643d', 'dispensingUnitsForNewPatients', 'Dispensing units for new patients'); -- numberOfNewPatientsAdded
-
