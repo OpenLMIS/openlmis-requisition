@@ -8,6 +8,7 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import java.util.Map;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
@@ -17,14 +18,15 @@ public class RequisitionTemplateValidator implements Validator {
   static final String REQUESTED_QUANTITY = "requestedQuantity";
   static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
   static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
-  static final String BEGINNING_BALANCE = "beginningBalance";
-  static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
-  static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
+  static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
+  static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION =
       " must be displayed when stock on hand is calculated.";
   static final String TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION =
       " must be displayed when total consumed quantity is calculated.";
+  static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
+      " must be displayed when adjusted consumption is calculated.";
 
 
   @Override
@@ -47,6 +49,12 @@ public class RequisitionTemplateValidator implements Validator {
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
       );
+      if (isColumnOnTemplate(requisitionTemplate)) {
+        validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
+            ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
+            TOTAL_STOCKOUT_DAYS
+        );
+      }
     }
   }
 
@@ -127,5 +135,11 @@ public class RequisitionTemplateValidator implements Validator {
       errors.rejectValue(COLUMNS_MAP, RequisitionTemplate.OPTION + chosenOption.getOptionName()
           + RequisitionTemplate.WARNING_SUFFIX);
     }
+  }
+
+  private boolean isColumnOnTemplate(RequisitionTemplate requisitionTemplate) {
+    Map<String, RequisitionTemplateColumn> columnsMap = requisitionTemplate.getColumnsMap();
+    RequisitionTemplateColumn adjustedConsumptionColumn = columnsMap.get(ADJUSTED_CONSUMPTION);
+    return adjustedConsumptionColumn != null;
   }
 }

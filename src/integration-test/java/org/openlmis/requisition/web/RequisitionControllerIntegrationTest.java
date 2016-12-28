@@ -662,6 +662,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           assertEquals(null, line.getPricePerPack());
           assertEquals(null, line.getTotalCost());
           assertEquals(null, line.getNumberOfNewPatientsAdded());
+          assertEquals(null, line.getAdjustedConsumption());
           assertEquals(0, line.getStockAdjustments().size());
         });
 

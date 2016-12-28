@@ -42,6 +42,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
   private static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   private static final String STOCK_ON_HAND = "stockOnHand";
+  private static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
+  private static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -270,6 +272,52 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldNotSaveWhenAdjustedConsumptionIsOnTemplateAndStockoutDaysNotDisplayed()
+      throws RequisitionTemplateColumnException {
+    requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionTemplate.getId())
+        .body(requisitionTemplate)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .extract().asString();
+
+    String expectedMessage = TOTAL_STOCKOUT_DAYS
+        + " must be displayed when adjusted consumption is calculated.";
+
+    assertTrue(response.contains(expectedMessage));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSaveWhenAdjustedConsumptionIsOnTemplateAndtConsumedQuantityNotDisplayed()
+      throws RequisitionTemplateColumnException {
+    requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, false);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionTemplate.getId())
+        .body(requisitionTemplate)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .extract().asString();
+
+    String expectedMessage = TOTAL_CONSUMED_QUANTITY
+        + " must be displayed when adjusted consumption is calculated.";
+
+    assertTrue(response.contains(expectedMessage));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   private RequisitionTemplate generateRequisitionTemplate()
       throws RequisitionTemplateColumnException {
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
@@ -339,6 +387,24 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     ));
     columnMap.put(STOCK_ON_HAND, column);
 
+    column = new RequisitionTemplateColumn(columnDefinition);
+    column.setName(TOTAL_STOCKOUT_DAYS);
+    column.setLabel("Total Stockout Days");
+    column.setIsDisplayed(true);
+    column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
+        UUID.fromString("750b9359-c097-4612-8328-d21671f88920")
+    ));
+    columnMap.put(TOTAL_STOCKOUT_DAYS, column);
+
+    column = new RequisitionTemplateColumn(columnDefinition);
+    column.setName(ADJUSTED_CONSUMPTION);
+    column.setLabel("Adjusted Consumption");
+    column.setIsDisplayed(true);
+    column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
+        UUID.fromString("720dd95b-b765-4afb-b7f2-7b22261c32f3")
+    ));
+    columnMap.put(ADJUSTED_CONSUMPTION, column);
+
     RequisitionTemplate reqTemplate = new RequisitionTemplate(columnMap);
     reqTemplate.changeColumnSource(REQUESTED_QUANTITY, SourceType.USER_INPUT);
     reqTemplate.changeColumnSource(STOCK_ON_HAND, SourceType.USER_INPUT);
@@ -347,6 +413,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     reqTemplate.changeColumnSource(BEGINNING_BALANCE, SourceType.USER_INPUT);
     reqTemplate.changeColumnSource(TOTAL_RECEIVED_QUANTITY, SourceType.USER_INPUT);
     reqTemplate.changeColumnSource(TOTAL_LOSSES_AND_ADJUSTMENTS, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(TOTAL_STOCKOUT_DAYS, SourceType.USER_INPUT);
+    reqTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
     reqTemplate.setProgramId(generateProgram().getId());
     requisitionTemplateRepository.save(reqTemplate);
     return reqTemplate;

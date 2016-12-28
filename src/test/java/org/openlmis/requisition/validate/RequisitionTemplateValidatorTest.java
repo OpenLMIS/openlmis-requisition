@@ -89,6 +89,36 @@ public class RequisitionTemplateValidatorTest {
             + RequisitionTemplate.WARNING_SUFFIX));
   }
 
+  @Test
+  public void shouldRejectIfTotalStockoutDaysFieldIsNotDisplayed()
+      throws RequisitionTemplateColumnException {
+    RequisitionTemplate requisitionTemplate =
+        getRequisitionTemplateForTestAdjustedConsumptionField();
+    requisitionTemplate.changeColumnDisplay(
+        RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS, false);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
+        eq(RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS
+            + RequisitionTemplateValidator.ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION));
+  }
+
+  @Test
+  public void shouldRejectIfTotalConsumedQuantityFieldIsNotDisplayed()
+      throws RequisitionTemplateColumnException {
+    RequisitionTemplate requisitionTemplate =
+        getRequisitionTemplateForTestAdjustedConsumptionField();
+    requisitionTemplate.changeColumnDisplay(
+        RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY, false);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
+        eq(RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY
+            + RequisitionTemplateValidator.ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION));
+  }
+
   private RequisitionTemplate generateTemplate() throws RequisitionTemplateColumnException {
     Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
     columnMap.put(RequisitionTemplateValidator.REQUESTED_QUANTITY,
@@ -103,6 +133,24 @@ public class RequisitionTemplateValidatorTest {
     return new RequisitionTemplate(columnMap);
   }
 
+  private RequisitionTemplate getRequisitionTemplateForTestAdjustedConsumptionField()
+      throws RequisitionTemplateColumnException {
+    Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
+    columnMap.put(RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY,
+        generateTemplateColumn(RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY, "C", true));
+    columnMap.put(RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS,
+        generateTemplateColumn(RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS,
+            "X", true));
+    columnMap.put(RequisitionTemplateValidator.ADJUSTED_CONSUMPTION,
+        generateTemplateColumn(RequisitionTemplateValidator.ADJUSTED_CONSUMPTION,
+            "N", true));
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.changeColumnSource(RequisitionTemplateValidator.ADJUSTED_CONSUMPTION,
+        SourceType.CALCULATED);
+    return requisitionTemplate;
+  }
+
   private RequisitionTemplateColumn generateTemplateColumn(String name, String indicator,
                                                            boolean displayed)
       throws RequisitionTemplateColumnException {
@@ -112,6 +160,7 @@ public class RequisitionTemplateValidatorTest {
     columnDefinition.setIsDisplayRequired(false);
     Set<SourceType> sources = new HashSet<>();
     sources.add(SourceType.USER_INPUT);
+    sources.add(SourceType.CALCULATED);
     columnDefinition.setSources(sources);
 
     RequisitionTemplateColumn requisitionTemplateColumn =
