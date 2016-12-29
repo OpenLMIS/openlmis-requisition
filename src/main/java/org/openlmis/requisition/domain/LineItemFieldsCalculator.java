@@ -143,14 +143,16 @@ public final class LineItemFieldsCalculator {
       return consumedQuantity;
     }
 
-    BigDecimal adjustedConsumption = new BigDecimal(consumedQuantity).multiply(
-        divideAndRoundUp(totalDays, new BigDecimal(nonStockoutDays)));
+    BigDecimal adjustedConsumption = new BigDecimal(consumedQuantity)
+        .multiply(divide(totalDays, nonStockoutDays))
+        .setScale(0, RoundingMode.CEILING);
 
     return adjustedConsumption.intValue();
   }
 
-  private static BigDecimal divideAndRoundUp(int totalDays, BigDecimal nonStockoutDays) {
-    return new BigDecimal(totalDays).divide(nonStockoutDays, 0, RoundingMode.CEILING);
+  private static BigDecimal divide(int totalDays, int nonStockoutDays) {
+    return new BigDecimal(totalDays)
+        .divide(new BigDecimal(nonStockoutDays), 1000, BigDecimal.ROUND_HALF_UP);
   }
 
   private static int zeroIfNull(Integer value) {

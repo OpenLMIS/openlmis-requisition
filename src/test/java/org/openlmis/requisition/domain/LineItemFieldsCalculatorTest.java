@@ -159,7 +159,7 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalStockoutDays(5);
     requisitionLineItem.setTotalConsumedQuantity(20);
 
-    assertEquals(40, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
+    assertEquals(22, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
   }
 
   @Test
