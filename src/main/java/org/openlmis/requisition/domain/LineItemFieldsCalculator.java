@@ -119,7 +119,7 @@ public final class LineItemFieldsCalculator {
   }
 
   /**
-   * Calculates StockOnHand (E) value and returns it.
+   * Calculates Adjusted Consumption (N) value and returns it.
    * The formula is N = C * RoundUp((M * 30) / ((M * 30) - X))
    * C = Total Consumed Quantity
    * M = Months in the previous period
