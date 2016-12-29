@@ -76,7 +76,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
         RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION);
 
-    rejectIfNullOrNegative(errors, template, item.getNumberOfNewPatientsAdded(),
+    rejectIfLessThanZero(errors, template, item.getNumberOfNewPatientsAdded(),
         RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED);
 
     validateCalculations(errors, template, item);
