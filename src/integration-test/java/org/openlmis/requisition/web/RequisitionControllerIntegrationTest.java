@@ -1245,7 +1245,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setTemplate(template);
-    requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisitionRepository.save(requisition);
 
     return requisition;

@@ -20,7 +20,6 @@ import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -29,7 +28,6 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.utils.ConvertHelper;
-import org.openlmis.utils.Message;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.slf4j.Logger;
@@ -314,20 +312,8 @@ public class RequisitionService {
    */
   public List<FacilityDto> getAvailableSupplyingDepots(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
-
-    UUID programId = requisition.getProgramId();
-    UUID supervisoryNodeId = requisition.getSupervisoryNodeId();
-    if (programId == null) {
-      throw new ValidationMessageException(
-          new Message("requisition.error.program-missing", requisitionId));
-    }
-    if (supervisoryNodeId == null) {
-      throw new ValidationMessageException(
-          new Message("requisition.error.supervisory-node-missing", requisitionId));
-    }
-
     Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .searchSupplyingDepots(programId, supervisoryNodeId);
+        .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
     return new ArrayList<>(facilityDtos);
   }
 
