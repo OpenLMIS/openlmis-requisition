@@ -8,7 +8,6 @@ import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import java.util.Map;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
@@ -49,7 +48,7 @@ public class RequisitionTemplateValidator implements Validator {
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
       );
-      if (isColumnOnTemplate(requisitionTemplate, ADJUSTED_CONSUMPTION)) {
+      if (requisitionTemplate.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
         validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
             ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS
@@ -135,11 +134,5 @@ public class RequisitionTemplateValidator implements Validator {
       errors.rejectValue(COLUMNS_MAP, RequisitionTemplate.OPTION + chosenOption.getOptionName()
           + RequisitionTemplate.WARNING_SUFFIX);
     }
-  }
-
-  private boolean isColumnOnTemplate(RequisitionTemplate requisitionTemplate, String columnName) {
-    Map<String, RequisitionTemplateColumn> columnsMap = requisitionTemplate.getColumnsMap();
-    RequisitionTemplateColumn adjustedConsumptionColumn = columnsMap.get(columnName);
-    return adjustedConsumptionColumn != null;
   }
 }

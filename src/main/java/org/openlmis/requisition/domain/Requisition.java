@@ -18,7 +18,9 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.web.RequisitionController;
+import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -205,6 +208,17 @@ public class Requisition extends BaseTimestampedEntity {
       if (template.isColumnDisplayed(TOTAL_COLUMN)) {
         forEachLine(line -> line.setTotal(
             LineItemFieldsCalculator.calculateTotal(line)));
+      }
+
+      if (template.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
+        forEachLine(line -> {
+          int adjustedConsumption =
+              LineItemFieldsCalculator.calculateAdjustedConsumption(line, getMonths());
+          if (adjustedConsumption != line.getAdjustedConsumption()) {
+            throw new ValidationMessageException(
+                new Message("requisition.error.calculate.passed-adjusted-consumption-incorrect"));
+          }
+        });
       }
 
     } catch (RequisitionTemplateColumnException ex) {
