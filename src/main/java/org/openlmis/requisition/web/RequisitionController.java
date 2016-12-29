@@ -4,6 +4,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.Template;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
@@ -13,14 +14,17 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
+import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.TemplateService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -31,6 +35,7 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
+import org.openlmis.utils.ReportUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,16 +53,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -66,6 +76,7 @@ public class RequisitionController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
   private static final String REQUISITION = "requisition";
+  private static final String REQUISITION_PRINT_TEMPLATE_NAME = "Print Requisition";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -105,6 +116,12 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
+  @Autowired
+  private TemplateService templateService;
+
+  @Autowired
+  private JasperReportsViewService jasperReportsViewService;
 
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
@@ -524,6 +541,29 @@ public class RequisitionController extends BaseController {
       LOGGER.error(errorResponse.getMessage(), err);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  /**
+   * Print out requisition as a PDF file.
+   *
+   * @param id The UUID of the requisition to print
+   * @return ResponseEntity with the "#200 OK" HTTP response status and PDF file on success, or
+   *         ResponseEntity containing the error description status.
+   */
+  @RequestMapping(value = "/requisitions/{id}/print", method = RequestMethod.GET)
+  @ResponseBody
+  public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id)
+      throws JasperReportViewException, MissingPermissionException {
+    permissionService.canViewRequisition(id);
+    Template template = templateService.getByName(REQUISITION_PRINT_TEMPLATE_NAME);
+
+    Map<String, Object> params = ReportUtils.createParametersMap();
+    params.put("requisition_id", "'" + id + "'");
+
+    JasperReportsMultiFormatView jasperView =
+        jasperReportsViewService.getJasperReportsView(template, request);
+
+    return new ModelAndView(jasperView, params);
   }
 
   private void nullDataValuesOfRequisitionLineItems(

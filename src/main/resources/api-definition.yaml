@@ -517,65 +517,79 @@ resourceTypes:
                       body:
                         application/json:
       /{id}/submit:
-              post:
-                  is: [ secured ]
-                  description: Submit earlier initiated requisition.
-                  responses:
-                      "200":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                      "400":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                      "403":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                                schema: errorResponse
+          post:
+              is: [ secured ]
+              description: Submit earlier initiated requisition.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
       /{id}/authorize:
-              uriParameters:
-                  id:
-                      displayName: requisition Id
-                      type: string
-                      required: true
-                      repeat: false
-              post:
-                  is: [ secured ]
-                  description: Authorize submitted requisition.
-                  responses:
-                      "200":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                      "400":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                                schema: errorResponse
-                            text/plain:
-                      "404":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                      "403":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                                schema: errorResponse
+          uriParameters:
+              id:
+                  displayName: requisition Id
+                  type: string
+                  required: true
+                  repeat: false
+          post:
+              is: [ secured ]
+              description: Authorize submitted requisition.
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+                        text/plain:
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+      /{id}/print:
+          uriParameters:
+              id:
+                  displayName: requisitionId
+                  type: string
+                  required: true
+                  repeat: false
+          get:
+              is: [ secured ]
+              description: Print requisition to a pdf file.
+              responses:
+                  200:
+                      body:
+                        application/pdf:
       /search:
           get:
               is: [ secured ]
