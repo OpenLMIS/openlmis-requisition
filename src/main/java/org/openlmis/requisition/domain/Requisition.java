@@ -18,9 +18,7 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.web.RequisitionController;
-import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,9 +212,9 @@ public class Requisition extends BaseTimestampedEntity {
         forEachLine(line -> {
           int adjustedConsumption =
               LineItemFieldsCalculator.calculateAdjustedConsumption(line, months);
-          if (adjustedConsumption != line.getAdjustedConsumption()) {
-            throw new ValidationMessageException(
-                new Message("requisition.error.calculate.passed-adjusted-consumption-incorrect"));
+          if (line.getAdjustedConsumption() != null
+              && adjustedConsumption != line.getAdjustedConsumption()) {
+            LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
           }
         });
       }
