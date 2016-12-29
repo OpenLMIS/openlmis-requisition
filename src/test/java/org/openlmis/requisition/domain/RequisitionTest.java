@@ -7,14 +7,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,7 +49,6 @@ public class RequisitionTest {
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
   private OrderableProductDto orderableProductDto;
-  private ProcessingPeriodDto periodDto;
 
   private UUID productId = UUID.randomUUID();
 
@@ -63,10 +60,6 @@ public class RequisitionTest {
     orderableProductDto = new OrderableProductDto();
     orderableProductDto.setId(productId);
     orderableProductDto.setPackSize(PACK_SIZE);
-
-    periodDto = new ProcessingPeriodDto();
-    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
-    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
 
     requisition = new Requisition();
     requisitionLineItem = new RequisitionLineItem();
@@ -80,6 +73,7 @@ public class RequisitionTest {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
+    requisition.setMonths(MONTHS_IN_PERIOD);
   }
 
   @Test
@@ -87,7 +81,7 @@ public class RequisitionTest {
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(orderableProducts, periodDto);
+    requisition.authorize(orderableProducts);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -97,7 +91,7 @@ public class RequisitionTest {
       throws RequisitionException {
     Collection<OrderableProductDto> orderableProducts =
         Collections.singletonList(orderableProductDto);
-    requisition.authorize(orderableProducts, periodDto);
+    requisition.authorize(orderableProducts);
   }
 
   @Test
@@ -120,7 +114,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(orderableProducts, periodDto);
+    requisition.authorize(orderableProducts);
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -413,7 +407,7 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
 
     //when
-    requisition.submit(orderableProducts, periodDto);
+    requisition.submit(orderableProducts);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -427,7 +421,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(orderableProducts, periodDto);
+    requisition.authorize(orderableProducts);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -441,7 +435,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(orderableProducts, periodDto);
+    requisition.approve(orderableProducts);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());

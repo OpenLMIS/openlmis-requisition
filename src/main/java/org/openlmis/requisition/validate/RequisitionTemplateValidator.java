@@ -49,7 +49,7 @@ public class RequisitionTemplateValidator implements Validator {
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
       );
-      if (isColumnOnTemplate(requisitionTemplate)) {
+      if (isColumnOnTemplate(requisitionTemplate, ADJUSTED_CONSUMPTION)) {
         validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
             ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS
@@ -137,9 +137,9 @@ public class RequisitionTemplateValidator implements Validator {
     }
   }
 
-  private boolean isColumnOnTemplate(RequisitionTemplate requisitionTemplate) {
+  private boolean isColumnOnTemplate(RequisitionTemplate requisitionTemplate, String columnName) {
     Map<String, RequisitionTemplateColumn> columnsMap = requisitionTemplate.getColumnsMap();
-    RequisitionTemplateColumn adjustedConsumptionColumn = columnsMap.get(ADJUSTED_CONSUMPTION);
+    RequisitionTemplateColumn adjustedConsumptionColumn = columnsMap.get(columnName);
     return adjustedConsumptionColumn != null;
   }
 }

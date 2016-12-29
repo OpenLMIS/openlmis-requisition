@@ -200,6 +200,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setComments(comments);
+    requisition.setMonths(1);
     requisition = requisitionRepository.save(requisition);
   }
 

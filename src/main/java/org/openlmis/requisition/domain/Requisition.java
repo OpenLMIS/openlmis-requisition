@@ -1,14 +1,11 @@
 package org.openlmis.requisition.domain;
 
-import static java.time.temporal.ChronoUnit.MONTHS;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.springframework.util.CollectionUtils.isEmpty;
-
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -21,22 +18,9 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.web.RequisitionController;
-import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
-import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -48,10 +32,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -129,6 +122,11 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private Boolean emergency;
+
+  @Column(nullable = true)
+  @Getter
+  @Setter
+  private Integer months;
 
   @Getter
   @Setter
@@ -266,7 +264,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param orderableProducts list of orderable products from referencedata
    */
-  public void submit(Collection<OrderableProductDto> orderableProducts, ProcessingPeriodDto period)
+  public void submit(Collection<OrderableProductDto> orderableProducts)
       throws RequisitionException, RequisitionTemplateColumnException {
     if (!INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
@@ -278,7 +276,7 @@ public class Requisition extends BaseTimestampedEntity {
           + ", requisition fields must have values.");
     }
     calculatePacksToShip(orderableProducts);
-    calculateAdjustedConsumption(period);
+    calculateAdjustedConsumption();
     status = RequisitionStatus.SUBMITTED;
   }
 
@@ -287,15 +285,14 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param orderableProducts list of orderable products from referencedata
    */
-  public void authorize(Collection<OrderableProductDto> orderableProducts,
-                        ProcessingPeriodDto period)
+  public void authorize(Collection<OrderableProductDto> orderableProducts)
       throws RequisitionException {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
           + ", requisition must have status 'SUBMITTED' to be authorized.");
     }
     calculatePacksToShip(orderableProducts);
-    calculateAdjustedConsumption(period);
+    calculateAdjustedConsumption();
     status = RequisitionStatus.AUTHORIZED;
   }
 
@@ -331,10 +328,9 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param orderableProducts list of orderable products from referencedata
    */
-  public void approve(Collection<OrderableProductDto> orderableProducts,
-                      ProcessingPeriodDto period) {
+  public void approve(Collection<OrderableProductDto> orderableProducts) {
     calculatePacksToShip(orderableProducts);
-    calculateAdjustedConsumption(period);
+    calculateAdjustedConsumption();
     status = RequisitionStatus.APPROVED;
   }
 
@@ -511,23 +507,9 @@ public class Requisition extends BaseTimestampedEntity {
     ));
   }
 
-  private void calculateAdjustedConsumption(ProcessingPeriodDto period) {
-    if (period == null) {
-      throw new ValidationMessageException(
-          new Message("requisition.error.calculation.no-period-for-requisition"));
-    }
-
-    int months = getNumberOfMonthsInThePeriod(period);
-
+  private void calculateAdjustedConsumption() {
     forEachLine(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, months)
+        LineItemFieldsCalculator.calculateAdjustedConsumption(line, getMonths())
     ));
-  }
-
-  private int getNumberOfMonthsInThePeriod(ProcessingPeriodDto period) {
-    YearMonth startMonth = YearMonth.from(period.getStartDate());
-    YearMonth endMonth = YearMonth.from(period.getEndDate());
-
-    return (int) MONTHS.between(startMonth, endMonth) + 1;
   }
 }

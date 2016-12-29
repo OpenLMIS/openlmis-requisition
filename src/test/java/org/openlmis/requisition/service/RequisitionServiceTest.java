@@ -59,6 +59,7 @@ import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -256,7 +257,6 @@ public class RequisitionServiceTest {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
 
-    requisition.setStatus(null);
     when(requisitionRepository
         .findOne(requisition.getId()))
         .thenReturn(null);
@@ -266,12 +266,18 @@ public class RequisitionServiceTest {
     when(requisitionTemplateService.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
 
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
+    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
+    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
+    when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
+        .thenReturn(periodDto);
+
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false
     );
 
-    verify(periodService).findPeriod(programId, facilityId, suggestedPeriodId, false);
-    assertEquals(initiatedRequisition.getStatus(), INITIATED);
+    assertEquals(INITIATED, initiatedRequisition.getStatus());
+    assertEquals(1, initiatedRequisition.getMonths().longValue());
   }
 
   @Test(expected = RequisitionInitializationException.class)

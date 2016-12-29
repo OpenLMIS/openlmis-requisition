@@ -215,10 +215,8 @@ public class RequisitionController extends BaseController {
 
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
-    ProcessingPeriodDto period = periodService.getPeriod(
-        requisition.getProcessingPeriodId());
 
-    requisition.submit(orderableProducts, period);
+    requisition.submit(orderableProducts);
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -389,10 +387,8 @@ public class RequisitionController extends BaseController {
 
       Collection<OrderableProductDto> orderableProducts
           = orderableProductReferenceDataService.findAll();
-      ProcessingPeriodDto period = periodService.getPeriod(
-          requisition.getProcessingPeriodId());
 
-      requisition.approve(orderableProducts, period);
+      requisition.approve(orderableProducts);
 
       requisitionRepository.save(requisition);
 
@@ -466,10 +462,8 @@ public class RequisitionController extends BaseController {
 
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
-    ProcessingPeriodDto period = periodService.getPeriod(
-        requisition.getProcessingPeriodId());
 
-    requisition.authorize(orderableProducts, period);
+    requisition.authorize(orderableProducts);
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
