@@ -196,8 +196,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    */
   public boolean isColumnOnTemplate(String columnName) {
     Map<String, RequisitionTemplateColumn> columnsMap = this.getColumnsMap();
-    RequisitionTemplateColumn adjustedConsumptionColumn = columnsMap.get(columnName);
-    return adjustedConsumptionColumn != null;
+    RequisitionTemplateColumn column = columnsMap.get(columnName);
+    return column != null;
   }
 
   private void moveDownAllColumnsBelowIndex(int beginIndex) {

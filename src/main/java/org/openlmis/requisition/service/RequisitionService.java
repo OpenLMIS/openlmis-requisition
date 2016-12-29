@@ -106,14 +106,14 @@ public class RequisitionService {
     Requisition requisition = RequisitionBuilder.newRequisition(facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
-    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
-    ProgramDto program = programReferenceDataService.findOne(programId);
-
     ProcessingPeriodDto period = periodService
         .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setMonths(getNumberOfMonthsInThePeriod(period));
+
+    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
+    ProgramDto program = programReferenceDataService.findOne(programId);
 
     Collection<ApprovedProductDto> approvedProducts =
         approvedProductReferenceDataService.getApprovedProducts(
@@ -123,7 +123,7 @@ public class RequisitionService {
     Requisition previousRequisition = findPreviousRequisition(requisition);
 
     requisition.initiate(requisitionTemplate, approvedProducts,
-            previousRequisition);
+        previousRequisition);
 
     requisitionRepository.save(requisition);
     return requisition;

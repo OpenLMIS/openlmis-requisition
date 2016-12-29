@@ -175,11 +175,11 @@ public class Requisition extends BaseTimestampedEntity {
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
 
     updateReqLines(requisition.getRequisitionLineItems());
-    calculateTemplateFields(this.template, stockAdjustmentReasons);
+    calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
   }
 
-  private void calculateTemplateFields(RequisitionTemplate template,
-                                        Collection<StockAdjustmentReasonDto>
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
+                                                  Collection<StockAdjustmentReasonDto>
                                             stockAdjustmentReasons) {
     try {
       forEachLine(line ->
@@ -213,7 +213,7 @@ public class Requisition extends BaseTimestampedEntity {
       if (template.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
         forEachLine(line -> {
           int adjustedConsumption =
-              LineItemFieldsCalculator.calculateAdjustedConsumption(line, getMonths());
+              LineItemFieldsCalculator.calculateAdjustedConsumption(line, months);
           if (adjustedConsumption != line.getAdjustedConsumption()) {
             throw new ValidationMessageException(
                 new Message("requisition.error.calculate.passed-adjusted-consumption-incorrect"));
@@ -523,7 +523,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void calculateAdjustedConsumption() {
     forEachLine(line -> line.setAdjustedConsumption(
-        LineItemFieldsCalculator.calculateAdjustedConsumption(line, getMonths())
+        LineItemFieldsCalculator.calculateAdjustedConsumption(line, months)
     ));
   }
 }
