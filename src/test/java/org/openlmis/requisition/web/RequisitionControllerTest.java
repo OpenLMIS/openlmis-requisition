@@ -224,6 +224,8 @@ public class RequisitionControllerTest {
     verify(requisitionRepository).save(initiatedRequsition);
     verify(stockAdjustmentReasonReferenceDataService)
         .getStockAdjustmentReasonsByProgram(any(UUID.class));
+    verify(initiatedRequsition, never()).setSupervisoryNodeId(any());
+
   }
 
   @Test

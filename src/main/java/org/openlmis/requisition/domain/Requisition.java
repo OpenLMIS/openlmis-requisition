@@ -170,7 +170,6 @@ public class Requisition extends BaseTimestampedEntity {
       this.comments.addAll(requisition.getComments());
     }
 
-    this.supervisoryNodeId = requisition.getSupervisoryNodeId();
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
     updateReqLines(requisition.getRequisitionLineItems());

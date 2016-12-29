@@ -27,6 +27,7 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.TemplateService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -101,6 +102,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
+
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -465,6 +469,11 @@ public class RequisitionController extends BaseController {
 
     requisition.authorize(orderableProducts);
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
+
+    UUID supervisorNode = supervisoryNodeReferenceDataService.findSupervisorNode(
+        requisition.getProgramId(), requisition.getFacilityId()).getId();
+    requisition.setSupervisoryNodeId(supervisorNode);
+
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 

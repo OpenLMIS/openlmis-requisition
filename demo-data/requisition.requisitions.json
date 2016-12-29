@@ -47,7 +47,6 @@
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "INITIATED",
     "emergency": "false",
-    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "templateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "numberOfMonthsInPeriod": 1
   },
@@ -86,7 +85,6 @@
     "supplyingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "status": "SKIPPED",
     "emergency": "false",
-    "supervisoryNodeId": "9f470265-0770-4dd1-bd5a-cf8fe3734d79",
     "templateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "numberOfMonthsInPeriod": 3
   },

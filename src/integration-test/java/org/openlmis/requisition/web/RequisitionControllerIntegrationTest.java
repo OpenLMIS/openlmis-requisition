@@ -96,6 +96,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String EMERGENCY = "emergency";
   private static final String MESSAGE = "message";
   private static final String FACILITY_CODE = "facilityCode";
+  private static final String SUPERVISOR_SEARCH_URL = "/api/supervisoryNodes/search";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -624,14 +625,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    restAssured.given()
+    mockSupervisorNodeSearch();
+    RequisitionDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
         .when()
         .post(AUTHORIZATION_URL)
         .then()
-        .statusCode(200);
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
 
+    assertEquals(ID, response.getSupervisoryNode());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -711,6 +715,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisitionRepository.save(requisition);
 
+    mockSupervisorNodeSearch();
     return restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
@@ -1281,6 +1286,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("{ \"result\":\"false\" }"))
+    );
+  }
+
+  private void mockSupervisorNodeSearch() {
+    wireMockRule.stubFor(
+        get(urlMatching(SUPERVISOR_SEARCH_URL + ".*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("[{ \"id\":\"" + ID + "\"}]"))
     );
   }
 
