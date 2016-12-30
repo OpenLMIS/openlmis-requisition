@@ -37,7 +37,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,8 +44,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static java.time.temporal.ChronoUnit.MONTHS;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -110,7 +107,7 @@ public class RequisitionService {
         .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
-    requisition.setNumberOfMonthsInPeriod(getNumberOfMonthsInThePeriod(period));
+    requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
 
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     ProgramDto program = programReferenceDataService.findOne(programId);
@@ -372,13 +369,6 @@ public class RequisitionService {
             + order.getExternalId() + " to order.");
       }
     }
-  }
-
-  private int getNumberOfMonthsInThePeriod(ProcessingPeriodDto period) {
-    YearMonth startMonth = YearMonth.from(period.getStartDate());
-    YearMonth endMonth = YearMonth.from(period.getEndDate());
-
-    return (int) MONTHS.between(startMonth, endMonth) + 1;
   }
 
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
