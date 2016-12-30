@@ -62,7 +62,7 @@
     "emergency": "false",
     "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "templateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
-    "numberOfMonthsInPeriod": 1
+    "numberOfMonthsInPeriod": 3
   },
   {
     "id": "21d138bc-f2c2-4188-adf3-a3aae381abde",
@@ -75,7 +75,7 @@
     "emergency": "false",
     "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "templateId": "5a268780-fafd-4243-9551-5c7daa824913",
-    "numberOfMonthsInPeriod": 1
+    "numberOfMonthsInPeriod": 3
   },
   {
     "id": "122508c9-f77b-4401-8dd7-00272c7f7919",
@@ -88,7 +88,7 @@
     "emergency": "false",
     "supervisoryNodeId": "9f470265-0770-4dd1-bd5a-cf8fe3734d79",
     "templateId": "5a268780-fafd-4243-9551-5c7daa824913",
-    "numberOfMonthsInPeriod": 1
+    "numberOfMonthsInPeriod": 3
   },
   {
     "id": "f152b9bb-c1e2-40b6-b381-28d739208662",
