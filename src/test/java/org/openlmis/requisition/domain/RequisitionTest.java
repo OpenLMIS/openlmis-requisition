@@ -73,7 +73,7 @@ public class RequisitionTest {
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
-    requisition.setMonths(MONTHS_IN_PERIOD);
+    requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
   }
 
   @Test

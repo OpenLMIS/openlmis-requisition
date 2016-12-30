@@ -48,6 +48,7 @@ public class RequisitionRepositoryIntegrationTest
         UUID.randomUUID(), RequisitionStatus.INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
+    requisition.setNumberOfMonthsInPeriod(1);
     requisition.setTemplate(testTemplate);
     return requisition;
   }
@@ -69,6 +70,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
+    requisition.setNumberOfMonthsInPeriod(1);
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
@@ -119,6 +121,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
+    requisition.setNumberOfMonthsInPeriod(1);
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(

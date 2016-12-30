@@ -110,7 +110,7 @@ public class RequisitionService {
         .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
-    requisition.setMonths(getNumberOfMonthsInThePeriod(period));
+    requisition.setNumberOfMonthsInPeriod(getNumberOfMonthsInThePeriod(period));
 
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     ProgramDto program = programReferenceDataService.findOne(programId);

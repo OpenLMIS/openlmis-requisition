@@ -124,10 +124,10 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private Boolean emergency;
 
-  @Column(nullable = true)
+  @Column(nullable = false)
   @Getter
   @Setter
-  private Integer months;
+  private Integer numberOfMonthsInPeriod;
 
   @Getter
   @Setter
@@ -171,6 +171,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     this.supervisoryNodeId = requisition.getSupervisoryNodeId();
+    this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
@@ -211,7 +212,7 @@ public class Requisition extends BaseTimestampedEntity {
       if (template.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
         forEachLine(line -> {
           int adjustedConsumption =
-              LineItemFieldsCalculator.calculateAdjustedConsumption(line, months);
+              LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod);
           if (line.getAdjustedConsumption() != null
               && adjustedConsumption != line.getAdjustedConsumption()) {
             LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
@@ -521,7 +522,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void calculateAdjustedConsumption() {
     forEachLine(line -> line.setAdjustedConsumption(
-        LineItemFieldsCalculator.calculateAdjustedConsumption(line, months)
+        LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
     ));
   }
 }

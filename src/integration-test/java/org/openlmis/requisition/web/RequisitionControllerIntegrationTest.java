@@ -200,7 +200,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setComments(comments);
-    requisition.setMonths(1);
     requisition = requisitionRepository.save(requisition);
   }
 
@@ -1126,6 +1125,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setEmergency(false);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
 
     wireMockRule.stubFor(
         post(urlMatching("/api/orders.*"))
@@ -1215,6 +1215,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setCreatedDate(localDateTime);
     requisition.setEmergency(false);
     requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
 
     return requisitionRepository.save(requisition);
   }
@@ -1228,6 +1229,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setCreatedDate(localDateTime);
     requisition.setEmergency(false);
     requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
 
     return requisitionRepository.save(requisition);
   }
@@ -1246,6 +1248,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
     requisitionRepository.save(requisition);
 
     return requisition;

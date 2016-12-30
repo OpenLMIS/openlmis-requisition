@@ -277,7 +277,7 @@ public class RequisitionServiceTest {
     );
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
-    assertEquals(1, initiatedRequisition.getMonths().longValue());
+    assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
   }
 
   @Test(expected = RequisitionInitializationException.class)
