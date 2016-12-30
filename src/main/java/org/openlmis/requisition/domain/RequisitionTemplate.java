@@ -194,10 +194,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param columnName name of requisition column.
    * @return return true if column is on template.
    */
-  public boolean isColumnOnTemplate(String columnName) {
-    Map<String, RequisitionTemplateColumn> columnsMap = this.getColumnsMap();
-    RequisitionTemplateColumn column = columnsMap.get(columnName);
-    return column != null;
+  public boolean isColumnOnTemplate(String columnName) throws RequisitionTemplateColumnException {
+    return getRequisitionTemplateColumn(columnName) != null;
   }
 
   private void moveDownAllColumnsBelowIndex(int beginIndex) {
@@ -225,26 +223,27 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   * Finds a column by column name.
+   * Finds a column by column name or throw exception.
    *
    * @param name name of requisition column.
    * @return {@link RequisitionTemplateColumn} if found column with the given name.
+   * @throws RequisitionTemplateColumnException if column is not present on template.
    */
   private RequisitionTemplateColumn findColumn(String name)
       throws RequisitionTemplateColumnException {
-
-    if (null == columnsMap) {
-      throw new RequisitionTemplateColumnException("Column with name: " + name
-          + " is not present in template");
-    }
-
-    RequisitionTemplateColumn column = columnsMap.get(name);
-
+    RequisitionTemplateColumn column = getRequisitionTemplateColumn(name);
     if (column == null) {
       throw new RequisitionTemplateColumnException("Column with name: " + name
           + " is not present in template");
     }
-
     return column;
+  }
+
+  private RequisitionTemplateColumn getRequisitionTemplateColumn(String name)
+      throws RequisitionTemplateColumnException {
+    if (columnsMap == null) {
+      throw new RequisitionTemplateColumnException("Columns map is null");
+    }
+    return columnsMap.get(name);
   }
 }

@@ -5,12 +5,16 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionTemplateValidator.class);
 
   static final String COLUMNS_MAP = "columnsMap";
 
@@ -48,11 +52,15 @@ public class RequisitionTemplateValidator implements Validator {
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
       );
-      if (requisitionTemplate.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
-        validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
-            ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
-            TOTAL_STOCKOUT_DAYS
-        );
+      try {
+        if (requisitionTemplate.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
+          validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
+              ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
+              TOTAL_STOCKOUT_DAYS
+          );
+        }
+      } catch (RequisitionTemplateColumnException ex) {
+        LOGGER.warn(ex.getMessage());
       }
     }
   }
