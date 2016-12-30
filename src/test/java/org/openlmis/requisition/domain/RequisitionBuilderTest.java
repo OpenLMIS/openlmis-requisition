@@ -111,16 +111,14 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldInitializeRequisitionFromDtoImporterWhenProgramFacilityAndPeriodAreNull() {
+  public void shouldInitializeRequisitionFromDtoImporterWhenProgramAndFacilityAreNull() {
     when(requisitionDto.getFacility()).thenReturn(null);
     when(requisitionDto.getProgram()).thenReturn(null);
-    when(requisitionDto.getProcessingPeriod()).thenReturn(null);
 
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
 
     assertNotNull(requisition);
     assertNull(requisition.getFacilityId());
     assertNull(requisition.getProgramId());
-    assertNull(requisition.getProcessingPeriodId());
   }
 }

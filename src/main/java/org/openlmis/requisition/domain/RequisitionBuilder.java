@@ -4,6 +4,8 @@ import static org.apache.commons.lang.BooleanUtils.isFalse;
 
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -42,16 +44,17 @@ public final class RequisitionBuilder {
   public static Requisition newRequisition(Requisition.Importer importer) {
     UUID facilityId = null;
     UUID programId = null;
-    UUID processingPeriodId = null;
     if (importer.getFacility() != null) {
       facilityId = importer.getFacility().getId();
     }
     if (importer.getProgram() != null) {
       programId = importer.getProgram().getId();
     }
-    if (importer.getProcessingPeriod() != null) {
-      processingPeriodId = importer.getProcessingPeriod().getId();
+    if (importer.getProcessingPeriod() == null) {
+      throw new ValidationMessageException(
+          new Message("requisition.error.processing-period-cannot-be-null"));
     }
+    UUID processingPeriodId = importer.getProcessingPeriod().getId();
 
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
         importer.getStatus(), importer.getEmergency());
@@ -62,6 +65,7 @@ public final class RequisitionBuilder {
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setComments(new ArrayList<>());
+    requisition.setNumberOfMonthsInPeriod(importer.getProcessingPeriod().getDurationInMonths());
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
