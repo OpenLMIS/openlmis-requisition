@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
@@ -15,7 +14,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -26,10 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -42,13 +37,12 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 public class RequisitionTest {
 
   private static final Money PRICE_PER_PACK = new Money("9");
-  private static final long PACK_SIZE = 2;
   private static final int ADJUSTED_CONSUMPTION = 1;
+  private static final Money TOTAL_COST = new Money("5");
   private static final int MONTHS_IN_PERIOD = 1;
 
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
-  private OrderableProductDto orderableProductDto;
 
   private UUID productId = UUID.randomUUID();
 
@@ -57,10 +51,6 @@ public class RequisitionTest {
 
   @Before
   public void setUp() {
-    orderableProductDto = new OrderableProductDto();
-    orderableProductDto.setId(productId);
-    orderableProductDto.setPackSize(PACK_SIZE);
-
     requisition = new Requisition();
     requisitionLineItem = new RequisitionLineItem();
 
@@ -78,10 +68,8 @@ public class RequisitionTest {
 
   @Test
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() throws RequisitionException {
-    Collection<OrderableProductDto> orderableProducts =
-        Collections.singletonList(orderableProductDto);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(orderableProducts);
+    requisition.authorize();
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -89,9 +77,7 @@ public class RequisitionTest {
   @Test(expected = RequisitionException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus()
       throws RequisitionException {
-    Collection<OrderableProductDto> orderableProducts =
-        Collections.singletonList(orderableProductDto);
-    requisition.authorize(orderableProducts);
+    requisition.authorize();
   }
 
   @Test
@@ -109,12 +95,10 @@ public class RequisitionTest {
     when(LineItemFieldsCalculator.calculateTotal(requisitionLineItem))
         .thenReturn(1);
 
-    Collection<OrderableProductDto> orderableProducts =
-        Collections.singletonList(orderableProductDto);
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(orderableProducts);
+    requisition.authorize();
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -362,95 +346,60 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculatePacksToShip() {
-    List<RequisitionLineItem> items = requisition.getRequisitionLineItems();
-    RequisitionLineItem requisitionLineItem = items.get(0);
-
-    assertNull(requisitionLineItem.getPacksToShip());
-    assertNull(requisitionLineItem.getTotalCost());
-
-    RequisitionLineItem requisitionLineItem2 = new RequisitionLineItem();
-
-    OrderableProductDto orderableProductDto2 = new OrderableProductDto();
-    orderableProductDto2.setId(UUID.randomUUID());
-    orderableProductDto2.setPackSize(20);
-
-    requisitionLineItem2.setOrderableProductId(orderableProductDto2.getId());
-    requisitionLineItem2.setId(UUID.randomUUID());
-    requisitionLineItem2.setRequestedQuantity(20);
-    requisitionLineItem2.setStockOnHand(5);
-    requisitionLineItem2.setPricePerPack(new Money("25"));
-    requisitionLineItem2.setRequisition(requisition);
-
-    assertNull(requisitionLineItem2.getPacksToShip());
-    assertNull(requisitionLineItem2.getTotalCost());
-
-    items.add(requisitionLineItem2);
-    requisition.setRequisitionLineItems(items);
-
-    Collection<OrderableProductDto> orderableProducts = Arrays.asList(
-        orderableProductDto, orderableProductDto2);
-    requisition.calculatePacksToShip(orderableProducts);
-
-    assertEquals(5, requisitionLineItem.getPacksToShip().longValue());
-    assertEquals(new Money("45"), requisitionLineItem.getTotalCost());
-
-    assertEquals(1, requisitionLineItem2.getPacksToShip().longValue());
-    assertEquals(new Money("25"), requisitionLineItem2.getTotalCost());
-  }
-
-  @Test
-  public void shouldCalculateAdjustedConsumptionWhenSubmit()
+  public void shouldCalculateAdjustedConsumptionAndTotalCostWhenSubmit()
       throws RequisitionTemplateColumnException, RequisitionException {
     // given
-    Collection<OrderableProductDto> orderableProducts = prepareForTestAdjustedConcumption();
+    prepareForTestAdjustedConcumptionAndTotalCost();
     requisition.setTemplate(mock(RequisitionTemplate.class));
 
     //when
-    requisition.submit(orderableProducts);
+    requisition.submit();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionWhenAuthorize()
+  public void shouldCalculateAdjustedConsumptionAndTotalCostWhenAuthorize()
       throws RequisitionTemplateColumnException, RequisitionException {
     // given
-    Collection<OrderableProductDto> orderableProducts = prepareForTestAdjustedConcumption();
+    prepareForTestAdjustedConcumptionAndTotalCost();
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(orderableProducts);
+    requisition.authorize();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionWhenApprove()
+  public void shouldCalculateAdjustedConsumptionAndTotalCostWhenApprove()
       throws RequisitionTemplateColumnException, RequisitionException {
     // given
-    Collection<OrderableProductDto> orderableProducts = prepareForTestAdjustedConcumption();
+    prepareForTestAdjustedConcumptionAndTotalCost();
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(orderableProducts);
+    requisition.approve();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
-  private Collection<OrderableProductDto> prepareForTestAdjustedConcumption() {
+  private void prepareForTestAdjustedConcumptionAndTotalCost() {
     requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(productId);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
     mockStatic(LineItemFieldsCalculator.class);
-    when(LineItemFieldsCalculator.calculateAdjustedConsumption(any(), eq(MONTHS_IN_PERIOD)))
-        .thenReturn(ADJUSTED_CONSUMPTION);
-
-    return Collections.singletonList(orderableProductDto);
+    when(LineItemFieldsCalculator
+        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
+    ).thenReturn(ADJUSTED_CONSUMPTION);
+    when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem))
+        .thenReturn(TOTAL_COST);
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,

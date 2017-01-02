@@ -1,18 +1,5 @@
 package org.openlmis.requisition.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,9 +8,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -51,6 +40,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
@@ -164,9 +166,36 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(orderableProductReferenceDataService.findAll());
+    verify(initiatedRequsition).submit();
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
+  }
+
+  @Test
+  public void shouldCalculatePacksToShipOnSubmit()
+      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+    OrderableProductDto orderableProductDto = mock(OrderableProductDto.class);
+
+    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(orderableProductReferenceDataService.findAll())
+        .thenReturn(Collections.singletonList(orderableProductDto));
+
+    UUID productId = UUID.randomUUID();
+    int requestedQuantity = 20;
+
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(productId);
+    requisitionLineItem.setRequestedQuantity(requestedQuantity);
+
+    when(orderableProductDto.packsToOrder(requestedQuantity)).thenReturn(5L);
+    when(orderableProductDto.getId()).thenReturn(productId);
+
+    when(initiatedRequsition.getRequisitionLineItems())
+        .thenReturn(Collections.singletonList(requisitionLineItem));
+
+    requisitionController.submitRequisition(uuid1);
+
+    assertEquals(5, requisitionLineItem.getPacksToShip().longValue());
   }
 
   @Test
@@ -300,6 +329,6 @@ public class RequisitionControllerTest {
       throws RequisitionException, RequisitionTemplateColumnException {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
-    verify(requisition, never()).submit(any());
+    verify(requisition, never()).submit();
   }
 }

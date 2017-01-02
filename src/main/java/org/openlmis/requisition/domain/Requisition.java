@@ -11,7 +11,6 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
@@ -273,10 +272,8 @@ public class Requisition extends BaseTimestampedEntity {
 
   /**
    * Submits given requisition.
-   *
-   * @param orderableProducts list of orderable products from referencedata
    */
-  public void submit(Collection<OrderableProductDto> orderableProducts)
+  public void submit()
       throws RequisitionException, RequisitionTemplateColumnException {
     if (!INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
@@ -287,24 +284,23 @@ public class Requisition extends BaseTimestampedEntity {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition fields must have values.");
     }
-    calculatePacksToShip(orderableProducts);
     calculateAdjustedConsumption();
+    calculateTotalCost();
     status = RequisitionStatus.SUBMITTED;
   }
 
   /**
    * Authorize given Requisition.
-   *
-   * @param orderableProducts list of orderable products from referencedata
    */
-  public void authorize(Collection<OrderableProductDto> orderableProducts)
+  public void authorize()
       throws RequisitionException {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
           + ", requisition must have status 'SUBMITTED' to be authorized.");
     }
-    calculatePacksToShip(orderableProducts);
     calculateAdjustedConsumption();
+    calculateTotalCost();
+
     status = RequisitionStatus.AUTHORIZED;
   }
 
@@ -337,12 +333,10 @@ public class Requisition extends BaseTimestampedEntity {
 
   /**
    * Approves given requisition.
-   *
-   * @param orderableProducts list of orderable products from referencedata
    */
-  public void approve(Collection<OrderableProductDto> orderableProducts) {
-    calculatePacksToShip(orderableProducts);
+  public void approve() {
     calculateAdjustedConsumption();
+    calculateTotalCost();
     status = RequisitionStatus.APPROVED;
   }
 
@@ -509,19 +503,15 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getTemplate();
   }
 
-  protected void calculatePacksToShip(Collection<OrderableProductDto> orderableProducts) {
-    forEachLine(line -> line.calculatePacksToShip(
-        orderableProducts
-            .stream()
-            .filter(product -> product.getId().equals(line.getOrderableProductId()))
-            .findFirst()
-            .orElse(null)
-    ));
-  }
-
   private void calculateAdjustedConsumption() {
     forEachLine(line -> line.setAdjustedConsumption(
         LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+    ));
+  }
+
+  private void calculateTotalCost() {
+    forEachLine(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
     ));
   }
 }

@@ -57,18 +57,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
-import javax.servlet.http.HttpServletRequest;
 
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -220,7 +221,9 @@ public class RequisitionController extends BaseController {
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
 
-    requisition.submit(orderableProducts);
+    calculatePacksToShipForEachLineItem(requisition, orderableProducts);
+
+    requisition.submit();
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -392,7 +395,9 @@ public class RequisitionController extends BaseController {
       Collection<OrderableProductDto> orderableProducts
           = orderableProductReferenceDataService.findAll();
 
-      requisition.approve(orderableProducts);
+      calculatePacksToShipForEachLineItem(requisition, orderableProducts);
+
+      requisition.approve();
 
       requisitionRepository.save(requisition);
 
@@ -467,7 +472,9 @@ public class RequisitionController extends BaseController {
     Collection<OrderableProductDto> orderableProducts
         = orderableProductReferenceDataService.findAll();
 
-    requisition.authorize(orderableProducts);
+    calculatePacksToShipForEachLineItem(requisition, orderableProducts);
+
+    requisition.authorize();
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
 
     UUID supervisorNode = supervisoryNodeReferenceDataService.findSupervisorNode(
@@ -569,6 +576,33 @@ public class RequisitionController extends BaseController {
     return new ModelAndView(jasperView, params);
   }
 
+  private void calculatePacksToShipForEachLineItem(Requisition requisition,
+                                               Collection<OrderableProductDto> orderableProducts) {
+    forEach(requisition.getRequisitionLineItems(),
+        line -> line.setPacksToShip(getPacksToShip(orderableProducts, line)));
+  }
+
+  private Long getPacksToShip(Collection<OrderableProductDto> orderableProducts,
+                              RequisitionLineItem line) {
+    return orderableProducts.stream()
+        .filter(product -> isProductEquals(line, product))
+        .map(product -> calculatePacksToShip(line, product))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private boolean isProductEquals(RequisitionLineItem line, OrderableProductDto product) {
+    return product.getId().equals(line.getOrderableProductId());
+  }
+
+  private Long calculatePacksToShip(RequisitionLineItem line, OrderableProductDto product) {
+    if (line.getOrderQuantity() != null) {
+      return product.packsToOrder(line.getOrderQuantity());
+    } else {
+      return null;
+    }
+  }
+
   private void nullDataValuesOfRequisitionLineItems(
       List<RequisitionLineItem> requisitionLineItems) {
     for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
@@ -592,4 +626,11 @@ public class RequisitionController extends BaseController {
       requisitionLineItem.clearStockAdjustments();
     }
   }
+
+  private void forEach(List<RequisitionLineItem> requisitionLineItems,
+                       Consumer<RequisitionLineItem> consumer) {
+    Optional.ofNullable(requisitionLineItems)
+        .ifPresent(list -> list.forEach(consumer));
+  }
+
 }

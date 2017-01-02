@@ -8,7 +8,7 @@ import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.utils.ExportHelper;
+import org.openlmis.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ public class RequisitionDtoBuilder {
   private RequisitionCommentService requisitionCommentService;
 
   @Autowired
-  private ExportHelper exportHelper;
+  private RequisitionExportHelper requisitionExportHelper;
 
   /**
    * Create a list of {@link RequisitionDto} based on passed data.
@@ -59,7 +59,7 @@ public class RequisitionDtoBuilder {
 
     requisition.export(requisitionDto);
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        exportHelper.exportToDtos(requisition.getRequisitionLineItems());
+        requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
     List<CommentDto> commentDtoList =
         requisitionCommentService.exportToDtos(requisition.getComments());
 

@@ -12,7 +12,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class ExportHelper {
+public class RequisitionExportHelper {
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;

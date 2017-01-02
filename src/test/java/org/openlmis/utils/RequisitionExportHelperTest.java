@@ -36,7 +36,7 @@ import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
-public class ExportHelperTest {
+public class RequisitionExportHelperTest {
 
   private static final Money PRICE_PER_PACK = new Money("9");
   private static final long PACK_SIZE = 2;
@@ -60,7 +60,7 @@ public class ExportHelperTest {
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @InjectMocks
-  private ExportHelper exportHelper;
+  private RequisitionExportHelper requisitionExportHelper;
 
   private UUID program = UUID.randomUUID();
   private UUID period1 = UUID.randomUUID();
@@ -79,7 +79,7 @@ public class ExportHelperTest {
     RequisitionLineItem requisitionLineItem =
         generateRequisitionLineItemToExport(orderableProductDto.getId());
     List<RequisitionLineItemDto> items =
-        exportHelper.exportToDtos(singletonList(requisitionLineItem));
+        requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
     assertEquals(item.getId(), requisitionLineItem.getId());

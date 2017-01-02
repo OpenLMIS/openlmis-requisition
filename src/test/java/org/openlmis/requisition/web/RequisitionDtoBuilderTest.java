@@ -27,7 +27,7 @@ import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.utils.ExportHelper;
+import org.openlmis.utils.RequisitionExportHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +46,7 @@ public class RequisitionDtoBuilderTest {
   private ProgramReferenceDataService programReferenceDataService;
 
   @Mock
-  private ExportHelper exportHelper;
+  private RequisitionExportHelper requisitionExportHelper;
 
   @Mock
   private RequisitionCommentService requisitionCommentService;
@@ -87,7 +87,7 @@ public class RequisitionDtoBuilderTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    when(exportHelper.exportToDtos(anyListOf(RequisitionLineItem.class)))
+    when(requisitionExportHelper.exportToDtos(anyListOf(RequisitionLineItem.class)))
         .thenReturn(lineItemDtos);
     when(requisitionCommentService.exportToDtos(anyListOf(Comment.class))).thenReturn(commentDtos);
 
@@ -102,7 +102,7 @@ public class RequisitionDtoBuilderTest {
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
-    verify(exportHelper).exportToDtos(anyListOf(RequisitionLineItem.class));
+    verify(requisitionExportHelper).exportToDtos(anyListOf(RequisitionLineItem.class));
     verify(requisitionCommentService).exportToDtos(anyListOf(Comment.class));
 
     assertNotNull(requisitionDto);
@@ -125,7 +125,7 @@ public class RequisitionDtoBuilderTest {
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
-    verify(exportHelper).exportToDtos(anyListOf(RequisitionLineItem.class));
+    verify(requisitionExportHelper).exportToDtos(anyListOf(RequisitionLineItem.class));
     verify(requisitionCommentService).exportToDtos(anyListOf(Comment.class));
 
     assertNotNull(requisitionDto);

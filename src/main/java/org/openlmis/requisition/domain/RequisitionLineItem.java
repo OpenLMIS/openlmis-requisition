@@ -331,23 +331,6 @@ public class RequisitionLineItem extends BaseEntity {
     stockAdjustments.clear();
   }
 
-  /**
-   * Calculates Packs to Ship (V) value.
-   *
-   * @param orderableProduct this lineItem's orderable product
-   */
-  public void calculatePacksToShip(OrderableProductDto orderableProduct) {
-    Integer orderQuantity = this.getOrderQuantity();
-
-    if (orderQuantity != null) {
-      long packsToShip = orderableProduct.packsToOrder(orderQuantity.longValue());
-      this.setPacksToShip(packsToShip);
-    }
-
-    Money totalCost = LineItemFieldsCalculator.calculateTotalCost(this);
-    this.setTotalCost(totalCost);
-  }
-
   public interface Exporter {
     void setId(UUID id);
 
