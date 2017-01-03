@@ -18,6 +18,7 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.web.RequisitionController;
+import org.openlmis.utils.RequisitionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
@@ -56,13 +56,12 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String FACILITY_ID = "facilityId";
   public static final String PROGRAM_ID = "programId";
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
+  public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
+  public static final String STOCK_ON_HAND = "stockOnHand";
   public static final String EMERGENCY = "emergency";
 
   private static final String UUID = "pg-uuid";
-
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
-  private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
-  private static final String STOCK_ON_HAND = "stockOnHand";
 
   // TODO: determine why it has to be set explicitly
   @OneToMany(
@@ -280,12 +279,18 @@ public class Requisition extends BaseTimestampedEntity {
           + ", requisition must have status 'INITIATED' to be submitted.");
     }
 
-    if (areFieldsNotFilled(template)) {
+    if (RequisitionHelper.areFieldsNotFilled(template, requisitionLineItems)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition fields must have values.");
     }
-    calculateAdjustedConsumption();
-    calculateTotalCost();
+
+    forEachLine(line -> line.setAdjustedConsumption(
+        LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+    ));
+    forEachLine(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
+
     status = RequisitionStatus.SUBMITTED;
   }
 
@@ -298,45 +303,26 @@ public class Requisition extends BaseTimestampedEntity {
       throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
           + ", requisition must have status 'SUBMITTED' to be authorized.");
     }
-    calculateAdjustedConsumption();
-    calculateTotalCost();
+    forEachLine(line -> line.setAdjustedConsumption(
+        LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+    ));
+    forEachLine(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
 
     status = RequisitionStatus.AUTHORIZED;
   }
-
-  private boolean areFieldsNotFilled(RequisitionTemplate template)
-      throws RequisitionTemplateColumnException {
-    if (null == requisitionLineItems) {
-      return false;
-    }
-
-    boolean isTotalConsumedQuantityCalculated =
-        template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY);
-    boolean isStockOnHandCalculated =
-        template.isColumnCalculated(STOCK_ON_HAND);
-
-    for (RequisitionLineItem line : requisitionLineItems) {
-      if (isTotalConsumedQuantityCalculated
-          && line.allRequiredCalcFieldsNotFilled(TOTAL_CONSUMED_QUANTITY)) {
-        return true;
-      }
-
-      if (isStockOnHandCalculated
-          && line.allRequiredCalcFieldsNotFilled(STOCK_ON_HAND)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
 
   /**
    * Approves given requisition.
    */
   public void approve() {
-    calculateAdjustedConsumption();
-    calculateTotalCost();
+    forEachLine(line -> line.setAdjustedConsumption(
+        LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+    ));
+    forEachLine(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
     status = RequisitionStatus.APPROVED;
   }
 
@@ -501,17 +487,5 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getSupervisoryNode();
 
     UUID getTemplate();
-  }
-
-  private void calculateAdjustedConsumption() {
-    forEachLine(line -> line.setAdjustedConsumption(
-        LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-    ));
-  }
-
-  private void calculateTotalCost() {
-    forEachLine(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
   }
 }

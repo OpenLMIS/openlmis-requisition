@@ -226,7 +226,10 @@ public class RequisitionLineItem extends BaseEntity {
     }
   }
 
-  boolean allRequiredCalcFieldsNotFilled(String field) {
+  /**
+   * Check if all required calculation fields are not filled.
+   */
+  public boolean allRequiredCalcFieldsNotFilled(String field) {
     switch (field) {
       case TOTAL_CONSUMED_QUANTITY:
         return null == stockOnHand;
