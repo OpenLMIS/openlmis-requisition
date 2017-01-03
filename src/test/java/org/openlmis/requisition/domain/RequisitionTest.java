@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalMatchers;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
@@ -38,6 +40,7 @@ public class RequisitionTest {
 
   private static final Money PRICE_PER_PACK = new Money("9");
   private static final int ADJUSTED_CONSUMPTION = 1;
+  private static final int AVERAGE_CONSUMPTION = 1;
   private static final Money TOTAL_COST = new Money("5");
   private static final int MONTHS_IN_PERIOD = 1;
 
@@ -68,8 +71,9 @@ public class RequisitionTest {
 
   @Test
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() throws RequisitionException {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -77,7 +81,8 @@ public class RequisitionTest {
   @Test(expected = RequisitionException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus()
       throws RequisitionException {
-    requisition.authorize();
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.authorize(Collections.emptyList());
   }
 
   @Test
@@ -98,7 +103,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -343,51 +348,89 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionAndTotalCostWhenSubmit()
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenSubmit()
       throws RequisitionException {
     // given
-    prepareForTestAdjustedConcumptionAndTotalCost();
-    requisition.setTemplate(mock(RequisitionTemplate.class));
+    prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit();
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
     assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionAndTotalCostWhenAuthorize()
+  public void shouldCalculateAverageConsumptionWhenSubmitWithPreviousRequisitions()
       throws RequisitionException {
     // given
-    prepareForTestAdjustedConcumptionAndTotalCost();
+    UUID orderableProductId = UUID.randomUUID();
+    requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(orderableProductId);
+    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
+
+    mockStatic(LineItemFieldsCalculator.class);
+    when(LineItemFieldsCalculator
+        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
+    ).thenReturn(ADJUSTED_CONSUMPTION);
+    when(LineItemFieldsCalculator.calculateAverageConsumption(
+        AdditionalMatchers.aryEq(new int[]{5, ADJUSTED_CONSUMPTION})))
+        .thenReturn(AVERAGE_CONSUMPTION);
+
+    when(template.isColumnInTemplate(RequisitionLineItem.ADJUSTED_CONSUMPTION)).thenReturn(true);
+    when(template.isColumnInTemplate(RequisitionLineItem.AVERAGE_CONSUMPTION)).thenReturn(true);
+    requisition.setTemplate(template);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(5);
+    previousRequisitionLineItem.setOrderableProductId(orderableProductId);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+
+    //when
+    requisition.submit(Collections.singletonList(previousRequisition));
+
+    //then
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenAuthorize()
+      throws RequisitionException {
+    // given
+    prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
     assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionAndTotalCostWhenApprove()
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenApprove()
       throws RequisitionException {
     // given
-    prepareForTestAdjustedConcumptionAndTotalCost();
+    prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve();
+    requisition.approve(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
     assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
-  private void prepareForTestAdjustedConcumptionAndTotalCost() {
+  private void prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption() {
     requisitionLineItem = new RequisitionLineItem();
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
@@ -397,6 +440,11 @@ public class RequisitionTest {
     ).thenReturn(ADJUSTED_CONSUMPTION);
     when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem))
         .thenReturn(TOTAL_COST);
+    when(LineItemFieldsCalculator.calculateAverageConsumption(new int[]{ADJUSTED_CONSUMPTION}))
+        .thenReturn(AVERAGE_CONSUMPTION);
+
+    when(template.isColumnInTemplate(any())).thenReturn(true);
+    requisition.setTemplate(template);
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,

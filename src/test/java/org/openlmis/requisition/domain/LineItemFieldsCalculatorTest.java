@@ -171,4 +171,26 @@ public class LineItemFieldsCalculatorTest {
 
     assertEquals(20, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
   }
+
+  @Test
+  public void shouldCalculateAverageConsumption() throws Exception {
+    int averageConsumption =
+        LineItemFieldsCalculator.calculateAverageConsumption(new int[]{5, 10, 15});
+
+    assertEquals(15, averageConsumption);
+  }
+
+  @Test
+  public void shouldReturnAdjustedConsumptionWhenNoPreviousPeriods() throws Exception {
+    int averageConsumption = LineItemFieldsCalculator.calculateAverageConsumption(new int[]{5});
+
+    assertEquals(5, averageConsumption);
+  }
+
+  @Test
+  public void shouldCalculateAverageConsumptionWhenOnePreviousPeriod() throws Exception {
+    int averageConsumption = LineItemFieldsCalculator.calculateAverageConsumption(new int[]{5, 10});
+
+    assertEquals(8, averageConsumption);
+  }
 }

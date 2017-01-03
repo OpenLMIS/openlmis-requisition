@@ -238,9 +238,17 @@ public class RequisitionService {
                                               UUID supervisoryNode,
                                               RequisitionStatus[] requisitionStatuses,
                                               Boolean emergency) {
-    return requisitionRepository.searchRequisitions(
-        facility, program, createdDateFrom,
+    return requisitionRepository.searchRequisitions(facility, program, createdDateFrom,
         createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency);
+  }
+
+  /**
+   * Finds requisitions matching all of provided parameters.
+   */
+  public List<Requisition> searchRequisitions(UUID facility, UUID program, UUID processingPeriod,
+                                              UUID supervisoryNode) {
+    return requisitionRepository.searchRequisitions(facility, program, null, null, processingPeriod,
+        supervisoryNode, null, null);
   }
 
   /**

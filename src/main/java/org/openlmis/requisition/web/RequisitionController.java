@@ -222,7 +222,7 @@ public class RequisitionController extends BaseController {
 
     calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
-    requisition.submit();
+    requisition.submit(getRecentRequisitions(requisition));
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -398,7 +398,7 @@ public class RequisitionController extends BaseController {
 
       calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
-      requisition.approve();
+      requisition.approve(getRecentRequisitions(requisition));
 
       requisitionRepository.save(requisition);
 
@@ -475,7 +475,7 @@ public class RequisitionController extends BaseController {
 
     calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
-    requisition.authorize();
+    requisition.authorize(getRecentRequisitions(requisition));
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
@@ -577,6 +577,26 @@ public class RequisitionController extends BaseController {
     return new ModelAndView(jasperView, params);
   }
 
+  private List<Requisition> getRecentRequisitions(Requisition requisition) {
+    int amount = 10;
+    List<ProcessingPeriodDto> previousPeriods =
+        periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
+
+    List<Requisition> recentRequisitions = new ArrayList<>();
+    for (ProcessingPeriodDto period: previousPeriods) {
+      List<Requisition> requisitionsByPeriod = getRequisitionsByPeriod(requisition, period);
+      Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
+      recentRequisitions.add(requisitionByPeriod);
+    }
+    return recentRequisitions;
+  }
+
+  private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
+                                                    ProcessingPeriodDto period) {
+    return requisitionService.searchRequisitions(requisition.getFacilityId(),
+        requisition.getProgramId(), period.getId(), requisition.getSupervisoryNodeId());
+  }
+
   private void calculatePacksToShipForEachLineItem(Requisition requisition,
                                                Collection<OrderableProductDto> orderableProducts) {
     requisition.getNonSkippedRequisitionLineItems().forEach(
@@ -624,6 +644,7 @@ public class RequisitionController extends BaseController {
       requisitionLineItem.setTotalCost(null);
       requisitionLineItem.setNumberOfNewPatientsAdded(null);
       requisitionLineItem.setAdjustedConsumption(null);
+      requisitionLineItem.setAverageConsumption(null);
       requisitionLineItem.clearStockAdjustments();
     }
   }

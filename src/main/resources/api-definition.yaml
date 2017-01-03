@@ -148,7 +148,8 @@ schemas:
               "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
               "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
               "skipped": {"type": "boolean", "required": false, "title": "boolean" },
-              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" }
+              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" },
+              "averageConsumption": {"type": "number", "required": false, "title": "averageConsumption" }
           }
       }
 
@@ -173,7 +174,8 @@ schemas:
               "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
               "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
               "skipped": {"type": "boolean", "required": false, "title": "boolean" },
-              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" }
+              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" },
+              "averageConsumption": {"type": "number", "required": false, "title": "averageConsumption" }
           }
       }
 

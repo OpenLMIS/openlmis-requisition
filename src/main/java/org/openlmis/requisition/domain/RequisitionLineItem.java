@@ -54,6 +54,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   public static final String SKIPPED_COLUMN = "skipped";
   public static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
+  public static final String AVERAGE_CONSUMPTION = "averageConsumption";
 
   private static final String UUID = "pg-uuid";
 
@@ -155,6 +156,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private Integer adjustedConsumption;
 
+  @Column
+  @Setter
+  @Getter
+  private Integer averageConsumption;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -232,6 +238,7 @@ public class RequisitionLineItem extends BaseEntity {
         stockAdjustments.addAll(requisitionLineItem.getStockAdjustments());
       }
       this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
+      this.averageConsumption = requisitionLineItem.getAverageConsumption();
     }
   }
 
@@ -295,6 +302,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotalCost(importer.getTotalCost());
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
+    requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -332,6 +340,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalCost(totalCost);
     exporter.setSkipped(skipped);
     exporter.setAdjustedConsumption(adjustedConsumption);
+    exporter.setAverageConsumption(averageConsumption);
   }
 
   public void clearStockAdjustments() {
@@ -391,6 +400,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setSkipped(Boolean skipped);
 
     void setAdjustedConsumption(Integer adjustedConsumption);
+
+    void setAverageConsumption(Integer averageConsumption);
   }
 
   public interface Importer {
@@ -433,5 +444,7 @@ public class RequisitionLineItem extends BaseEntity {
     Boolean getSkipped();
 
     Integer getAdjustedConsumption();
+
+    Integer getAverageConsumption();
   }
 }

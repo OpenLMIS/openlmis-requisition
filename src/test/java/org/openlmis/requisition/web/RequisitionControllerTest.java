@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -166,9 +167,28 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit();
+    verify(initiatedRequsition).submit(Collections.emptyList());
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
+  }
+
+  @Test
+  public void shouldSubmitRequisitionWithValidRecentRequisitions()
+      throws RequisitionException, MissingPermissionException {
+    when(initiatedRequsition.getTemplate()).thenReturn(template);
+    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+
+    when(periodService.findPreviousPeriods(any(), anyInt()))
+        .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
+
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    when(requisitionService.searchRequisitions(any(), any(), any(), any()))
+        .thenReturn(Collections.singletonList(requisition));
+
+    requisitionController.submitRequisition(uuid1);
+
+    verify(initiatedRequsition).submit(Collections.singletonList(requisition));
   }
 
   @Test
@@ -332,7 +352,7 @@ public class RequisitionControllerTest {
       throws RequisitionException {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
-    verify(requisition, never()).submit();
+    verify(requisition, never()).submit(any());
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {

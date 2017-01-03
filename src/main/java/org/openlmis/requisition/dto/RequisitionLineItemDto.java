@@ -39,6 +39,7 @@ public class RequisitionLineItemDto
   private Money totalCost;
   private Boolean skipped;
   private Integer adjustedConsumption;
+  private Integer averageConsumption;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;
