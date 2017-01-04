@@ -28,6 +28,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Setter
   private LocalDateTime createdDate;
 
+  @Getter
+  @Setter
+  private UUID initiatorId;
+
   @Setter
   private List<RequisitionLineItemDto> requisitionLineItems;
 

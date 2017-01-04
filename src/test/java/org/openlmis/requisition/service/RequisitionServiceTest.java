@@ -3,11 +3,13 @@ package org.openlmis.requisition.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.refEq;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -48,6 +50,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -58,6 +61,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
+import org.springframework.context.MessageSource;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -114,16 +118,25 @@ public class RequisitionServiceTest {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
   private SupplyLineReferenceDataService supplyLineService;
 
   @Mock
   private OrderFulfillmentService orderFulfillmentService;
 
   @Mock
+  private NotificationService notificationService;
+
+  @Mock
   private ConvertHelper convertHelper;
 
   @Mock
   private PaginationHelper paginationHelper;
+
+  @Mock
+  private MessageSource messageSource;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -272,18 +285,20 @@ public class RequisitionServiceTest {
     when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
         .thenReturn(periodDto);
 
+    UUID userId = UUID.randomUUID();
     Requisition initiatedRequisition = requisitionService.initiate(
-        programId, facilityId, suggestedPeriodId, false
+        programId, facilityId, suggestedPeriodId, userId, false
     );
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
+    assertEquals(userId, initiatedRequisition.getInitiatorId());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
   }
 
   @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
       throws RequisitionException, RequisitionTemplateColumnException {
-    requisitionService.initiate(null, null, null, false);
+    requisitionService.initiate(null, null, null, null, false);
   }
 
   @Test
@@ -469,6 +484,26 @@ public class RequisitionServiceTest {
     requisitionService.convertToOrder(list, user);
   }
 
+  @Test
+  public void shouldNotifyUserWhenConvertingRequisitionToOrder() throws Exception {
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(UUID.randomUUID());
+
+    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(1);
+
+    List<FacilityDto> facilities = list.stream()
+        .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+        .collect(Collectors.toList());
+
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
+        .thenReturn(facilities);
+    when(orderFulfillmentService.create(any())).thenReturn(true);
+
+    requisitionService.convertToOrder(list, user);
+
+    verify(notificationService).notify(refEq(user), anyString(), anyString());
+  }
+
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
@@ -586,5 +621,9 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchByProcessingPeriodAndType(any(), any()))
         .thenReturn(new ArrayList<>());
+
+    when(periodReferenceDataService
+        .findOne(any()))
+        .thenReturn(processingPeriodDto);
   }
 }

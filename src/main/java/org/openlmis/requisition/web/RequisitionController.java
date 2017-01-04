@@ -155,9 +155,10 @@ public class RequisitionController extends BaseController {
     permissionService.canInitRequisition(program, facility);
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
+    UserDto user = authenticationHelper.getCurrentUser();
     try {
       Requisition newRequisition = requisitionService
-          .initiate(program, facility, suggestedPeriod, emergency);
+          .initiate(program, facility, suggestedPeriod, user.getId(), emergency);
       return new ResponseEntity<>(requisitionDtoBuilder.build(newRequisition), HttpStatus.CREATED);
     } catch (InvalidPeriodException ipe) {
       ErrorResponse errorResponse = new ErrorResponse(

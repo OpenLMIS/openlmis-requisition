@@ -52,6 +52,7 @@ public class DraftRequisitionValidatorTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID processingPeriodId = UUID.randomUUID();
+  private UUID initiatorId = UUID.randomUUID();
 
   @Before
   public void setUp() throws RequisitionTemplateColumnException {
@@ -75,6 +76,9 @@ public class DraftRequisitionValidatorTest {
     updatedRequisition.setProcessingPeriodId(UUID.randomUUID());
     Assert.assertNotEquals(requisition.getProcessingPeriodId(),
         updatedRequisition.getProcessingPeriodId());
+    updatedRequisition.setInitiatorId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getInitiatorId(),
+        updatedRequisition.getInitiatorId());
     updatedRequisition.setEmergency(false);
 
     draftRequisitionValidator.validate(updatedRequisition, errors);
@@ -86,6 +90,8 @@ public class DraftRequisitionValidatorTest {
     verify(errors).rejectValue(eq(Requisition.PROCESSING_PERIOD_ID),
         contains(RequisitionValidator.IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.EMERGENCY),
+        contains(RequisitionValidator.IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.INITIATOR_ID),
         contains(RequisitionValidator.IS_INVARIANT));
   }
 
@@ -157,6 +163,7 @@ public class DraftRequisitionValidatorTest {
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setId(requisitionId);
     requisition.setTemplate(requisitionTemplate);
+    requisition.setInitiatorId(initiatorId);
     return requisition;
   }
 

@@ -24,6 +24,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
@@ -33,6 +34,8 @@ import org.openlmis.utils.RequisitionDtoComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,16 +84,26 @@ public class RequisitionService {
   private OrderFulfillmentService orderFulfillmentService;
 
   @Autowired
+  private NotificationService notificationService;
+
+  @Autowired
   private PaginationHelper paginationHelper;
 
   @Autowired
   private ConvertHelper convertHelper;
+
+  @Autowired
+  private MessageSource messageSource;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
    *
    * @param programId         UUID of Program.
    * @param facilityId        UUID of Facility.
+   * @param initiatorId        UUID of the user that initiates the requisition.
    * @param emergency         Emergency status.
    * @param suggestedPeriodId Period for requisition.
    * @return Initiated requisition.
@@ -98,10 +111,11 @@ public class RequisitionService {
    *                              requisition.
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                              boolean emergency)
+                              UUID initiatorId, boolean emergency)
       throws RequisitionException, RequisitionTemplateColumnException {
     Requisition requisition = RequisitionBuilder.newRequisition(facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setInitiatorId(initiatorId);
 
     ProcessingPeriodDto period = periodService
         .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
@@ -364,6 +378,19 @@ public class RequisitionService {
       OrderDto order = OrderDto.newOrder(requisition, user);
       if (orderFulfillmentService.create(order)) {
         requisitionRepository.save(requisition);
+
+        ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+        ProcessingPeriodDto period = periodReferenceDataService.findOne(
+            requisition.getProcessingPeriodId());
+
+        String[] msgArgs = {user.getFirstName(), user.getLastName(),
+            program.getName(), period.getName()};
+        String mailBody = messageSource.getMessage("requisition.mail.convert-to-order.content",
+            msgArgs, LocaleContextHolder.getLocale());
+        String mailSubject = messageSource.getMessage("requisition.mail.convert-to-order.subject",
+            new String[]{}, LocaleContextHolder.getLocale());
+
+        notificationService.notify(user, mailSubject, mailBody);
       } else {
         throw new RequisitionConversionException("Error while converting requisition: "
             + order.getExternalId() + " to order.");

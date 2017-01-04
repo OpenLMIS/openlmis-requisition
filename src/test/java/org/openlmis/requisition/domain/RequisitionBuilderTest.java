@@ -48,6 +48,7 @@ public class RequisitionBuilderTest {
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
   private UUID templateUuid = UUID.randomUUID();
+  private UUID initiatorUuid = UUID.randomUUID();
 
   private List<Comment.Importer> commentDtos = new ArrayList<>();
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
@@ -62,6 +63,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getProcessingPeriod()).thenReturn(processingPeriodDto);
     when(requisitionDto.getSupervisoryNode()).thenReturn(supervisoryNodeUuid);
     when(requisitionDto.getTemplate()).thenReturn(templateUuid);
+    when(requisitionDto.getInitiatorId()).thenReturn(initiatorUuid);
     when(requisitionDto.getComments()).thenReturn(commentDtos);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
@@ -110,6 +112,7 @@ public class RequisitionBuilderTest {
     assertEquals(programUuid, requisition.getProgramId());
     assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());
     assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
+    assertEquals(initiatorUuid, requisition.getInitiatorId());
     assertEquals(commentDtos, requisition.getComments());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());
