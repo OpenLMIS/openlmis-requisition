@@ -5,11 +5,9 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -54,59 +52,44 @@ public class RequisitionHelper {
    */
   public static void calculateAverageConsumption(List<Requisition> previousRequisitions,
                                                  List<RequisitionLineItem> requisitionLineItems) {
-    Set<Map<UUID, Integer>> productIdAdjustedConsumptionMapHashSet =
-        getProductIdAdjustedConsumptionMapsFromRequisitions(previousRequisitions);
+    List<RequisitionLineItem> previousRequisitionLineItems =
+        getRequisitionLineItems(previousRequisitions);
 
-    forEachLineItem(requisitionLineItems, line -> {
-      List<Integer> adjustedConsumptions =
-          getAdjustedConsumptionListByProductId(productIdAdjustedConsumptionMapHashSet,
-              line.getOrderableProductId());
-
-      adjustedConsumptions.add(line.getAdjustedConsumption());
-
-      int averageConsumption = getAverageConsumption(adjustedConsumptions);
-      line.setAverageConsumption(averageConsumption);
-    });
+    forEachLineItem(requisitionLineItems,
+        line -> {
+          List<RequisitionLineItem> previousRequisitionLineItemsWithOrderableProductId =
+              getRequisitionLineItems(previousRequisitionLineItems, line.getOrderableProductId());
+          List<Integer> adjustedConsumptions =
+              mapToAdjustedConsumptions(previousRequisitionLineItemsWithOrderableProductId);
+          adjustedConsumptions.add(line.getAdjustedConsumption());
+          int averageConsumption =
+              LineItemFieldsCalculator.calculateAverageConsumption(toArray(adjustedConsumptions));
+          line.setAverageConsumption(averageConsumption);
+        });
   }
 
-  private static Set<Map<UUID, Integer>> getProductIdAdjustedConsumptionMapsFromRequisitions(
-      List<Requisition> previousRequisitions) {
-    Set<Map<UUID, Integer>> productIdAdjustedConsumptionMapHashSet = new HashSet<>();
-
-    for (Requisition previousRequisition : previousRequisitions) {
-      addProductIdAdjustedConsumptionMapFromRequisitionToSet(
-          productIdAdjustedConsumptionMapHashSet, previousRequisition);
-    }
-    return productIdAdjustedConsumptionMapHashSet;
-  }
-
-  private static void addProductIdAdjustedConsumptionMapFromRequisitionToSet(
-      Set<Map<UUID, Integer>> productIdAdjustedConsumptionMapHashSet,
-      Requisition previousRequisition) {
-    List<RequisitionLineItem> products = previousRequisition.getRequisitionLineItems();
-    Map<UUID, Integer> productIdAdjustedConsumptionMap =
-        getMapOfProductIdAndAdjustedConsumptionFromRequisitionLineItems(products);
-    productIdAdjustedConsumptionMapHashSet.add(productIdAdjustedConsumptionMap);
-  }
-
-  private static Map<UUID, Integer> getMapOfProductIdAndAdjustedConsumptionFromRequisitionLineItems(
-      List<RequisitionLineItem> products) {
-    return products.stream()
-        .collect(Collectors.toMap(RequisitionLineItem::getOrderableProductId,
-            RequisitionLineItem::getAdjustedConsumption));
-  }
-
-  private static List<Integer> getAdjustedConsumptionListByProductId(
-      Set<Map<UUID, Integer>> productIdAdjustedConsumptionMapHashSet, UUID productId) {
-    return productIdAdjustedConsumptionMapHashSet.stream()
-        .map(map -> map.get(productId))
+  private static List<Integer> mapToAdjustedConsumptions(
+      List<RequisitionLineItem> previousRequisitionLineItemsWithOrderableProductId) {
+    return previousRequisitionLineItemsWithOrderableProductId
+        .stream()
+        .map(RequisitionLineItem::getAdjustedConsumption)
         .collect(Collectors.toList());
   }
 
-  private static int getAverageConsumption(List<Integer> adjustedConsumptions) {
-    int[] adjustedConsumptionsArray = toArray(adjustedConsumptions);
-    return LineItemFieldsCalculator
-        .calculateAverageConsumption(adjustedConsumptionsArray);
+  private static List<RequisitionLineItem> getRequisitionLineItems(
+      List<RequisitionLineItem> previousRequisitionLineItemList, UUID productId) {
+    return previousRequisitionLineItemList.stream()
+        .filter(previousLine ->
+            previousLine.getOrderableProductId().equals(productId))
+        .collect(Collectors.toList());
+  }
+
+  private static List<RequisitionLineItem> getRequisitionLineItems(
+      List<Requisition> previousRequisitions) {
+    return previousRequisitions.stream()
+        .map(Requisition::getRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
   }
 
   private static int[] toArray(List<Integer> adjustedConsumptions) {
@@ -116,7 +99,7 @@ public class RequisitionHelper {
   }
 
   private static void forEachLineItem(List<RequisitionLineItem> requisitionLineItems,
-                              Consumer<RequisitionLineItem> consumer) {
+                                      Consumer<RequisitionLineItem> consumer) {
     Optional.ofNullable(requisitionLineItems)
         .ifPresent(list -> list.forEach(consumer));
   }

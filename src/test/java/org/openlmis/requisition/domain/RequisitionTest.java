@@ -363,35 +363,34 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAverageConsumptionWhenSubmitWithPreviousRequisitions()
+  public void shouldCalculateAverageConsumptionWhenSubmitWithOnePreviousRequisition()
       throws RequisitionException {
     // given
-    UUID orderableProductId = UUID.randomUUID();
-    requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(orderableProductId);
-    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
-
-    mockStatic(LineItemFieldsCalculator.class);
-    when(LineItemFieldsCalculator
-        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
-    ).thenReturn(ADJUSTED_CONSUMPTION);
-    when(LineItemFieldsCalculator.calculateAverageConsumption(
-        AdditionalMatchers.aryEq(new int[]{5, ADJUSTED_CONSUMPTION})))
-        .thenReturn(AVERAGE_CONSUMPTION);
-
-    when(template.isColumnInTemplate(RequisitionLineItem.ADJUSTED_CONSUMPTION)).thenReturn(true);
-    when(template.isColumnInTemplate(RequisitionLineItem.AVERAGE_CONSUMPTION)).thenReturn(true);
-    requisition.setTemplate(template);
-
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
-    previousRequisitionLineItem.setAdjustedConsumption(5);
-    previousRequisitionLineItem.setOrderableProductId(orderableProductId);
-    Requisition previousRequisition = new Requisition();
-    previousRequisition.setRequisitionLineItems(
-        Collections.singletonList(previousRequisitionLineItem));
+    Requisition previousRequisition =
+        prepareForTestAverageConsumptionAndgetRequisition(new int[]{5, ADJUSTED_CONSUMPTION});
 
     //when
     requisition.submit(Collections.singletonList(previousRequisition));
+
+    //then
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+  }
+
+  @Test
+  public void shouldCalculateAverageConsumptionWhenSubmitWithManyPreviousRequisitions()
+      throws RequisitionException {
+    // given
+    Requisition previousRequisition =
+        prepareForTestAverageConsumptionAndgetRequisition(new int[]{5, 5, 5, ADJUSTED_CONSUMPTION});
+
+    List<Requisition> previousRequisitions = new ArrayList<>();
+    previousRequisitions.add(previousRequisition);
+    previousRequisitions.add(previousRequisition);
+    previousRequisitions.add(previousRequisition);
+
+    //when
+    requisition.submit(previousRequisitions);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -445,6 +444,34 @@ public class RequisitionTest {
 
     when(template.isColumnInTemplate(any())).thenReturn(true);
     requisition.setTemplate(template);
+  }
+
+  private Requisition prepareForTestAverageConsumptionAndgetRequisition(
+      int[] adjustedConsumptions) {
+    UUID orderableProductId = UUID.randomUUID();
+    requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(orderableProductId);
+    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
+
+    mockStatic(LineItemFieldsCalculator.class);
+    when(LineItemFieldsCalculator
+        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
+    ).thenReturn(ADJUSTED_CONSUMPTION);
+    when(LineItemFieldsCalculator.calculateAverageConsumption(
+        AdditionalMatchers.aryEq(adjustedConsumptions)))
+        .thenReturn(AVERAGE_CONSUMPTION);
+
+    when(template.isColumnInTemplate(RequisitionLineItem.ADJUSTED_CONSUMPTION)).thenReturn(true);
+    when(template.isColumnInTemplate(RequisitionLineItem.AVERAGE_CONSUMPTION)).thenReturn(true);
+    requisition.setTemplate(template);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(5);
+    previousRequisitionLineItem.setOrderableProductId(orderableProductId);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+    return previousRequisition;
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,
