@@ -14,5 +14,5 @@ public class SupervisoryNodeDto {
   private String description;
   private FacilityDto facility;
   private SupervisoryNodeDto parentNode;
-  private Set<SupervisorNodeBaseDto> childNodes;
+  private Set<SupervisoryNodeBaseDto> childNodes;
 }

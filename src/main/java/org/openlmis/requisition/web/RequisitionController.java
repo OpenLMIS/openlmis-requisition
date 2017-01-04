@@ -477,9 +477,9 @@ public class RequisitionController extends BaseController {
     requisition.authorize();
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
 
-    UUID supervisorNode = supervisoryNodeReferenceDataService.findSupervisorNode(
+    UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();
-    requisition.setSupervisoryNodeId(supervisorNode);
+    requisition.setSupervisoryNodeId(supervisoryNode);
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");

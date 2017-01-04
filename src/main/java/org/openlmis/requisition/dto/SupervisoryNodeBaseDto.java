@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SupervisorNodeBaseDto {
+public class SupervisoryNodeBaseDto {
 
   private String code;
   private FacilityDto facility;

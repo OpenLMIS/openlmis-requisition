@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -241,7 +242,10 @@ public class RequisitionControllerTest {
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
+    when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
+
     when(initiatedRequsition.getTemplate()).thenReturn(template);
+    when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid1);
@@ -253,8 +257,7 @@ public class RequisitionControllerTest {
     verify(requisitionRepository).save(initiatedRequsition);
     verify(stockAdjustmentReasonReferenceDataService)
         .getStockAdjustmentReasonsByProgram(any(UUID.class));
-    verify(initiatedRequsition, never()).setSupervisoryNodeId(any());
-
+    verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
 
   @Test
@@ -330,5 +333,10 @@ public class RequisitionControllerTest {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
     verify(requisition, never()).submit();
+  }
+
+  private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
+    verify(requisition, never()).setSupervisoryNodeId(any());
+    assertNull(requisition.getSupervisoryNodeId());
   }
 }

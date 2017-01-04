@@ -29,10 +29,10 @@ public class SupervisoryNodeReferenceDataService
   }
 
   /**
-   * Find a correct supervisor node by the provided facility and program.
+   * Find a correct supervisory node by the provided facility and program.
    *
    */
-  public SupervisoryNodeDto findSupervisorNode(UUID program, UUID facility) {
+  public SupervisoryNodeDto findSupervisoryNode(UUID program, UUID facility) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("programId", program);
     parameters.put("facilityId", facility);

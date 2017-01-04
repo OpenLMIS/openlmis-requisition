@@ -96,7 +96,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String EMERGENCY = "emergency";
   private static final String MESSAGE = "message";
   private static final String FACILITY_CODE = "facilityCode";
-  private static final String SUPERVISOR_SEARCH_URL = "/api/supervisoryNodes/search";
+  private static final String SUPERVISORY_SEARCH_URL = "/api/supervisoryNodes/search";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -625,17 +625,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    mockSupervisorNodeSearch();
-    RequisitionDto response = restAssured.given()
+    mockSupervisoryNodeSearch();
+    restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
         .when()
         .post(AUTHORIZATION_URL)
         .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto.class);
+        .statusCode(200);
 
-    assertEquals(ID, response.getSupervisoryNode());
+    requisition = requisitionRepository.findOne(requisition.getId());
+    assertEquals(ID, requisition.getSupervisoryNodeId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -715,7 +715,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     requisitionRepository.save(requisition);
 
-    mockSupervisorNodeSearch();
+    mockSupervisoryNodeSearch();
     return restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
@@ -1289,9 +1289,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     );
   }
 
-  private void mockSupervisorNodeSearch() {
+  private void mockSupervisoryNodeSearch() {
     wireMockRule.stubFor(
-        get(urlMatching(SUPERVISOR_SEARCH_URL + ".*"))
+        get(urlMatching(SUPERVISORY_SEARCH_URL + ".*"))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("[{ \"id\":\"" + ID + "\"}]"))
