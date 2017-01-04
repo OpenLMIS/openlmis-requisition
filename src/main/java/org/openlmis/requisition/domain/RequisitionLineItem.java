@@ -285,11 +285,6 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotalCost(importer.getTotalCost());
-    if (importer.getSkipped() != null) {
-      requisitionLineItem.setSkipped(importer.getSkipped());
-    } else {
-      requisitionLineItem.setSkipped(false);
-    }
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();

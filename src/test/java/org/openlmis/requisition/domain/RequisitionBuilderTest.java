@@ -11,12 +11,16 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,8 +100,8 @@ public class RequisitionBuilderTest {
 
   @Test
   public void shouldInitializeRequisitionFromDtoImporter() {
-    when(requisitionTemplate.getId()).thenReturn(templateUuid);
-    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
 
     assertNotNull(requisition);
     assertEquals(requisitionUuid, requisition.getId());
@@ -111,14 +115,49 @@ public class RequisitionBuilderTest {
   }
 
   @Test
+  public void shouldReturnFalseIfSkippedIsNotSetInDto() throws RequisitionTemplateColumnException {
+    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
+        .thenReturn(true);
+    prepareForTestSkip(new RequisitionLineItemDto());
+
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+
+    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+  }
+
+  @Test
+  public void shouldNotSetSkippedIfNotOnTemplate() throws RequisitionTemplateColumnException {
+    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
+        .thenReturn(false);
+    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
+    lineItemDto.setSkipped(true);
+    prepareForTestSkip(lineItemDto);
+
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+
+    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+  }
+
+  @Test
   public void shouldInitializeRequisitionFromDtoImporterWhenProgramAndFacilityAreNull() {
     when(requisitionDto.getFacility()).thenReturn(null);
     when(requisitionDto.getProgram()).thenReturn(null);
 
-    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
 
     assertNotNull(requisition);
     assertNull(requisition.getFacilityId());
     assertNull(requisition.getProgramId());
+  }
+
+  private void prepareForTestSkip(RequisitionLineItemDto lineItemDto) {
+    OrderableProductDto orderableProduct = new OrderableProductDto();
+    orderableProduct.setPrograms(Collections.emptySet());
+    lineItemDto.setOrderableProduct(orderableProduct);
+    when(requisitionDto.getRequisitionLineItems())
+        .thenReturn(Collections.singletonList(lineItemDto));
   }
 }

@@ -224,6 +224,7 @@ public class RequisitionControllerTest {
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
     when(initiatedRequsition.getTemplate()).thenReturn(template);
+    when(requisitionRepository.findOne(uuid2)).thenReturn(initiatedRequsition);
 
     ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid2);
 

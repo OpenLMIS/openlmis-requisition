@@ -71,7 +71,6 @@ import java.util.stream.Collectors;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
 public class RequisitionController extends BaseController {
@@ -258,7 +257,13 @@ public class RequisitionController extends BaseController {
       MissingPermissionException {
     permissionService.canUpdateRequisition(requisitionId);
 
-    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto);
+    Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
+
+    if (requisitionToUpdate == null) {
+      throw new RequisitionNotFoundException(requisitionId);
+    }
+    Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
+        requisitionToUpdate.getTemplate());
 
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);
@@ -268,11 +273,6 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-
-    if (requisitionToUpdate == null) {
-      throw new RequisitionNotFoundException(requisitionId);
-    }
 
     RequisitionStatus status = requisitionToUpdate.getStatus();
     if (status != RequisitionStatus.APPROVED
@@ -632,5 +632,4 @@ public class RequisitionController extends BaseController {
     Optional.ofNullable(requisitionLineItems)
         .ifPresent(list -> list.forEach(consumer));
   }
-
 }
