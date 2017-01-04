@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionBuilderTest {
 
   @Mock
@@ -138,6 +139,69 @@ public class RequisitionBuilderTest {
         RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+  }
+
+  @Test
+  public void shouldNotSetSkippedIfRequisitionStatusIsAuthorized()
+      throws RequisitionTemplateColumnException {
+    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
+        .thenReturn(true);
+    when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
+    lineItemDto.setSkipped(true);
+    prepareForTestSkip(lineItemDto);
+
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+
+    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+  }
+
+  @Test
+  public void shouldNotSetSkippedIfRequisitionStatusIsApproved()
+      throws RequisitionTemplateColumnException {
+    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
+        .thenReturn(true);
+    when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
+    lineItemDto.setSkipped(true);
+    prepareForTestSkip(lineItemDto);
+
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+
+    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+  }
+
+  @Test
+  public void shouldSetSkippedIfRequisitionStatusIsInitiated()
+      throws RequisitionTemplateColumnException {
+    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
+        .thenReturn(true);
+    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
+    lineItemDto.setSkipped(true);
+    prepareForTestSkip(lineItemDto);
+
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+
+    assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
+  }
+
+  @Test
+  public void shouldSetSkippedIfRequisitionStatusIsSubmitted()
+      throws RequisitionTemplateColumnException {
+    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
+        .thenReturn(true);
+    when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
+    lineItemDto.setSkipped(true);
+    prepareForTestSkip(lineItemDto);
+
+    Requisition requisition =
+        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+
+    assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test

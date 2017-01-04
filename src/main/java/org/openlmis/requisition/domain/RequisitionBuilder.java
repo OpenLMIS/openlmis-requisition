@@ -84,8 +84,10 @@ public final class RequisitionBuilder {
         RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
         program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
 
-        skipLineItem(template, requisitionLineItem.getSkipped(), item);
-
+        if (importer.getStatus() == RequisitionStatus.INITIATED
+            || importer.getStatus() == RequisitionStatus.SUBMITTED) {
+          skipLineItem(template, requisitionLineItem.getSkipped(), item);
+        }
         requisition.getRequisitionLineItems().add(item);
       }
     }
