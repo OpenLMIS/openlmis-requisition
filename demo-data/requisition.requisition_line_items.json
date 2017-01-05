@@ -13,7 +13,7 @@
   },
   {
     "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
-    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "orderableProductId": "7f7b83db-580d-4269-88d2-7f9c80a591a9",
     "requisition": { "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff" },
     "stockOnHand": 1000,
     "beginningBalance": 400,
