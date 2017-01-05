@@ -85,9 +85,8 @@ public final class RequisitionBuilder {
         RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
         program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
 
-        if (importer.getStatus() == RequisitionStatus.INITIATED
-            || importer.getStatus() == RequisitionStatus.SUBMITTED) {
-          skipLineItem(template, requisitionLineItem.getSkipped(), item);
+        if (isSkipped(requisitionLineItem) && isInitiatedOrSubmitted(importer.getStatus())) {
+          skipLineItem(template, item);
         }
         requisition.getRequisitionLineItems().add(item);
       }
@@ -102,16 +101,18 @@ public final class RequisitionBuilder {
     return requisition;
   }
 
-  private static void skipLineItem(RequisitionTemplate template,
-                                   Boolean skipped,
-                                   RequisitionLineItem item) {
+  private static boolean isInitiatedOrSubmitted(RequisitionStatus status) {
+    return status == RequisitionStatus.INITIATED || status == RequisitionStatus.SUBMITTED;
+  }
+
+  private static boolean isSkipped(RequisitionLineItem.Importer requisitionLineItem) {
+    return requisitionLineItem.getSkipped() != null && requisitionLineItem.getSkipped();
+  }
+
+  private static void skipLineItem(RequisitionTemplate template, RequisitionLineItem item) {
     try {
       if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
-        if (skipped != null) {
-          item.setSkipped(skipped);
-        } else {
-          item.setSkipped(false);
-        }
+        item.setSkipped(true);
       } else {
         LOGGER.warn("Skipping is only possible if the skip column is enabled"
             + " in the requisition template");
