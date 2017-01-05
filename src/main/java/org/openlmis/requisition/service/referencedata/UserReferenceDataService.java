@@ -1,6 +1,6 @@
 package org.openlmis.requisition.service.referencedata;
 
-import org.openlmis.requisition.dto.ResultDto;
+import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.springframework.stereotype.Service;
 
@@ -56,11 +56,11 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    * @param right    right to check
    * @param program  program to check (for supervision rights, can be {@code null})
    * @param facility facility to check (for supervision rights, can be {@code null})
-   * @return an instance of {@link ResultDto} with true or false depending on if user has the
+   * @return an instance of {@link BooleanResultDto} with true or false depending on if user has the
    *         right.
    */
-  public ResultDto<Boolean> hasRight(UUID user, UUID right, UUID program, UUID facility,
-                                     UUID warehouse) {
+  public BooleanResultDto hasRight(UUID user, UUID right, UUID program, UUID facility,
+                                   UUID warehouse) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("rightId", right);
 
@@ -76,12 +76,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
       parameters.put("warehouseId", warehouse);
     }
 
-    ResultDto<String> response = get(ResultDto.class, user + "/hasRight", parameters);
-    if (response == null) {
-      return null;
-    } else {
-      return new ResultDto<>(Boolean.valueOf(response.getResult()));
-    }
+    return get(BooleanResultDto.class, user + "/hasRight", parameters);
   }
 
 }

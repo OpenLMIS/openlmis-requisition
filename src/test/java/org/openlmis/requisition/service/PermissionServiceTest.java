@@ -20,8 +20,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
-import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -264,7 +264,7 @@ public class PermissionServiceTest {
   }
 
   private void hasRight(UUID rightId, boolean assign) {
-    ResultDto<Boolean> resultDto = new ResultDto(assign);
+    BooleanResultDto resultDto = new BooleanResultDto(assign);
     when(userReferenceDataService
         .hasRight(userId, rightId, programId, facilityId, null)
     ).thenReturn(resultDto);
