@@ -3,7 +3,6 @@ package org.openlmis.requisition.domain;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
 public class RequisitionTemplateColumnTest {

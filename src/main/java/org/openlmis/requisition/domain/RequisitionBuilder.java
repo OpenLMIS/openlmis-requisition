@@ -6,16 +6,12 @@ import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
 public final class RequisitionBuilder {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionBuilder.class);
 
   private RequisitionBuilder() {
   }
@@ -86,7 +82,7 @@ public final class RequisitionBuilder {
         program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
 
         if (isSkipped(requisitionLineItem) && importer.getStatus().isPreAuthorize()) {
-          skipLineItem(template, item);
+          item.skipLineItem(template);
         }
         requisition.getRequisitionLineItems().add(item);
       }
@@ -103,14 +99,5 @@ public final class RequisitionBuilder {
 
   private static boolean isSkipped(RequisitionLineItem.Importer requisitionLineItem) {
     return requisitionLineItem.getSkipped() != null && requisitionLineItem.getSkipped();
-  }
-
-  private static void skipLineItem(RequisitionTemplate template, RequisitionLineItem item) {
-    if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
-      item.setSkipped(true);
-    } else {
-      LOGGER.warn("Skipping is only possible if the skip column is enabled"
-          + " in the requisition template");
-    }
   }
 }

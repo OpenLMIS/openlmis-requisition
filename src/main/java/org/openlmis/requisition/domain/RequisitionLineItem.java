@@ -8,6 +8,8 @@ import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,9 +28,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
   public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
@@ -327,6 +332,20 @@ public class RequisitionLineItem extends BaseEntity {
 
   public void clearStockAdjustments() {
     stockAdjustments.clear();
+  }
+
+  /**
+   * Skip requisition line item of column is displayed on template.
+   *
+   * @param template on which we check if column is displayed
+   */
+  public void skipLineItem(RequisitionTemplate template) {
+    if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
+      skipped = true;
+    } else {
+      LOGGER.warn("Skipping is only possible if the skip column is enabled"
+          + " in the requisition template");
+    }
   }
 
   public interface Exporter {

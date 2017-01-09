@@ -4,16 +4,12 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionTemplateValidator.class);
 
   static final String COLUMNS_MAP = "columnsMap";
 
