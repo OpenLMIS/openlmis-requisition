@@ -183,12 +183,12 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   * Checks if column with given name is on template.
+   * Checks if column with given name is defined in the template.
    *
    * @param columnName name of requisition column.
-   * @return return true if column is on template.
+   * @return return true if column is defined in the template.
    */
-  public boolean isColumnOnTemplate(String columnName) {
+  public boolean isColumnInTemplate(String columnName) {
     return getRequisitionTemplateColumn(columnName) != null;
   }
 
@@ -217,7 +217,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   * Finds a column by column name or throw exception.
+   * Finds a column by column name or throws exception.
    *
    * @param name name of requisition column.
    * @return {@link RequisitionTemplateColumn} if found column with the given name.

@@ -105,10 +105,8 @@ public class RequisitionRepositoryIntegrationTest
       assertTrue(
           receivedRequisition.getCreatedDate().isAfter(
               requisitions.get(0).getCreatedDate().minusDays(1)));
-      assertEquals(
-          receivedRequisition.getEmergency(),
-          requisitions.get(0).getEmergency()
-      );
+      assertEquals(receivedRequisition.getEmergency(), requisitions.get(0).getEmergency());
+      assertEquals(receivedRequisition.getNumberOfMonthsInPeriod(), Integer.valueOf(1));
     }
   }
 
@@ -136,6 +134,8 @@ public class RequisitionRepositoryIntegrationTest
       assertEquals(
           receivedRequisition.getFacilityId(),
           requisitions.get(0).getFacilityId());
+      assertEquals(
+          receivedRequisition.getNumberOfMonthsInPeriod(), Integer.valueOf(1));
     }
   }
 
@@ -177,6 +177,7 @@ public class RequisitionRepositoryIntegrationTest
       found.forEach(element -> {
         assertEquals(requisition.getProcessingPeriodId(), element.getProcessingPeriodId());
         assertEquals(requisition.getEmergency(), element.getEmergency());
+        assertEquals(requisition.getNumberOfMonthsInPeriod(), element.getNumberOfMonthsInPeriod());
       });
     });
   }

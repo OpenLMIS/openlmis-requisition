@@ -209,7 +209,7 @@ public class Requisition extends BaseTimestampedEntity {
           LineItemFieldsCalculator.calculateTotal(line)));
     }
 
-    if (template.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       forEachLine(line -> {
         int adjustedConsumption =
             LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod);

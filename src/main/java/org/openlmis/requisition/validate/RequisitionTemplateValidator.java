@@ -47,7 +47,7 @@ public class RequisitionTemplateValidator implements Validator {
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
       );
-      if (requisitionTemplate.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
+      if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
         validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
             ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS
