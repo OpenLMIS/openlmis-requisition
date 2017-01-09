@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,12 +66,11 @@ public class RequisitionTemplateColumn {
 
   /**
    * Validate name of new label and change it if it's alphanumeric.
-   * @throws RequisitionTemplateColumnException Exception thrown when
-   *      given label name is not alphanumeric.
    */
-  public void setLabel(String labelName) throws RequisitionTemplateColumnException {
+  public void setLabel(String labelName) {
     if (!validateString(labelName)) {
-      throw new RequisitionTemplateColumnException("Only alphanumeric label is accepted.");
+      throw new ValidationMessageException(
+          new Message("requisition.error.only-alphanumeric-label-is-accepted"));
     }
     this.label = labelName;
   }

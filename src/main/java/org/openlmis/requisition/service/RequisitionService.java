@@ -17,7 +17,6 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.SkipNotAllowedException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -112,7 +111,7 @@ public class RequisitionService {
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               UUID initiatorId, boolean emergency)
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException {
     Requisition requisition = RequisitionBuilder.newRequisition(facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setInitiatorId(initiatorId);

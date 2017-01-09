@@ -59,7 +59,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param name name of requisition column.
    * @return return true if column is displayed
    */
-  public boolean isColumnDisplayed(String name) throws RequisitionTemplateColumnException {
+  public boolean isColumnDisplayed(String name) {
     RequisitionTemplateColumn column = findColumn(name);
 
     return column.getIsDisplayed();
@@ -71,7 +71,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param name name of requisition column.
    * @return return true if column is calculated
    */
-  public boolean isColumnCalculated(String name) throws RequisitionTemplateColumnException {
+  public boolean isColumnCalculated(String name) {
     RequisitionTemplateColumn column = findColumn(name);
 
     return SourceType.CALCULATED.equals(column.getSource());
@@ -120,8 +120,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param key Key to column which needs a new name.
    * @param name New name for label.
    */
-  public void changeColumnLabel(String key, String name)
-      throws RequisitionTemplateColumnException {
+  public void changeColumnLabel(String key, String name) {
     RequisitionTemplateColumn column = columnsMap.get(key);
     column.setLabel(name);
   }
@@ -130,11 +129,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * Validate source of column and change it if it's available.
    * @param key Key to column which needs a new source.
    * @param source New source for column.
-   * @throws RequisitionTemplateColumnException Exception thrown when
-   *      given source is not available.
    */
-  public void changeColumnSource(String key, SourceType source)
-      throws RequisitionTemplateColumnException {
+  public void changeColumnSource(String key, SourceType source) {
 
     RequisitionTemplateColumn column = findColumn(key);
 
@@ -154,11 +150,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * Validate option of column and change it if it's available.
    * @param key Key to column which needs a new option.
    * @param option New option for column.
-   * @throws RequisitionTemplateColumnException Exception thrown when
-   *      given option is not available.
    */
-  public void changeColumnOption(String key, AvailableRequisitionColumnOption option)
-      throws RequisitionTemplateColumnException {
+  public void changeColumnOption(String key, AvailableRequisitionColumnOption option) {
 
     RequisitionTemplateColumn column = findColumn(key);
 
@@ -194,7 +187,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param columnName name of requisition column.
    * @return return true if column is on template.
    */
-  public boolean isColumnOnTemplate(String columnName) throws RequisitionTemplateColumnException {
+  public boolean isColumnOnTemplate(String columnName) {
     return getRequisitionTemplateColumn(columnName) != null;
   }
 
@@ -227,10 +220,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    *
    * @param name name of requisition column.
    * @return {@link RequisitionTemplateColumn} if found column with the given name.
-   * @throws RequisitionTemplateColumnException if column is not present on template.
    */
-  private RequisitionTemplateColumn findColumn(String name)
-      throws RequisitionTemplateColumnException {
+  private RequisitionTemplateColumn findColumn(String name) {
     RequisitionTemplateColumn column = getRequisitionTemplateColumn(name);
     if (column == null) {
       throw new RequisitionTemplateColumnException("Column with name: " + name
@@ -239,8 +230,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     return column;
   }
 
-  private RequisitionTemplateColumn getRequisitionTemplateColumn(String name)
-      throws RequisitionTemplateColumnException {
+  private RequisitionTemplateColumn getRequisitionTemplateColumn(String name) {
     if (columnsMap == null) {
       throw new RequisitionTemplateColumnException("Columns map is null");
     }

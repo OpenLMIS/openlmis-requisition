@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -82,7 +81,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing()
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     mockStatic(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
@@ -107,7 +106,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldCalculateTotalValueWhenUpdatingRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     mockStatic(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
@@ -235,8 +234,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided()
-      throws RequisitionTemplateColumnException {
+  public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided() {
     // given
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
@@ -263,8 +261,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldInitiateBeginningBalanceToZeroIfNoPreviousRequisition()
-      throws RequisitionTemplateColumnException {
+  public void shouldInitiateBeginningBalanceToZeroIfNoPreviousRequisition() {
     // given
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
@@ -287,8 +284,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldInitiateBeginningBalanceToZeroIfNotVisible()
-      throws RequisitionTemplateColumnException {
+  public void shouldInitiateBeginningBalanceToZeroIfNotVisible() {
     // given
     final UUID productId1 = UUID.randomUUID();
     final UUID productId2 = UUID.randomUUID();
@@ -347,7 +343,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldCalculateAdjustedConsumptionAndTotalCostWhenSubmit()
-      throws RequisitionTemplateColumnException, RequisitionException {
+      throws RequisitionException {
     // given
     prepareForTestAdjustedConcumptionAndTotalCost();
     requisition.setTemplate(mock(RequisitionTemplate.class));
@@ -362,7 +358,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldCalculateAdjustedConsumptionAndTotalCostWhenAuthorize()
-      throws RequisitionTemplateColumnException, RequisitionException {
+      throws RequisitionException {
     // given
     prepareForTestAdjustedConcumptionAndTotalCost();
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -377,7 +373,7 @@ public class RequisitionTest {
 
   @Test
   public void shouldCalculateAdjustedConsumptionAndTotalCostWhenApprove()
-      throws RequisitionTemplateColumnException, RequisitionException {
+      throws RequisitionException {
     // given
     prepareForTestAdjustedConcumptionAndTotalCost();
     requisition.setStatus(RequisitionStatus.APPROVED);

@@ -3,7 +3,6 @@ package org.openlmis.utils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.List;
 
@@ -13,8 +12,7 @@ public class RequisitionHelper {
    * Check if all required fields fot template are not filled.
    */
   public static boolean areFieldsNotFilled(RequisitionTemplate template,
-                                     List<RequisitionLineItem> requisitionLineItems)
-      throws RequisitionTemplateColumnException {
+                                     List<RequisitionLineItem> requisitionLineItems) {
     if (null == requisitionLineItems) {
       return false;
     }

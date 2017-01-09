@@ -4,7 +4,6 @@ import static org.apache.commons.lang.BooleanUtils.isFalse;
 
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.slf4j.Logger;
@@ -18,7 +17,8 @@ public final class RequisitionBuilder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionBuilder.class);
 
-  private RequisitionBuilder() {}
+  private RequisitionBuilder() {
+  }
 
   /**
    * Create a new instance of Requisition with given facility and program IDs and emergency flag.
@@ -85,7 +85,7 @@ public final class RequisitionBuilder {
         RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
         program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
 
-        if (isSkipped(requisitionLineItem) && isInitiatedOrSubmitted(importer.getStatus())) {
+        if (isSkipped(requisitionLineItem) && importer.getStatus().isPreAuthorize()) {
           skipLineItem(template, item);
         }
         requisition.getRequisitionLineItems().add(item);
@@ -101,24 +101,16 @@ public final class RequisitionBuilder {
     return requisition;
   }
 
-  private static boolean isInitiatedOrSubmitted(RequisitionStatus status) {
-    return status == RequisitionStatus.INITIATED || status == RequisitionStatus.SUBMITTED;
-  }
-
   private static boolean isSkipped(RequisitionLineItem.Importer requisitionLineItem) {
     return requisitionLineItem.getSkipped() != null && requisitionLineItem.getSkipped();
   }
 
   private static void skipLineItem(RequisitionTemplate template, RequisitionLineItem item) {
-    try {
-      if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
-        item.setSkipped(true);
-      } else {
-        LOGGER.warn("Skipping is only possible if the skip column is enabled"
-            + " in the requisition template");
-      }
-    } catch (RequisitionTemplateColumnException ex) {
-      LOGGER.warn(ex.getMessage());
+    if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
+      item.setSkipped(true);
+    } else {
+      LOGGER.warn("Skipping is only possible if the skip column is enabled"
+          + " in the requisition template");
     }
   }
 }

@@ -4,7 +4,6 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +12,7 @@ import java.util.Set;
 
 public class RequisitionValidationTestUtils {
 
-  static Map<String, RequisitionTemplateColumn> initiateColumns()
-      throws RequisitionTemplateColumnException {
+  static Map<String, RequisitionTemplateColumn> initiateColumns() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     columns.put(RequisitionLineItem.REQUESTED_QUANTITY,
         generateTemplateColumn(RequisitionLineItem.REQUESTED_QUANTITY,
@@ -56,8 +54,7 @@ public class RequisitionValidationTestUtils {
   }
 
   private static RequisitionTemplateColumn generateTemplateColumn(
-      String name, SourceType sourceType, String indicator)
-      throws RequisitionTemplateColumnException {
+      String name, SourceType sourceType, String indicator) {
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
     columnDefinition.setName(name);
     columnDefinition.setIndicator(indicator);

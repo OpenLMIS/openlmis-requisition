@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 
 public class RequisitionTemplateColumnTest {
   private RequisitionTemplateColumn requisitionTemplateColumn;
@@ -15,7 +16,7 @@ public class RequisitionTemplateColumnTest {
   }
 
   @Test
-  public void testShouldChangeLabelOnlyIfValid() throws RequisitionTemplateColumnException {
+  public void testShouldChangeLabelOnlyIfValid() {
     requisitionTemplateColumn.setLabel("ValidName");
     Assert.assertEquals("ValidName", requisitionTemplateColumn.getLabel());
     requisitionTemplateColumn.setLabel("New valid name with numbers 123 and spaces ");
@@ -23,27 +24,23 @@ public class RequisitionTemplateColumnTest {
         requisitionTemplateColumn.getLabel());
   }
 
-  @Test(expected = RequisitionTemplateColumnException.class)
-  public void testShouldNotChangeLabelIfLabelNameIsInvalid()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = ValidationMessageException.class)
+  public void testShouldNotChangeLabelIfLabelNameIsInvalid() {
     requisitionTemplateColumn.setLabel("New not valid name with wrong signs: !@#$%^&*()");
   }
 
-  @Test(expected = RequisitionTemplateColumnException.class)
-  public void testShouldNotChangeLabelIfLabelNameHasSpecialCharacters()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = ValidationMessageException.class)
+  public void testShouldNotChangeLabelIfLabelNameHasSpecialCharacters() {
     requisitionTemplateColumn.setLabel(")(*&^%$#@!");
   }
 
-  @Test(expected = RequisitionTemplateColumnException.class)
-  public void testShouldNotChangeLabelIfLabelNameIsEmpty()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = ValidationMessageException.class)
+  public void testShouldNotChangeLabelIfLabelNameIsEmpty() {
     requisitionTemplateColumn.setLabel("");
   }
 
-  @Test(expected = RequisitionTemplateColumnException.class)
-  public void testShouldNotChangeLabelIfLabelNameHasOnlyWhiteSpace()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = ValidationMessageException.class)
+  public void testShouldNotChangeLabelIfLabelNameHasOnlyWhiteSpace() {
     requisitionTemplateColumn.setLabel(" ");
   }
 }

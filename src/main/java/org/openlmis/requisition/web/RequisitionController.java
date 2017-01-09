@@ -17,7 +17,6 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
@@ -146,7 +145,7 @@ public class RequisitionController extends BaseController {
                     @RequestParam(value = "facility") UUID facility,
                     @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                     @RequestParam(value = "emergency") boolean emergency)
-      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+      throws RequisitionException, MissingPermissionException {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
           new Message("requisition.error.initiate.missing-parameters"));
@@ -199,7 +198,7 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
   public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+      throws RequisitionException, MissingPermissionException {
     permissionService.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {

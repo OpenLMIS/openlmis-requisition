@@ -17,7 +17,6 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,7 +118,7 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldReturnFalseIfSkippedIsNotSetInDto() throws RequisitionTemplateColumnException {
+  public void shouldReturnFalseIfSkippedIsNotSetInDto() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(true);
     prepareForTestSkip(new RequisitionLineItemDto());
@@ -131,7 +130,7 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldNotSetSkippedIfNotOnTemplate() throws RequisitionTemplateColumnException {
+  public void shouldNotSetSkippedIfNotOnTemplate() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(false);
     RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
@@ -145,8 +144,7 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldNotSetSkippedIfRequisitionStatusIsAuthorized()
-      throws RequisitionTemplateColumnException {
+  public void shouldNotSetSkippedIfRequisitionStatusIsAuthorized() {
     prepareForTestSkippedDependOnStatus(RequisitionStatus.AUTHORIZED);
 
     Requisition requisition =
@@ -156,8 +154,7 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldNotSetSkippedIfRequisitionStatusIsApproved()
-      throws RequisitionTemplateColumnException {
+  public void shouldNotSetSkippedIfRequisitionStatusIsApproved() {
     prepareForTestSkippedDependOnStatus(RequisitionStatus.APPROVED);
 
     Requisition requisition =
@@ -167,8 +164,7 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldSetSkippedIfRequisitionStatusIsInitiated()
-      throws RequisitionTemplateColumnException {
+  public void shouldSetSkippedIfRequisitionStatusIsInitiated() {
     prepareForTestSkippedDependOnStatus(RequisitionStatus.INITIATED);
 
     Requisition requisition =
@@ -178,8 +174,7 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldSetSkippedIfRequisitionStatusIsSubmitted()
-      throws RequisitionTemplateColumnException {
+  public void shouldSetSkippedIfRequisitionStatusIsSubmitted() {
     prepareForTestSkippedDependOnStatus(RequisitionStatus.SUBMITTED);
 
     Requisition requisition =
@@ -209,8 +204,7 @@ public class RequisitionBuilderTest {
         .thenReturn(Collections.singletonList(lineItemDto));
   }
 
-  private void prepareForTestSkippedDependOnStatus(RequisitionStatus initiated)
-      throws RequisitionTemplateColumnException {
+  private void prepareForTestSkippedDependOnStatus(RequisitionStatus initiated) {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(true);
     when(requisitionDto.getStatus()).thenReturn(initiated);

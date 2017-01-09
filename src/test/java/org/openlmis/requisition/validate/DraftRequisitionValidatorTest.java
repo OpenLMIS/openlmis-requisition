@@ -21,7 +21,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
@@ -55,7 +54,7 @@ public class DraftRequisitionValidatorTest {
   private UUID initiatorId = UUID.randomUUID();
 
   @Before
-  public void setUp() throws RequisitionTemplateColumnException {
+  public void setUp() {
     requisitionLineItems = new ArrayList<>();
     columnsMap = RequisitionValidationTestUtils.initiateColumns();
     requisitionTemplate = new RequisitionTemplate();
@@ -96,8 +95,7 @@ public class DraftRequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfColumnIsCalculatedAndValueNotEmpty()
-      throws RequisitionTemplateColumnException {
+  public void shouldRejectIfColumnIsCalculatedAndValueNotEmpty() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setStockOnHand(1);
     requisitionLineItems.add(lineItem);

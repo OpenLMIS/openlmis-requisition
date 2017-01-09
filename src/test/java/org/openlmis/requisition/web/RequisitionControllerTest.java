@@ -17,7 +17,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -161,7 +160,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldSubmitValidInitiatedRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+      throws RequisitionException, MissingPermissionException {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
 
@@ -174,7 +173,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldCalculatePacksToShipOnSubmit()
-      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+      throws RequisitionException, MissingPermissionException {
     OrderableProductDto orderableProductDto = mock(OrderableProductDto.class);
 
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
@@ -201,7 +200,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotSubmitInvalidRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+      throws RequisitionException, MissingPermissionException {
     doAnswer(invocation -> {
       Errors errors = (Errors) invocation.getArguments()[1];
       errors.reject("requisitionLineItems",
@@ -263,7 +262,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotUpdateWithInvalidRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException, MissingPermissionException {
+      throws RequisitionException, MissingPermissionException {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
@@ -330,7 +329,7 @@ public class RequisitionControllerTest {
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition)
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
     verify(requisition, never()).submit();

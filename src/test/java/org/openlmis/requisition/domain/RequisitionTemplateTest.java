@@ -85,8 +85,7 @@ public class RequisitionTemplateTest {
   }
 
   @Test
-  public void shouldThrowIfSourceIsNotAvailableInColumn()
-      throws RequisitionTemplateColumnException {
+  public void shouldThrowIfSourceIsNotAvailableInColumn() {
     expectedException.expect(RequisitionTemplateColumnException.class);
     requisitionTemplate.changeColumnSource(COLUMN_NAMES[0], SourceType.REFERENCE_DATA);
 
@@ -95,8 +94,7 @@ public class RequisitionTemplateTest {
   }
 
   @Test
-  public void shouldThrowIfOptionIsNotAvailableInColumn()
-      throws RequisitionTemplateColumnException {
+  public void shouldThrowIfOptionIsNotAvailableInColumn() {
     expectedException.expect(RequisitionTemplateColumnException.class);
     AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
         requisitionTemplate.getColumnsMap().get(COLUMN_NAMES[0])

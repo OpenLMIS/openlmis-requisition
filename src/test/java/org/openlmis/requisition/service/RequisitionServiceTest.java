@@ -45,7 +45,6 @@ import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -266,7 +265,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldInitiateRequisitionIfItDoesNotAlreadyExist()
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
 
@@ -297,7 +296,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
-      throws RequisitionException, RequisitionTemplateColumnException {
+      throws RequisitionException {
     requisitionService.initiate(null, null, null, null, false);
   }
 

@@ -14,7 +14,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private Integer currentInstanceNumber;
 
   @Before
-  public void setUp() throws RequisitionTemplateColumnException {
+  public void setUp() {
     currentInstanceNumber = 0;
     requisitionTemplate = generateRequisitionTemplate();
   }
@@ -249,8 +248,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void shouldNotSaveWhenTotalConsumedQuantityCalculatedAndStockOnHandIsNotDisplayed()
-      throws RequisitionTemplateColumnException {
+  public void shouldNotSaveWhenTotalConsumedQuantityCalculatedAndStockOnHandIsNotDisplayed() {
     requisitionTemplate.changeColumnDisplay(STOCK_ON_HAND, false);
     requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
 
@@ -273,8 +271,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void shouldNotSaveWhenAdjustedConsumptionIsOnTemplateAndStockoutDaysNotDisplayed()
-      throws RequisitionTemplateColumnException {
+  public void shouldNotSaveWhenAdjustedConsumptionIsOnTemplateAndStockoutDaysNotDisplayed() {
     requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
 
     String response = restAssured.given()
@@ -296,8 +293,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   }
 
   @Test
-  public void shouldNotSaveWhenAdjustedConsumptionIsOnTemplateAndtConsumedQuantityNotDisplayed()
-      throws RequisitionTemplateColumnException {
+  public void shouldNotSaveWhenAdjustedConsumptionIsOnTemplateAndtConsumedQuantityNotDisplayed() {
     requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, false);
 
     String response = restAssured.given()
@@ -318,8 +314,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private RequisitionTemplate generateRequisitionTemplate()
-      throws RequisitionTemplateColumnException {
+  private RequisitionTemplate generateRequisitionTemplate() {
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
     columnDefinition.setIsDisplayRequired(false);
 

@@ -15,7 +15,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
@@ -203,7 +202,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldPersistWithMoney() throws RequisitionTemplateColumnException {
+  public void shouldPersistWithMoney() {
     Money pricePerPack = new Money("14.57");
     UUID productId = UUID.randomUUID();
 
@@ -224,8 +223,7 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(pricePerPack, requisition.getRequisitionLineItems().get(0).getPricePerPack());
   }
 
-  private RequisitionTemplate setUpTemplateWithBeginningBalance()
-          throws RequisitionTemplateColumnException {
+  private RequisitionTemplate setUpTemplateWithBeginningBalance() {
     RequisitionTemplateColumn column = new RequisitionTemplateColumn();
     column.setName(RequisitionLineItem.BEGINNING_BALANCE);
     column.setIsDisplayed(true);

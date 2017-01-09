@@ -1,8 +1,6 @@
 package org.openlmis.requisition.validate;
 
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,9 +29,8 @@ public class RequisitionTemplateValidatorTest {
 
   private Errors errors = mock(Errors.class);
 
-  @Test
-  public void shouldRejectIfRequestedQuantityAndExplanationIsDisplayedValuesAreDifferent()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void shouldThrowExceptionIfRequestedQuantityAndExplanationIsDisplayedValuesAreDifferent() {
 
     RequisitionTemplate requisitionTemplate = generateTemplate();
     requisitionTemplate.changeColumnDisplay(
@@ -45,15 +42,10 @@ public class RequisitionTemplateValidatorTest {
         RequisitionTemplateValidator.REQUESTED_QUANTITY_EXPLANATION, SourceType.USER_INPUT);
 
     validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
-        eq(RequisitionTemplateValidator.REQUESTED_QUANTITY_EXPLANATION
-            + " must be displayed when requested quantity is displayed."));
   }
 
-  @Test
-  public void shouldRejectIfSourceIsNotAvailableInColumn()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void shouldThrowExceptionWhenSourceIsNotAvailableInColumn() {
     RequisitionTemplate requisitionTemplate = generateTemplate();
 
     requisitionTemplate.changeColumnSource(COLUMN_NAME, SourceType.USER_INPUT);
@@ -61,15 +53,10 @@ public class RequisitionTemplateValidatorTest {
         .get(COLUMN_NAME).getColumnDefinition().getSources().clear();
 
     validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
-        eq(RequisitionTemplate.SOURCE + SourceType.USER_INPUT
-            + RequisitionTemplate.WARNING_SUFFIX));
   }
 
-  @Test
-  public void shouldRejectIfOptionIsNotAvailableInColumn()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void shouldThrowExceptionWhenOptionIsNotAvailableInColumn() {
     RequisitionTemplate requisitionTemplate = generateTemplate();
     AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
         requisitionTemplate.getColumnsMap().get(COLUMN_NAME)
@@ -83,43 +70,29 @@ public class RequisitionTemplateValidatorTest {
         .getColumnDefinition().getOptions().clear();
 
     validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
-        eq(RequisitionTemplate.OPTION + option.getOptionName()
-            + RequisitionTemplate.WARNING_SUFFIX));
   }
 
-  @Test
-  public void shouldRejectIfTotalStockoutDaysFieldIsNotDisplayed()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void shouldThrowExceptionWhenTotalStockoutDaysFieldIsNotDisplayed() {
     RequisitionTemplate requisitionTemplate =
         getRequisitionTemplateForTestAdjustedConsumptionField();
     requisitionTemplate.changeColumnDisplay(
         RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS, false);
 
     validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
-        eq(RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS
-            + RequisitionTemplateValidator.ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION));
   }
 
-  @Test
-  public void shouldRejectIfTotalConsumedQuantityFieldIsNotDisplayed()
-      throws RequisitionTemplateColumnException {
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void shouldThrowExceptionWhenTotalConsumedQuantityFieldIsNotDisplayed() {
     RequisitionTemplate requisitionTemplate =
         getRequisitionTemplateForTestAdjustedConsumptionField();
     requisitionTemplate.changeColumnDisplay(
         RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY, false);
 
     validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
-        eq(RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY
-            + RequisitionTemplateValidator.ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION));
   }
 
-  private RequisitionTemplate generateTemplate() throws RequisitionTemplateColumnException {
+  private RequisitionTemplate generateTemplate() {
     Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
     columnMap.put(RequisitionTemplateValidator.REQUESTED_QUANTITY,
         generateTemplateColumn(RequisitionTemplateValidator.REQUESTED_QUANTITY, "J", true));
@@ -133,8 +106,7 @@ public class RequisitionTemplateValidatorTest {
     return new RequisitionTemplate(columnMap);
   }
 
-  private RequisitionTemplate getRequisitionTemplateForTestAdjustedConsumptionField()
-      throws RequisitionTemplateColumnException {
+  private RequisitionTemplate getRequisitionTemplateForTestAdjustedConsumptionField() {
     Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
     columnMap.put(RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY,
         generateTemplateColumn(RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY, "C", true));
@@ -152,8 +124,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   private RequisitionTemplateColumn generateTemplateColumn(String name, String indicator,
-                                                           boolean displayed)
-      throws RequisitionTemplateColumnException {
+                                                           boolean displayed) {
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
     columnDefinition.setName(name);
     columnDefinition.setIndicator(indicator);

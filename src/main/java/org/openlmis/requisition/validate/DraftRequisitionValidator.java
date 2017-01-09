@@ -6,7 +6,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,13 +83,9 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private void rejectIfCalculatedAndNotNull(Errors errors, RequisitionTemplate template,
                                             Object value, String field) {
-    try {
-      if (template.isColumnCalculated(field) && value != null) {
-        errors.rejectValue(REQUISITION_LINE_ITEMS,
-            field + TEMPLATE_COLUMN_IS_CALCULATED);
-      }
-    } catch (RequisitionTemplateColumnException ex) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, ex.getMessage());
+    if (template.isColumnCalculated(field) && value != null) {
+      errors.rejectValue(REQUISITION_LINE_ITEMS,
+          field + TEMPLATE_COLUMN_IS_CALCULATED);
     }
   }
 

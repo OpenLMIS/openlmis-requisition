@@ -16,7 +16,6 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.openlmis.requisition.web.RequisitionController;
 import org.openlmis.utils.RequisitionHelper;
 import org.slf4j.Logger;
@@ -181,49 +180,44 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
                                                   Collection<StockAdjustmentReasonDto>
-                                            stockAdjustmentReasons) {
-    try {
-      forEachLine(line ->
-          line.setTotalLossesAndAdjustments(
-              LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
-                  line, stockAdjustmentReasons)));
+                                                      stockAdjustmentReasons) {
+    forEachLine(line ->
+        line.setTotalLossesAndAdjustments(
+            LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
+                line, stockAdjustmentReasons)));
 
-      if (template.isColumnDisplayed(STOCK_ON_HAND)) {
-        if (template.isColumnCalculated(STOCK_ON_HAND)) {
-          forEachLine(line ->  line.setStockOnHand(
-              LineItemFieldsCalculator.calculateStockOnHand(line)));
+    if (template.isColumnDisplayed(STOCK_ON_HAND)) {
+      if (template.isColumnCalculated(STOCK_ON_HAND)) {
+        forEachLine(line -> line.setStockOnHand(
+            LineItemFieldsCalculator.calculateStockOnHand(line)));
+      }
+    } else {
+      forEachLine(line -> line.setStockOnHand(null));
+    }
+
+    if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
+      if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
+        forEachLine(line -> line.setTotalConsumedQuantity(
+            LineItemFieldsCalculator.calculateTotalConsumedQuantity(line)));
+      }
+    } else {
+      forEachLine(line -> line.setTotalConsumedQuantity(null));
+    }
+
+    if (template.isColumnDisplayed(TOTAL_COLUMN)) {
+      forEachLine(line -> line.setTotal(
+          LineItemFieldsCalculator.calculateTotal(line)));
+    }
+
+    if (template.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
+      forEachLine(line -> {
+        int adjustedConsumption =
+            LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod);
+        if (line.getAdjustedConsumption() != null
+            && adjustedConsumption != line.getAdjustedConsumption()) {
+          LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
         }
-      } else {
-        forEachLine(line -> line.setStockOnHand(null));
-      }
-
-      if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
-        if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
-          forEachLine(line -> line.setTotalConsumedQuantity(
-              LineItemFieldsCalculator.calculateTotalConsumedQuantity(line)));
-        }
-      } else {
-        forEachLine(line -> line.setTotalConsumedQuantity(null));
-      }
-
-      if (template.isColumnDisplayed(TOTAL_COLUMN)) {
-        forEachLine(line -> line.setTotal(
-            LineItemFieldsCalculator.calculateTotal(line)));
-      }
-
-      if (template.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
-        forEachLine(line -> {
-          int adjustedConsumption =
-              LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod);
-          if (line.getAdjustedConsumption() != null
-              && adjustedConsumption != line.getAdjustedConsumption()) {
-            LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
-          }
-        });
-      }
-
-    } catch (RequisitionTemplateColumnException ex) {
-      LOGGER.warn(ex.getMessage());
+      });
     }
   }
 
@@ -277,8 +271,7 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Submits given requisition.
    */
-  public void submit()
-      throws RequisitionException, RequisitionTemplateColumnException {
+  public void submit() throws RequisitionException {
     if (!INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition must have status 'INITIATED' to be submitted.");
@@ -364,11 +357,10 @@ public class Requisition extends BaseTimestampedEntity {
    * @param previousRequisition the previous requisition for this program/facility.
    *                            Used for field calculations.Pass null if there are no
    *                            previous requisitions.
-   * @throws RequisitionTemplateColumnException if there are issues with template definitions.
    */
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
-                       Requisition previousRequisition) throws RequisitionTemplateColumnException {
+                       Requisition previousRequisition) {
     this.template = template;
 
     setRequisitionLineItems(

@@ -10,7 +10,6 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
@@ -114,7 +113,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void testChangeRequisitionTemplateLabel() throws RequisitionTemplateColumnException {
+  public void testChangeRequisitionTemplateLabel() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn testColumn1 =
         new RequisitionTemplateColumn(
@@ -131,7 +130,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void testChangeRequisitionTemplateSource() throws RequisitionTemplateColumnException {
+  public void testChangeRequisitionTemplateSource() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn column = new RequisitionTemplateColumn("column1", "label1", "I", 1,
                 false, SourceType.CALCULATED, getColumn(), null);
@@ -151,7 +150,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void testChangeRequisitionTemplateOption() throws RequisitionTemplateColumnException {
+  public void testChangeRequisitionTemplateOption() {
     AvailableRequisitionColumnOption option = getOption("34b8e763-71a0-41f1-86b4-1829963f0704");
 
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();

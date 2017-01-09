@@ -55,7 +55,7 @@ public class RequisitionValidatorTest {
   private UUID programId;
 
   @Before
-  public void setUp() throws RequisitionTemplateColumnException {
+  public void setUp() {
     requisitionLineItems = new ArrayList<>();
     columnsMap = RequisitionValidationTestUtils.initiateColumns();
     requisitionTemplate = new RequisitionTemplate();
@@ -100,8 +100,8 @@ public class RequisitionValidatorTest {
             + RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION));
   }
 
-  @Test
-  public void shouldRejectIfColumnDoesNotExist() {
+  @Test(expected = RequisitionTemplateColumnException.class)
+  public void shouldThrowExceptionWhenColumnDoesNotExist() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(1);
     requisitionLineItems.add(lineItem);
@@ -109,12 +109,6 @@ public class RequisitionValidatorTest {
     columnsMap.remove(RequisitionLineItem.STOCK_ON_HAND);
 
     requisitionValidator.validate(requisition, errors);
-
-    // 1. when we check if value is not null
-    // 2. when we check if values is greater or equal to zero
-    // 3. when we check if calculation was correct
-    verify(errors, times(3)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains("is not present in template"));
   }
 
   @Test

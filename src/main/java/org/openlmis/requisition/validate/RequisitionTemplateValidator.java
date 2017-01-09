@@ -4,7 +4,6 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -52,68 +51,51 @@ public class RequisitionTemplateValidator implements Validator {
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
       );
-      try {
-        if (requisitionTemplate.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
-          validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
-              ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
-              TOTAL_STOCKOUT_DAYS
-          );
-        }
-      } catch (RequisitionTemplateColumnException ex) {
-        LOGGER.warn(ex.getMessage());
+      if (requisitionTemplate.isColumnOnTemplate(ADJUSTED_CONSUMPTION)) {
+        validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
+            ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
+            TOTAL_STOCKOUT_DAYS
+        );
       }
     }
   }
 
   private void validateRequestedQuantity(Errors errors, RequisitionTemplate template) {
-    try {
-      boolean quantityDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY);
-      boolean explanationDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY_EXPLANATION);
+    boolean quantityDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY);
+    boolean explanationDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY_EXPLANATION);
 
-      if (quantityDisplayed) {
-        if (!explanationDisplayed) {
-          errors.rejectValue(COLUMNS_MAP, REQUESTED_QUANTITY_EXPLANATION
-              + " must be displayed when requested quantity is displayed.");
-        }
-      } else {
-        if (explanationDisplayed) {
-          errors.rejectValue(COLUMNS_MAP, REQUESTED_QUANTITY
-              + " must be displayed when requested quantity explanation is displayed.");
-        }
+    if (quantityDisplayed) {
+      if (!explanationDisplayed) {
+        errors.rejectValue(COLUMNS_MAP, REQUESTED_QUANTITY_EXPLANATION
+            + " must be displayed when requested quantity is displayed.");
       }
-    } catch (RequisitionTemplateColumnException ex) {
-      errors.rejectValue(COLUMNS_MAP, ex.getMessage());
+    } else {
+      if (explanationDisplayed) {
+        errors.rejectValue(COLUMNS_MAP, REQUESTED_QUANTITY
+            + " must be displayed when requested quantity explanation is displayed.");
+      }
     }
   }
 
   private void validateCalculatedFields(Errors errors, RequisitionTemplate template) {
-    try {
-      if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
-          && template.isColumnCalculated(STOCK_ON_HAND)) {
-        errors.rejectValue(COLUMNS_MAP, TOTAL_CONSUMED_QUANTITY + " and " + STOCK_ON_HAND
-            + "columns cannot be calculated at the same time");
-      }
-    } catch (RequisitionTemplateColumnException ex) {
-      errors.rejectValue(COLUMNS_MAP, ex.getMessage());
+    if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
+        && template.isColumnCalculated(STOCK_ON_HAND)) {
+      errors.rejectValue(COLUMNS_MAP, TOTAL_CONSUMED_QUANTITY + " and " + STOCK_ON_HAND
+          + "columns cannot be calculated at the same time");
     }
   }
 
   private void validateCalculatedField(Errors errors, RequisitionTemplate template, String field,
                                        String suffix, String... requiredFields) {
-    try {
-      if (template.isColumnCalculated(field)) {
-        for (String requiredField : requiredFields) {
-          rejectIfNotDisplayed(errors, template, requiredField, suffix);
-        }
+    if (template.isColumnCalculated(field)) {
+      for (String requiredField : requiredFields) {
+        rejectIfNotDisplayed(errors, template, requiredField, suffix);
       }
-    } catch (RequisitionTemplateColumnException ex) {
-      errors.rejectValue(COLUMNS_MAP, ex.getMessage());
     }
   }
 
   private void rejectIfNotDisplayed(Errors errors, RequisitionTemplate template,
-                                    String field, String suffix)
-      throws RequisitionTemplateColumnException {
+                                    String field, String suffix) {
     if (!template.isColumnDisplayed(field)) {
       errors.rejectValue(COLUMNS_MAP, field + suffix);
     }
