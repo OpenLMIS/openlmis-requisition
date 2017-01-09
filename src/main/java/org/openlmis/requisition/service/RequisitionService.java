@@ -2,6 +2,7 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -18,7 +19,7 @@ import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
-import org.openlmis.requisition.exception.SkipNotAllowedException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -28,6 +29,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.utils.ConvertHelper;
+import org.openlmis.utils.Message;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.slf4j.Logger;
@@ -50,6 +52,10 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
+  private static final String CAN_NOT_SKIP_PERIOD_STATUS =
+      "requisition.error.canNotSkipPeriod.status";
+  private static final String CAN_NOT_SKIP_PERIOD_PROGRAM =
+      "requisition.error.canNotSkipPeriod.program";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
 
@@ -185,13 +191,15 @@ public class RequisitionService {
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-        throw new InvalidRequisitionStatusException("Skip failed - "
-            + REQUISITION_BAD_STATUS_MESSAGE);
+        throw new ValidationMessageException(new Message(CAN_NOT_SKIP_PERIOD_STATUS));
       } else if (!program.getPeriodsSkippable()) {
-        throw new SkipNotAllowedException("Skip failed - "
-            + "requisition program does not allow skipping");
+        throw new ValidationMessageException(new Message(CAN_NOT_SKIP_PERIOD_PROGRAM));
       } else {
         LOGGER.debug("Requisition skipped");
+
+        for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
+          item.skipLineItem(requisition.getTemplate());
+        }
         requisition.setStatus(RequisitionStatus.SKIPPED);
         return requisitionRepository.save(requisition);
       }
@@ -408,7 +416,6 @@ public class RequisitionService {
     return null != previousPeriod
         ? findPreviousRequisition(currentRequisition, previousPeriod)
         : null;
-
   }
 
   private Requisition findPreviousRequisition(Requisition currentRequisition,

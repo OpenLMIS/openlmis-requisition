@@ -57,18 +57,20 @@ public class PermissionService {
   public void canUpdateRequisition(UUID requisitionId) throws MissingPermissionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
-    switch (requisition.getStatus()) {
-      case INITIATED:
-        hasPermission(REQUISITION_CREATE, requisitionId);
-        break;
-      case SUBMITTED:
-        hasPermission(REQUISITION_AUTHORIZE, requisitionId);
-        break;
-      case AUTHORIZED:
-        hasPermission(REQUISITION_APPROVE, requisitionId);
-        break;
-      default:
-        throw new IllegalStateException("Requisition has incorrect status");
+    if (requisition != null) {
+      switch (requisition.getStatus()) {
+        case INITIATED:
+          hasPermission(REQUISITION_CREATE, requisitionId);
+          break;
+        case SUBMITTED:
+          hasPermission(REQUISITION_AUTHORIZE, requisitionId);
+          break;
+        case AUTHORIZED:
+          hasPermission(REQUISITION_APPROVE, requisitionId);
+          break;
+        default:
+          throw new IllegalStateException("Requisition has incorrect status");
+      }
     }
   }
 

@@ -484,15 +484,20 @@ resourceTypes:
               description: Skip chosen requisition period.
               responses:
                   "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
                       body:
                         application/json:
                   "400":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+                  "403":
+                      body:
+                        application/json:
+                            schema: errorResponse
+                  "404":
+                      body:
+                        application/json:
+                            schema: errorResponse
       /{id}/reject:
           uriParameters:
               id:

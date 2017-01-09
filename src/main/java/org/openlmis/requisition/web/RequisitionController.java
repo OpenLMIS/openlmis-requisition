@@ -353,7 +353,8 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   public ResponseEntity<RequisitionDto> skipRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionException {
+      throws RequisitionException, MissingPermissionException {
+    permissionService.canUpdateRequisition(requisitionId);
     Requisition requisition = requisitionService.skip(requisitionId);
     return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
   }

@@ -44,6 +44,7 @@ import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -74,6 +75,15 @@ import java.util.stream.Collectors;
 public class RequisitionServiceTest {
 
   private Requisition requisition;
+
+  @Mock
+  private RequisitionLineItem lineItem1;
+
+  @Mock
+  private RequisitionLineItem lineItem2;
+
+  @Mock
+  private RequisitionTemplate requisitionTemplate;
 
   @Mock
   private ProgramDto program;
@@ -169,14 +179,43 @@ public class RequisitionServiceTest {
   public void shouldSkipRequisitionIfItIsValid() throws RequisitionException {
     when(program.getPeriodsSkippable()).thenReturn(true);
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
+    verify(lineItem1).skipLineItem(requisition.getTemplate());
+    verify(lineItem2).skipLineItem(requisition.getTemplate());
 
     assertEquals(skippedRequisition.getStatus(), SKIPPED);
   }
 
-  @Test(expected = RequisitionException.class)
-  public void shouldThrowExceptionWhenSkippingNotSkippableProgram()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingNotSkippableProgram() throws RequisitionException {
     when(program.getPeriodsSkippable()).thenReturn(false);
+    requisitionService.skip(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingSubmittedRequisition() throws RequisitionException {
+    when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setStatus(SUBMITTED);
+    requisitionService.skip(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingAuthorizedRequisition() throws RequisitionException {
+    when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setStatus(AUTHORIZED);
+    requisitionService.skip(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingApprovedRequisition() throws RequisitionException {
+    when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setStatus(APPROVED);
+    requisitionService.skip(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingReleasedRequisition() throws RequisitionException {
+    when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setStatus(RELEASED);
     requisitionService.skip(requisition.getId());
   }
 
@@ -533,8 +572,10 @@ public class RequisitionServiceTest {
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setSupplyingFacilityId(facilityId);
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
-    requisitionLineItems.add(mock(RequisitionLineItem.class));
+    requisitionLineItems.add(lineItem1);
+    requisitionLineItems.add(lineItem2);
     requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition.setTemplate(requisitionTemplate);
     return requisition;
   }
 
