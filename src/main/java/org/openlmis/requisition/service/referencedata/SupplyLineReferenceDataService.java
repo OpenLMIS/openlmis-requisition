@@ -28,7 +28,8 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
 
   /**
    * Retrieves supply lines from reference data service by program and supervisory node.
-   * @param programId UUID of the program
+   *
+   * @param programId         UUID of the program
    * @param supervisoryNodeId UUID of the supervisory node
    * @return A list of supply lines matching search criteria
    */

@@ -18,7 +18,7 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class BaseEntity {
   static final String TEXT_COLUMN_DEFINITION = "text";
-  
+
   @Id
   @GeneratedValue(generator = "uuid-gen")
   @GenericGenerator(name = "uuid-gen", strategy = "uuid2")

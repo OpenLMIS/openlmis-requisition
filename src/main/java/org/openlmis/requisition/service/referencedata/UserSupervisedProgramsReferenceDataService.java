@@ -18,6 +18,7 @@ public class UserSupervisedProgramsReferenceDataService extends ProgramReference
 
   /**
    * Retrieves all the programs supervised by the given user from the reference data service.
+   *
    * @param userUuid the UUID of the user
    * @return a collection of programs supervised by user
    */

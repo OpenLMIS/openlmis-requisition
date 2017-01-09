@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Service
 public class SupervisoryNodeReferenceDataService
-        extends BaseReferenceDataService<SupervisoryNodeDto> {
+    extends BaseReferenceDataService<SupervisoryNodeDto> {
 
   @Override
   protected String getUrl() {
@@ -30,7 +30,6 @@ public class SupervisoryNodeReferenceDataService
 
   /**
    * Find a correct supervisory node by the provided facility and program.
-   *
    */
   public SupervisoryNodeDto findSupervisoryNode(UUID program, UUID facility) {
     Map<String, Object> parameters = new HashMap<>();

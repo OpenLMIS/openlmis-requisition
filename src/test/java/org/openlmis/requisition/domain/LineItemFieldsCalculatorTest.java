@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Lists;
+
 import org.junit.Test;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
@@ -52,8 +53,8 @@ public class LineItemFieldsCalculatorTest {
     doReturn(id4).when(adjustment4).getReasonId();
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setStockAdjustments(Lists.newArrayList(adjustment1,adjustment2,
-        adjustment3,adjustment4));
+    requisitionLineItem.setStockAdjustments(Lists.newArrayList(adjustment1, adjustment2,
+        adjustment3, adjustment4));
     requisitionLineItem.setTotalLossesAndAdjustments(
         LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
             requisitionLineItem, Lists.newArrayList(reason1, reason2, reason3, reason4)));

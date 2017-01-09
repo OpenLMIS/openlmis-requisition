@@ -1,10 +1,11 @@
 package org.openlmis.requisition.domain;
 
+import org.hibernate.annotations.Type;
+import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   /**
    * Allows changing the display order of columns.
    *
-   * @param key Key to column which needs a new display order.
+   * @param key             Key to column which needs a new display order.
    * @param newDisplayOrder Number specifying new display order of extracted column.
    */
   public void changeColumnDisplayOrder(String key, int newDisplayOrder) {
@@ -101,8 +102,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   *
-   * @param key Key to column which needs a new display property.
+   * @param key     Key to column which needs a new display property.
    * @param display Should column be displayed.
    */
   public void changeColumnDisplay(String key, boolean display) {
@@ -116,8 +116,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   *
-   * @param key Key to column which needs a new name.
+   * @param key  Key to column which needs a new name.
    * @param name New name for label.
    */
   public void changeColumnLabel(String key, String name) {
@@ -127,7 +126,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   /**
    * Validate source of column and change it if it's available.
-   * @param key Key to column which needs a new source.
+   *
+   * @param key    Key to column which needs a new source.
    * @param source New source for column.
    */
   public void changeColumnSource(String key, SourceType source) {
@@ -148,7 +148,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   /**
    * Validate option of column and change it if it's available.
-   * @param key Key to column which needs a new option.
+   *
+   * @param key    Key to column which needs a new option.
    * @param option New option for column.
    */
   public void changeColumnOption(String key, AvailableRequisitionColumnOption option) {

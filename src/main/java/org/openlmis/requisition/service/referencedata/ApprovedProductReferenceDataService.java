@@ -32,7 +32,7 @@ public class ApprovedProductReferenceDataService extends
    * provided facility and full supply flag. It can be optionally filtered by the program ID.
    *
    * @param facilityId id of the facility
-   * @param programId id of the program
+   * @param programId  id of the program
    * @param fullSupply whether the full supply or non-full supply products should be retrieved
    * @return a collection of approved products matching the search criteria
    */

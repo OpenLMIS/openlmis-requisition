@@ -39,7 +39,7 @@ public abstract class BaseCommunicationService {
     HttpServletRequest httpServletRequest = HttpContextHelper.getCurrentHttpRequest();
     if (httpServletRequest != null) {
       String token = httpServletRequest.getParameter(ACCESS_TOKEN);
-      if (token != null ) {
+      if (token != null) {
         return token;
       }
     }

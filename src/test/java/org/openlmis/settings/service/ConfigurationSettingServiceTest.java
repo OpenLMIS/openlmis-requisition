@@ -1,5 +1,8 @@
 package org.openlmis.settings.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,9 +12,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationSettingServiceTest {
@@ -53,7 +53,7 @@ public class ConfigurationSettingServiceTest {
 
   @Test
   public void shouldCatchExceptionAndReturnFalseIfKeyDoesNotExists()
-          throws ConfigurationSettingException {
+      throws ConfigurationSettingException {
     assertEquals(configurationSettingService.getBoolValue("testEmpty"), Boolean.FALSE);
   }
 
@@ -63,8 +63,8 @@ public class ConfigurationSettingServiceTest {
     configurationSetting.setKey("testTrue");
     configurationSetting.setValue(Boolean.TRUE.toString());
     when(configurationSettingRepository
-            .findOne(configurationSetting.getKey()))
-            .thenReturn(configurationSetting);
+        .findOne(configurationSetting.getKey()))
+        .thenReturn(configurationSetting);
     assertEquals(configurationSettingService.getBoolValue("testTrue"), Boolean.TRUE);
   }
 
@@ -74,8 +74,8 @@ public class ConfigurationSettingServiceTest {
     setting.setKey("testFalse");
     setting.setValue(Boolean.FALSE.toString());
     when(configurationSettingRepository
-            .findOne(configurationSetting.getKey()))
-            .thenReturn(configurationSetting);
+        .findOne(configurationSetting.getKey()))
+        .thenReturn(configurationSetting);
     assertEquals(configurationSettingService.getBoolValue("testFalse"), Boolean.FALSE);
   }
 
@@ -87,7 +87,7 @@ public class ConfigurationSettingServiceTest {
 
   private void mockRepositories() {
     when(configurationSettingRepository
-            .findOne(configurationSetting.getKey()))
-            .thenReturn(configurationSetting);
+        .findOne(configurationSetting.getKey()))
+        .thenReturn(configurationSetting);
   }
 }

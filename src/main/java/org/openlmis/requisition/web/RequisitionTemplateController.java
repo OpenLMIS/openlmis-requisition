@@ -48,12 +48,12 @@ public class RequisitionTemplateController extends BaseController {
    * If the id is specified, it will be ignored.
    *
    * @param requisitionTemplate A requisitionTemplate bound to the request body
-   * @param bindingResult Object used for validation.
+   * @param bindingResult       Object used for validation.
    * @return ResponseEntity containing the created requisitionTemplate
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionTemplate(
-        @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
+      @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
 
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
@@ -62,7 +62,7 @@ public class RequisitionTemplateController extends BaseController {
     LOGGER.debug("Creating new requisitionTemplate");
     requisitionTemplate.setId(null);
     RequisitionTemplate newRequisitionTemplate =
-          requisitionTemplateRepository.save(requisitionTemplate);
+        requisitionTemplateRepository.save(requisitionTemplate);
     LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
     return new ResponseEntity<>(newRequisitionTemplate, HttpStatus.CREATED);
   }
@@ -82,22 +82,22 @@ public class RequisitionTemplateController extends BaseController {
   /**
    * Allows updating requisitionTemplates.
    *
-   * @param requisitionTemplate A requisitionTemplate bound to the request body
+   * @param requisitionTemplate   A requisitionTemplate bound to the request body
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
-   * @param bindingResult Object used for validation.
+   * @param bindingResult         Object used for validation.
    * @return ResponseEntity containing the updated requisitionTemplate
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionTemplate(
-        @RequestBody @Valid RequisitionTemplate requisitionTemplate,
-        @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult) {
+      @RequestBody @Valid RequisitionTemplate requisitionTemplate,
+      @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult) {
 
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
 
     RequisitionTemplate requisitionTemplateToUpdate =
-          requisitionTemplateRepository.findOne(requisitionTemplateId);
+        requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplateToUpdate == null) {
       requisitionTemplateToUpdate = new RequisitionTemplate();
       requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
@@ -123,7 +123,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
     RequisitionTemplate requisitionTemplate =
-          requisitionTemplateRepository.findOne(requisitionTemplateId);
+        requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -139,9 +139,9 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisitionTemplate(@PathVariable("id")
-                                                             UUID requisitionTemplateId) {
+                                                         UUID requisitionTemplateId) {
     RequisitionTemplate requisitionTemplate =
-          requisitionTemplateRepository.findOne(requisitionTemplateId);
+        requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplate == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
@@ -152,14 +152,15 @@ public class RequisitionTemplateController extends BaseController {
 
   /**
    * Returns requisition template for the given program.
+   *
    * @param program program of searched requisition templates.
-   * @return ResponseEntity with list of all requisition templates matching
-   *         provided parameters and OK httpStatus.
+   * @return ResponseEntity with list of all requisition templates matching provided parameters and
+   *     OK httpStatus.
    */
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
   @ResponseBody
   public RequisitionTemplate getTemplateByProgram(
-          @RequestParam(value = "program", required = false) UUID program) {
+      @RequestParam(value = "program", required = false) UUID program) {
     return requisitionTemplateService.getTemplateForProgram(program);
   }
 }

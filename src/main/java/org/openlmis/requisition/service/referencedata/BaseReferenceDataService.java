@@ -105,9 +105,9 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   /**
    * Return all reference data T objects that need to be retrieved with POST request.
    *
-   * @param resourceUrl Endpoint url.
-   * @param uriParameters  Map of query parameters.
-   * @param payload  body to include with the outgoing request.
+   * @param resourceUrl   Endpoint url.
+   * @param uriParameters Map of query parameters.
+   * @param payload       body to include with the outgoing request.
    * @return all reference data T objects.
    */
   public Collection<T> postFindAll(String resourceUrl, Map<String, Object> uriParameters,
@@ -116,7 +116,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   }
 
   private Collection<T> findAllWithMethod(String resourceUrl, Map<String, Object> uriParameters,
-                                       Map<String, Object> payload, HttpMethod method) {
+                                          Map<String, Object> payload, HttpMethod method) {
     String url = getReferenceDataUrl() + getUrl() + resourceUrl;
     RestTemplate restTemplate = new RestTemplate();
 

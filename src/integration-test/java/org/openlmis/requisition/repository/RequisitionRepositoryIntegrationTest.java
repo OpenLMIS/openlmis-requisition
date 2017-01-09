@@ -73,38 +73,38 @@ public class RequisitionRepositoryIntegrationTest
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-            requisitions.get(0).getFacilityId(),
-            requisitions.get(0).getProgramId(),
-            requisitions.get(0).getCreatedDate().minusDays(1),
-            requisitions.get(0).getCreatedDate().plusDays(2),
-            requisitions.get(0).getProcessingPeriodId(),
-            requisitions.get(0).getSupervisoryNodeId(),
-            new RequisitionStatus[]{requisitions.get(0).getStatus()},
-            requisitions.get(0).getEmergency());
+        requisitions.get(0).getFacilityId(),
+        requisitions.get(0).getProgramId(),
+        requisitions.get(0).getCreatedDate().minusDays(1),
+        requisitions.get(0).getCreatedDate().plusDays(2),
+        requisitions.get(0).getProcessingPeriodId(),
+        requisitions.get(0).getSupervisoryNodeId(),
+        new RequisitionStatus[]{requisitions.get(0).getStatus()},
+        requisitions.get(0).getEmergency());
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       assertEquals(
-              receivedRequisition.getProgramId(),
-              requisitions.get(0).getProgramId());
+          receivedRequisition.getProgramId(),
+          requisitions.get(0).getProgramId());
       assertEquals(
-              receivedRequisition.getProcessingPeriodId(),
-              requisitions.get(0).getProcessingPeriodId());
+          receivedRequisition.getProcessingPeriodId(),
+          requisitions.get(0).getProcessingPeriodId());
       assertEquals(
-              receivedRequisition.getFacilityId(),
-              requisitions.get(0).getFacilityId());
+          receivedRequisition.getFacilityId(),
+          requisitions.get(0).getFacilityId());
       assertEquals(
-              receivedRequisition.getSupervisoryNodeId(),
-              requisitions.get(0).getSupervisoryNodeId());
+          receivedRequisition.getSupervisoryNodeId(),
+          requisitions.get(0).getSupervisoryNodeId());
       assertEquals(
-              receivedRequisition.getStatus(),
-              requisitions.get(0).getStatus());
+          receivedRequisition.getStatus(),
+          requisitions.get(0).getStatus());
       assertTrue(
-              receivedRequisition.getCreatedDate().isBefore(
-                      requisitions.get(0).getCreatedDate().plusDays(2)));
+          receivedRequisition.getCreatedDate().isBefore(
+              requisitions.get(0).getCreatedDate().plusDays(2)));
       assertTrue(
-              receivedRequisition.getCreatedDate().isAfter(
-                      requisitions.get(0).getCreatedDate().minusDays(1)));
+          receivedRequisition.getCreatedDate().isAfter(
+              requisitions.get(0).getCreatedDate().minusDays(1)));
       assertEquals(
           receivedRequisition.getEmergency(),
           requisitions.get(0).getEmergency()
@@ -124,25 +124,25 @@ public class RequisitionRepositoryIntegrationTest
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-            requisitions.get(0).getFacilityId(),
-            requisitions.get(0).getProgramId(),
-            null, null, null, null, null, null);
+        requisitions.get(0).getFacilityId(),
+        requisitions.get(0).getProgramId(),
+        null, null, null, null, null, null);
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       assertEquals(
-              receivedRequisition.getProgramId(),
-              requisitions.get(0).getProgramId());
+          receivedRequisition.getProgramId(),
+          requisitions.get(0).getProgramId());
       assertEquals(
-              receivedRequisition.getFacilityId(),
-              requisitions.get(0).getFacilityId());
+          receivedRequisition.getFacilityId(),
+          requisitions.get(0).getFacilityId());
     }
   }
 
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-            null, null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null);
 
     assertEquals(5, receivedRequisitions.size());
   }
@@ -150,7 +150,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchEmergencyRequsitions() throws Exception {
     List<Requisition> emergency = repository.searchRequisitions(
-        null,null,null,null,null,null,null, true
+        null, null, null, null, null, null, null, true
     );
 
     assertEquals(2, emergency.size());
@@ -160,7 +160,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchStandardRequisitions() throws Exception {
     List<Requisition> standard = repository.searchRequisitions(
-        null,null,null,null,null,null,null, false
+        null, null, null, null, null, null, null, false
     );
 
     assertEquals(3, standard.size());
@@ -214,7 +214,7 @@ public class RequisitionRepositoryIntegrationTest
     ftap.setProduct(programProduct);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-            UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap), null);
 
     requisition = repository.save(requisition);

@@ -1,5 +1,7 @@
 package org.openlmis.utils;
 
+import static java.util.stream.Collectors.toList;
+
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -8,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Component
 public class RequisitionExportHelper {

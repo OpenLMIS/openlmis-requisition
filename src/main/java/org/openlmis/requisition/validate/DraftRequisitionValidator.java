@@ -39,7 +39,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   }
 
   private void validateInvariantsDidntChange(Errors errors, Requisition requisition,
-                                   Requisition savedRequisition) {
+                                             Requisition savedRequisition) {
     rejectIfValueChanged(errors, requisition.getFacilityId(),
         savedRequisition.getFacilityId(), Requisition.FACILITY_ID);
     rejectIfValueChanged(errors, requisition.getProgramId(),
@@ -97,7 +97,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   }
 
   private void rejectIfValueChanged(Errors errors, Object value,
-                                        Object savedValue, String field) {
+                                    Object savedValue, String field) {
     if (savedValue != null && !savedValue.equals(value)) {
       errors.rejectValue(field, field + IS_INVARIANT);
     }

@@ -1,5 +1,8 @@
 package org.openlmis.utils;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,9 +12,6 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PaginationHelperTest {

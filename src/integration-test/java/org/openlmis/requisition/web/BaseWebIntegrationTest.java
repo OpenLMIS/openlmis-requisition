@@ -20,11 +20,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.UUID;
-
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
+
+import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
@@ -172,7 +172,7 @@ public abstract class BaseWebIntegrationTest {
       + " \"id\":\"4c6b05c2-894b-11e6-ae22-56b6b6499611\","
       + " \"name\":\"Period Name\","
       + " \"description\":\"Period Description\","
-      +  "\"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE + ","
+      + "\"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE + ","
       + " \"startDate\":\"2016-03-01\","
       + " \"endDate\":\"2017-03-01\""
       + " }";
@@ -272,16 +272,16 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks the call to retrieve programs supervised by the user
     wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/programs.*"))
-            .willReturn(aResponse()
-                    .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .withBody(MOCK_FIND_USER_SUPERVISED_PROGRAMS)));
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_FIND_USER_SUPERVISED_PROGRAMS)));
 
     // This mocks the call to retrieve fulfillment facilities of the user
     wireMockRule.stubFor(
         get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/fulfillmentFacilities.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody("[" + MOCK_FIND_FACILITY_RESULT + "]")));
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("[" + MOCK_FIND_FACILITY_RESULT + "]")));
 
     // This mocks for find one program
     wireMockRule.stubFor(get(urlMatching("/api/programs/" + UUID_REGEX + ".*"))
@@ -375,16 +375,16 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks for checking if a user has a right
     wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .withBody(MOCK_HAS_RIGHT))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_HAS_RIGHT))
     );
 
     // This mocks searching for right by name
     wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_RIGHTS + "search.*"))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .withBody(MOCK_RIGHT_SEARCH))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_RIGHT_SEARCH))
     );
   }
 

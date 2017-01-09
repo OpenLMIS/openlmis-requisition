@@ -1,10 +1,11 @@
 package org.openlmis.requisition.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter

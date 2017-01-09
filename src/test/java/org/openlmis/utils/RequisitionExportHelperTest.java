@@ -137,7 +137,7 @@ public class RequisitionExportHelperTest {
     );
 
     requisition.setRequisitionLineItems(new ArrayList<>(
-            singletonList(requisitionLineItem)));
+        singletonList(requisitionLineItem)));
     orderableProductDto = new OrderableProductDto();
     orderableProductDto.setId(UUID.randomUUID());
     orderableProductDto.setPackSize(PACK_SIZE);

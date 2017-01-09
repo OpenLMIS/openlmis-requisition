@@ -43,15 +43,16 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
       parameters.put("name", name);
     }
 
-    return findAll("search",parameters);
+    return findAll("search", parameters);
   }
 
   /**
    * Retrieves supply lines from reference data service by program and supervisory node.
-   * @param programId UUID of the program
+   *
+   * @param programId         UUID of the program
    * @param supervisoryNodeId UUID of the supervisory node
    * @return A list of supply lines matching search criteria
-   * */
+   */
   public Collection<FacilityDto> searchSupplyingDepots(UUID programId, UUID supervisoryNodeId) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("programId", programId);

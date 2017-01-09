@@ -19,8 +19,8 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 
@@ -272,7 +272,7 @@ public class PeriodServiceTest {
   @Test(expected = RequisitionInitializationException.class)
   public void shouldThrowExceptionIfScheduleDoesNotExist()
       throws RequisitionException {
-    when(periodReferenceDataService.searchByProgramAndFacility(programId,facilityId))
+    when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Lists.newArrayList(period1));
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(null);
@@ -289,7 +289,7 @@ public class PeriodServiceTest {
     period1.setProcessingSchedule(processingScheduleDto);
     period1.setId(UUID.randomUUID());
 
-    when(periodReferenceDataService.searchByProgramAndFacility(programId,facilityId))
+    when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Lists.newArrayList(period1));
 
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
@@ -312,29 +312,29 @@ public class PeriodServiceTest {
 
   @Test(expected = InvalidRequisitionStatusException.class)
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus()
-          throws RequisitionException {
+      throws RequisitionException {
 
     Requisition requisition = getRequisition(INITIATED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
-            .thenReturn(requisition);
+        .thenReturn(requisition);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
 
   @Test(expected = InvalidRequisitionStatusException.class)
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus()
-          throws RequisitionException {
+      throws RequisitionException {
 
     Requisition requisition = getRequisition(SUBMITTED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
-            .thenReturn(requisition);
+        .thenReturn(requisition);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
 
   @Test
   public void shouldSucceedWhenPreviousReqHasAuthorizedStatus()
-          throws RequisitionException {
+      throws RequisitionException {
 
     Requisition requisition = getRequisition(AUTHORIZED);
     setMockForFindPeriod(requisition);
@@ -345,7 +345,7 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldSucceedWhenPreviousReqHasApprovedStatus()
-          throws RequisitionException {
+      throws RequisitionException {
 
     Requisition requisition = getRequisition(APPROVED);
     setMockForFindPeriod(requisition);
@@ -356,7 +356,7 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldSucceedWhenPreviousReqHasSkippedStatus()
-          throws RequisitionException {
+      throws RequisitionException {
 
     Requisition requisition = getRequisition(SKIPPED);
     setMockForFindPeriod(requisition);
@@ -373,15 +373,15 @@ public class PeriodServiceTest {
 
   private void setMockForFindPeriod(Requisition requisition) {
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
-            .thenReturn(requisition);
+        .thenReturn(requisition);
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-            .thenReturn(Collections.singletonList(period1));
+        .thenReturn(Collections.singletonList(period1));
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     UUID id = UUID.randomUUID();
     processingScheduleDto.setId(id);
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-            .thenReturn(Collections.singletonList(processingScheduleDto));
+        .thenReturn(Collections.singletonList(processingScheduleDto));
     when(period1.getProcessingSchedule().getId()).thenReturn(id);
   }
 

@@ -47,8 +47,8 @@ public class RequisitionDtoBuilder {
    * Create a new instance of RequisitionDto based on data from {@link Requisition}.
    *
    * @param requisition instance used to create {@link RequisitionDto} (can be {@code null})
-   * @return new instance of {@link RequisitionDto}.
-   *         {@code null} if passed argument is {@code null}.
+   * @return new instance of {@link RequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
    */
   public RequisitionDto build(Requisition requisition) {
     if (null == requisition) {

@@ -22,6 +22,7 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
    * Handles the {@link DataIntegrityViolationException} which signals a violation of some sort
    * of a db constraint like unique. Returns error 409 (CONFLICT) and a JSON representation of the
    * error as the body.
+   *
    * @param ex the exception that caused the issue
    * @return the error response
    */
@@ -41,6 +42,7 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
 
   /**
    * Handles Message exceptions and returns status 400 Bad Request.
+   *
    * @param ex the ValidationMessageException to handle
    * @return the error response for the user
    */

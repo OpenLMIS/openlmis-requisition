@@ -41,8 +41,9 @@ public class JasperReportsViewService {
    * Create Jasper Report View.
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
    * Set 'Jasper' exporter parameters, data source, web application context, url to file.
+   *
    * @param template template that will be used to create a view
-   * @param request it is used to take web application context
+   * @param request  it is used to take web application context
    * @return created jasper view.
    * @throws JasperReportViewException if there will be any problem with creating the view.
    */

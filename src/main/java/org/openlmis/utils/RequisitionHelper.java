@@ -12,7 +12,7 @@ public class RequisitionHelper {
    * Check if all required fields fot template are not filled.
    */
   public static boolean areFieldsNotFilled(RequisitionTemplate template,
-                                     List<RequisitionLineItem> requisitionLineItems) {
+                                           List<RequisitionLineItem> requisitionLineItems) {
     if (null == requisitionLineItems) {
       return false;
     }

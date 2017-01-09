@@ -2,10 +2,10 @@ package org.openlmis.requisition.web;
 
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.Template;
-import org.openlmis.requisition.repository.TemplateRepository;
-import org.openlmis.requisition.exception.ReportingException;
-import org.openlmis.requisition.service.TemplateService;
 import org.openlmis.requisition.dto.TemplateDto;
+import org.openlmis.requisition.exception.ReportingException;
+import org.openlmis.requisition.repository.TemplateRepository;
+import org.openlmis.requisition.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,8 +65,8 @@ public class TemplateController extends BaseController {
   /**
    * Allows updating templates.
    *
-   * @param templateDto   A template bound to the request body
-   * @param templateId UUID of template which we want to update
+   * @param templateDto A template bound to the request body
+   * @param templateId  UUID of template which we want to update
    * @return ResponseEntity containing the updated template
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
@@ -113,7 +113,7 @@ public class TemplateController extends BaseController {
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<TemplateDto> deleteTemplate(@PathVariable("id")
-                                              UUID templateId) {
+                                                        UUID templateId) {
     Template template =
         templateRepository.findOne(templateId);
     if (template == null) {

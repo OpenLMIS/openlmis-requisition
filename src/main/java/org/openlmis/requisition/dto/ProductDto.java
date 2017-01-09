@@ -1,8 +1,9 @@
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.Money;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.requisition.domain.Money;
 
 import java.util.UUID;
 

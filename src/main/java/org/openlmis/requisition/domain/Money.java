@@ -5,10 +5,12 @@ import static java.math.BigDecimal.ROUND_HALF_UP;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.openlmis.utils.MoneyDeserializer;
 import org.openlmis.utils.MoneySerializer;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -63,6 +65,7 @@ public class Money extends Number {
   /**
    * Multiplication, multiplies the value represented by this money object
    * by the provided value.
+   *
    * @param multiplyBy the value to multiply by
    * @return a new Money object representing the result of the multiplication
    */

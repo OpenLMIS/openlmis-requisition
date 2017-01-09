@@ -16,6 +16,7 @@ public class OrderLineItemDto {
 
   /**
    * Static factory method for constructing new OrderLineItem based on RequisitionLineItem.
+   *
    * @param lineItem RequisitionLineItem to create instance from.
    */
   public static OrderLineItemDto newOrderLineItem(RequisitionLineItem lineItem) {

@@ -15,11 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @Ignore

@@ -2,9 +2,10 @@ package org.openlmis.utils;
 
 import org.openlmis.requisition.dto.RequisitionDto;
 
-import java.util.Comparator;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
+import java.util.Comparator;
 
 @NoArgsConstructor
 @AllArgsConstructor

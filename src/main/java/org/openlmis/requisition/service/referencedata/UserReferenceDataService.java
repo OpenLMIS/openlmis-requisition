@@ -57,7 +57,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    * @param program  program to check (for supervision rights, can be {@code null})
    * @param facility facility to check (for supervision rights, can be {@code null})
    * @return an instance of {@link BooleanResultDto} with true or false depending on if user has the
-   *         right.
+   *     right.
    */
   public BooleanResultDto hasRight(UUID user, UUID right, UUID program, UUID facility,
                                    UUID warehouse) {

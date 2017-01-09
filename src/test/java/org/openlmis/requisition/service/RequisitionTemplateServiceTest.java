@@ -38,11 +38,11 @@ public class RequisitionTemplateServiceTest {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
     when(requisitionTemplateRepository
-            .getTemplateForProgram(program.getId()))
-            .thenReturn(requisitionTemplate);
+        .getTemplateForProgram(program.getId()))
+        .thenReturn(requisitionTemplate);
 
     RequisitionTemplate template =
-            requisitionTemplateService.getTemplateForProgram(program.getId());
+        requisitionTemplateService.getTemplateForProgram(program.getId());
 
     assertNotNull(template);
     assertEquals(requisitionTemplate, template);

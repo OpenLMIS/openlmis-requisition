@@ -1,10 +1,10 @@
 package org.openlmis.utils;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
-
 import java.sql.Date;
 import java.time.LocalDate;
+
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 @Converter
 public class LocalDatePersistenceConverter implements AttributeConverter<LocalDate, Date> {

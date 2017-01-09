@@ -5,17 +5,17 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,5 +1,7 @@
 package org.openlmis.utils;
 
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,16 +10,14 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.UUID;
-
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FacilitySupportsProgramHelperTest {

@@ -28,7 +28,8 @@ public class ScheduleReferenceDataService extends BaseReferenceDataService<Proce
 
   /**
    * Retrieves schedule from reference data service by program and facility.
-   * @param programId UUID of the program
+   *
+   * @param programId  UUID of the program
    * @param facilityId UUID of the facility
    * @return schedule matching search criteria
    */

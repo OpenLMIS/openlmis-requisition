@@ -12,7 +12,7 @@ public class PaginationHelper {
    * Get items from given page of list.
    */
   public List<RequisitionDto> pageCollection(List<RequisitionDto> requisitions,
-                                              int pageNumber, int pageSize) {
+                                             int pageNumber, int pageSize) {
     int firstPageRecordListIndex = (pageNumber - 1) * pageSize;
     int lastPlusOnePageRecordListIndex = (pageNumber * pageSize);
 

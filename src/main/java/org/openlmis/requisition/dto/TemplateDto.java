@@ -3,17 +3,17 @@ package org.openlmis.requisition.dto;
 import org.openlmis.requisition.domain.Template;
 import org.openlmis.requisition.domain.TemplateParameter;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -51,6 +51,7 @@ public class TemplateDto implements Template.Importer, Template.Exporter {
 
   /**
    * Create new list of TemplateDto based on given list of {@link Template}
+   *
    * @param templates list of {@link Template}
    * @return new list of TemplateDto.
    */
@@ -63,6 +64,7 @@ public class TemplateDto implements Template.Importer, Template.Exporter {
 
   /**
    * Create new instance of TemplateDto based on given {@link Template}
+   *
    * @param template instance of Template
    * @return new instance of TemplateDto.
    */

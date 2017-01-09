@@ -4,6 +4,11 @@ package org.openlmis.requisition.domain;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +23,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "templates")

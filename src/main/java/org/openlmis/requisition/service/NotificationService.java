@@ -29,7 +29,7 @@ public class NotificationService extends BaseCommunicationService {
   /**
    * Send an email notification.
    *
-   * @param user receiver of the notification
+   * @param user    receiver of the notification
    * @param subject subject of the email
    * @param content content of the email
    * @return true if success, false if failed.

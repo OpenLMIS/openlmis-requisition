@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 public class HttpContextHelper {
   /**
    * Static method returning current HTTP Request.
+   *
    * @return HttpServletRequest
    */
 

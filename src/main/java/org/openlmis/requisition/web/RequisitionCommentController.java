@@ -38,7 +38,7 @@ public class RequisitionCommentController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<?> insertComment(
       @RequestBody CommentDto comment, @PathVariable("id") UUID id)
-          throws RequisitionNotFoundException {
+      throws RequisitionNotFoundException {
     Requisition requisition = requisitionRepository.findOne(comment.getRequisitionId());
     Comment updatedComment = CommentBuilder.newComment(comment, requisition);
 
@@ -46,12 +46,13 @@ public class RequisitionCommentController extends BaseController {
     return new ResponseEntity<>(commentService.exportToDtos(comments), HttpStatus.OK);
   }
 
-  /**s
+  /**
+   * s
    * Get all comments for specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
   public ResponseEntity<?> getCommentsForRequisition(
-          @PathVariable("id") UUID id) throws RequisitionNotFoundException {
+      @PathVariable("id") UUID id) throws RequisitionNotFoundException {
     List<Comment> comments = commentService.findCommentsForRequisition(id);
     return new ResponseEntity<>(commentService.exportToDtos(comments), HttpStatus.OK);
   }
@@ -97,7 +98,7 @@ public class RequisitionCommentController extends BaseController {
   @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId)
-          throws CommentNotFoundException {
+      throws CommentNotFoundException {
     Comment comment = commentService.findComment(commentId);
     if (comment == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);

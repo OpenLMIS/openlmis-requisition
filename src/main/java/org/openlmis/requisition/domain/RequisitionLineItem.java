@@ -1,15 +1,17 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

@@ -330,7 +330,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param productId UUID of orderable product
    * @return first RequisitionLineItem that have productId property equals to the given productId
-   *         argument; otherwise null;
+   *     argument; otherwise null;
    */
   public RequisitionLineItem findLineByProductId(UUID productId) {
     if (null == requisitionLineItems) {

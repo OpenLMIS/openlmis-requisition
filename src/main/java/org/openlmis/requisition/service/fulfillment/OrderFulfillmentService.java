@@ -30,6 +30,7 @@ public class OrderFulfillmentService extends BaseCommunicationService {
 
   /**
    * Creates a new instance of order
+   *
    * @param order instance that contain data required to save order
    * @return true if success, false if failed.
    */

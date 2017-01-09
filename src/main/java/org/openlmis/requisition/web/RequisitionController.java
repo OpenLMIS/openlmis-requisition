@@ -1,5 +1,8 @@
 package org.openlmis.requisition.web;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -56,7 +59,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,8 +69,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -351,7 +352,7 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   public ResponseEntity<RequisitionDto> skipRequisition(@PathVariable("id") UUID requisitionId)
-          throws RequisitionException {
+      throws RequisitionException {
     Requisition requisition = requisitionService.skip(requisitionId);
     return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
   }
@@ -361,7 +362,7 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id)
-          throws RequisitionException {
+      throws RequisitionException {
     Requisition rejectedRequisition = requisitionService.reject(id);
     return new ResponseEntity<>(requisitionDtoBuilder.build(rejectedRequisition), HttpStatus.OK);
   }
@@ -428,8 +429,8 @@ public class RequisitionController extends BaseController {
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
     List<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
-                null, null, null, null, null, null,
-                new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null);
+        null, null, null, null, null, null,
+        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null);
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -491,8 +492,8 @@ public class RequisitionController extends BaseController {
    * Get approved requisitions matching all of provided parameters.
    *
    * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName"
-   *                    or "all".
+   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
+   *                    "all".
    * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
    * @param descending  Descending direction for sort.
    * @param pageNumber  Page number to return.
@@ -558,7 +559,7 @@ public class RequisitionController extends BaseController {
    *
    * @param id The UUID of the requisition to print
    * @return ResponseEntity with the "#200 OK" HTTP response status and PDF file on success, or
-   *         ResponseEntity containing the error description status.
+   *     ResponseEntity containing the error description status.
    */
   @RequestMapping(value = "/requisitions/{id}/print", method = RequestMethod.GET)
   @ResponseBody

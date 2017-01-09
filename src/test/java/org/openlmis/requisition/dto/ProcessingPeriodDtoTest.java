@@ -1,10 +1,10 @@
 package org.openlmis.requisition.dto;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import java.time.LocalDate;
-
-import static org.junit.Assert.assertTrue;
 
 public class ProcessingPeriodDtoTest {
 

@@ -3,11 +3,11 @@ package org.openlmis.requisition.dto;
 
 import org.openlmis.requisition.domain.TemplateParameter;
 
-import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -25,6 +25,7 @@ public class TemplateParameterDto implements TemplateParameter.Importer,
 
   /**
    * Create new instance of TemplateParameterDto based on given {@link TemplateParameter}
+   *
    * @param templateParameter instance of Template
    * @return new instance of TemplateDto.
    */

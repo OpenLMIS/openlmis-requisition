@@ -102,7 +102,7 @@ public class RequisitionService {
    *
    * @param programId         UUID of Program.
    * @param facilityId        UUID of Facility.
-   * @param initiatorId        UUID of the user that initiates the requisition.
+   * @param initiatorId       UUID of the user that initiates the requisition.
    * @param emergency         Emergency status.
    * @param suggestedPeriodId Period for requisition.
    * @return Initiated requisition.
@@ -278,8 +278,8 @@ public class RequisitionService {
   /**
    * Releases the list of given requisitions as order.
    *
-   * @param convertToOrderDtos list of Requisitions with their supplyingDepots
-   *                           to be released as order
+   * @param convertToOrderDtos list of Requisitions with their supplyingDepots to be released as
+   *                           order
    * @return list of released requisitions
    */
   public List<Requisition> releaseRequisitionsAsOrder(
@@ -335,8 +335,8 @@ public class RequisitionService {
    * Get approved requisitions matching all of provided parameters.
    *
    * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName"
-   *                    or "all".
+   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
+   *                    "all".
    * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
    * @param descending  Descending direction for sort.
    * @param pageNumber  Page number to return.
@@ -373,7 +373,7 @@ public class RequisitionService {
       throws RequisitionException {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
 
-    for (Requisition requisition: releasedRequisitions) {
+    for (Requisition requisition : releasedRequisitions) {
       OrderDto order = OrderDto.newOrder(requisition, user);
       if (orderFulfillmentService.create(order)) {
         requisitionRepository.save(requisition);
@@ -423,19 +423,19 @@ public class RequisitionService {
   private Requisition findPreviousRequisition(Requisition currentRequisition) {
     // ... we try to find previous period and requisition ...
     ProcessingPeriodDto previousPeriod = periodService.findPreviousPeriod(
-            currentRequisition.getProcessingPeriodId()
+        currentRequisition.getProcessingPeriodId()
     );
     return null != previousPeriod
-            ? findPreviousRequisition(currentRequisition, previousPeriod)
-            : null;
+        ? findPreviousRequisition(currentRequisition, previousPeriod)
+        : null;
 
   }
 
   private Requisition findPreviousRequisition(Requisition currentRequisition,
                                               ProcessingPeriodDto previousPeriod) {
     List<Requisition> list = searchRequisitions(
-            currentRequisition.getFacilityId(), currentRequisition.getProgramId(),
-            null, null, previousPeriod.getId(), null, null, null
+        currentRequisition.getFacilityId(), currentRequisition.getProgramId(),
+        null, null, previousPeriod.getId(), null, null, null
     );
 
     return null == list ? null : (list.isEmpty() ? null : list.get(0));

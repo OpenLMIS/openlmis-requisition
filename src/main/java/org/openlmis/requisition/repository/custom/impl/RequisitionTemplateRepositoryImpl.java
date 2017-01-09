@@ -20,6 +20,7 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
 
   /**
    * Method returns Requisition templates with matched parameters.
+   *
    * @param program Program of searched requisition template.
    * @return RequisitionTemplate with matched parameters.
    */
@@ -33,9 +34,9 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
     Predicate predicate = builder.conjunction();
 
     predicate = builder.and(
-            predicate,
-            builder.equal(
-                    root.get("programId"), program));
+        predicate,
+        builder.equal(
+            root.get("programId"), program));
 
     query.where(predicate);
     query.orderBy(builder.desc(root.get("createdDate")));

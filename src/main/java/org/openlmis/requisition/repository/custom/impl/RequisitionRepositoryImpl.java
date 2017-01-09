@@ -109,7 +109,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterBy     Field used to filter: "programName","facilityCode","facilityName" or "all".
+   * @param filterBy     Field used to filter: "programName","facilityCode","facilityName" or
+   *                     "all".
    * @param desiredUuids Desired UUID list.
    * @return List of requisitions.
    */

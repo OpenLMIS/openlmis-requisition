@@ -1,5 +1,10 @@
 package org.openlmis.requisition.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -8,11 +13,6 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "template_parameters")
@@ -58,6 +58,7 @@ public class TemplateParameter extends BaseEntity {
 
   /**
    * Create new instance of TemplateParameter based on given {@link TemplateParameter.Importer}
+   *
    * @param importer instance of {@link TemplateParameter.Importer}
    * @return instance of TemplateParameter.
    */

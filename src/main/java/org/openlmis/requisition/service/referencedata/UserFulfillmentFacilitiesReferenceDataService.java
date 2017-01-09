@@ -16,6 +16,7 @@ public class UserFulfillmentFacilitiesReferenceDataService extends FacilityRefer
 
   /**
    * Retrieves all the facilities that the given user has fulfillment rights for.
+   *
    * @param userUuid the UUID of the user
    * @return a collection of facilities the user has fulfillment rights for
    */

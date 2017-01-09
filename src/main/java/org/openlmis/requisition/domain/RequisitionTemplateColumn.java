@@ -1,12 +1,13 @@
 package org.openlmis.requisition.domain;
 
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +46,7 @@ public class RequisitionTemplateColumn {
   private SourceType source;
 
   @ManyToOne(
-      cascade = { CascadeType.REFRESH},
+      cascade = {CascadeType.REFRESH},
       fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnId", nullable = false)
   @Getter
@@ -53,7 +54,7 @@ public class RequisitionTemplateColumn {
   private AvailableRequisitionColumn columnDefinition;
 
   @ManyToOne(
-      cascade = { CascadeType.REFRESH},
+      cascade = {CascadeType.REFRESH},
       fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnOptionId")
   @Getter

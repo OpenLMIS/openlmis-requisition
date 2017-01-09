@@ -1,5 +1,10 @@
 package org.openlmis.utils;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -11,11 +16,6 @@ import org.openlmis.requisition.web.RequisitionDtoBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConvertHelperTest {

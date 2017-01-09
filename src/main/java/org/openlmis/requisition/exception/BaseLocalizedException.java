@@ -35,7 +35,7 @@ public class BaseLocalizedException extends Exception {
   }
 
   public Message asMessage() {
-    return new Message(messageKey, (Object[])params);
+    return new Message(messageKey, (Object[]) params);
   }
 
   /**

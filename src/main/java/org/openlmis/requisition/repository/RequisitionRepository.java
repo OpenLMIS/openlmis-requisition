@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RequisitionRepository extends
-        PagingAndSortingRepository<Requisition, UUID>,
-        RequisitionRepositoryCustom {
+    PagingAndSortingRepository<Requisition, UUID>,
+    RequisitionRepositoryCustom {
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
 }

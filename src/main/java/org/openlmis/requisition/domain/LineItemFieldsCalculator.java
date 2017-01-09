@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
+
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import java.math.BigDecimal;
@@ -7,11 +9,10 @@ import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Optional;
 
-import static org.apache.commons.lang.BooleanUtils.isTrue;
-
 public final class LineItemFieldsCalculator {
 
-  private LineItemFieldsCalculator() {}
+  private LineItemFieldsCalculator() {
+  }
 
   /**
    * Calculates beginningBalance (A) value of current requsition line item based on previous one

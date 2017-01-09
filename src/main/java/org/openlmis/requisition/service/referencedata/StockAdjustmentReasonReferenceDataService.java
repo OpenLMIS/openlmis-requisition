@@ -29,6 +29,7 @@ public class StockAdjustmentReasonReferenceDataService
 
   /**
    * Retrieves all the stock adjustment reasons for a given program id.
+   *
    * @param programId the id of the program
    * @return a collection of stock adjustment reasons the user has fulfillment rights for
    */

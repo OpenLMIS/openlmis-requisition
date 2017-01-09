@@ -1,11 +1,12 @@
 package org.openlmis.settings.service;
 
-import lombok.NoArgsConstructor;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import lombok.NoArgsConstructor;
 
 @Service
 @NoArgsConstructor
@@ -16,6 +17,7 @@ public class ConfigurationSettingService {
 
   /**
    * Return cofiguration setting with given key.
+   *
    * @param key String value of key.
    * @return Configuration setting containing given key.
    * @throws ConfigurationSettingException Exception saying that setting was not found.

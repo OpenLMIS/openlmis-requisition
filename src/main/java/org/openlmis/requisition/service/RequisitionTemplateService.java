@@ -24,6 +24,7 @@ public class RequisitionTemplateService {
 
   /**
    * Method returns Requisition templates with matched parameters.
+   *
    * @param program Program of searched requisition template.
    * @return RequisitionTemplate with matched parameters.
    */
@@ -34,6 +35,7 @@ public class RequisitionTemplateService {
   /**
    * Method saves given requisition template. When an update occurs,
    * and the template is already referred by a requisition, a new template is created.
+   *
    * @param template Template to be saved.
    * @return Saved template.
    */

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -18,6 +17,8 @@ import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.util.Arrays;
 import java.util.HashMap;

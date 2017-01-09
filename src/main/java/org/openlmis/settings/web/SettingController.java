@@ -20,10 +20,11 @@ public class SettingController extends BaseController {
 
   /**
    * Returns setting with given key.
+   *
    * @param key Key of setting to be returned.
    * @return Configuration setting with given key.
    */
-  @RequestMapping(value = "/settings/{key}",  method = RequestMethod.GET)
+  @RequestMapping(value = "/settings/{key}", method = RequestMethod.GET)
   public ResponseEntity<?> getByKey(@PathVariable(value = "key") String key) {
     try {
       ConfigurationSetting setting = configurationSettingService.getByKey(key);

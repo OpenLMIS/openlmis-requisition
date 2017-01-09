@@ -42,8 +42,10 @@ public abstract class AbstractErrorHandling {
 
   /**
    * Logs an error message and returns an error response.
+   *
    * @param message the error message
-   * @param ex the exception to log. Message from the exception is used as the error description.
+   * @param ex      the exception to log. Message from the exception is used as the error
+   *                description.
    * @return the error response that should be sent to the client
    */
   protected ErrorResponse logErrorAndRespond(String message, Exception ex) {

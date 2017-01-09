@@ -7,9 +7,9 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
-import org.openlmis.requisition.web.MissingPermissionException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.web.MissingPermissionException;
 import org.openlmis.utils.AuthenticationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,8 +51,8 @@ public class PermissionService {
    * Permissions needed to perform update action depend on the requisition status.
    *
    * @param requisitionId UUID of requisition.
-   * @throws MissingPermissionException   if the current user has not a permission.
-   * @throws IllegalStateException        if requisition has incorrect status.
+   * @throws MissingPermissionException if the current user has not a permission.
+   * @throws IllegalStateException      if requisition has incorrect status.
    */
   public void canUpdateRequisition(UUID requisitionId) throws MissingPermissionException {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -75,7 +75,7 @@ public class PermissionService {
   /**
    * Checks if current user has permission to submit a requisition.
    *
-   * @throws MissingPermissionException   if the current user has not a permission.
+   * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canSubmitRequisition(UUID requisitionId) throws MissingPermissionException {
     hasPermission(REQUISITION_CREATE, requisitionId);
@@ -84,7 +84,7 @@ public class PermissionService {
   /**
    * Checks if current user has permission to approve a requisition.
    *
-   * @throws MissingPermissionException   if the current user has not a permission.
+   * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canApproveRequisition(UUID requisitionId) throws MissingPermissionException {
     hasPermission(REQUISITION_APPROVE, requisitionId);
@@ -93,7 +93,7 @@ public class PermissionService {
   /**
    * Checks if current user has permission to authorize a requisition.
    *
-   * @throws MissingPermissionException   if the current user has not a permission.
+   * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canAuthorizeRequisition(UUID requisitionId) throws MissingPermissionException {
     hasPermission(REQUISITION_AUTHORIZE, requisitionId);
@@ -102,7 +102,7 @@ public class PermissionService {
   /**
    * Checks if current user has permission to delete a requisition.
    *
-   * @throws MissingPermissionException   if the current user has not a permission.
+   * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canDeleteRequisition(UUID requisitionId) throws MissingPermissionException {
     hasPermission(REQUISITION_DELETE, requisitionId);
@@ -111,7 +111,7 @@ public class PermissionService {
   /**
    * Checks if current user has permission to view a requisition.
    *
-   * @throws MissingPermissionException   if the current user has not a permission.
+   * @throws MissingPermissionException if the current user has not a permission.
    */
   public void canViewRequisition(UUID requisitionId) throws MissingPermissionException {
     hasPermission(REQUISITION_VIEW, requisitionId);
@@ -119,6 +119,7 @@ public class PermissionService {
 
   /**
    * Chacks if current user has permission to convert requisition to order.
+   *
    * @param list of ConvertToOrderDtos containing chosen requisitionId and supplyingDepotId.
    * @throws MissingPermissionException if the current user has not a permission.
    */

@@ -6,6 +6,6 @@ import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryC
 import java.util.UUID;
 
 public interface RequisitionTemplateRepository extends
-        ReferenceDataRepository<RequisitionTemplate, UUID>,
-        RequisitionTemplateRepositoryCustom {
+    ReferenceDataRepository<RequisitionTemplate, UUID>,
+    RequisitionTemplateRepositoryCustom {
 }

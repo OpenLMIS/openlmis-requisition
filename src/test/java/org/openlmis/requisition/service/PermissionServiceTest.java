@@ -86,7 +86,7 @@ public class PermissionServiceTest {
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private ConvertToOrderDto convertToOrderDto =  new ConvertToOrderDto();
+  private ConvertToOrderDto convertToOrderDto = new ConvertToOrderDto();
   private List<ConvertToOrderDto> convertToOrderDtos = new ArrayList<>();
 
   @Before
