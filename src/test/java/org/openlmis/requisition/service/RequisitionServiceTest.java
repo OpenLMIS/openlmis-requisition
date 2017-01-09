@@ -3,7 +3,6 @@ package org.openlmis.requisition.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -49,7 +48,6 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -60,7 +58,6 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
-import org.springframework.context.MessageSource;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -117,25 +114,19 @@ public class RequisitionServiceTest {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
-
-  @Mock
   private SupplyLineReferenceDataService supplyLineService;
 
   @Mock
   private OrderFulfillmentService orderFulfillmentService;
 
   @Mock
-  private NotificationService notificationService;
+  private RequisitionStatusNotifier requisitionStatusNotifier;
 
   @Mock
   private ConvertHelper convertHelper;
 
   @Mock
   private PaginationHelper paginationHelper;
-
-  @Mock
-  private MessageSource messageSource;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -290,7 +281,7 @@ public class RequisitionServiceTest {
     );
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
-    assertEquals(userId, initiatedRequisition.getInitiatorId());
+    assertEquals(userId, initiatedRequisition.getCreatorId());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
   }
 
@@ -500,7 +491,7 @@ public class RequisitionServiceTest {
 
     requisitionService.convertToOrder(list, user);
 
-    verify(notificationService).notify(refEq(user), anyString(), anyString());
+    verify(requisitionStatusNotifier).notifyConvertToOrder(refEq(user), any(Requisition.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
@@ -620,9 +611,5 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchByProcessingPeriodAndType(any(), any()))
         .thenReturn(new ArrayList<>());
-
-    when(periodReferenceDataService
-        .findOne(any()))
-        .thenReturn(processingPeriodDto);
   }
 }

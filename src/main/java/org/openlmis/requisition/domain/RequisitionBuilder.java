@@ -61,7 +61,7 @@ public final class RequisitionBuilder {
         importer.getStatus(), importer.getEmergency());
     requisition.setId(importer.getId());
     requisition.setCreatedDate(importer.getCreatedDate());
-    requisition.setInitiatorId(importer.getInitiatorId());
+    requisition.setCreatorId(importer.getCreatorId());
 
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());

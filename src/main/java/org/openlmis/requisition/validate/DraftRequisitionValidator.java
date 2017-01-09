@@ -48,8 +48,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         savedRequisition.getProcessingPeriodId(), Requisition.PROCESSING_PERIOD_ID);
     rejectIfValueChanged(errors, requisition.getEmergency(),
         savedRequisition.getEmergency(), Requisition.EMERGENCY);
-    rejectIfValueChanged(errors, requisition.getInitiatorId(),
-        savedRequisition.getInitiatorId(), Requisition.INITIATOR_ID);
+    rejectIfValueChanged(errors, requisition.getCreatorId(),
+        savedRequisition.getCreatorId(), Requisition.CREATOR_ID);
   }
 
   private void validateRequisitionLineItem(

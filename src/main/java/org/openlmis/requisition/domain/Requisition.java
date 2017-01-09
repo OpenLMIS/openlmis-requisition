@@ -57,7 +57,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
-  public static final String INITIATOR_ID = "initiatorId";
+  public static final String CREATOR_ID = "creatorId";
   public static final String EMERGENCY = "emergency";
 
   private static final String UUID = "pg-uuid";
@@ -134,7 +134,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  private UUID initiatorId;
+  private UUID creatorId;
 
   /**
    * Constructor.
@@ -438,7 +438,7 @@ public class Requisition extends BaseTimestampedEntity {
   public void export(Requisition.Exporter exporter) {
     exporter.setId(id);
     exporter.setCreatedDate(getCreatedDate());
-    exporter.setInitiatorId(initiatorId);
+    exporter.setCreatorId(creatorId);
     exporter.setStatus(status);
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
@@ -450,7 +450,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setCreatedDate(LocalDateTime createdDate);
 
-    void setInitiatorId(UUID initiatorId);
+    void setCreatorId(UUID creatorId);
 
     void setStatus(RequisitionStatus status);
 
@@ -468,7 +468,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     LocalDateTime getCreatedDate();
 
-    UUID getInitiatorId();
+    UUID getCreatorId();
 
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
 

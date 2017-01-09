@@ -51,7 +51,7 @@ public class DraftRequisitionValidatorTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID processingPeriodId = UUID.randomUUID();
-  private UUID initiatorId = UUID.randomUUID();
+  private UUID creatorId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -75,9 +75,9 @@ public class DraftRequisitionValidatorTest {
     updatedRequisition.setProcessingPeriodId(UUID.randomUUID());
     Assert.assertNotEquals(requisition.getProcessingPeriodId(),
         updatedRequisition.getProcessingPeriodId());
-    updatedRequisition.setInitiatorId(UUID.randomUUID());
-    Assert.assertNotEquals(requisition.getInitiatorId(),
-        updatedRequisition.getInitiatorId());
+    updatedRequisition.setCreatorId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getCreatorId(),
+        updatedRequisition.getCreatorId());
     updatedRequisition.setEmergency(false);
 
     draftRequisitionValidator.validate(updatedRequisition, errors);
@@ -90,7 +90,7 @@ public class DraftRequisitionValidatorTest {
         contains(RequisitionValidator.IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.EMERGENCY),
         contains(RequisitionValidator.IS_INVARIANT));
-    verify(errors).rejectValue(eq(Requisition.INITIATOR_ID),
+    verify(errors).rejectValue(eq(Requisition.CREATOR_ID),
         contains(RequisitionValidator.IS_INVARIANT));
   }
 
@@ -161,7 +161,7 @@ public class DraftRequisitionValidatorTest {
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setId(requisitionId);
     requisition.setTemplate(requisitionTemplate);
-    requisition.setInitiatorId(initiatorId);
+    requisition.setCreatorId(creatorId);
     return requisition;
   }
 

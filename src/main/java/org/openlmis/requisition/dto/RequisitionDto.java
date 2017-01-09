@@ -30,7 +30,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private UUID initiatorId;
+  private UUID creatorId;
 
   @Setter
   private List<RequisitionLineItemDto> requisitionLineItems;
