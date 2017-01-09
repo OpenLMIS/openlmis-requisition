@@ -17,6 +17,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -129,7 +130,7 @@ public class RequisitionBuilderTest {
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
-  @Test
+  @Test(expected = ValidationMessageException.class)
   public void shouldNotSetSkippedIfNotOnTemplate() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(false);
@@ -137,10 +138,7 @@ public class RequisitionBuilderTest {
     lineItemDto.setSkipped(true);
     prepareForTestSkip(lineItemDto);
 
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
-
-    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+    RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
   }
 
   @Test

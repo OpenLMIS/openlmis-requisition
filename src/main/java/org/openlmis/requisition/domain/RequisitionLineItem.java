@@ -6,6 +6,8 @@ import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -345,8 +347,7 @@ public class RequisitionLineItem extends BaseEntity {
     if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
       skipped = true;
     } else {
-      LOGGER.warn("Skipping is only possible if the skip column is enabled"
-          + " in the requisition template");
+      throw new ValidationMessageException(new Message("requisition.error.can-not-skip"));
     }
   }
 
