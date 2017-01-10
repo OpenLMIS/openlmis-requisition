@@ -7,6 +7,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -26,8 +27,8 @@ import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDa
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.exception.ConfigurationSettingException;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.PaginationHelper;
@@ -78,10 +79,10 @@ public class RequisitionService {
   private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Autowired
-  private UserSupervisedProgramsReferenceDataService userSupervisedProgramsReferenceDataService;
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
+  private UserRoleAssignmentsReferenceDataService roleAssignmentsReferenceDataService;
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
@@ -247,12 +248,15 @@ public class RequisitionService {
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    Collection<ProgramDto> supervisedPrograms =
-        userSupervisedProgramsReferenceDataService.getProgramsSupervisedByUser(userId);
-
-    if (supervisedPrograms != null) {
-      for (ProgramDto program : supervisedPrograms) {
-        requisitionsForApproval.addAll(getAuthorizedRequisitions(program));
+    Collection<DetailedRoleAssignmentDto> roleAssignments =
+        roleAssignmentsReferenceDataService.getRoleAssignments(userId);
+    if (roleAssignments != null) {
+      for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
+        if (roleAssignment.getSupervisoryNodeId() != null
+            && roleAssignment.getProgramId() != null) {
+          requisitionsForApproval.addAll(getAuthorizedRequisitions(
+              roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
+        }
       }
     }
     return requisitionsForApproval;
@@ -261,10 +265,11 @@ public class RequisitionService {
   /**
    * Get authorized requisitions for specified program.
    */
-  public List<Requisition> getAuthorizedRequisitions(ProgramDto program) {
+  public List<Requisition> getAuthorizedRequisitions(UUID programId,
+                                                     UUID supervisoryNodeId) {
     List<Requisition> requisitions = new ArrayList<>();
-    List<Requisition> reqList = searchRequisitions(null, program.getId(),
-        null, null, null, null, null, null);
+    List<Requisition> reqList = searchRequisitions(null, programId,
+            null, null, null, supervisoryNodeId, null, null);
     if (reqList != null) {
       for (Requisition req : reqList) {
         if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
