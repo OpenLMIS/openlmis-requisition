@@ -174,7 +174,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"description\":\"Period Description\","
       + "\"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE + ","
       + " \"startDate\":\"2016-03-01\","
-      + " \"endDate\":\"2017-03-01\""
+      + " \"endDate\":\"2017-03-01\","
+      + " \"durationInMonths\":1"
       + " }";
 
   private static final String MOCK_FIND_PROGRAM_PRODUCT = "{"

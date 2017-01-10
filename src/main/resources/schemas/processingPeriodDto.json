@@ -28,6 +28,10 @@
     "endDate": {
       "type": "string",
       "title": "endDate"
+    },
+    "durationInMonths": {
+      "type": "integer",
+      "title": "durationInMonths"
     }
   },
   "required": [

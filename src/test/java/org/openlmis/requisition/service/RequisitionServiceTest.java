@@ -61,7 +61,6 @@ import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -310,8 +309,7 @@ public class RequisitionServiceTest {
         .thenReturn(requisitionTemplate);
 
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
-    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
-    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
+    periodDto.setDurationInMonths(1);
     when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
         .thenReturn(periodDto);
 
