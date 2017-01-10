@@ -53,9 +53,9 @@ import java.util.stream.Collectors;
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
   private static final String CAN_NOT_SKIP_PERIOD_STATUS =
-      "requisition.error.canNotSkipPeriod.status";
+      "requisition.error.can-not-skip-period.status";
   private static final String CAN_NOT_SKIP_PERIOD_PROGRAM =
-      "requisition.error.canNotSkipPeriod.program";
+      "requisition.error.can-not-skip-period.program";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
 
