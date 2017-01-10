@@ -54,6 +54,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
@@ -427,7 +428,8 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldConvertRequisitionsToOrders() throws RequisitionException {
+  public void shouldConvertRequisitionsToOrders() throws RequisitionException,
+      ConfigurationSettingException {
     // given
     int requisitionsCount = 5;
 
@@ -453,7 +455,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = RequisitionConversionException.class)
   public void shouldNotConvertRequisitionToOrderWhenCreatingOrderInFulfillmentServiceFailed()
-      throws RequisitionException {
+      throws RequisitionException, ConfigurationSettingException {
     // given
     int requisitionsCount = 5;
 

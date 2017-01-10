@@ -26,6 +26,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
@@ -361,7 +362,7 @@ public class RequisitionService {
    */
   @Transactional
   public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
-      throws RequisitionException {
+      throws RequisitionException, ConfigurationSettingException {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
 
     for (Requisition requisition : releasedRequisitions) {

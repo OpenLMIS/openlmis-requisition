@@ -1,0 +1,14 @@
+[
+  {
+    "key": "requisition.email.noreply",
+    "value": "noreply@openlmis.org"
+  },
+  {
+    "key": "requisition.email.convert-to-order.subject",
+    "value": "Requisition converted to order"
+  },
+  {
+    "key": "requisition.email.convert-to-order.content",
+    "value": "Dear {0} {1},\n\nThe Requisition for Program {2} and Period {3} has been converted to Order."
+  }
+]

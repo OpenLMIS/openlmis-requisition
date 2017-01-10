@@ -5,14 +5,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.powermock.api.mockito.PowerMockito;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -34,6 +37,9 @@ public class NotificationServiceTest {
   private static final String MAIL_CONTENT = "content";
   private static final String BASE_URL = "http://localhost";
 
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
+
   @Spy
   @InjectMocks
   private NotificationService notificationService;
@@ -45,6 +51,8 @@ public class NotificationServiceTest {
     ReflectionTestUtils.setField(notificationService, "notificationUrl", BASE_URL);
     ReflectionTestUtils.setField(notificationService, "authorizationUrl", BASE_URL);
     ReflectionTestUtils.setField(notificationService, "restTemplate", restTemplate);
+    ReflectionTestUtils.setField(notificationService, "configurationSettingService",
+        configurationSettingService);
     Map<String, String> body = Collections.singletonMap(NotificationService.ACCESS_TOKEN,
         ACCESS_TOKEN);
     ResponseEntity<Object> response = new ResponseEntity<>(body, HttpStatus.OK);
@@ -58,6 +66,8 @@ public class NotificationServiceTest {
     when(user.getEmail()).thenReturn(USER_EMAIL);
 
     notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT);
+
+    verify(configurationSettingService).getStringValue(REQUISITION_EMAIL_NOREPLY);
 
     verify(restTemplate).postForObject(eq(
         new URI(BASE_URL + "/api/notification?access_token=" + ACCESS_TOKEN)),

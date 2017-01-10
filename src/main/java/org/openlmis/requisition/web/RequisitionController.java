@@ -33,6 +33,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ErrorResponse;
@@ -540,7 +541,7 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/convertToOrder", method = RequestMethod.POST)
   public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list)
-      throws MissingPermissionException {
+      throws MissingPermissionException, ConfigurationSettingException {
     try {
       UserDto user = authenticationHelper.getCurrentUser();
       permissionService.canConvertToOrder(list);

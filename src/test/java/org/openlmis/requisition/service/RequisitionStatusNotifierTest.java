@@ -13,24 +13,23 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.springframework.context.MessageSource;
-
-import java.util.Locale;
+import org.openlmis.settings.service.ConfigurationSettingService;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionStatusNotifierTest {
 
   @Mock
-  private MessageSource messageSource;
+  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -53,18 +52,18 @@ public class RequisitionStatusNotifierTest {
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
     UserDto user = mock(UserDto.class);
-    String mailSubject = "requisition.mail.convert-to-order.subject";
-    String mailContent = "requisition.mail.convert-to-order.content";
 
-    when(messageSource.getMessage(contains(mailSubject), any(Object[].class),
-        any(Locale.class))).thenReturn(mailSubject);
+    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
+        .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
 
-    when(messageSource.getMessage(contains(mailContent), any(Object[].class),
-        any(Locale.class))).thenReturn(mailContent);
+    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
+        .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
 
     requisitionStatusNotifier.notifyConvertToOrder(user, requisition);
 
-    verify(notificationService).notify(refEq(user), eq(mailSubject), eq(mailContent));
+    verify(notificationService).notify(refEq(user),
+        eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),
+        eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT));
   }
 
   private void mockServices() {

@@ -11,6 +11,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
@@ -1131,6 +1134,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
+
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, "subject"));
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, "content"));
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
 
     wireMockRule.stubFor(
         post(urlMatching("/api/orders.*"))
