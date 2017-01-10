@@ -50,8 +50,22 @@ public class RequisitionHelper {
   /**
    * Calculate Average Consumption for each line item.
    */
-  public static void calculateAverageConsumption(List<Requisition> previousRequisitions,
-                                                 List<RequisitionLineItem> requisitionLineItems) {
+  public static void calculateAverageConsumption(List<RequisitionLineItem> requisitionLineItems) {
+
+    forEachLineItem(requisitionLineItems, line -> {
+      List<Integer> previousAdjustedConsumptions = line.getPreviousAdjustedConsumptions();
+      previousAdjustedConsumptions.add(line.getAdjustedConsumption());
+      int averageConsumption =
+          LineItemFieldsCalculator.calculateAverageConsumption(previousAdjustedConsumptions);
+      line.setAverageConsumption(averageConsumption);
+    });
+  }
+
+  /**
+   * Set previous adjusted consumptions to requisitionLineItems.
+   */
+  public static void setPreviousAdjustedConsumptions(List<RequisitionLineItem> requisitionLineItems,
+                                                     List<Requisition> previousRequisitions) {
     List<RequisitionLineItem> previousRequisitionLineItems =
         getRequisitionLineItems(previousRequisitions);
 
@@ -61,10 +75,7 @@ public class RequisitionHelper {
               getRequisitionLineItems(previousRequisitionLineItems, line.getOrderableProductId());
           List<Integer> adjustedConsumptions =
               mapToAdjustedConsumptions(previousRequisitionLineItemsWithOrderableProductId);
-          adjustedConsumptions.add(line.getAdjustedConsumption());
-          int averageConsumption =
-              LineItemFieldsCalculator.calculateAverageConsumption(toArray(adjustedConsumptions));
-          line.setAverageConsumption(averageConsumption);
+          line.setPreviousAdjustedConsumptions(adjustedConsumptions);
         });
   }
 
@@ -90,12 +101,6 @@ public class RequisitionHelper {
         .map(Requisition::getRequisitionLineItems)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
-  }
-
-  private static int[] toArray(List<Integer> adjustedConsumptions) {
-    return adjustedConsumptions.stream()
-        .mapToInt(Integer::intValue)
-        .toArray();
   }
 
   private static void forEachLineItem(List<RequisitionLineItem> requisitionLineItems,

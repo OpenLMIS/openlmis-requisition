@@ -4,6 +4,7 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSU
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.utils.RequisitionHelper.setPreviousAdjustedConsumptions;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -275,7 +276,7 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Submits given requisition.
    */
-  public void submit(List<Requisition> previousRequisitions) throws RequisitionException {
+  public void submit() throws RequisitionException {
     if (!INITIATED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition must have status 'INITIATED' to be submitted.");
@@ -292,7 +293,7 @@ public class Requisition extends BaseTimestampedEntity {
       ));
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      RequisitionHelper.calculateAverageConsumption(previousRequisitions, requisitionLineItems);
+      RequisitionHelper.calculateAverageConsumption(requisitionLineItems);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -305,7 +306,7 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Authorize given Requisition.
    */
-  public void authorize(List<Requisition> previousRequisitions)
+  public void authorize()
       throws RequisitionException {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
@@ -317,7 +318,7 @@ public class Requisition extends BaseTimestampedEntity {
       ));
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      RequisitionHelper.calculateAverageConsumption(previousRequisitions, requisitionLineItems);
+      RequisitionHelper.calculateAverageConsumption(requisitionLineItems);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -330,14 +331,14 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Approves given requisition.
    */
-  public void approve(List<Requisition> previousRequisitions) {
+  public void approve() {
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
       ));
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      RequisitionHelper.calculateAverageConsumption(previousRequisitions, requisitionLineItems);
+      RequisitionHelper.calculateAverageConsumption(requisitionLineItems);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -370,16 +371,18 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Initiates the state of a requisition by creating line items based on products
    *
-   * @param template            the requisition template for this requisition to use (based on
-   *                            program)
-   * @param products            the full supply products for this requisitions facility to build
-   *                            requisition lines for
-   * @param previousRequisition the previous requisition for this program/facility. Used for field
-   *                            calculations.Pass null if there are no previous requisitions.
+   * @param template             the requisition template for this requisition to use (based on
+   *                             program)
+   * @param products             the full supply products for this requisitions facility to build
+   *                             requisition lines for
+   * @param previousRequisitions the previous requisitions for this program/facility. Used for field
+   *                             calculations and set previous adjusted consumptions. Pass empty
+   *                             list if there are no previous requisitions.
    */
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
-                       Requisition previousRequisition) {
+                       List<Requisition> previousRequisitions
+  ) {
     this.template = template;
 
     setRequisitionLineItems(
@@ -401,11 +404,12 @@ public class Requisition extends BaseTimestampedEntity {
     // Secondly, if we display the column ...
     // ... and if the previous requisition exists ...
     if (template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)
-        && null != previousRequisition) {
+        && !previousRequisitions.isEmpty()
+        && null != previousRequisitions.get(0)) {
       // .. for each line from the current requisition ...
       getNonSkippedRequisitionLineItems().forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
-        RequisitionLineItem previousLine = previousRequisition
+        RequisitionLineItem previousLine = previousRequisitions.get(0)
             .findLineByProductId(currentLine.getOrderableProductId());
 
         // ... and in the end we use it to calculate beginning balance in a new line.
@@ -413,6 +417,7 @@ public class Requisition extends BaseTimestampedEntity {
             LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
       });
     }
+    setPreviousAdjustedConsumptions(requisitionLineItems, previousRequisitions);
   }
 
   @JsonIgnore

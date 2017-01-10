@@ -222,7 +222,7 @@ public class RequisitionController extends BaseController {
 
     calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
-    requisition.submit(getRecentRequisitions(requisition));
+    requisition.submit();
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -398,7 +398,7 @@ public class RequisitionController extends BaseController {
 
       calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
-      requisition.approve(getRecentRequisitions(requisition));
+      requisition.approve();
 
       requisitionRepository.save(requisition);
 
@@ -475,7 +475,7 @@ public class RequisitionController extends BaseController {
 
     calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
-    requisition.authorize(getRecentRequisitions(requisition));
+    requisition.authorize();
     nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
@@ -575,26 +575,6 @@ public class RequisitionController extends BaseController {
         jasperReportsViewService.getJasperReportsView(template, request);
 
     return new ModelAndView(jasperView, params);
-  }
-
-  private List<Requisition> getRecentRequisitions(Requisition requisition) {
-    int amount = 10;
-    List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
-
-    List<Requisition> recentRequisitions = new ArrayList<>();
-    for (ProcessingPeriodDto period: previousPeriods) {
-      List<Requisition> requisitionsByPeriod = getRequisitionsByPeriod(requisition, period);
-      Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
-      recentRequisitions.add(requisitionByPeriod);
-    }
-    return recentRequisitions;
-  }
-
-  private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
-                                                    ProcessingPeriodDto period) {
-    return requisitionService.searchRequisitions(requisition.getFacilityId(),
-        requisition.getProgramId(), period.getId(), requisition.getSupervisoryNodeId());
   }
 
   private void calculatePacksToShipForEachLineItem(Requisition requisition,

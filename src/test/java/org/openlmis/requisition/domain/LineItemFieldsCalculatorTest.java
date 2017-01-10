@@ -11,6 +11,8 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -175,21 +177,23 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateAverageConsumption() throws Exception {
     int averageConsumption =
-        LineItemFieldsCalculator.calculateAverageConsumption(new int[]{5, 10, 15});
+        LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(5, 10, 15));
 
-    assertEquals(15, averageConsumption);
+    assertEquals(10, averageConsumption);
   }
 
   @Test
   public void shouldReturnAdjustedConsumptionWhenNoPreviousPeriods() throws Exception {
-    int averageConsumption = LineItemFieldsCalculator.calculateAverageConsumption(new int[]{5});
+    int averageConsumption = LineItemFieldsCalculator
+        .calculateAverageConsumption(Collections.singletonList(5));
 
     assertEquals(5, averageConsumption);
   }
 
   @Test
   public void shouldCalculateAverageConsumptionWhenOnePreviousPeriod() throws Exception {
-    int averageConsumption = LineItemFieldsCalculator.calculateAverageConsumption(new int[]{5, 10});
+    int averageConsumption =
+        LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(5, 10));
 
     assertEquals(8, averageConsumption);
   }

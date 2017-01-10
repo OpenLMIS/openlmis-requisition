@@ -246,20 +246,6 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldReturnPreviousPeriod() throws Exception {
-    doReturn(period5)
-        .when(periodReferenceDataService)
-        .findOne(period5.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, period5))
-        .when(periodReferenceDataService)
-        .search(any(), any());
-
-    ProcessingPeriodDto previous = periodService.findPreviousPeriod(period5.getId());
-
-    assertThat(previous.getId(), is(equalTo(period4.getId())));
-  }
-
-  @Test
   public void shouldReturnPreviousPeriods() throws Exception {
     doReturn(period5)
         .when(periodReferenceDataService)

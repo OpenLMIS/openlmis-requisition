@@ -8,8 +8,6 @@ import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,6 +21,7 @@ import java.util.UUID;
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -36,8 +35,6 @@ import javax.persistence.Transient;
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
   public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
@@ -156,6 +153,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private Integer adjustedConsumption;
 
+  @ElementCollection
+  @Setter
+  @Getter
+  private List<Integer> previousAdjustedConsumptions;
+
   @Column
   @Setter
   @Getter
@@ -182,6 +184,7 @@ public class RequisitionLineItem extends BaseEntity {
     stockAdjustments = new ArrayList<>();
     this.numberOfNewPatientsAdded = 0;
     this.skipped = false;
+    previousAdjustedConsumptions = new ArrayList<>();
   }
 
   /**

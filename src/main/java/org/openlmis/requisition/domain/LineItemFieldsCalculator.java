@@ -7,8 +7,8 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public final class LineItemFieldsCalculator {
@@ -156,7 +156,7 @@ public final class LineItemFieldsCalculator {
   /**
    * Calculates Average Consumption (N) value and returns it.
    * The formula is
-   * P = (N<sub>t0</sub> + N<sub>t-1</sub> + N<sub>t-2</sub> + N<sub>t-n</sub>) / (n -1).
+   * P = (N<sub>t0</sub> + N<sub>t-1</sub> + N<sub>t-2</sub> + N<sub>t-(n-1)</sub>) / (n).
    * N = Adjusted Consumption.
    * P = Average Consumption.
    * n = number of periods to be averaged.
@@ -165,19 +165,20 @@ public final class LineItemFieldsCalculator {
    * If one previous period, so t0 and t-1 formula is
    * P = Roundup( (N<sub>t0</sub> + N<sub>t-1</sub>) / 2).
    */
-  public static int calculateAverageConsumption(int[] adjustedConsumptions) {
-    int numberOfPeriods = adjustedConsumptions.length;
+  public static int calculateAverageConsumption(List<Integer> adjustedConsumptions) {
+    int numberOfPeriods = adjustedConsumptions.size();
     if (numberOfPeriods == 1) {
-      return adjustedConsumptions[0];
+      return adjustedConsumptions.get(0);
     }
 
     if (numberOfPeriods == 2) {
-      return (int) Math.ceil((adjustedConsumptions[0] + adjustedConsumptions[1]) / 2.0);
+      return (int) Math.ceil((adjustedConsumptions.get(0) + adjustedConsumptions.get(1)) / 2.0);
     }
 
-    int sum = IntStream.of(adjustedConsumptions).sum();
+    int sum = adjustedConsumptions.stream().reduce(0, Integer::sum);
 
-    return sum / (numberOfPeriods - 1);
+
+    return sum / numberOfPeriods;
   }
 
   private static BigDecimal divide(int totalDays, int nonStockoutDays) {

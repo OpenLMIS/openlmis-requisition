@@ -117,39 +117,6 @@ public class PeriodService {
   }
 
   /**
-   * Find previous period for the given period.
-   *
-   * @param periodId UUID of period
-   * @return previous period or {@code null} if not found.
-   */
-  public ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
-    // retrieve data from reference-data
-    ProcessingPeriodDto period = getPeriod(periodId);
-
-    if (null == period) {
-      return null;
-    }
-
-    Collection<ProcessingPeriodDto> collection = search(
-        period.getProcessingSchedule().getId(), period.getStartDate()
-    );
-
-    if (null == collection || collection.isEmpty()) {
-      return null;
-    }
-
-    // create a list...
-    List<ProcessingPeriodDto> list = new ArrayList<>(collection);
-    // ...remove the latest period from the list because it is not previous...
-    list.removeIf(p -> p.getId().equals(periodId));
-    // .. and sort elements by startDate property DESC.
-    list.sort((one, two) -> ObjectUtils.compare(two.getStartDate(), one.getStartDate()));
-
-    // The latest previous date should be first.
-    return list.isEmpty() ? null : list.get(0);
-  }
-
-  /**
    * Find recent periods for the given period.
    *
    * @param periodId UUID of period

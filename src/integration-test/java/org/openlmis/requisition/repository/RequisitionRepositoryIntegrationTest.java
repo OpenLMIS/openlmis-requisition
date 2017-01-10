@@ -216,7 +216,8 @@ public class RequisitionRepositoryIntegrationTest
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), RequisitionStatus.INITIATED, false);
-    requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap), null);
+    requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
+        Collections.emptyList());
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

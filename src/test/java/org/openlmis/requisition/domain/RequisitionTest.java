@@ -19,7 +19,6 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.AdditionalMatchers;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
@@ -73,7 +72,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() throws RequisitionException {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize();
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -82,7 +81,7 @@ public class RequisitionTest {
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus()
       throws RequisitionException {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize();
   }
 
   @Test
@@ -103,7 +102,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize();
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -256,7 +255,8 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), previousRequisition);
+    req.initiate(template, asList(product1, product2),
+        Collections.singletonList(previousRequisition));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -279,7 +279,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), null);
+    req.initiate(template, asList(product1, product2), Collections.emptyList());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -307,7 +307,8 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), previousRequisition);
+    req.initiate(template, asList(product1, product2),
+        Collections.singletonList(previousRequisition));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -354,7 +355,7 @@ public class RequisitionTest {
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit(Collections.emptyList());
+    requisition.submit();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -366,11 +367,17 @@ public class RequisitionTest {
   public void shouldCalculateAverageConsumptionWhenSubmitWithOnePreviousRequisition()
       throws RequisitionException {
     // given
-    Requisition previousRequisition =
-        prepareForTestAverageConsumptionAndgetRequisition(new int[]{5, ADJUSTED_CONSUMPTION});
+
+    List<Integer> adjustedConsumptions = new ArrayList<>();
+    adjustedConsumptions.add(5);
+    prepareForTestAverageConsumptionAndgetRequisition(adjustedConsumptions);
+    when(LineItemFieldsCalculator
+        .calculateAverageConsumption(Arrays.asList(5, ADJUSTED_CONSUMPTION)))
+        .thenReturn(AVERAGE_CONSUMPTION);
+
 
     //when
-    requisition.submit(Collections.singletonList(previousRequisition));
+    requisition.submit();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -381,16 +388,17 @@ public class RequisitionTest {
   public void shouldCalculateAverageConsumptionWhenSubmitWithManyPreviousRequisitions()
       throws RequisitionException {
     // given
-    Requisition previousRequisition =
-        prepareForTestAverageConsumptionAndgetRequisition(new int[]{5, 5, 5, ADJUSTED_CONSUMPTION});
-
-    List<Requisition> previousRequisitions = new ArrayList<>();
-    previousRequisitions.add(previousRequisition);
-    previousRequisitions.add(previousRequisition);
-    previousRequisitions.add(previousRequisition);
+    List<Integer> adjustedConsumptions = new ArrayList<>();
+    adjustedConsumptions.add(5);
+    adjustedConsumptions.add(5);
+    adjustedConsumptions.add(5);
+    prepareForTestAverageConsumptionAndgetRequisition(adjustedConsumptions);
+    when(LineItemFieldsCalculator
+        .calculateAverageConsumption(Arrays.asList(5, 5, 5, ADJUSTED_CONSUMPTION)))
+        .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(previousRequisitions);
+    requisition.submit();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -405,7 +413,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -421,7 +429,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(Collections.emptyList());
+    requisition.approve();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -439,39 +447,30 @@ public class RequisitionTest {
     ).thenReturn(ADJUSTED_CONSUMPTION);
     when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem))
         .thenReturn(TOTAL_COST);
-    when(LineItemFieldsCalculator.calculateAverageConsumption(new int[]{ADJUSTED_CONSUMPTION}))
+    when(LineItemFieldsCalculator
+        .calculateAverageConsumption(Collections.singletonList(ADJUSTED_CONSUMPTION)))
         .thenReturn(AVERAGE_CONSUMPTION);
 
     when(template.isColumnInTemplate(any())).thenReturn(true);
     requisition.setTemplate(template);
   }
 
-  private Requisition prepareForTestAverageConsumptionAndgetRequisition(
-      int[] adjustedConsumptions) {
+  private void prepareForTestAverageConsumptionAndgetRequisition(
+      List<Integer> adjustedConsumptions) {
     UUID orderableProductId = UUID.randomUUID();
     requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setOrderableProductId(orderableProductId);
+    requisitionLineItem.setPreviousAdjustedConsumptions(adjustedConsumptions);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
     mockStatic(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
     ).thenReturn(ADJUSTED_CONSUMPTION);
-    when(LineItemFieldsCalculator.calculateAverageConsumption(
-        AdditionalMatchers.aryEq(adjustedConsumptions)))
-        .thenReturn(AVERAGE_CONSUMPTION);
 
     when(template.isColumnInTemplate(RequisitionLineItem.ADJUSTED_CONSUMPTION)).thenReturn(true);
     when(template.isColumnInTemplate(RequisitionLineItem.AVERAGE_CONSUMPTION)).thenReturn(true);
     requisition.setTemplate(template);
-
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
-    previousRequisitionLineItem.setAdjustedConsumption(5);
-    previousRequisitionLineItem.setOrderableProductId(orderableProductId);
-    Requisition previousRequisition = new Requisition();
-    previousRequisition.setRequisitionLineItems(
-        Collections.singletonList(previousRequisitionLineItem));
-    return previousRequisition;
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,
