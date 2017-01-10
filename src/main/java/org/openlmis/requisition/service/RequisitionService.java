@@ -275,7 +275,7 @@ public class RequisitionService {
                                                      UUID supervisoryNodeId) {
     List<Requisition> requisitions = new ArrayList<>();
     List<Requisition> reqList = searchRequisitions(null, programId,
-            null, null, null, supervisoryNodeId, null, null);
+        null, null, null, supervisoryNodeId, null, null);
     if (reqList != null) {
       for (Requisition req : reqList) {
         if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
@@ -424,7 +424,7 @@ public class RequisitionService {
         periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
 
     List<Requisition> recentRequisitions = new ArrayList<>();
-    for (ProcessingPeriodDto period: previousPeriods) {
+    for (ProcessingPeriodDto period : previousPeriods) {
       List<Requisition> requisitionsByPeriod = getRequisitionsByPeriod(requisition, period);
       Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
       recentRequisitions.add(requisitionByPeriod);
@@ -437,5 +437,4 @@ public class RequisitionService {
     return searchRequisitions(requisition.getFacilityId(),
         requisition.getProgramId(), period.getId());
   }
-
 }
