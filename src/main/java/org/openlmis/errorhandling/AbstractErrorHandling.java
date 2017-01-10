@@ -4,7 +4,7 @@ import org.openlmis.requisition.exception.AuthenticationException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.web.AuthorizationException;
-import org.openlmis.utils.ErrorResponse;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

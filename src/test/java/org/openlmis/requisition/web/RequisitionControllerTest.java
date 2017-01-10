@@ -41,7 +41,7 @@ import org.openlmis.requisition.service.referencedata.OrderableProductReferenceD
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
-import org.openlmis.utils.ErrorResponse;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

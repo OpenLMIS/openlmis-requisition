@@ -36,7 +36,7 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.ErrorResponse;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.ReportUtils;

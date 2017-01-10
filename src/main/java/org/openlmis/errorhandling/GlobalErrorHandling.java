@@ -2,7 +2,7 @@ package org.openlmis.errorhandling;
 
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.ReferenceDataRetrievalException;
-import org.openlmis.utils.ErrorResponse;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.Message;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
