@@ -1,11 +1,22 @@
 [
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "skipped",
+    "name": "skipped",
+    "label": "Skip",
+    "indicator": "S",
+    "displayOrder": 1,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+  },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "productCode",
     "name": "orderableProduct.productCode",
     "label": "Product Code",
     "indicator": "O",
-    "displayOrder": 1,
+    "displayOrder": 2,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
@@ -16,7 +27,7 @@
     "name": "orderableProduct.name",
     "label": "Product",
     "indicator": "N",
-    "displayOrder": 2,
+    "displayOrder": 3,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
@@ -27,7 +38,7 @@
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
-    "displayOrder": 3,
+    "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -38,7 +49,7 @@
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
-    "displayOrder": 4,
+    "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -49,7 +60,7 @@
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
-    "displayOrder": 5,
+    "displayOrder": 6,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -60,7 +71,7 @@
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
-    "displayOrder": 6,
+    "displayOrder": 7,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -71,7 +82,7 @@
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
-    "displayOrder": 7,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
@@ -82,7 +93,7 @@
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
-    "displayOrder": 8,
+    "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
@@ -93,7 +104,7 @@
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
     "indicator": "W",
-    "displayOrder": 9,
+    "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
@@ -104,7 +115,7 @@
     "name": "approvedQuantity",
     "label": "Approved Quantity",
     "indicator": "K",
-    "displayOrder": 10,
+    "displayOrder": 11,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
@@ -115,7 +126,7 @@
     "name": "remarks",
     "label": "Remarks",
     "indicator": "L",
-    "displayOrder": 11,
+    "displayOrder": 12,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
@@ -126,7 +137,7 @@
     "name": "totalStockoutDays",
     "label": "Total Stockout Days",
     "indicator": "X",
-    "displayOrder": 12,
+    "displayOrder": 13,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
@@ -137,7 +148,7 @@
     "name": "total",
     "label": "Total",
     "indicator": "Y",
-    "displayOrder": 13,
+    "displayOrder": 14,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
@@ -148,7 +159,7 @@
     "name": "orderableProduct.dispensable.dispensingUnit",
     "label": "Unit/Unit of Issue",
     "indicator": "U",
-    "displayOrder": 14,
+    "displayOrder": 15,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "61e6d059-10ef-40c4-a6e3-fa7b9ad741ec"
@@ -159,7 +170,7 @@
     "name": "packsToShip",
     "label": "Packs To Ship",
     "indicator": "V",
-    "displayOrder": 15,
+    "displayOrder": 16,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
@@ -170,7 +181,7 @@
     "name": "pricePerPack",
     "label": "Price Per Pack",
     "indicator": "T",
-    "displayOrder": 16,
+    "displayOrder": 17,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
@@ -181,7 +192,7 @@
     "name": "numberOfNewPatientsAdded",
     "label": "Number Of New Patients Added",
     "indicator": "F",
-    "displayOrder": 17,
+    "displayOrder": 18,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
@@ -193,21 +204,10 @@
     "name": "totalCost",
     "label": "Total Cost",
     "indicator": "Q",
-    "displayOrder": 18,
+    "displayOrder": 19,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
-  },
-  {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
-    "key": "skipped",
-    "name": "skipped",
-    "label": "Skip",
-    "indicator": "S",
-    "displayOrder": 19,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
   },
   {
     "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
@@ -226,11 +226,22 @@
 
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "skipped",
+    "name": "skipped",
+    "label": "Skip",
+    "indicator": "S",
+    "displayOrder": 1,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+  },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "productCode",
     "name": "orderableProduct.productCode",
     "label": "Product Code",
     "indicator": "O",
-    "displayOrder": 1,
+    "displayOrder": 2,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
@@ -241,7 +252,7 @@
     "name": "orderableProduct.name",
     "label": "Product",
     "indicator": "N",
-    "displayOrder": 2,
+    "displayOrder": 3,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
@@ -252,7 +263,7 @@
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
-    "displayOrder": 3,
+    "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -263,7 +274,7 @@
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
-    "displayOrder": 4,
+    "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -274,7 +285,7 @@
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
-    "displayOrder": 5,
+    "displayOrder": 6,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -285,7 +296,7 @@
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
-    "displayOrder": 6,
+    "displayOrder": 7,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -296,7 +307,7 @@
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
-    "displayOrder": 7,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
@@ -307,7 +318,7 @@
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
-    "displayOrder": 8,
+    "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
@@ -318,7 +329,7 @@
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
     "indicator": "W",
-    "displayOrder": 9,
+    "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
@@ -329,7 +340,7 @@
     "name": "approvedQuantity",
     "label": "Approved Quantity",
     "indicator": "K",
-    "displayOrder": 10,
+    "displayOrder": 11,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
@@ -340,7 +351,7 @@
     "name": "remarks",
     "label": "Remarks",
     "indicator": "L",
-    "displayOrder": 11,
+    "displayOrder": 12,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
@@ -351,7 +362,7 @@
     "name": "totalStockoutDays",
     "label": "Total Stockout Days",
     "indicator": "X",
-    "displayOrder": 12,
+    "displayOrder": 13,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
@@ -362,7 +373,7 @@
     "name": "total",
     "label": "Total",
     "indicator": "Y",
-    "displayOrder": 13,
+    "displayOrder": 14,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
@@ -373,7 +384,7 @@
     "name": "packsToShip",
     "label": "Packs To Ship",
     "indicator": "V",
-    "displayOrder": 14,
+    "displayOrder": 15,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
@@ -384,7 +395,7 @@
     "name": "pricePerPack",
     "label": "Price Per Pack",
     "indicator": "T",
-    "displayOrder": 15,
+    "displayOrder": 16,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
@@ -395,7 +406,7 @@
     "name": "numberOfNewPatientsAdded",
     "label": "Number Of New Patients Added",
     "indicator": "F",
-    "displayOrder": 16,
+    "displayOrder": 17,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
@@ -407,21 +418,10 @@
     "name": "totalCost",
     "label": "Total Cost",
     "indicator": "Q",
-    "displayOrder": 17,
+    "displayOrder": 18,
     "isDisplayed": false,
     "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
-  },
-  {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
-    "key": "skipped",
-    "name": "skipped",
-    "label": "Skip",
-    "indicator": "S",
-    "displayOrder": 18,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
   },
   {
     "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
@@ -437,14 +437,24 @@
 
 
 
-
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "skipped",
+    "name": "skipped",
+    "label": "Skip",
+    "indicator": "S",
+    "displayOrder": 1,
+    "isDisplayed": true,
+    "source": 0,
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+  },
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productCode",
     "name": "orderableProduct.productCode",
     "label": "Product Code",
     "indicator": "O",
-    "displayOrder": 1,
+    "displayOrder": 2,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
@@ -455,7 +465,7 @@
     "name": "orderableProduct.name",
     "label": "Product",
     "indicator": "N",
-    "displayOrder": 2,
+    "displayOrder": 3,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
@@ -466,7 +476,7 @@
     "name": "beginningBalance",
     "label": "Beginning Balance",
     "indicator": "A",
-    "displayOrder": 3,
+    "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -477,7 +487,7 @@
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
     "indicator": "B",
-    "displayOrder": 4,
+    "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -488,7 +498,7 @@
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
     "indicator": "C",
-    "displayOrder": 5,
+    "displayOrder": 6,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -499,7 +509,7 @@
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
     "indicator": "D",
-    "displayOrder": 6,
+    "displayOrder": 7,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -510,7 +520,7 @@
     "name": "stockOnHand",
     "label": "Stock On Hand",
     "indicator": "E",
-    "displayOrder": 7,
+    "displayOrder": 8,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
@@ -521,7 +531,7 @@
     "name": "requestedQuantity",
     "label": "Requested Quantity",
     "indicator": "J",
-    "displayOrder": 8,
+    "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
@@ -532,7 +542,7 @@
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
     "indicator": "W",
-    "displayOrder": 9,
+    "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
@@ -543,7 +553,7 @@
     "name": "approvedQuantity",
     "label": "Approved Quantity",
     "indicator": "K",
-    "displayOrder": 10,
+    "displayOrder": 11,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
@@ -554,7 +564,7 @@
     "name": "remarks",
     "label": "Remarks",
     "indicator": "L",
-    "displayOrder": 11,
+    "displayOrder": 12,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
@@ -565,7 +575,7 @@
     "name": "totalStockoutDays",
     "label": "Total Stockout Days",
     "indicator": "X",
-    "displayOrder": 12,
+    "displayOrder": 13,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
@@ -576,7 +586,7 @@
     "name": "total",
     "label": "Total",
     "indicator": "Y",
-    "displayOrder": 13,
+    "displayOrder": 14,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
@@ -587,7 +597,7 @@
     "name": "packsToShip",
     "label": "Packs To Ship",
     "indicator": "V",
-    "displayOrder": 14,
+    "displayOrder": 15,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
@@ -598,7 +608,7 @@
     "name": "pricePerPack",
     "label": "Price Per Pack",
     "indicator": "T",
-    "displayOrder": 15,
+    "displayOrder": 16,
     "isDisplayed": true,
     "source": 2,
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
@@ -609,7 +619,7 @@
     "name": "numberOfNewPatientsAdded",
     "label": "Number Of New Patients Added",
     "indicator": "F",
-    "displayOrder": 16,
+    "displayOrder": 17,
     "isDisplayed": true,
     "source": 0,
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
@@ -621,21 +631,10 @@
     "name": "totalCost",
     "label": "Total Cost",
     "indicator": "Q",
-    "displayOrder": 17,
+    "displayOrder": 18,
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
-  },
-  {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
-    "key": "skipped",
-    "name": "skipped",
-    "label": "Skip",
-    "indicator": "S",
-    "displayOrder": 18,
-    "isDisplayed": true,
-    "source": 0,
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
   },
   {
     "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
