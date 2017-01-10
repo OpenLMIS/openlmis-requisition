@@ -370,11 +370,10 @@ public class RequisitionTest {
 
     List<Integer> adjustedConsumptions = new ArrayList<>();
     adjustedConsumptions.add(5);
-    prepareForTestAverageConsumptionAndgetRequisition(adjustedConsumptions);
+    prepareForTestAverageConsumption(adjustedConsumptions);
     when(LineItemFieldsCalculator
         .calculateAverageConsumption(Arrays.asList(5, ADJUSTED_CONSUMPTION)))
         .thenReturn(AVERAGE_CONSUMPTION);
-
 
     //when
     requisition.submit();
@@ -392,7 +391,7 @@ public class RequisitionTest {
     adjustedConsumptions.add(5);
     adjustedConsumptions.add(5);
     adjustedConsumptions.add(5);
-    prepareForTestAverageConsumptionAndgetRequisition(adjustedConsumptions);
+    prepareForTestAverageConsumption(adjustedConsumptions);
     when(LineItemFieldsCalculator
         .calculateAverageConsumption(Arrays.asList(5, 5, 5, ADJUSTED_CONSUMPTION)))
         .thenReturn(AVERAGE_CONSUMPTION);
@@ -455,7 +454,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
   }
 
-  private void prepareForTestAverageConsumptionAndgetRequisition(
+  private void prepareForTestAverageConsumption(
       List<Integer> adjustedConsumptions) {
     UUID orderableProductId = UUID.randomUUID();
     requisitionLineItem = new RequisitionLineItem();
