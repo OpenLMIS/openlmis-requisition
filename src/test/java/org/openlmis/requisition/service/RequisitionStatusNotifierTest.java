@@ -15,8 +15,11 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.springframework.context.MessageSource;
 
+import java.util.Locale;
+
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.contains;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -50,10 +53,18 @@ public class RequisitionStatusNotifierTest {
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
     UserDto user = mock(UserDto.class);
+    String mailSubject = "requisition.mail.convert-to-order.subject";
+    String mailContent = "requisition.mail.convert-to-order.content";
+
+    when(messageSource.getMessage(contains(mailSubject), any(Object[].class),
+        any(Locale.class))).thenReturn(mailSubject);
+
+    when(messageSource.getMessage(contains(mailContent), any(Object[].class),
+        any(Locale.class))).thenReturn(mailContent);
 
     requisitionStatusNotifier.notifyConvertToOrder(user, requisition);
 
-    verify(notificationService).notify(refEq(user), anyString(), anyString());
+    verify(notificationService).notify(refEq(user), eq(mailSubject), eq(mailContent));
   }
 
   private void mockServices() {
