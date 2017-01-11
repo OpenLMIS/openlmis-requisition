@@ -55,7 +55,7 @@ public class RequisitionHelper {
     forEachLineItem(requisitionLineItems, line -> {
       List<Integer> previousAdjustedConsumptions = line.getPreviousAdjustedConsumptions();
       previousAdjustedConsumptions.add(line.getAdjustedConsumption());
-      int averageConsumption =
+      Integer averageConsumption =
           LineItemFieldsCalculator.calculateAverageConsumption(previousAdjustedConsumptions);
       line.setAverageConsumption(averageConsumption);
     });

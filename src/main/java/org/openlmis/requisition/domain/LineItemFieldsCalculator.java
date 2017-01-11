@@ -165,7 +165,7 @@ public final class LineItemFieldsCalculator {
    * If one previous period, so t0 and t-1 formula is
    * P = Roundup( (N<sub>t0</sub> + N<sub>t-1</sub>) / 2).
    */
-  public static int calculateAverageConsumption(List<Integer> adjustedConsumptions) {
+  public static Integer calculateAverageConsumption(List<Integer> adjustedConsumptions) {
     int numberOfPeriods = adjustedConsumptions.size();
     if (numberOfPeriods == 1) {
       return adjustedConsumptions.get(0);
