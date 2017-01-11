@@ -1,6 +1,8 @@
 package org.openlmis.requisition.service.referencedata;
 
+import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.utils.DynamicParametrizedTypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -139,14 +141,19 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
     }
   }
 
-  <P> P get(Class<P> type, String resourceUrl, Map<String, Object> parameters) {
+  <P> ResultDto<P> getValue(String resourceUrl, Map<String, Object> parameters, Class<P> type) {
     String url = getReferenceDataUrl() + getUrl() + resourceUrl;
     Map<String, Object> params = new HashMap<>();
     params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
 
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<P> response = restTemplate.getForEntity(buildUri(url, params), type);
+    ResponseEntity<ResultDto<P>> response = restTemplate.exchange(
+        buildUri(url, params),
+        HttpMethod.GET,
+        null,
+        new DynamicParametrizedTypeReference<>(type)
+    );
 
     return response.getBody();
   }

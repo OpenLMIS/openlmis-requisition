@@ -1,8 +1,9 @@
 package org.openlmis.requisition.service;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.BooleanResultDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
@@ -150,11 +151,11 @@ public class PermissionService {
       throws MissingPermissionException {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
-    BooleanResultDto result = userReferenceDataService.hasRight(
+    ResultDto<Boolean> result = userReferenceDataService.hasRight(
         user.getId(), right.getId(), program, facility, warehouse
     );
 
-    if (null == result || !result.isResult()) {
+    if (null == result || BooleanUtils.isNotTrue(result.getResult())) {
       throw new MissingPermissionException(rightName);
     }
   }
