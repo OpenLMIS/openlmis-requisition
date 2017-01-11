@@ -126,10 +126,17 @@ public class RequisitionService {
 
     Collection<ApprovedProductDto> approvedProducts =
         approvedProductReferenceDataService.getApprovedProducts(
-            facility.getId(), program.getId(), true
-        );
+            facility.getId(), program.getId(), true);
+
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
-    List<Requisition> previousRequisitions = getRecentRequisitions(requisition, 9);
+
+    Integer numberOfPeriods = requisitionTemplate
+        .getColumnsMap()
+        .get(RequisitionLineItem.AVERAGE_CONSUMPTION)
+        .getSetting();
+
+    List<Requisition> previousRequisitions =
+        getRecentRequisitions(requisition, numberOfPeriods - 1);
 
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions);
 

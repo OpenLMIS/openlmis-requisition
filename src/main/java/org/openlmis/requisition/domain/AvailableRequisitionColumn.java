@@ -17,6 +17,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -41,6 +42,9 @@ public class AvailableRequisitionColumn extends BaseEntity {
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER)
   private Set<AvailableRequisitionColumnOption> options;
+
+  @OneToOne(mappedBy = "requisitionColumn", cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  private RequisitionColumnSetting setting;
 
   private String label;
 

@@ -343,11 +343,13 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalCost(totalCost);
     exporter.setSkipped(skipped);
     exporter.setAdjustedConsumption(adjustedConsumption);
+    exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
     exporter.setAverageConsumption(averageConsumption);
   }
 
-  public void clearStockAdjustments() {
+  public void clearStockAdjustmentsAndPreviousAdjustedConsumptions() {
     stockAdjustments.clear();
+    previousAdjustedConsumptions.clear();
   }
 
   /**
@@ -404,6 +406,8 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setAdjustedConsumption(Integer adjustedConsumption);
 
+    void setPreviousAdjustedConsumptions(List<Integer> previousAdjustedConsupmtions);
+
     void setAverageConsumption(Integer averageConsumption);
   }
 
@@ -447,6 +451,8 @@ public class RequisitionLineItem extends BaseEntity {
     Boolean getSkipped();
 
     Integer getAdjustedConsumption();
+
+    List<Integer> getPreviousAdjustedConsumptions();
 
     Integer getAverageConsumption();
   }

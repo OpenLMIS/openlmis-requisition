@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class RequisitionHelper {
 
   /**
-   * Check if all required fields fot template are not filled.
+   * Check if all required fields for template are not filled.
    */
   public static boolean areFieldsNotFilled(RequisitionTemplate template,
                                            List<RequisitionLineItem> requisitionLineItems) {

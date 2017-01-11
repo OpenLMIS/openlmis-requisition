@@ -11,6 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
@@ -23,6 +24,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.ColumnType;
 import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -197,6 +199,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalStockoutDays(0);
     requisitionLineItem.setTotal(0);
     requisitionLineItem.setNumberOfNewPatientsAdded(0);
+
     requisitionLineItem.setRequisition(requisition);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
@@ -641,6 +644,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.delete(requisition);
     requisitionRepository.delete(requisitionForSearch);
 
+    AvailableRequisitionColumn requisitionColumn = new AvailableRequisitionColumn();
+    requisitionColumn.setColumnType(ColumnType.NUMERIC);
+    availableRequisitionColumnRepository.save(requisitionColumn);
+
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+    column.setSetting(1);
+    column.setColumnDefinition(requisitionColumn);
+    template.setColumnsMap(Collections.singletonMap(AVERAGE_CONSUMPTION, column));
+    template.setProgramId(programDto.getId());
+    requisitionTemplateRepository.save(template);
+
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam(PROGRAM, programDto.getId())
@@ -653,6 +667,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    requisitionRepository.deleteAll();
+    requisitionTemplateRepository.delete(template);
+    availableRequisitionColumnRepository.delete(requisitionColumn);
   }
 
   @Test
@@ -722,6 +740,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           assertEquals(null, line.getTotalCost());
           assertEquals(null, line.getNumberOfNewPatientsAdded());
           assertEquals(null, line.getAdjustedConsumption());
+          assertEquals(null, line.getAverageConsumption());
+          assertEquals(0, line.getPreviousAdjustedConsumptions().size());
           assertEquals(0, line.getStockAdjustments().size());
         });
 
@@ -752,6 +772,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           assertNotNull(line.getTotalStockoutDays());
           assertNotNull(line.getPacksToShip());
           assertNotNull(line.getNumberOfNewPatientsAdded());
+          assertNotNull(line.getAdjustedConsumption());
+          assertNotNull(line.getAverageConsumption());
         });
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

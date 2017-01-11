@@ -61,6 +61,10 @@ public class RequisitionTemplateColumn {
   @Setter(AccessLevel.PACKAGE)
   private AvailableRequisitionColumnOption option;
 
+  @Getter
+  @Setter
+  private Integer setting;
+
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
     this.columnDefinition = columnDefinition;
   }
