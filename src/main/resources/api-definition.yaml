@@ -120,6 +120,12 @@ schemas:
           "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
       }
 
+  - requisitionDtoArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "#/schemas/requisitionDto" }
+      }
+
   - requisitionLineItem: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-03/schema",
@@ -697,7 +703,7 @@ resourceTypes:
                         X-XSS-Protection:
                       body:
                         application/json:
-                            schema: convertedRequisitionMap
+                            schema: requisitionDtoArray
                   "500":
                       headers:
                         X-Content-Type-Options:

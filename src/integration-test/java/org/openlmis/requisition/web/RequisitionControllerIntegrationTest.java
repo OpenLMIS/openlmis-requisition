@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Comment;
@@ -440,9 +439,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals("Second comment", commentList.get(1).getBody());
   }
 
-  @Ignore
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
+    mockFacility();
     mockRoleAssignments();
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setProgramId(programDto.getId());
@@ -1365,9 +1364,25 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("[{"
-                    + " \"programId\":\"" + programDto.getId() + ","
-                    + " \"supervisoryNodeId\":\"" + supervisoryNode.getId() + " }]"))
+                    + " \"programId\":\"86191d25-4846-4775-a968-12df732e6004\","
+                    + " \"supervisoryNodeId\":\"bb0c6821-df46-44d2-ba3f-48f613abe4c4\" }]"))
     );
+  }
+
+  private void mockFacility() {
+    wireMockRule.stubFor(get(urlMatching("/api/facilities/aaf12a5a-8b16-11e6-ae22-56b6b6499611.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("{"
+                + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+                + " \"name\":\"facilityName\",\n"
+                + " \"code\":\"facilityCode\",\n"
+                + " \"active\":true,\n"
+                + " \"enabled\":true,\n"
+                + " \"geographicZone\":\"bf2b810b-cdbf-48b2-b569-149b3cf42387\","
+                + " \"operator\":\"9456c3e9-c4a6-4a28-9e08-47ceb16a4121\","
+                + " \"type\":\"ac1d268b-ce10-455f-bf87-9c667da8f060\""
+                + "}")));
   }
 
   private void setProgramIdInRequisitionAndTemplate(UUID programId) {
