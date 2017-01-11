@@ -1,14 +1,14 @@
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.Comment;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import org.openlmis.requisition.domain.Comment;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,6 +37,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Setter
   private List<CommentDto> comments;
+  
+  @Getter
+  @Setter
+  private String draftStatusMessage;
 
   @Getter
   @Setter

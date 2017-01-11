@@ -93,6 +93,8 @@ public final class RequisitionBuilder {
         requisition.getComments().add(Comment.newComment(comment));
       }
     }
+    
+    requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
 
     return requisition;
   }

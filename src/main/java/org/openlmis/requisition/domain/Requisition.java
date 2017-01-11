@@ -10,6 +10,10 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -21,10 +25,6 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.utils.RequisitionHelper;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -80,6 +80,10 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private List<Comment> comments;
+  
+  @Getter
+  @Setter
+  private String draftStatusMessage;
 
   @ManyToOne
   @JoinColumn(name = "templateId", nullable = false)
@@ -173,7 +177,9 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
-
+    
+    this.draftStatusMessage = requisition.draftStatusMessage;
+    
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
   }
@@ -442,6 +448,7 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
+    exporter.setDraftStatusMessage(draftStatusMessage);
   }
 
   public interface Exporter {
@@ -460,6 +467,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setSupervisoryNode(UUID supervisoryNode);
 
     void setTemplate(UUID template);
+    
+    void setDraftStatusMessage(String draftStatusMessage);
   }
 
   public interface Importer {
@@ -472,7 +481,7 @@ public class Requisition extends BaseTimestampedEntity {
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
 
     List<Comment.Importer> getComments();
-
+    
     FacilityDto getFacility();
 
     ProgramDto getProgram();
@@ -488,5 +497,7 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getSupervisoryNode();
 
     UUID getTemplate();
+
+    String getDraftStatusMessage();
   }
 }
