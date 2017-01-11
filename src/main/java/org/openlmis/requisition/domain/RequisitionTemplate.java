@@ -222,7 +222,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param name name of requisition column.
    * @return {@link RequisitionTemplateColumn} if found column with the given name.
    */
-  private RequisitionTemplateColumn findColumn(String name) {
+  public RequisitionTemplateColumn findColumn(String name) {
     RequisitionTemplateColumn column = getRequisitionTemplateColumn(name);
     if (column == null) {
       throw new RequisitionTemplateColumnException("Column with name: " + name

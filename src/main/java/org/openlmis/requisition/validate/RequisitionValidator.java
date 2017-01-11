@@ -1,6 +1,18 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
+import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
+import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -52,32 +64,32 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       Errors errors, Requisition requisition, RequisitionLineItem item) {
     RequisitionTemplate template = requisition.getTemplate();
     rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
-        RequisitionLineItem.REQUESTED_QUANTITY);
+        REQUESTED_QUANTITY);
 
     rejectIfNullOrNegative(errors, template, item.getBeginningBalance(),
-        RequisitionLineItem.BEGINNING_BALANCE);
+        BEGINNING_BALANCE);
 
     rejectIfNullOrNegative(errors, template, item.getTotalReceivedQuantity(),
-        RequisitionLineItem.TOTAL_RECEIVED_QUANTITY);
+        TOTAL_RECEIVED_QUANTITY);
 
     rejectIfNullOrNegative(errors, template, item.getStockOnHand(),
-        RequisitionLineItem.STOCK_ON_HAND);
+        STOCK_ON_HAND);
 
     rejectIfNullOrNegative(errors, template, item.getTotalConsumedQuantity(),
-        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+        TOTAL_CONSUMED_QUANTITY);
 
     rejectIfNullOrNegative(errors, template, item.getTotalStockoutDays(),
-        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
+        TOTAL_STOCKOUT_DAYS);
 
-    rejectIfNullOrNegative(errors, template, item.getTotal(), RequisitionLineItem.TOTAL_COLUMN);
+    rejectIfNullOrNegative(errors, template, item.getTotal(), TOTAL_COLUMN);
 
     validateApprovedQuantity(errors, template, requisition, item);
 
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
-        RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION);
+        REQUESTED_QUANTITY_EXPLANATION);
 
     rejectIfLessThanZero(errors, template, item.getNumberOfNewPatientsAdded(),
-        RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED);
+        NUMBER_OF_NEW_PATIENTS_ADDED);
 
     validateCalculations(errors, template, item);
 
@@ -110,21 +122,30 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
       rejectIfNull(errors, template, item.getApprovedQuantity(),
-          RequisitionLineItem.APPROVED_QUANTITY);
+          APPROVED_QUANTITY);
       rejectIfLessThanZero(errors, template, item.getApprovedQuantity(),
-          RequisitionLineItem.APPROVED_QUANTITY);
+          APPROVED_QUANTITY);
     }
   }
 
   private void validateCalculations(Errors errors, RequisitionTemplate template,
                                     RequisitionLineItem item) {
     boolean templateValid = checkTemplate(errors, template, item.getStockOnHand(),
-        RequisitionLineItem.STOCK_ON_HAND) && checkTemplate(errors, template,
-        item.getTotalConsumedQuantity(), RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+        STOCK_ON_HAND) && checkTemplate(errors, template,
+        item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
 
     if (templateValid && !Objects.equals(item.getStockOnHand(), calculateStockOnHand(item))) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, RequisitionLineItem.STOCK_ON_HAND + " or "
-          + RequisitionLineItem.TOTAL_CONSUMED_QUANTITY + VALUE_IS_INCORRECTLY_CALCULATED);
+      errors.rejectValue(REQUISITION_LINE_ITEMS, STOCK_ON_HAND + " or "
+          + TOTAL_CONSUMED_QUANTITY + VALUE_IS_INCORRECTLY_CALCULATED);
+    }
+
+    if (checkTemplate(errors, template, item.getMaximumStockQuantity(), MAXIMUM_STOCK_QUANTITY)
+        && !Objects.equals(item.getMaximumStockQuantity(), calculateMaximumStockQuantity(item,
+        template))) {
+      errors.rejectValue(
+          REQUISITION_LINE_ITEMS,
+          MAXIMUM_STOCK_QUANTITY + VALUE_IS_INCORRECTLY_CALCULATED
+      );
     }
   }
 

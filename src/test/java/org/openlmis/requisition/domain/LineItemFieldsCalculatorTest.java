@@ -1,11 +1,15 @@
 package org.openlmis.requisition.domain;
 
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import org.junit.Test;
@@ -13,6 +17,7 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -196,5 +201,38 @@ public class LineItemFieldsCalculatorTest {
         LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(5, 10));
 
     assertEquals(8, averageConsumption);
+  }
+
+  @Test
+  public void shouldCalculateMaximumStockQuantityForDefaultOption() throws Exception {
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+    column.setOption(new AvailableRequisitionColumnOption(null, "default", "Default"));
+
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setMaxMonthsOfStock(BigDecimal.valueOf(7.25));
+    item.setAverageConsumption(2);
+
+    assertThat(
+        LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
+        closeTo(new BigDecimal("14.5"), BigDecimal.ZERO)
+    );
+  }
+
+  @Test
+  public void shouldCalculateMaximumStockQuantityWhenOptionIsNotSelected() throws Exception {
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
+
+    RequisitionLineItem item = new RequisitionLineItem();
+
+    assertThat(
+        LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
+        is(equalTo(BigDecimal.ZERO))
+    );
   }
 }

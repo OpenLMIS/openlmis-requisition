@@ -178,6 +178,7 @@ public class RequisitionLineItemTest {
     programProduct.setProductId(productId);
     ApprovedProductDto ftap = new ApprovedProductDto();
     ftap.setProduct(programProduct);
+    ftap.setMaxMonthsOfStock(7.25);
     when(initiatedRequisition.getProgramId()).thenReturn(programId);
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem(initiatedRequisition, ftap);

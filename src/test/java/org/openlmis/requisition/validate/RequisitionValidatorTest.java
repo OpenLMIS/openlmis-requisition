@@ -26,6 +26,7 @@ import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonRefer
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.validation.Errors;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -224,6 +225,9 @@ public class RequisitionValidatorTest {
     lineItem.setTotalStockoutDays(1);
     lineItem.setTotal(1);
     lineItem.setRequisition(requisition);
+    lineItem.setMaxMonthsOfStock(BigDecimal.ONE);
+    lineItem.setMaximumStockQuantity(BigDecimal.ONE);
+    lineItem.setAverageConsumption(1);
     lineItem.setStockAdjustments(new ArrayList<>());
     return lineItem;
   }

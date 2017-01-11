@@ -15,6 +15,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONV
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 
@@ -56,6 +57,7 @@ import org.springframework.http.MediaType;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -186,6 +188,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configureRequisitionForSearch(requisitionForSearch);
 
     requisitionLineItem.setOrderableProductId(product.getId());
+    requisitionLineItem.setMaxMonthsOfStock(BigDecimal.valueOf(2));
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
     requisitionLineItem.setStockOnHand(2);
@@ -197,7 +200,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalStockoutDays(0);
     requisitionLineItem.setTotal(0);
     requisitionLineItem.setNumberOfNewPatientsAdded(0);
-
+    requisitionLineItem.setAverageConsumption(2);
+    requisitionLineItem.setMaximumStockQuantity(BigDecimal.valueOf(4));
     requisitionLineItem.setRequisition(requisition);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
@@ -1343,6 +1347,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       RequisitionTemplateColumn column = new RequisitionTemplateColumn(columnDefinition);
       column.setName(columnDefinition.getName());
       column.setIsDisplayed(true);
+
+      if (!isEmpty(columnDefinition.getOptions())) {
+        column.setOption(columnDefinition.getOptions().iterator().next());
+      }
+
       columns.put(columnDefinition.getName(), column);
     }
     return columns;

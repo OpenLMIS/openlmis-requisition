@@ -58,7 +58,7 @@ public class RequisitionTemplateColumn {
       fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnOptionId")
   @Getter
-  @Setter(AccessLevel.PACKAGE)
+  @Setter
   private AvailableRequisitionColumnOption option;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {

@@ -1,6 +1,7 @@
 package org.openlmis.requisition.validate;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -50,6 +51,13 @@ public class RequisitionValidationTestUtils {
     columns.put(RequisitionLineItem.SKIPPED_COLUMN,
         generateTemplateColumn(RequisitionLineItem.SKIPPED_COLUMN,
             SourceType.USER_INPUT, "S"));
+
+    RequisitionTemplateColumn maximumStockQuantity = generateTemplateColumn(
+        RequisitionLineItem.MAXIMUM_STOCK_QUANTITY, SourceType.CALCULATED, "H");
+    maximumStockQuantity.setOption(new AvailableRequisitionColumnOption(maximumStockQuantity
+        .getColumnDefinition(), "default", "Default"));
+
+    columns.put(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY, maximumStockQuantity);
     return columns;
   }
 

@@ -2,6 +2,7 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.openlmis.utils.RequisitionHelper.setPreviousAdjustedConsumptions;
@@ -190,6 +191,12 @@ public class Requisition extends BaseTimestampedEntity {
         line.setTotalLossesAndAdjustments(
             LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
                 line, stockAdjustmentReasons)));
+
+    if (template.isColumnDisplayed(MAXIMUM_STOCK_QUANTITY)) {
+      getNonSkippedRequisitionLineItems().forEach(line ->
+          line.setMaximumStockQuantity(
+              LineItemFieldsCalculator.calculateMaximumStockQuantity(line, template)));
+    }
 
     if (template.isColumnDisplayed(STOCK_ON_HAND)) {
       if (template.isColumnCalculated(STOCK_ON_HAND)) {

@@ -698,6 +698,7 @@ public class RequisitionServiceTest {
     product.setPricePerPack(new Money());
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
     approvedProductDto.setProduct(product);
+    approvedProductDto.setMaxMonthsOfStock(7.25);
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), anyBoolean()))
         .thenReturn(Collections.singletonList(approvedProductDto));

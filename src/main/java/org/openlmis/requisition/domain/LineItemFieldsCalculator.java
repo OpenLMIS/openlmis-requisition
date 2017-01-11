@@ -1,6 +1,8 @@
 package org.openlmis.requisition.domain;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
+import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+import static org.openlmis.requisition.domain.NumberUtil.zeroIfNull;
 
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
@@ -8,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -146,8 +149,11 @@ public final class LineItemFieldsCalculator {
       return consumedQuantity;
     }
 
+    BigDecimal divide = new BigDecimal(totalDays)
+        .divide(new BigDecimal(nonStockoutDays), 1000, BigDecimal.ROUND_HALF_UP);
+
     BigDecimal adjustedConsumption = new BigDecimal(consumedQuantity)
-        .multiply(divide(totalDays, nonStockoutDays))
+        .multiply(divide)
         .setScale(0, RoundingMode.CEILING);
 
     return adjustedConsumption.intValue();
@@ -181,16 +187,34 @@ public final class LineItemFieldsCalculator {
     return sum / numberOfPeriods;
   }
 
-  private static BigDecimal divide(int totalDays, int nonStockoutDays) {
-    return new BigDecimal(totalDays)
-        .divide(new BigDecimal(nonStockoutDays), 1000, BigDecimal.ROUND_HALF_UP);
+  /**
+   * Calculates Maximum Stock Quantity (H) value and returns it.
+   * The formula depends on selected option:
+   * default => P * MaxMonthsStock
+   * P = Average Consumption
+   *
+   * @param line the line item to calculate the value for.
+   * @param template template related with the requisition.
+   * @return a {@link BigDecimal} object representing the maximum stock quantity for this line.
+   */
+  public static BigDecimal calculateMaximumStockQuantity(RequisitionLineItem line,
+                                                         RequisitionTemplate template) {
+    RequisitionTemplateColumn column = template
+        .findColumn(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
+    AvailableRequisitionColumnOption option = column.getOption();
+
+    if (null != option) {
+      String name = defaultIfBlank(option.getOptionName(), "").toLowerCase(Locale.ENGLISH);
+
+      if ("default".equals(name)) {
+        int averageConsumption = zeroIfNull(line.getAverageConsumption());
+        BigDecimal maxMonthsOfStock = zeroIfNull(line.getMaxMonthsOfStock());
+
+        return BigDecimal.valueOf(averageConsumption).multiply(maxMonthsOfStock);
+      }
+    }
+
+    return BigDecimal.ZERO;
   }
 
-  private static int zeroIfNull(Integer value) {
-    return null == value ? 0 : value;
-  }
-
-  private static long zeroIfNull(Long value) {
-    return null == value ? 0 : value;
-  }
 }

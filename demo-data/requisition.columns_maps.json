@@ -231,6 +231,18 @@
     "source": 1,
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "maximumStockQuantity",
+    "name": "maximumStockQuantity",
+    "label": "Maximum Stock Quantity",
+    "indicator": "H",
+    "displayOrder": 22,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
+    "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
+  },
 
 
 
@@ -456,6 +468,18 @@
     "source": 1,
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "maximumStockQuantity",
+    "name": "maximumStockQuantity",
+    "label": "Maximum Stock Quantity",
+    "indicator": "H",
+    "displayOrder": 21,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
+    "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
+  },
 
 
 
@@ -679,5 +703,17 @@
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "maximumStockQuantity",
+    "name": "maximumStockQuantity",
+    "label": "Maximum Stock Quantity",
+    "indicator": "H",
+    "displayOrder": 21,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
+    "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   }
 ]

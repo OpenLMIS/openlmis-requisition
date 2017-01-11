@@ -10,6 +10,7 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +42,8 @@ public class RequisitionLineItemDto
   private Integer adjustedConsumption;
   private List<Integer> previousAdjustedConsumptions;
   private Integer averageConsumption;
+  private BigDecimal maxMonthsOfStock;
+  private BigDecimal maximumStockQuantity;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;
