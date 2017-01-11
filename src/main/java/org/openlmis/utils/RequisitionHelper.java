@@ -24,7 +24,7 @@ public class RequisitionHelper {
 
     for (RequisitionLineItem line : requisitionLineItems) {
       if (line.getSkipped()) {
-        return true;
+        return false;
       }
 
       if (isTotalConsumedQuantityCalculated
