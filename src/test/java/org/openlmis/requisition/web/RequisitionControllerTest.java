@@ -190,7 +190,7 @@ public class RequisitionControllerTest {
     when(orderableProductDto.packsToOrder(requestedQuantity)).thenReturn(5L);
     when(orderableProductDto.getId()).thenReturn(productId);
 
-    when(initiatedRequsition.getRequisitionLineItems())
+    when(initiatedRequsition.getNonSkippedRequisitionLineItems())
         .thenReturn(Collections.singletonList(requisitionLineItem));
 
     requisitionController.submitRequisition(uuid1);

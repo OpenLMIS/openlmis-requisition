@@ -23,6 +23,10 @@ public class RequisitionHelper {
         template.isColumnCalculated(Requisition.STOCK_ON_HAND);
 
     for (RequisitionLineItem line : requisitionLineItems) {
+      if (line.getSkipped()) {
+        return true;
+      }
+
       if (isTotalConsumedQuantityCalculated
           && line.allRequiredCalcFieldsNotFilled(Requisition.TOTAL_CONSUMED_QUANTITY)) {
         return true;

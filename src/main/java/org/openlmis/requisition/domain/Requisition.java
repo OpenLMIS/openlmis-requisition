@@ -1,11 +1,14 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.springframework.util.CollectionUtils.isEmpty;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -21,6 +24,19 @@ import org.openlmis.utils.RequisitionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,20 +47,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Entity
 @Table(name = "requisitions")
@@ -181,42 +183,43 @@ public class Requisition extends BaseTimestampedEntity {
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
-    forEachLine(line ->
+    getNonSkippedRequisitionLineItems().forEach(line ->
         line.setTotalLossesAndAdjustments(
             LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
                 line, stockAdjustmentReasons)));
 
     if (template.isColumnDisplayed(STOCK_ON_HAND)) {
       if (template.isColumnCalculated(STOCK_ON_HAND)) {
-        forEachLine(line -> line.setStockOnHand(
+        getNonSkippedRequisitionLineItems().forEach(line -> line.setStockOnHand(
             LineItemFieldsCalculator.calculateStockOnHand(line)));
       }
     } else {
-      forEachLine(line -> line.setStockOnHand(null));
+      getNonSkippedRequisitionLineItems().forEach(line -> line.setStockOnHand(null));
     }
 
     if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
       if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
-        forEachLine(line -> line.setTotalConsumedQuantity(
+        getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalConsumedQuantity(
             LineItemFieldsCalculator.calculateTotalConsumedQuantity(line)));
       }
     } else {
-      forEachLine(line -> line.setTotalConsumedQuantity(null));
+      getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalConsumedQuantity(null));
     }
 
     if (template.isColumnDisplayed(TOTAL_COLUMN)) {
-      forEachLine(line -> line.setTotal(
+      getNonSkippedRequisitionLineItems().forEach(line -> line.setTotal(
           LineItemFieldsCalculator.calculateTotal(line)));
     }
 
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      forEachLine(line -> {
+      getNonSkippedRequisitionLineItems().forEach(line -> {
         int adjustedConsumption =
             LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod);
         if (line.getAdjustedConsumption() != null
             && adjustedConsumption != line.getAdjustedConsumption()) {
           LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
         }
+        line.setAdjustedConsumption(adjustedConsumption);
       });
     }
   }
@@ -282,10 +285,10 @@ public class Requisition extends BaseTimestampedEntity {
           + ", requisition fields must have values.");
     }
 
-    forEachLine(line -> line.setAdjustedConsumption(
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
         LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
     ));
-    forEachLine(line -> line.setTotalCost(
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
         LineItemFieldsCalculator.calculateTotalCost(line)
     ));
 
@@ -301,10 +304,10 @@ public class Requisition extends BaseTimestampedEntity {
       throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
           + ", requisition must have status 'SUBMITTED' to be authorized.");
     }
-    forEachLine(line -> line.setAdjustedConsumption(
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
         LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
     ));
-    forEachLine(line -> line.setTotalCost(
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
         LineItemFieldsCalculator.calculateTotalCost(line)
     ));
 
@@ -315,10 +318,10 @@ public class Requisition extends BaseTimestampedEntity {
    * Approves given requisition.
    */
   public void approve() {
-    forEachLine(line -> line.setAdjustedConsumption(
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
         LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
     ));
-    forEachLine(line -> line.setTotalCost(
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
         LineItemFieldsCalculator.calculateTotalCost(line)
     ));
     status = RequisitionStatus.APPROVED;
@@ -344,11 +347,6 @@ public class Requisition extends BaseTimestampedEntity {
         .orElse(null);
   }
 
-  public void forEachLine(Consumer<RequisitionLineItem> consumer) {
-    Optional.ofNullable(requisitionLineItems)
-        .ifPresent(list -> list.forEach(consumer));
-  }
-
   /**
    * Initiates the state of a requisition by creating line items based on products
    * @param template the requisition template for this requisition to use (based on program)
@@ -370,7 +368,7 @@ public class Requisition extends BaseTimestampedEntity {
             .collect(Collectors.toList())
     );
 
-    forEachLine(line -> {
+    getNonSkippedRequisitionLineItems().forEach(line -> {
       if (null == line.getBeginningBalance()) {
         // Firstly, we set the Beginning Balance to zero for all lines.
         line.setBeginningBalance(0);
@@ -384,7 +382,7 @@ public class Requisition extends BaseTimestampedEntity {
     if (template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)
             && null != previousRequisition) {
       // .. for each line from the current requisition ...
-      forEachLine(currentLine -> {
+      getNonSkippedRequisitionLineItems().forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
         RequisitionLineItem previousLine = previousRequisition
                 .findLineByProductId(currentLine.getOrderableProductId());
@@ -413,6 +411,9 @@ public class Requisition extends BaseTimestampedEntity {
    */
   @JsonIgnore
   public List<RequisitionLineItem> getNonSkippedRequisitionLineItems() {
+    if (requisitionLineItems == null) {
+      return Collections.emptyList();
+    }
     return this.requisitionLineItems.stream()
         .filter(line -> !line.getSkipped())
         .collect(Collectors.toList());

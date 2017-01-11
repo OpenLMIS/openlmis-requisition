@@ -35,8 +35,8 @@ import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.util.ErrorResponse;
+import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.ReportUtils;
@@ -65,9 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -581,7 +579,7 @@ public class RequisitionController extends BaseController {
 
   private void calculatePacksToShipForEachLineItem(Requisition requisition,
                                                Collection<OrderableProductDto> orderableProducts) {
-    forEach(requisition.getRequisitionLineItems(),
+    requisition.getNonSkippedRequisitionLineItems().forEach(
         line -> line.setPacksToShip(getPacksToShip(orderableProducts, line)));
   }
 
@@ -628,11 +626,5 @@ public class RequisitionController extends BaseController {
       requisitionLineItem.setAdjustedConsumption(null);
       requisitionLineItem.clearStockAdjustments();
     }
-  }
-
-  private void forEach(List<RequisitionLineItem> requisitionLineItems,
-                       Consumer<RequisitionLineItem> consumer) {
-    Optional.ofNullable(requisitionLineItems)
-        .ifPresent(list -> list.forEach(consumer));
   }
 }
