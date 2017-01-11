@@ -1,12 +1,16 @@
 package org.openlmis.requisition.service.referencedata;
 
+import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.method.P;
+import org.springframework.ui.Model;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -147,6 +151,23 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
 
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<P> response = restTemplate.getForEntity(buildUri(url, params), type);
+
+    return response.getBody();
+  }
+
+  <P> ResultDto<P> get(ParameterizedTypeReference<ResultDto<P>> type, String resourceUrl,
+                       Map<String, Object> parameters) {
+    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
+    Map<String, Object> params = new HashMap<>();
+    params.putAll(parameters);
+    params.put(ACCESS_TOKEN, obtainAccessToken());
+
+    RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<ResultDto<P>> response = restTemplate.exchange(
+        buildUri(url, params),
+        HttpMethod.GET,
+        null,
+        new ParameterizedTypeReference<ResultDto<P>>() {});
 
     return response.getBody();
   }

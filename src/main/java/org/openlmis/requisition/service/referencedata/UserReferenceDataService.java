@@ -2,8 +2,10 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,12 +78,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
       parameters.put("warehouseId", warehouse);
     }
 
-    ResultDto<String> response = get(ResultDto.class, user + "/hasRight", parameters);
-    if (response == null) {
-      return null;
-    } else {
-      return new ResultDto<>(Boolean.valueOf(response.getResult()));
-    }
+    return get(new ParameterizedTypeReference<ResultDto<Boolean>>() {},
+        user + "/hasRight", parameters);
   }
-
 }
