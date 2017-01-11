@@ -3,15 +3,12 @@ package org.openlmis.requisition.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -27,20 +24,16 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -73,9 +66,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -154,16 +145,11 @@ public class RequisitionServiceTest {
   @InjectMocks
   private RequisitionService requisitionService;
 
-  private static final int SETTING = 5;
-  private static final int ADJUSTED_CONSUMPTION = 7;
-  private static final UUID PRODUCT_ID = UUID.randomUUID();
-
   private ProcessingPeriodDto processingPeriodDto;
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID suggestedPeriodId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
-
 
   @Before
   public void setUp() throws RequisitionException {
@@ -317,8 +303,22 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateRequisitionIfItDoesNotAlreadyExist()
       throws RequisitionException {
-    RequisitionTemplate requisitionTemplate = getRequisitionTemplate();
-    prepareForTestInitiate(requisitionTemplate);
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
+
+    when(requisitionRepository
+        .findOne(requisition.getId()))
+        .thenReturn(null);
+
+    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
+    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
+    when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);
+
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
+    periodDto.setDurationInMonths(1);
+    when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
+        .thenReturn(periodDto);
 
     UUID userId = UUID.randomUUID();
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -328,25 +328,6 @@ public class RequisitionServiceTest {
     assertEquals(INITIATED, initiatedRequisition.getStatus());
     assertEquals(userId, initiatedRequisition.getCreatorId());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
-  }
-
-  @Test
-  public void shouldSetPreviousAdjustedConsumptions()
-      throws RequisitionException {
-    RequisitionTemplate requisitionTemplate = getRequisitionTemplate();
-    prepareForTestInitiate(requisitionTemplate);
-    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
-        .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
-    mockPreviousRequisition();
-    mockApprovedProduct();
-
-    Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
-    );
-
-    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
-    assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
-        requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
 
   @Test(expected = RequisitionInitializationException.class)
@@ -474,7 +455,7 @@ public class RequisitionServiceTest {
     int pageNumber = 1;
     int pageSize = 5;
 
-    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy,
+    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, null,
         pageNumber, pageSize, filterAndSortBy);
 
     requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
@@ -627,8 +608,9 @@ public class RequisitionServiceTest {
   }
 
   private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
-                                                    String filterBy, int pageNumber, int pageSize,
-                                                    String programName) {
+                                                    String filterBy, String filterValue,
+                                                    int pageNumber, int pageSize, String
+                                                        programName) {
     List<UUID> desiredUuids = new ArrayList<>();
     List<Requisition> requisitions = new ArrayList<>();
     when(programReferenceDataService.search(programName))
@@ -639,63 +621,6 @@ public class RequisitionServiceTest {
         .thenReturn(requisitionDtos);
     when(paginationHelper.pageCollection(any(), eq(pageNumber), eq(pageSize)))
         .then(i -> i.getArgumentAt(0, List.class));
-  }
-
-  private RequisitionTemplate getRequisitionTemplate() {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-    column.setSetting(SETTING);
-
-    RequisitionTemplateColumn beginningBalanceColumn = new RequisitionTemplateColumn();
-    beginningBalanceColumn.setName("beginningBalance");
-    beginningBalanceColumn.setIsDisplayed(true);
-
-    Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
-    columnsMap.put(AVERAGE_CONSUMPTION, column);
-    columnsMap.put(BEGINNING_BALANCE, beginningBalanceColumn);
-
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(columnsMap);
-    return requisitionTemplate;
-  }
-
-  private void mockPreviousRequisition() {
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
-    previousRequisitionLineItem.setAdjustedConsumption(ADJUSTED_CONSUMPTION);
-    previousRequisitionLineItem.setOrderableProductId(PRODUCT_ID);
-    Requisition previousRequisition = new Requisition();
-    previousRequisition.setId(UUID.randomUUID());
-    previousRequisition
-        .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
-
-    when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.singletonList(previousRequisition));
-  }
-
-  private void mockApprovedProduct() {
-    ProductDto product = new ProductDto();
-    product.setProductId(PRODUCT_ID);
-    product.setPricePerPack(new Money());
-    ApprovedProductDto approvedProductDto = new ApprovedProductDto();
-    approvedProductDto.setProduct(product);
-
-    when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), anyBoolean()))
-        .thenReturn(Collections.singletonList(approvedProductDto));
-  }
-
-  private void prepareForTestInitiate(RequisitionTemplate requisitionTemplate)
-      throws RequisitionException {
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
-
-    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
-    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.getTemplateForProgram(programId))
-        .thenReturn(requisitionTemplate);
-
-    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
-    periodDto.setDurationInMonths(1);
-    when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
-        .thenReturn(periodDto);
   }
 
   private void mockRepositories() throws RequisitionException {

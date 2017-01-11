@@ -246,7 +246,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldReturnPreviousPeriods() throws Exception {
+  public void shouldReturnPreviousPeriod() throws Exception {
     doReturn(period5)
         .when(periodReferenceDataService)
         .findOne(period5.getId());
@@ -254,26 +254,9 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .search(any(), any());
 
-    List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(period5.getId(), 2);
+    ProcessingPeriodDto previous = periodService.findPreviousPeriod(period5.getId());
 
-
-    assertEquals(Arrays.asList(period4, period3), previousPeriods);
-  }
-
-  @Test
-  public void shouldReturnWholeListIfAmountGreaterThanListSize() throws Exception {
-    doReturn(period5)
-        .when(periodReferenceDataService)
-        .findOne(period5.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, period5))
-        .when(periodReferenceDataService)
-        .search(any(), any());
-
-    List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(period5.getId(), 5);
-
-    assertEquals(Arrays.asList(period4, period3, period2, period1), previousPeriods);
+    assertThat(previous.getId(), is(equalTo(period4.getId())));
   }
 
   private ProcessingPeriodDto createPeriod(int plusMonth) {

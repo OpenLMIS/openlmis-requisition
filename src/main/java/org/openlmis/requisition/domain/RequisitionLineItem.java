@@ -8,6 +8,8 @@ import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,7 +23,6 @@ import java.util.UUID;
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -35,6 +36,8 @@ import javax.persistence.Transient;
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
   public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
@@ -51,7 +54,6 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   public static final String SKIPPED_COLUMN = "skipped";
   public static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
-  public static final String AVERAGE_CONSUMPTION = "averageConsumption";
 
   private static final String UUID = "pg-uuid";
 
@@ -153,16 +155,6 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private Integer adjustedConsumption;
 
-  @ElementCollection
-  @Setter
-  @Getter
-  private List<Integer> previousAdjustedConsumptions;
-
-  @Column
-  @Setter
-  @Getter
-  private Integer averageConsumption;
-
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -184,7 +176,6 @@ public class RequisitionLineItem extends BaseEntity {
     stockAdjustments = new ArrayList<>();
     this.numberOfNewPatientsAdded = 0;
     this.skipped = false;
-    previousAdjustedConsumptions = new ArrayList<>();
   }
 
   /**
@@ -241,7 +232,6 @@ public class RequisitionLineItem extends BaseEntity {
         stockAdjustments.addAll(requisitionLineItem.getStockAdjustments());
       }
       this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
-      this.averageConsumption = requisitionLineItem.getAverageConsumption();
     }
   }
 
@@ -305,7 +295,6 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotalCost(importer.getTotalCost());
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
-    requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -343,13 +332,10 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalCost(totalCost);
     exporter.setSkipped(skipped);
     exporter.setAdjustedConsumption(adjustedConsumption);
-    exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
-    exporter.setAverageConsumption(averageConsumption);
   }
 
-  public void clearStockAdjustmentsAndPreviousAdjustedConsumptions() {
+  public void clearStockAdjustments() {
     stockAdjustments.clear();
-    previousAdjustedConsumptions.clear();
   }
 
   /**
@@ -405,10 +391,6 @@ public class RequisitionLineItem extends BaseEntity {
     void setSkipped(Boolean skipped);
 
     void setAdjustedConsumption(Integer adjustedConsumption);
-
-    void setPreviousAdjustedConsumptions(List<Integer> previousAdjustedConsupmtions);
-
-    void setAverageConsumption(Integer averageConsumption);
   }
 
   public interface Importer {
@@ -451,9 +433,5 @@ public class RequisitionLineItem extends BaseEntity {
     Boolean getSkipped();
 
     Integer getAdjustedConsumption();
-
-    List<Integer> getPreviousAdjustedConsumptions();
-
-    Integer getAverageConsumption();
   }
 }

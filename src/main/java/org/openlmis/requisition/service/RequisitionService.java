@@ -126,19 +126,13 @@ public class RequisitionService {
 
     Collection<ApprovedProductDto> approvedProducts =
         approvedProductReferenceDataService.getApprovedProducts(
-            facility.getId(), program.getId(), true);
-
+            facility.getId(), program.getId(), true
+        );
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+    Requisition previousRequisition = findPreviousRequisition(requisition);
 
-    Integer numberOfPeriods = requisitionTemplate
-        .getColumnsMap()
-        .get(RequisitionLineItem.AVERAGE_CONSUMPTION)
-        .getSetting();
-
-    List<Requisition> previousRequisitions =
-        getRecentRequisitions(requisition, numberOfPeriods - 1);
-
-    requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions);
+    requisition.initiate(requisitionTemplate, approvedProducts,
+        previousRequisition);
 
     requisitionRepository.save(requisition);
     return requisition;
@@ -244,16 +238,9 @@ public class RequisitionService {
                                               UUID supervisoryNode,
                                               RequisitionStatus[] requisitionStatuses,
                                               Boolean emergency) {
-    return requisitionRepository.searchRequisitions(facility, program, createdDateFrom,
+    return requisitionRepository.searchRequisitions(
+        facility, program, createdDateFrom,
         createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency);
-  }
-
-  /**
-   * Finds requisitions matching all of provided parameters.
-   */
-  public List<Requisition> searchRequisitions(UUID facility, UUID program, UUID processingPeriod) {
-    return requisitionRepository.searchRequisitions(facility, program, null, null, processingPeriod,
-        null, null, null);
   }
 
   /**
@@ -426,22 +413,23 @@ public class RequisitionService {
     return uuidsToReturn;
   }
 
-  private List<Requisition> getRecentRequisitions(Requisition requisition, int amount) {
-    List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
-
-    List<Requisition> recentRequisitions = new ArrayList<>();
-    for (ProcessingPeriodDto period : previousPeriods) {
-      List<Requisition> requisitionsByPeriod = getRequisitionsByPeriod(requisition, period);
-      Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
-      recentRequisitions.add(requisitionByPeriod);
-    }
-    return recentRequisitions;
+  private Requisition findPreviousRequisition(Requisition currentRequisition) {
+    // ... we try to find previous period and requisition ...
+    ProcessingPeriodDto previousPeriod = periodService.findPreviousPeriod(
+        currentRequisition.getProcessingPeriodId()
+    );
+    return null != previousPeriod
+        ? findPreviousRequisition(currentRequisition, previousPeriod)
+        : null;
   }
 
-  private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
-                                                    ProcessingPeriodDto period) {
-    return searchRequisitions(requisition.getFacilityId(),
-        requisition.getProgramId(), period.getId());
+  private Requisition findPreviousRequisition(Requisition currentRequisition,
+                                              ProcessingPeriodDto previousPeriod) {
+    List<Requisition> list = searchRequisitions(
+        currentRequisition.getFacilityId(), currentRequisition.getProgramId(),
+        null, null, previousPeriod.getId(), null, null, null
+    );
+
+    return null == list ? null : (list.isEmpty() ? null : list.get(0));
   }
 }
