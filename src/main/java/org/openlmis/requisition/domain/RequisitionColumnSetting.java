@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,6 +19,7 @@ import javax.persistence.Table;
 @Setter
 public class RequisitionColumnSetting extends BaseEntity {
 
+  @JsonIgnore
   @OneToOne
   @JoinColumn(name = "columnId", nullable = false)
   private AvailableRequisitionColumn requisitionColumn;
