@@ -3,7 +3,7 @@ package org.openlmis.requisition.domain;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import org.hibernate.annotations.Type;
-import org.openlmis.view.View;
+import org.openlmis.util.View;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

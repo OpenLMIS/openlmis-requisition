@@ -1,5 +1,6 @@
 package org.openlmis.requisition.service;
 
+import org.openlmis.util.NotificationRequest;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;

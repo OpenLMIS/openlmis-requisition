@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.util.NotificationRequest;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.powermock.api.mockito.PowerMockito;
