@@ -1191,6 +1191,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
+    requisition.setCreatorId(user.getId());
 
     configurationSettingRepository.save(
         new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, "subject"));

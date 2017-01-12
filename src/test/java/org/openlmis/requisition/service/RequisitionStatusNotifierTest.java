@@ -13,7 +13,10 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
+
+import java.util.UUID;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -40,8 +43,14 @@ public class RequisitionStatusNotifierTest {
   @Mock
   private NotificationService notificationService;
 
+  @Mock
+  private UserReferenceDataService userReferenceDataService;
+
   @InjectMocks
   private RequisitionStatusNotifier requisitionStatusNotifier;
+
+  private UserDto user = mock(UserDto.class);
+  private UUID userId = UUID.randomUUID();
 
   @Before
   public void setUp() throws RequisitionException {
@@ -51,7 +60,7 @@ public class RequisitionStatusNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    UserDto user = mock(UserDto.class);
+    when(requisition.getCreatorId()).thenReturn(userId);
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
@@ -59,7 +68,7 @@ public class RequisitionStatusNotifierTest {
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
 
-    requisitionStatusNotifier.notifyConvertToOrder(user, requisition);
+    requisitionStatusNotifier.notifyConvertToOrder(requisition);
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),
@@ -71,5 +80,6 @@ public class RequisitionStatusNotifierTest {
         mock(ProgramDto.class));
     when(periodReferenceDataService.findOne(any())).thenReturn(
         mock(ProcessingPeriodDto.class));
+    when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
   }
 }

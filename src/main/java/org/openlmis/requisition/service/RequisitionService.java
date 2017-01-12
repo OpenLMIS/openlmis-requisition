@@ -392,7 +392,7 @@ public class RequisitionService {
       OrderDto order = OrderDto.newOrder(requisition, user);
       if (orderFulfillmentService.create(order)) {
         requisitionRepository.save(requisition);
-        requisitionStatusNotifier.notifyConvertToOrder(user, requisition);
+        requisitionStatusNotifier.notifyConvertToOrder(requisition);
       } else {
         throw new RequisitionConversionException("Error while converting requisition: "
             + order.getExternalId() + " to order.");

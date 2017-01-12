@@ -7,7 +7,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -554,7 +553,7 @@ public class RequisitionServiceTest {
 
     requisitionService.convertToOrder(list, user);
 
-    verify(requisitionStatusNotifier).notifyConvertToOrder(refEq(user), any(Requisition.class));
+    verify(requisitionStatusNotifier).notifyConvertToOrder(any(Requisition.class));
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {

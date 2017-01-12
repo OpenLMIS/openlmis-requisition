@@ -6,6 +6,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,28 +32,31 @@ public class RequisitionStatusNotifier {
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
   /**
    * Notify user that the requisition was converted to order.
    *
-   * @param user receiver of the notification
    * @param requisition requisition that was converted
    * @return true if success, false if failed.
    */
-  public Boolean notifyConvertToOrder(UserDto user, Requisition requisition)
+  public Boolean notifyConvertToOrder(Requisition requisition)
       throws ConfigurationSettingException {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
+    UserDto creator = userReferenceDataService.findOne(requisition.getCreatorId());
 
     String subject = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
     String content = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
 
-    Object[] msgArgs = {user.getFirstName(), user.getLastName(),
+    Object[] msgArgs = {creator.getFirstName(), creator.getLastName(),
         program.getName(), period.getName()};
     content = MessageFormat.format(content, msgArgs);
 
-    return notificationService.notify(user, subject, content);
+    return notificationService.notify(creator, subject, content);
   }
 }
