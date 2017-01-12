@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -116,17 +117,18 @@ public class PeriodService {
   }
 
   /**
-   * Find previous period for the given period.
+   * Find recent periods for the given period.
    *
    * @param periodId UUID of period
+   * @param amount of previous periods
    * @return previous period or {@code null} if not found.
    */
-  public ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
+  public List<ProcessingPeriodDto> findPreviousPeriods(UUID periodId, int amount) {
     // retrieve data from reference-data
     ProcessingPeriodDto period = getPeriod(periodId);
 
     if (null == period) {
-      return null;
+      return Collections.emptyList();
     }
 
     Collection<ProcessingPeriodDto> collection = search(
@@ -134,18 +136,20 @@ public class PeriodService {
     );
 
     if (null == collection || collection.isEmpty()) {
-      return null;
+      return Collections.emptyList();
     }
 
     // create a list...
     List<ProcessingPeriodDto> list = new ArrayList<>(collection);
-    // ...remove the latest period from the list because it is not previous...
+    // ...remove the latest period from the list...
     list.removeIf(p -> p.getId().equals(periodId));
     // .. and sort elements by startDate property DESC.
     list.sort((one, two) -> ObjectUtils.compare(two.getStartDate(), one.getStartDate()));
 
-    // The latest previous date should be first.
-    return list.isEmpty() ? null : list.get(0);
+    if (amount > list.size()) {
+      return list;
+    }
+    return list.subList(0, amount);
   }
 
   /**

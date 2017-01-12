@@ -624,7 +624,8 @@ public class RequisitionController extends BaseController {
       requisitionLineItem.setTotalCost(null);
       requisitionLineItem.setNumberOfNewPatientsAdded(null);
       requisitionLineItem.setAdjustedConsumption(null);
-      requisitionLineItem.clearStockAdjustments();
+      requisitionLineItem.setAverageConsumption(null);
+      requisitionLineItem.clearStockAdjustmentsAndPreviousAdjustedConsumptions();
     }
   }
 }

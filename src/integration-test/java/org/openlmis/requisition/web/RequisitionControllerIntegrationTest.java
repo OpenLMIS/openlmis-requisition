@@ -197,6 +197,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotalStockoutDays(0);
     requisitionLineItem.setTotal(0);
     requisitionLineItem.setNumberOfNewPatientsAdded(0);
+
     requisitionLineItem.setRequisition(requisition);
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
@@ -722,6 +723,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           assertEquals(null, line.getTotalCost());
           assertEquals(null, line.getNumberOfNewPatientsAdded());
           assertEquals(null, line.getAdjustedConsumption());
+          assertEquals(null, line.getAverageConsumption());
+          assertEquals(0, line.getPreviousAdjustedConsumptions().size());
           assertEquals(0, line.getStockAdjustments().size());
         });
 
@@ -752,6 +755,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           assertNotNull(line.getTotalStockoutDays());
           assertNotNull(line.getPacksToShip());
           assertNotNull(line.getNumberOfNewPatientsAdded());
+          assertNotNull(line.getAdjustedConsumption());
+          assertNotNull(line.getAverageConsumption());
         });
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

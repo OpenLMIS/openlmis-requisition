@@ -220,6 +220,17 @@
     "source": 1,
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "averageConsumption",
+    "name": "averageConsumption",
+    "label": "Average Consumption",
+    "indicator": "P",
+    "displayOrder": 21,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
+  },
 
 
 
@@ -434,6 +445,17 @@
     "source": 1,
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "averageConsumption",
+    "name": "averageConsumption",
+    "label": "Average Consumption",
+    "indicator": "P",
+    "displayOrder": 20,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
+  },
 
 
 
@@ -646,5 +668,16 @@
     "isDisplayed": true,
     "source": 1,
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "averageConsumption",
+    "name": "averageConsumption",
+    "label": "Average Consumption",
+    "indicator": "P",
+    "displayOrder": 20,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   }
 ]
