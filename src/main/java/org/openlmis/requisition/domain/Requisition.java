@@ -138,6 +138,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID creatorId;
 
   /**
