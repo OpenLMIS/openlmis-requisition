@@ -262,6 +262,22 @@ public class PeriodServiceTest {
   }
 
   @Test
+  public void shouldReturnPreviousPeriod() throws Exception {
+    doReturn(period5)
+        .when(periodReferenceDataService)
+        .findOne(period5.getId());
+    doReturn(Arrays.asList(period1, period2, period3, period4, period5))
+        .when(periodReferenceDataService)
+        .search(any(), any());
+
+    ProcessingPeriodDto previousPeriod =
+        periodService.findPreviousPeriod(period5.getId());
+
+
+    assertEquals(period4, previousPeriod);
+  }
+
+  @Test
   public void shouldReturnWholeListIfAmountGreaterThanListSize() throws Exception {
     doReturn(period5)
         .when(periodReferenceDataService)

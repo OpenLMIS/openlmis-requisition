@@ -67,6 +67,10 @@ public class RequisitionHelper {
               getRequisitionLineItems(previousRequisitionLineItems, line.getOrderableProductId());
           List<Integer> adjustedConsumptions =
               mapToAdjustedConsumptions(previousRequisitionLineItemsWithOrderableProductId);
+          adjustedConsumptions = adjustedConsumptions.stream()
+              .filter(adjustedConsumption -> adjustedConsumption != null)
+              .collect(Collectors.toList());
+
           line.setPreviousAdjustedConsumptions(adjustedConsumptions);
         });
   }
@@ -90,7 +94,7 @@ public class RequisitionHelper {
   private static List<RequisitionLineItem> getRequisitionLineItems(
       List<Requisition> previousRequisitions) {
     return previousRequisitions.stream()
-        .map(Requisition::getRequisitionLineItems)
+        .map(Requisition::getNonSkippedRequisitionLineItems)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }

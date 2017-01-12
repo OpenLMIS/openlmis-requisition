@@ -117,6 +117,17 @@ public class PeriodService {
   }
 
   /**
+   * Find previous period for the given period.
+   *
+   * @param periodId UUID of period
+   * @return previous period or {@code null} if not found.
+   */
+  public ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
+    List<ProcessingPeriodDto> previousPeriods = findPreviousPeriods(periodId, 1);
+    return previousPeriods.isEmpty() ? null : previousPeriods.get(0);
+  }
+
+  /**
    * Find recent periods for the given period.
    *
    * @param periodId UUID of period

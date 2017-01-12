@@ -81,4 +81,47 @@ public class RequisitionHelperTest {
 
     assertEquals(Arrays.asList(5, 5, 5), requisitionLineItem.getPreviousAdjustedConsumptions());
   }
+
+  @Test
+  public void shouldNotAddPreviousAdjustedConsumptionIfLineSkipped() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(5);
+    previousRequisitionLineItem.setSkipped(true);
+    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+
+    RequisitionHelper.setPreviousAdjustedConsumptions(
+        Collections.singletonList(requisitionLineItem),
+        Collections.singletonList(previousRequisition)
+    );
+
+    assertEquals(Collections.emptyList(),
+        requisitionLineItem.getPreviousAdjustedConsumptions());
+  }
+
+  @Test
+  public void shouldNotAddPreviousAdjustedConsumptionIfNull() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(null);
+    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+
+    RequisitionHelper.setPreviousAdjustedConsumptions(
+        Collections.singletonList(requisitionLineItem),
+        Collections.singletonList(previousRequisition)
+    );
+
+    assertEquals(Collections.emptyList(),
+        requisitionLineItem.getPreviousAdjustedConsumptions());
+  }
 }

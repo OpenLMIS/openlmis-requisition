@@ -240,8 +240,6 @@ public class RequisitionLineItem extends BaseEntity {
       if (null != requisitionLineItem.getStockAdjustments()) {
         stockAdjustments.addAll(requisitionLineItem.getStockAdjustments());
       }
-      this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
-      this.averageConsumption = requisitionLineItem.getAverageConsumption();
     }
   }
 
