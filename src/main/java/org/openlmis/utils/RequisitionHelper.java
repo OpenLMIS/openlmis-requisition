@@ -13,20 +13,12 @@ public class RequisitionHelper {
    */
   public static boolean areFieldsNotFilled(RequisitionTemplate template,
                                            List<RequisitionLineItem> requisitionLineItems) {
-    if (null == requisitionLineItems) {
-      return false;
-    }
-
     boolean isTotalConsumedQuantityCalculated =
         template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY);
     boolean isStockOnHandCalculated =
         template.isColumnCalculated(Requisition.STOCK_ON_HAND);
 
     for (RequisitionLineItem line : requisitionLineItems) {
-      if (line.getSkipped()) {
-        return false;
-      }
-
       if (isTotalConsumedQuantityCalculated
           && line.allRequiredCalcFieldsNotFilled(Requisition.TOTAL_CONSUMED_QUANTITY)) {
         return true;

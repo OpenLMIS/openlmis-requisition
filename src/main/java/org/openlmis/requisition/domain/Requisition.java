@@ -280,7 +280,7 @@ public class Requisition extends BaseTimestampedEntity {
           + ", requisition must have status 'INITIATED' to be submitted.");
     }
 
-    if (RequisitionHelper.areFieldsNotFilled(template, requisitionLineItems)) {
+    if (RequisitionHelper.areFieldsNotFilled(template, getNonSkippedRequisitionLineItems())) {
       throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
           + ", requisition fields must have values.");
     }
