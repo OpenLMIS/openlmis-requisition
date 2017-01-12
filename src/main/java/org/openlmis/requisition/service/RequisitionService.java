@@ -430,8 +430,10 @@ public class RequisitionService {
     List<Requisition> recentRequisitions = new ArrayList<>();
     for (ProcessingPeriodDto period : previousPeriods) {
       List<Requisition> requisitionsByPeriod = getRequisitionsByPeriod(requisition, period);
-      Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
-      recentRequisitions.add(requisitionByPeriod);
+      if (!requisitionsByPeriod.isEmpty()) {
+        Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
+        recentRequisitions.add(requisitionByPeriod);
+      }
     }
     return recentRequisitions;
   }
