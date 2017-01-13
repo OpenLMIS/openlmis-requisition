@@ -184,7 +184,7 @@ public class RequisitionLineItem extends BaseEntity {
   @JoinColumn(name = "requisitionLineItemId")
   private List<StockAdjustment> stockAdjustments;
 
-  @Column
+  @Column(nullable = false)
   @Setter
   @Getter
   private BigDecimal maxMonthsOfStock;
