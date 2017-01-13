@@ -53,6 +53,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
   public static final String AVERAGE_CONSUMPTION = "averageConsumption";
   public static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
+  public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
 
   private static final String UUID = "pg-uuid";
 
@@ -169,6 +170,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private BigDecimal maximumStockQuantity;
 
+  @Column
+  @Setter
+  @Getter
+  private Integer calculatedOrderQuantity;
+
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
@@ -239,6 +245,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.averageConsumption = requisitionLineItem.getAverageConsumption();
       this.numberOfNewPatientsAdded = requisitionLineItem.getNumberOfNewPatientsAdded();
       this.maximumStockQuantity = requisitionLineItem.getMaximumStockQuantity();
+      this.calculatedOrderQuantity = requisitionLineItem.getCalculatedOrderQuantity();
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
       } else {
@@ -320,6 +327,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
     requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
     requisitionLineItem.setMaxMonthsOfStock(importer.getMaxMonthsOfStock());
+    requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -361,6 +369,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setMaximumStockQuantity(maximumStockQuantity);
     exporter.setMaxMonthsOfStock(maxMonthsOfStock);
     exporter.setAverageConsumption(averageConsumption);
+    exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
   }
 
   public void clearStockAdjustmentsAndPreviousAdjustedConsumptions() {
@@ -429,6 +438,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setMaxMonthsOfStock(BigDecimal maxMonthsOfStock);
 
     void setMaximumStockQuantity(BigDecimal maximumStockQuantity);
+
+    void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
   }
 
   public interface Importer {
@@ -479,5 +490,7 @@ public class RequisitionLineItem extends BaseEntity {
     BigDecimal getMaxMonthsOfStock();
 
     BigDecimal getMaximumStockQuantity();
+
+    Integer getCalculatedOrderQuantity();
   }
 }

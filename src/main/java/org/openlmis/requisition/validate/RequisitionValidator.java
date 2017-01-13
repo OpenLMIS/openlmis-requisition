@@ -1,9 +1,11 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
@@ -145,6 +147,15 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       errors.rejectValue(
           REQUISITION_LINE_ITEMS,
           MAXIMUM_STOCK_QUANTITY + VALUE_IS_INCORRECTLY_CALCULATED
+      );
+    }
+
+    if (checkTemplate(errors, template, item.getCalculatedOrderQuantity(),
+        CALCULATED_ORDER_QUANTITY) && !Objects.equals(item.getCalculatedOrderQuantity(),
+        calculateCalculatedOrderQuantity(item, template))) {
+      errors.rejectValue(
+          REQUISITION_LINE_ITEMS,
+          CALCULATED_ORDER_QUANTITY + VALUE_IS_INCORRECTLY_CALCULATED
       );
     }
   }

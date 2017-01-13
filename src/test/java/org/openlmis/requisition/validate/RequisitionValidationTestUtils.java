@@ -58,6 +58,10 @@ public class RequisitionValidationTestUtils {
         .getColumnDefinition(), "default", "Default"));
 
     columns.put(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY, maximumStockQuantity);
+
+    columns.put(RequisitionLineItem.CALCULATED_ORDER_QUANTITY,
+        generateTemplateColumn(RequisitionLineItem.CALCULATED_ORDER_QUANTITY,
+            SourceType.CALCULATED, "I"));
     return columns;
   }
 

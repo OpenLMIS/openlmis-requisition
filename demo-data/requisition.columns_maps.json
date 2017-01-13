@@ -243,6 +243,17 @@
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
+  {
+    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "calculatedOrderQuantity",
+    "name": "calculatedOrderQuantity",
+    "label": "Calculated Order Quantity",
+    "indicator": "I",
+    "displayOrder": 23,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
+  },
 
 
 
@@ -480,6 +491,17 @@
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
+  {
+    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "calculatedOrderQuantity",
+    "name": "calculatedOrderQuantity",
+    "label": "Calculated Order Quantity",
+    "indicator": "I",
+    "displayOrder": 22,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
+  },
 
 
 
@@ -715,5 +737,16 @@
     "source": 1,
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
+  },
+  {
+    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "key": "calculatedOrderQuantity",
+    "name": "calculatedOrderQuantity",
+    "label": "Calculated Order Quantity",
+    "indicator": "I",
+    "displayOrder": 22,
+    "isDisplayed": true,
+    "source": 1,
+    "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
   }
 ]

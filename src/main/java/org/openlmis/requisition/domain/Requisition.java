@@ -2,8 +2,6 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.openlmis.utils.RequisitionHelper.setPreviousAdjustedConsumptions;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -22,10 +20,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.web.RequisitionController;
 import org.openlmis.utils.RequisitionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -66,7 +61,6 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String EMERGENCY = "emergency";
 
   private static final String UUID = "pg-uuid";
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
 
   // TODO: determine why it has to be set explicitly
   @OneToMany(
@@ -187,51 +181,15 @@ public class Requisition extends BaseTimestampedEntity {
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
-    getNonSkippedRequisitionLineItems().forEach(line ->
-        line.setTotalLossesAndAdjustments(
-            LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
-                line, stockAdjustmentReasons)));
-
-    if (template.isColumnDisplayed(MAXIMUM_STOCK_QUANTITY)) {
-      getNonSkippedRequisitionLineItems().forEach(line ->
-          line.setMaximumStockQuantity(
-              LineItemFieldsCalculator.calculateMaximumStockQuantity(line, template)));
-    }
-
-    if (template.isColumnDisplayed(STOCK_ON_HAND)) {
-      if (template.isColumnCalculated(STOCK_ON_HAND)) {
-        getNonSkippedRequisitionLineItems().forEach(line -> line.setStockOnHand(
-            LineItemFieldsCalculator.calculateStockOnHand(line)));
-      }
-    } else {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.setStockOnHand(null));
-    }
-
-    if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
-      if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
-        getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalConsumedQuantity(
-            LineItemFieldsCalculator.calculateTotalConsumedQuantity(line)));
-      }
-    } else {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalConsumedQuantity(null));
-    }
-
-    if (template.isColumnDisplayed(TOTAL_COLUMN)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.setTotal(
-          LineItemFieldsCalculator.calculateTotal(line)));
-    }
-
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> {
-        int adjustedConsumption =
-            LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod);
-        if (line.getAdjustedConsumption() != null
-            && adjustedConsumption != line.getAdjustedConsumption()) {
-          LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
-        }
-        line.setAdjustedConsumption(adjustedConsumption);
-      });
-    }
+    getNonSkippedRequisitionLineItems().forEach(line -> {
+      LineItemFieldsSetter.setTotalLossesAndAdjustments(line, stockAdjustmentReasons);
+      LineItemFieldsSetter.setMaximumStockQuantity(template, line);
+      LineItemFieldsSetter.setStockOnHand(template, line);
+      LineItemFieldsSetter.setTotalConsumedQuantity(template, line);
+      LineItemFieldsSetter.setTotal(template, line);
+      LineItemFieldsSetter.setAdjustedConsumption(template, line, numberOfMonthsInPeriod);
+      LineItemFieldsSetter.setCalculatedOrderQuantity(template, line);
+    });
   }
 
   private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {

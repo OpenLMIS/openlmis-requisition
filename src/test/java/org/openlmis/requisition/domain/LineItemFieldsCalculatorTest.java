@@ -15,9 +15,9 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -234,5 +234,57 @@ public class LineItemFieldsCalculatorTest {
         LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
         is(equalTo(BigDecimal.ZERO))
     );
+  }
+
+  @Test
+  public void shouldCalculateCalculatedOrderQuantity() throws Exception {
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setStockOnHand(5);
+    item.setMaximumStockQuantity(BigDecimal.TEN);
+
+    assertThat(
+        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
+        is(equalTo(5))
+    );
+
+  }
+
+  @Test
+  public void shouldCalculateCalculatedOrderQuantityIfMaximumStockQuantityIsNotSet() {
+    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
+    column.setOption(new AvailableRequisitionColumnOption(null, "default", "Default"));
+
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setMaxMonthsOfStock(BigDecimal.valueOf(7));
+    item.setAverageConsumption(2);
+    item.setStockOnHand(4);
+
+    assertThat(
+        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, template),
+        is(equalTo(10))
+    );
+
+  }
+
+  @Test
+  public void shouldCalculateCalculatedOrderQuantityIfStockOnHandIsNotSet() {
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setStockOnHand(null);
+    item.setBeginningBalance(5);
+    item.setTotalReceivedQuantity(0);
+    item.setTotalLossesAndAdjustments(0);
+    item.setTotalConsumedQuantity(0);
+    item.setMaximumStockQuantity(BigDecimal.TEN);
+
+    assertThat(
+        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
+        is(equalTo(5))
+    );
+
   }
 }

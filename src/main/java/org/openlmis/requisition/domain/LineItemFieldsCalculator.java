@@ -193,7 +193,7 @@ public final class LineItemFieldsCalculator {
    * default => P * MaxMonthsStock
    * P = Average Consumption
    *
-   * @param line the line item to calculate the value for.
+   * @param line     the line item to calculate the value for.
    * @param template template related with the requisition.
    * @return a {@link BigDecimal} object representing the maximum stock quantity for this line.
    */
@@ -215,6 +215,30 @@ public final class LineItemFieldsCalculator {
     }
 
     return BigDecimal.ZERO;
+  }
+
+  /**
+   * Calculates Calculated Order Quantity (I) value and returns it.
+   * The formula is
+   * I = H - E
+   *
+   * @param line the line item to calculate the value for.
+   * @return a {@link Integer} object representing the Calculated Order Quantity for this line.
+   */
+  public static Integer calculateCalculatedOrderQuantity(RequisitionLineItem line,
+                                                         RequisitionTemplate template) {
+    BigDecimal maximumStockQuantity = line.getMaximumStockQuantity();
+    Integer stockOnHand = line.getStockOnHand();
+
+    if (null == maximumStockQuantity) {
+      maximumStockQuantity = calculateMaximumStockQuantity(line, template);
+    }
+
+    if (null == stockOnHand) {
+      stockOnHand = calculateStockOnHand(line);
+    }
+
+    return Math.max(0, zeroIfNull(maximumStockQuantity).intValue() - zeroIfNull(stockOnHand));
   }
 
 }

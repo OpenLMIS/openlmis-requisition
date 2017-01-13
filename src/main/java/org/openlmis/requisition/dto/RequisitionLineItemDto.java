@@ -44,6 +44,7 @@ public class RequisitionLineItemDto
   private Integer averageConsumption;
   private BigDecimal maxMonthsOfStock;
   private BigDecimal maximumStockQuantity;
+  private Integer calculatedOrderQuantity;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;
