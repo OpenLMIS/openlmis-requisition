@@ -28,7 +28,7 @@ public class Message {
    */
   public Message(String messageKey, Object... messageParameters) {
     Validate.notBlank(messageKey);
-    this.key = messageKey.trim().toLowerCase();
+    this.key = messageKey.trim();
     this.params = messageParameters;
   }
 

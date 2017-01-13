@@ -322,6 +322,23 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotSkipRequisitionIfItIsEmergency() {
+    requisition.setEmergency(true);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldReturnNotFoundWhenSkippingNotExistingRequisition() {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

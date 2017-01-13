@@ -57,9 +57,11 @@ import java.util.stream.Collectors;
 public class RequisitionService {
   private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
   private static final String CAN_NOT_SKIP_PERIOD_STATUS =
-      "requisition.error.can-not-skip-period.status";
+      "requisition.error.canNotSkipPeriod.status";
   private static final String CAN_NOT_SKIP_PERIOD_PROGRAM =
-      "requisition.error.can-not-skip-period.program";
+      "requisition.error.canNotSkipPeriod.program";
+  private static final String CAN_NOT_SKIP_EMERGENCY_REQUISITION =
+      "requisition.error.canNotSkipPeriod.emergency";
   private static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
@@ -224,6 +226,8 @@ public class RequisitionService {
         throw new ValidationMessageException(new Message(CAN_NOT_SKIP_PERIOD_STATUS));
       } else if (!program.getPeriodsSkippable()) {
         throw new ValidationMessageException(new Message(CAN_NOT_SKIP_PERIOD_PROGRAM));
+      } else if (requisition.getEmergency()) {
+        throw new ValidationMessageException(new Message(CAN_NOT_SKIP_EMERGENCY_REQUISITION));
       } else {
         LOGGER.debug("Requisition skipped");
 

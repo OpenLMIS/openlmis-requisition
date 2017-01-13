@@ -247,6 +247,13 @@ public class RequisitionServiceTest {
     requisitionService.skip(requisition.getId());
   }
 
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingEmergencyRequisition() throws RequisitionException {
+    when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setEmergency(true);
+    requisitionService.skip(requisition.getId());
+  }
+
   @Test(expected = RequisitionException.class)
   public void shouldThrowExceptionWhenSkippingNotExistingRequisition()
       throws RequisitionException {
