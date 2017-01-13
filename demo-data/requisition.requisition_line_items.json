@@ -10,7 +10,7 @@
     "totalConsumedQuantity": 10,
     "requestedQuantityExplanation": "Some test explanation",
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
@@ -23,7 +23,7 @@
     "totalConsumedQuantity": 1200,
     "requestedQuantityExplanation": "Some test explanation",
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "f27415c4-7049-46a6-9e59-818990c85390",
@@ -36,7 +36,7 @@
     "totalConsumedQuantity": 16,
     "requestedQuantityExplanation": "Too few left to make any use out of it.",
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
@@ -48,7 +48,7 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 100,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "ac49b686-c74c-4684-a635-d777ee298cd2",
@@ -61,7 +61,7 @@
     "totalConsumedQuantity": 300,
     "requestedQuantityExplanation": "Some test explanation",
     "totalStockoutDays": 0,
-    "maxMonthsStock": 10
+    "maxMonthsOfStock": 10
   },
   {
     "id": "1d0d970f-c619-40db-ae81-6d8990505502",
@@ -74,7 +74,7 @@
     "totalConsumedQuantity": 31000,
     "requestedQuantityExplanation": "Some test explanation",
     "totalStockoutDays": 0,
-    "maxMonthsStock": 10
+    "maxMonthsOfStock": 10
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
@@ -87,7 +87,7 @@
     "totalConsumedQuantity": 31000,
     "totalStockoutDays": 0,
     "approvedQuantity": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
@@ -100,7 +100,7 @@
     "totalConsumedQuantity": 31000,
     "totalStockoutDays": 0,
     "approvedQuantity": 0,
-    "maxMonthsStock": 10
+    "maxMonthsOfStock": 10
   },
   {
     "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
@@ -112,7 +112,7 @@
     "requestedQuantity": 35000,
     "totalConsumedQuantity": 31000,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 30
+    "maxMonthsOfStock": 30
   },
   {
     "id": "f2ccd66c-f608-4eaa-8eea-22daba187a5a",
@@ -124,7 +124,7 @@
     "requestedQuantity": 35000,
     "totalConsumedQuantity": 31000,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 30
+    "maxMonthsOfStock": 30
   },
   {
     "id": "682baaa0-9a68-40a2-97a4-a2cafb8fcce6",
@@ -140,7 +140,7 @@
     "remarks": "fudge",
     "approvedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "a2ab1bea-5833-4fa6-9c8f-ea4cba43a6da",
@@ -156,7 +156,7 @@
     "remarks": "",
     "approvedQuantity": 999,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 30
+    "maxMonthsOfStock": 30
   },
   {
     "id": "d2529049-6e96-4ca0-870e-6d9819bfb17d",
@@ -172,7 +172,7 @@
     "remarks": "",
     "approvedQuantity": 1278,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "818b66c2-27c3-4662-9644-db8da5afacbe",
@@ -188,7 +188,7 @@
     "remarks": "",
     "approvedQuantity": 2019,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 10
+    "maxMonthsOfStock": 10
   },
   {
     "id": "982943fe-c8a7-468c-9622-dd1a345ce459",
@@ -204,7 +204,7 @@
     "remarks": "fudge",
     "approvedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "14e25f19-1857-4ab0-b426-2893cef14663",
@@ -220,7 +220,7 @@
     "remarks": "",
     "approvedQuantity": 999,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "a9280f48-5d7f-48b8-9064-10e4d4c567fb",
@@ -236,7 +236,7 @@
     "remarks": "",
     "approvedQuantity": 1278,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "21297efb-af7c-4342-8b00-d15c324d5282",
@@ -252,7 +252,7 @@
     "remarks": "",
     "approvedQuantity": 2019,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 10
+    "maxMonthsOfStock": 10
   },
   {
     "id": "2efd35db-fa98-4a1a-b711-1aaa9d6b1fcc",
@@ -268,7 +268,7 @@
     "remarks": "fudge",
     "approvedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "90df5393-16e8-419b-8a36-3f5daf9a0f89",
@@ -284,7 +284,7 @@
     "remarks": "",
     "approvedQuantity": 999,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "4b5cde6e-2771-4b64-afd1-5ee4f4452fda",
@@ -300,7 +300,7 @@
     "remarks": "",
     "approvedQuantity": 1278,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "6e3b9044-eb81-45a9-9567-3461cfa6e1d7",
@@ -316,7 +316,7 @@
     "remarks": "",
     "approvedQuantity": 2019,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "8e724d8f-d714-409b-baa9-fe732d7175a7",
@@ -332,7 +332,7 @@
     "remarks": "fudge",
     "approvedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "46c607b1-a8da-40de-93d6-9dcae3a34068",
@@ -348,7 +348,7 @@
     "remarks": "",
     "approvedQuantity": 999,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "8c8026b8-0ae8-4adb-b2ca-bfb0dfb030a5",
@@ -361,7 +361,7 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "552eb0f7-fc57-4916-bb54-0c3c9540420a",
@@ -374,7 +374,7 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 1000
+    "maxMonthsOfStock": 1000
   },
   {
     "id": "bcbd9a7c-6068-40d9-90ab-cb090fd6ed8c",
@@ -387,7 +387,7 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "502eb011-27bc-4f7f-bb1f-6425ae66a5d5",
@@ -400,7 +400,7 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "5b449a32-aedf-4a8b-a9d7-c3b665ad76e2",
@@ -413,7 +413,7 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   },
   {
     "id": "89e46600-aa5a-4cc9-8bfd-67be8e907778",
@@ -426,6 +426,6 @@
     "requestedQuantity": 0,
     "totalConsumedQuantity": 0,
     "totalStockoutDays": 0,
-    "maxMonthsStock": 20
+    "maxMonthsOfStock": 20
   }
 ]
