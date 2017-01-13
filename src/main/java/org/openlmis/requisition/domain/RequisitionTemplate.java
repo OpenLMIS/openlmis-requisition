@@ -83,6 +83,18 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
+   * Checks if column with given name is input by user.
+   *
+   * @param name name of requisition column.
+   * @return return true if column is calculated
+   */
+  public boolean isColumnUserInput(String name) {
+    RequisitionTemplateColumn column = findColumn(name);
+
+    return SourceType.USER_INPUT.equals(column.getSource());
+  }
+
+  /**
    * Allows changing the display order of columns.
    *
    * @param key             Key to column which needs a new display order.

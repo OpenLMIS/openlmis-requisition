@@ -17,6 +17,7 @@ public class RequisitionTemplateValidator implements Validator {
   static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
   static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
+  static final String AVERAGE_CONSUMPTION = "averageConsumption";
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION =
@@ -25,6 +26,8 @@ public class RequisitionTemplateValidator implements Validator {
       " must be displayed when total consumed quantity is calculated.";
   static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
       " must be displayed when adjusted consumption is calculated.";
+  static final String MUST_BE_IN_TEMPLATE = "must be in template when";
+
 
 
   @Override
@@ -52,6 +55,11 @@ public class RequisitionTemplateValidator implements Validator {
             ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS
         );
+      }
+      if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)
+          && !requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+        errors.rejectValue(COLUMNS_MAP, "average consumption " + MUST_BE_IN_TEMPLATE
+            + " adjusted consumption is in template");
       }
     }
   }
@@ -85,7 +93,13 @@ public class RequisitionTemplateValidator implements Validator {
                                        String suffix, String... requiredFields) {
     if (template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
-        rejectIfNotDisplayed(errors, template, requiredField, suffix);
+        if (!template.isColumnInTemplate(requiredField)) {
+          errors.rejectValue(COLUMNS_MAP, requiredField + " must be in template when "
+              + field + " is in template");
+        }
+        if (template.isColumnUserInput(requiredField)) {
+          rejectIfNotDisplayed(errors, template, requiredField, suffix);
+        }
       }
     }
   }
