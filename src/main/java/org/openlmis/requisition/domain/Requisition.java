@@ -183,12 +183,12 @@ public class Requisition extends BaseTimestampedEntity {
                                                       stockAdjustmentReasons) {
     getNonSkippedRequisitionLineItems().forEach(line -> {
       LineItemFieldsSetter.setTotalLossesAndAdjustments(line, stockAdjustmentReasons);
-      LineItemFieldsSetter.setMaximumStockQuantity(template, line);
       LineItemFieldsSetter.setStockOnHand(template, line);
       LineItemFieldsSetter.setTotalConsumedQuantity(template, line);
       LineItemFieldsSetter.setTotal(template, line);
       LineItemFieldsSetter.setAdjustedConsumption(template, line, numberOfMonthsInPeriod);
       LineItemFieldsSetter.setAverageConsumptionOnUpdate(template, line);
+      LineItemFieldsSetter.setMaximumStockQuantity(template, line);
       LineItemFieldsSetter.setCalculatedOrderQuantity(template, line);
     });
   }
