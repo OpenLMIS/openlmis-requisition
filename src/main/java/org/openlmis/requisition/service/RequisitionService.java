@@ -475,7 +475,7 @@ public class RequisitionService {
       OrderableProductDto orderableProduct = orderableProductReferenceDataService
           .findOne(lineItem.getOrderableProductId());
 
-      Optional<ProductDto> product = orderableProduct.getProducts().stream()
+      Optional<ProductDto> product = orderableProduct.getPrograms().stream()
           .filter(e -> requisition.getProgramId().equals(e.getProgramId())).findFirst();
 
       product.ifPresent(p -> {

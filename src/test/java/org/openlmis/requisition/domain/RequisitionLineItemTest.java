@@ -235,7 +235,7 @@ public class RequisitionLineItemTest {
     productDto.setProgramId(program.getId());
     Set<ProductDto> products = new HashSet<>();
     products.add(productDto);
-    orderableProductDto.setProducts(products);
+    orderableProductDto.setPrograms(products);
     return orderableProductDto;
   }
 

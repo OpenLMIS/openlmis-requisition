@@ -779,14 +779,14 @@ public class RequisitionServiceTest {
     UUID fullSupplyLineProductId = UUID.randomUUID();
     when(orderableProductReferenceDataService.findOne(fullSupplyLineProductId))
         .thenReturn(fullSupplyOrderableProduct);
-    when(fullSupplyOrderableProduct.getProducts())
+    when(fullSupplyOrderableProduct.getPrograms())
         .thenReturn(Collections.singleton(fullSupplyProduct));
 
     OrderableProductDto nonFullSupplyOrderableProduct = mock(OrderableProductDto.class);
     UUID nonFullSupplyLineProductId = UUID.randomUUID();
     when(orderableProductReferenceDataService.findOne(nonFullSupplyLineProductId))
         .thenReturn(nonFullSupplyOrderableProduct);
-    when(nonFullSupplyOrderableProduct.getProducts())
+    when(nonFullSupplyOrderableProduct.getPrograms())
         .thenReturn(Collections.singleton(nonFullSupplyProduct));
 
     fullSupply.forEach(line -> when(line.getOrderableProductId())

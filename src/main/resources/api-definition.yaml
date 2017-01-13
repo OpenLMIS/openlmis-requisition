@@ -55,7 +55,7 @@ schemas:
                "id": { "type": "string", "required": true, "title": "id" },
                "productCode": { "type": "string", "required": true, "title": "code" },
                "name": { "type": "string", "required": true, "title": "name" },
-               "products": {"type": "array", "required": false, "title": "products", "items": {"type": "object", "$ref": "schemas/productDto.json"}, "uniqueItems": false}
+               "programs": {"type": "array", "required": false, "title": "programs", "items": {"type": "object", "$ref": "schemas/productDto.json"}, "uniqueItems": false}
            }
       }
 

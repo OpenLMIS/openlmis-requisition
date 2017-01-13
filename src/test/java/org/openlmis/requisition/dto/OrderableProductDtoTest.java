@@ -127,7 +127,7 @@ public class OrderableProductDtoTest {
     productDto.setProductId(orderableProductDto.getId());
     productDto.setProgramId(program.getId());
     products.add(productDto);
-    orderableProductDto.setProducts(products);
+    orderableProductDto.setPrograms(products);
 
     ProductDto productDtoAfterFind =
         orderableProductDto.findProgramProductDto(program.getId());

@@ -196,7 +196,7 @@ public class RequisitionBuilderTest {
 
   private void prepareForTestSkip(RequisitionLineItemDto lineItemDto) {
     OrderableProductDto orderableProduct = new OrderableProductDto();
-    orderableProduct.setProducts(Collections.emptySet());
+    orderableProduct.setPrograms(Collections.emptySet());
     lineItemDto.setOrderableProduct(orderableProduct);
     when(requisitionDto.getRequisitionLineItems())
         .thenReturn(Collections.singletonList(lineItemDto));
