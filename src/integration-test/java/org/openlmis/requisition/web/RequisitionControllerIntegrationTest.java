@@ -180,6 +180,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     template = new RequisitionTemplate();
     template.setColumnsMap(generateTemplateColumns());
     template.setProgramId(programDto.getId());
+    template.setNumberOfPeriodsToAverage(5);
 
     requisitionTemplateRepository.save(template);
 

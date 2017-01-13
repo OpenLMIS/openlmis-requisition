@@ -10,6 +10,7 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 import static org.openlmis.requisition.domain.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.Requisition.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
@@ -19,6 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class LineItemFieldsSetter {
   private static final Logger LOGGER = LoggerFactory.getLogger(LineItemFieldsSetter.class);
@@ -107,4 +113,83 @@ public final class LineItemFieldsSetter {
     }
   }
 
+  /**
+   * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem} on update.
+   */
+  public static void setAverageConsumptionOnUpdate(RequisitionTemplate template,
+                                                   RequisitionLineItem line) {
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      Integer averageConsumptionPassed = line.getAverageConsumption();
+      setAverageConsumption(line);
+      if (averageConsumptionPassed != null
+          && averageConsumptionPassed != line.getAdjustedConsumption()) {
+        LOGGER.warn("Passed Average Consumption does not match calculated one.");
+      }
+    }
+  }
+
+  /**
+   * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
+   */
+  public static void setAverageConsumption(RequisitionLineItem requisitionLineItem) {
+
+    List<Integer> previousAdjustedConsumptions =
+        requisitionLineItem.getPreviousAdjustedConsumptions();
+    previousAdjustedConsumptions.add(requisitionLineItem.getAdjustedConsumption());
+    Integer averageConsumption =
+        LineItemFieldsCalculator.calculateAverageConsumption(previousAdjustedConsumptions);
+    requisitionLineItem.setAverageConsumption(averageConsumption);
+  }
+
+  /**
+   * Set previous adjusted consumptions to requisitionLineItems.
+   */
+  public static void setPreviousAdjustedConsumptions(List<RequisitionLineItem> requisitionLineItems,
+                                                     List<Requisition> previousRequisitions) {
+    List<RequisitionLineItem> previousRequisitionLineItems =
+        getRequisitionLineItems(previousRequisitions);
+
+    forEachLineItem(requisitionLineItems,
+        line -> {
+          List<RequisitionLineItem> previousRequisitionLineItemsWithOrderableProductId =
+              getRequisitionLineItems(previousRequisitionLineItems, line.getOrderableProductId());
+          List<Integer> adjustedConsumptions =
+              mapToAdjustedConsumptions(previousRequisitionLineItemsWithOrderableProductId);
+          adjustedConsumptions = adjustedConsumptions.stream()
+              .filter(adjustedConsumption -> adjustedConsumption != null)
+              .collect(Collectors.toList());
+
+          line.setPreviousAdjustedConsumptions(adjustedConsumptions);
+        });
+  }
+
+  private static List<Integer> mapToAdjustedConsumptions(
+      List<RequisitionLineItem> previousRequisitionLineItemsWithOrderableProductId) {
+    return previousRequisitionLineItemsWithOrderableProductId
+        .stream()
+        .map(RequisitionLineItem::getAdjustedConsumption)
+        .collect(Collectors.toList());
+  }
+
+  private static List<RequisitionLineItem> getRequisitionLineItems(
+      List<RequisitionLineItem> previousRequisitionLineItemList, UUID productId) {
+    return previousRequisitionLineItemList.stream()
+        .filter(previousLine ->
+            previousLine.getOrderableProductId().equals(productId))
+        .collect(Collectors.toList());
+  }
+
+  private static List<RequisitionLineItem> getRequisitionLineItems(
+      List<Requisition> previousRequisitions) {
+    return previousRequisitions.stream()
+        .map(Requisition::getNonSkippedRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+  }
+
+  private static void forEachLineItem(List<RequisitionLineItem> requisitionLineItems,
+                                      Consumer<RequisitionLineItem> consumer) {
+    Optional.ofNullable(requisitionLineItems)
+        .ifPresent(list -> list.forEach(consumer));
+  }
 }

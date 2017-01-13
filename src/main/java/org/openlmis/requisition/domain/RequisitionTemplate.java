@@ -35,6 +35,10 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Type(type = UUID)
   private UUID programId;
 
+  @Getter
+  @Setter
+  private Integer numberOfPeriodsToAverage;
+
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "key")
   @Column(name = "value")

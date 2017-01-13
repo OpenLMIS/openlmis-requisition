@@ -1,4 +1,4 @@
-package org.openlmis.utils;
+package org.openlmis.requisition.domain;
 
 import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -19,12 +19,12 @@ import java.util.UUID;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
-public class RequisitionHelperTest {
+public class LineItemFieldsSetterTest {
   private static final UUID ORDERABLE_PRODUCT_ID = UUID.randomUUID();
   private static final Integer AVERAGE_CONSUMPTION = 5;
 
   @Test
-  public void shouldCalculateAverageConsumption() throws Exception {
+  public void shouldSetAverageConsumption() throws Exception {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     ArrayList<Integer> adjustedConsumptions = new ArrayList<>();
     adjustedConsumptions.addAll(Arrays.asList(1, 2, 3));
@@ -35,7 +35,7 @@ public class RequisitionHelperTest {
     when(LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(1, 2, 3, 4)))
         .thenReturn(AVERAGE_CONSUMPTION);
 
-    RequisitionHelper.calculateAverageConsumption(Collections.singletonList(requisitionLineItem));
+    LineItemFieldsSetter.setAverageConsumption(requisitionLineItem);
 
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption());
   }
@@ -52,7 +52,7 @@ public class RequisitionHelperTest {
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
 
-    RequisitionHelper.setPreviousAdjustedConsumptions(
+    LineItemFieldsSetter.setPreviousAdjustedConsumptions(
         Collections.singletonList(requisitionLineItem),
         Collections.singletonList(previousRequisition)
     );
@@ -74,7 +74,7 @@ public class RequisitionHelperTest {
         .setRequisitionLineItems(Arrays.asList(previousRequisitionLineItem,
             previousRequisitionLineItem, previousRequisitionLineItem));
 
-    RequisitionHelper.setPreviousAdjustedConsumptions(
+    LineItemFieldsSetter.setPreviousAdjustedConsumptions(
         Collections.singletonList(requisitionLineItem),
         Collections.singletonList(previousRequisition)
     );
@@ -95,7 +95,7 @@ public class RequisitionHelperTest {
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
 
-    RequisitionHelper.setPreviousAdjustedConsumptions(
+    LineItemFieldsSetter.setPreviousAdjustedConsumptions(
         Collections.singletonList(requisitionLineItem),
         Collections.singletonList(previousRequisition)
     );
@@ -116,7 +116,7 @@ public class RequisitionHelperTest {
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
 
-    RequisitionHelper.setPreviousAdjustedConsumptions(
+    LineItemFieldsSetter.setPreviousAdjustedConsumptions(
         Collections.singletonList(requisitionLineItem),
         Collections.singletonList(previousRequisition)
     );

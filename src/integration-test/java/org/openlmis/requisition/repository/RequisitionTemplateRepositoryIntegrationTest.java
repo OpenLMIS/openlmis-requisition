@@ -54,6 +54,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
         new HashMap<>());
     requisitionTemplate.setProgramId(UUID.randomUUID());
+    requisitionTemplate.setNumberOfPeriodsToAverage(3);
     return requisitionTemplate;
   }
 
@@ -216,12 +217,14 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void shouldFindLastTemplateByProgram() {
     // given
     UUID programId = UUID.randomUUID();
+    Integer numberOfPeriodsToAverage = 5;
     LocalDateTime createdDate = LocalDateTime.now().minusMonths(1);
 
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       createdDate = createdDate.plusDays(1);
       RequisitionTemplate requisitionTemplate = generateInstance();
       requisitionTemplate.setProgramId(programId);
+      requisitionTemplate.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
       requisitionTemplates.add(repository.save(requisitionTemplate));
 
       requisitionTemplate.setCreatedDate(createdDate);
@@ -235,6 +238,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     assertEquals(
         requisitionTemplates.get(requisitionTemplates.size() - 1).getId(), result.getId());
     assertEquals(programId, result.getProgramId());
+    assertEquals(numberOfPeriodsToAverage, result.getNumberOfPeriodsToAverage());
   }
 
   private AvailableRequisitionColumn getColumn() {

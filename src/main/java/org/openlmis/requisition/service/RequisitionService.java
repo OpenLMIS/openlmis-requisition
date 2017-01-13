@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -138,12 +139,28 @@ public class RequisitionService {
 
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
 
-    Integer numberOfPeriods = 5;
+    Integer numberOfPeriods = Optional
+        .ofNullable(requisitionTemplate.getNumberOfPeriodsToAverage())
+        .orElse(1);
+
+    int amount;
+    int numberOfPreviousPeriodsToAverage;
+    if (numberOfPeriods < 2) {
+      amount = 1;
+      numberOfPreviousPeriodsToAverage = 0;
+    } else {
+      amount = numberOfPeriods - 1;
+      numberOfPreviousPeriodsToAverage = numberOfPeriods - 1;
+    }
 
     List<Requisition> previousRequisitions =
-        getRecentRequisitions(requisition, numberOfPeriods - 1);
+        getRecentRequisitions(requisition, amount);
 
-    requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions);
+    if (previousRequisitions.size() < numberOfPreviousPeriodsToAverage) {
+      numberOfPreviousPeriodsToAverage = previousRequisitions.size();
+    }
+    requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
+        numberOfPreviousPeriodsToAverage);
 
     requisitionRepository.save(requisition);
     return requisition;

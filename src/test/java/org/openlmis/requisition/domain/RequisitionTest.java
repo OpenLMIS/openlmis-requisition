@@ -256,7 +256,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition));
+        Collections.singletonList(previousRequisition), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -279,7 +279,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), Collections.emptyList());
+    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -308,7 +308,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition));
+        Collections.singletonList(previousRequisition), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();

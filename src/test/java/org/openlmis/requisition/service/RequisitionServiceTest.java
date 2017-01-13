@@ -337,7 +337,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateRequisitionIfItDoesNotAlreadyExist()
       throws RequisitionException {
-    prepareForTestInitiate();
+    prepareForTestInitiate(SETTING);
 
     UUID userId = UUID.randomUUID();
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -350,9 +350,9 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSetPreviousAdjustedConsumptions()
+  public void shouldInitiatePreviousAdjustedConsumptions()
       throws RequisitionException {
-    prepareForTestInitiate();
+    prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
@@ -368,12 +368,58 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForPreviousPeriod()
+  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull()
       throws RequisitionException {
-    prepareForTestInitiate();
+    prepareForTestInitiate(null);
+    mockPreviousRequisition();
+    mockApprovedProduct();
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+    );
+
+    verify(periodService).findPreviousPeriods(any(), eq(1));
+    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
+    assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
+  }
+
+  @Test
+  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsLessThanTwo()
+      throws RequisitionException {
+    prepareForTestInitiate(1);
+    mockPreviousRequisition();
+    mockApprovedProduct();
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+    );
+
+    verify(periodService).findPreviousPeriods(any(), eq(1));
+    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
+    assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
+  }
+
+  @Test
+  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition()
+      throws RequisitionException {
+    prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
+    mockApprovedProduct();
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+    );
+
+    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
+    assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
+  }
+
+  @Test
+  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod()
+      throws RequisitionException {
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct();
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -725,10 +771,11 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.singletonList(approvedProductDto));
   }
 
-  private void prepareForTestInitiate()
+  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage)
       throws RequisitionException {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
+    when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(numberOfPeriodsToAverage);
 
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
 

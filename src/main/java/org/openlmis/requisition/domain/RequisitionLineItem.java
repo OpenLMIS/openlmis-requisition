@@ -261,6 +261,9 @@ public class RequisitionLineItem extends BaseEntity {
       if (null != requisitionLineItem.getStockAdjustments()) {
         stockAdjustments.addAll(requisitionLineItem.getStockAdjustments());
       }
+
+      this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
+      this.averageConsumption = requisitionLineItem.getAverageConsumption();
     }
   }
 
@@ -324,6 +327,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotalCost(importer.getTotalCost());
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
+    requisitionLineItem.setPreviousAdjustedConsumptions(importer.getPreviousAdjustedConsumptions());
     requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
     requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
     requisitionLineItem.setMaxMonthsOfStock(importer.getMaxMonthsOfStock());
