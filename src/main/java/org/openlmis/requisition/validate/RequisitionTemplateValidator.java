@@ -12,6 +12,7 @@ import org.springframework.validation.Validator;
 public class RequisitionTemplateValidator implements Validator {
 
   static final String COLUMNS_MAP = "columnsMap";
+  static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
 
   static final String REQUESTED_QUANTITY = "requestedQuantity";
   static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
@@ -27,8 +28,6 @@ public class RequisitionTemplateValidator implements Validator {
   static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
       " must be displayed when adjusted consumption is calculated.";
   static final String MUST_BE_IN_TEMPLATE = "must be in template when";
-
-
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -61,6 +60,12 @@ public class RequisitionTemplateValidator implements Validator {
         errors.rejectValue(COLUMNS_MAP, "average consumption " + MUST_BE_IN_TEMPLATE
             + " adjusted consumption is in template");
       }
+    }
+
+    if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
+        && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
+      errors.rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, NUMBER_OF_PERIODS_TO_AVERAGE + "must be"
+          + " greater or equal than 2");
     }
   }
 

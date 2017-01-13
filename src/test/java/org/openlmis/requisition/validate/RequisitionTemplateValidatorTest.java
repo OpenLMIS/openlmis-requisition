@@ -1,8 +1,10 @@
 package org.openlmis.requisition.validate;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
@@ -126,6 +128,32 @@ public class RequisitionTemplateValidatorTest {
 
     verify(errors).rejectValue(eq(RequisitionTemplateValidator.COLUMNS_MAP),
         contains(RequisitionTemplateValidator.MUST_BE_IN_TEMPLATE));
+  }
+
+  @Test
+  public void shouldRejectWhenNumberOfPreviousPeriodsLessThanTwo() {
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.setNumberOfPeriodsToAverage(1);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE),
+        any());
+  }
+
+  @Test
+  public void shouldNotRejectWhenNumberOfPreviousPeriodsGreaterOrEqualThan2() {
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.setNumberOfPeriodsToAverage(2);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors, never())
+        .rejectValue(eq(RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE), any());
   }
 
   private RequisitionTemplate generateTemplate() {
