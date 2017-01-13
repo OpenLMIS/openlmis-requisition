@@ -7,12 +7,12 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
-import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidRequisitionStateException;
 import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
@@ -26,9 +26,11 @@ import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.exception.ConfigurationSettingException;
-import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.PaginationHelper;
@@ -82,7 +84,13 @@ public class RequisitionService {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private UserRoleAssignmentsReferenceDataService roleAssignmentsReferenceDataService;
+  private UserSupervisedFacilitiesReferenceDataService supervisedFacilitiesReferenceDataService;
+
+  @Autowired
+  private UserSupervisedProgramsReferenceDataService supervisedProgramsReferenceDataService;
+
+  @Autowired
+  private RightReferenceDataService rightReferenceDataService;
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
@@ -258,28 +266,43 @@ public class RequisitionService {
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId) {
     List<Requisition> requisitionsForApproval = new ArrayList<>();
-    Collection<DetailedRoleAssignmentDto> roleAssignments =
-        roleAssignmentsReferenceDataService.getRoleAssignments(userId);
-    if (roleAssignments != null) {
-      for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
-        if (roleAssignment.getSupervisoryNodeId() != null
-            && roleAssignment.getProgramId() != null) {
-          requisitionsForApproval.addAll(getAuthorizedRequisitions(
-              roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
-        }
+    Collection<FacilityDto> filteredFacilities = new ArrayList<>();
+    Collection<ProgramDto> supervisedPrograms = supervisedProgramsReferenceDataService
+        .getProgramsSupervisedByUser(userId);
+    RightDto right = rightReferenceDataService.findRight("REQUISITION_APPROVE");
+    if (supervisedPrograms != null) {
+      for (ProgramDto program : supervisedPrograms) {
+        Collection<FacilityDto> supervisedFacilities = supervisedFacilitiesReferenceDataService
+            .getFacilitiesSupervisedByUser(userId, program.getId(), right.getId());
+        addAuthorizedRequisitions(supervisedFacilities, filteredFacilities,
+            requisitionsForApproval, program);
       }
     }
     return requisitionsForApproval;
   }
 
   /**
+   * Add authorized requisitions to list.
+   */
+  public void addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
+                                        Collection<FacilityDto> filteredFacilities,
+                                        List<Requisition> requisitionsForApproval,
+                                        ProgramDto program) {
+    for (FacilityDto facility : supervisedFacilities) {
+      if (!filteredFacilities.contains(facility)) {
+        filteredFacilities.add(facility);
+        requisitionsForApproval.addAll(getAuthorizedRequisitions(facility, program));
+      }
+    }
+  }
+
+  /**
    * Get authorized requisitions for specified program.
    */
-  public List<Requisition> getAuthorizedRequisitions(UUID programId,
-                                                     UUID supervisoryNodeId) {
+  public List<Requisition> getAuthorizedRequisitions(FacilityDto facility, ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
-    List<Requisition> reqList = searchRequisitions(null, programId,
-        null, null, null, supervisoryNodeId, null, null);
+    List<Requisition> reqList = searchRequisitions(facility.getId(), program.getId(),
+        null, null, null, null, null, null);
     if (reqList != null) {
       for (Requisition req : reqList) {
         if (req.getStatus() == RequisitionStatus.AUTHORIZED) {

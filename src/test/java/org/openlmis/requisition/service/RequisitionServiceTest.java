@@ -34,7 +34,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
-import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -42,6 +41,7 @@ import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -57,11 +57,13 @@ import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ConvertHelper;
@@ -97,7 +99,10 @@ public class RequisitionServiceTest {
   private ProgramDto program;
 
   @Mock
-  private DetailedRoleAssignmentDto roleAssignment;
+  private FacilityDto facility;
+
+  @Mock
+  private RightDto right;
 
   @Mock
   private SupervisoryNodeDto supervisoryNode;
@@ -133,7 +138,13 @@ public class RequisitionServiceTest {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Mock
-  private UserRoleAssignmentsReferenceDataService roleAssignmentsReferenceDataService;
+  private UserSupervisedFacilitiesReferenceDataService supervisedFacilitiesReferenceDataService;
+
+  @Mock
+  private UserSupervisedProgramsReferenceDataService supervisedProgramsReferenceDataService;
+
+  @Mock
+  private RightReferenceDataService rightReferenceDataService;
 
   @Mock
   private SupplyLineReferenceDataService supplyLineService;
@@ -161,7 +172,7 @@ public class RequisitionServiceTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID suggestedPeriodId = UUID.randomUUID();
-  private UUID supervisoryNodeId = UUID.randomUUID();
+  private UUID rightId = UUID.randomUUID();
 
 
   @Before
@@ -276,35 +287,45 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetAuthorizedRequisitions() {
-
+    when(facility.getId()).thenReturn(facilityId);
+    when(program.getId()).thenReturn(programId);
     requisition.setStatus(AUTHORIZED);
     requisition.setProgramId(program.getId());
+    requisition.setFacilityId(facility.getId());
 
     when(requisitionRepository
-        .searchRequisitions(null, programId, null, null, null, supervisoryNodeId, null, null))
+        .searchRequisitions(facilityId, programId, null, null, null, null, null, null))
         .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> authorizedRequisitions =
-        requisitionService.getAuthorizedRequisitions(programId, supervisoryNodeId);
+        requisitionService.getAuthorizedRequisitions(facility, program);
     List<Requisition> expected = Collections.singletonList(requisition);
 
     assertEquals(expected, authorizedRequisitions);
   }
 
   @Test
-  public void shouldGetRequisitionsForApprovalIfUserHasSupervisoryNodeAndSupervisedPrograms() {
-    when(roleAssignment.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
-    when(roleAssignment.getProgramId()).thenReturn(programId);
+  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedProgramsAndFacilities() {
+    when(facility.getId()).thenReturn(facilityId);
+    when(program.getId()).thenReturn(programId);
+    when(right.getId()).thenReturn(rightId);
+    requisition.setFacilityId(facilityId);
     requisition.setProgramId(programId);
     requisition.setStatus(AUTHORIZED);
     UserDto user = mock(UserDto.class);
 
     when(requisitionRepository
-        .searchRequisitions(null, programId, null, null, null, supervisoryNodeId, null, null))
+        .searchRequisitions(facilityId, programId, null, null, null, null, null, null))
         .thenReturn(Collections.singletonList(requisition));
-    when(roleAssignmentsReferenceDataService
-        .getRoleAssignments(user.getId()))
-        .thenReturn(Collections.singletonList(roleAssignment));
+    when(supervisedFacilitiesReferenceDataService
+        .getFacilitiesSupervisedByUser(user.getId(), programId, rightId))
+        .thenReturn(Collections.singletonList(facility));
+    when(supervisedProgramsReferenceDataService
+        .getProgramsSupervisedByUser(user.getId()))
+        .thenReturn(Collections.singletonList(program));
+    when(rightReferenceDataService
+        .findRight("REQUISITION_APPROVE"))
+        .thenReturn(right);
 
     List<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId());

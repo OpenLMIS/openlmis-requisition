@@ -277,6 +277,13 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_USER_SUPERVISED_PROGRAMS)));
 
+    // This mocks the call to retrieve facilities supervised by the user
+    wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX
+        + "/supervisedFacilities.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("[" + MOCK_FIND_FACILITY_RESULT_WITH_SUPPORTED_PROGRAMS + "]")));
+
     // This mocks the call to retrieve fulfillment facilities of the user
     wireMockRule.stubFor(
         get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/fulfillmentFacilities.*"))
