@@ -72,7 +72,6 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String INSERT_COMMENT = RESOURCE_URL + "/{id}/comments";

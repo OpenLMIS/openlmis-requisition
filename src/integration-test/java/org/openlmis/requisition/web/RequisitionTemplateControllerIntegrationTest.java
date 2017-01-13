@@ -31,7 +31,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
-  private static final String ACCESS_TOKEN = "access_token";
   private static final String PROGRAM = "program";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 

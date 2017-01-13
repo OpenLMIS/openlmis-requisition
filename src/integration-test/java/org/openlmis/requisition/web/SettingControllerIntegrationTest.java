@@ -17,7 +17,6 @@ public class SettingControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "api/settings";
   private static final String KEY_URL = RESOURCE_URL + "/{key}";
-  private static final String ACCESS_TOKEN = "access_token";
   private static final String key = "key";
   private static final String value = "value";
 

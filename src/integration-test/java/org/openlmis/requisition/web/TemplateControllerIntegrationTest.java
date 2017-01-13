@@ -23,7 +23,6 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/reports/templates/requisitions";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
-  private static final String ACCESS_TOKEN = "access_token";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 

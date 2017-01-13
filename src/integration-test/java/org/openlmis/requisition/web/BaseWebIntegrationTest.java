@@ -52,6 +52,8 @@ public abstract class BaseWebIntegrationTest {
   protected static final String APPLICATION_JSON = "application/json";
 
   protected static final String FACILITY_ID = "1d5bdd9c-8702-11e6-ae22-56b6b6499611";
+  
+  protected static final String ACCESS_TOKEN = "access_token";
 
   private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
