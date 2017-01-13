@@ -60,6 +60,7 @@ public class RequisitionService {
       "requisition.error.can-not-skip-period.status";
   private static final String CAN_NOT_SKIP_PERIOD_PROGRAM =
       "requisition.error.can-not-skip-period.program";
+  private static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
 
@@ -286,31 +287,27 @@ public class RequisitionService {
     Collection<FacilityDto> filteredFacilities = new ArrayList<>();
     Collection<ProgramDto> supervisedPrograms = supervisedProgramsReferenceDataService
         .getProgramsSupervisedByUser(userId);
-    RightDto right = rightReferenceDataService.findRight("REQUISITION_APPROVE");
-    if (supervisedPrograms != null) {
-      for (ProgramDto program : supervisedPrograms) {
-        Collection<FacilityDto> supervisedFacilities = supervisedFacilitiesReferenceDataService
-            .getFacilitiesSupervisedByUser(userId, program.getId(), right.getId());
-        addAuthorizedRequisitions(supervisedFacilities, filteredFacilities,
-            requisitionsForApproval, program);
-      }
+    RightDto right = rightReferenceDataService.findRight(REQUISITION_APPROVE);
+    for (ProgramDto program : supervisedPrograms) {
+      Collection<FacilityDto> supervisedFacilities = supervisedFacilitiesReferenceDataService
+          .getFacilitiesSupervisedByUser(userId, program.getId(), right.getId());
+      requisitionsForApproval.addAll(addAuthorizedRequisitions(supervisedFacilities,
+          filteredFacilities, program));
     }
     return requisitionsForApproval;
   }
 
-  /**
-   * Add authorized requisitions to list.
-   */
-  public void addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
+  private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
                                         Collection<FacilityDto> filteredFacilities,
-                                        List<Requisition> requisitionsForApproval,
                                         ProgramDto program) {
+    List<Requisition> requisitions = new ArrayList<>();
     for (FacilityDto facility : supervisedFacilities) {
       if (!filteredFacilities.contains(facility)) {
         filteredFacilities.add(facility);
-        requisitionsForApproval.addAll(getAuthorizedRequisitions(facility, program));
+        requisitions.addAll(getAuthorizedRequisitions(facility, program));
       }
     }
+    return requisitions;
   }
 
   /**
