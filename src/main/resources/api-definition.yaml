@@ -955,6 +955,13 @@ resourceTypes:
                     X-XSS-Protection:
                   body:
                     application/json:
+              "403":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+                        schema: errorResponse
       /{id}:
           uriParameters:
               id:
@@ -970,6 +977,13 @@ resourceTypes:
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
                   "404":
                       headers:
                         X-Content-Type-Options:
@@ -1010,6 +1024,13 @@ resourceTypes:
                         X-XSS-Protection:
                       body:
                         application/json:
+                  "403":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
       /search:
           get:
               is: [ secured ]

@@ -2,6 +2,7 @@ package org.openlmis.requisition.service;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.service.PermissionService.MANAGE_REQUISITION_TEMPLATES;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
@@ -74,6 +75,9 @@ public class PermissionServiceTest {
   private RightDto requisitionConvertRight;
 
   @Mock
+  private RightDto manageRequisitionTemplateRight;
+
+  @Mock
   private Requisition requisition;
 
   private UUID userId = UUID.randomUUID();
@@ -83,6 +87,7 @@ public class PermissionServiceTest {
   private UUID requisitionDeleteRightId = UUID.randomUUID();
   private UUID requisitionViewRightId = UUID.randomUUID();
   private UUID requisitionConvertRightId = UUID.randomUUID();
+  private UUID manageRequisitionTemplateRightId = UUID.randomUUID();
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
@@ -103,6 +108,7 @@ public class PermissionServiceTest {
     when(requisitionDeleteRight.getId()).thenReturn(requisitionDeleteRightId);
     when(requisitionViewRight.getId()).thenReturn(requisitionViewRightId);
     when(requisitionConvertRight.getId()).thenReturn(requisitionConvertRightId);
+    when(manageRequisitionTemplateRight.getId()).thenReturn(manageRequisitionTemplateRightId);
 
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
@@ -119,6 +125,8 @@ public class PermissionServiceTest {
     when(authenticationHelper.getRight(REQUISITION_VIEW)).thenReturn(requisitionViewRight);
     when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
         requisitionConvertRight);
+    when(authenticationHelper.getRight(MANAGE_REQUISITION_TEMPLATES)).thenReturn(
+        manageRequisitionTemplateRight);
 
     when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
   }
@@ -263,6 +271,23 @@ public class PermissionServiceTest {
     permissionService.canConvertToOrder(convertToOrderDtos);
   }
 
+  @Test
+  public void canManageRequisitionTemplate() throws Exception {
+    hasRight(manageRequisitionTemplateRightId, true);
+
+    permissionService.canManageRequisitionTemplate();
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyGeneralAdminRight(order, MANAGE_REQUISITION_TEMPLATES, manageRequisitionTemplateRightId);
+  }
+
+  @Test
+  public void cannotManageRequisitionTemplate() throws Exception {
+    expectException(MANAGE_REQUISITION_TEMPLATES);
+
+    permissionService.canManageRequisitionTemplate();
+  }
+
   private void hasRight(UUID rightId, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService
@@ -270,6 +295,9 @@ public class PermissionServiceTest {
     ).thenReturn(resultDto);
     when(userReferenceDataService
         .hasRight(userId, rightId, null, null, facilityId)
+    ).thenReturn(resultDto);
+    when(userReferenceDataService
+        .hasRight(userId, rightId, null, null, null)
     ).thenReturn(resultDto);
   }
 
@@ -292,6 +320,12 @@ public class PermissionServiceTest {
     order.verify(authenticationHelper).getRight(rightName);
     order.verify(userReferenceDataService).hasRight(userId, rightId, null, null,
         facilityId);
+  }
+
+  private void verifyGeneralAdminRight(InOrder order, String rightName, UUID rightId) {
+    order.verify(authenticationHelper).getCurrentUser();
+    order.verify(authenticationHelper).getRight(rightName);
+    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, null);
   }
 
 }

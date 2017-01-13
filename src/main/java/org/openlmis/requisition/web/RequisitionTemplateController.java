@@ -2,6 +2,7 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.slf4j.Logger;
@@ -38,6 +39,9 @@ public class RequisitionTemplateController extends BaseController {
   @Autowired
   private RequisitionTemplateValidator validator;
 
+  @Autowired
+  private PermissionService permissionService;
+
   @InitBinder
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
@@ -53,8 +57,9 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionTemplate(
-      @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
-
+      @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult)
+      throws MissingPermissionException {
+    permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
@@ -90,8 +95,9 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionTemplate(
       @RequestBody @Valid RequisitionTemplate requisitionTemplate,
-      @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult) {
-
+      @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult)
+      throws MissingPermissionException {
+    permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
@@ -139,7 +145,9 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisitionTemplate(@PathVariable("id")
-                                                         UUID requisitionTemplateId) {
+                                                         UUID requisitionTemplateId)
+      throws MissingPermissionException {
+    permissionService.canManageRequisitionTemplate();
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplate == null) {

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Service
 public class PermissionService {
   private static final String REQUISITION_BASE = "REQUISITION_";
@@ -28,6 +29,7 @@ public class PermissionService {
   static final String REQUISITION_DELETE = REQUISITION_BASE + "DELETE";
   static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
   static final String REQUISITION_CONVERT_TO_ORDER = REQUISITION_BASE + "CONVERT_TO_ORDER";
+  static final String MANAGE_REQUISITION_TEMPLATES = "MANAGE_REQUISITION_TEMPLATES";
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -136,6 +138,15 @@ public class PermissionService {
       hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
           convertToOrder.getSupplyingDepotId());
     }
+  }
+
+  /**
+   * Checks if current user has permission to manage a requisition template.
+   *
+   * @throws MissingPermissionException   if the current user has not a permission.
+   */
+  public void canManageRequisitionTemplate() throws MissingPermissionException {
+    hasPermission(MANAGE_REQUISITION_TEMPLATES, null, null, null);
   }
 
   private void hasPermission(String rightName, UUID requisitionId)
