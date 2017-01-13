@@ -106,9 +106,9 @@ public class RequisitionExportHelperTest {
     ProductDto productDto = new ProductDto();
     productDto.setProductId(orderableProductDto.getId());
     productDto.setProgramId(program);
-    Set<ProductDto> programs = new HashSet<>();
-    programs.add(productDto);
-    orderableProductDto.setPrograms(programs);
+    Set<ProductDto> products = new HashSet<>();
+    products.add(productDto);
+    orderableProductDto.setProducts(products);
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequisition(requisition);

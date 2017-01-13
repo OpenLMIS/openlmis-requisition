@@ -3,6 +3,7 @@ package org.openlmis.utils;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.repository.TemplateRepository;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,9 @@ public class CleanRepositoryHelper {
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
 
+  @Autowired
+  private TemplateRepository templateRepository;
+
   /**
    * Delete all entities from most of repositories.
    */
@@ -37,5 +41,6 @@ public class CleanRepositoryHelper {
     commentRepository.deleteAll();
     requisitionRepository.deleteAll();
     requisitionTemplateRepository.deleteAll();
+    templateRepository.deleteAll();
   }
 }

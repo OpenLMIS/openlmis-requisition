@@ -73,7 +73,7 @@ public final class RequisitionBuilder {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
         Optional<ProductDto> program = requisitionLineItem
             .getOrderableProduct()
-            .getPrograms()
+            .getProducts()
             .stream()
             .filter(e -> requisition.getProgramId().equals(e.getProgramId()))
             .findFirst();

@@ -55,7 +55,7 @@ schemas:
                "id": { "type": "string", "required": true, "title": "id" },
                "productCode": { "type": "string", "required": true, "title": "code" },
                "name": { "type": "string", "required": true, "title": "name" },
-               "programs": {"type": "array", "required": false, "title": "programs", "items": {"type": "object", "$ref": "schemas/productDto.json"}, "uniqueItems": false}
+               "products": {"type": "array", "required": false, "title": "products", "items": {"type": "object", "$ref": "schemas/productDto.json"}, "uniqueItems": false}
            }
       }
 
@@ -257,6 +257,14 @@ schemas:
       {
           "type": "array",
           "items": { "type": "object", "$ref": "schemas/convertToOrderDto.json" }
+      }
+
+  - templateDto: !include schemas/templateDto.json
+
+  - templateDtoArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/templateDto.json" }
       }
 
 traits:
@@ -886,40 +894,111 @@ resourceTypes:
                         X-XSS-Protection:
 
       /periodsForInitiate:
-              get:
-                  is: [ secured ]
-                  description: Find periods for initiate requisition.
-                  queryParameters:
-                      programId:
-                          displayName: program
-                          type: string
-                          required: true
-                          repeat: false
-                      facilityId:
-                          displayName: facility
-                          type: string
-                          required: true
-                          repeat: false
-                      emergency:
-                          displayName: emergency
-                          type: boolean
-                          required: true
-                          repeat: false
-                  responses:
-                      "200":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                              schema: processingPeriodDto
-                      "400":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                          body:
-                            application/json:
-                                schema: errorResponse
+          get:
+              is: [ secured ]
+              description: Find periods for initiate requisition.
+              queryParameters:
+                  programId:
+                      displayName: program
+                      type: string
+                      required: true
+                      repeat: false
+                  facilityId:
+                      displayName: facility
+                      type: string
+                      required: true
+                      repeat: false
+                  emergency:
+                      displayName: emergency
+                      type: boolean
+                      required: true
+                      repeat: false
+              responses:
+                  "200":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                          schema: processingPeriodDto
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+                      body:
+                        application/json:
+                            schema: errorResponse
+
+  /reports/templates/requisitions:
+      displayName: Report Template
+      post:
+          is: [ secured ]
+          description: Add report template to database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    file:
+                         displayName: Template with .jrxml format
+                         type: file
+                         required: false
+                         repeat: false
+                    name:
+                         displayName: Name of Template in database
+                         type: string
+                         required: false
+                         repeat: false
+                    description:
+                         displayName: Description of Template
+                         type: string
+                         required: false
+                         repeat: false
+          responses:
+                200:
+      get:
+          is: [ secured ]
+          description: Get all templates.
+          responses:
+              200:
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+                      schema: templateDtoArray
+              404:
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          delete:
+              is: [ secured ]
+              description: Delete chosen template.
+              responses:
+                  204:
+                  404:
+          get:
+              is: [ secured ]
+              description: Get chosen template.
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: templateDto
+                  404:
+          put:
+              is: [ secured ]
+              description: Update existing template.
+              body:
+                  application/json:
+                    schema: templateDto
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: templateDto
 
   /requisitionTemplates:
       displayName: Requisition Template

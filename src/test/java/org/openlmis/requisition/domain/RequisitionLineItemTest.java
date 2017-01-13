@@ -233,9 +233,9 @@ public class RequisitionLineItemTest {
     program.setId(UUID.randomUUID());
     productDto.setProductId(orderableProductDto.getId());
     productDto.setProgramId(program.getId());
-    Set<ProductDto> programs = new HashSet<>();
-    programs.add(productDto);
-    orderableProductDto.setPrograms(programs);
+    Set<ProductDto> products = new HashSet<>();
+    products.add(productDto);
+    orderableProductDto.setProducts(products);
     return orderableProductDto;
   }
 

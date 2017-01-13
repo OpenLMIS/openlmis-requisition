@@ -12,13 +12,13 @@ import java.util.UUID;
 public class OrderableProductDtoTest {
 
   private OrderableProductDto orderableProductDto;
-  private Set<ProductDto> programs;
+  private Set<ProductDto> products;
   private ProgramDto program;
 
   @Before
   public void setUp() {
-    programs = new HashSet<>();
-    programs.addAll(genereteProgram(10));
+    products = new HashSet<>();
+    products.addAll(genereteProducts(10));
 
     program = new ProgramDto();
     program.setId(UUID.randomUUID());
@@ -126,8 +126,8 @@ public class OrderableProductDtoTest {
     ProductDto productDto = new ProductDto();
     productDto.setProductId(orderableProductDto.getId());
     productDto.setProgramId(program.getId());
-    programs.add(productDto);
-    orderableProductDto.setPrograms(programs);
+    products.add(productDto);
+    orderableProductDto.setProducts(products);
 
     ProductDto productDtoAfterFind =
         orderableProductDto.findProgramProductDto(program.getId());
@@ -137,7 +137,7 @@ public class OrderableProductDtoTest {
     assertEquals(productDtoAfterFind.getProductId(), productDto.getProductId());
   }
 
-  private Set<ProductDto> genereteProgram(int instances) {
+  private Set<ProductDto> genereteProducts(int instances) {
     Set<ProductDto> programs = new HashSet<>();
     for (int i = 0; i < instances; i++) {
       ProgramDto program = new ProgramDto();

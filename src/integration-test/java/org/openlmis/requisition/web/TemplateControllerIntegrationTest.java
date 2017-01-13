@@ -3,10 +3,8 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.BDDMockito.given;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Template;
 import org.openlmis.requisition.dto.TemplateDto;
@@ -15,16 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 @SuppressWarnings({"PMD.UnusedPrivateField"})
-@Ignore
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
-  private static final String RESOURCE_URL = "/api/templates";
+  private static final String RESOURCE_URL = "/api/reports/templates/requisitions";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
@@ -53,12 +50,13 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldAddReportTemplate() throws IOException {
-    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+    ClassPathResource requisitionReport =
+        new ClassPathResource("jasperTemplates/requisition.jrxml");
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-        .multiPart("file", podReport.getFilename(), podReport.getInputStream())
+        .multiPart("file", requisitionReport.getFilename(), requisitionReport.getInputStream())
         .formParam("name", TEMPLATE_CONTROLLER_TEST)
         .formParam("description", TEMPLATE_CONTROLLER_TEST)
         .when()
@@ -71,6 +69,8 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldDeleteTemplate() {
+    template = templateRepository.save(template);
+
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -85,9 +85,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldNotDeleteNonexistentTemplate() {
-    given(templateRepository.findOne(template.getId())).willReturn(null);
-    given(templateRepository.exists(template.getId())).willReturn(false);
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -102,7 +99,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateTemplate() {
-
     templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
     TemplateDto response = restAssured.given()
@@ -122,9 +118,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateNewTemplateIfDoesNotExist() {
-    given(templateRepository.findOne(template.getId())).willReturn(template);
-    given(templateRepository.exists(template.getId())).willReturn(true);
-
     templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
     TemplateDto response = restAssured.given()
@@ -144,6 +137,8 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldGetAllTemplates() {
+    templateRepository.save(template);
+
     TemplateDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -160,6 +155,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldGetChosenTemplate() {
+    template = templateRepository.save(template);
 
     TemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -177,9 +173,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldNotGetNonexistentTemplate() {
-    given(templateRepository.findOne(template.getId())).willReturn(null);
-    given(templateRepository.exists(template.getId())).willReturn(false);
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)

@@ -13,6 +13,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.InvalidPeriodException;
@@ -40,6 +41,7 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.ReportUtils;
+import org.openlmis.utils.RequisitionExportHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,7 @@ import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiForm
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -109,6 +112,9 @@ public class RequisitionController extends BaseController {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
+  private RequisitionExportHelper requisitionExportHelper;
+
+  @Autowired
   private PermissionService permissionService;
 
   @Autowired
@@ -125,11 +131,6 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private JasperReportsViewService jasperReportsViewService;
-
-  @InitBinder("requisition")
-  protected void initBinder(final WebDataBinder binder) {
-    binder.addValidators(validator);
-  }
 
   /**
    * Allows creating new requisitions.
@@ -564,17 +565,38 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/print", method = RequestMethod.GET)
   @ResponseBody
   public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id)
-      throws JasperReportViewException, MissingPermissionException {
+      throws JasperReportViewException, MissingPermissionException, RequisitionNotFoundException {
     permissionService.canViewRequisition(id);
+
+    Requisition requisition = requisitionRepository.findOne(id);
+    if (requisition == null) {
+      throw new RequisitionNotFoundException(id);
+    }
+
     Template template = templateService.getByName(REQUISITION_PRINT_TEMPLATE_NAME);
+    List<RequisitionLineItem> fullSupply = requisitionService.getFullSupplyItems(id)
+        .stream().filter(l -> !l.getSkipped()).collect(Collectors.toList());
+    List<RequisitionLineItem> nonFullSupply = requisitionService.getNonFullSupplyItems(id)
+        .stream().filter(l -> !l.getSkipped()).collect(Collectors.toList());
+
+    RequisitionReportDto reportDto = new RequisitionReportDto(
+        requisitionDtoBuilder.build(requisition),
+        requisitionExportHelper.exportToDtos(fullSupply),
+        requisitionExportHelper.exportToDtos(nonFullSupply)
+    );
 
     Map<String, Object> params = ReportUtils.createParametersMap();
-    params.put("requisition_id", "'" + id + "'");
+    params.put("datasource", Collections.singletonList(reportDto));
+    params.put("template", requisition.getTemplate());
 
     JasperReportsMultiFormatView jasperView =
         jasperReportsViewService.getJasperReportsView(template, request);
-
     return new ModelAndView(jasperView, params);
+  }
+
+  @InitBinder("requisition")
+  protected void initBinder(final WebDataBinder binder) {
+    binder.addValidators(validator);
   }
 
   private void calculatePacksToShipForEachLineItem(Requisition requisition,

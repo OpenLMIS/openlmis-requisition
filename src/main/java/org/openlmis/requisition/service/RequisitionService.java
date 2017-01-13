@@ -9,7 +9,9 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -25,6 +27,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -95,6 +98,9 @@ public class RequisitionService {
 
   @Autowired
   private RightReferenceDataService rightReferenceDataService;
+
+  @Autowired
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
@@ -388,6 +394,26 @@ public class RequisitionService {
   }
 
   /**
+   * Retrieves full supply requisition line items for requisition with given id.
+   *
+   * @param requisitionId id of requisition to find items for.
+   * @return list of full supply requisition line items.
+   */
+  public List<RequisitionLineItem> getFullSupplyItems(UUID requisitionId) {
+    return getSupplyItemsBase(requisitionId, true);
+  }
+
+  /**
+   * Retrieves non-full supply requisition line items for requisition with given id.
+   *
+   * @param requisitionId id of requisition to find items for.
+   * @return list of non-full supply requisition line items.
+   */
+  public List<RequisitionLineItem> getNonFullSupplyItems(UUID requisitionId) {
+    return getSupplyItemsBase(requisitionId, false);
+  }
+
+  /**
    * Get approved requisitions matching all of provided parameters.
    *
    * @param filterValue Value to be used to filter.
@@ -439,6 +465,27 @@ public class RequisitionService {
             + order.getExternalId() + " to order.");
       }
     }
+  }
+
+  private List<RequisitionLineItem> getSupplyItemsBase(UUID requisitionId, boolean fullSupply) {
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+
+    for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
+      OrderableProductDto orderableProduct = orderableProductReferenceDataService
+          .findOne(lineItem.getOrderableProductId());
+
+      Optional<ProductDto> product = orderableProduct.getProducts().stream()
+          .filter(e -> requisition.getProgramId().equals(e.getProgramId())).findFirst();
+
+      product.ifPresent(p -> {
+        if (p.getFullSupply() == fullSupply) {
+          requisitionLineItems.add(lineItem);
+        }
+      });
+    }
+
+    return requisitionLineItems;
   }
 
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {

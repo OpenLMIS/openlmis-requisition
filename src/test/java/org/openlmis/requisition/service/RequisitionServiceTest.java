@@ -36,6 +36,7 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProductDto;
@@ -56,6 +57,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
@@ -75,8 +77,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -130,6 +134,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private ScheduleReferenceDataService scheduleReferenceDataService;
+
+  @Mock
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Mock
   private ApprovedProductReferenceDataService approvedProductReferenceDataService;
@@ -647,6 +654,49 @@ public class RequisitionServiceTest {
     verify(requisitionStatusNotifier).notifyConvertToOrder(any(Requisition.class));
   }
 
+  @Test
+  public void shouldReturnFullSupplyRequisitionLineItems() {
+    // given
+    Requisition requisition = generateRequisition();
+    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+
+    List<RequisitionLineItem> fullSupply = Collections.singletonList(lineItem1);
+    List<RequisitionLineItem> nonFullSupply = Collections.singletonList(lineItem2);
+
+    setupStubsForTestFindSupplyItems(requisition, fullSupply, nonFullSupply);
+
+    // when
+    List<RequisitionLineItem> result = requisitionService.getFullSupplyItems(requisition.getId());
+
+    Set<RequisitionLineItem> resultSet = new HashSet<>(result);
+    Set<RequisitionLineItem> fullSupplySet = new HashSet<>(fullSupply);
+
+    // then
+    assertTrue(resultSet.equals(fullSupplySet));
+  }
+
+  @Test
+  public void shouldReturnNonFullSupplyRequisitionLineItems() {
+    // given
+    Requisition requisition = generateRequisition();
+    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+
+    List<RequisitionLineItem> fullSupply = Collections.singletonList(lineItem1);
+    List<RequisitionLineItem> nonFullSupply = Collections.singletonList(lineItem2);
+
+    setupStubsForTestFindSupplyItems(requisition, fullSupply, nonFullSupply);
+
+    // when
+    List<RequisitionLineItem> result = requisitionService
+        .getNonFullSupplyItems(requisition.getId());
+
+    Set<RequisitionLineItem> resultSet = new HashSet<>(result);
+    Set<RequisitionLineItem> nonFullSupplySet = new HashSet<>(nonFullSupply);
+
+    // then
+    assertTrue(resultSet.equals(nonFullSupplySet));
+  }
+
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
@@ -712,6 +762,37 @@ public class RequisitionServiceTest {
       requisitionDtos.add(requisitionDto);
     }
     return requisitionDtos;
+  }
+
+  private void setupStubsForTestFindSupplyItems(
+      Requisition requisition, List<RequisitionLineItem> fullSupply,
+      List<RequisitionLineItem> nonFullSupply) {
+    ProductDto fullSupplyProduct = mock(ProductDto.class);
+    when(fullSupplyProduct.getProgramId()).thenReturn(requisition.getProgramId());
+    when(fullSupplyProduct.getFullSupply()).thenReturn(true);
+
+    ProductDto nonFullSupplyProduct = mock(ProductDto.class);
+    when(nonFullSupplyProduct.getProgramId()).thenReturn(requisition.getProgramId());
+    when(nonFullSupplyProduct.getFullSupply()).thenReturn(false);
+
+    OrderableProductDto fullSupplyOrderableProduct = mock(OrderableProductDto.class);
+    UUID fullSupplyLineProductId = UUID.randomUUID();
+    when(orderableProductReferenceDataService.findOne(fullSupplyLineProductId))
+        .thenReturn(fullSupplyOrderableProduct);
+    when(fullSupplyOrderableProduct.getProducts())
+        .thenReturn(Collections.singleton(fullSupplyProduct));
+
+    OrderableProductDto nonFullSupplyOrderableProduct = mock(OrderableProductDto.class);
+    UUID nonFullSupplyLineProductId = UUID.randomUUID();
+    when(orderableProductReferenceDataService.findOne(nonFullSupplyLineProductId))
+        .thenReturn(nonFullSupplyOrderableProduct);
+    when(nonFullSupplyOrderableProduct.getProducts())
+        .thenReturn(Collections.singleton(nonFullSupplyProduct));
+
+    fullSupply.forEach(line -> when(line.getOrderableProductId())
+        .thenReturn(fullSupplyLineProductId));
+    nonFullSupply.forEach(line -> when(line.getOrderableProductId())
+        .thenReturn(nonFullSupplyLineProductId));
   }
 
   private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
