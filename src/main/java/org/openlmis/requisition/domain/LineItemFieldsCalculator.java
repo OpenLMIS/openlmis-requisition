@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@SuppressWarnings("PMD.TooManyMethods")
 public final class LineItemFieldsCalculator {
 
   private LineItemFieldsCalculator() {
