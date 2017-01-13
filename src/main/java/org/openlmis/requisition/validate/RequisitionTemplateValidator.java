@@ -4,12 +4,17 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.utils.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
+  @Autowired
+  MessageService messageService;
 
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
@@ -22,11 +27,11 @@ public class RequisitionTemplateValidator implements Validator {
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION =
-      " must be displayed when stock on hand is calculated.";
+      "requisition.error.validation.must-be-displayed-when-on-hand-calculated";
   static final String TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION =
-      " must be displayed when total consumed quantity is calculated.";
+      "requisition.error.validation.mist-be-displayed-when-consumed-quantity-is-calculated";
   static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
-      " must be displayed when adjusted consumption is calculated.";
+      "requisition.error.validation.must-be-displayed-when-consumption-is-calculated";
   static final String MUST_BE_IN_TEMPLATE = "must be in template when";
 
   @Override
@@ -75,13 +80,16 @@ public class RequisitionTemplateValidator implements Validator {
 
     if (quantityDisplayed) {
       if (!explanationDisplayed) {
-        errors.rejectValue(COLUMNS_MAP, REQUESTED_QUANTITY_EXPLANATION
-            + " must be displayed when requested quantity is displayed.");
+        errors.rejectValue(COLUMNS_MAP, messageService.localize(
+            new Message("requisition.error.validation.displayed-when-requested-quantity-displayed",
+                REQUESTED_QUANTITY_EXPLANATION)).toString());
       }
     } else {
       if (explanationDisplayed) {
-        errors.rejectValue(COLUMNS_MAP, REQUESTED_QUANTITY
-            + " must be displayed when requested quantity explanation is displayed.");
+        errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
+            "requisition.error.validation.displayed-when-requested-quantity-explanation-displayed",
+            REQUESTED_QUANTITY)).toString());
+
       }
     }
   }
@@ -89,8 +97,9 @@ public class RequisitionTemplateValidator implements Validator {
   private void validateCalculatedFields(Errors errors, RequisitionTemplate template) {
     if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
         && template.isColumnCalculated(STOCK_ON_HAND)) {
-      errors.rejectValue(COLUMNS_MAP, TOTAL_CONSUMED_QUANTITY + " and " + STOCK_ON_HAND
-          + "columns cannot be calculated at the same time");
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
+          "requisition.error.validation.cannot-calculate-at-the-same-time", TOTAL_CONSUMED_QUANTITY,
+          STOCK_ON_HAND)).toString());
     }
   }
 
@@ -99,8 +108,9 @@ public class RequisitionTemplateValidator implements Validator {
     if (template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
         if (!template.isColumnInTemplate(requiredField)) {
-          errors.rejectValue(COLUMNS_MAP, requiredField + " must be in template when "
-              + field + " is in template");
+          errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
+              "requisition.error.validation.field-must-be-in-template",requiredField, field))
+              .toString());
         }
         if (template.isColumnUserInput(requiredField)) {
           rejectIfNotDisplayed(errors, template, requiredField, suffix);
@@ -112,7 +122,8 @@ public class RequisitionTemplateValidator implements Validator {
   private void rejectIfNotDisplayed(Errors errors, RequisitionTemplate template,
                                     String field, String suffix) {
     if (!template.isColumnDisplayed(field)) {
-      errors.rejectValue(COLUMNS_MAP, field + suffix);
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(
+          new Message(suffix, field)).toString());
     }
   }
 
@@ -127,8 +138,9 @@ public class RequisitionTemplateValidator implements Validator {
     SourceType chosenSource = column.getSource();
     if (chosenSource != null
         && !column.getColumnDefinition().getSources().contains(chosenSource)) {
-      errors.rejectValue(COLUMNS_MAP, RequisitionTemplate.SOURCE + chosenSource.toString()
-          + RequisitionTemplate.WARNING_SUFFIX);
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(
+          new Message("requisition.error.validation.source-is-not-available",
+              chosenSource.toString())).toString());
     }
   }
 
@@ -136,8 +148,9 @@ public class RequisitionTemplateValidator implements Validator {
     AvailableRequisitionColumnOption chosenOption = column.getOption();
     if (chosenOption != null
         && !column.getColumnDefinition().getOptions().contains(chosenOption)) {
-      errors.rejectValue(COLUMNS_MAP, RequisitionTemplate.OPTION + chosenOption.getOptionName()
-          + RequisitionTemplate.WARNING_SUFFIX);
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(
+          new Message("requisition.error.validation.option-is-not-available",
+              chosenOption.toString())).toString());
     }
   }
 }

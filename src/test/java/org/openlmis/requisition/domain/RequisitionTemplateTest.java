@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +86,7 @@ public class RequisitionTemplateTest {
 
   @Test
   public void shouldThrowIfSourceIsNotAvailableInColumn() {
-    expectedException.expect(RequisitionTemplateColumnException.class);
+    expectedException.expect(ValidationMessageException.class);
     requisitionTemplate.changeColumnSource(COLUMN_NAMES[0], SourceType.REFERENCE_DATA);
 
     expectedException.expectMessage(RequisitionTemplate.SOURCE + SourceType.REFERENCE_DATA
@@ -95,7 +95,7 @@ public class RequisitionTemplateTest {
 
   @Test
   public void shouldThrowIfOptionIsNotAvailableInColumn() {
-    expectedException.expect(RequisitionTemplateColumnException.class);
+    expectedException.expect(ValidationMessageException.class);
     AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
         requisitionTemplate.getColumnsMap().get(COLUMN_NAMES[0])
             .getColumnDefinition(), "option1", "label1");

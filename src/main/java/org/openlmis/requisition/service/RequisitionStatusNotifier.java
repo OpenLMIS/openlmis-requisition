@@ -7,7 +7,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -41,8 +40,7 @@ public class RequisitionStatusNotifier {
    * @param requisition requisition that was converted
    * @return true if success, false if failed.
    */
-  public Boolean notifyConvertToOrder(Requisition requisition)
-      throws ConfigurationSettingException {
+  public Boolean notifyConvertToOrder(Requisition requisition) {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());

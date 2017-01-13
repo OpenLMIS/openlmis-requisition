@@ -22,8 +22,8 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
 
 import java.time.LocalDateTime;
@@ -249,15 +249,16 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Submits given requisition.
    */
-  public void submit() throws RequisitionException {
+  public void submit() {
     if (!INITIATED.equals(status)) {
-      throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
-          + ", requisition must have status 'INITIATED' to be submitted.");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.submit.must-be-initiated-to-be-submitted", getId()));
     }
 
-    if (RequisitionHelper.areFieldsNotFilled(template, getNonSkippedRequisitionLineItems())) {
-      throw new InvalidRequisitionStatusException("Cannot submit requisition: " + getId()
-          + ", requisition fields must have values.");
+
+    if (RequisitionHelper.areFieldsNotFilled(template, requisitionLineItems)) {
+      throw new ValidationMessageException(new Message(
+          "requisition.error.submit.fields-must-have-values", getId()));
     }
 
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
@@ -280,11 +281,10 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Authorize given Requisition.
    */
-  public void authorize()
-      throws RequisitionException {
+  public void authorize() {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
-      throw new InvalidRequisitionStatusException("Cannot authorize requisition: " + getId()
-          + ", requisition must have status 'SUBMITTED' to be authorized.");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.authorize.must-be-submitted-to-be-authorize", getId()));
     }
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(

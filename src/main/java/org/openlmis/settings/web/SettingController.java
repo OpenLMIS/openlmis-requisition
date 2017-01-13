@@ -2,7 +2,6 @@ package org.openlmis.settings.web;
 
 import org.openlmis.requisition.web.BaseController;
 import org.openlmis.settings.domain.ConfigurationSetting;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,11 +25,7 @@ public class SettingController extends BaseController {
    */
   @RequestMapping(value = "/settings/{key}", method = RequestMethod.GET)
   public ResponseEntity<?> getByKey(@PathVariable(value = "key") String key) {
-    try {
-      ConfigurationSetting setting = configurationSettingService.getByKey(key);
-      return new ResponseEntity<>(setting, HttpStatus.OK);
-    } catch (ConfigurationSettingException ex) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
-    }
+    ConfigurationSetting setting = configurationSettingService.getByKey(key);
+    return new ResponseEntity<>(setting, HttpStatus.OK);
   }
 }

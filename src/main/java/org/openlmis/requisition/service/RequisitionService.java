@@ -16,12 +16,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.InvalidRequisitionStateException;
-import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.RequisitionConversionException;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
-import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
@@ -34,7 +29,6 @@ import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.PaginationHelper;
@@ -59,7 +53,7 @@ import java.util.stream.Collectors;
 // TODO: split this up in OLMIS-1102
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionService {
-  private static final String REQUISITION_BAD_STATUS_MESSAGE = "requisition has bad status";
+
   private static final String CAN_NOT_SKIP_PERIOD_STATUS =
       "requisition.error.canNotSkipPeriod.status";
   private static final String CAN_NOT_SKIP_PERIOD_PROGRAM =
@@ -67,8 +61,8 @@ public class RequisitionService {
   private static final String CAN_NOT_SKIP_EMERGENCY_REQUISITION =
       "requisition.error.canNotSkipPeriod.emergency";
   private static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
-
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
+  private static final String REQUISITION_NOT_FOUND = "requisition.error.requisition-not-found";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -127,12 +121,9 @@ public class RequisitionService {
    * @param emergency         Emergency status.
    * @param suggestedPeriodId Period for requisition.
    * @return Initiated requisition.
-   * @throws RequisitionException Exception thrown when it is not possible to initialize a
-   *                              requisition.
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                              UUID creatorId, boolean emergency)
-      throws RequisitionException {
+                              UUID creatorId, boolean emergency) {
     Requisition requisition = RequisitionBuilder.newRequisition(facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setCreatorId(creatorId);
@@ -179,20 +170,23 @@ public class RequisitionService {
     return requisition;
   }
 
-  private RequisitionTemplate findRequisitionTemplate(UUID programId) throws RequisitionException {
+  private RequisitionTemplate findRequisitionTemplate(UUID programId) {
     if (null == programId) {
-      throw new IllegalArgumentException("Program ID cannot be null");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.program-id-cannot-be-null"));
     }
 
     RequisitionTemplate template =
         requisitionTemplateService.getTemplateForProgram(programId);
 
     if (null == template) {
-      throw new RequisitionTemplateNotFoundException("RequisitionTemplate not found");
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.requisition-template-not-found"));
     }
 
     if (!template.hasColumnsDefined()) {
-      throw new RequisitionTemplateNotFoundException("RequisitionTemplate is not defined");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.requisitiontemplate-not-defined"));
     } else {
       return template;
     }
@@ -202,16 +196,15 @@ public class RequisitionService {
    * Delete given Requisition if possible.
    *
    * @param requisitionId UUID of Requisition to be deleted.
-   * @throws RequisitionException Exception thrown when it is not possible to delete a requisition.
    */
-  public void delete(UUID requisitionId) throws RequisitionException {
+  public void delete(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new RequisitionNotFoundException(requisitionId);
+      throw new ContentNotFoundMessageException(new Message(
+          REQUISITION_NOT_FOUND, requisitionId));
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-      throw new InvalidRequisitionStatusException("Delete failed - "
-          + REQUISITION_BAD_STATUS_MESSAGE);
+      throw new ValidationMessageException(new Message("requisition.error.bad-status.delete"));
     } else {
       statusMessageRepository.delete(statusMessageRepository.findByRequisitionId(requisitionId));
       requisitionRepository.delete(requisition);
@@ -224,13 +217,13 @@ public class RequisitionService {
    *
    * @param requisitionId UUID of Requisition to be skipped.
    * @return Skipped Requisition.
-   * @throws RequisitionException Exception thrown when it is not possible to skip a requisition.
    */
-  public Requisition skip(UUID requisitionId) throws RequisitionException {
+  public Requisition skip(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new RequisitionNotFoundException(requisitionId);
+      throw new ContentNotFoundMessageException(new Message(
+          REQUISITION_NOT_FOUND, requisitionId));
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
@@ -248,6 +241,27 @@ public class RequisitionService {
         requisition.setStatus(RequisitionStatus.SKIPPED);
         return requisitionRepository.save(requisition);
       }
+    }
+  }
+
+  /**
+   * Reject given requisition if possible.
+   *
+   * @param requisitionId UUID of Requisition to be rejected.
+   */
+  public Requisition reject(UUID requisitionId) {
+
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition == null) {
+      throw new ContentNotFoundMessageException(new Message(
+          REQUISITION_NOT_FOUND, requisitionId));
+    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+      LOGGER.debug("Requisition rejected: " + requisitionId);
+      requisition.setStatus(RequisitionStatus.INITIATED);
+      return requisitionRepository.save(requisition);
+    } else {
+      throw new ValidationMessageException(new Message(
+          "requisition.error.reject.requisition-must-be-waiting-for-approval", requisitionId));
     }
   }
 
@@ -329,7 +343,7 @@ public class RequisitionService {
    * @return list of released requisitions
    */
   public List<Requisition> releaseRequisitionsAsOrder(
-      List<ConvertToOrderDto> convertToOrderDtos, UserDto user) throws RequisitionException {
+      List<ConvertToOrderDto> convertToOrderDtos, UserDto user) {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)
@@ -342,8 +356,8 @@ public class RequisitionService {
       if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
         loadedRequisition.setStatus(RequisitionStatus.RELEASED);
       } else {
-        throw new InvalidRequisitionStatusException("Can not release requisition: "
-            + loadedRequisition.getId() + " as order. Requisition must be approved.");
+        throw new ValidationMessageException(new Message(
+            "requisition.error.release.requisition-must-be-approved", loadedRequisition.getId()));
       }
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
@@ -354,8 +368,8 @@ public class RequisitionService {
       if (validFacilities.contains(facilityId)) {
         loadedRequisition.setSupplyingFacilityId(facilityId);
       } else {
-        throw new InvalidRequisitionStateException("Can not release requisition: "
-            + loadedRequisition.getId() + " as order. Requisition must have supplying facility.");
+        throw new ValidationMessageException(new Message(
+            "requisition.error.release.must-have-supplying-facility",loadedRequisition.getId()));
       }
 
       releasedRequisitions.add(loadedRequisition);
@@ -435,8 +449,7 @@ public class RequisitionService {
    * Converting Requisition list to Orders.
    */
   @Transactional
-  public void convertToOrder(List<ConvertToOrderDto> list, UserDto user)
-      throws RequisitionException, ConfigurationSettingException {
+  public void convertToOrder(List<ConvertToOrderDto> list, UserDto user) {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
 
     for (Requisition requisition : releasedRequisitions) {
@@ -445,8 +458,8 @@ public class RequisitionService {
         requisitionRepository.save(requisition);
         requisitionStatusNotifier.notifyConvertToOrder(requisition);
       } else {
-        throw new RequisitionConversionException("Error while converting requisition: "
-            + order.getExternalId() + " to order.");
+        throw new ValidationMessageException(new Message(
+            "requisition.error.converting-requisition-to-order", order.getExternalId()));
       }
     }
   }

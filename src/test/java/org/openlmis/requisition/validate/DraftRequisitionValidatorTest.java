@@ -21,8 +21,10 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
@@ -32,6 +34,9 @@ import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DraftRequisitionValidatorTest {
+  @Mock
+  private MessageService messageService;
+
   @Mock
   private RequisitionRepository requisitionRepository;
 
@@ -80,6 +85,24 @@ public class DraftRequisitionValidatorTest {
         updatedRequisition.getCreatorId());
     updatedRequisition.setEmergency(false);
 
+    Message message1 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.PROGRAM_ID);
+    Message message2 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.FACILITY_ID);
+    Message message3 = new Message(DraftRequisitionValidator.IS_INVARIANT,
+        Requisition.PROCESSING_PERIOD_ID);
+    Message message4 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.EMERGENCY);
+    Message message5 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.CREATOR_ID);
+
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.IS_INVARIANT));
+    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
+        RequisitionValidator.IS_INVARIANT));
+    when(messageService.localize(message3)).thenReturn(message3.new LocalizedMessage(
+        RequisitionValidator.IS_INVARIANT));
+    when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
+        RequisitionValidator.IS_INVARIANT));
+    when(messageService.localize(message5)).thenReturn(message5.new LocalizedMessage(
+        RequisitionValidator.IS_INVARIANT));
+
     draftRequisitionValidator.validate(updatedRequisition, errors);
 
     verify(errors).rejectValue(eq(Requisition.PROGRAM_ID),
@@ -103,6 +126,22 @@ public class DraftRequisitionValidatorTest {
     requisitionTemplate.changeColumnSource(RequisitionLineItem.STOCK_ON_HAND,
         SourceType.CALCULATED);
 
+    Message message = new Message(DraftRequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED,
+        RequisitionLineItem.STOCK_ON_HAND);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        RequisitionLineItem.STOCK_ON_HAND + " is calculated and should not contain a value."));
+    Message message1 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        RequisitionLineItem.APPROVED_QUANTITY);
+    Message message2 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        RequisitionLineItem.REMARKS_COLUMN);
+
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionLineItem.APPROVED_QUANTITY + "is only available during the approval step of "
+            + "the requisition process."));
+    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
+        RequisitionLineItem.REMARKS_COLUMN + "is only available during the approval step of the "
+            + "requisition process."));
+
     draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
@@ -116,15 +155,28 @@ public class DraftRequisitionValidatorTest {
 
     requisitionLineItems.add(lineItem);
 
+    Message message1 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        RequisitionLineItem.APPROVED_QUANTITY);
+    Message message2 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        RequisitionLineItem.REMARKS_COLUMN);
+
+    when(messageService.localize(message1))
+        .thenReturn(message1.new LocalizedMessage(
+            RequisitionLineItem.APPROVED_QUANTITY + " is only available during the approval step of"
+                + " the requisition process."))
+        .thenReturn(message2.new LocalizedMessage(
+        RequisitionLineItem.REMARKS_COLUMN + " is only available during the approval step of the "
+            + "requisition process."));
+
     draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionLineItem.APPROVED_QUANTITY
-            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
+        contains(RequisitionLineItem.APPROVED_QUANTITY
+            + " is only available during the approval step of the requisition process."));
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionLineItem.REMARKS_COLUMN
-            + RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP));
+        contains(RequisitionLineItem.REMARKS_COLUMN
+            + " is only available during the approval step of the requisition process."));
   }
 
   @Test
@@ -137,6 +189,18 @@ public class DraftRequisitionValidatorTest {
 
     requisitionLineItems.add(lineItem);
     requisitionLineItems.add(lineItem2);
+
+    Message message1 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        RequisitionLineItem.APPROVED_QUANTITY);
+    Message message2 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        RequisitionLineItem.REMARKS_COLUMN);
+
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionLineItem.APPROVED_QUANTITY + "is only available during the approval step of "
+            + "the requisition process."));
+    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
+        RequisitionLineItem.REMARKS_COLUMN + "is only available during the approval step of the "
+            + "requisition process."));
 
     draftRequisitionValidator.validate(requisition, errors);
 

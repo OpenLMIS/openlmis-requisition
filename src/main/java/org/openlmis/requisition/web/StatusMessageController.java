@@ -2,7 +2,6 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +24,7 @@ public class StatusMessageController extends BaseController {
    * Get all status messages for the specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/statusMessages", method = RequestMethod.GET)
-  public ResponseEntity getAllRequisitionStatusMessages(@PathVariable("id") UUID id)
-      throws RequisitionNotFoundException {
+  public ResponseEntity getAllRequisitionStatusMessages(@PathVariable("id") UUID id) {
     List<StatusMessage> statusMessages = statusMessageRepository.findByRequisitionId(id);
     return ResponseEntity.ok(exportToDtos(statusMessages));
   }

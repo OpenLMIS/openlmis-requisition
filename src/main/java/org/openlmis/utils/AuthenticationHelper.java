@@ -2,7 +2,7 @@ package org.openlmis.utils;
 
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.AuthenticationException;
+import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class AuthenticationHelper {
    * and fetches his data from reference-data service.
    *
    * @return UserDto entity of current user.
-   * @throws AuthenticationException if user cannot be found.
+   * @throws AuthenticationMessageException if user cannot be found.
    */
   public UserDto getCurrentUser() {
     String username =
@@ -31,7 +31,8 @@ public class AuthenticationHelper {
     UserDto user = userReferenceDataService.findUser(username);
 
     if (user == null) {
-      throw new AuthenticationException("User with name \"" + username + "\" not found.");
+      throw new AuthenticationMessageException(new Message(
+          "requisition.error.authentication.user-can-not-be-found", username));
     }
 
     return user;
@@ -42,13 +43,14 @@ public class AuthenticationHelper {
    *
    * @param name right name
    * @return RightDto entity of right.
-   * @throws AuthenticationException if right cannot be found.
+   * @throws AuthenticationMessageException if right cannot be found.
    */
   public RightDto getRight(String name) {
     RightDto right = rightReferenceDataService.findRight(name);
 
     if (null == right) {
-      throw new AuthenticationException("Right with name \"" + name + "\" not found");
+      throw new AuthenticationMessageException(new Message(
+          "requisition.error.authentication.right-can-not-be-found", name));
     }
 
     return right;

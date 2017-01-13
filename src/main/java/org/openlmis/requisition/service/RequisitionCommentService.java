@@ -6,11 +6,11 @@ import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.CommentNotFoundException;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +45,8 @@ public class RequisitionCommentService {
    * @param requisitionId the id of the requisition
    * @param comment       the comment to be added
    * @return all comments of the requisition
-   * @throws RequisitionNotFoundException if the requisition with the given id does not exist
    */
-  public List<Comment> insertComment(UUID requisitionId, Comment comment)
-      throws RequisitionNotFoundException {
+  public List<Comment> insertComment(UUID requisitionId, Comment comment) {
     Requisition requisition = findRequisition(requisitionId);
 
     UserDto user = authenticationHelper.getCurrentUser();
@@ -65,10 +63,8 @@ public class RequisitionCommentService {
    *
    * @param requisitionId the id of the requisition
    * @return all comments of the requisition
-   * @throws RequisitionNotFoundException if the requisition with the given id does not exist
    */
-  public List<Comment> findCommentsForRequisition(UUID requisitionId)
-      throws RequisitionNotFoundException {
+  public List<Comment> findCommentsForRequisition(UUID requisitionId) {
     Requisition requisition = findRequisition(requisitionId);
     return requisition.getComments();
   }
@@ -115,18 +111,20 @@ public class RequisitionCommentService {
    *
    * @param commentId the id of the comment
    */
-  public void deleteComment(UUID commentId) throws CommentNotFoundException {
+  public void deleteComment(UUID commentId) {
     Comment comment = commentRepository.findOne(commentId);
     if (comment == null) {
-      throw new CommentNotFoundException(commentId);
+      throw new ContentNotFoundMessageException(new Message("requisition.error.comment-not-found",
+          commentId));
     }
     commentRepository.delete(comment);
   }
 
-  private Requisition findRequisition(UUID requisitionId) throws RequisitionNotFoundException {
+  private Requisition findRequisition(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      throw new RequisitionNotFoundException(requisitionId);
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.requisition-not-found", requisitionId));
     }
     return requisition;
   }

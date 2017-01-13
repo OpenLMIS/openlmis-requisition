@@ -27,7 +27,7 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.web.MissingPermissionException;
+import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
 
 import java.util.ArrayList;
@@ -302,9 +302,9 @@ public class PermissionServiceTest {
   }
 
   private void expectException(String rightName) {
-    exception.expect(MissingPermissionException.class);
+    exception.expect(PermissionMessageException.class);
     exception.expectMessage(
-        "You do not have the following permission to perform this action: " + rightName
+        "requisition.error.authorization.no-following-permission: " + rightName
     );
   }
 

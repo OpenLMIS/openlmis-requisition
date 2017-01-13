@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
-import org.openlmis.requisition.exception.RequisitionException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -69,7 +69,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() throws RequisitionException {
+  public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisition.authorize();
@@ -77,16 +77,14 @@ public class RequisitionTest {
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
 
-  @Test(expected = RequisitionException.class)
-  public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.authorize();
   }
 
   @Test
-  public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing()
-      throws RequisitionException {
+  public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing() {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     mockStatic(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
@@ -110,8 +108,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateTotalValueWhenUpdatingRequisition()
-      throws RequisitionException {
+  public void shouldCalculateTotalValueWhenUpdatingRequisition() {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     mockStatic(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
@@ -349,8 +346,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenSubmit()
-      throws RequisitionException {
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenSubmit() {
     // given
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
@@ -364,8 +360,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAverageConsumptionWhenSubmitWithOnePreviousRequisition()
-      throws RequisitionException {
+  public void shouldCalculateAverageConsumptionWhenSubmitWithOnePreviousRequisition() {
     // given
 
     List<Integer> adjustedConsumptions = new ArrayList<>();
@@ -384,8 +379,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAverageConsumptionWhenSubmitWithManyPreviousRequisitions()
-      throws RequisitionException {
+  public void shouldCalculateAverageConsumptionWhenSubmitWithManyPreviousRequisitions() {
     // given
     List<Integer> adjustedConsumptions = new ArrayList<>();
     adjustedConsumptions.add(5);
@@ -405,8 +399,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenAuthorize()
-      throws RequisitionException {
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenAuthorize() {
     // given
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -421,8 +414,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenApprove()
-      throws RequisitionException {
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenApprove() {
     // given
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
     requisition.setStatus(RequisitionStatus.APPROVED);

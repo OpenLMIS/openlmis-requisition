@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.AuthenticationException;
+import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.security.core.Authentication;
@@ -59,7 +59,7 @@ public class AuthenticationHelperTest {
     assertNotNull(user);
   }
 
-  @Test(expected = AuthenticationException.class)
+  @Test(expected = AuthenticationMessageException.class)
   public void shouldThrowExceptionIfUserDoesNotExist() {
     // given
     when(userReferenceDataService.findUser(any(String.class))).thenReturn(null);
@@ -82,7 +82,7 @@ public class AuthenticationHelperTest {
     assertThat(dto, is(right));
   }
 
-  @Test(expected = AuthenticationException.class)
+  @Test(expected = AuthenticationMessageException.class)
   public void shouldThrowExceptionIfRightDoesNotExist() {
     // given
     when(rightReferenceDataService.findRight(anyString())).thenReturn(null);

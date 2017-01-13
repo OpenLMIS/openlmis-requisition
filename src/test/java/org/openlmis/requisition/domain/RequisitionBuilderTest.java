@@ -16,7 +16,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
 import java.util.ArrayList;
@@ -73,27 +72,26 @@ public class RequisitionBuilderTest {
     when(programDto.getId()).thenReturn(programUuid);
   }
 
-  @Test(expected = RequisitionInitializationException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenProgramIdIsMissing()
-      throws RequisitionInitializationException {
+      throws ValidationMessageException {
     RequisitionBuilder.newRequisition(null, UUID.randomUUID(), true);
   }
 
-  @Test(expected = RequisitionInitializationException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenFacilityIdIsMissing() throws
-      RequisitionInitializationException {
+      ValidationMessageException {
     RequisitionBuilder.newRequisition(UUID.randomUUID(), null, true);
   }
 
-  @Test(expected = RequisitionInitializationException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenEmergencyFlagIsMissing() throws
-      RequisitionInitializationException {
+      ValidationMessageException {
     RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), null);
   }
 
   @Test
-  public void shouldInitializeRequisitionWithGivenProgramFacilityAndEmergencyFlag()
-      throws RequisitionInitializationException {
+  public void shouldInitializeRequisitionWithGivenProgramFacilityAndEmergencyFlag() {
     Requisition requisition = RequisitionBuilder.newRequisition(facilityUuid, programUuid, false);
 
     assertFalse(requisition.getEmergency());

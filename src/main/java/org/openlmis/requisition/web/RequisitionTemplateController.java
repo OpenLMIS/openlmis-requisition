@@ -57,8 +57,7 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   public ResponseEntity<?> createRequisitionTemplate(
-      @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult)
-      throws MissingPermissionException {
+      @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
@@ -95,8 +94,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionTemplate(
       @RequestBody @Valid RequisitionTemplate requisitionTemplate,
-      @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult)
-      throws MissingPermissionException {
+      @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
@@ -145,8 +143,7 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteRequisitionTemplate(@PathVariable("id")
-                                                         UUID requisitionTemplateId)
-      throws MissingPermissionException {
+                                                         UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate();
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);

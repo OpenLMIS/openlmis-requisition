@@ -20,10 +20,12 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StockAdjustment;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
 import java.math.BigDecimal;
@@ -35,6 +37,14 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionValidatorTest {
+
+  private static final String ENTERED_PRIOR_SUBMISSION_NOTIFICATION =
+      " must be entered prior to submission of a requisition.";
+  private static final String REASON_MUST_BE_NON_NEGATIVE =
+      "reasonId with id must be a non-negative value.";
+
+  @Mock
+  private MessageService messageService;
   @Mock
   private RequisitionRepository requisitionRepository;
 
@@ -69,10 +79,16 @@ public class RequisitionValidatorTest {
   public void shouldRejectIfRequisitionItemsEmpty() {
     requisitionLineItems = new ArrayList<>();
 
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
+
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq("A requisitionLineItems" + RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION));
+        contains("requisitionLineItems must be entered prior to submission of a requisition." ));
   }
 
   @Test
@@ -81,11 +97,23 @@ public class RequisitionValidatorTest {
     lineItem.setRequestedQuantity(-1);
     requisitionLineItems.add(lineItem);
 
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
+
+    Message message = new Message("requisition.error.validation.must-be-non-negative",
+        RequisitionLineItem.REQUESTED_QUANTITY);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        RequisitionLineItem.REQUESTED_QUANTITY
+            + " must be a non-negative value."));
+
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionLineItem.REQUESTED_QUANTITY
-            + RequisitionValidator.VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION));
+        contains(RequisitionLineItem.REQUESTED_QUANTITY
+            + " must be a non-negative value."));
   }
 
   @Test
@@ -94,14 +122,20 @@ public class RequisitionValidatorTest {
     lineItem.setRequestedQuantity(null);
     requisitionLineItems.add(lineItem);
 
+    Message message = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionLineItem.REQUESTED_QUANTITY);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        RequisitionLineItem.REQUESTED_QUANTITY
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
+
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        eq(RequisitionLineItem.REQUESTED_QUANTITY
-            + RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION));
+        contains(RequisitionLineItem.REQUESTED_QUANTITY
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
   }
 
-  @Test(expected = RequisitionTemplateColumnException.class)
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(1);
@@ -120,13 +154,24 @@ public class RequisitionValidatorTest {
 
     columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
 
+    Message message = new Message("requisition.error.validation.is-hidden",
+        RequisitionLineItem.STOCK_ON_HAND);
+    when(messageService.localize(message)).thenReturn(
+        message.new LocalizedMessage("is hidden in template and should not contain a value."));
+
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
+
     requisitionValidator.validate(requisition, errors);
 
     // 1. when we check if value is not null
     // 2. when we check if values is greater or equal to zero
     // 3. when we check if calculation was correct
     verify(errors, times(3)).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionValidator.TEMPLATE_COLUMN_IS_HIDDEN));
+        contains("is hidden in template and should not contain a value."));
   }
 
   @Test
@@ -134,6 +179,18 @@ public class RequisitionValidatorTest {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setStockOnHand(2);
     requisitionLineItems.add(lineItem);
+
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
+
+    Message message2 = new Message("requisition.error.validation.incorrect-value",
+        RequisitionLineItem.STOCK_ON_HAND,
+        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
+        "has incorrect value, it does not match the calculated value."));
 
     requisitionValidator.validate(requisition, errors);
 
@@ -148,7 +205,21 @@ public class RequisitionValidatorTest {
     lineItem.getStockAdjustments().add(adjustment);
     requisitionLineItems.add(lineItem);
 
+    Message message = new Message("requisition.error.validation.stock-adjustment-not-found",
+        adjustment.getReasonId());
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    Message message2 = new Message("requisition.error.validation.stock-adjustment-non-negative",
+        adjustment.getReasonId());
+
     when(adjustment.getId()).thenReturn(UUID.randomUUID());
+    when(messageService.localize(message)).thenReturn(
+        message.new LocalizedMessage("reasonId with id  could not be found."));
+    when(messageService.localize(message2)).thenReturn(
+        message2.new LocalizedMessage(REASON_MUST_BE_NON_NEGATIVE));
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
 
     requisitionValidator.validate(requisition, errors);
 
@@ -163,12 +234,26 @@ public class RequisitionValidatorTest {
     lineItem.getStockAdjustments().add(adjustment);
     requisitionLineItems.add(lineItem);
 
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    Message message = new Message("requisition.error.validation.stock-adjustment-not-found",
+        adjustment.getReasonId());
+    Message message2 = new Message("requisition.error.validation.stock-adjustment-non-negative",
+        adjustment.getReasonId());
+
     when(adjustment.getQuantity()).thenReturn(null);
+    when(messageService.localize(message)).thenReturn(
+        message.new LocalizedMessage("must be a non-negative value."));
+    when(messageService.localize(message2)).thenReturn(
+        message2.new LocalizedMessage(REASON_MUST_BE_NON_NEGATIVE));
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
 
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
-        contains(RequisitionValidator.VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION));
+        contains(REASON_MUST_BE_NON_NEGATIVE));
   }
 
   @Test
@@ -178,12 +263,26 @@ public class RequisitionValidatorTest {
     lineItem.getStockAdjustments().add(adjustment);
     requisitionLineItems.add(lineItem);
 
+    Message message = new Message("requisition.error.validation.stock-adjustment-not-found",
+        adjustment.getReasonId());
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    Message message2 = new Message("requisition.error.validation.stock-adjustment-non-negative",
+        adjustment.getReasonId());
+
     when(adjustment.getQuantity()).thenReturn(-6);
+    when(messageService.localize(message)).thenReturn(
+        message.new LocalizedMessage("must be a non-negative value."));
+    when(messageService.localize(message2)).thenReturn(
+        message2.new LocalizedMessage(REASON_MUST_BE_NON_NEGATIVE));
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
 
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
-        contains(RequisitionValidator.VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION));
+        contains(REASON_MUST_BE_NON_NEGATIVE));
   }
 
   @Test
@@ -191,6 +290,18 @@ public class RequisitionValidatorTest {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setTotalConsumedQuantity(2);
     requisitionLineItems.add(lineItem);
+
+    Message message1 = new Message(RequisitionValidator.VALUE_MUST_BE_ENTERED_NOTIFICATION,
+        RequisitionValidator.REQUISITION_LINE_ITEMS);
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        RequisitionValidator.REQUISITION_LINE_ITEMS
+            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
+
+    Message message2 = new Message("requisition.error.validation.incorrect-value",
+        RequisitionLineItem.STOCK_ON_HAND,
+        RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
+        "has incorrect value, it does not match the calculated value."));
 
     requisitionValidator.validate(requisition, errors);
 
@@ -218,6 +329,7 @@ public class RequisitionValidatorTest {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setRequestedQuantity(1);
     lineItem.setBeginningBalance(1);
+    lineItem.setApprovedQuantity(1);
     lineItem.setTotalReceivedQuantity(1);
     lineItem.setStockOnHand(1);
     lineItem.setTotalConsumedQuantity(1);

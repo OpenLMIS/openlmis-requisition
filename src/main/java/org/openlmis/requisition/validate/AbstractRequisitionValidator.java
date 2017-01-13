@@ -2,24 +2,32 @@ package org.openlmis.requisition.validate;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.utils.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
+@Component
 abstract class AbstractRequisitionValidator implements Validator {
 
+  @Autowired
+  MessageService messageService;
+
   static final String TEMPLATE_COLUMN_IS_CALCULATED =
-      " is calculated and should not contain a value";
+      "requisition.error.validation.field-is-calculated";
   static final String IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP =
-      " is only available during the approval step of the requisition process.";
+      "requisition.error.validation.only-available-for-approval";
   static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
   static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
-      " must be a non-negative value.";
+      "requisition.error.validation.must-be-non-negative";
   static final String VALUE_MUST_BE_ENTERED_NOTIFICATION =
-      " must be entered prior to submission of a requisition.";
+      "requisition.error.validation.value-must-be-entered";
   static final String TEMPLATE_COLUMN_IS_HIDDEN =
-      " is hidden in template and should not contain a value.";
+      "requisition.error.validation.is-hidden";
   static final String IS_INVARIANT =
-      " is an invariant and should not change.";
+      "requisition.error.validation.is-invariant";
 
   public boolean supports(Class<?> clazz) {
     return Requisition.class.equals(clazz);
@@ -34,7 +42,8 @@ abstract class AbstractRequisitionValidator implements Validator {
                                      String field) {
     if (!template.isColumnDisplayed(field)) {
       if (value != null) {
-        errors.rejectValue(REQUISITION_LINE_ITEMS, field + TEMPLATE_COLUMN_IS_HIDDEN);
+        errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
+            new Message(TEMPLATE_COLUMN_IS_HIDDEN, field)).toString());
       }
 
       return false;
@@ -54,7 +63,8 @@ abstract class AbstractRequisitionValidator implements Validator {
     boolean templateValid = checkTemplate(errors, template, value, field);
 
     if (templateValid && value != null && value < 0) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION);
+      errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
+          new Message(VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION, field)).toString());
     }
   }
 
@@ -63,7 +73,8 @@ abstract class AbstractRequisitionValidator implements Validator {
     boolean templateValid = checkTemplate(errors, template, value, field);
 
     if (templateValid && value == null) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, field + VALUE_MUST_BE_ENTERED_NOTIFICATION);
+      errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
+          new Message(VALUE_MUST_BE_ENTERED_NOTIFICATION, field)).toString());
     }
   }
 }

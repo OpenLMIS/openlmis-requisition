@@ -5,13 +5,12 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.exception.InvalidPeriodException;
-import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
+import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -171,21 +170,21 @@ public class PeriodService {
    * @param suggestedPeriodId UUID of suggested period
    * @param emergency         true if requisition has emergency flag; otherwise false.
    * @return an instance of {@link ProcessingPeriodDto}
-   * @throws InvalidPeriodException             if period cannot be found, period has different id
+   * @throws ValidationMessageException         if period cannot be found, period has different id
    *                                            than suggested period or processing schedule of
    *                                            found period has different ID than retrieved
    *                                            schedule.
-   * @throws RequisitionInitializationException if schedule cannot be found
    */
   public ProcessingPeriodDto findPeriod(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                                        Boolean emergency) throws RequisitionException {
+                                        Boolean emergency) {
     ProcessingPeriodDto period;
 
     if (emergency) {
       List<ProcessingPeriodDto> periods = getCurrentPeriods(programId, facilityId);
 
       if (periods.isEmpty()) {
-        throw new InvalidPeriodException("Cannot find current period");
+        throw new ValidationMessageException(
+            new Message("requisition.error.initiate.cannot-find-current-period"));
       }
 
       period = periods.get(0);
@@ -195,25 +194,24 @@ public class PeriodService {
 
     if (period == null
         || (null != suggestedPeriodId && !suggestedPeriodId.equals(period.getId()))) {
-      throw new InvalidPeriodException(
-          "Period should be the oldest and not associated with any requisitions");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.initiate.period-should-be-oldest-and-not-associated"));
     }
 
     Collection<ProcessingScheduleDto> schedules =
         scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId);
 
     if (schedules == null || schedules.isEmpty()) {
-      throw new RequisitionInitializationException(
-          "Cannot initiate requisition. Requisition group program schedule"
-              + " with given program and facility does not exist");
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.initiate"
+              + ".requisition-group-program-schedule-with-program-anf-facility-not-found"));
     }
 
     ProcessingScheduleDto scheduleDto = schedules.iterator().next();
 
     if (!scheduleDto.getId().equals(period.getProcessingSchedule().getId())) {
-      throw new InvalidPeriodException("Cannot initiate requisition."
-          + " Period for the requisition must belong to the same schedule"
-          + " that belongs to the program selected for that requisition");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.initiate.period-must-belong-to-the-same-schedule"));
     }
 
     return period;
@@ -226,15 +224,15 @@ public class PeriodService {
    * @param facilityId Facility for Requisition
    * @return ProcessingPeriodDto.
    */
-  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId)
-      throws RequisitionException {
+  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId) {
 
     Requisition lastRequisition = requisitionRepository.getLastRegularRequisition(
         facilityId, programId
     );
 
     if (null != lastRequisition && lastRequisition.isPreAuthorize()) {
-      throw new InvalidRequisitionStatusException("Please finish previous requisition");
+      throw new ValidationMessageException(new Message(
+          "requisition.error.initiate.finish-previous-requisition"));
     }
 
     ProcessingPeriodDto result = null;

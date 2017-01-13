@@ -2,7 +2,6 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.util.NotificationRequest;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +42,7 @@ public class NotificationService extends BaseCommunicationService {
    * @param content content of the email
    * @return true if success, false if failed.
    */
-  public boolean notify(UserDto user, String subject, String content)
-      throws ConfigurationSettingException {
+  public boolean notify(UserDto user, String subject, String content) {
     String from = configurationSettingService.getStringValue(REQUISITION_EMAIL_NOREPLY);
     String url = notificationUrl + "/api/notification";
 

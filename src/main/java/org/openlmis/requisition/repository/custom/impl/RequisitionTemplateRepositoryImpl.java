@@ -1,7 +1,9 @@
 package org.openlmis.requisition.repository.custom.impl;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryCustom;
+import org.openlmis.utils.Message;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +28,8 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
    */
   public RequisitionTemplate getTemplateForProgram(UUID program) {
     if (program == null) {
-      throw new IllegalArgumentException("Program cannot be null.");
+      throw new ContentNotFoundMessageException(new Message("requisition.error"
+          + ".program-cannot-be-null"));
     }
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<RequisitionTemplate> query = builder.createQuery(RequisitionTemplate.class);

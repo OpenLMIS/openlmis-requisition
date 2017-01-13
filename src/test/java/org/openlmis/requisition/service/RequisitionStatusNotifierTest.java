@@ -10,7 +10,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -53,7 +52,7 @@ public class RequisitionStatusNotifierTest {
   private UUID userId = UUID.randomUUID();
 
   @Before
-  public void setUp() throws RequisitionException {
+  public void setUp() {
     mockServices();
   }
 

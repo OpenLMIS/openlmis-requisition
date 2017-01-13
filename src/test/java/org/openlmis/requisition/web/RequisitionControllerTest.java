@@ -30,7 +30,6 @@ import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -41,7 +40,6 @@ import org.openlmis.requisition.service.referencedata.OrderableProductReferenceD
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
-import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -159,8 +157,7 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldSubmitValidInitiatedRequisition()
-      throws RequisitionException, MissingPermissionException {
+  public void shouldSubmitValidInitiatedRequisition() {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
 
@@ -172,8 +169,7 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldCalculatePacksToShipOnSubmit()
-      throws RequisitionException, MissingPermissionException {
+  public void shouldCalculatePacksToShipOnSubmit() {
     OrderableProductDto orderableProductDto = mock(OrderableProductDto.class);
 
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
@@ -199,8 +195,7 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldNotSubmitInvalidRequisition()
-      throws RequisitionException, MissingPermissionException {
+  public void shouldNotSubmitInvalidRequisition() {
     doAnswer(invocation -> {
       Errors errors = (Errors) invocation.getArguments()[1];
       errors.reject("requisitionLineItems",
@@ -214,7 +209,7 @@ public class RequisitionControllerTest {
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
-  @Test
+  @Test(expected = ValidationMessageException.class)
   public void shouldReturnBadRequestWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
@@ -225,12 +220,8 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid2)).thenReturn(initiatedRequsition);
 
-    ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid2);
+    requisitionController.updateRequisition(requisitionDto, uuid2);
 
-    assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-    assertTrue(responseEntity.getBody() instanceof ErrorResponse);
-    ErrorResponse errorResponse = (ErrorResponse) responseEntity.getBody();
-    assertEquals("Requisition id mismatch", errorResponse.getMessage());
   }
 
   @Test
@@ -261,8 +252,7 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldNotUpdateWithInvalidRequisition()
-      throws RequisitionException, MissingPermissionException {
+  public void shouldNotUpdateWithInvalidRequisition() {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
@@ -328,8 +318,7 @@ public class RequisitionControllerTest {
         .thenReturn(initiatedRequsition);
   }
 
-  private void verifyNoSubmitOrUpdate(Requisition requisition)
-      throws RequisitionException {
+  private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
     verify(requisition, never()).submit();

@@ -6,14 +6,19 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
+  @Autowired
+  private MessageService messageService;
+
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
@@ -72,20 +77,22 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
       expectedStatus = RequisitionStatus.AUTHORIZED;
     }
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
-        expectedStatus, RequisitionLineItem.APPROVED_QUANTITY
-            + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
+        expectedStatus, messageService.localize(new Message(
+            IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+            RequisitionLineItem.APPROVED_QUANTITY)).toString());
 
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getRemarks(),
-        expectedStatus, RequisitionLineItem.REMARKS_COLUMN
-            + IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP);
+        expectedStatus, messageService.localize(new Message(
+            IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+            RequisitionLineItem.REMARKS_COLUMN)).toString());
 
   }
 
   private void rejectIfCalculatedAndNotNull(Errors errors, RequisitionTemplate template,
                                             Object value, String field) {
     if (template.isColumnCalculated(field) && value != null) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS,
-          field + TEMPLATE_COLUMN_IS_CALCULATED);
+      errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
+          new Message(TEMPLATE_COLUMN_IS_CALCULATED, field)).toString());
     }
   }
 
@@ -99,7 +106,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   private void rejectIfValueChanged(Errors errors, Object value,
                                     Object savedValue, String field) {
     if (savedValue != null && !savedValue.equals(value)) {
-      errors.rejectValue(field, field + IS_INVARIANT);
+      errors.rejectValue(field,
+          messageService.localize(new Message(IS_INVARIANT, field)).toString());
     }
   }
 }

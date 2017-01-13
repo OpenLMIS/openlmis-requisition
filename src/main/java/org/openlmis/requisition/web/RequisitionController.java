@@ -17,11 +17,8 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.InvalidPeriodException;
-import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
@@ -36,9 +33,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
@@ -150,8 +145,7 @@ public class RequisitionController extends BaseController {
   public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
                     @RequestParam(value = "facility") UUID facility,
                     @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                    @RequestParam(value = "emergency") boolean emergency)
-      throws RequisitionException, MissingPermissionException {
+                    @RequestParam(value = "emergency") boolean emergency) {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
           new Message("requisition.error.initiate.missing-parameters"));
@@ -161,17 +155,10 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
     UserDto user = authenticationHelper.getCurrentUser();
-    try {
-      Requisition newRequisition = requisitionService
-          .initiate(program, facility, suggestedPeriod, user.getId(), emergency);
-      return new ResponseEntity<>(requisitionDtoBuilder.build(newRequisition), HttpStatus.CREATED);
-    } catch (InvalidPeriodException ipe) {
-      ErrorResponse errorResponse = new ErrorResponse(
-          "Error occurred while initiating requisition - incorrect suggested period.",
-          ipe.getMessage());
-      LOGGER.error(errorResponse.getMessage(), ipe);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+
+    Requisition newRequisition = requisitionService
+        .initiate(program, facility, suggestedPeriod, user.getId(), emergency);
+    return new ResponseEntity<>(requisitionDtoBuilder.build(newRequisition), HttpStatus.CREATED);
   }
 
   /**
@@ -203,8 +190,7 @@ public class RequisitionController extends BaseController {
    * Submits earlier initiated requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
-  public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionException, MissingPermissionException {
+  public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -244,8 +230,7 @@ public class RequisitionController extends BaseController {
    * Deletes requisition with the given id.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionException, MissingPermissionException {
+  public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canDeleteRequisition(requisitionId);
     requisitionService.delete(requisitionId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -260,15 +245,14 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
-                                             @PathVariable("id") UUID requisitionId)
-      throws InvalidRequisitionStatusException, RequisitionNotFoundException,
-      MissingPermissionException {
+                                             @PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
 
     if (requisitionToUpdate == null) {
-      throw new RequisitionNotFoundException(requisitionId);
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.requisition-not-found", requisitionId));
     }
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate());
@@ -276,9 +260,7 @@ public class RequisitionController extends BaseController {
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);
     } else if (!requisitionId.equals(requisition.getId())) {
-      ErrorResponse errorResponse = new ErrorResponse("Requisition id mismatch",
-          "The ID that was provided in the requisition body differs from the one in url");
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+      throw new ValidationMessageException(new Message("requisition.error.id-mismatch"));
     }
 
 
@@ -307,8 +289,8 @@ public class RequisitionController extends BaseController {
           requisitionDtoBuilder.build(requisitionToUpdate), HttpStatus.OK
       );
     } else {
-      throw new InvalidRequisitionStatusException("Cannot update a requisition "
-          + "with status: " + requisition.getStatus());
+      throw new ValidationMessageException(new Message(
+          "requisition.error.update.can-not-update-with-status", requisition.getStatus()));
     }
   }
 
@@ -319,8 +301,7 @@ public class RequisitionController extends BaseController {
    * @return Requisition.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionNotFoundException, MissingPermissionException {
+  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canViewRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -358,9 +339,9 @@ public class RequisitionController extends BaseController {
    * Skipping chosen requisition period.
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
-  public ResponseEntity<RequisitionDto> skipRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionException, MissingPermissionException {
+  public ResponseEntity<RequisitionDto> skipRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
+
     Requisition requisition = requisitionService.skip(requisitionId);
     return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
   }
@@ -369,29 +350,16 @@ public class RequisitionController extends BaseController {
    * Rejecting requisition which is waiting for approve.
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
-  public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id)
-      throws RequisitionException {
-    Requisition requisition = requisitionRepository.findOne(id);
-    if (requisition == null) {
-      throw new RequisitionNotFoundException(id);
-    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
-      LOGGER.debug("Requisition rejected: " + id);
-      requisition.setStatus(RequisitionStatus.INITIATED);
-      saveStatusMessage(requisition);
-      requisition = requisitionRepository.save(requisition);
-      return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
-    } else {
-      throw new InvalidRequisitionStatusException("Cannot reject requisition: " + id
-          + " .Requisition must be waiting for approval to be rejected");
-    }
+  public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id) {
+    Requisition rejectedRequisition = requisitionService.reject(id);
+    return new ResponseEntity<>(requisitionDtoBuilder.build(rejectedRequisition), HttpStatus.OK);
   }
 
   /**
    * Approve specified by id requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
-  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId)
-      throws MissingPermissionException, RequisitionException {
+  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -467,13 +435,12 @@ public class RequisitionController extends BaseController {
    * @return ResponseEntity with authorized Requisition if authorization was successful.
    */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
-  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId)
-      throws RequisitionException, MissingPermissionException {
+  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canAuthorizeRequisition(requisitionId);
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
-      return new ResponseEntity<>("Requisition authorization is configured to be skipped",
-          HttpStatus.BAD_REQUEST);
+      throw new ValidationMessageException(
+          new Message("requisition.error.authorization-to-be-skipped"));
     }
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
@@ -562,19 +529,11 @@ public class RequisitionController extends BaseController {
    * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
   @RequestMapping(value = "/requisitions/convertToOrder", method = RequestMethod.POST)
-  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list)
-      throws MissingPermissionException, ConfigurationSettingException {
-    try {
-      UserDto user = authenticationHelper.getCurrentUser();
-      permissionService.canConvertToOrder(list);
-      requisitionService.convertToOrder(list, user);
-      return new ResponseEntity<>(HttpStatus.CREATED);
-    } catch (RequisitionException err) {
-      ErrorResponse errorResponse = new ErrorResponse(
-          "An error occurred while converting requisitions to order", err.getMessage());
-      LOGGER.error(errorResponse.getMessage(), err);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
+    UserDto user = authenticationHelper.getCurrentUser();
+    permissionService.canConvertToOrder(list);
+    requisitionService.convertToOrder(list, user);
+    return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
   /**
@@ -587,12 +546,13 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/print", method = RequestMethod.GET)
   @ResponseBody
   public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id)
-      throws JasperReportViewException, MissingPermissionException, RequisitionNotFoundException {
+      throws JasperReportViewException {
     permissionService.canViewRequisition(id);
 
     Requisition requisition = requisitionRepository.findOne(id);
     if (requisition == null) {
-      throw new RequisitionNotFoundException(id);
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.requisition-not-found", id));
     }
 
     Template template = templateService.getByName(REQUISITION_PRINT_TEMPLATE_NAME);

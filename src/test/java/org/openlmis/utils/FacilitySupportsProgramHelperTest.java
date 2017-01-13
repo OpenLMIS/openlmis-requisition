@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
-import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 
@@ -42,14 +41,14 @@ public class FacilitySupportsProgramHelperTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenNoSupportedPrograms() throws RequisitionException {
+  public void shouldThrowExceptionWhenNoSupportedPrograms() {
     facilityDto.setSupportedPrograms(Collections.emptyList());
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenProgramIsNotSupported() throws RequisitionException {
+  public void shouldThrowExceptionWhenProgramIsNotSupported() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(UUID.randomUUID());
     supportedProgramDto.setSupportActive(true);
@@ -62,7 +61,7 @@ public class FacilitySupportsProgramHelperTest {
   }
 
   @Test
-  public void shouldPassWhenProgramIsSupported() throws RequisitionException {
+  public void shouldPassWhenProgramIsSupported() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(true);
@@ -75,7 +74,7 @@ public class FacilitySupportsProgramHelperTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSupportIsNotActive() throws RequisitionException {
+  public void shouldThrowExceptionWhenSupportIsNotActive() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(false);
@@ -88,7 +87,7 @@ public class FacilitySupportsProgramHelperTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenProgramIsNotActive() throws RequisitionException {
+  public void shouldThrowExceptionWhenProgramIsNotActive() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(true);
@@ -101,7 +100,7 @@ public class FacilitySupportsProgramHelperTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenStartDateIsAfterCurrentDate() throws RequisitionException {
+  public void shouldThrowExceptionWhenStartDateIsAfterCurrentDate() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(true);
@@ -115,7 +114,7 @@ public class FacilitySupportsProgramHelperTest {
   }
 
   @Test
-  public void shouldPassWhenProgramStartDateIsNull() throws RequisitionException {
+  public void shouldPassWhenProgramStartDateIsNull() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(true);

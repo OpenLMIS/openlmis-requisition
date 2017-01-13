@@ -1,6 +1,7 @@
 package org.openlmis.utils;
 
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -26,8 +27,8 @@ public class RequisitionDtoComparator implements Comparator<RequisitionDto> {
         return o1.getFacility().getName().compareTo(o2.getFacility().getName());
       }
       default: {
-        throw new IllegalArgumentException(
-            compareCondition + " is not a valid column for sorting");
+        throw new ValidationMessageException(new Message(
+            "requisition.error.column-is-not-valid-for-sorting",compareCondition));
       }
     }
   }

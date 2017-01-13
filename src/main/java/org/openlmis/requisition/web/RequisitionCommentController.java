@@ -4,8 +4,6 @@ import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.CommentBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.CommentDto;
-import org.openlmis.requisition.exception.CommentNotFoundException;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequisitionCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +35,7 @@ public class RequisitionCommentController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.POST)
   public ResponseEntity<?> insertComment(
-      @RequestBody CommentDto comment, @PathVariable("id") UUID id)
-      throws RequisitionNotFoundException {
+      @RequestBody CommentDto comment, @PathVariable("id") UUID id) {
     Requisition requisition = requisitionRepository.findOne(comment.getRequisitionId());
     Comment updatedComment = CommentBuilder.newComment(comment, requisition);
 
@@ -52,7 +49,7 @@ public class RequisitionCommentController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/comments", method = RequestMethod.GET)
   public ResponseEntity<?> getCommentsForRequisition(
-      @PathVariable("id") UUID id) throws RequisitionNotFoundException {
+      @PathVariable("id") UUID id) {
     List<Comment> comments = commentService.findCommentsForRequisition(id);
     return new ResponseEntity<>(commentService.exportToDtos(comments), HttpStatus.OK);
   }
@@ -97,8 +94,7 @@ public class RequisitionCommentController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/comments/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId)
-      throws CommentNotFoundException {
+  public ResponseEntity<?> deleteRequisitionComment(@PathVariable("id") UUID commentId) {
     Comment comment = commentService.findComment(commentId);
     if (comment == null) {
       return new ResponseEntity(HttpStatus.NOT_FOUND);

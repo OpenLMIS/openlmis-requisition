@@ -1,10 +1,10 @@
 package org.openlmis.errorhandling;
 
-import org.openlmis.requisition.exception.AuthenticationException;
-import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.exception.AuthenticationMessageException;
+import org.openlmis.requisition.exception.BaseMessageException;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.web.AuthorizationException;
-import org.openlmis.util.ErrorResponse;
+import org.openlmis.requisition.web.PermissionMessageException;
+import org.openlmis.utils.ErrorResponse;
 import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,18 +26,18 @@ public abstract class AbstractErrorHandling {
   @Autowired
   private MessageService messageService;
 
-  @ExceptionHandler(AuthenticationException.class)
+  @ExceptionHandler(AuthenticationMessageException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   @ResponseBody
-  public ErrorResponse handleAuthenticationException(AuthenticationException ex) {
-    return logErrorAndRespond("Could not authenticate user", ex);
+  public Message.LocalizedMessage handleAuthenticationException(AuthenticationMessageException ex) {
+    return getLocalizedMessage(ex);
   }
 
-  @ExceptionHandler(AuthorizationException.class)
+  @ExceptionHandler(PermissionMessageException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   @ResponseBody
-  public ErrorResponse handlePermissionException(AuthorizationException ex) {
-    return logErrorAndRespond("User is lacking permission to access the resource", ex);
+  public Message.LocalizedMessage handlePermissionException(PermissionMessageException ex) {
+    return getLocalizedMessage(ex);
   }
 
   /**
@@ -60,8 +60,10 @@ public abstract class AbstractErrorHandling {
    * @return a LocalizedMessage translated by the MessageService bean
    */
   protected final Message.LocalizedMessage getLocalizedMessage(
-      ValidationMessageException exception) {
-    return messageService.localize(exception.asMessage());
+      BaseMessageException exception) {
+    Message.LocalizedMessage message = messageService.localize(exception.asMessage());
+    logger.error(message.toString());
+    return message;
   }
 
 }

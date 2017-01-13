@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -35,9 +36,9 @@ public class ConfigurationSettingServiceTest {
     assertEquals(configurationSettingService.getByKey("key"), configurationSetting);
   }
 
-  @Test(expected = ConfigurationSettingException.class)
+  @Test(expected = ContentNotFoundMessageException.class)
   public void shouldGetConfigurationSettingByKeyIfDoesNotKeyExists()
-      throws ConfigurationSettingException {
+      throws ContentNotFoundMessageException {
     configurationSettingService.getByKey("testEmpty");
   }
 
@@ -46,8 +47,8 @@ public class ConfigurationSettingServiceTest {
     assertEquals(configurationSettingService.getStringValue("key"), "value");
   }
 
-  @Test(expected = ConfigurationSettingException.class)
-  public void shouldThrowExceptionIfKeyDoesNotExists() throws ConfigurationSettingException {
+  @Test(expected = ContentNotFoundMessageException.class)
+  public void shouldThrowExceptionIfKeyDoesNotExists() throws ContentNotFoundMessageException {
     configurationSettingService.getStringValue("testEmpty");
   }
 

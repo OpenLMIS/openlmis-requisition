@@ -1,7 +1,8 @@
 package org.openlmis.requisition.domain;
 
 import org.hibernate.annotations.Type;
-import org.openlmis.requisition.exception.RequisitionTemplateColumnException;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -151,13 +152,13 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     RequisitionTemplateColumn column = findColumn(key);
 
     if (column.getColumnDefinition().getSources() == null) {
-      throw new RequisitionTemplateColumnException(SOURCE + source.toString()
-          + WARNING_SUFFIX);
+      throw new ValidationMessageException(new Message(
+          "requisition.error.source-not-available-for-this-column", source.toString()));
     }
 
     if (!column.getColumnDefinition().getSources().contains(source)) {
-      throw new RequisitionTemplateColumnException(SOURCE + source.toString()
-          + WARNING_SUFFIX);
+      throw new ValidationMessageException(new Message(
+          "requisition.error.source-not-available-for-this-column", source.toString()));
     }
     column.setSource(source);
   }
@@ -173,13 +174,13 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     RequisitionTemplateColumn column = findColumn(key);
 
     if (column.getColumnDefinition().getOptions() == null) {
-      throw new RequisitionTemplateColumnException(OPTION + option.getOptionName()
-          + WARNING_SUFFIX);
+      throw new ValidationMessageException(new Message(
+          "requisition.error.option-not-available-fot-this-column", option.getOptionName()));
     }
 
     if (!column.getColumnDefinition().getOptions().contains(option)) {
-      throw new RequisitionTemplateColumnException(OPTION + option.getOptionName()
-          + WARNING_SUFFIX);
+      throw new ValidationMessageException(new Message(
+          "requisition.error.option-not-available-fot-this-column", option.getOptionName()));
     }
     column.setOption(option);
   }
@@ -241,15 +242,15 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   public RequisitionTemplateColumn findColumn(String name) {
     RequisitionTemplateColumn column = getRequisitionTemplateColumn(name);
     if (column == null) {
-      throw new RequisitionTemplateColumnException("Column with name: " + name
-          + " is not present in template");
+      throw new ValidationMessageException(new Message("requisition.error.column-not-in-template",
+          name));
     }
     return column;
   }
 
   private RequisitionTemplateColumn getRequisitionTemplateColumn(String name) {
     if (columnsMap == null) {
-      throw new RequisitionTemplateColumnException("Columns map is null");
+      throw new ValidationMessageException(new Message("requisition.error.columns-map-is-null"));
     }
     return columnsMap.get(name);
   }

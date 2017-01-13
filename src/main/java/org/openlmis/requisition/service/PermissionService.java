@@ -1,17 +1,16 @@
 package org.openlmis.requisition.service;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.web.MissingPermissionException;
+import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,9 +42,9 @@ public class PermissionService {
   /**
    * Checks if current user has permission to initiate a requisition.
    *
-   * @throws MissingPermissionException if the current user has not a permission.
+   * @throws PermissionMessageException if the current user has not a permission.
    */
-  public void canInitRequisition(UUID program, UUID facility) throws MissingPermissionException {
+  public void canInitRequisition(UUID program, UUID facility) {
     hasPermission(REQUISITION_CREATE, program, facility, null);
   }
 
@@ -54,10 +53,10 @@ public class PermissionService {
    * Permissions needed to perform update action depend on the requisition status.
    *
    * @param requisitionId UUID of requisition.
-   * @throws MissingPermissionException if the current user has not a permission.
+   * @throws PermissionMessageException if the current user has not a permission.
    * @throws IllegalStateException      if requisition has incorrect status.
    */
-  public void canUpdateRequisition(UUID requisitionId) throws MissingPermissionException {
+  public void canUpdateRequisition(UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition != null) {
@@ -79,46 +78,36 @@ public class PermissionService {
 
   /**
    * Checks if current user has permission to submit a requisition.
-   *
-   * @throws MissingPermissionException if the current user has not a permission.
    */
-  public void canSubmitRequisition(UUID requisitionId) throws MissingPermissionException {
+  public void canSubmitRequisition(UUID requisitionId) {
     hasPermission(REQUISITION_CREATE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to approve a requisition.
-   *
-   * @throws MissingPermissionException if the current user has not a permission.
    */
-  public void canApproveRequisition(UUID requisitionId) throws MissingPermissionException {
+  public void canApproveRequisition(UUID requisitionId) {
     hasPermission(REQUISITION_APPROVE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to authorize a requisition.
-   *
-   * @throws MissingPermissionException if the current user has not a permission.
    */
-  public void canAuthorizeRequisition(UUID requisitionId) throws MissingPermissionException {
+  public void canAuthorizeRequisition(UUID requisitionId) {
     hasPermission(REQUISITION_AUTHORIZE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to delete a requisition.
-   *
-   * @throws MissingPermissionException if the current user has not a permission.
    */
-  public void canDeleteRequisition(UUID requisitionId) throws MissingPermissionException {
+  public void canDeleteRequisition(UUID requisitionId) {
     hasPermission(REQUISITION_DELETE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to view a requisition.
-   *
-   * @throws MissingPermissionException if the current user has not a permission.
    */
-  public void canViewRequisition(UUID requisitionId) throws MissingPermissionException {
+  public void canViewRequisition(UUID requisitionId) {
     hasPermission(REQUISITION_VIEW, requisitionId);
   }
 
@@ -126,31 +115,29 @@ public class PermissionService {
    * Chacks if current user has permission to convert requisition to order.
    *
    * @param list of ConvertToOrderDtos containing chosen requisitionId and supplyingDepotId.
-   * @throws MissingPermissionException if the current user has not a permission.
+   * @throws PermissionMessageException if the current user has not a permission.
    */
-  public void canConvertToOrder(List<ConvertToOrderDto> list) throws MissingPermissionException,
-      RequisitionException {
+  public void canConvertToOrder(List<ConvertToOrderDto> list) {
     for (ConvertToOrderDto convertToOrder : list) {
       Requisition requisition = requisitionRepository.findOne(convertToOrder.getRequisitionId());
       if (requisition == null) {
-        throw new RequisitionNotFoundException(convertToOrder.getRequisitionId());
+        throw new ContentNotFoundMessageException(new Message(
+            "requisition.error.requisition-not-found", convertToOrder.getRequisitionId()));
       }
       hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
           convertToOrder.getSupplyingDepotId());
     }
   }
 
+
   /**
    * Checks if current user has permission to manage a requisition template.
-   *
-   * @throws MissingPermissionException   if the current user has not a permission.
    */
-  public void canManageRequisitionTemplate() throws MissingPermissionException {
+  public void canManageRequisitionTemplate() {
     hasPermission(MANAGE_REQUISITION_TEMPLATES, null, null, null);
   }
 
-  private void hasPermission(String rightName, UUID requisitionId)
-      throws MissingPermissionException {
+  private void hasPermission(String rightName, UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (null != requisition) {
@@ -158,16 +145,16 @@ public class PermissionService {
     }
   }
 
-  private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)
-      throws MissingPermissionException {
+  private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result = userReferenceDataService.hasRight(
         user.getId(), right.getId(), program, facility, warehouse
     );
 
-    if (null == result || BooleanUtils.isNotTrue(result.getResult())) {
-      throw new MissingPermissionException(rightName);
+    if (null == result || !result.getResult()) {
+      throw new PermissionMessageException( new Message(
+          "requisition.error.authorization.no-following-permission", rightName));
     }
   }
 

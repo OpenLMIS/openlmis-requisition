@@ -3,7 +3,6 @@ package org.openlmis.requisition.domain;
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 
 import org.openlmis.requisition.dto.ProductDto;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 
@@ -23,14 +22,11 @@ public final class RequisitionBuilder {
    * @param programId  UUID of program
    * @param emergency  flag
    * @return a new instance of Requisition
-   * @throws RequisitionInitializationException if any of arguments is {@code null}
+   * @throws ValidationMessageException if any of arguments is {@code null}
    */
-  public static Requisition newRequisition(UUID facilityId, UUID programId, Boolean emergency)
-      throws RequisitionInitializationException {
+  public static Requisition newRequisition(UUID facilityId, UUID programId, Boolean emergency) {
     if (facilityId == null || programId == null || emergency == null) {
-      throw new RequisitionInitializationException(
-          "Requisition cannot be initiated with null id"
-      );
+      throw new ValidationMessageException(new Message("requisition.error.initiate.null-id"));
     }
     return new Requisition(facilityId, programId, null, null, emergency);
   }

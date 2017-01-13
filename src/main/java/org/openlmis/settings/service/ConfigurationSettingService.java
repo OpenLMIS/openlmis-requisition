@@ -1,8 +1,9 @@
 package org.openlmis.settings.service;
 
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.settings.domain.ConfigurationSetting;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
+import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +17,17 @@ public class ConfigurationSettingService {
   private ConfigurationSettingRepository configurationSettingRepository;
 
   /**
-   * Return cofiguration setting with given key.
+   * Return configuration setting with given key.
    *
    * @param key String value of key.
    * @return Configuration setting containing given key.
-   * @throws ConfigurationSettingException Exception saying that setting was not found.
+   * @throws ContentNotFoundMessageException Exception saying that setting was not found.
    */
-  public ConfigurationSetting getByKey(String key) throws ConfigurationSettingException {
+  public ConfigurationSetting getByKey(String key) {
     ConfigurationSetting setting = configurationSettingRepository.findOne(key);
     if (setting == null) {
-      throw new ConfigurationSettingException("Configuration setting '" + key + "' not found");
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.configuration-setting-not-found", key));
     }
     return setting;
   }
@@ -36,10 +38,11 @@ public class ConfigurationSettingService {
    * @param key String value indicates key.
    * @return String value of given key.
    */
-  public String getStringValue(String key) throws ConfigurationSettingException {
+  public String getStringValue(String key) {
     ConfigurationSetting configurationSetting = configurationSettingRepository.findOne(key);
     if (configurationSetting == null || configurationSetting.getValue() == null) {
-      throw new ConfigurationSettingException("Configuration setting '" + key + "' not found");
+      throw new ContentNotFoundMessageException(new Message(
+          "requisition.error.configuration-setting-not-found", key));
     }
     return configurationSetting.getValue();
   }
@@ -55,7 +58,7 @@ public class ConfigurationSettingService {
     try {
       String value = getStringValue(key);
       return Boolean.parseBoolean(value);
-    } catch (ConfigurationSettingException exception) {
+    } catch (ContentNotFoundMessageException exception) {
       return false;
     }
   }

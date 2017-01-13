@@ -34,10 +34,8 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.exception.InvalidPeriodException;
-import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
@@ -302,9 +300,9 @@ public class PeriodServiceTest {
     return dto;
   }
 
-  @Test(expected = RequisitionInitializationException.class)
+  @Test(expected = ContentNotFoundMessageException.class)
   public void shouldThrowExceptionIfScheduleDoesNotExist()
-      throws RequisitionException {
+      throws ContentNotFoundMessageException {
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Lists.newArrayList(period1));
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
@@ -313,9 +311,8 @@ public class PeriodServiceTest {
     periodService.findPeriod(programId, facilityId, null, false);
   }
 
-  @Test(expected = InvalidPeriodException.class)
-  public void shouldThrowExceptionIfPeriodIsNotTheOldest()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionIfPeriodIsNotTheOldest() {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
 
@@ -331,9 +328,8 @@ public class PeriodServiceTest {
     periodService.findPeriod(programId, facilityId, UUID.randomUUID(), false);
   }
 
-  @Test(expected = InvalidPeriodException.class)
-  public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram() {
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
@@ -343,9 +339,8 @@ public class PeriodServiceTest {
     periodService.findPeriod(programId, facilityId, null, false);
   }
 
-  @Test(expected = InvalidRequisitionStatusException.class)
-  public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus() {
 
     Requisition requisition = getRequisition(INITIATED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
@@ -354,9 +349,8 @@ public class PeriodServiceTest {
     periodService.findPeriod(programId, facilityId, null, false);
   }
 
-  @Test(expected = InvalidRequisitionStatusException.class)
-  public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus() {
 
     Requisition requisition = getRequisition(SUBMITTED);
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
@@ -366,9 +360,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldSucceedWhenPreviousReqHasAuthorizedStatus()
-      throws RequisitionException {
-
+  public void shouldSucceedWhenPreviousReqHasAuthorizedStatus() {
     Requisition requisition = getRequisition(AUTHORIZED);
     setMockForFindPeriod(requisition);
 
@@ -377,8 +369,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldSucceedWhenPreviousReqHasApprovedStatus()
-      throws RequisitionException {
+  public void shouldSucceedWhenPreviousReqHasApprovedStatus() {
 
     Requisition requisition = getRequisition(APPROVED);
     setMockForFindPeriod(requisition);
@@ -388,8 +379,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldSucceedWhenPreviousReqHasSkippedStatus()
-      throws RequisitionException {
+  public void shouldSucceedWhenPreviousReqHasSkippedStatus() {
 
     Requisition requisition = getRequisition(SKIPPED);
     setMockForFindPeriod(requisition);

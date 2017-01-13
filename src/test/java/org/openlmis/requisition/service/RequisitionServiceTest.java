@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,11 +48,7 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.InvalidRequisitionStateException;
-import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
-import org.openlmis.requisition.exception.RequisitionConversionException;
-import org.openlmis.requisition.exception.RequisitionException;
-import org.openlmis.requisition.exception.RequisitionInitializationException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
@@ -73,6 +70,7 @@ import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -187,13 +185,13 @@ public class RequisitionServiceTest {
 
 
   @Before
-  public void setUp() throws RequisitionException {
+  public void setUp() {
     generateRequisition();
     mockRepositories();
   }
 
   @Test
-  public void shouldDeleteRequisitionIfItIsInitiated() throws RequisitionException {
+  public void shouldDeleteRequisitionIfItIsInitiated() {
     requisition.setStatus(INITIATED);
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(Collections.emptyList());
@@ -202,7 +200,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldDeleteStatusMessagesWhenDeletingRequisition() throws RequisitionException {
+  public void shouldDeleteStatusMessagesWhenDeletingRequisition() {
     requisition.setStatus(INITIATED);
     List<StatusMessage> statusMessages = Collections.singletonList(
         StatusMessage.newStatusMessage(requisition, null, requisition.getStatus(), "Message 1"));
@@ -213,15 +211,16 @@ public class RequisitionServiceTest {
     verify(statusMessageRepository).delete(statusMessages);
   }
 
-  @Test(expected = InvalidRequisitionStatusException.class)
-  public void shouldNotDeleteRequisitionWhenStatusIsSubmitted() throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotDeleteRequisitionWhenStatusIsSubmitted() throws
+      ValidationMessageException {
     requisition.setStatus(SUBMITTED);
     requisitionService.delete(requisition.getId());
   }
 
-  @Test(expected = RequisitionException.class)
+  @Test(expected = ContentNotFoundMessageException.class)
   public void shouldThrowExceptionWhenDeletingNotExistingRequisition()
-      throws RequisitionException {
+      throws ContentNotFoundMessageException {
     UUID deletedRequisitionId = requisition.getId();
     when(requisitionRepository
         .findOne(requisition.getId()))
@@ -230,7 +229,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSkipRequisitionIfItIsValid() throws RequisitionException {
+  public void shouldSkipRequisitionIfItIsValid() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
     verify(lineItem1).skipLineItem(requisition.getTemplate());
@@ -240,53 +239,83 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingNotSkippableProgram() throws RequisitionException {
+  public void shouldThrowExceptionWhenSkippingNotSkippableProgram() {
     when(program.getPeriodsSkippable()).thenReturn(false);
     requisitionService.skip(requisition.getId());
   }
 
+
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingSubmittedRequisition() throws RequisitionException {
+  public void shouldThrowExceptionWhenSkippingSubmittedRequisition() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     requisition.setStatus(SUBMITTED);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingAuthorizedRequisition() throws RequisitionException {
+  public void shouldThrowExceptionWhenSkippingAuthorizedRequisition() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     requisition.setStatus(AUTHORIZED);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingApprovedRequisition() throws RequisitionException {
+  public void shouldThrowExceptionWhenSkippingApprovedRequisition() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     requisition.setStatus(APPROVED);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingReleasedRequisition() throws RequisitionException {
+  public void shouldThrowExceptionWhenSkippingReleasedRequisition() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     requisition.setStatus(RELEASED);
     requisitionService.skip(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingEmergencyRequisition() throws RequisitionException {
+  public void shouldThrowExceptionWhenSkippingEmergencyRequisition() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     requisition.setEmergency(true);
     requisitionService.skip(requisition.getId());
   }
 
-  @Test(expected = RequisitionException.class)
+  @Test(expected = ContentNotFoundMessageException.class)
   public void shouldThrowExceptionWhenSkippingNotExistingRequisition()
-      throws RequisitionException {
+      throws ContentNotFoundMessageException {
     when(requisitionRepository
         .findOne(requisition.getId()))
         .thenReturn(null);
     requisitionService.skip(requisition.getId());
+  }
+
+  @Test
+  public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() {
+    requisition.setStatus(AUTHORIZED);
+    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
+
+    assertEquals(returnedRequisition.getStatus(), INITIATED);
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
+      throws ValidationMessageException {
+    requisition.setStatus(SUBMITTED);
+    requisitionService.reject(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
+      throws ValidationMessageException {
+    requisition.setStatus(APPROVED);
+    requisitionService.reject(requisition.getId());
+  }
+
+  @Test(expected = ContentNotFoundMessageException.class)
+  public void shouldThrowExceptionWhenRejectingNotExistingRequisition()
+      throws ContentNotFoundMessageException {
+    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
+    requisitionService.reject(requisition.getId());
   }
 
   @Test
@@ -339,9 +368,29 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldInitiateRequisitionIfItDoesNotAlreadyExist()
-      throws RequisitionException {
+  public void shouldInitiateRequisitionIfItDoesNotAlreadyExist() {
     prepareForTestInitiate(SETTING);
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
+
+    when(requisitionRepository
+        .findOne(requisition.getId()))
+        .thenReturn(null);
+
+    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
+    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
+    /*when(requisitionTemplateService.getTemplateForProgram(programId))
+        .thenReturn(requisitionTemplate);*/
+    doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
+
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
+    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
+    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
+    periodDto.setDurationInMonths(1);
+    doReturn(periodDto).when(periodService).findPeriod(programId, facilityId, suggestedPeriodId,
+        false);
+    /*when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
+        .thenReturn(periodDto);*/
 
     UUID userId = UUID.randomUUID();
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -354,8 +403,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldInitiatePreviousAdjustedConsumptions()
-      throws RequisitionException {
+  public void shouldInitiatePreviousAdjustedConsumptions() {
     prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
@@ -372,8 +420,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull()
-      throws RequisitionException {
+  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
     prepareForTestInitiate(null);
     mockPreviousRequisition();
     mockApprovedProduct();
@@ -388,8 +435,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsLessThanTwo()
-      throws RequisitionException {
+  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsLessThan2() {
     prepareForTestInitiate(1);
     mockPreviousRequisition();
     mockApprovedProduct();
@@ -404,8 +450,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition()
-      throws RequisitionException {
+  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition() {
     prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
@@ -421,8 +466,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod()
-      throws RequisitionException {
+  public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod() {
     prepareForTestInitiate(SETTING);
     mockApprovedProduct();
 
@@ -434,14 +478,13 @@ public class RequisitionServiceTest {
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
   }
 
-  @Test(expected = RequisitionInitializationException.class)
-  public void shouldThrowExceptionWhenInitiatingEmptyRequisition()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenInitiatingEmptyRequisition() {
     requisitionService.initiate(null, null, null, null, false);
   }
 
   @Test
-  public void shouldReleaseRequisitionsAsOrder() throws RequisitionException {
+  public void shouldReleaseRequisitionsAsOrder() {
     // given
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
@@ -465,9 +508,8 @@ public class RequisitionServiceTest {
     }
   }
 
-  @Test(expected = InvalidRequisitionStateException.class)
-  public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided() {
     // given
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
@@ -489,9 +531,8 @@ public class RequisitionServiceTest {
     requisitionService.releaseRequisitionsAsOrder(requisitions, user);
   }
 
-  @Test(expected = InvalidRequisitionStateException.class)
-  public void shouldNotReleaseRequisitionsAsOrderIfUserHasNoFulfillmentRightsForFacility()
-      throws RequisitionException {
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotReleaseRequisitionsAsOrderIfUserHasNoFulfillmentRightsForFacility() {
     // given
     UserDto user = mock(UserDto.class);
     UUID userId = UUID.randomUUID();
@@ -576,8 +617,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldConvertRequisitionsToOrders() throws RequisitionException,
-      ConfigurationSettingException {
+  public void shouldConvertRequisitionsToOrders() {
     // given
     int requisitionsCount = 5;
 
@@ -601,9 +641,10 @@ public class RequisitionServiceTest {
     verify(orderFulfillmentService, atLeastOnce()).create(any(OrderDto.class));
   }
 
-  @Test(expected = RequisitionConversionException.class)
+
+  @Test(expected = ValidationMessageException.class)
   public void shouldNotConvertRequisitionToOrderWhenCreatingOrderInFulfillmentServiceFailed()
-      throws RequisitionException, ConfigurationSettingException {
+      throws ConfigurationSettingException {
     // given
     int requisitionsCount = 5;
 
@@ -849,8 +890,7 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.singletonList(approvedProductDto));
   }
 
-  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage)
-      throws RequisitionException {
+  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(numberOfPeriodsToAverage);
@@ -868,7 +908,8 @@ public class RequisitionServiceTest {
         .thenReturn(periodDto);
   }
 
-  private void mockRepositories() throws RequisitionException {
+
+  private void mockRepositories() {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
 
