@@ -2,7 +2,7 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.utils.DynamicParametrizedTypeReference;
+import org.openlmis.utils.DynamicParameterizedTypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -152,7 +152,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
         buildUri(url, params),
         HttpMethod.GET,
         null,
-        new DynamicParametrizedTypeReference<>(type)
+        new DynamicParameterizedTypeReference<>(type)
     );
 
     return response.getBody();

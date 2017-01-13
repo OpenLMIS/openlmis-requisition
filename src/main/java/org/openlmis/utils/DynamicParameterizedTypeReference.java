@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
  * template however, allowing easily retrieving {@link ResultDto} objects with
  * the provided generic type at runtime.
  */
-public class DynamicParametrizedTypeReference<T>
+public class DynamicParameterizedTypeReference<T>
             extends ParameterizedTypeReference<ResultDto<T>> {
   private final Class<?> valueType;
 
@@ -23,13 +23,13 @@ public class DynamicParametrizedTypeReference<T>
     * @param valueType the value type (generic type) of the {@link ResultDto}
    *                   type that this will represent
    */
-  public DynamicParametrizedTypeReference(Class<?> valueType) {
+  public DynamicParameterizedTypeReference(Class<?> valueType) {
     this.valueType = valueType;
   }
 
   @Override
   public Type getType() {
-    Type [] responseWrapperActualTypes = { valueType };
+    Type[] responseWrapperActualTypes = { valueType };
 
     return new ParameterizedType() {
       @Override
@@ -51,11 +51,11 @@ public class DynamicParametrizedTypeReference<T>
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof DynamicParametrizedTypeReference)) {
+    if (!(other instanceof DynamicParameterizedTypeReference)) {
       return false;
     }
 
-    DynamicParametrizedTypeReference dptr = (DynamicParametrizedTypeReference) other;
+    DynamicParameterizedTypeReference dptr = (DynamicParameterizedTypeReference) other;
 
     return getType().equals(dptr.getType());
   }
