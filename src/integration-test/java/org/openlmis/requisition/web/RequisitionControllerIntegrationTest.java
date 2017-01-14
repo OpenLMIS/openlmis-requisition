@@ -23,13 +23,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
@@ -42,10 +40,8 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.ExposedMessageSource;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
-import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -74,7 +70,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
   private static final String RESOURCE_URL = "/api/requisitions";
-  private static final String INSERT_COMMENT = RESOURCE_URL + "/{id}/comments";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
   private static final String APPROVE_URL = RESOURCE_URL + "/{id}/approve";
   private static final String SKIP_URL = RESOURCE_URL + "/{id}/skip";
@@ -82,13 +77,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
   private static final String SUBMITTED_URL = RESOURCE_URL + "/submitted";
   private static final String AUTHORIZATION_URL = RESOURCE_URL + "/{id}/authorize";
-  private static final String ID_COMMENT_URL = RESOURCE_URL + "/comments/{id}";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitionsForApproval";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
-  private static final String COMMENT_TEXT = "OpenLMIS";
-  private static final String COMMENT = "Comment";
   private static final String FACILITY = "facility";
   private static final String APPROVED_REQUISITIONS_SEARCH_URL =
       RESOURCE_URL + "/requisitionsForConvert";
@@ -104,12 +96,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private RequisitionRepository requisitionRepository;
-
-  @Autowired
-  private CommentRepository commentRepository;
-
-  @Autowired
-  private RequisitionCommentService commentService;
 
   @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
@@ -206,10 +192,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
-    List<Comment> comments = new ArrayList<>();
 
     requisition.setRequisitionLineItems(requisitionLineItems);
-    requisition.setComments(comments);
     requisition = requisitionRepository.save(requisition);
   }
 
@@ -439,30 +423,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldGetCommentsForRequisition() {
-    createComment(user, requisition, "First comment");
-    createComment(user, requisition, "Second comment");
-
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    CommentDto[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .get(INSERT_COMMENT)
-        .then()
-        .statusCode(200)
-        .extract().as(CommentDto[].class);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    List<CommentDto> commentList = Arrays.asList(response);
-    assertEquals("First comment", commentList.get(0).getBody());
-    assertEquals("Second comment", commentList.get(1).getBody());
-  }
-
-  @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
@@ -483,143 +443,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     for (int i = 0; i < responseList.size(); i++) {
       assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
     }
-  }
-
-  @Test
-  public void shouldInsertComment() {
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    createComment(user, requisition, "Previous comment");
-    Comment userPostComment = new Comment(requisition);
-    userPostComment.setBody("User comment");
-
-    CommentDto[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(commentService.exportToDto(userPostComment))
-        .pathParam("id", requisition.getId())
-        .when()
-        .post(INSERT_COMMENT)
-        .then()
-        .statusCode(200)
-        .extract().as(CommentDto[].class);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    List<CommentDto> commentList = Arrays.asList(response);
-    assertEquals("Previous comment", commentList.get(0).getBody());
-    assertEquals("User comment", commentList.get(1).getBody());
-  }
-
-  @Test
-  public void shouldGetChosenComment() {
-    Comment comment = createComment(user, requisition, COMMENT);
-
-    CommentDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", comment.getId())
-        .when()
-        .get(ID_COMMENT_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(CommentDto.class);
-
-    assertTrue(commentRepository.exists(response.getId()));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotGetNonexistentComment() {
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", UUID.randomUUID())
-        .when()
-        .get(ID_COMMENT_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldCreateNewCommentIfDoesNotExist() {
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    Comment comment = new Comment(requisition);
-    comment.setBody(COMMENT_TEXT);
-    comment.setAuthorId(user.getId());
-
-    CommentDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", ID)
-        .body(commentService.exportToDto(comment))
-        .when()
-        .put(ID_COMMENT_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(CommentDto.class);
-
-    assertEquals(response.getBody(), COMMENT_TEXT);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldUpdateComment() {
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    Comment comment = createComment(user, requisition, COMMENT);
-    comment.setBody(COMMENT_TEXT);
-
-    CommentDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", comment.getId())
-        .body(commentService.exportToDto(comment))
-        .when()
-        .put(ID_COMMENT_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(CommentDto.class);
-
-    assertEquals(response.getBody(), COMMENT_TEXT);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldDeleteComment() {
-
-    Comment comment = createComment(user, requisition, COMMENT);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", comment.getId())
-        .when()
-        .delete(ID_COMMENT_URL)
-        .then()
-        .statusCode(204);
-
-    assertFalse(commentRepository.exists(comment.getId()));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotDeleteNonexistentComment() {
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", UUID.randomUUID())
-        .when()
-        .delete(ID_COMMENT_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -1325,14 +1148,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setNumberOfMonthsInPeriod(1);
 
     return requisitionRepository.save(requisition);
-  }
-
-  private Comment createComment(UserDto author, Requisition req, String commentText) {
-    Comment comment = new Comment(req);
-    comment.setAuthorId(author.getId());
-    comment.setBody(commentText);
-    commentRepository.save(comment);
-    return comment;
   }
 
   private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {

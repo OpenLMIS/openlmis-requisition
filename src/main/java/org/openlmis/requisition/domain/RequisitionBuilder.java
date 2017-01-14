@@ -64,7 +64,6 @@ public final class RequisitionBuilder {
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
     requisition.setRequisitionLineItems(new ArrayList<>());
-    requisition.setComments(new ArrayList<>());
     requisition.setNumberOfMonthsInPeriod(importer.getProcessingPeriod().getDurationInMonths());
 
     if (importer.getRequisitionLineItems() != null) {
@@ -86,12 +85,6 @@ public final class RequisitionBuilder {
       }
     }
 
-    if (importer.getComments() != null) {
-      for (Comment.Importer comment : importer.getComments()) {
-        requisition.getComments().add(Comment.newComment(comment));
-      }
-    }
-    
     requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
 
     return requisition;

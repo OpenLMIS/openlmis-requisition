@@ -3,7 +3,6 @@ package org.openlmis.requisition.domain;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -72,14 +71,6 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private List<RequisitionLineItem> requisitionLineItems;
-
-  @OneToMany(
-      mappedBy = "requisition",
-      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
-      orphanRemoval = true)
-  @Getter
-  @Setter
-  private List<Comment> comments;
 
   @Getter
   @Setter
@@ -169,20 +160,11 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void updateFrom(
       Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
-    if (null == this.comments) {
-      this.comments = new ArrayList<>();
-    }
-
-    this.comments.clear();
-
-    if (!isEmpty(requisition.getComments())) {
-      this.comments.addAll(requisition.getComments());
-    }
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
-
+    
     this.draftStatusMessage = requisition.draftStatusMessage;
-
+    
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
   }
@@ -490,7 +472,7 @@ public class Requisition extends BaseTimestampedEntity {
     void setSupervisoryNode(UUID supervisoryNode);
 
     void setTemplate(UUID template);
-
+    
     void setDraftStatusMessage(String draftStatusMessage);
   }
 
@@ -502,8 +484,6 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getCreatorId();
 
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
-
-    List<Comment.Importer> getComments();
 
     FacilityDto getFacility();
 

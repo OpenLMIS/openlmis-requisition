@@ -1,6 +1,5 @@
 package org.openlmis.utils;
 
-import org.openlmis.requisition.repository.CommentRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.TemplateRepository;
@@ -24,9 +23,6 @@ public class CleanRepositoryHelper {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private CommentRepository commentRepository;
-
-  @Autowired
   private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
@@ -38,7 +34,6 @@ public class CleanRepositoryHelper {
   @Transactional
   public void cleanAll() {
     configurationSettingRepository.deleteAll();
-    commentRepository.deleteAll();
     requisitionRepository.deleteAll();
     requisitionTemplateRepository.deleteAll();
     templateRepository.deleteAll();

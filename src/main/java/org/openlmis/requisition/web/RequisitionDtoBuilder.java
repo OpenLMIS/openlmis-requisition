@@ -1,11 +1,9 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.CommentDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.PeriodService;
-import org.openlmis.requisition.service.RequisitionCommentService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionExportHelper;
@@ -27,9 +25,6 @@ public class RequisitionDtoBuilder {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private RequisitionCommentService requisitionCommentService;
 
   @Autowired
   private RequisitionExportHelper requisitionExportHelper;
@@ -61,8 +56,6 @@ public class RequisitionDtoBuilder {
     requisition.export(requisitionDto);
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
         requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
-    List<CommentDto> commentDtoList =
-        requisitionCommentService.exportToDtos(requisition.getComments());
 
     requisitionDto.setTemplate(requisition.getTemplate().getId());
     requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
@@ -70,7 +63,6 @@ public class RequisitionDtoBuilder {
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()));
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
-    requisitionDto.setComments(commentDtoList);
 
     return requisitionDto;
   }

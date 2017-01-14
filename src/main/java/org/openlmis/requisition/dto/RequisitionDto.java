@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import org.openlmis.requisition.domain.Comment;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -35,9 +34,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Setter
   private List<RequisitionLineItemDto> requisitionLineItems;
 
-  @Setter
-  private List<CommentDto> comments;
-  
   @Getter
   @Setter
   private String draftStatusMessage;
@@ -78,13 +74,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
     return new ArrayList<>(
         Optional.ofNullable(requisitionLineItems).orElse(Collections.emptyList())
-    );
-  }
-
-  @Override
-  public List<Comment.Importer> getComments() {
-    return new ArrayList<>(
-        Optional.ofNullable(comments).orElse(Collections.emptyList())
     );
   }
 }

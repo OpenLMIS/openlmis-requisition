@@ -9,32 +9,6 @@ documentation:
       content: Welcome to the OpenLMIS requisition-service documentation.
 
 schemas:
-  - comment: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "Comment",
-          "description": "A single comment",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
-              "authorId": { "type": "string", "required": false, "title": "authorId" },
-              "body": { "type": "string", "required": true, "title": "body" },
-              "createdDate": { "type": "string", "required": false, "title": "createdDate" }
-          }
-      }
-
-  - commentDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "Comment",
-          "description": "A single commentDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "authorId": { "type": "string", "required": false, "title": "authorId" },
-              "body": { "type": "string", "required": true, "title": "body" },
-              "createdDate": { "type": "string", "required": false, "title": "createdDate" }
-          }
-      }
 
   - facilityDto: !include schemas/facilityDto.json
 
@@ -94,8 +68,7 @@ schemas:
               "status": { "type": "string", "required": true, "title": "status" },
               "emergency": { "type": "boolean", "required": false, "title": "emergency" },
               "supervisoryNodeId": { "type": "string", "required": true, "title": "supervisoryNodeId" },
-              "requisitionLineItems": { "type": "array", "required": false, "title":"requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false },
-              "commens": {"type": "array", "required": false, "title": "comments", "items": {"type": "object", "$ref": "#/schemas/comment" }, "uniqueItems": false }
+              "requisitionLineItems": { "type": "array", "required": false, "title":"requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false }
           }
       }
 
@@ -114,8 +87,7 @@ schemas:
               "status": { "type": "string", "title": "status" },
               "emergency": { "type": "boolean", "title": "emergency" },
               "supervisoryNode": { "type": "string", "title": "supervisoryNode" },
-              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItemDto" }, "uniqueItems": false },
-              "comments": {"type": "array", "title": "comments", "items": {"type": "object", "$ref": "#/schemas/commentDto" }, "uniqueItems": false }
+              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItemDto" }, "uniqueItems": false }
           },
           "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
       }
@@ -838,106 +810,6 @@ resourceTypes:
                         application/json:
                           schema: errorResponse
                   "500":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-
-      /{id}/comments:
-          uriParameters:
-              id:
-                  displayName: id
-                  description: requisition id
-                  type: string
-                  required: true
-                  repeat: false
-          get:
-              is: [ secured ]
-              description: Get all comments for specified requisition.
-              responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                      body:
-                        application/json:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                      body:
-                        application/json:
-                          schema: errorResponse
-                  "500":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-          post:
-              is: [ secured ]
-              description: Add comment to the requisition.
-              body:
-                  application/json:
-              responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                      body:
-                        application/json:
-                  "500":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-      /comments/{id}:
-          uriParameters:
-              id:
-                  displayName: id
-                  description: comment id
-                  type: string
-                  required: true
-                  repeat: false
-          delete:
-              is: [ secured ]
-              description: Delete comment from requisition.
-              responses:
-                  "204":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "409":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-          get:
-              is: [ secured ]
-              description: Get chosen comment from requisition.
-              responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                      body:
-                        application/json:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-          put:
-              is: [ secured ]
-              description: Update comment.
-              body:
-                  application/json:
-              responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                      body:
-                        application/json:
-                  "400":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
