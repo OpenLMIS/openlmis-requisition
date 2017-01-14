@@ -267,6 +267,14 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/templateDto.json" }
       }
 
+  - statusMessage: !include schemas/statusMessage.json
+
+  - statusMessageArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/statusMessage.json" }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -611,6 +619,15 @@ resourceTypes:
                   200:
                       body:
                         application/pdf:
+      /{id}/statusMessages:
+          get:
+              is: [ secured ]
+              description: Get status messages associated with a requisition.
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: statusMessageArray
       /search:
           get:
               is: [ secured ]

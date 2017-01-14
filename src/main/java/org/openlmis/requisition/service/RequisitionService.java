@@ -24,6 +24,7 @@ import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.RequisitionTemplateNotFoundException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -71,6 +72,9 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private StatusMessageRepository statusMessageRepository;
 
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
@@ -209,6 +213,7 @@ public class RequisitionService {
       throw new InvalidRequisitionStatusException("Delete failed - "
           + REQUISITION_BAD_STATUS_MESSAGE);
     } else {
+      statusMessageRepository.delete(statusMessageRepository.findByRequisitionId(requisitionId));
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
     }
@@ -243,27 +248,6 @@ public class RequisitionService {
         requisition.setStatus(RequisitionStatus.SKIPPED);
         return requisitionRepository.save(requisition);
       }
-    }
-  }
-
-  /**
-   * Reject given requisition if possible.
-   *
-   * @param requisitionId UUID of Requisition to be rejected.
-   * @throws RequisitionException Exception thrown when it is not possible to reject a requisition.
-   */
-  public Requisition reject(UUID requisitionId) throws RequisitionException {
-
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new RequisitionNotFoundException(requisitionId);
-    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
-      LOGGER.debug("Requisition rejected: " + requisitionId);
-      requisition.setStatus(RequisitionStatus.INITIATED);
-      return requisitionRepository.save(requisition);
-    } else {
-      throw new InvalidRequisitionStatusException("Cannot reject requisition: " + requisitionId
-          + " .Requisition must be waiting for approval to be rejected");
     }
   }
 
@@ -308,8 +292,8 @@ public class RequisitionService {
   }
 
   private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
-                                        Collection<FacilityDto> filteredFacilities,
-                                        ProgramDto program) {
+                                                      Collection<FacilityDto> filteredFacilities,
+                                                      ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
     for (FacilityDto facility : supervisedFacilities) {
       if (!filteredFacilities.contains(facility)) {

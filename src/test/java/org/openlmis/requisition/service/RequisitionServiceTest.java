@@ -32,6 +32,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -51,9 +52,9 @@ import org.openlmis.requisition.exception.InvalidRequisitionStatusException;
 import org.openlmis.requisition.exception.RequisitionConversionException;
 import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionInitializationException;
-import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -168,6 +169,9 @@ public class RequisitionServiceTest {
   @Mock
   private PaginationHelper paginationHelper;
 
+  @Mock
+  private StatusMessageRepository statusMessageRepository;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -191,7 +195,22 @@ public class RequisitionServiceTest {
   @Test
   public void shouldDeleteRequisitionIfItIsInitiated() throws RequisitionException {
     requisition.setStatus(INITIATED);
+    when(statusMessageRepository.findByRequisitionId(requisition.getId()))
+        .thenReturn(Collections.emptyList());
     requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
+  }
+
+  @Test
+  public void shouldDeleteStatusMessagesWhenDeletingRequisition() throws RequisitionException {
+    requisition.setStatus(INITIATED);
+    List<StatusMessage> statusMessages = Collections.singletonList(
+        StatusMessage.newStatusMessage(requisition, null, requisition.getStatus(), "Message 1"));
+    when(statusMessageRepository.findByRequisitionId(requisition.getId()))
+        .thenReturn(statusMessages);
+    requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
+    verify(statusMessageRepository).delete(statusMessages);
   }
 
   @Test(expected = InvalidRequisitionStatusException.class)
@@ -268,35 +287,6 @@ public class RequisitionServiceTest {
         .findOne(requisition.getId()))
         .thenReturn(null);
     requisitionService.skip(requisition.getId());
-  }
-
-  @Test
-  public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() throws RequisitionException {
-    requisition.setStatus(AUTHORIZED);
-    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
-
-    assertEquals(returnedRequisition.getStatus(), INITIATED);
-  }
-
-  @Test(expected = InvalidRequisitionStatusException.class)
-  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
-      throws RequisitionException {
-    requisition.setStatus(SUBMITTED);
-    requisitionService.reject(requisition.getId());
-  }
-
-  @Test(expected = InvalidRequisitionStatusException.class)
-  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
-      throws RequisitionException {
-    requisition.setStatus(APPROVED);
-    requisitionService.reject(requisition.getId());
-  }
-
-  @Test(expected = RequisitionNotFoundException.class)
-  public void shouldThrowExceptionWhenRejectingNotExistingRequisition()
-      throws RequisitionException {
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
-    requisitionService.reject(requisition.getId());
   }
 
   @Test

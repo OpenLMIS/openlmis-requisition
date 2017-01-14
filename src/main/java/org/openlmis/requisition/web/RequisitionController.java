@@ -7,6 +7,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.Template;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -23,6 +24,7 @@ import org.openlmis.requisition.exception.RequisitionException;
 import org.openlmis.requisition.exception.RequisitionNotFoundException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
@@ -131,6 +133,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private JasperReportsViewService jasperReportsViewService;
+  
+  @Autowired
+  private StatusMessageRepository statusMessageRepository;
 
   /**
    * Allows creating new requisitions.
@@ -224,7 +229,9 @@ public class RequisitionController extends BaseController {
     calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
     requisition.submit();
-
+    
+    saveStatusMessage(requisition);
+    
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
@@ -364,8 +371,19 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id)
       throws RequisitionException {
-    Requisition rejectedRequisition = requisitionService.reject(id);
-    return new ResponseEntity<>(requisitionDtoBuilder.build(rejectedRequisition), HttpStatus.OK);
+    Requisition requisition = requisitionRepository.findOne(id);
+    if (requisition == null) {
+      throw new RequisitionNotFoundException(id);
+    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+      LOGGER.debug("Requisition rejected: " + id);
+      requisition.setStatus(RequisitionStatus.INITIATED);
+      saveStatusMessage(requisition);
+      requisition = requisitionRepository.save(requisition);
+      return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
+    } else {
+      throw new InvalidRequisitionStatusException("Cannot reject requisition: " + id
+          + " .Requisition must be waiting for approval to be rejected");
+    }
   }
 
   /**
@@ -400,6 +418,8 @@ public class RequisitionController extends BaseController {
       calculatePacksToShipForEachLineItem(requisition, orderableProducts);
 
       requisition.approve();
+
+      saveStatusMessage(requisition);
 
       requisitionRepository.save(requisition);
 
@@ -482,6 +502,8 @@ public class RequisitionController extends BaseController {
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();
     requisition.setSupervisoryNodeId(supervisoryNode);
+
+    saveStatusMessage(requisition);
 
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
@@ -650,6 +672,16 @@ public class RequisitionController extends BaseController {
       requisitionLineItem.setMaximumStockQuantity(null);
       requisitionLineItem.setCalculatedOrderQuantity(null);
       requisitionLineItem.clearStockAdjustmentsAndPreviousAdjustedConsumptions();
+    }
+  }
+  
+  private void saveStatusMessage(Requisition requisition) {
+    if (requisition.getDraftStatusMessage() != null) {
+      StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
+          authenticationHelper.getCurrentUser().getId(), requisition.getStatus(),
+          requisition.getDraftStatusMessage());
+      statusMessageRepository.save(newStatusMessage);
+      requisition.setDraftStatusMessage(null);
     }
   }
 }
