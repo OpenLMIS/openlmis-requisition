@@ -293,7 +293,7 @@ public class RequisitionService {
     for (ProgramDto program : programsForUser) {
       Collection<FacilityDto> supervisedFacilities = supervisedFacilitiesReferenceDataService
           .getFacilitiesSupervisedByUser(userId, program.getId(), right.getId());
-      requisitionsForApproval.addAll(addAuthorizedRequisitions(supervisedFacilities, program));
+      requisitionsForApproval.addAll(findAuthorizedRequisitions(supervisedFacilities, program));
     }
 
     return requisitionsForApproval;
@@ -519,7 +519,7 @@ public class RequisitionService {
     return allPrograms;
   }
 
-  private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
+  private List<Requisition> findAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
                                                       ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
     for (FacilityDto facility : supervisedFacilities) {
