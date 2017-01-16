@@ -69,8 +69,8 @@ public class RequisitionTemplateValidator implements Validator {
 
     if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
         && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
-      errors.rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, NUMBER_OF_PERIODS_TO_AVERAGE + "must be"
-          + " greater or equal than 2");
+      errors.rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, NUMBER_OF_PERIODS_TO_AVERAGE + " must be"
+          + " greater than or equal to 2");
     }
   }
 

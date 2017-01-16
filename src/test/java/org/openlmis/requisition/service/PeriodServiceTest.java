@@ -83,7 +83,7 @@ public class PeriodServiceTest {
   private ProcessingPeriodDto period2;
   private ProcessingPeriodDto period3;
   private ProcessingPeriodDto period4;
-  private ProcessingPeriodDto period5;
+  private ProcessingPeriodDto currentPeriod;
 
   @Before
   public void setUp() throws Exception {
@@ -91,7 +91,7 @@ public class PeriodServiceTest {
     period2 = createPeriod(1);
     period3 = createPeriod(2);
     period4 = createPeriod(3);
-    period5 = createPeriod(4);
+    currentPeriod = createPeriod(4);
 
     doReturn(INITIATED).when(initiatedRequsition).getStatus();
     doReturn(SUBMITTED).when(submittedRequsition).getStatus();
@@ -112,7 +112,7 @@ public class PeriodServiceTest {
         .searchByProcessingPeriodAndType(period4.getId(), false);
     doReturn(Collections.singletonList(approvedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period5.getId(), false);
+        .searchByProcessingPeriodAndType(currentPeriod.getId(), false);
   }
 
   @Test
@@ -218,7 +218,7 @@ public class PeriodServiceTest {
   @Test
   public void shouldReturnOnlyValidPeriodsForRequisitionInitiate() {
     List<ProcessingPeriodDto> list = Lists.newArrayList(
-        period1, period2, period3, period4, period5
+        period1, period2, period3, period4, currentPeriod
     );
 
     doReturn(list)
@@ -245,15 +245,15 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnPreviousPeriods() throws Exception {
-    doReturn(period5)
+    doReturn(currentPeriod)
         .when(periodReferenceDataService)
-        .findOne(period5.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, period5))
+        .findOne(currentPeriod.getId());
+    doReturn(Arrays.asList(period1, period2, period3, period4, currentPeriod))
         .when(periodReferenceDataService)
         .search(any(), any());
 
     List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(period5.getId(), 2);
+        periodService.findPreviousPeriods(currentPeriod.getId(), 2);
 
 
     assertEquals(Arrays.asList(period4, period3), previousPeriods);
@@ -261,15 +261,15 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnPreviousPeriod() throws Exception {
-    doReturn(period5)
+    doReturn(currentPeriod)
         .when(periodReferenceDataService)
-        .findOne(period5.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, period5))
+        .findOne(currentPeriod.getId());
+    doReturn(Arrays.asList(period1, period2, period3, period4, currentPeriod))
         .when(periodReferenceDataService)
         .search(any(), any());
 
     ProcessingPeriodDto previousPeriod =
-        periodService.findPreviousPeriod(period5.getId());
+        periodService.findPreviousPeriod(currentPeriod.getId());
 
 
     assertEquals(period4, previousPeriod);
@@ -277,15 +277,15 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnWholeListIfAmountGreaterThanListSize() throws Exception {
-    doReturn(period5)
+    doReturn(currentPeriod)
         .when(periodReferenceDataService)
-        .findOne(period5.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, period5))
+        .findOne(currentPeriod.getId());
+    doReturn(Arrays.asList(period1, period2, period3, period4, currentPeriod))
         .when(periodReferenceDataService)
         .search(any(), any());
 
     List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(period5.getId(), 5);
+        periodService.findPreviousPeriods(currentPeriod.getId(), 5);
 
     assertEquals(Arrays.asList(period4, period3, period2, period1), previousPeriods);
   }
