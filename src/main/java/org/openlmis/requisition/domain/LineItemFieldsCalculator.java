@@ -169,7 +169,7 @@ public final class LineItemFieldsCalculator {
    * If one previous period, so t0 and t-1 formula is
    * P = Roundup( (N<sub>t0</sub> + N<sub>t-1</sub>) / 2).
    */
-  public static Integer calculateAverageConsumption(List<Integer> adjustedConsumptions) {
+  public static int calculateAverageConsumption(List<Integer> adjustedConsumptions) {
     int numberOfPeriods = adjustedConsumptions.size();
     if (numberOfPeriods == 1) {
       return adjustedConsumptions.get(0);
@@ -195,8 +195,8 @@ public final class LineItemFieldsCalculator {
    * @param template template related with the requisition.
    * @return a {@link Integer} object representing the maximum stock quantity for this line.
    */
-  public static Integer calculateMaximumStockQuantity(RequisitionLineItem line,
-                                                      RequisitionTemplate template) {
+  public static int calculateMaximumStockQuantity(RequisitionLineItem line,
+                                                  RequisitionTemplate template) {
     RequisitionTemplateColumn column = template
         .findColumn(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
     AvailableRequisitionColumnOption option = column.getOption();
@@ -229,8 +229,8 @@ public final class LineItemFieldsCalculator {
    * @param line the line item to calculate the value for.
    * @return a {@link Integer} object representing the Calculated Order Quantity for this line.
    */
-  public static Integer calculateCalculatedOrderQuantity(RequisitionLineItem line,
-                                                         RequisitionTemplate template) {
+  public static int calculateCalculatedOrderQuantity(RequisitionLineItem line,
+                                                     RequisitionTemplate template) {
     Integer maximumStockQuantity = line.getMaximumStockQuantity();
     Integer stockOnHand = line.getStockOnHand();
 
