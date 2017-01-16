@@ -316,24 +316,6 @@ public class RequisitionService {
     return requisitions;
   }
 
-  private Set<ProgramDto> getAllProgramsForUser(UUID userId) {
-    Set<ProgramDto> allPrograms = new HashSet<>(userProgramsReferenceDataService
-        .getProgramsSupervisedByUser(userId));
-    allPrograms.addAll(userProgramsReferenceDataService
-        .getHomeFacilityProgramsByUser(userId));
-
-    return allPrograms;
-  }
-
-  private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
-                                                      ProgramDto program) {
-    List<Requisition> requisitions = new ArrayList<>();
-    for (FacilityDto facility : supervisedFacilities) {
-      requisitions.addAll(getAuthorizedRequisitions(facility, program));
-    }
-    return requisitions;
-  }
-
   /**
    * Releases the list of given requisitions as order.
    *
@@ -526,5 +508,23 @@ public class RequisitionService {
                                                     ProcessingPeriodDto period) {
     return searchRequisitions(requisition.getFacilityId(),
         requisition.getProgramId(), period.getId());
+  }
+
+  private Set<ProgramDto> getAllProgramsForUser(UUID userId) {
+    Set<ProgramDto> allPrograms = new HashSet<>(userProgramsReferenceDataService
+        .getProgramsSupervisedByUser(userId));
+    allPrograms.addAll(userProgramsReferenceDataService
+        .getHomeFacilityProgramsByUser(userId));
+
+    return allPrograms;
+  }
+
+  private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
+                                                      ProgramDto program) {
+    List<Requisition> requisitions = new ArrayList<>();
+    for (FacilityDto facility : supervisedFacilities) {
+      requisitions.addAll(getAuthorizedRequisitions(facility, program));
+    }
+    return requisitions;
   }
 }
