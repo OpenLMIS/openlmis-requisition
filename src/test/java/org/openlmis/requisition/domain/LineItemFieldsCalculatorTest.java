@@ -21,6 +21,8 @@ import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class LineItemFieldsCalculatorTest {
+  private static final UUID ORDERABLE_PRODUCT_ID = UUID.randomUUID();
+
   @Test
   public void shouldCalculateTotalLossesAndAdjustments() throws Exception {
     // given
@@ -287,5 +289,101 @@ public class LineItemFieldsCalculatorTest {
         is(equalTo(5))
     );
 
+  }
+
+  @Test
+  public void shouldSetAverageConsumption() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setPreviousAdjustedConsumptions(Lists.newArrayList(1, 2, 3));
+    requisitionLineItem.setAdjustedConsumption(4);
+
+    LineItemFieldsCalculator.setAverageConsumption(requisitionLineItem);
+
+    assertEquals(2L, requisitionLineItem.getAverageConsumption().longValue());
+  }
+
+  @Test
+  public void shouldSetPreviousAdjustedConsumptionsWhenOnePreviousRequisition() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(5);
+    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+
+    LineItemFieldsCalculator.setPreviousAdjustedConsumptions(
+        Collections.singletonList(requisitionLineItem),
+        Collections.singletonList(previousRequisition)
+    );
+
+    assertEquals(Collections.singletonList(5),
+        requisitionLineItem.getPreviousAdjustedConsumptions());
+  }
+
+  @Test
+  public void shouldSetPreviousAdjustedConsumptionsFromManyPreviousRequisitions() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(5);
+    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition
+        .setRequisitionLineItems(Arrays.asList(previousRequisitionLineItem,
+            previousRequisitionLineItem, previousRequisitionLineItem));
+
+    LineItemFieldsCalculator.setPreviousAdjustedConsumptions(
+        Collections.singletonList(requisitionLineItem),
+        Collections.singletonList(previousRequisition)
+    );
+
+    assertEquals(Arrays.asList(5, 5, 5), requisitionLineItem.getPreviousAdjustedConsumptions());
+  }
+
+  @Test
+  public void shouldNotAddPreviousAdjustedConsumptionIfLineSkipped() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(5);
+    previousRequisitionLineItem.setSkipped(true);
+    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+
+    LineItemFieldsCalculator.setPreviousAdjustedConsumptions(
+        Collections.singletonList(requisitionLineItem),
+        Collections.singletonList(previousRequisition)
+    );
+
+    assertEquals(Collections.emptyList(),
+        requisitionLineItem.getPreviousAdjustedConsumptions());
+  }
+
+  @Test
+  public void shouldNotAddPreviousAdjustedConsumptionIfNull() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    previousRequisitionLineItem.setAdjustedConsumption(null);
+    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    Requisition previousRequisition = new Requisition();
+    previousRequisition.setRequisitionLineItems(
+        Collections.singletonList(previousRequisitionLineItem));
+
+    LineItemFieldsCalculator.setPreviousAdjustedConsumptions(
+        Collections.singletonList(requisitionLineItem),
+        Collections.singletonList(previousRequisition)
+    );
+
+    assertEquals(Collections.emptyList(),
+        requisitionLineItem.getPreviousAdjustedConsumptions());
   }
 }

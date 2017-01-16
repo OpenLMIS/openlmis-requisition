@@ -1,6 +1,5 @@
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.LineItemFieldsSetter.setPreviousAdjustedConsumptions;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -188,14 +187,14 @@ public class Requisition extends BaseTimestampedEntity {
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
     getNonSkippedRequisitionLineItems().forEach(line -> {
-      LineItemFieldsSetter.setTotalLossesAndAdjustments(line, stockAdjustmentReasons);
-      LineItemFieldsSetter.setStockOnHand(template, line);
-      LineItemFieldsSetter.setTotalConsumedQuantity(template, line);
-      LineItemFieldsSetter.setTotal(template, line);
-      LineItemFieldsSetter.setAdjustedConsumption(template, line, numberOfMonthsInPeriod);
-      LineItemFieldsSetter.setAverageConsumptionOnUpdate(template, line);
-      LineItemFieldsSetter.setMaximumStockQuantity(template, line);
-      LineItemFieldsSetter.setCalculatedOrderQuantity(template, line);
+      LineItemFieldsCalculator.setTotalLossesAndAdjustments(line, stockAdjustmentReasons);
+      LineItemFieldsCalculator.setStockOnHand(template, line);
+      LineItemFieldsCalculator.setTotalConsumedQuantity(template, line);
+      LineItemFieldsCalculator.setTotal(template, line);
+      LineItemFieldsCalculator.setAdjustedConsumption(template, line, numberOfMonthsInPeriod);
+      LineItemFieldsCalculator.setAverageConsumptionOnUpdate(template, line);
+      LineItemFieldsCalculator.setMaximumStockQuantity(template, line);
+      LineItemFieldsCalculator.setCalculatedOrderQuantity(template, line);
     });
   }
 
@@ -268,7 +267,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          LineItemFieldsSetter::setAverageConsumption);
+          LineItemFieldsCalculator::setAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -293,7 +292,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          LineItemFieldsSetter::setAverageConsumption);
+          LineItemFieldsCalculator::setAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -314,7 +313,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          LineItemFieldsSetter::setAverageConsumption);
+          LineItemFieldsCalculator::setAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -394,7 +393,7 @@ public class Requisition extends BaseTimestampedEntity {
             LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
       });
     }
-    setPreviousAdjustedConsumptions(requisitionLineItems,
+    LineItemFieldsCalculator.setPreviousAdjustedConsumptions(requisitionLineItems,
         previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage));
   }
 

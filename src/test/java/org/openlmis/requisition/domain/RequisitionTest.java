@@ -11,7 +11,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
@@ -23,6 +22,7 @@ import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -86,7 +86,7 @@ public class RequisitionTest {
   @Test
   public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing() {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
-    mockStatic(LineItemFieldsCalculator.class);
+    PowerMockito.spy(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
 
     requisition.setRequisitionLineItems(new ArrayList<>(
@@ -110,7 +110,7 @@ public class RequisitionTest {
   @Test
   public void shouldCalculateTotalValueWhenUpdatingRequisition() {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
-    mockStatic(LineItemFieldsCalculator.class);
+    PowerMockito.spy(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
 
     when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
@@ -432,7 +432,7 @@ public class RequisitionTest {
     requisitionLineItem = new RequisitionLineItem();
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
-    mockStatic(LineItemFieldsCalculator.class);
+    PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
     ).thenReturn(ADJUSTED_CONSUMPTION);
@@ -454,7 +454,7 @@ public class RequisitionTest {
     requisitionLineItem.setPreviousAdjustedConsumptions(adjustedConsumptions);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
-    mockStatic(LineItemFieldsCalculator.class);
+    PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
     ).thenReturn(ADJUSTED_CONSUMPTION);
