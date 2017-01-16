@@ -57,6 +57,7 @@ public class DraftRequisitionValidatorTest {
   private UUID facilityId = UUID.randomUUID();
   private UUID processingPeriodId = UUID.randomUUID();
   private UUID creatorId = UUID.randomUUID();
+  private UUID supervisoryNodeId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -83,6 +84,9 @@ public class DraftRequisitionValidatorTest {
     updatedRequisition.setCreatorId(UUID.randomUUID());
     Assert.assertNotEquals(requisition.getCreatorId(),
         updatedRequisition.getCreatorId());
+    updatedRequisition.setSupervisoryNodeId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getSupervisoryNodeId(),
+        updatedRequisition.getSupervisoryNodeId());
     updatedRequisition.setEmergency(false);
 
     Message message1 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.PROGRAM_ID);
@@ -91,6 +95,8 @@ public class DraftRequisitionValidatorTest {
         Requisition.PROCESSING_PERIOD_ID);
     Message message4 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.EMERGENCY);
     Message message5 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.CREATOR_ID);
+    Message message6 = new Message(DraftRequisitionValidator.IS_INVARIANT,
+        Requisition.SUPERVISORY_NODE_ID);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
         RequisitionValidator.IS_INVARIANT));
@@ -101,6 +107,8 @@ public class DraftRequisitionValidatorTest {
     when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
         RequisitionValidator.IS_INVARIANT));
     when(messageService.localize(message5)).thenReturn(message5.new LocalizedMessage(
+        RequisitionValidator.IS_INVARIANT));
+    when(messageService.localize(message6)).thenReturn(message6.new LocalizedMessage(
         RequisitionValidator.IS_INVARIANT));
 
     draftRequisitionValidator.validate(updatedRequisition, errors);
@@ -114,6 +122,8 @@ public class DraftRequisitionValidatorTest {
     verify(errors).rejectValue(eq(Requisition.EMERGENCY),
         contains(RequisitionValidator.IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.CREATOR_ID),
+        contains(RequisitionValidator.IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.SUPERVISORY_NODE_ID),
         contains(RequisitionValidator.IS_INVARIANT));
   }
 
@@ -226,6 +236,7 @@ public class DraftRequisitionValidatorTest {
     requisition.setId(requisitionId);
     requisition.setTemplate(requisitionTemplate);
     requisition.setCreatorId(creatorId);
+    requisition.setSupervisoryNodeId(supervisoryNodeId);
     return requisition;
   }
 

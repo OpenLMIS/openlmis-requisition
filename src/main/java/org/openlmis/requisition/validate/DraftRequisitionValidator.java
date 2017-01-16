@@ -55,6 +55,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         savedRequisition.getEmergency(), Requisition.EMERGENCY);
     rejectIfValueChanged(errors, requisition.getCreatorId(),
         savedRequisition.getCreatorId(), Requisition.CREATOR_ID);
+    rejectIfValueChanged(errors, requisition.getSupervisoryNodeId(),
+        savedRequisition.getSupervisoryNodeId(), Requisition.SUPERVISORY_NODE_ID);
   }
 
   private void validateRequisitionLineItem(

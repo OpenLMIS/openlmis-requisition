@@ -57,6 +57,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
   public static final String CREATOR_ID = "creatorId";
+  public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
 
   private static final String UUID = "pg-uuid";
