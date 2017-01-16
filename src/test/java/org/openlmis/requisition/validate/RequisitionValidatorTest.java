@@ -338,7 +338,7 @@ public class RequisitionValidatorTest {
     lineItem.setTotal(1);
     lineItem.setRequisition(requisition);
     lineItem.setMaxMonthsOfStock(BigDecimal.ONE);
-    lineItem.setMaximumStockQuantity(BigDecimal.ONE);
+    lineItem.setMaximumStockQuantity(1);
     lineItem.setAverageConsumption(1);
     lineItem.setCalculatedOrderQuantity(0);
     lineItem.setStockAdjustments(new ArrayList<>());

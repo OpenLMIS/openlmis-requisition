@@ -1,6 +1,5 @@
 package org.openlmis.requisition.domain;
 
-import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -217,7 +216,7 @@ public class LineItemFieldsCalculatorTest {
 
     assertThat(
         LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
-        closeTo(new BigDecimal("14.5"), BigDecimal.ZERO)
+        is(equalTo(15))
     );
   }
 
@@ -232,7 +231,7 @@ public class LineItemFieldsCalculatorTest {
 
     assertThat(
         LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
-        is(equalTo(BigDecimal.ZERO))
+        is(equalTo(0))
     );
   }
 
@@ -241,7 +240,7 @@ public class LineItemFieldsCalculatorTest {
 
     RequisitionLineItem item = new RequisitionLineItem();
     item.setStockOnHand(5);
-    item.setMaximumStockQuantity(BigDecimal.TEN);
+    item.setMaximumStockQuantity(10);
 
     assertThat(
         LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
@@ -279,7 +278,7 @@ public class LineItemFieldsCalculatorTest {
     item.setTotalReceivedQuantity(0);
     item.setTotalLossesAndAdjustments(0);
     item.setTotalConsumedQuantity(0);
-    item.setMaximumStockQuantity(BigDecimal.TEN);
+    item.setMaximumStockQuantity(10);
 
     assertThat(
         LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),

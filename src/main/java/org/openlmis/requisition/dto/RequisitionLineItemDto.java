@@ -43,7 +43,7 @@ public class RequisitionLineItemDto
   private List<Integer> previousAdjustedConsumptions;
   private Integer averageConsumption;
   private BigDecimal maxMonthsOfStock;
-  private BigDecimal maximumStockQuantity;
+  private Integer maximumStockQuantity;
   private Integer calculatedOrderQuantity;
 
   @JsonProperty

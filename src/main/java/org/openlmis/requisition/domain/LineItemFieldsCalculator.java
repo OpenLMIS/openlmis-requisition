@@ -194,10 +194,10 @@ public final class LineItemFieldsCalculator {
    *
    * @param line     the line item to calculate the value for.
    * @param template template related with the requisition.
-   * @return a {@link BigDecimal} object representing the maximum stock quantity for this line.
+   * @return a {@link Integer} object representing the maximum stock quantity for this line.
    */
-  public static BigDecimal calculateMaximumStockQuantity(RequisitionLineItem line,
-                                                         RequisitionTemplate template) {
+  public static Integer calculateMaximumStockQuantity(RequisitionLineItem line,
+                                                      RequisitionTemplate template) {
     RequisitionTemplateColumn column = template
         .findColumn(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
     AvailableRequisitionColumnOption option = column.getOption();
@@ -216,7 +216,10 @@ public final class LineItemFieldsCalculator {
     int averageConsumption = zeroIfNull(line.getAverageConsumption());
     BigDecimal maxMonthsOfStock = zeroIfNull(line.getMaxMonthsOfStock());
 
-    return BigDecimal.valueOf(averageConsumption).multiply(maxMonthsOfStock);
+    return BigDecimal.valueOf(averageConsumption)
+        .multiply(maxMonthsOfStock)
+        .setScale(0, BigDecimal.ROUND_HALF_UP)
+        .intValue();
   }
 
   /**
@@ -229,7 +232,7 @@ public final class LineItemFieldsCalculator {
    */
   public static Integer calculateCalculatedOrderQuantity(RequisitionLineItem line,
                                                          RequisitionTemplate template) {
-    BigDecimal maximumStockQuantity = line.getMaximumStockQuantity();
+    Integer maximumStockQuantity = line.getMaximumStockQuantity();
     Integer stockOnHand = line.getStockOnHand();
 
     if (null == maximumStockQuantity) {
@@ -240,7 +243,7 @@ public final class LineItemFieldsCalculator {
       stockOnHand = calculateStockOnHand(line);
     }
 
-    return Math.max(0, zeroIfNull(maximumStockQuantity).intValue() - zeroIfNull(stockOnHand));
+    return Math.max(0, zeroIfNull(maximumStockQuantity) - zeroIfNull(stockOnHand));
   }
 
 }

@@ -168,7 +168,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Column
   @Setter
   @Getter
-  private BigDecimal maximumStockQuantity;
+  private Integer maximumStockQuantity;
 
   @Column
   @Setter
@@ -441,7 +441,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setMaxMonthsOfStock(BigDecimal maxMonthsOfStock);
 
-    void setMaximumStockQuantity(BigDecimal maximumStockQuantity);
+    void setMaximumStockQuantity(Integer maximumStockQuantity);
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
   }
@@ -493,7 +493,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     BigDecimal getMaxMonthsOfStock();
 
-    BigDecimal getMaximumStockQuantity();
+    Integer getMaximumStockQuantity();
 
     Integer getCalculatedOrderQuantity();
   }

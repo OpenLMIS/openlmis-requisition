@@ -200,7 +200,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setTotal(0);
     requisitionLineItem.setNumberOfNewPatientsAdded(0);
     requisitionLineItem.setAverageConsumption(2);
-    requisitionLineItem.setMaximumStockQuantity(BigDecimal.valueOf(4));
+    requisitionLineItem.setMaximumStockQuantity(4);
     requisitionLineItem.setCalculatedOrderQuantity(2);
     requisitionLineItem.setRequisition(requisition);
 
