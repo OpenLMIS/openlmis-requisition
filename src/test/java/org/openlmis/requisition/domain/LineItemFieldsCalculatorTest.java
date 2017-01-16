@@ -228,10 +228,12 @@ public class LineItemFieldsCalculatorTest {
     template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
 
     RequisitionLineItem item = new RequisitionLineItem();
+    item.setMaxMonthsOfStock(BigDecimal.valueOf(7.25));
+    item.setAverageConsumption(2);
 
     assertThat(
         LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
-        is(equalTo(0))
+        is(equalTo(15))
     );
   }
 
