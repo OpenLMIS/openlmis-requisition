@@ -153,7 +153,7 @@ public class RequisitionTemplateValidatorTest {
   @Test
   public void shouldRejectWhenTotalStockoutDaysFieldIsNotDisplayed() {
     RequisitionTemplate requisitionTemplate =
-        getRequisitionTemplateForTestAdjustedConsumptionField();
+        getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.changeColumnDisplay(
         RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS, false);
 
@@ -174,7 +174,7 @@ public class RequisitionTemplateValidatorTest {
   @Test
   public void shouldRejectWhenTotalConsumedQuantityFieldIsNotDisplayed() {
     RequisitionTemplate requisitionTemplate =
-        getRequisitionTemplateForTestAdjustedConsumptionField();
+        getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.changeColumnDisplay(
         RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY, false);
 
@@ -208,6 +208,18 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
+  public void shouldRejectWhenAverageInTemplateAndNumberOfPreviousPeriodsIsNull() {
+    RequisitionTemplate requisitionTemplate
+        = getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
+    requisitionTemplate.setNumberOfPeriodsToAverage(null);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE),
+        contains(RequisitionTemplateValidator.CAN_NOT_BE_NULL));
+  }
+
+  @Test
   public void shouldRejectWhenNumberOfPreviousPeriodsLessThanTwo() {
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
 
@@ -221,7 +233,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenNumberOfPreviousPeriodsGreaterOrEqualThan2() {
+  public void shouldNotRejectWhenNumberOfPreviousPeriodsGreaterOrEqualThanTwo() {
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
@@ -257,7 +269,7 @@ public class RequisitionTemplateValidatorTest {
     return columnMap;
   }
 
-  private RequisitionTemplate getRequisitionTemplateForTestAdjustedConsumptionField() {
+  private RequisitionTemplate getRequisitionTemplateForTestAdjustedAndAverageConsumptionField() {
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
     columnMap.put(RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS,
         generateTemplateColumn(RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS,
@@ -265,9 +277,14 @@ public class RequisitionTemplateValidatorTest {
     columnMap.put(RequisitionTemplateValidator.ADJUSTED_CONSUMPTION,
         generateTemplateColumn(RequisitionTemplateValidator.ADJUSTED_CONSUMPTION,
             "N", true));
+    columnMap.put(RequisitionTemplateValidator.AVERAGE_CONSUMPTION,
+        generateTemplateColumn(RequisitionTemplateValidator.AVERAGE_CONSUMPTION,
+            "P", true));
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
     requisitionTemplate.changeColumnSource(RequisitionTemplateValidator.ADJUSTED_CONSUMPTION,
+        SourceType.CALCULATED);
+    requisitionTemplate.changeColumnSource(RequisitionTemplateValidator.AVERAGE_CONSUMPTION,
         SourceType.CALCULATED);
     requisitionTemplate.changeColumnSource(
         RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS, SourceType.USER_INPUT);

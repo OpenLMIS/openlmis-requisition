@@ -33,6 +33,8 @@ public class RequisitionTemplateValidator implements Validator {
   static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
       "requisition.error.validation.must-be-displayed-when-consumption-is-calculated";
   static final String MUST_BE_IN_TEMPLATE = "must be in template when";
+  static final String CAN_NOT_BE_NULL = "can not be null";
+
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -60,10 +62,15 @@ public class RequisitionTemplateValidator implements Validator {
             TOTAL_STOCKOUT_DAYS
         );
       }
-      if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)
-          && !requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-        errors.rejectValue(COLUMNS_MAP, "average consumption " + MUST_BE_IN_TEMPLATE
-            + " adjusted consumption is in template");
+      if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+        if (!requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+          errors.rejectValue(COLUMNS_MAP, "average consumption " + MUST_BE_IN_TEMPLATE
+              + " adjusted consumption is in template");
+        }
+        if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
+          errors.rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, NUMBER_OF_PERIODS_TO_AVERAGE + " "
+              + CAN_NOT_BE_NULL + " if average consumption in template");
+        }
       }
     }
 
