@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -122,7 +123,7 @@ public final class LineItemFieldsSetter {
       Integer averageConsumptionPassed = line.getAverageConsumption();
       setAverageConsumption(line);
       if (averageConsumptionPassed != null
-          && averageConsumptionPassed != line.getAdjustedConsumption()) {
+          && !Objects.equals(averageConsumptionPassed, line.getAdjustedConsumption())) {
         LOGGER.warn("Passed Average Consumption does not match calculated one.");
       }
     }
