@@ -310,6 +310,25 @@ public class RequisitionValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfMaximumStockQuantityIsIncorrectlyCalculated() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setMaximumStockQuantity(10);
+    lineItem.setCalculatedOrderQuantity(9);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(
+        "requisition.error.validation.value-does-not-match-calculated-value",
+        RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        "has incorrect value, it does not match the calculated value."));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
+  }
+
+  @Test
   public void shouldNotValidateSkippedLineItems() {
     Requisition requisition = getRequisition();
 
