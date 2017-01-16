@@ -5,9 +5,9 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.math.BigDecimal;
 
-public final class NumberUtil extends NumberUtils {
+public final class OpenLmisNumberUtils extends NumberUtils {
 
-  private NumberUtil() {
+  private OpenLmisNumberUtils() {
     throw new UnsupportedOperationException();
   }
 

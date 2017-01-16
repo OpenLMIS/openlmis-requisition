@@ -3,7 +3,7 @@ package org.openlmis.requisition.domain;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.openlmis.requisition.domain.AvailableRequisitionColumnOption.DEFAULT;
-import static org.openlmis.requisition.domain.NumberUtil.zeroIfNull;
+import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
