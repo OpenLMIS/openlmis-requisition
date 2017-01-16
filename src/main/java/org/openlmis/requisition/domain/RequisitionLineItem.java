@@ -83,38 +83,30 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Requisition requisition;
 
-  @Column
   @Getter
   @Setter
   private Integer beginningBalance;
 
-  @Column
   @Getter
   @Setter
   private Integer totalReceivedQuantity;
 
-  @Column
   @Getter
   private Integer totalLossesAndAdjustments;
 
-  @Column
   @Getter
   private Integer stockOnHand;
 
-  @Column
   @Getter
   @Setter
   private Integer requestedQuantity;
 
-  @Column
   @Getter
   private Integer totalConsumedQuantity;
 
-  @Column
   @Getter
   private Integer total;
 
-  @Column
   @Getter
   @Setter
   private String requestedQuantityExplanation;
@@ -124,22 +116,18 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private String remarks;
 
-  @Column
   @Getter
   @Setter
   private Integer approvedQuantity;
 
-  @Column
   @Getter
   @Setter
   private Integer totalStockoutDays;
 
-  @Column
   @Getter
   @Setter
   private Long packsToShip;
 
-  @Column
   @Getter
   @Setter
   private Boolean skipped;
@@ -156,12 +144,10 @@ public class RequisitionLineItem extends BaseEntity {
   @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "totalCost"))
   private Money totalCost;
 
-  @Column
   @Setter
   @Getter
   private Integer numberOfNewPatientsAdded;
 
-  @Column
   @Setter
   @Getter
   private Integer adjustedConsumption;
@@ -171,16 +157,13 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private List<Integer> previousAdjustedConsumptions;
 
-  @Column
   @Setter
   @Getter
   private Integer averageConsumption;
 
-  @Column
   @Getter
   private Integer maximumStockQuantity;
 
-  @Column
   @Getter
   private Integer calculatedOrderQuantity;
 
