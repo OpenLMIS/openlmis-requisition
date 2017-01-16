@@ -202,7 +202,7 @@
 					<subreportParameterExpression><![CDATA[$P{template}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="title">
-					<subreportParameterExpression><![CDATA[$R{requisition.print.requisition.label.full-supply-items}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$R{requisition.print.requisition.label.fullSupplyItems}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{fullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport(getClass().getResourceAsStream($P{subreport_dir} + "requisitionLines.jrxml"))]]></subreportExpression>
@@ -215,7 +215,7 @@
 					<subreportParameterExpression><![CDATA[$P{template}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="title">
-					<subreportParameterExpression><![CDATA[$R{requisition.print.requisition.label.non-full-supply-items}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$R{requisition.print.requisition.label.nonFullSupplyItems}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{nonFullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport(getClass().getResourceAsStream($P{subreport_dir} + "requisitionLines.jrxml"))]]></subreportExpression>

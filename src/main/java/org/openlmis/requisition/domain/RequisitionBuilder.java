@@ -52,7 +52,7 @@ public final class RequisitionBuilder {
     }
     if (importer.getProcessingPeriod() == null) {
       throw new ValidationMessageException(
-          new Message("requisition.error.processing-period-cannot-be-null"));
+          new Message("requisition.error.processingPeriod.null"));
     }
     UUID processingPeriodId = importer.getProcessingPeriod().getId();
 
