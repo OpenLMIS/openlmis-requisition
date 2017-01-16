@@ -299,26 +299,6 @@ public class RequisitionService {
     return requisitionsForApproval;
   }
 
-  private Set<ProgramDto> getAllProgramsForUser(UUID userId) {
-    Collection<ProgramDto> supervisedPrograms = userProgramsReferenceDataService
-        .getProgramsSupervisedByUser(userId);
-    Collection<ProgramDto> homePrograms = userProgramsReferenceDataService
-        .getHomeFacilityProgramsByUser(userId);
-    Set<ProgramDto> allPrograms = new HashSet<>(supervisedPrograms);
-    allPrograms.addAll(homePrograms);
-
-    return allPrograms;
-  }
-
-  private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
-                                                      ProgramDto program) {
-    List<Requisition> requisitions = new ArrayList<>();
-    for (FacilityDto facility : supervisedFacilities) {
-      requisitions.addAll(getAuthorizedRequisitions(facility, program));
-    }
-    return requisitions;
-  }
-
   /**
    * Get authorized requisitions for specified program.
    */
@@ -332,6 +312,24 @@ public class RequisitionService {
           requisitions.add(req);
         }
       }
+    }
+    return requisitions;
+  }
+
+  private Set<ProgramDto> getAllProgramsForUser(UUID userId) {
+    Set<ProgramDto> allPrograms = new HashSet<>(userProgramsReferenceDataService
+        .getProgramsSupervisedByUser(userId));
+    allPrograms.addAll(userProgramsReferenceDataService
+        .getHomeFacilityProgramsByUser(userId));
+
+    return allPrograms;
+  }
+
+  private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
+                                                      ProgramDto program) {
+    List<Requisition> requisitions = new ArrayList<>();
+    for (FacilityDto facility : supervisedFacilities) {
+      requisitions.addAll(getAuthorizedRequisitions(facility, program));
     }
     return requisitions;
   }
