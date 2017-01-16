@@ -184,7 +184,7 @@ public class PeriodService {
 
       if (periods.isEmpty()) {
         throw new ValidationMessageException(
-            new Message("requisition.error.initiate.cannot-find-current-period"));
+            new Message("requisition.error.initiate.incorrect-suggested-period"));
       }
 
       period = periods.get(0);

@@ -255,7 +255,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
 
-    if (RequisitionHelper.areFieldsNotFilled(template, requisitionLineItems)) {
+    if (RequisitionHelper.areFieldsNotFilled(template, getNonSkippedRequisitionLineItems())) {
       throw new ValidationMessageException(new Message(
           "requisition.error.submit.fields-must-have-values", getId()));
     }
