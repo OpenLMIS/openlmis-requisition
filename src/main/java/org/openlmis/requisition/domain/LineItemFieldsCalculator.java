@@ -2,6 +2,7 @@ package org.openlmis.requisition.domain;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+import static org.openlmis.requisition.domain.AvailableRequisitionColumnOption.DEFAULT;
 import static org.openlmis.requisition.domain.NumberUtil.zeroIfNull;
 
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
@@ -10,7 +11,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 public final class LineItemFieldsCalculator {
@@ -201,19 +201,22 @@ public final class LineItemFieldsCalculator {
     RequisitionTemplateColumn column = template
         .findColumn(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
     AvailableRequisitionColumnOption option = column.getOption();
+    String optionName = null != option
+        ? defaultIfBlank(option.getOptionName(), DEFAULT)
+        : DEFAULT;
 
-    if (null != option) {
-      String name = defaultIfBlank(option.getOptionName(), "").toLowerCase(Locale.ENGLISH);
-
-      if ("default".equals(name)) {
-        int averageConsumption = zeroIfNull(line.getAverageConsumption());
-        BigDecimal maxMonthsOfStock = zeroIfNull(line.getMaxMonthsOfStock());
-
-        return BigDecimal.valueOf(averageConsumption).multiply(maxMonthsOfStock);
-      }
+    // currently we only support default option for this column. When new option will be added
+    // this condition should be removed/updated
+    if (!DEFAULT.equalsIgnoreCase(optionName)) {
+      throw new IllegalArgumentException(
+          "Unsupported option for maximum stock quantity: " + optionName
+      );
     }
 
-    return BigDecimal.ZERO;
+    int averageConsumption = zeroIfNull(line.getAverageConsumption());
+    BigDecimal maxMonthsOfStock = zeroIfNull(line.getMaxMonthsOfStock());
+
+    return BigDecimal.valueOf(averageConsumption).multiply(maxMonthsOfStock);
   }
 
   /**

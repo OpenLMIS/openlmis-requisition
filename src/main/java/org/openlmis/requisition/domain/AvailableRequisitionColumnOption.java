@@ -22,6 +22,8 @@ import javax.persistence.Table;
 @AllArgsConstructor
 public class AvailableRequisitionColumnOption extends BaseEntity {
 
+  public static final String DEFAULT = "default";
+
   @ManyToOne(cascade = {CascadeType.REFRESH})
   @JoinColumn(name = "columnId", nullable = false)
   @JsonIgnore
