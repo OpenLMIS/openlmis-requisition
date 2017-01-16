@@ -8,6 +8,8 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -166,6 +168,17 @@ public class RequisitionLineItemTest {
     RequisitionLineItem requisitionLineItem =
         RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
     assertEquals(false, requisitionLineItem.getSkipped());
+  }
+
+  @Test
+  public void shouldSetAverageConsumption() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setPreviousAdjustedConsumptions(Lists.newArrayList(1, 2, 3));
+    requisitionLineItem.setAdjustedConsumption(4);
+
+    requisitionLineItem.setAverageConsumption();
+
+    assertEquals(2L, requisitionLineItem.getAverageConsumption().longValue());
   }
 
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {

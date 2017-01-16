@@ -1,13 +1,25 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateAdjustedConsumption;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateAverageConsumption;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotal;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
+import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,7 +27,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.AttributeOverride;
@@ -35,6 +49,7 @@ import javax.persistence.Transient;
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
   public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
@@ -80,12 +95,10 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Column
   @Getter
-  @Setter
   private Integer totalLossesAndAdjustments;
 
   @Column
   @Getter
-  @Setter
   private Integer stockOnHand;
 
   @Column
@@ -95,12 +108,10 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Column
   @Getter
-  @Setter
   private Integer totalConsumedQuantity;
 
   @Column
   @Getter
-  @Setter
   private Integer total;
 
   @Column
@@ -166,12 +177,10 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer averageConsumption;
 
   @Column
-  @Setter
   @Getter
   private Integer maximumStockQuantity;
 
   @Column
-  @Setter
   @Getter
   private Integer calculatedOrderQuantity;
 
@@ -391,6 +400,131 @@ public class RequisitionLineItem extends BaseEntity {
       skipped = true;
     } else {
       throw new ValidationMessageException(new Message("requisition.error.can-not-skip"));
+    }
+  }
+
+  public void setTotalConsumedQuantity(Integer totalConsumedQuantity) {
+    this.totalConsumedQuantity = totalConsumedQuantity;
+  }
+
+  /**
+   * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
+   */
+  public void setTotalConsumedQuantity(RequisitionTemplate template) {
+    if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
+      if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
+        setTotalConsumedQuantity(calculateTotalConsumedQuantity(this));
+      }
+    } else {
+      setTotalConsumedQuantity((Integer)null);
+    }
+  }
+
+  public void setTotal(Integer total) {
+    this.total = total;
+  }
+
+  /**
+   * Sets appropriate value for Total field in {@link RequisitionLineItem}.
+   */
+  public void setTotal(RequisitionTemplate template) {
+    if (template.isColumnDisplayed(TOTAL_COLUMN)) {
+      setTotal(calculateTotal(this));
+    }
+  }
+
+  public void setStockOnHand(Integer stockOnHand) {
+    this.stockOnHand = stockOnHand;
+  }
+
+  /**
+   * Sets appropriate value for Stock On Hand field in {@link RequisitionLineItem}.
+   */
+  public void setStockOnHand(RequisitionTemplate template) {
+    if (template.isColumnDisplayed(STOCK_ON_HAND)) {
+      if (template.isColumnCalculated(STOCK_ON_HAND)) {
+        setStockOnHand(calculateStockOnHand(this));
+      }
+    } else {
+      setStockOnHand((Integer) null);
+    }
+  }
+
+  public void setTotalLossesAndAdjustments(Integer totalLossesAndAdjustments) {
+    this.totalLossesAndAdjustments = totalLossesAndAdjustments;
+  }
+
+  /**
+   * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
+   */
+  public void setTotalLossesAndAdjustments(Collection<StockAdjustmentReasonDto> reasons) {
+    setTotalLossesAndAdjustments(calculateTotalLossesAndAdjustments(this, reasons));
+  }
+
+  /**
+   * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem}.
+   */
+  public void setAdjustedConsumption(RequisitionTemplate template,
+                                     Integer monthsInThePeriod) {
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+      int calculated = calculateAdjustedConsumption(this, monthsInThePeriod);
+
+      if (!Objects.equals(calculated, getAdjustedConsumption())) {
+        LOGGER.warn("Passed Adjusted Consumption does not match calculated one.");
+      }
+
+      setAdjustedConsumption(calculated);
+    }
+  }
+
+  /**
+   * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem} on update.
+   */
+  public void setAverageConsumptionOnUpdate(RequisitionTemplate template) {
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      Integer averageConsumptionPassed = this.getAverageConsumption();
+      setAverageConsumption();
+
+      if (averageConsumptionPassed != null
+          && !Objects.equals(averageConsumptionPassed, getAdjustedConsumption())) {
+        LOGGER.warn("Passed Average Consumption does not match calculated one.");
+      }
+    }
+  }
+
+  /**
+   * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
+   */
+  public void setAverageConsumption() {
+    List<Integer> previous = getPreviousAdjustedConsumptions();
+    previous.add(getAdjustedConsumption());
+    Integer calculated = calculateAverageConsumption(previous);
+    setAverageConsumption(calculated);
+  }
+
+  public void setMaximumStockQuantity(Integer maximumStockQuantity) {
+    this.maximumStockQuantity = maximumStockQuantity;
+  }
+
+  /**
+   * Sets appropriate value for Maximum Stock Quantity field in {@link RequisitionLineItem}.
+   */
+  public void setMaximumStockQuantity(RequisitionTemplate template) {
+    if (template.isColumnDisplayed(MAXIMUM_STOCK_QUANTITY)) {
+      setMaximumStockQuantity(calculateMaximumStockQuantity(this, template));
+    }
+  }
+
+  public void setCalculatedOrderQuantity(Integer calculatedOrderQuantity) {
+    this.calculatedOrderQuantity = calculatedOrderQuantity;
+  }
+
+  /**
+   * Sets appropriate value for Calculated Order Quantity field in {@link RequisitionLineItem}.
+   */
+  public void setCalculatedOrderQuantity(RequisitionTemplate template) {
+    if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+      setCalculatedOrderQuantity(calculateCalculatedOrderQuantity(this, template));
     }
   }
 

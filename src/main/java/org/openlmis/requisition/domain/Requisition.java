@@ -9,10 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -24,6 +20,10 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private List<Comment> comments;
-  
+
   @Getter
   @Setter
   private String draftStatusMessage;
@@ -176,9 +176,9 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
-    
+
     this.draftStatusMessage = requisition.draftStatusMessage;
-    
+
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
   }
@@ -187,14 +187,14 @@ public class Requisition extends BaseTimestampedEntity {
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
     getNonSkippedRequisitionLineItems().forEach(line -> {
-      LineItemFieldsCalculator.setTotalLossesAndAdjustments(line, stockAdjustmentReasons);
-      LineItemFieldsCalculator.setStockOnHand(template, line);
-      LineItemFieldsCalculator.setTotalConsumedQuantity(template, line);
-      LineItemFieldsCalculator.setTotal(template, line);
-      LineItemFieldsCalculator.setAdjustedConsumption(template, line, numberOfMonthsInPeriod);
-      LineItemFieldsCalculator.setAverageConsumptionOnUpdate(template, line);
-      LineItemFieldsCalculator.setMaximumStockQuantity(template, line);
-      LineItemFieldsCalculator.setCalculatedOrderQuantity(template, line);
+      line.setTotalLossesAndAdjustments(stockAdjustmentReasons);
+      line.setStockOnHand(template);
+      line.setTotalConsumedQuantity(template);
+      line.setTotal(template);
+      line.setAdjustedConsumption(template, numberOfMonthsInPeriod);
+      line.setAverageConsumptionOnUpdate(template);
+      line.setMaximumStockQuantity(template);
+      line.setCalculatedOrderQuantity(template);
     });
   }
 
@@ -267,7 +267,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          LineItemFieldsCalculator::setAverageConsumption);
+          RequisitionLineItem::setAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -292,7 +292,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          LineItemFieldsCalculator::setAverageConsumption);
+          RequisitionLineItem::setAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -313,7 +313,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          LineItemFieldsCalculator::setAverageConsumption);
+          RequisitionLineItem::setAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -393,8 +393,9 @@ public class Requisition extends BaseTimestampedEntity {
             LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
       });
     }
-    LineItemFieldsCalculator.setPreviousAdjustedConsumptions(requisitionLineItems,
-        previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage));
+    setPreviousAdjustedConsumptions(
+        previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage)
+    );
   }
 
   @JsonIgnore
@@ -450,6 +451,25 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setDraftStatusMessage(draftStatusMessage);
   }
 
+  /**
+   * Sets appropriate value for Previous Adjusted Consumptions field in
+   * each {@link RequisitionLineItem}.
+   */
+  public void setPreviousAdjustedConsumptions(List<Requisition> previousRequisitions) {
+    List<RequisitionLineItem> previousRequisitionLineItems =
+        RequisitionHelper.getNonSkippedLineItems(previousRequisitions);
+
+    RequisitionHelper.forEachLine(requisitionLineItems,
+        line -> {
+          List<RequisitionLineItem> withProductId = RequisitionHelper
+              .findByProductId(previousRequisitionLineItems, line.getOrderableProductId());
+          List<Integer> adjustedConsumptions = RequisitionHelper
+              .mapToAdjustedConsumptions(withProductId);
+
+          line.setPreviousAdjustedConsumptions(adjustedConsumptions);
+        });
+  }
+
   public interface Exporter {
     void setId(UUID id);
 
@@ -466,7 +486,7 @@ public class Requisition extends BaseTimestampedEntity {
     void setSupervisoryNode(UUID supervisoryNode);
 
     void setTemplate(UUID template);
-    
+
     void setDraftStatusMessage(String draftStatusMessage);
   }
 
@@ -480,7 +500,7 @@ public class Requisition extends BaseTimestampedEntity {
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
 
     List<Comment.Importer> getComments();
-    
+
     FacilityDto getFacility();
 
     ProgramDto getProgram();

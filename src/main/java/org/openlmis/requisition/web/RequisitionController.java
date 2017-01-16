@@ -614,14 +614,14 @@ public class RequisitionController extends BaseController {
     for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
       requisitionLineItem.setBeginningBalance(null);
       requisitionLineItem.setTotalReceivedQuantity(null);
-      requisitionLineItem.setTotalLossesAndAdjustments(null);
-      requisitionLineItem.setStockOnHand(null);
+      requisitionLineItem.setTotalLossesAndAdjustments((Integer) null);
+      requisitionLineItem.setStockOnHand((Integer) null);
       requisitionLineItem.setRequestedQuantityExplanation(null);
       requisitionLineItem.setRemarks(null);
       requisitionLineItem.setApprovedQuantity(null);
       requisitionLineItem.setRequestedQuantity(null);
-      requisitionLineItem.setTotalConsumedQuantity(null);
-      requisitionLineItem.setTotal(null);
+      requisitionLineItem.setTotalConsumedQuantity((Integer) null);
+      requisitionLineItem.setTotal((Integer) null);
       requisitionLineItem.setRequestedQuantityExplanation(null);
       requisitionLineItem.setTotalStockoutDays(null);
       requisitionLineItem.setPacksToShip(null);
@@ -630,8 +630,8 @@ public class RequisitionController extends BaseController {
       requisitionLineItem.setNumberOfNewPatientsAdded(null);
       requisitionLineItem.setAdjustedConsumption(null);
       requisitionLineItem.setAverageConsumption(null);
-      requisitionLineItem.setMaximumStockQuantity(null);
-      requisitionLineItem.setCalculatedOrderQuantity(null);
+      requisitionLineItem.setMaximumStockQuantity((Integer) null);
+      requisitionLineItem.setCalculatedOrderQuantity((Integer) null);
       requisitionLineItem.clearStockAdjustmentsAndPreviousAdjustedConsumptions();
     }
   }
