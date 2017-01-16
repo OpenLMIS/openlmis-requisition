@@ -356,15 +356,18 @@ public class RequisitionServiceTest {
     when(supervisedProgramsReferenceDataService
         .getProgramsSupervisedByUser(user.getId()))
         .thenReturn(Collections.singletonList(program));
+    when(supervisedProgramsReferenceDataService
+        .getHomeFacilityProgramsByUser(user.getId()))
+        .thenReturn(Collections.singletonList(program));
     when(rightReferenceDataService
         .findRight("REQUISITION_APPROVE"))
         .thenReturn(right);
 
-    List<Requisition> requisitionsForApproval =
+    Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId());
 
     assertEquals(1, requisitionsForApproval.size());
-    assertEquals(requisitionsForApproval.get(0), requisition);
+    assertTrue(requisitionsForApproval.contains(requisition));
   }
 
   @Test

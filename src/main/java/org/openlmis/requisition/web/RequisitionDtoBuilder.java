@@ -12,6 +12,7 @@ import org.openlmis.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public class RequisitionDtoBuilder {
    * @param requisitions a list of requisitions that will be converted into DTOs.
    * @return a list of {@link RequisitionDto}
    */
-  public List<RequisitionDto> build(List<Requisition> requisitions) {
+  public List<RequisitionDto> build(Collection<Requisition> requisitions) {
     return requisitions.stream().map(this::build).collect(Collectors.toList());
   }
 

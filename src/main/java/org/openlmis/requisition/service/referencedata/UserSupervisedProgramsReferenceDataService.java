@@ -27,4 +27,15 @@ public class UserSupervisedProgramsReferenceDataService extends ProgramReference
     searchParameters.put("forHomeFacility", false);
     return findAll(userUuid + "/programs", searchParameters);
   }
+
+  /**
+   * Retrieves all home facility programs for given user from the reference data
+   * service.
+   *
+   * @param userUuid the UUID of the user
+   * @return a collection of home facility programs for user
+   */
+  public Collection<ProgramDto> getHomeFacilityProgramsByUser(UUID userUuid) {
+    return findAll(userUuid + "/programs");
+  }
 }

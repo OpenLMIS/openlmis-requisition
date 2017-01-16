@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -404,7 +405,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
   public ResponseEntity<Collection<RequisitionDto>> listForApproval() {
     UserDto user = authenticationHelper.getCurrentUser();
-    List<Requisition> approvalRequisitions = requisitionService
+    Set<Requisition> approvalRequisitions = requisitionService
         .getRequisitionsForApproval(user.getId());
     return new ResponseEntity<>(requisitionDtoBuilder.build(approvalRequisitions), HttpStatus.OK);
   }

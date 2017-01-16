@@ -43,6 +43,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class RequisitionService {
   private UserSupervisedFacilitiesReferenceDataService supervisedFacilitiesReferenceDataService;
 
   @Autowired
-  private UserSupervisedProgramsReferenceDataService supervisedProgramsReferenceDataService;
+  private UserSupervisedProgramsReferenceDataService userProgramsReferenceDataService;
 
   @Autowired
   private RightReferenceDataService rightReferenceDataService;
@@ -290,30 +291,35 @@ public class RequisitionService {
   /**
    * Get requisitions to approve for specified user.
    */
-  public List<Requisition> getRequisitionsForApproval(UUID userId) {
-    List<Requisition> requisitionsForApproval = new ArrayList<>();
-    Collection<FacilityDto> filteredFacilities = new ArrayList<>();
-    Collection<ProgramDto> supervisedPrograms = supervisedProgramsReferenceDataService
-        .getProgramsSupervisedByUser(userId);
+  public Set<Requisition> getRequisitionsForApproval(UUID userId) {
+    Set<Requisition> requisitionsForApproval = new HashSet<>();
+    Collection<ProgramDto> programsForUser = getAllProgramsForUser(userId);
     RightDto right = rightReferenceDataService.findRight(REQUISITION_APPROVE);
-    for (ProgramDto program : supervisedPrograms) {
+    for (ProgramDto program : programsForUser) {
       Collection<FacilityDto> supervisedFacilities = supervisedFacilitiesReferenceDataService
           .getFacilitiesSupervisedByUser(userId, program.getId(), right.getId());
-      requisitionsForApproval.addAll(addAuthorizedRequisitions(supervisedFacilities,
-          filteredFacilities, program));
+      requisitionsForApproval.addAll(addAuthorizedRequisitions(supervisedFacilities, program));
     }
+
     return requisitionsForApproval;
   }
 
+  private Set<ProgramDto> getAllProgramsForUser(UUID userId) {
+    Collection<ProgramDto> supervisedPrograms = userProgramsReferenceDataService
+        .getProgramsSupervisedByUser(userId);
+    Collection<ProgramDto> homePrograms = userProgramsReferenceDataService
+        .getHomeFacilityProgramsByUser(userId);
+    Set<ProgramDto> allPrograms = new HashSet<>(supervisedPrograms);
+    allPrograms.addAll(homePrograms);
+
+    return allPrograms;
+  }
+
   private List<Requisition> addAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
-                                                      Collection<FacilityDto> filteredFacilities,
                                                       ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
     for (FacilityDto facility : supervisedFacilities) {
-      if (!filteredFacilities.contains(facility)) {
-        filteredFacilities.add(facility);
-        requisitions.addAll(getAuthorizedRequisitions(facility, program));
-      }
+      requisitions.addAll(getAuthorizedRequisitions(facility, program));
     }
     return requisitions;
   }
