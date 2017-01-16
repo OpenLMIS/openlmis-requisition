@@ -190,7 +190,7 @@ public class RequisitionValidatorTest {
         RequisitionLineItem.STOCK_ON_HAND,
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
     when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
-        "has incorrect value, it does not match the calculated value."));
+        RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
 
     requisitionValidator.validate(requisition, errors);
 
@@ -301,7 +301,7 @@ public class RequisitionValidatorTest {
         RequisitionLineItem.STOCK_ON_HAND,
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
     when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
-        "has incorrect value, it does not match the calculated value."));
+        RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
 
     requisitionValidator.validate(requisition, errors);
 
@@ -320,7 +320,25 @@ public class RequisitionValidatorTest {
         "requisition.error.validation.value-does-not-match-calculated-value",
         RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        "has incorrect value, it does not match the calculated value."));
+        RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
+  }
+
+  @Test
+  public void shouldRejectIfCalculatedOrderQuantityIsIncorrectlyCalculated() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setCalculatedOrderQuantity(9);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(
+        "requisition.error.validation.value-does-not-match-calculated-value",
+        RequisitionLineItem.CALCULATED_ORDER_QUANTITY);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
 
     requisitionValidator.validate(requisition, errors);
 
