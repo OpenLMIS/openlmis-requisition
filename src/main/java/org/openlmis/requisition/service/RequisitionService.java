@@ -125,9 +125,9 @@ public class RequisitionService {
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               UUID creatorId, boolean emergency) {
-    Requisition requisition = RequisitionBuilder.newRequisition(facilityId, programId, emergency);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        facilityId, programId, creatorId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setCreatorId(creatorId);
 
     ProcessingPeriodDto period = periodService
         .findPeriod(programId, facilityId, suggestedPeriodId, emergency);

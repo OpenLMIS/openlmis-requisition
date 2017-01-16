@@ -729,7 +729,7 @@ public class RequisitionServiceTest {
       when(facility.getId()).thenReturn(UUID.randomUUID());
 
       Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-          UUID.randomUUID(), APPROVED, false);
+          UUID.randomUUID(), UUID.randomUUID(), APPROVED, false);
       requisition.setId(UUID.randomUUID());
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
@@ -749,7 +749,7 @@ public class RequisitionServiceTest {
 
   private Requisition generateRequisition() {
     requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        INITIATED, false);
+        UUID.randomUUID(), INITIATED, false);
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setSupplyingFacilityId(facilityId);

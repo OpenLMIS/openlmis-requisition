@@ -35,7 +35,7 @@ public class RequisitionStatusNotifier {
   private UserReferenceDataService userReferenceDataService;
 
   /**
-   * Notify user that the requisition was converted to order.
+   * Notify requisition's creator that it was converted to order.
    *
    * @param requisition requisition that was converted
    * @return true if success, false if failed.

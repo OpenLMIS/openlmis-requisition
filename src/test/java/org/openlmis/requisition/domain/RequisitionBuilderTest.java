@@ -47,7 +47,7 @@ public class RequisitionBuilderTest {
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
   private UUID templateUuid = UUID.randomUUID();
-  private UUID initiatorUuid = UUID.randomUUID();
+  private UUID creatorUuid = UUID.randomUUID();
 
   private List<Comment.Importer> commentDtos = new ArrayList<>();
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
@@ -57,12 +57,12 @@ public class RequisitionBuilderTest {
     MockitoAnnotations.initMocks(this);
 
     when(requisitionDto.getId()).thenReturn(requisitionUuid);
+    when(requisitionDto.getCreatorId()).thenReturn(creatorUuid);
     when(requisitionDto.getFacility()).thenReturn(facilityDto);
     when(requisitionDto.getProgram()).thenReturn(programDto);
     when(requisitionDto.getProcessingPeriod()).thenReturn(processingPeriodDto);
     when(requisitionDto.getSupervisoryNode()).thenReturn(supervisoryNodeUuid);
     when(requisitionDto.getTemplate()).thenReturn(templateUuid);
-    when(requisitionDto.getCreatorId()).thenReturn(initiatorUuid);
     when(requisitionDto.getComments()).thenReturn(commentDtos);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
@@ -73,26 +73,34 @@ public class RequisitionBuilderTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenProgramIdIsMissing()
+  public void shouldThrowExceptionWhenFacilityIdIsMissing()
       throws ValidationMessageException {
-    RequisitionBuilder.newRequisition(null, UUID.randomUUID(), true);
+    RequisitionBuilder.newRequisition(null, UUID.randomUUID(), UUID.randomUUID(), true);
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenFacilityIdIsMissing() throws
+  public void shouldThrowExceptionWhenProgramIdIsMissing() throws
       ValidationMessageException {
-    RequisitionBuilder.newRequisition(UUID.randomUUID(), null, true);
+    RequisitionBuilder.newRequisition(UUID.randomUUID(), null, UUID.randomUUID(), true);
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenCreatorIdIsMissing() throws
+      ValidationMessageException {
+    RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), null, true);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenEmergencyFlagIsMissing() throws
       ValidationMessageException {
-    RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), null);
+    RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+        null);
   }
 
   @Test
   public void shouldInitializeRequisitionWithGivenProgramFacilityAndEmergencyFlag() {
-    Requisition requisition = RequisitionBuilder.newRequisition(facilityUuid, programUuid, false);
+    Requisition requisition = RequisitionBuilder.newRequisition(facilityUuid, programUuid,
+        creatorUuid,  false);
 
     assertFalse(requisition.getEmergency());
     assertEquals(programUuid, requisition.getProgramId());
@@ -106,11 +114,11 @@ public class RequisitionBuilderTest {
 
     assertNotNull(requisition);
     assertEquals(requisitionUuid, requisition.getId());
+    assertEquals(creatorUuid, requisition.getCreatorId());
     assertEquals(facilityUuid, requisition.getFacilityId());
     assertEquals(programUuid, requisition.getProgramId());
     assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());
     assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
-    assertEquals(initiatorUuid, requisition.getCreatorId());
     assertEquals(commentDtos, requisition.getComments());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());

@@ -221,7 +221,7 @@ public class DraftRequisitionValidatorTest {
 
   private Requisition generateRequisition() {
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
-        RequisitionStatus.AUTHORIZED, true);
+        creatorId, RequisitionStatus.AUTHORIZED, true);
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setId(requisitionId);
     requisition.setTemplate(requisitionTemplate);

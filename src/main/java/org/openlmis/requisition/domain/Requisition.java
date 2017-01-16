@@ -134,6 +134,7 @@ public class Requisition extends BaseTimestampedEntity {
   @Type(type = UUID)
   private UUID supervisoryNodeId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
@@ -145,14 +146,16 @@ public class Requisition extends BaseTimestampedEntity {
    * @param facilityId         id of the Facility
    * @param programId          id of the Program
    * @param processingPeriodId id of the ProcessingPeriod
+   * @param creatorId          id of the creator
    * @param status             status of the Requisition
    * @param emergency          whether this Requisition is emergency
    */
-  public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId,
+  public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId, UUID creatorId,
                      RequisitionStatus status, Boolean emergency) {
     this.facilityId = facilityId;
     this.programId = programId;
     this.processingPeriodId = processingPeriodId;
+    this.creatorId = creatorId;
     this.status = status;
     this.emergency = emergency;
   }

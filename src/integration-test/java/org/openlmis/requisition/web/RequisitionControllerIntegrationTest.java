@@ -658,7 +658,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.delete(requisition);
     requisitionRepository.delete(requisitionForSearch);
 
-    restAssured.given()
+    RequisitionDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam(PROGRAM, programDto.getId())
         .queryParam(FACILITY, facilityDto.getId())
@@ -667,8 +667,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .post(INITIATE_URL)
         .then()
-        .statusCode(201);
+        .statusCode(201)
+        .extract().as(RequisitionDto.class);
 
+    assertEquals(user.getId(), response.getCreatorId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1299,6 +1301,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setFacilityId(facilityDto.getId());
     requisition.setProcessingPeriodId(period.getId());
     requisition.setProgramId(programDto.getId());
+    requisition.setCreatorId(user.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
@@ -1313,6 +1316,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setFacilityId(FACILITY_UUID);
     requisition.setProcessingPeriodId(PERIOD_UUID);
     requisition.setProgramId(PROGRAM_UUID);
+    requisition.setCreatorId(user.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(localDateTime);
@@ -1333,8 +1337,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
     Requisition requisition = new Requisition(facility, UUID.randomUUID(), UUID.randomUUID(),
-        requisitionStatus, true);
+        UUID.randomUUID(), requisitionStatus, true);
     requisition.setId(UUID.randomUUID());
+    requisition.setCreatorId(user.getId());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
