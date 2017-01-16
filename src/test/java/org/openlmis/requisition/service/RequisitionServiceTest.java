@@ -375,6 +375,7 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
+    when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
 
     when(requisitionRepository
         .findOne(requisition.getId()))
@@ -425,21 +426,6 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
     prepareForTestInitiate(null);
-    mockPreviousRequisition();
-    mockApprovedProduct();
-
-    Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
-    );
-
-    verify(periodService).findPreviousPeriods(any(), eq(1));
-    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
-    assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
-  }
-
-  @Test
-  public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsLessThan2() {
-    prepareForTestInitiate(1);
     mockPreviousRequisition();
     mockApprovedProduct();
 

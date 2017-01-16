@@ -144,24 +144,19 @@ public class RequisitionService {
 
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
 
-    Integer numberOfPeriods = Optional
-        .ofNullable(requisitionTemplate.getNumberOfPeriodsToAverage())
-        .orElse(1);
-
-    int amount;
     int numberOfPreviousPeriodsToAverage;
-    if (numberOfPeriods < 2) {
-      amount = 1;
+    List<Requisition> previousRequisitions;
+    // numberOfPeriodsToAverage is always >= 2 or null
+    if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
       numberOfPreviousPeriodsToAverage = 0;
+      previousRequisitions = getRecentRequisitions(requisition, 1);
     } else {
-      amount = numberOfPeriods - 1;
-      numberOfPreviousPeriodsToAverage = numberOfPeriods - 1;
+      numberOfPreviousPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage() - 1;
+      previousRequisitions =
+          getRecentRequisitions(requisition, numberOfPreviousPeriodsToAverage);
     }
 
-    List<Requisition> previousRequisitions =
-        getRecentRequisitions(requisition, amount);
-
-    if (previousRequisitions.size() < numberOfPreviousPeriodsToAverage) {
+    if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
       numberOfPreviousPeriodsToAverage = previousRequisitions.size();
     }
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
