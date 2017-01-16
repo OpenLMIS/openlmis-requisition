@@ -28,7 +28,7 @@ public class PermissionService {
   static final String REQUISITION_DELETE = REQUISITION_BASE + "DELETE";
   static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
   static final String REQUISITION_CONVERT_TO_ORDER = REQUISITION_BASE + "CONVERT_TO_ORDER";
-  static final String MANAGE_REQUISITION_TEMPLATES = "MANAGE_REQUISITION_TEMPLATES";
+  static final String REQUISITION_TEMPLATES_MANAGE = "REQUISITION_TEMPLATES_MANAGE";
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -134,7 +134,7 @@ public class PermissionService {
    * Checks if current user has permission to manage a requisition template.
    */
   public void canManageRequisitionTemplate() {
-    hasPermission(MANAGE_REQUISITION_TEMPLATES, null, null, null);
+    hasPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
   }
 
   private void hasPermission(String rightName, UUID requisitionId) {

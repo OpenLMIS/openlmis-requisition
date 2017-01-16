@@ -2,7 +2,7 @@ package org.openlmis.requisition.service;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.service.PermissionService.MANAGE_REQUISITION_TEMPLATES;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
@@ -125,7 +125,7 @@ public class PermissionServiceTest {
     when(authenticationHelper.getRight(REQUISITION_VIEW)).thenReturn(requisitionViewRight);
     when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
         requisitionConvertRight);
-    when(authenticationHelper.getRight(MANAGE_REQUISITION_TEMPLATES)).thenReturn(
+    when(authenticationHelper.getRight(REQUISITION_TEMPLATES_MANAGE)).thenReturn(
         manageRequisitionTemplateRight);
 
     when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
@@ -278,12 +278,12 @@ public class PermissionServiceTest {
     permissionService.canManageRequisitionTemplate();
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyGeneralAdminRight(order, MANAGE_REQUISITION_TEMPLATES, manageRequisitionTemplateRightId);
+    verifyGeneralAdminRight(order, REQUISITION_TEMPLATES_MANAGE, manageRequisitionTemplateRightId);
   }
 
   @Test
   public void cannotManageRequisitionTemplate() throws Exception {
-    expectException(MANAGE_REQUISITION_TEMPLATES);
+    expectException(REQUISITION_TEMPLATES_MANAGE);
 
     permissionService.canManageRequisitionTemplate();
   }
