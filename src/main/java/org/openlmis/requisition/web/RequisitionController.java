@@ -639,8 +639,7 @@ public class RequisitionController extends BaseController {
   private void saveStatusMessage(Requisition requisition) {
     if (requisition.getDraftStatusMessage() != null) {
       StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
-          authenticationHelper.getCurrentUser().getId(), requisition.getStatus(),
-          requisition.getDraftStatusMessage());
+          authenticationHelper.getCurrentUser().getId(), requisition.getDraftStatusMessage());
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage(null);
     }

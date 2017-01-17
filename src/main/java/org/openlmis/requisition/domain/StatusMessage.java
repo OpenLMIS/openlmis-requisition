@@ -45,17 +45,16 @@ public class StatusMessage extends BaseTimestampedEntity {
   @Setter
   private String body;
 
-  private StatusMessage(Requisition requisition, UUID authorId, RequisitionStatus status,
-                        String body) {
+  private StatusMessage(Requisition requisition, UUID authorId, String body) {
     this.requisition = Objects.requireNonNull(requisition);
     this.authorId = authorId;
-    this.status = Objects.requireNonNull(status);
+    this.status = Objects.requireNonNull(requisition.getStatus());
     this.body = Objects.requireNonNull(body);
   }
   
   public static StatusMessage newStatusMessage(Requisition requisition, UUID authorId,
-                                               RequisitionStatus status, String body) {
-    return new StatusMessage(requisition, authorId, status, body);
+                                               String body) {
+    return new StatusMessage(requisition, authorId, body);
   }
 
   /**

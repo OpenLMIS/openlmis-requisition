@@ -37,8 +37,7 @@ public class StatusMessageRepositoryIntegrationTest
   }
 
   StatusMessage generateInstance() {
-    return StatusMessage.newStatusMessage(requisition, userId, requisition.getStatus(),
-        "Status Message");
+    return StatusMessage.newStatusMessage(requisition, userId, "Status Message");
   }
   
   @Before
