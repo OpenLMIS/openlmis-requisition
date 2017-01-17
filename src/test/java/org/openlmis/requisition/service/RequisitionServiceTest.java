@@ -26,7 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -38,6 +40,7 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
+import org.openlmis.requisition.dto.OrderLineItemDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
@@ -64,12 +67,14 @@ import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataSer
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.PaginationHelper;
 import org.openlmis.utils.RequisitionDtoComparator;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -169,6 +174,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private StatusMessageRepository statusMessageRepository;
+
+  @Mock
+  private OrderDtoBuilder orderDtoBuilder;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -934,5 +942,34 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchByProcessingPeriodAndType(any(), any()))
         .thenReturn(new ArrayList<>());
+
+    when(orderDtoBuilder.build(any(Requisition.class), any(UserDto.class)))
+        .thenAnswer(new Answer<OrderDto>() {
+          @Override
+          public OrderDto answer(InvocationOnMock invocation) throws Throwable {
+            Requisition requisition = (Requisition) invocation.getArguments()[0];
+
+            if (null == requisition) {
+              return null;
+            }
+
+            OrderDto order = new OrderDto();
+            order.setExternalId(requisition.getId());
+            order.setEmergency(requisition.getEmergency());
+            order.setQuotedCost(BigDecimal.ZERO);
+
+            order.setOrderLineItems(
+                requisition
+                    .getRequisitionLineItems()
+                    .stream()
+                    .map(OrderLineItemDto::newOrderLineItem)
+                    .collect(Collectors.toList())
+            );
+
+            order.setCreatedBy((UserDto) invocation.getArguments()[1]);
+
+            return order;
+          }
+        });
   }
 }

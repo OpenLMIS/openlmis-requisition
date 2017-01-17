@@ -11,7 +11,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,7 +23,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -60,11 +62,11 @@ public class OrderFulfillmentServiceTest {
 
   private OrderDto generate() {
     OrderDto order = new OrderDto();
-    order.setCreatedById(UUID.randomUUID());
-    order.setProgramId(UUID.randomUUID());
-    order.setRequestingFacilityId(UUID.randomUUID());
-    order.setReceivingFacilityId(UUID.randomUUID());
-    order.setSupplyingFacilityId(UUID.randomUUID());
+    order.setCreatedBy(new UserDto());
+    order.setProgram(new ProgramDto());
+    order.setRequestingFacility(new FacilityDto());
+    order.setReceivingFacility(new FacilityDto());
+    order.setSupplyingFacility(new FacilityDto());
     order.setOrderLineItems(new ArrayList<>());
     return order;
   }

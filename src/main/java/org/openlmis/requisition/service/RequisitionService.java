@@ -29,6 +29,7 @@ import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.PaginationHelper;
@@ -112,6 +113,9 @@ public class RequisitionService {
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
+
+  @Autowired
+  private OrderDtoBuilder orderDtoBuilder;
 
   /**
    * Initiated given requisition if possible.
@@ -434,7 +438,7 @@ public class RequisitionService {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
 
     for (Requisition requisition : releasedRequisitions) {
-      OrderDto order = OrderDto.newOrder(requisition, user);
+      OrderDto order = orderDtoBuilder.build(requisition, user);
       if (orderFulfillmentService.create(order)) {
         requisitionRepository.save(requisition);
         requisitionStatusNotifier.notifyConvertToOrder(requisition);
