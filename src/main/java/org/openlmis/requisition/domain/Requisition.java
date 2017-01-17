@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -132,6 +133,11 @@ public class Requisition extends BaseTimestampedEntity {
   @Type(type = UUID)
   private UUID creatorId;
 
+  @ElementCollection
+  @Getter
+  @Setter
+  private List<Requisition> previousRequisitions;
+
   /**
    * Constructor.
    *
@@ -173,14 +179,14 @@ public class Requisition extends BaseTimestampedEntity {
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
     getNonSkippedRequisitionLineItems().forEach(line -> {
-      line.setTotalLossesAndAdjustments(stockAdjustmentReasons);
-      line.setStockOnHand(template);
-      line.setTotalConsumedQuantity(template);
-      line.setTotal(template);
-      line.setAdjustedConsumption(template, numberOfMonthsInPeriod);
+      line.calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
+      line.calculateAndSetStockOnHand(template);
+      line.calculateAndSetTotalConsumedQuantity(template);
+      line.calculateAndSetTotal(template);
+      line.calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
       line.setAverageConsumptionOnUpdate(template);
-      line.setMaximumStockQuantity(template);
-      line.setCalculatedOrderQuantity(template);
+      line.calculateAndSetMaximumStockQuantity(template);
+      line.calculateAndSetCalculatedOrderQuantity(template);
     });
   }
 
@@ -253,7 +259,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          RequisitionLineItem::setAverageConsumption);
+          RequisitionLineItem::calculateAndSetAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -278,7 +284,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          RequisitionLineItem::setAverageConsumption);
+          RequisitionLineItem::calculateAndSetAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -299,7 +305,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(
-          RequisitionLineItem::setAverageConsumption);
+          RequisitionLineItem::calculateAndSetAverageConsumption);
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
@@ -346,6 +352,7 @@ public class Requisition extends BaseTimestampedEntity {
                        int numberOfPreviousPeriodsToAverage
   ) {
     this.template = template;
+    this.previousRequisitions = previousRequisitions;
 
     setRequisitionLineItems(
         products
@@ -435,13 +442,14 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
+    exporter.setPreviousRequisitions(previousRequisitions);
   }
 
   /**
    * Sets appropriate value for Previous Adjusted Consumptions field in
    * each {@link RequisitionLineItem}.
    */
-  public void setPreviousAdjustedConsumptions(List<Requisition> previousRequisitions) {
+  void setPreviousAdjustedConsumptions(List<Requisition> previousRequisitions) {
     List<RequisitionLineItem> previousRequisitionLineItems =
         RequisitionHelper.getNonSkippedLineItems(previousRequisitions);
 
@@ -474,6 +482,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setTemplate(UUID template);
     
     void setDraftStatusMessage(String draftStatusMessage);
+
+    void setPreviousRequisitions(List<Requisition> previousRequisitions);
   }
 
   public interface Importer {
@@ -502,5 +512,7 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getTemplate();
 
     String getDraftStatusMessage();
+
+    List<Requisition> getPreviousRequisitions();
   }
 }

@@ -176,7 +176,7 @@ public class RequisitionLineItemTest {
     requisitionLineItem.setPreviousAdjustedConsumptions(Lists.newArrayList(1, 2, 3));
     requisitionLineItem.setAdjustedConsumption(4);
 
-    requisitionLineItem.setAverageConsumption();
+    requisitionLineItem.calculateAndSetAverageConsumption();
 
     assertEquals(2L, requisitionLineItem.getAverageConsumption().longValue());
   }

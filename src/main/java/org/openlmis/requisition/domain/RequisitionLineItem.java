@@ -45,7 +45,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-
+@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
@@ -393,13 +393,13 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
-  public void setTotalConsumedQuantity(RequisitionTemplate template) {
+  public void calculateAndSetTotalConsumedQuantity(RequisitionTemplate template) {
     if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
       if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
         setTotalConsumedQuantity(calculateTotalConsumedQuantity(this));
       }
     } else {
-      setTotalConsumedQuantity((Integer)null);
+      setTotalConsumedQuantity(null);
     }
   }
 
@@ -410,7 +410,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Total field in {@link RequisitionLineItem}.
    */
-  public void setTotal(RequisitionTemplate template) {
+  public void calculateAndSetTotal(RequisitionTemplate template) {
     if (template.isColumnDisplayed(TOTAL_COLUMN)) {
       setTotal(calculateTotal(this));
     }
@@ -423,13 +423,13 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Stock On Hand field in {@link RequisitionLineItem}.
    */
-  public void setStockOnHand(RequisitionTemplate template) {
+  public void calculateAndSetStockOnHand(RequisitionTemplate template) {
     if (template.isColumnDisplayed(STOCK_ON_HAND)) {
       if (template.isColumnCalculated(STOCK_ON_HAND)) {
         setStockOnHand(calculateStockOnHand(this));
       }
     } else {
-      setStockOnHand((Integer) null);
+      setStockOnHand(null);
     }
   }
 
@@ -440,15 +440,16 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
-  public void setTotalLossesAndAdjustments(Collection<StockAdjustmentReasonDto> reasons) {
+  public void calculateAndSetTotalLossesAndAdjustments(
+      Collection<StockAdjustmentReasonDto> reasons) {
     setTotalLossesAndAdjustments(calculateTotalLossesAndAdjustments(this, reasons));
   }
 
   /**
    * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem}.
    */
-  public void setAdjustedConsumption(RequisitionTemplate template,
-                                     Integer monthsInThePeriod) {
+  public void calculateAndSetAdjustedConsumption(RequisitionTemplate template,
+                                                 Integer monthsInThePeriod) {
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       int calculated = calculateAdjustedConsumption(this, monthsInThePeriod);
 
@@ -466,7 +467,7 @@ public class RequisitionLineItem extends BaseEntity {
   public void setAverageConsumptionOnUpdate(RequisitionTemplate template) {
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       Integer averageConsumptionPassed = this.getAverageConsumption();
-      setAverageConsumption();
+      calculateAndSetAverageConsumption();
 
       if (averageConsumptionPassed != null
           && !Objects.equals(averageConsumptionPassed, getAdjustedConsumption())) {
@@ -478,7 +479,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
    */
-  public void setAverageConsumption() {
+  public void calculateAndSetAverageConsumption() {
     List<Integer> previous = getPreviousAdjustedConsumptions();
     previous.add(getAdjustedConsumption());
     Integer calculated = calculateAverageConsumption(previous);
@@ -492,7 +493,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Maximum Stock Quantity field in {@link RequisitionLineItem}.
    */
-  public void setMaximumStockQuantity(RequisitionTemplate template) {
+  public void calculateAndSetMaximumStockQuantity(RequisitionTemplate template) {
     if (template.isColumnDisplayed(MAXIMUM_STOCK_QUANTITY)) {
       setMaximumStockQuantity(calculateMaximumStockQuantity(this, template));
     }
@@ -505,7 +506,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Calculated Order Quantity field in {@link RequisitionLineItem}.
    */
-  public void setCalculatedOrderQuantity(RequisitionTemplate template) {
+  public void calculateAndSetCalculatedOrderQuantity(RequisitionTemplate template) {
     if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
       setCalculatedOrderQuantity(calculateCalculatedOrderQuantity(this, template));
     }
