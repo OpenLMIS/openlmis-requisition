@@ -13,8 +13,12 @@ import org.springframework.validation.Validator;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
+
   @Autowired
   MessageService messageService;
+
+  @Autowired
+  ValidatorUtil validatorUtil;
 
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
@@ -32,8 +36,6 @@ public class RequisitionTemplateValidator implements Validator {
       "requisition.error.validation.mist-be-displayed-when-consumed-quantity-is-calculated";
   static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
       "requisition.error.validation.must-be-displayed-when-consumption-is-calculated";
-  static final String MUST_BE_IN_TEMPLATE = "must be in template when";
-  static final String CAN_NOT_BE_NULL = "can not be null";
 
 
   @Override
@@ -64,20 +66,23 @@ public class RequisitionTemplateValidator implements Validator {
       }
       if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
         if (!requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-          errors.rejectValue(COLUMNS_MAP, "average consumption " + MUST_BE_IN_TEMPLATE
-              + " adjusted consumption is in template");
+          validatorUtil.rejectValue(errors, COLUMNS_MAP, messageService.localize(
+              new Message("requisition.error.validation.fieldMustBeInTemplate",
+                  AVERAGE_CONSUMPTION, ADJUSTED_CONSUMPTION)));
         }
         if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
-          errors.rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, NUMBER_OF_PERIODS_TO_AVERAGE + " "
-              + CAN_NOT_BE_NULL + " if average consumption in template");
+          validatorUtil.rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE, messageService.localize(
+              new Message("requisition.error.validation.fieldCanNotBeNull",
+                  NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION)));
         }
       }
     }
 
     if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
         && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
-      errors.rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, NUMBER_OF_PERIODS_TO_AVERAGE + " must be"
-          + " greater than or equal to 2");
+      validatorUtil.rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE, messageService.localize(
+          new Message("requisition.error.validation.fieldMustBeGreaterOrEqual",
+              NUMBER_OF_PERIODS_TO_AVERAGE, "2")));
     }
   }
 
@@ -116,7 +121,7 @@ public class RequisitionTemplateValidator implements Validator {
       for (String requiredField : requiredFields) {
         if (!template.isColumnInTemplate(requiredField)) {
           errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
-              "requisition.error.validation.field-must-be-in-template",requiredField, field))
+              "requisition.error.validation.fieldMustBeInTemplate", requiredField, field))
               .toString());
         }
         if (template.isColumnUserInput(requiredField)) {
