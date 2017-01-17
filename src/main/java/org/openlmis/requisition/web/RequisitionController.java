@@ -1,5 +1,6 @@
 package org.openlmis.requisition.web;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -637,11 +638,11 @@ public class RequisitionController extends BaseController {
   }
   
   private void saveStatusMessage(Requisition requisition) {
-    if (requisition.getDraftStatusMessage() != null) {
+    if (isNotBlank(requisition.getDraftStatusMessage())) {
       StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
           authenticationHelper.getCurrentUser().getId(), requisition.getDraftStatusMessage());
       statusMessageRepository.save(newStatusMessage);
-      requisition.setDraftStatusMessage(null);
+      requisition.setDraftStatusMessage("");
     }
   }
 }

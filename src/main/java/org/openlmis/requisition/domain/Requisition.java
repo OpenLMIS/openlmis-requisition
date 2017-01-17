@@ -74,7 +74,6 @@ public class Requisition extends BaseTimestampedEntity {
   private List<RequisitionLineItem> requisitionLineItems;
 
   @Getter
-  @Setter
   private String draftStatusMessage;
 
   @ManyToOne
@@ -389,6 +388,10 @@ public class Requisition extends BaseTimestampedEntity {
     setPreviousAdjustedConsumptions(
         previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage)
     );
+  }
+  
+  public void setDraftStatusMessage(String draftStatusMessage) {
+    this.draftStatusMessage = (draftStatusMessage == null) ? "" : draftStatusMessage;
   }
 
   @JsonIgnore
