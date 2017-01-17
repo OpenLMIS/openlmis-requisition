@@ -6,9 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.Template;
-import org.openlmis.requisition.dto.TemplateDto;
-import org.openlmis.requisition.repository.TemplateRepository;
+import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.dto.JasperTemplateDto;
+import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
@@ -20,26 +20,26 @@ import java.util.UUID;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
-public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/reports/templates/requisitions";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @Autowired
-  private TemplateRepository templateRepository;
+  private JasperTemplateRepository jasperTemplateRepository;
 
-  private Template template = new Template();
-  private TemplateDto templateDto;
+  private JasperTemplate jasperTemplate = new JasperTemplate();
+  private JasperTemplateDto jasperTemplateDto;
   private Integer currentInstanceNumber;
 
   @Before
   public void setUp() {
     currentInstanceNumber = 0;
 
-    template.setId(UUID.randomUUID());
-    template.setName(TEMPLATE_CONTROLLER_TEST + generateInstanceNumber());
-    templateDto = TemplateDto.newInstance(template);
+    jasperTemplate.setId(UUID.randomUUID());
+    jasperTemplate.setName(TEMPLATE_CONTROLLER_TEST + generateInstanceNumber());
+    jasperTemplateDto = JasperTemplateDto.newInstance(jasperTemplate);
   }
 
   private Integer generateInstanceNumber() {
@@ -68,12 +68,12 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldDeleteTemplate() {
-    template = templateRepository.save(template);
+    jasperTemplate = jasperTemplateRepository.save(jasperTemplate);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", template.getId())
+        .pathParam("id", jasperTemplate.getId())
         .when()
         .delete(ID_URL)
         .then()
@@ -87,7 +87,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", template.getId())
+        .pathParam("id", jasperTemplate.getId())
         .when()
         .delete(ID_URL)
         .then()
@@ -98,18 +98,18 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateTemplate() {
-    templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
+    jasperTemplateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
-    TemplateDto response = restAssured.given()
+    JasperTemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", template.getId())
-        .body(templateDto)
+        .pathParam("id", jasperTemplate.getId())
+        .body(jasperTemplateDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(TemplateDto.class);
+        .extract().as(JasperTemplateDto.class);
 
     assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -117,18 +117,18 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateNewTemplateIfDoesNotExist() {
-    templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
+    jasperTemplateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
-    TemplateDto response = restAssured.given()
+    JasperTemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
-        .body(templateDto)
+        .body(jasperTemplateDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(TemplateDto.class);
+        .extract().as(JasperTemplateDto.class);
 
     assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -136,37 +136,37 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldGetAllTemplates() {
-    templateRepository.save(template);
+    jasperTemplateRepository.save(jasperTemplate);
 
-    TemplateDto[] response = restAssured.given()
+    JasperTemplateDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(TemplateDto[].class);
+        .extract().as(JasperTemplateDto[].class);
 
-    Iterable<TemplateDto> templates = Arrays.asList(response);
+    Iterable<JasperTemplateDto> templates = Arrays.asList(response);
     assertTrue(templates.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldGetChosenTemplate() {
-    template = templateRepository.save(template);
+    jasperTemplate = jasperTemplateRepository.save(jasperTemplate);
 
-    TemplateDto response = restAssured.given()
+    JasperTemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", template.getId())
+        .pathParam("id", jasperTemplate.getId())
         .when()
         .get(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(TemplateDto.class);
+        .extract().as(JasperTemplateDto.class);
 
-    assertEquals(template.getId(), response.getId());
+    assertEquals(jasperTemplate.getId(), response.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -175,7 +175,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", template.getId())
+        .pathParam("id", jasperTemplate.getId())
         .when()
         .get(ID_URL)
         .then()

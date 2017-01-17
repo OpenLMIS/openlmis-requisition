@@ -24,7 +24,7 @@
       "title": "templateParameters",
       "items": {
         "type": "object",
-        "$ref": "templateParameterDto.json"
+        "$ref": "jasperTemplateParameterDto.json"
       },
       "uniqueItems": false
     },

@@ -34,9 +34,9 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.openlmis.requisition.domain.Template;
+import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.exception.ReportingException;
-import org.openlmis.requisition.repository.TemplateRepository;
+import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
@@ -49,14 +49,14 @@ import java.io.ObjectOutputStream;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(BlockJUnit4ClassRunner.class)
-@PrepareForTest({TemplateService.class, JasperCompileManager.class})
-public class TemplateServiceTest {
+@PrepareForTest({JasperTemplateService.class, JasperCompileManager.class})
+public class JasperTemplateServiceTest {
 
   @Mock
-  private TemplateRepository templateRepository;
+  private JasperTemplateRepository jasperTemplateRepository;
 
   @InjectMocks
-  private TemplateService templateService;
+  private JasperTemplateService jasperTemplateService;
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -71,7 +71,7 @@ public class TemplateServiceTest {
     expectedException.expectMessage(ERROR_REPORTING_FILE_INCORRECT_TYPE);
 
     MockMultipartFile file = new MockMultipartFile("report.pdf", new byte[1]);
-    templateService.validateFileAndInsertTemplate(new Template(), file);
+    jasperTemplateService.validateFileAndInsertTemplate(new JasperTemplate(), file);
   }
 
   @Test
@@ -81,7 +81,7 @@ public class TemplateServiceTest {
     MockMultipartFile file = new MockMultipartFile(
         NAME_OF_FILE, NAME_OF_FILE, "", new byte[0]);
 
-    templateService.validateFileAndInsertTemplate(new Template(), file);
+    jasperTemplateService.validateFileAndInsertTemplate(new JasperTemplate(), file);
   }
 
   @Test
@@ -89,7 +89,7 @@ public class TemplateServiceTest {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage(ERROR_REPORTING_FILE_MISSING);
 
-    templateService.validateFileAndInsertTemplate(new Template(), null);
+    jasperTemplateService.validateFileAndInsertTemplate(new JasperTemplate(), null);
   }
 
   @Test
@@ -97,19 +97,19 @@ public class TemplateServiceTest {
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage(ERROR_REPORTING_FILE_INVALID);
 
-    templateService.validateFileAndInsertTemplate(new Template(),
+    jasperTemplateService.validateFileAndInsertTemplate(new JasperTemplate(),
         new MockMultipartFile(NAME_OF_FILE, NAME_OF_FILE, "", new byte[1]));
   }
 
   @Test
   public void shouldThrowErrorIfTemplateNameAlreadyExists() throws Exception {
-    Template template = new Template();
-    template.setName("Name");
+    JasperTemplate jasperTemplate = new JasperTemplate();
+    jasperTemplate.setName("Name");
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage(ERROR_REPORTING_TEMPLATE_EXIST);
-    when(templateRepository.findByName(Matchers.anyObject())).thenReturn(template);
+    when(jasperTemplateRepository.findByName(Matchers.anyObject())).thenReturn(jasperTemplate);
 
-    templateService.validateFileAndInsertTemplate(template, null);
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, null);
   }
 
   @Test
@@ -136,11 +136,11 @@ public class TemplateServiceTest {
     String[] propertyNames = {"name1"};
     when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
     when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(null);
-    Template template = new Template();
+    JasperTemplate jasperTemplate = new JasperTemplate();
 
-    templateService.validateFileAndInsertTemplate(template, file);
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
 
-    verify(templateService, never()).saveWithParameters(template);
+    verify(jasperTemplateService, never()).saveWithParameters(jasperTemplate);
   }
 
   @Test
@@ -163,11 +163,11 @@ public class TemplateServiceTest {
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
     String[] propertyNames = {"name1", "name2", "name3"};
     when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
-    Template template = new Template();
+    JasperTemplate jasperTemplate = new JasperTemplate();
 
-    templateService.validateFileAndInsertTemplate(template, file);
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
 
-    verify(templateService, never()).saveWithParameters(template);
+    verify(jasperTemplateService, never()).saveWithParameters(jasperTemplate);
   }
 
   @Test
@@ -212,16 +212,16 @@ public class TemplateServiceTest {
     doNothing().when(objectOutputStream).writeObject(report);
     byte[] byteData = new byte[1];
     when(byteOutputStream.toByteArray()).thenReturn(byteData);
-    Template template = new Template();
+    JasperTemplate jasperTemplate = new JasperTemplate();
 
-    templateService.validateFileAndInsertTemplate(template, file);
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
 
-    verify(templateRepository).save(template);
+    verify(jasperTemplateRepository).save(jasperTemplate);
 
-    assertThat(template.getTemplateParameters().get(0).getDisplayName(),
+    assertThat(jasperTemplate.getTemplateParameters().get(0).getDisplayName(),
         is(PARAM_DISPLAY_NAME));
-    assertThat(template.getTemplateParameters().get(0).getDescription(), is("desc"));
-    assertThat(template.getTemplateParameters().get(0).getName(), is("name"));
+    assertThat(jasperTemplate.getTemplateParameters().get(0).getDescription(), is("desc"));
+    assertThat(jasperTemplate.getTemplateParameters().get(0).getName(), is("name"));
   }
 
   @Test
@@ -262,12 +262,12 @@ public class TemplateServiceTest {
     doNothing().when(objectOutputStream).writeObject(report);
     byte[] byteData = new byte[1];
     when(byteOutputStream.toByteArray()).thenReturn(byteData);
-    Template template = new Template();
+    JasperTemplate jasperTemplate = new JasperTemplate();
 
-    templateService.validateFileAndInsertTemplate(template, file);
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
 
-    verify(templateRepository).save(template);
-    assertThat(template.getTemplateParameters().get(0).getDisplayName(),
+    verify(jasperTemplateRepository).save(jasperTemplate);
+    assertThat(jasperTemplate.getTemplateParameters().get(0).getDisplayName(),
         is(PARAM_DISPLAY_NAME));
   }
 }

@@ -231,12 +231,12 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/convertToOrderDto.json" }
       }
 
-  - templateDto: !include schemas/templateDto.json
+  - jasperTemplateDto: !include schemas/jasperTemplateDto.json
 
   - templateDtoArray: |
       {
           "type": "array",
-          "items": { "type": "object", "$ref": "schemas/templateDto.json" }
+          "items": { "type": "object", "$ref": "schemas/jasperTemplateDto.json" }
       }
 
   - statusMessage: !include schemas/statusMessage.json
@@ -760,19 +760,19 @@ resourceTypes:
                   200:
                       body:
                         application/json:
-                          schema: templateDto
+                          schema: jasperTemplateDto
                   404:
           put:
               is: [ secured ]
               description: Update existing template.
               body:
                   application/json:
-                    schema: templateDto
+                    schema: jasperTemplateDto
               responses:
                   200:
                       body:
                         application/json:
-                          schema: templateDto
+                          schema: jasperTemplateDto
 
   /requisitionTemplates:
       displayName: Requisition Template

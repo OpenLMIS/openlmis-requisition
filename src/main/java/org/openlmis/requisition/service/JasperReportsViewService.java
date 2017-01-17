@@ -10,7 +10,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_CREATI
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperReport;
 
-import org.openlmis.requisition.domain.Template;
+import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,14 +42,14 @@ public class JasperReportsViewService {
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
    * Set 'Jasper' exporter parameters, JDBC data source, web application context, url to file.
    *
-   * @param template template that will be used to create a view
+   * @param jasperTemplate template that will be used to create a view
    * @param request  it is used to take web application context
    * @return created jasper view.
    * @throws JasperReportViewException if there will be any problem with creating the view.
    */
   public JasperReportsMultiFormatView getJasperReportsViewWithJdbcDatasource(
-      Template template, HttpServletRequest request) throws JasperReportViewException {
-    JasperReportsMultiFormatView jasperView = getJasperReportsView(template, request);
+      JasperTemplate jasperTemplate, HttpServletRequest request) throws JasperReportViewException {
+    JasperReportsMultiFormatView jasperView = getJasperReportsView(jasperTemplate, request);
     jasperView.setJdbcDataSource(replicationDataSource);
     return jasperView;
   }
@@ -59,16 +59,16 @@ public class JasperReportsViewService {
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
    * Set 'Jasper' exporter parameters, web application context, url to file.
    *
-   * @param template template that will be used to create a view
+   * @param jasperTemplate template that will be used to create a view
    * @param request  it is used to take web application context
    * @return created jasper view.
    * @throws JasperReportViewException if there will be any problem with creating the view.
    */
   public JasperReportsMultiFormatView getJasperReportsView(
-      Template template, HttpServletRequest request) throws JasperReportViewException {
+      JasperTemplate jasperTemplate, HttpServletRequest request) throws JasperReportViewException {
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
     setExportParams(jasperView);
-    jasperView.setUrl(getReportUrlForReportData(template));
+    jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
     if (getApplicationContext(request) != null) {
       jasperView.setApplicationContext(getApplicationContext(request));
     }
@@ -97,11 +97,12 @@ public class JasperReportsViewService {
    *
    * @return Url to ".jasper" file.
    */
-  private String getReportUrlForReportData(Template template) throws JasperReportViewException {
+  private String getReportUrlForReportData(JasperTemplate jasperTemplate)
+      throws JasperReportViewException {
     File tmpFile;
 
     try {
-      tmpFile = createTempFile(template.getName() + "_temp", ".jasper");
+      tmpFile = createTempFile(jasperTemplate.getName() + "_temp", ".jasper");
     } catch (IOException exp) {
       throw new JasperReportViewException(
           exp, ERROR_JASPER_FILE_CREATION
@@ -109,7 +110,7 @@ public class JasperReportsViewService {
     }
 
     try (ObjectInputStream inputStream =
-             new ObjectInputStream(new ByteArrayInputStream(template.getData()))) {
+             new ObjectInputStream(new ByteArrayInputStream(jasperTemplate.getData()))) {
       JasperReport jasperReport = (JasperReport) inputStream.readObject();
 
       try (ByteArrayOutputStream bos = new ByteArrayOutputStream();

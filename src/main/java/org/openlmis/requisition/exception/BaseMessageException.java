@@ -12,6 +12,10 @@ public class BaseMessageException extends RuntimeException {
     this.message = message;
   }
 
+  public BaseMessageException(String messageKey) {
+    this.message = new Message(messageKey);
+  }
+
   public Message asMessage() {
     return message;
   }

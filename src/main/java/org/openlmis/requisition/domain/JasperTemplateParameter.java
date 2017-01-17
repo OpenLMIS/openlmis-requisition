@@ -18,13 +18,13 @@ import javax.persistence.Table;
 @Table(name = "template_parameters")
 @NoArgsConstructor
 @AllArgsConstructor
-public class TemplateParameter extends BaseEntity {
+public class JasperTemplateParameter extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "templateId", nullable = false)
   @Getter
   @Setter
-  private Template template;
+  private JasperTemplate template;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
@@ -57,21 +57,22 @@ public class TemplateParameter extends BaseEntity {
   private String description;
 
   /**
-   * Create new instance of TemplateParameter based on given {@link TemplateParameter.Importer}
+   * Create new instance of JasperTemplateParameter based on given
+   * {@link JasperTemplateParameter.Importer}
    *
-   * @param importer instance of {@link TemplateParameter.Importer}
-   * @return instance of TemplateParameter.
+   * @param importer instance of {@link JasperTemplateParameter.Importer}
+   * @return instance of JasperTemplateParameter.
    */
-  public static TemplateParameter newInstance(Importer importer) {
-    TemplateParameter templateParameter = new TemplateParameter();
-    templateParameter.setId(importer.getId());
-    templateParameter.setName(importer.getName());
-    templateParameter.setDisplayName(importer.getDisplayName());
-    templateParameter.setDefaultValue(importer.getDefaultValue());
-    templateParameter.setSelectSql(importer.getSelectSql());
-    templateParameter.setDescription(importer.getDescription());
-    templateParameter.setDataType(importer.getDataType());
-    return templateParameter;
+  public static JasperTemplateParameter newInstance(Importer importer) {
+    JasperTemplateParameter jasperTemplateParameter = new JasperTemplateParameter();
+    jasperTemplateParameter.setId(importer.getId());
+    jasperTemplateParameter.setName(importer.getName());
+    jasperTemplateParameter.setDisplayName(importer.getDisplayName());
+    jasperTemplateParameter.setDefaultValue(importer.getDefaultValue());
+    jasperTemplateParameter.setSelectSql(importer.getSelectSql());
+    jasperTemplateParameter.setDescription(importer.getDescription());
+    jasperTemplateParameter.setDataType(importer.getDataType());
+    return jasperTemplateParameter;
   }
 
   /**

@@ -25,10 +25,10 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "templates")
+@Table(name = "jasper_templates")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Template extends BaseEntity {
+public class JasperTemplate extends BaseEntity {
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION, unique = true, nullable = false)
   @Getter
@@ -48,7 +48,7 @@ public class Template extends BaseEntity {
   @Fetch(FetchMode.SELECT)
   @Getter
   @Setter
-  private List<TemplateParameter> templateParameters;
+  private List<JasperTemplateParameter> templateParameters;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
@@ -73,41 +73,41 @@ public class Template extends BaseEntity {
   /**
    * Copy values of attributes into new or updated Template.
    *
-   * @param template Template with new values.
+   * @param jasperTemplate Template with new values.
    */
-  public void updateFrom(Template template) {
-    this.name = template.getName();
-    this.data = template.getData();
-    this.templateParameters = template.getTemplateParameters();
-    this.type = template.getType();
-    this.description = template.getDescription();
+  public void updateFrom(JasperTemplate jasperTemplate) {
+    this.name = jasperTemplate.getName();
+    this.data = jasperTemplate.getData();
+    this.templateParameters = jasperTemplate.getTemplateParameters();
+    this.type = jasperTemplate.getType();
+    this.description = jasperTemplate.getDescription();
   }
 
-  public void forEachParameter(Consumer<TemplateParameter> consumer) {
+  public void forEachParameter(Consumer<JasperTemplateParameter> consumer) {
     Optional.ofNullable(templateParameters)
         .ifPresent(list -> list.forEach(consumer));
   }
 
   /**
-   * Create a new instance of Tamplate absed on data from {@link Template.Importer}
+   * Create a new instance of Tamplate absed on data from {@link JasperTemplate.Importer}
    *
-   * @param importer instance of {@link Template.Importer}
+   * @param importer instance of {@link JasperTemplate.Importer}
    * @return new instance od template.
    */
-  public static Template newInstance(Importer importer) {
-    Template template = new Template();
-    template.setId(importer.getId());
-    template.setName(importer.getName());
-    template.setData(importer.getData());
-    template.setType(importer.getType());
-    template.setDescription(importer.getDescription());
-    template.setTemplateParameters(new ArrayList<>());
+  public static JasperTemplate newInstance(Importer importer) {
+    JasperTemplate jasperTemplate = new JasperTemplate();
+    jasperTemplate.setId(importer.getId());
+    jasperTemplate.setName(importer.getName());
+    jasperTemplate.setData(importer.getData());
+    jasperTemplate.setType(importer.getType());
+    jasperTemplate.setDescription(importer.getDescription());
+    jasperTemplate.setTemplateParameters(new ArrayList<>());
 
     if (importer.getTemplateParameters() != null) {
-      importer.getTemplateParameters().forEach(
-          tp -> template.getTemplateParameters().add(TemplateParameter.newInstance(tp)));
+      importer.getTemplateParameters().forEach(tp -> jasperTemplate.getTemplateParameters()
+          .add(JasperTemplateParameter.newInstance(tp)));
     }
-    return template;
+    return jasperTemplate;
   }
 
   /**
@@ -147,7 +147,7 @@ public class Template extends BaseEntity {
 
     String getDescription();
 
-    List<TemplateParameter.Importer> getTemplateParameters();
+    List<JasperTemplateParameter.Importer> getTemplateParameters();
 
   }
 }

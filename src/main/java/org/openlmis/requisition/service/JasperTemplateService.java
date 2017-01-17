@@ -21,10 +21,10 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
 
 import org.apache.log4j.Logger;
-import org.openlmis.requisition.domain.Template;
-import org.openlmis.requisition.domain.TemplateParameter;
+import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.domain.JasperTemplateParameter;
 import org.openlmis.requisition.exception.ReportingException;
-import org.openlmis.requisition.repository.TemplateRepository;
+import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,56 +38,56 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 @Service
-public class TemplateService {
+public class JasperTemplateService {
 
-  private static final Logger LOGGER = Logger.getLogger(TemplateService.class);
+  private static final Logger LOGGER = Logger.getLogger(JasperTemplateService.class);
 
   @Autowired
-  private TemplateRepository templateRepository;
+  private JasperTemplateRepository jasperTemplateRepository;
 
-  public Template getByName(String name) {
-    return templateRepository.findByName(name);
+  public JasperTemplate getByName(String name) {
+    return jasperTemplateRepository.findByName(name);
   }
 
   /**
    * Validate ".jrmxl" file and insert this template to database.
    */
-  public void validateFileAndInsertTemplate(Template template, MultipartFile file)
+  public void validateFileAndInsertTemplate(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
-    throwIfTemplateWithSameNameAlreadyExists(template.getName());
-    validateFile(template, file);
-    saveWithParameters(template);
+    throwIfTemplateWithSameNameAlreadyExists(jasperTemplate.getName());
+    validateFile(jasperTemplate, file);
+    saveWithParameters(jasperTemplate);
   }
 
   /**
    * Validate ".jrmxl" file and insert if template not exist.
    * If this name of template already exist, remove older template and insert new.
    */
-  public void validateFileAndSaveTemplate(Template template, MultipartFile file)
+  public void validateFileAndSaveTemplate(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
-    Template templateTmp = templateRepository.findByName(template.getName());
+    JasperTemplate templateTmp = jasperTemplateRepository.findByName(jasperTemplate.getName());
     if (templateTmp != null) {
-      templateRepository.delete(templateTmp.getId());
+      jasperTemplateRepository.delete(templateTmp.getId());
     }
-    validateFile(template, file);
-    saveWithParameters(template);
+    validateFile(jasperTemplate, file);
+    saveWithParameters(jasperTemplate);
   }
 
   /**
    * Insert template and template parameters to database.
    */
-  public void saveWithParameters(Template template) {
-    templateRepository.save(template);
+  public void saveWithParameters(JasperTemplate jasperTemplate) {
+    jasperTemplateRepository.save(jasperTemplate);
   }
 
   /**
    * Convert template from ".jasper" format in database to ".jrxml"(extension) format.
    */
-  public File convertJasperToXml(Template template) throws ReportingException {
-    try (InputStream inputStream = new ByteArrayInputStream(template.getData());
+  public File convertJasperToXml(JasperTemplate jasperTemplate) throws ReportingException {
+    try (InputStream inputStream = new ByteArrayInputStream(jasperTemplate.getData());
          ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       JasperCompileManager.writeReportToXmlStream(inputStream, outputStream);
-      File xmlReport = createTempFile(template.getName(), ".jrxml");
+      File xmlReport = createTempFile(jasperTemplate.getName(), ".jrxml");
       writeByteArrayToFile(xmlReport, outputStream.toByteArray());
       return xmlReport;
     } catch (JRException | IOException ex) {
@@ -98,11 +98,12 @@ public class TemplateService {
   /**
    * Validate ".jrxml" report file with JasperCompileManager.
    * If report is valid create additional report parameters.
-   * Save additional report parameters as TemplateParameter list.
+   * Save additional report parameters as JasperTemplateParameter list.
    * Save report file as ".jasper" in byte array in Template class.
    * If report is not valid throw exception.
    */
-  private void validateFile(Template template, MultipartFile file) throws ReportingException {
+  private void validateFile(JasperTemplate jasperTemplate, MultipartFile file)
+      throws ReportingException {
     throwIfFileIsNull(file);
     throwIfIncorrectFileType(file);
     throwIfFileIsEmpty(file);
@@ -112,13 +113,13 @@ public class TemplateService {
       JRParameter[] jrParameters = report.getParameters();
 
       if (jrParameters != null && jrParameters.length > 0) {
-        setTemplateParameters(template, jrParameters);
+        setTemplateParameters(jasperTemplate, jrParameters);
       }
 
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream out = new ObjectOutputStream(bos);
       out.writeObject(report);
-      template.setData(bos.toByteArray());
+      jasperTemplate.setData(bos.toByteArray());
     } catch (JRException ex) {
       throw new ReportingException(ex, ERROR_REPORTING_FILE_INVALID);
     } catch (IOException ex) {
@@ -126,9 +127,9 @@ public class TemplateService {
     }
   }
 
-  private void setTemplateParameters(Template template, JRParameter[] jrParameters)
+  private void setTemplateParameters(JasperTemplate jasperTemplate, JRParameter[] jrParameters)
       throws ReportingException {
-    ArrayList<TemplateParameter> parameters = new ArrayList<>();
+    ArrayList<JasperTemplateParameter> parameters = new ArrayList<>();
 
     for (JRParameter jrParameter : jrParameters) {
       if (!jrParameter.isSystemDefined()) {
@@ -136,13 +137,14 @@ public class TemplateService {
       }
     }
 
-    template.setTemplateParameters(parameters);
+    jasperTemplate.setTemplateParameters(parameters);
   }
 
   /**
    * Create new report parameter of report which is not defined in Jasper system.
    */
-  private TemplateParameter createParameter(JRParameter jrParameter) throws ReportingException {
+  private JasperTemplateParameter createParameter(JRParameter jrParameter)
+      throws ReportingException {
     String[] propertyNames = jrParameter.getPropertiesMap().getPropertyNames();
     //Check # of properties and that required ones are given.
     if (propertyNames.length > 2) {
@@ -162,24 +164,24 @@ public class TemplateService {
           ERROR_REPORTING_PARAMETER_INCORRECT_TYPE, "sql", "string");
     }
     //Set parameters.
-    TemplateParameter templateParameter = new TemplateParameter();
-    templateParameter.setName(jrParameter.getName());
-    templateParameter.setDisplayName(displayName);
-    templateParameter.setDescription(jrParameter.getDescription());
-    templateParameter.setDataType(dataType);
+    JasperTemplateParameter jasperTemplateParameter = new JasperTemplateParameter();
+    jasperTemplateParameter.setName(jrParameter.getName());
+    jasperTemplateParameter.setDisplayName(displayName);
+    jasperTemplateParameter.setDescription(jrParameter.getDescription());
+    jasperTemplateParameter.setDataType(dataType);
     if (isNotBlank(selectSql)) {
       LOGGER.debug("SQL from report parameter: " + selectSql);
-      templateParameter.setSelectSql(selectSql);
+      jasperTemplateParameter.setSelectSql(selectSql);
     }
     if (jrParameter.getDefaultValueExpression() != null) {
-      templateParameter.setDefaultValue(jrParameter.getDefaultValueExpression()
+      jasperTemplateParameter.setDefaultValue(jrParameter.getDefaultValueExpression()
           .getText().replace("\"", "").replace("\'", ""));
     }
-    return templateParameter;
+    return jasperTemplateParameter;
   }
 
   private void throwIfTemplateWithSameNameAlreadyExists(String name) throws ReportingException {
-    if (templateRepository.findByName(name) != null) {
+    if (jasperTemplateRepository.findByName(name) != null) {
       throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXIST);
     }
   }

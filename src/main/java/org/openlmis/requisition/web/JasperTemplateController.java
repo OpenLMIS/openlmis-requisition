@@ -1,11 +1,11 @@
 package org.openlmis.requisition.web;
 
 import org.apache.log4j.Logger;
-import org.openlmis.requisition.domain.Template;
-import org.openlmis.requisition.dto.TemplateDto;
+import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.exception.ReportingException;
-import org.openlmis.requisition.repository.TemplateRepository;
-import org.openlmis.requisition.service.TemplateService;
+import org.openlmis.requisition.repository.JasperTemplateRepository;
+import org.openlmis.requisition.service.JasperTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,17 +23,17 @@ import java.util.UUID;
 
 @Controller
 @RequestMapping("/api/reports/templates/requisitions")
-public class TemplateController extends BaseController {
+public class JasperTemplateController extends BaseController {
 
   private static final String CONSISTENCY_REPORT = "Consistency Report";
 
-  private static final Logger LOGGER = Logger.getLogger(TemplateController.class);
+  private static final Logger LOGGER = Logger.getLogger(JasperTemplateController.class);
 
   @Autowired
-  private TemplateService templateService;
+  private JasperTemplateService jasperTemplateService;
 
   @Autowired
-  private TemplateRepository templateRepository;
+  private JasperTemplateRepository jasperTemplateRepository;
 
   /**
    * Adding report templates with ".jrxml" format to database.
@@ -47,8 +47,9 @@ public class TemplateController extends BaseController {
   public void createJasperReportTemplate(
       @RequestPart("file") MultipartFile file, String name, String description)
       throws ReportingException {
-    Template template = new Template(name, null, null, CONSISTENCY_REPORT, description);
-    templateService.validateFileAndInsertTemplate(template, file);
+    JasperTemplate jasperTemplate = new JasperTemplate(
+        name, null, null, CONSISTENCY_REPORT, description);
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
   }
 
   /**
@@ -58,35 +59,37 @@ public class TemplateController extends BaseController {
    */
   @RequestMapping(method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<Iterable<TemplateDto>> getAllTemplates() {
-    Iterable<TemplateDto> templates = TemplateDto.newInstance(templateRepository.findAll());
+  public ResponseEntity<Iterable<JasperTemplateDto>> getAllTemplates() {
+    Iterable<JasperTemplateDto> templates =
+        JasperTemplateDto.newInstance(jasperTemplateRepository.findAll());
     return new ResponseEntity<>(templates, HttpStatus.OK);
   }
 
   /**
    * Allows updating templates.
    *
-   * @param templateDto A template bound to the request body
+   * @param jasperTemplateDto A template bound to the request body
    * @param templateId  UUID of template which we want to update
    * @return ResponseEntity containing the updated template
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<TemplateDto> updateTemplate(
-      @RequestBody TemplateDto templateDto, @PathVariable("id") UUID templateId) {
-    Template template = Template.newInstance(templateDto);
-    Template templateToUpdate = templateRepository.findOne(templateId);
-    if (templateToUpdate == null) {
-      templateToUpdate = new Template();
+  public ResponseEntity<JasperTemplateDto> updateTemplate(
+      @RequestBody JasperTemplateDto jasperTemplateDto, @PathVariable("id") UUID templateId) {
+    JasperTemplate jasperTemplate = JasperTemplate.newInstance(jasperTemplateDto);
+    JasperTemplate jasperTemplateToUpdate = jasperTemplateRepository.findOne(templateId);
+    if (jasperTemplateToUpdate == null) {
+      jasperTemplateToUpdate = new JasperTemplate();
       LOGGER.info("Creating new template");
     } else {
       LOGGER.debug("Updating template with id: " + templateId);
     }
 
-    templateToUpdate.updateFrom(template);
-    templateToUpdate = templateRepository.save(templateToUpdate);
+    jasperTemplateToUpdate.updateFrom(jasperTemplate);
+    jasperTemplateToUpdate = jasperTemplateRepository.save(jasperTemplateToUpdate);
 
-    LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
-    return new ResponseEntity<>(TemplateDto.newInstance(templateToUpdate), HttpStatus.OK);
+    LOGGER.debug("Saved template with id: " + jasperTemplateToUpdate.getId());
+    return new ResponseEntity<>(
+        JasperTemplateDto.newInstance(jasperTemplateToUpdate), HttpStatus.OK);
   }
 
   /**
@@ -96,13 +99,13 @@ public class TemplateController extends BaseController {
    * @return Template.
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-  public ResponseEntity<TemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
-    Template template =
-        templateRepository.findOne(templateId);
-    if (template == null) {
+  public ResponseEntity<JasperTemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
+    JasperTemplate jasperTemplate =
+        jasperTemplateRepository.findOne(templateId);
+    if (jasperTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(TemplateDto.newInstance(template), HttpStatus.OK);
+      return new ResponseEntity<>(JasperTemplateDto.newInstance(jasperTemplate), HttpStatus.OK);
     }
   }
 
@@ -113,12 +116,12 @@ public class TemplateController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<TemplateDto> deleteTemplate(@PathVariable("id") UUID templateId) {
-    Template template = templateRepository.findOne(templateId);
-    if (template == null) {
+  public ResponseEntity<JasperTemplateDto> deleteTemplate(@PathVariable("id") UUID templateId) {
+    JasperTemplate jasperTemplate = jasperTemplateRepository.findOne(templateId);
+    if (jasperTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      templateRepository.delete(template);
+      jasperTemplateRepository.delete(jasperTemplate);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
   }
