@@ -214,8 +214,7 @@ public class RequisitionTemplateValidatorTest {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
     validator.validate(requisitionTemplate, errors);
 
-    verify(validatorUtil).rejectValue(errors, COLUMNS_MAP,
-        message);
+    verify(validatorUtil).rejectValue(errors, COLUMNS_MAP, message);
   }
 
   @Test
@@ -258,8 +257,7 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, never())
-        .rejectValue(eq(NUMBER_OF_PERIODS_TO_AVERAGE), any());
+    verify(errors, never()).rejectValue(eq(NUMBER_OF_PERIODS_TO_AVERAGE), any());
   }
 
   private RequisitionTemplate generateTemplate() {
