@@ -3,8 +3,8 @@ package org.openlmis.requisition.domain;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -133,6 +133,12 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   @Type(type = UUID)
   private UUID creatorId;
+
+  @OneToMany
+  @JoinColumn(name = "requisition_id")
+  @Getter
+  @Setter
+  private List<Requisition> previousRequisitions;
 
   /**
    * Constructor.
@@ -349,6 +355,7 @@ public class Requisition extends BaseTimestampedEntity {
                        int numberOfPreviousPeriodsToAverage
   ) {
     this.template = template;
+    this.previousRequisitions = previousRequisitions;
 
     setRequisitionLineItems(
         products
@@ -382,9 +389,7 @@ public class Requisition extends BaseTimestampedEntity {
             LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
       });
     }
-    setPreviousAdjustedConsumptions(
-        previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage)
-    );
+    setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
   }
   
   public void setDraftStatusMessage(String draftStatusMessage) {
@@ -458,15 +463,16 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
+    exporter.setPreviousRequisitions(previousRequisitions);
   }
 
   /**
    * Sets appropriate value for Previous Adjusted Consumptions field in
    * each {@link RequisitionLineItem}.
    */
-  void setPreviousAdjustedConsumptions(List<Requisition> previousRequisitions) {
-    List<RequisitionLineItem> previousRequisitionLineItems =
-        RequisitionHelper.getNonSkippedLineItems(previousRequisitions);
+  void setPreviousAdjustedConsumptions(int numberOfPreviousPeriodsToAverage) {
+    List<RequisitionLineItem> previousRequisitionLineItems = RequisitionHelper
+        .getNonSkippedLineItems(previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage));
 
     RequisitionHelper.forEachLine(requisitionLineItems,
         line -> {
@@ -497,6 +503,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setTemplate(UUID template);
     
     void setDraftStatusMessage(String draftStatusMessage);
+
+    void setPreviousRequisitions(List<Requisition> previousRequisitions);
   }
 
   public interface Importer {
@@ -525,5 +533,7 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getTemplate();
 
     String getDraftStatusMessage();
+
+    List<Requisition> getPreviousRequisitions();
   }
 }

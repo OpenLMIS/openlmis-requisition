@@ -87,6 +87,7 @@ public final class RequisitionBuilder {
     }
 
     requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
+    requisition.setPreviousRequisitions(importer.getPreviousRequisitions());
 
     return requisition;
   }

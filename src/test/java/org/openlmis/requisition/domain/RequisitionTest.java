@@ -459,9 +459,8 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
-    requisition.setPreviousAdjustedConsumptions(
-        Collections.singletonList(previousRequisition)
-    );
+    requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
+    requisition.setPreviousAdjustedConsumptions(1);
 
     assertEquals(Collections.singletonList(5),
         requisitionLineItem.getPreviousAdjustedConsumptions());
@@ -483,9 +482,8 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
-    requisition.setPreviousAdjustedConsumptions(
-        Collections.singletonList(previousRequisition)
-    );
+    requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
+    requisition.setPreviousAdjustedConsumptions(1);
 
     assertEquals(Arrays.asList(5, 5, 5), requisitionLineItem.getPreviousAdjustedConsumptions());
   }
@@ -506,9 +504,8 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
-    requisition.setPreviousAdjustedConsumptions(
-        Collections.singletonList(previousRequisition)
-    );
+    requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
+    requisition.setPreviousAdjustedConsumptions(1);
 
     assertEquals(Collections.emptyList(),
         requisitionLineItem.getPreviousAdjustedConsumptions());
@@ -529,9 +526,8 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
-    requisition.setPreviousAdjustedConsumptions(
-        Collections.singletonList(previousRequisition)
-    );
+    requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
+    requisition.setPreviousAdjustedConsumptions(1);
 
     assertEquals(Collections.emptyList(),
         requisitionLineItem.getPreviousAdjustedConsumptions());

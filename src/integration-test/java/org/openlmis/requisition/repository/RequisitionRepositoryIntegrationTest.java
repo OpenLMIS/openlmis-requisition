@@ -228,6 +228,18 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(pricePerPack, requisition.getRequisitionLineItems().get(0).getPricePerPack());
   }
 
+  @Test
+  public void shouldPersistWithPreviousRequisitions() {
+    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+    requisition.setPreviousRequisitions(requisitions);
+
+    requisition = repository.save(requisition);
+    requisition = repository.findOne(requisition.getId());
+
+    assertEquals(5, requisition.getPreviousRequisitions().size());
+  }
+
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
     RequisitionTemplateColumn column = new RequisitionTemplateColumn();
     column.setName(RequisitionLineItem.BEGINNING_BALANCE);
