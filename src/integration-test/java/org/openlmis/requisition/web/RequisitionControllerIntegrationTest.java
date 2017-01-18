@@ -691,7 +691,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("filterBy", "facilityName")
         .queryParam("sortBy", FACILITY_CODE)
         .queryParam("descending", Boolean.FALSE.toString())
-        .queryParam("pageNumber", valueOf(2))
+        .queryParam("pageNumber", valueOf(1))
         .queryParam("pageSize", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()

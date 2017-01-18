@@ -32,11 +32,14 @@ import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsRefe
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
-import org.openlmis.utils.PaginationHelper;
+import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,9 +107,6 @@ public class RequisitionService {
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
-
-  @Autowired
-  private PaginationHelper paginationHelper;
 
   @Autowired
   private ConvertHelper convertHelper;
@@ -266,29 +266,33 @@ public class RequisitionService {
   }
 
   /**
-   * Finds requisitions matching all of provided parameters.
+   * Finds requisitions matching all of the provided parameters.
    */
-  public List<Requisition> searchRequisitions(UUID facility, UUID program,
+  public Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDateTime createdDateFrom,
                                               LocalDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               RequisitionStatus[] requisitionStatuses,
-                                              Boolean emergency) {
+                                              Boolean emergency,
+                                              Pageable pageable) {
     return requisitionRepository.searchRequisitions(facility, program, createdDateFrom,
-        createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency);
+        createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency, pageable);
   }
 
   /**
-   * Finds requisitions matching all of provided parameters.
+   * Finds requisitions matching all of the provided parameters.
    */
-  public List<Requisition> searchRequisitions(UUID facility, UUID program, UUID processingPeriod) {
+  public Page<Requisition> searchRequisitions(UUID facility,
+                                              UUID program,
+                                              UUID processingPeriod,
+                                              Pageable pageable) {
     return requisitionRepository.searchRequisitions(facility, program, null, null, processingPeriod,
-        null, null, null);
+        null, null, null, pageable);
   }
 
   /**
-   * Get requisitions to approve for specified user.
+   * Get requisitions to approve for the specified user.
    */
   public Set<Requisition> getRequisitionsForApproval(UUID userId) {
     Set<Requisition> requisitionsForApproval = new HashSet<>();
@@ -308,10 +312,10 @@ public class RequisitionService {
    */
   public List<Requisition> getAuthorizedRequisitions(FacilityDto facility, ProgramDto program) {
     List<Requisition> requisitions = new ArrayList<>();
-    List<Requisition> reqList = searchRequisitions(facility.getId(), program.getId(),
-        null, null, null, null, null, null);
+    Page<Requisition> reqList = searchRequisitions(facility.getId(), program.getId(),
+        null, null, null, null, null, null, null);
     if (reqList != null) {
-      for (Requisition req : reqList) {
+      for (Requisition req : reqList.getContent()) {
         if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
           requisitions.add(req);
         }
@@ -423,8 +427,9 @@ public class RequisitionService {
       Collections.reverse(requisitionDtos);
     }
     if (pageNumber != null && pageSize != null) {
-      requisitionDtos = paginationHelper.pageCollection(requisitionDtos, pageNumber,
-          pageSize);
+      PageRequest pageRequest = new PageRequest(pageNumber, pageSize);
+      Page<RequisitionDto> requisitionDtoPage = Pagination.getPage(requisitionDtos, pageRequest);
+      requisitionDtos = requisitionDtoPage.getContent();
     }
 
     return requisitionDtos;
@@ -510,8 +515,9 @@ public class RequisitionService {
 
   private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
                                                     ProcessingPeriodDto period) {
-    return searchRequisitions(requisition.getFacilityId(),
-        requisition.getProgramId(), period.getId());
+    Page<Requisition> requisitions = searchRequisitions(requisition.getFacilityId(),
+            requisition.getProgramId(), period.getId(), null);
+    return requisitions.getContent();
   }
 
   private Set<ProgramDto> getAllProgramsForUser(UUID userId) {

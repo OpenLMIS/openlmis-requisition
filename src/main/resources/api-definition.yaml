@@ -256,7 +256,18 @@ traits:
                   type: string
                   required: true
                   repeat: false
-
+    - paginated:
+          queryParameters:
+              page:
+                  description: The page number which should be displayed. Note that it is zero based (the first page is numbered 0 rather than 1). The page number that should be displayed. Note that it is zero based (the first page is numbered 0 rather than 1). Additionally, negative and undefined valued are interpreted as zero.
+                  type: integer
+                  required: false
+                  repeat: false
+              size:
+                  description: The desired size of each page. This specifies the maximum number of values that should be returned by the server. Zero, undefined, and negative values all cause a default size to be used. This is defined system-wide as 2,000, but may be overridden within individual resources.
+                  type: integer
+                  required: false
+                  repeat: false
 resourceTypes:
     - collection:
         get:
@@ -528,7 +539,7 @@ resourceTypes:
                           schema: statusMessageArray
       /search:
           get:
-              is: [ secured ]
+              is: [ secured, paginated ]
               description: Find requisitions matching all of provided parameters.
               queryParameters:
                   facility:
