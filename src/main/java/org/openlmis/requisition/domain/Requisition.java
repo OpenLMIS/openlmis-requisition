@@ -34,8 +34,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -45,6 +47,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+@Embeddable
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
@@ -133,6 +136,7 @@ public class Requisition extends BaseTimestampedEntity {
   private UUID creatorId;
 
   @ElementCollection
+  @CollectionTable(name = "previous_requisitions")
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;
