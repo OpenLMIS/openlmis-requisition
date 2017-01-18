@@ -332,6 +332,21 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldReturnNonSkippedFullSupplyRequisitionLineItems() {
+    RequisitionLineItem notSkipped = getRequisitionLineItem(false);
+    RequisitionLineItem skipped = getRequisitionLineItem(true);
+
+    Requisition requisition = getRequisition(notSkipped, skipped);
+    List<RequisitionLineItem> nonSkippedRequisitionLineItems =
+        requisition.getNonSkippedFullSupplyRequisitionLineItems();
+    RequisitionLineItem requisitionLineItem =
+        nonSkippedRequisitionLineItems.get(0);
+
+    assertEquals(1, nonSkippedRequisitionLineItems.size());
+    assertEquals(notSkipped.getId(), requisitionLineItem.getId());
+  }
+
+  @Test
   public void shouldReturnSkippedRequisitionLineItems() {
     RequisitionLineItem notSkipped = getRequisitionLineItem(false);
     RequisitionLineItem skipped = getRequisitionLineItem(true);
@@ -579,6 +594,7 @@ public class RequisitionTest {
   private RequisitionLineItem getRequisitionLineItem(boolean skipped) {
     RequisitionLineItem notSkipped = new RequisitionLineItem();
     notSkipped.setSkipped(skipped);
+    notSkipped.setNonFullSupply(false);
     notSkipped.setId(UUID.randomUUID());
     return notSkipped;
   }

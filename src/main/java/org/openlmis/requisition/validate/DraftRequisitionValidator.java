@@ -40,8 +40,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
-    if (!isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
-      requisition.getNonSkippedRequisitionLineItems()
+    if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
+      requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, savedRequisition, i));
     }
   }

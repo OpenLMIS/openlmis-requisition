@@ -174,7 +174,7 @@ public class Requisition extends BaseTimestampedEntity {
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
-    getNonSkippedRequisitionLineItems().forEach(line -> {
+    getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> {
       line.calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
       line.calculateAndSetStockOnHand(template);
       line.calculateAndSetTotalConsumedQuantity(template);
@@ -243,18 +243,19 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
 
-    if (RequisitionHelper.areFieldsNotFilled(template, getNonSkippedRequisitionLineItems())) {
+    if (RequisitionHelper.areFieldsNotFilled(template,
+        getNonSkippedFullSupplyRequisitionLineItems())) {
       throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES,
           getId()));
     }
 
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
       ));
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
     }
 
@@ -274,12 +275,12 @@ public class Requisition extends BaseTimestampedEntity {
           getId()));
     }
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
       ));
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
     }
 
@@ -295,12 +296,12 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void approve() {
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
       ));
     }
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedRequisitionLineItems().forEach(
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
     }
 
@@ -356,7 +357,7 @@ public class Requisition extends BaseTimestampedEntity {
             .collect(Collectors.toList())
     );
 
-    getNonSkippedRequisitionLineItems().forEach(line -> {
+    getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> {
       if (null == line.getBeginningBalance()) {
         // Firstly, we set the Beginning Balance to zero for all lines.
         line.setBeginningBalance(0);
@@ -371,7 +372,7 @@ public class Requisition extends BaseTimestampedEntity {
         && null != previousRequisitions.get(0)
         && template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)) {
       // .. for each line from the current requisition ...
-      getNonSkippedRequisitionLineItems().forEach(currentLine -> {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
         RequisitionLineItem previousLine = previousRequisitions.get(0)
             .findLineByProductId(currentLine.getOrderableProductId());
@@ -412,6 +413,22 @@ public class Requisition extends BaseTimestampedEntity {
     }
     return this.requisitionLineItems.stream()
         .filter(line -> !line.getSkipped())
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Filter out requisitionLineItems that are skipped and not-full supply.
+   *
+   * @return requisitionLineItems that are not skipped
+   */
+  @JsonIgnore
+  public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems() {
+    if (requisitionLineItems == null) {
+      return Collections.emptyList();
+    }
+    return this.requisitionLineItems.stream()
+        .filter(line -> !line.getSkipped())
+        .filter(line -> !line.isNonFullSupply())
         .collect(Collectors.toList());
   }
 
