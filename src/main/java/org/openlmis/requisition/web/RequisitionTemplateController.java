@@ -48,7 +48,7 @@ public class RequisitionTemplateController extends BaseController {
   }
 
   /**
-   * Allows creating new requisitionLineItems.
+   * Allows creating a new Requisition Template.
    * If the id is specified, it will be ignored.
    *
    * @param requisitionTemplate A requisitionTemplate bound to the request body
