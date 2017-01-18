@@ -34,10 +34,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -47,7 +44,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-@Embeddable
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
@@ -134,12 +130,6 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   @Type(type = UUID)
   private UUID creatorId;
-
-  @ElementCollection
-  @CollectionTable(name = "previous_requisitions")
-  @Getter
-  @Setter
-  private List<Requisition> previousRequisitions;
 
   /**
    * Constructor.
@@ -355,7 +345,6 @@ public class Requisition extends BaseTimestampedEntity {
                        int numberOfPreviousPeriodsToAverage
   ) {
     this.template = template;
-    this.previousRequisitions = previousRequisitions;
 
     setRequisitionLineItems(
         products
@@ -449,7 +438,6 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
-    exporter.setPreviousRequisitions(previousRequisitions);
   }
 
   /**
@@ -489,8 +477,6 @@ public class Requisition extends BaseTimestampedEntity {
     void setTemplate(UUID template);
     
     void setDraftStatusMessage(String draftStatusMessage);
-
-    void setPreviousRequisitions(List<Requisition> previousRequisitions);
   }
 
   public interface Importer {
@@ -519,7 +505,5 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getTemplate();
 
     String getDraftStatusMessage();
-
-    List<Requisition> getPreviousRequisitions();
   }
 }

@@ -70,10 +70,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Setter
   private UUID template;
 
-  @Getter
-  @Setter
-  private List<Requisition> previousRequisitions;
-
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
     return new ArrayList<>(
