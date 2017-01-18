@@ -1,5 +1,16 @@
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
+import static org.openlmis.requisition.i18n.MessageKeys
+    .ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -64,7 +75,6 @@ public class RequisitionService {
       "requisition.error.canNotSkipPeriod.emergency";
   private static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
-  private static final String REQUISITION_NOT_FOUND = "requisition.error.requisition-not-found";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -172,21 +182,18 @@ public class RequisitionService {
 
   private RequisitionTemplate findRequisitionTemplate(UUID programId) {
     if (null == programId) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.program-id-cannot-be-null"));
+      throw new ValidationMessageException(new Message(ERROR_PROGRAM_ID_CANNOT_BE_NULL));
     }
 
     RequisitionTemplate template =
         requisitionTemplateService.getTemplateForProgram(programId);
 
     if (null == template) {
-      throw new ContentNotFoundMessageException(new Message(
-          "requisition.error.requisition-template-not-found"));
+      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_FOUND));
     }
 
     if (!template.hasColumnsDefined()) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.requisitiontemplate-not-defined"));
+      throw new ValidationMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_DEFINED));
     } else {
       return template;
     }
@@ -201,10 +208,10 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          REQUISITION_NOT_FOUND, requisitionId));
+      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
+          requisitionId));
     } else if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-      throw new ValidationMessageException(new Message("requisition.error.bad-status.delete"));
+      throw new ValidationMessageException(new Message(ERROR_DELETE_FAILED_WRONG_STATUS));
     } else {
       statusMessageRepository.delete(statusMessageRepository.findByRequisitionId(requisitionId));
       requisitionRepository.delete(requisition);
@@ -222,8 +229,8 @@ public class RequisitionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          REQUISITION_NOT_FOUND, requisitionId));
+      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
+          requisitionId));
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
@@ -253,15 +260,15 @@ public class RequisitionService {
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          REQUISITION_NOT_FOUND, requisitionId));
+      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
+          requisitionId));
     } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(
-          "requisition.error.reject.requisition-must-be-waiting-for-approval", requisitionId));
+          ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisitionId));
     }
   }
 
@@ -341,8 +348,8 @@ public class RequisitionService {
       if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
         loadedRequisition.setStatus(RequisitionStatus.RELEASED);
       } else {
-        throw new ValidationMessageException(new Message(
-            "requisition.error.release.requisition-must-be-approved", loadedRequisition.getId()));
+        throw new ValidationMessageException(new Message(ERROR_REQUISITION_MUST_BE_APPROVED,
+            loadedRequisition.getId()));
       }
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
@@ -353,8 +360,8 @@ public class RequisitionService {
       if (validFacilities.contains(facilityId)) {
         loadedRequisition.setSupplyingFacilityId(facilityId);
       } else {
-        throw new ValidationMessageException(new Message(
-            "requisition.error.release.must-have-supplying-facility",loadedRequisition.getId()));
+        throw new ValidationMessageException(new Message(ERROR_MUST_HAVE_SUPPLYING_FACILITY,
+            loadedRequisition.getId()));
       }
 
       releasedRequisitions.add(loadedRequisition);
@@ -443,8 +450,8 @@ public class RequisitionService {
         requisitionRepository.save(requisition);
         requisitionStatusNotifier.notifyConvertToOrder(requisition);
       } else {
-        throw new ValidationMessageException(new Message(
-            "requisition.error.converting-requisition-to-order", order.getExternalId()));
+        throw new ValidationMessageException(new Message(ERROR_CONVERTING_REQUISITION_TO_ORDER,
+            order.getExternalId()));
       }
     }
   }

@@ -1,8 +1,10 @@
 package org.openlmis.errorhandling;
 
+import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.ReferenceDataRetrievalException;
-import org.openlmis.utils.ErrorResponse;
+import org.openlmis.requisition.web.PermissionMessageException;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,6 +36,20 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   public Message.LocalizedMessage handleMessageException(ValidationMessageException ex) {
+    return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(AuthenticationMessageException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  @ResponseBody
+  public Message.LocalizedMessage handleAuthenticationException(AuthenticationMessageException ex) {
+    return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(PermissionMessageException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ResponseBody
+  public Message.LocalizedMessage handlePermissionException(PermissionMessageException ex) {
     return getLocalizedMessage(ex);
   }
 }

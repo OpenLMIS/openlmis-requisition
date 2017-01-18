@@ -1,5 +1,7 @@
 package org.openlmis.utils;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING;
+
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
@@ -27,8 +29,8 @@ public class RequisitionDtoComparator implements Comparator<RequisitionDto> {
         return o1.getFacility().getName().compareTo(o2.getFacility().getName());
       }
       default: {
-        throw new ValidationMessageException(new Message(
-            "requisition.error.column-is-not-valid-for-sorting",compareCondition));
+        throw new ValidationMessageException(new Message(ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING,
+            compareCondition));
       }
     }
   }

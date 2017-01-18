@@ -1,19 +1,13 @@
 package org.openlmis.errorhandling;
 
-import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.exception.BaseMessageException;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.web.PermissionMessageException;
-import org.openlmis.utils.ErrorResponse;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Base classes for controller advices dealing with error handling.
@@ -25,20 +19,6 @@ public abstract class AbstractErrorHandling {
 
   @Autowired
   private MessageService messageService;
-
-  @ExceptionHandler(AuthenticationMessageException.class)
-  @ResponseStatus(HttpStatus.UNAUTHORIZED)
-  @ResponseBody
-  public Message.LocalizedMessage handleAuthenticationException(AuthenticationMessageException ex) {
-    return getLocalizedMessage(ex);
-  }
-
-  @ExceptionHandler(PermissionMessageException.class)
-  @ResponseStatus(HttpStatus.FORBIDDEN)
-  @ResponseBody
-  public Message.LocalizedMessage handlePermissionException(PermissionMessageException ex) {
-    return getLocalizedMessage(ex);
-  }
 
   /**
    * Logs an error message and returns an error response.

@@ -1,5 +1,7 @@
 package org.openlmis.settings.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CONFIGURATION_SETTING_NOT_FOUND;
+
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
@@ -26,8 +28,8 @@ public class ConfigurationSettingService {
   public ConfigurationSetting getByKey(String key) {
     ConfigurationSetting setting = configurationSettingRepository.findOne(key);
     if (setting == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          "requisition.error.configuration-setting-not-found", key));
+      throw new ContentNotFoundMessageException(new Message(ERROR_CONFIGURATION_SETTING_NOT_FOUND,
+          key));
     }
     return setting;
   }
@@ -41,8 +43,8 @@ public class ConfigurationSettingService {
   public String getStringValue(String key) {
     ConfigurationSetting configurationSetting = configurationSettingRepository.findOne(key);
     if (configurationSetting == null || configurationSetting.getValue() == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          "requisition.error.configuration-setting-not-found", key));
+      throw new ContentNotFoundMessageException(new Message(ERROR_CONFIGURATION_SETTING_NOT_FOUND,
+          key));
     }
     return configurationSetting.getValue();
   }

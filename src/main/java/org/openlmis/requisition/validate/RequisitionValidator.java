@@ -15,6 +15,11 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -55,7 +60,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
     if (isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(VALUE_MUST_BE_ENTERED_NOTIFICATION, REQUISITION_LINE_ITEMS)).toString());
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS)).toString());
     } else {
       requisition.getNonSkippedRequisitionLineItems()
           .forEach(lineItem ->
@@ -108,14 +113,12 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     for (StockAdjustment adjustment : item.getStockAdjustments()) {
       if (!reasons.contains(adjustment.getReasonId())) {
         errors.rejectValue(STOCK_ADJUSTMENT_REASON, messageService.localize(
-            new Message("requisition.error.validation.stock-adjustment-not-found",
-                adjustment.getReasonId())).toString());
+            new Message(ERROR_STOCK_ADJUSTMENT_NOT_FOUND, adjustment.getReasonId())).toString());
       }
 
       if (adjustment.getQuantity() == null || adjustment.getQuantity() < 0) {
         errors.rejectValue(STOCK_ADJUSTMENT_REASON, messageService.localize(
-            new Message("requisition.error.validation.stock-adjustment-non-negative",
-                adjustment.getReasonId())).toString());
+            new Message(ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE, adjustment.getReasonId())).toString());
       }
     }
   }
@@ -141,8 +144,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
     if (templateValid && !Objects.equals(item.getStockOnHand(), calculateStockOnHand(item))) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message("requisition.error.validation.incorrect-value",
-              RequisitionLineItem.STOCK_ON_HAND,
+          new Message(ERROR_INCORRECT_VALUE, RequisitionLineItem.STOCK_ON_HAND,
               RequisitionLineItem.TOTAL_CONSUMED_QUANTITY)).toString());
     }
 
@@ -151,7 +153,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         template))) {
       errors.rejectValue(
           REQUISITION_LINE_ITEMS, messageService.localize(new Message(
-              "requisition.error.validation.value-does-not-match-calculated-value",
+              ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
               MAXIMUM_STOCK_QUANTITY)).toString());
     }
 
@@ -160,7 +162,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         calculateCalculatedOrderQuantity(item, template))) {
       errors.rejectValue(
           REQUISITION_LINE_ITEMS, messageService.localize(new Message(
-              "requisition.error.validation.value-does-not-match-calculated-value",
+              ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
               CALCULATED_ORDER_QUANTITY)).toString());
     }
   }

@@ -7,6 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -89,42 +92,40 @@ public class DraftRequisitionValidatorTest {
         updatedRequisition.getSupervisoryNodeId());
     updatedRequisition.setEmergency(false);
 
-    Message message1 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.PROGRAM_ID);
-    Message message2 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.FACILITY_ID);
-    Message message3 = new Message(DraftRequisitionValidator.IS_INVARIANT,
-        Requisition.PROCESSING_PERIOD_ID);
-    Message message4 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.EMERGENCY);
-    Message message5 = new Message(DraftRequisitionValidator.IS_INVARIANT, Requisition.CREATOR_ID);
-    Message message6 = new Message(DraftRequisitionValidator.IS_INVARIANT,
-        Requisition.SUPERVISORY_NODE_ID);
+    Message message1 = new Message(ERROR_IS_INVARIANT, Requisition.PROGRAM_ID);
+    Message message2 = new Message(ERROR_IS_INVARIANT, Requisition.FACILITY_ID);
+    Message message3 = new Message(ERROR_IS_INVARIANT, Requisition.PROCESSING_PERIOD_ID);
+    Message message4 = new Message(ERROR_IS_INVARIANT, Requisition.EMERGENCY);
+    Message message5 = new Message(ERROR_IS_INVARIANT, Requisition.CREATOR_ID);
+    Message message6 = new Message(ERROR_IS_INVARIANT, Requisition.SUPERVISORY_NODE_ID);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
-        RequisitionValidator.IS_INVARIANT));
+        ERROR_IS_INVARIANT));
     when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
-        RequisitionValidator.IS_INVARIANT));
+        ERROR_IS_INVARIANT));
     when(messageService.localize(message3)).thenReturn(message3.new LocalizedMessage(
-        RequisitionValidator.IS_INVARIANT));
+        ERROR_IS_INVARIANT));
     when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
-        RequisitionValidator.IS_INVARIANT));
+        ERROR_IS_INVARIANT));
     when(messageService.localize(message5)).thenReturn(message5.new LocalizedMessage(
-        RequisitionValidator.IS_INVARIANT));
+        ERROR_IS_INVARIANT));
     when(messageService.localize(message6)).thenReturn(message6.new LocalizedMessage(
-        RequisitionValidator.IS_INVARIANT));
+        ERROR_IS_INVARIANT));
 
     draftRequisitionValidator.validate(updatedRequisition, errors);
 
     verify(errors).rejectValue(eq(Requisition.PROGRAM_ID),
-        contains(RequisitionValidator.IS_INVARIANT));
+        contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.FACILITY_ID),
-        contains(RequisitionValidator.IS_INVARIANT));
+        contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.PROCESSING_PERIOD_ID),
-        contains(RequisitionValidator.IS_INVARIANT));
+        contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.EMERGENCY),
-        contains(RequisitionValidator.IS_INVARIANT));
+        contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.CREATOR_ID),
-        contains(RequisitionValidator.IS_INVARIANT));
+        contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.SUPERVISORY_NODE_ID),
-        contains(RequisitionValidator.IS_INVARIANT));
+        contains(ERROR_IS_INVARIANT));
   }
 
   @Test
@@ -136,13 +137,12 @@ public class DraftRequisitionValidatorTest {
     requisitionTemplate.changeColumnSource(RequisitionLineItem.STOCK_ON_HAND,
         SourceType.CALCULATED);
 
-    Message message = new Message(DraftRequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED,
-        RequisitionLineItem.STOCK_ON_HAND);
+    Message message = new Message(ERROR_FIELD_IS_CALCULATED, RequisitionLineItem.STOCK_ON_HAND);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
         RequisitionLineItem.STOCK_ON_HAND + " is calculated and should not contain a value."));
-    Message message1 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+    Message message1 = new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
         RequisitionLineItem.APPROVED_QUANTITY);
-    Message message2 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+    Message message2 = new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
         RequisitionLineItem.REMARKS_COLUMN);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
@@ -155,7 +155,7 @@ public class DraftRequisitionValidatorTest {
     draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionValidator.TEMPLATE_COLUMN_IS_CALCULATED));
+        contains(ERROR_FIELD_IS_CALCULATED));
   }
 
   @Test
@@ -165,9 +165,9 @@ public class DraftRequisitionValidatorTest {
 
     requisitionLineItems.add(lineItem);
 
-    Message message1 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+    Message message1 = new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
         RequisitionLineItem.APPROVED_QUANTITY);
-    Message message2 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+    Message message2 = new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
         RequisitionLineItem.REMARKS_COLUMN);
 
     when(messageService.localize(message1))
@@ -200,9 +200,9 @@ public class DraftRequisitionValidatorTest {
     requisitionLineItems.add(lineItem);
     requisitionLineItems.add(lineItem2);
 
-    Message message1 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+    Message message1 = new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
         RequisitionLineItem.APPROVED_QUANTITY);
-    Message message2 = new Message(RequisitionValidator.IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+    Message message2 = new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
         RequisitionLineItem.REMARKS_COLUMN);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(

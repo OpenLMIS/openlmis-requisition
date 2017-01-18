@@ -1,5 +1,14 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
@@ -30,12 +39,6 @@ public class RequisitionTemplateValidator implements Validator {
   static final String AVERAGE_CONSUMPTION = "averageConsumption";
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
-  static final String STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION =
-      "requisition.error.validation.must-be-displayed-when-on-hand-calculated";
-  static final String TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION =
-      "requisition.error.validation.mist-be-displayed-when-consumed-quantity-is-calculated";
-  static final String ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION =
-      "requisition.error.validation.must-be-displayed-when-consumption-is-calculated";
 
 
   @Override
@@ -53,14 +56,14 @@ public class RequisitionTemplateValidator implements Validator {
 
     if (!errors.hasErrors()) {
       validateCalculatedField(errors, requisitionTemplate, STOCK_ON_HAND,
-          STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY
+          ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY
       );
       validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
-          TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION, STOCK_ON_HAND
+          ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED, STOCK_ON_HAND
       );
       if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
         validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
-            ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION, TOTAL_CONSUMED_QUANTITY,
+            ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS
         );
       }
@@ -93,13 +96,13 @@ public class RequisitionTemplateValidator implements Validator {
     if (quantityDisplayed) {
       if (!explanationDisplayed) {
         errors.rejectValue(COLUMNS_MAP, messageService.localize(
-            new Message("requisition.error.validation.displayed-when-requested-quantity-displayed",
+            new Message(ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED,
                 REQUESTED_QUANTITY_EXPLANATION)).toString());
       }
     } else {
       if (explanationDisplayed) {
         errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
-            "requisition.error.validation.displayed-when-requested-quantity-explanation-displayed",
+            ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED,
             REQUESTED_QUANTITY)).toString());
 
       }
@@ -110,7 +113,7 @@ public class RequisitionTemplateValidator implements Validator {
     if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
         && template.isColumnCalculated(STOCK_ON_HAND)) {
       errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
-          "requisition.error.validation.cannot-calculate-at-the-same-time", TOTAL_CONSUMED_QUANTITY,
+          ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME, TOTAL_CONSUMED_QUANTITY,
           STOCK_ON_HAND)).toString());
     }
   }
@@ -151,8 +154,7 @@ public class RequisitionTemplateValidator implements Validator {
     if (chosenSource != null
         && !column.getColumnDefinition().getSources().contains(chosenSource)) {
       errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message("requisition.error.validation.source-is-not-available",
-              chosenSource.toString())).toString());
+          new Message(ERROR_SOURCE_NOT_AVAILABLE, chosenSource.toString())).toString());
     }
   }
 
@@ -161,8 +163,7 @@ public class RequisitionTemplateValidator implements Validator {
     if (chosenOption != null
         && !column.getColumnDefinition().getOptions().contains(chosenOption)) {
       errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message("requisition.error.validation.option-is-not-available",
-              chosenOption.toString())).toString());
+          new Message(ERROR_OPTION_NOT_AVAILABLE, chosenOption.toString())).toString());
     }
   }
 }

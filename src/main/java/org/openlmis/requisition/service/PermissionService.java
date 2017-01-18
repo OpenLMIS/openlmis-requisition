@@ -1,5 +1,8 @@
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
@@ -121,8 +124,8 @@ public class PermissionService {
     for (ConvertToOrderDto convertToOrder : list) {
       Requisition requisition = requisitionRepository.findOne(convertToOrder.getRequisitionId());
       if (requisition == null) {
-        throw new ContentNotFoundMessageException(new Message(
-            "requisition.error.requisition-not-found", convertToOrder.getRequisitionId()));
+        throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
+            convertToOrder.getRequisitionId()));
       }
       hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
           convertToOrder.getSupplyingDepotId());
@@ -153,8 +156,7 @@ public class PermissionService {
     );
 
     if (null == result || !result.getResult()) {
-      throw new PermissionMessageException( new Message(
-          "requisition.error.authorization.no-following-permission", rightName));
+      throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName));
     }
   }
 

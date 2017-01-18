@@ -1,5 +1,11 @@
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FINISH_PROVIOUS_REQUISITION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_MUST_BELONG_TO_THE_SAME_SCHEDULE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_GROUP_PROGRAM_SCHEDULE_WITH_PROGRAM_AND_FACILITY_NOT_FOUND;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -183,8 +189,7 @@ public class PeriodService {
       List<ProcessingPeriodDto> periods = getCurrentPeriods(programId, facilityId);
 
       if (periods.isEmpty()) {
-        throw new ValidationMessageException(
-            new Message("requisition.error.initiate.incorrect-suggested-period"));
+        throw new ValidationMessageException(new Message(ERROR_INCORRECT_SUGGESTED_PERIOD));
       }
 
       period = periods.get(0);
@@ -195,7 +200,7 @@ public class PeriodService {
     if (period == null
         || (null != suggestedPeriodId && !suggestedPeriodId.equals(period.getId()))) {
       throw new ValidationMessageException(new Message(
-          "requisition.error.initiate.period-should-be-oldest-and-not-associated"));
+          ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED));
     }
 
     Collection<ProcessingScheduleDto> schedules =
@@ -203,15 +208,14 @@ public class PeriodService {
 
     if (schedules == null || schedules.isEmpty()) {
       throw new ContentNotFoundMessageException(new Message(
-          "requisition.error.initiate"
-              + ".requisition-group-program-schedule-with-program-anf-facility-not-found"));
+          ERROR_REQUISITION_GROUP_PROGRAM_SCHEDULE_WITH_PROGRAM_AND_FACILITY_NOT_FOUND));
     }
 
     ProcessingScheduleDto scheduleDto = schedules.iterator().next();
 
     if (!scheduleDto.getId().equals(period.getProcessingSchedule().getId())) {
       throw new ValidationMessageException(new Message(
-          "requisition.error.initiate.period-must-belong-to-the-same-schedule"));
+          ERROR_PERIOD_MUST_BELONG_TO_THE_SAME_SCHEDULE));
     }
 
     return period;
@@ -231,8 +235,7 @@ public class PeriodService {
     );
 
     if (null != lastRequisition && lastRequisition.isPreAuthorize()) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.initiate.finish-previous-requisition"));
+      throw new ValidationMessageException(new Message(ERROR_FINISH_PROVIOUS_REQUISITION));
     }
 
     ProcessingPeriodDto result = null;

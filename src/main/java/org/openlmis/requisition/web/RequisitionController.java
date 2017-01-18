@@ -1,8 +1,12 @@
 package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_AUTHORIZATION_TO_BE_SKIPPED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -231,7 +235,7 @@ public class RequisitionController extends BaseController {
 
     if (requisitionToUpdate == null) {
       throw new ContentNotFoundMessageException(new Message(
-          "requisition.error.requisition-not-found", requisitionId));
+          ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate());
@@ -239,7 +243,7 @@ public class RequisitionController extends BaseController {
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);
     } else if (!requisitionId.equals(requisition.getId())) {
-      throw new ValidationMessageException(new Message("requisition.error.id-mismatch"));
+      throw new ValidationMessageException(new Message(ERROR_ID_MISMATCH));
     }
 
 
@@ -268,8 +272,8 @@ public class RequisitionController extends BaseController {
           requisitionDtoBuilder.build(requisitionToUpdate), HttpStatus.OK
       );
     } else {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.update.can-not-update-with-status", requisition.getStatus()));
+      throw new ValidationMessageException(new Message(ERROR_CANNOT_UPDATE_WITH_STATUS,
+          requisition.getStatus()));
     }
   }
 
@@ -418,8 +422,7 @@ public class RequisitionController extends BaseController {
     permissionService.canAuthorizeRequisition(requisitionId);
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
-      throw new ValidationMessageException(
-          new Message("requisition.error.authorization-to-be-skipped"));
+      throw new ValidationMessageException(new Message(ERROR_AUTHORIZATION_TO_BE_SKIPPED));
     }
 
     Requisition requisition = requisitionRepository.findOne(requisitionId);

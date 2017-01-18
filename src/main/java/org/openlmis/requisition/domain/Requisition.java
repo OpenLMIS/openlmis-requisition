@@ -3,6 +3,9 @@ package org.openlmis.requisition.domain;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -235,14 +238,14 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void submit() {
     if (!INITIATED.equals(status)) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.submit.must-be-initiated-to-be-submitted", getId()));
+      throw new ValidationMessageException(new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED,
+          getId()));
     }
 
 
     if (RequisitionHelper.areFieldsNotFilled(template, getNonSkippedRequisitionLineItems())) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.submit.fields-must-have-values", getId()));
+      throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES,
+          getId()));
     }
 
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
@@ -267,8 +270,8 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void authorize() {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.authorize.must-be-submitted-to-be-authorize", getId()));
+      throw new ValidationMessageException(new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED,
+          getId()));
     }
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(

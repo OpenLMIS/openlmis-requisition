@@ -1,5 +1,9 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.i18n.MessageService;
@@ -15,19 +19,7 @@ abstract class AbstractRequisitionValidator implements Validator {
   @Autowired
   MessageService messageService;
 
-  static final String TEMPLATE_COLUMN_IS_CALCULATED =
-      "requisition.error.validation.field-is-calculated";
-  static final String IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP =
-      "requisition.error.validation.only-available-for-approval";
   static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
-  static final String VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION =
-      "requisition.error.validation.must-be-non-negative";
-  static final String VALUE_MUST_BE_ENTERED_NOTIFICATION =
-      "requisition.error.validation.value-must-be-entered";
-  static final String TEMPLATE_COLUMN_IS_HIDDEN =
-      "requisition.error.validation.is-hidden";
-  static final String IS_INVARIANT =
-      "requisition.error.validation.is-invariant";
 
   public boolean supports(Class<?> clazz) {
     return Requisition.class.equals(clazz);
@@ -43,7 +35,7 @@ abstract class AbstractRequisitionValidator implements Validator {
     if (!template.isColumnDisplayed(field)) {
       if (value != null) {
         errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-            new Message(TEMPLATE_COLUMN_IS_HIDDEN, field)).toString());
+            new Message(ERROR_IS_HIDDEN, field)).toString());
       }
 
       return false;
@@ -64,7 +56,7 @@ abstract class AbstractRequisitionValidator implements Validator {
 
     if (templateValid && value != null && value < 0) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(VALUE_MUST_BE_NON_NEGATIVE_NOTIFICATION, field)).toString());
+          new Message(ERROR_MUST_BE_NON_NEGATIVE, field)).toString());
     }
   }
 
@@ -74,7 +66,7 @@ abstract class AbstractRequisitionValidator implements Validator {
 
     if (templateValid && value == null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(VALUE_MUST_BE_ENTERED_NOTIFICATION, field)).toString());
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, field)).toString());
     }
   }
 }

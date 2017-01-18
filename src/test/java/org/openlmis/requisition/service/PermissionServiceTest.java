@@ -2,6 +2,7 @@ package org.openlmis.requisition.service;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -303,9 +304,7 @@ public class PermissionServiceTest {
 
   private void expectException(String rightName) {
     exception.expect(PermissionMessageException.class);
-    exception.expectMessage(
-        "requisition.error.authorization.no-following-permission: " + rightName
-    );
+    exception.expectMessage(ERROR_NO_FOLLOWING_PERMISSION + ": " + rightName);
   }
 
   private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {

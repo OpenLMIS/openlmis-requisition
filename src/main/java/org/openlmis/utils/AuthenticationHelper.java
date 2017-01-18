@@ -1,5 +1,8 @@
 package org.openlmis.utils;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_RIGHT_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
+
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
@@ -31,8 +34,7 @@ public class AuthenticationHelper {
     UserDto user = userReferenceDataService.findUser(username);
 
     if (user == null) {
-      throw new AuthenticationMessageException(new Message(
-          "requisition.error.authentication.user-can-not-be-found", username));
+      throw new AuthenticationMessageException(new Message(ERROR_USER_NOT_FOUND, username));
     }
 
     return user;
@@ -49,8 +51,7 @@ public class AuthenticationHelper {
     RightDto right = rightReferenceDataService.findRight(name);
 
     if (null == right) {
-      throw new AuthenticationMessageException(new Message(
-          "requisition.error.authentication.right-can-not-be-found", name));
+      throw new AuthenticationMessageException(new Message(ERROR_RIGHT_NOT_FOUND, name));
     }
 
     return right;

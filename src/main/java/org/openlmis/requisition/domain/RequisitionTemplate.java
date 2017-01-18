@@ -1,5 +1,10 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_IS_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_NOT_IN_TEMPLATE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
+
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
@@ -152,13 +157,13 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     RequisitionTemplateColumn column = findColumn(key);
 
     if (column.getColumnDefinition().getSources() == null) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.source-not-available-for-this-column", source.toString()));
+      throw new ValidationMessageException(new Message(ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN,
+          source.toString()));
     }
 
     if (!column.getColumnDefinition().getSources().contains(source)) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.source-not-available-for-this-column", source.toString()));
+      throw new ValidationMessageException(new Message(ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN,
+          source.toString()));
     }
     column.setSource(source);
   }
@@ -174,13 +179,13 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     RequisitionTemplateColumn column = findColumn(key);
 
     if (column.getColumnDefinition().getOptions() == null) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.option-not-available-fot-this-column", option.getOptionName()));
+      throw new ValidationMessageException(new Message(ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN,
+          option.getOptionName()));
     }
 
     if (!column.getColumnDefinition().getOptions().contains(option)) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.option-not-available-fot-this-column", option.getOptionName()));
+      throw new ValidationMessageException(new Message(ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN,
+          option.getOptionName()));
     }
     column.setOption(option);
   }
@@ -242,15 +247,14 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   public RequisitionTemplateColumn findColumn(String name) {
     RequisitionTemplateColumn column = getRequisitionTemplateColumn(name);
     if (column == null) {
-      throw new ValidationMessageException(new Message("requisition.error.column-not-in-template",
-          name));
+      throw new ValidationMessageException(new Message(ERROR_COLUMN_NOT_IN_TEMPLATE, name));
     }
     return column;
   }
 
   private RequisitionTemplateColumn getRequisitionTemplateColumn(String name) {
     if (columnsMap == null) {
-      throw new ValidationMessageException(new Message("requisition.error.columns-map-is-null"));
+      throw new ValidationMessageException(new Message(ERROR_COLUMNS_MAP_IS_NULL));
     }
     return columnsMap.get(name);
   }

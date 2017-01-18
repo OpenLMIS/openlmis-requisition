@@ -1,5 +1,8 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -79,13 +82,11 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
       expectedStatus = RequisitionStatus.AUTHORIZED;
     }
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
-        expectedStatus, messageService.localize(new Message(
-            IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        expectedStatus, messageService.localize(new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.APPROVED_QUANTITY)).toString());
 
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getRemarks(),
-        expectedStatus, messageService.localize(new Message(
-            IS_ONLY_AVAILABLE_DURING_APPROVAL_STEP,
+        expectedStatus, messageService.localize(new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.REMARKS_COLUMN)).toString());
 
   }
@@ -94,7 +95,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
                                             Object value, String field) {
     if (template.isColumnCalculated(field) && value != null) {
       errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(TEMPLATE_COLUMN_IS_CALCULATED, field)).toString());
+          new Message(ERROR_FIELD_IS_CALCULATED, field)).toString());
     }
   }
 
@@ -109,7 +110,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
                                     Object savedValue, String field) {
     if (savedValue != null && !savedValue.equals(value)) {
       errors.rejectValue(field,
-          messageService.localize(new Message(IS_INVARIANT, field)).toString());
+          messageService.localize(new Message(ERROR_IS_INVARIANT, field)).toString());
     }
   }
 }

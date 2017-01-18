@@ -221,7 +221,7 @@ schemas:
           }
       }
 
-  - errorResponse: !include schemas/errorResponse.json
+  - localizedMessage: !include schemas/localizedMessage.json
 
   - convertToOrderDto: !include schemas/convertToOrderDto.json
 
@@ -338,11 +338,11 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /submitted:
           get:
               is: [ secured ]
@@ -355,7 +355,7 @@ resourceTypes:
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -371,16 +371,16 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
                   "404":
                       body:
                         application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
                   "409":
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
           get:
               is: [ secured ]
               description: Get chosen requisition.
@@ -392,7 +392,7 @@ resourceTypes:
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
           put:
               is: [ secured ]
               description: Update existing requisition.
@@ -407,15 +407,15 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "404":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /{id}/skip:
           uriParameters:
               id:
@@ -433,15 +433,15 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "404":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /{id}/reject:
           uriParameters:
               id:
@@ -459,11 +459,11 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
                   "404":
                       body:
                         application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
       /{id}/submit:
           post:
               is: [ secured ]
@@ -478,7 +478,7 @@ resourceTypes:
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /{id}/authorize:
           uriParameters:
               id:
@@ -496,13 +496,13 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                         text/plain:
                   "404":
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /{id}/print:
           uriParameters:
               id:
@@ -594,11 +594,11 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /requisitionsForApproval:
           get:
               is: [ secured ]
@@ -673,7 +673,7 @@ resourceTypes:
                   "403":
                       body:
                         application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
                   "500":
 
       /periodsForInitiate:
@@ -704,7 +704,7 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
 
   /reports/templates/requisitions:
       displayName: Report Template
@@ -799,7 +799,7 @@ resourceTypes:
               "403":
                   body:
                     application/json:
-                        schema: errorResponse
+                        schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -815,7 +815,7 @@ resourceTypes:
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
                   "404":
                   "409":
           get:
@@ -841,7 +841,7 @@ resourceTypes:
                   "403":
                       body:
                         application/json:
-                            schema: errorResponse
+                            schema: localizedMessage
       /search:
           get:
               is: [ secured ]

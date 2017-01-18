@@ -1,6 +1,7 @@
 package org.openlmis.requisition.domain;
 
 import static org.apache.commons.lang.BooleanUtils.isFalse;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -29,7 +30,7 @@ public final class RequisitionBuilder {
   public static Requisition newRequisition(UUID facilityId, UUID programId, UUID creatorId,
                                            Boolean emergency) {
     if (facilityId == null || programId == null || creatorId == null || emergency == null) {
-      throw new ValidationMessageException(new Message("requisition.error.initiate.null-id"));
+      throw new ValidationMessageException(new Message(ERROR_NULL_ID));
     }
     return new Requisition(facilityId, programId, null, creatorId, null, emergency);
   }

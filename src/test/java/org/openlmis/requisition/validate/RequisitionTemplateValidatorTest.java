@@ -7,6 +7,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.COLUMNS_MAP;
@@ -56,20 +64,19 @@ public class RequisitionTemplateValidatorTest {
   @Before
   public void prepareMessageServiceMock() {
     Message message1 = new Message(
-        "requisition.error.validation.displayed-when-requested-quantity-displayed",
+        ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED,
         RequisitionTemplateValidator.REQUESTED_QUANTITY_EXPLANATION);
     Message message2 = new Message(
-        "requisition.error.validation.displayed-when-requested-quantity-explanation-displayed",
+        ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED,
         RequisitionTemplateValidator.REQUESTED_QUANTITY);
     Message message3 = new Message(
-        "requisition.error.validation.cannot-calculate-at-the-same-time",
+        ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME,
         RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY,
         RequisitionTemplateValidator.STOCK_ON_HAND);
     Message message7 = new Message(
-        RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY_MUST_BE_CALCULATED_INFORMATION,
+        ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED,
         RequisitionTemplateValidator.STOCK_ON_HAND);
-    Message message8 = new Message(
-        RequisitionTemplateValidator.STOCK_ON_HAND_MUST_BE_CALCULATED_INFORMATION,
+    Message message8 = new Message(ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED,
         RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
@@ -120,8 +127,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.getColumnsMap()
         .get(COLUMN_NAME).getColumnDefinition().getSources().clear();
 
-    Message message4 = new Message(
-        "requisition.error.validation.source-is-not-available", "test");
+    Message message4 = new Message(ERROR_SOURCE_NOT_AVAILABLE, "test");
     when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
         "Source " + SourceType.USER_INPUT + " is not available for this column."));
 
@@ -146,8 +152,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.getColumnsMap().get(COLUMN_NAME)
         .getColumnDefinition().getOptions().clear();
 
-    Message message5 = new Message(
-        "requisition.error.validation.option-is-not-available", "test");
+    Message message5 = new Message(ERROR_OPTION_NOT_AVAILABLE, "test");
     when(messageService.localize(message5)).thenReturn(message5.new LocalizedMessage(
         "Option " + option.getOptionName() + " is not available for this column."));
 
@@ -165,8 +170,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(
         RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS, false);
 
-    Message message6 = new Message(
-        RequisitionTemplateValidator.ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION,
+    Message message6 = new Message(ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED,
         RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS);
     when(messageService.localize(message6)).thenReturn(message6.new LocalizedMessage(
         RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS
@@ -186,8 +190,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(
         RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY, false);
 
-    Message message9 = new Message(
-        RequisitionTemplateValidator.ADJUSTED_CONSUMPTION_MUST_BE_CALCULATED_INFORMATION,
+    Message message9 = new Message(ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED,
         RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY);
 
     when(messageService.localize(message9)).thenReturn(message9.new LocalizedMessage(
