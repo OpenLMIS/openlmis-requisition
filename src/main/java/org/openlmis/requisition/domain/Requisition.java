@@ -8,7 +8,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import org.hibernate.annotations.Fetch;
@@ -137,9 +136,9 @@ public class Requisition extends BaseTimestampedEntity {
   private UUID creatorId;
 
   @ManyToMany
-  @JoinTable(name = "requisition_previous_requisition",
+  @JoinTable(name = "requisitions_previousrequisitions",
       joinColumns = { @JoinColumn(name = "requisition_id") },
-      inverseJoinColumns = { @JoinColumn(name = "previous_requisition_id") })
+      inverseJoinColumns = { @JoinColumn(name = "previousrequisition_id") })
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;
@@ -400,12 +399,10 @@ public class Requisition extends BaseTimestampedEntity {
     this.draftStatusMessage = (draftStatusMessage == null) ? "" : draftStatusMessage;
   }
 
-  @JsonIgnore
   public boolean isPreAuthorize() {
     return status.isPreAuthorize();
   }
 
-  @JsonIgnore
   public boolean isPostSubmitted() {
     return status.isPostSubmitted();
   }
@@ -415,7 +412,6 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @return requisitionLineItems that are not skipped
    */
-  @JsonIgnore
   public List<RequisitionLineItem> getNonSkippedRequisitionLineItems() {
     if (requisitionLineItems == null) {
       return Collections.emptyList();
@@ -430,7 +426,6 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @return requisitionLineItems that are not skipped
    */
-  @JsonIgnore
   public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems() {
     if (requisitionLineItems == null) {
       return Collections.emptyList();
@@ -446,7 +441,6 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @return requisitionLineItems that are skipped
    */
-  @JsonIgnore
   public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
     return this.requisitionLineItems.stream()
         .filter(RequisitionLineItem::getSkipped)
