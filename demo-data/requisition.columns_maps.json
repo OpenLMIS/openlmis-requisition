@@ -1,6 +1,6 @@
 [
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "skipped",
     "name": "skipped",
     "label": "Skip",
@@ -11,7 +11,7 @@
     "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "productCode",
     "name": "orderableProduct.productCode",
     "label": "Product Code",
@@ -22,7 +22,7 @@
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "productName",
     "name": "orderableProduct.name",
     "label": "Product",
@@ -33,7 +33,7 @@
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
@@ -44,7 +44,7 @@
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalReceivedQuantity",
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
@@ -55,7 +55,7 @@
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalConsumedQuantity",
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
@@ -66,7 +66,7 @@
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalLossesAndAdjustments",
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
@@ -77,7 +77,7 @@
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "stockOnHand",
     "name": "stockOnHand",
     "label": "Stock On Hand",
@@ -88,7 +88,7 @@
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "requestedQuantity",
     "name": "requestedQuantity",
     "label": "Requested Quantity",
@@ -99,7 +99,7 @@
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "requestedQuantityExplanation",
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
@@ -110,7 +110,7 @@
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "approvedQuantity",
     "name": "approvedQuantity",
     "label": "Approved Quantity",
@@ -121,7 +121,7 @@
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "remarks",
     "name": "remarks",
     "label": "Remarks",
@@ -132,7 +132,7 @@
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalStockoutDays",
     "name": "totalStockoutDays",
     "label": "Total Stockout Days",
@@ -143,7 +143,7 @@
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "total",
     "name": "total",
     "label": "Total",
@@ -154,7 +154,7 @@
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "dispensingUnit",
     "name": "orderableProduct.dispensable.dispensingUnit",
     "label": "Unit/Unit of Issue",
@@ -165,7 +165,7 @@
     "requisitionColumnId": "61e6d059-10ef-40c4-a6e3-fa7b9ad741ec"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "packsToShip",
     "name": "packsToShip",
     "label": "Packs To Ship",
@@ -176,7 +176,7 @@
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "pricePerPack",
     "name": "pricePerPack",
     "label": "Price Per Pack",
@@ -187,7 +187,7 @@
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "numberOfNewPatientsAdded",
     "name": "numberOfNewPatientsAdded",
     "label": "Number Of New Patients Added",
@@ -199,7 +199,7 @@
     "requisitionColumnOptionId": "34b8e763-71a0-41f1-86b4-1829963f0704"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "totalCost",
     "name": "totalCost",
     "label": "Total Cost",
@@ -210,7 +210,7 @@
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "adjustedConsumption",
     "name": "adjustedConsumption",
     "label": "Adjusted Consumption",
@@ -221,7 +221,7 @@
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "averageConsumption",
     "name": "averageConsumption",
     "label": "Average Consumption",
@@ -232,7 +232,7 @@
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "maximumStockQuantity",
     "name": "maximumStockQuantity",
     "label": "Maximum Stock Quantity",
@@ -244,7 +244,7 @@
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
   {
-    "requisitionTemplate": "5a268780-fafd-4243-9551-5c7daa824913",
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "calculatedOrderQuantity",
     "name": "calculatedOrderQuantity",
     "label": "Calculated Order Quantity",
@@ -259,7 +259,7 @@
 
 
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "skipped",
     "name": "skipped",
     "label": "Skip",
@@ -270,7 +270,7 @@
     "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "productCode",
     "name": "orderableProduct.productCode",
     "label": "Product Code",
@@ -281,7 +281,7 @@
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "productName",
     "name": "orderableProduct.name",
     "label": "Product",
@@ -292,7 +292,7 @@
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
@@ -303,7 +303,7 @@
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalReceivedQuantity",
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
@@ -314,7 +314,7 @@
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalConsumedQuantity",
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
@@ -325,7 +325,7 @@
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalLossesAndAdjustments",
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
@@ -336,7 +336,7 @@
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "stockOnHand",
     "name": "stockOnHand",
     "label": "Stock On Hand",
@@ -347,7 +347,7 @@
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "requestedQuantity",
     "name": "requestedQuantity",
     "label": "Requested Quantity",
@@ -358,7 +358,7 @@
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "requestedQuantityExplanation",
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
@@ -369,7 +369,7 @@
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "approvedQuantity",
     "name": "approvedQuantity",
     "label": "Approved Quantity",
@@ -380,7 +380,7 @@
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "remarks",
     "name": "remarks",
     "label": "Remarks",
@@ -391,7 +391,7 @@
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalStockoutDays",
     "name": "totalStockoutDays",
     "label": "Total Stockout Days",
@@ -402,7 +402,7 @@
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "total",
     "name": "total",
     "label": "Total",
@@ -413,7 +413,7 @@
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "packsToShip",
     "name": "packsToShip",
     "label": "Packs To Ship",
@@ -424,7 +424,7 @@
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "pricePerPack",
     "name": "pricePerPack",
     "label": "Price Per Pack",
@@ -435,7 +435,7 @@
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "numberOfNewPatientsAdded",
     "name": "numberOfNewPatientsAdded",
     "label": "Number Of New Patients Added",
@@ -447,7 +447,7 @@
     "requisitionColumnOptionId": "34b8e763-71a0-41f1-86b4-1829963f0704"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "totalCost",
     "name": "totalCost",
     "label": "Total Cost",
@@ -458,7 +458,7 @@
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "adjustedConsumption",
     "name": "adjustedConsumption",
     "label": "Adjusted Consumption",
@@ -469,7 +469,7 @@
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "averageConsumption",
     "name": "averageConsumption",
     "label": "Average Consumption",
@@ -480,7 +480,7 @@
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "maximumStockQuantity",
     "name": "maximumStockQuantity",
     "label": "Maximum Stock Quantity",
@@ -492,7 +492,7 @@
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
   {
-    "requisitionTemplate": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "calculatedOrderQuantity",
     "name": "calculatedOrderQuantity",
     "label": "Calculated Order Quantity",
@@ -506,7 +506,7 @@
 
 
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "skipped",
     "name": "skipped",
     "label": "Skip",
@@ -517,7 +517,7 @@
     "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productCode",
     "name": "orderableProduct.productCode",
     "label": "Product Code",
@@ -528,7 +528,7 @@
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productName",
     "name": "orderableProduct.name",
     "label": "Product",
@@ -539,7 +539,7 @@
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "beginningBalance",
     "name": "beginningBalance",
     "label": "Beginning Balance",
@@ -550,7 +550,7 @@
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "totalReceivedQuantity",
     "name": "totalReceivedQuantity",
     "label": "Total Received Quantity",
@@ -561,7 +561,7 @@
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "totalConsumedQuantity",
     "name": "totalConsumedQuantity",
     "label": "Total Consumed Quantity",
@@ -572,7 +572,7 @@
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "totalLossesAndAdjustments",
     "name": "totalLossesAndAdjustments",
     "label": "Total Losses And Adjustments",
@@ -583,7 +583,7 @@
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "stockOnHand",
     "name": "stockOnHand",
     "label": "Stock On Hand",
@@ -594,7 +594,7 @@
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "requestedQuantity",
     "name": "requestedQuantity",
     "label": "Requested Quantity",
@@ -605,7 +605,7 @@
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "requestedQuantityExplanation",
     "name": "requestedQuantityExplanation",
     "label": "Requested Quantity Explanation",
@@ -616,7 +616,7 @@
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "approvedQuantity",
     "name": "approvedQuantity",
     "label": "Approved Quantity",
@@ -627,7 +627,7 @@
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "remarks",
     "name": "remarks",
     "label": "Remarks",
@@ -638,7 +638,7 @@
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "totalStockoutDays",
     "name": "totalStockoutDays",
     "label": "Total Stockout Days",
@@ -649,7 +649,7 @@
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "total",
     "name": "total",
     "label": "Total",
@@ -660,7 +660,7 @@
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "packsToShip",
     "name": "packsToShip",
     "label": "Packs To Ship",
@@ -671,7 +671,7 @@
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "pricePerPack",
     "name": "pricePerPack",
     "label": "Price Per Pack",
@@ -682,7 +682,7 @@
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "numberOfNewPatientsAdded",
     "name": "numberOfNewPatientsAdded",
     "label": "Number Of New Patients Added",
@@ -694,7 +694,7 @@
     "requisitionColumnOptionId": "4957ebb4-297c-459e-a291-812e72286eff"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "totalCost",
     "name": "totalCost",
     "label": "Total Cost",
@@ -705,7 +705,7 @@
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "adjustedConsumption",
     "name": "adjustedConsumption",
     "label": "Adjusted Consumption",
@@ -716,7 +716,7 @@
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "averageConsumption",
     "name": "averageConsumption",
     "label": "Average Consumption",
@@ -727,7 +727,7 @@
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "maximumStockQuantity",
     "name": "maximumStockQuantity",
     "label": "Maximum Stock Quantity",
@@ -739,7 +739,7 @@
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
   {
-    "requisitionTemplate": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
+    "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "calculatedOrderQuantity",
     "name": "calculatedOrderQuantity",
     "label": "Calculated Order Quantity",
