@@ -71,8 +71,9 @@ import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.ConvertHelper;
-import org.openlmis.utils.PaginationHelper;
+import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -168,9 +169,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private ConvertHelper convertHelper;
-
-  @Mock
-  private PaginationHelper paginationHelper;
 
   @Mock
   private StatusMessageRepository statusMessageRepository;
@@ -334,9 +332,11 @@ public class RequisitionServiceTest {
     requisition.setProgramId(program.getId());
     requisition.setFacilityId(facility.getId());
 
+    Page page = Pagination.getPage(Collections.singletonList(requisition), null);
+
     when(requisitionRepository
-        .searchRequisitions(facilityId, programId, null, null, null, null, null, null))
-        .thenReturn(Collections.singletonList(requisition));
+        .searchRequisitions(facilityId, programId, null, null, null, null, null, null, null))
+        .thenReturn(page);
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getAuthorizedRequisitions(facility, program);
@@ -353,11 +353,12 @@ public class RequisitionServiceTest {
     requisition.setFacilityId(facilityId);
     requisition.setProgramId(programId);
     requisition.setStatus(AUTHORIZED);
+    Page page = Pagination.getPage(Collections.singletonList(requisition), null);
     UserDto user = mock(UserDto.class);
 
     when(requisitionRepository
-        .searchRequisitions(facilityId, programId, null, null, null, null, null, null))
-        .thenReturn(Collections.singletonList(requisition));
+        .searchRequisitions(facilityId, programId, null, null, null, null, null, null, null))
+        .thenReturn(page);
     when(supervisedFacilitiesReferenceDataService
         .getFacilitiesSupervisedByUser(user.getId(), programId, rightId))
         .thenReturn(Collections.singletonList(facility));
@@ -546,6 +547,9 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFindRequisitionIfItExists() {
+
+    Page page = Pagination.getPage(Collections.singletonList(requisition), null);
+
     when(requisitionRepository.searchRequisitions(
         requisition.getFacilityId(),
         requisition.getProgramId(),
@@ -553,17 +557,19 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisition.getStatus()}, null))
-        .thenReturn(Collections.singletonList(requisition));
+        new RequisitionStatus[]{requisition.getStatus()}, null, null))
+        .thenReturn(page);
 
-    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
+    Page<Requisition> receivedRequisitionsPage = requisitionService.searchRequisitions(
         requisition.getFacilityId(),
         requisition.getProgramId(),
         requisition.getCreatedDate().minusDays(2),
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisition.getStatus()}, null);
+        new RequisitionStatus[]{requisition.getStatus()}, null, null);
+
+    List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
 
     assertEquals(1, receivedRequisitions.size());
     assertEquals(
@@ -594,7 +600,7 @@ public class RequisitionServiceTest {
     // given
     List<RequisitionDto> requisitionDtos = getRequisitionDtoList();
     String filterAndSortBy = "programName";
-    int pageNumber = 1;
+    int pageNumber = 0;
     int pageSize = 5;
 
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy,
@@ -609,7 +615,6 @@ public class RequisitionServiceTest {
             filterAndSortBy, filterAndSortBy, true, pageNumber, pageSize);
 
     //then
-    verify(paginationHelper).pageCollection(requisitionDtos, pageNumber, pageSize);
     assertEquals(requisitionDtos, requisitionDtosRetrieved);
   }
 
@@ -834,8 +839,6 @@ public class RequisitionServiceTest {
         .thenReturn(requisitions);
     when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
         .thenReturn(requisitionDtos);
-    when(paginationHelper.pageCollection(any(), eq(pageNumber), eq(pageSize)))
-        .then(i -> i.getArgumentAt(0, List.class));
   }
 
   private RequisitionTemplate getRequisitionTemplate() {
@@ -864,15 +867,18 @@ public class RequisitionServiceTest {
     previousRequisition
         .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
 
+    Page page = Pagination.getPage(Collections.singletonList(previousRequisition), null);
+
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.singletonList(previousRequisition));
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(page);
   }
 
   private void mockNoPreviousRequisition() {
+    Page page = Pagination.getPage(Collections.emptyList(), null);
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.emptyList());
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(page);
   }
 
   private void mockApprovedProduct() {

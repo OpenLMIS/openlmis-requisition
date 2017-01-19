@@ -40,6 +40,8 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -295,7 +297,7 @@ public class RequisitionController extends BaseController {
   }
 
   /**
-   * Finds requisitions matching all of provided parameters.
+   * Finds requisitions matching all of the provided parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   public ResponseEntity<?> searchRequisitions(
@@ -310,11 +312,12 @@ public class RequisitionController extends BaseController {
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
           RequisitionStatus[] requisitionStatuses,
-      @RequestParam(value = "emergency", required = false) Boolean emergency) {
-    List<Requisition> result = requisitionService.searchRequisitions(facility, program,
+      @RequestParam(value = "emergency", required = false) Boolean emergency,
+      Pageable pageable) {
+    Page<Requisition> requisitions = requisitionService.searchRequisitions(facility, program,
         createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
-        emergency);
-
+        emergency, null);
+    List<Requisition> result = requisitions.getContent();
     return new ResponseEntity<>(requisitionDtoBuilder.build(result), HttpStatus.OK);
   }
 
@@ -400,9 +403,13 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getSubmittedRequisitions() {
-    List<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
+    Page<Requisition> submittedRequisitionsPage = requisitionService.searchRequisitions(
         null, null, null, null, null, null,
-        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null);
+        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null, null);
+    List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
+
+    /* TODO: It seems like this should never return HttpStatus.NOT_FOUND. Rather, if no results
+             exist, simply return an empty list. Verify this an update this code accordingly. */
     if (submittedRequisitions == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
