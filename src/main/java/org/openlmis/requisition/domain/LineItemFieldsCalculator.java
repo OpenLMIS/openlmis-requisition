@@ -5,6 +5,8 @@ import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.openlmis.requisition.domain.AvailableRequisitionColumnOption.DEFAULT;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import java.math.BigDecimal;
@@ -114,12 +116,12 @@ public final class LineItemFieldsCalculator {
   public static Money calculateTotalCost(RequisitionLineItem lineItem) {
     Money pricePerPack = lineItem.getPricePerPack();
     if (pricePerPack == null) {
-      pricePerPack = new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
+      pricePerPack = Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
     }
 
     long packsToShip = zeroIfNull(lineItem.getPacksToShip());
 
-    return pricePerPack.mul(packsToShip);
+    return pricePerPack.multipliedBy(packsToShip);
   }
 
   /**

@@ -6,13 +6,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -38,7 +39,7 @@ import java.util.UUID;
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionExportHelperTest {
 
-  private static final Money PRICE_PER_PACK = new Money("9");
+  private static final Money PRICE_PER_PACK = Money.of(CurrencyUnit.USD, 9);
   private static final long PACK_SIZE = 2;
 
   private Requisition requisition;

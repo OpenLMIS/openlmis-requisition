@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -133,7 +135,7 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldBuildFromConstructorAndExport() {
-    Money pricePerPack = new Money("5.7986");
+    Money pricePerPack = Money.of(CurrencyUnit.USD, 5.79);
     RequisitionLineItemDto lineItemDto = testConstructionAndExport(pricePerPack);
 
     assertThat(lineItemDto.getPricePerPack(), is(pricePerPack));
@@ -144,7 +146,7 @@ public class RequisitionLineItemTest {
     RequisitionLineItemDto lineItemDto = testConstructionAndExport(null);
 
     assertThat(lineItemDto.getPricePerPack(),
-        is(new Money(RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
+        is(Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
   }
 
   @Test
@@ -208,7 +210,7 @@ public class RequisitionLineItemTest {
     requisitionLineItem.setTotalStockoutDays(6);
     requisitionLineItem.setRemarks("remarks");
     requisitionLineItem.setRequestedQuantityExplanation("explanation");
-    requisitionLineItem.setTotalCost(new Money("30"));
+    requisitionLineItem.setTotalCost(Money.of(CurrencyUnit.USD, 30));
     requisitionLineItem.setNumberOfNewPatientsAdded(10);
 
     OrderableProductDto orderableProductDto = generateOrderableProductDto(program, programProduct);

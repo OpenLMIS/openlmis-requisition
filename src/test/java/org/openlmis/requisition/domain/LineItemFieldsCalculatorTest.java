@@ -11,6 +11,8 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Test;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
@@ -104,7 +106,7 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateStockOnHandIfNull() throws Exception {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalLossesAndAdjustments((Integer) null);
+    requisitionLineItem.setTotalLossesAndAdjustments(null);
     requisitionLineItem.setTotalConsumedQuantity(200);
     requisitionLineItem.setTotalReceivedQuantity(500);
     requisitionLineItem.setBeginningBalance(1000);
@@ -135,30 +137,30 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateTotalCost() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setPricePerPack(new Money("3.25"));
+    requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 3.25));
     requisitionLineItem.setPacksToShip(40L);
 
     Money totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
 
-    assertEquals(new Money("130"), totalCost);
+    assertEquals(Money.of(CurrencyUnit.USD, 130), totalCost);
   }
 
   @Test
   public void shouldCalculateTotalCostAsZeroIfValuesAreMissing() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setPricePerPack(new Money("3.25"));
+    requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 3.25));
     requisitionLineItem.setPacksToShip(null);
 
     Money totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
-    assertEquals(Money.ZERO, totalCost);
+    assertEquals(BigDecimal.ZERO.setScale(2), totalCost.getAmount());
 
     requisitionLineItem.setPricePerPack(null);
     totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
-    assertEquals(Money.ZERO, totalCost);
+    assertEquals(BigDecimal.ZERO.setScale(2), totalCost.getAmount());
 
     requisitionLineItem.setPacksToShip(20L);
     totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
-    assertEquals(Money.ZERO, totalCost);
+    assertEquals(BigDecimal.ZERO.setScale(2), totalCost.getAmount());
   }
 
   @Test

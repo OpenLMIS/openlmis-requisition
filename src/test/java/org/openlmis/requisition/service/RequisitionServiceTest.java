@@ -21,6 +21,8 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -884,7 +885,7 @@ public class RequisitionServiceTest {
   private void mockApprovedProduct() {
     ProductDto product = new ProductDto();
     product.setProductId(PRODUCT_ID);
-    product.setPricePerPack(new Money());
+    product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
     approvedProductDto.setProduct(product);
     approvedProductDto.setMaxMonthsOfStock(7.25);

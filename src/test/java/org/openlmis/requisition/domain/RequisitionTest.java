@@ -15,6 +15,8 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,10 +40,10 @@ import java.util.UUID;
 public class RequisitionTest {
   private static final UUID ORDERABLE_PRODUCT_ID = UUID.randomUUID();
 
-  private static final Money PRICE_PER_PACK = new Money("9");
+  private static final Money PRICE_PER_PACK = Money.of(CurrencyUnit.USD, 9);
   private static final int ADJUSTED_CONSUMPTION = 1;
   private static final int AVERAGE_CONSUMPTION = 1;
-  private static final Money TOTAL_COST = new Money("5");
+  private static final Money TOTAL_COST = Money.of(CurrencyUnit.USD, 5);
   private static final int MONTHS_IN_PERIOD = 1;
 
   private Requisition requisition;

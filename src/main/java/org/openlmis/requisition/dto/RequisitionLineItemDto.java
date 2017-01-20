@@ -2,10 +2,14 @@ package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import org.openlmis.requisition.domain.Money;
+import org.joda.money.Money;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.utils.MoneyDeserializer;
+import org.openlmis.utils.MoneySerializer;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,8 +39,12 @@ public class RequisitionLineItemDto
   private Integer totalStockoutDays;
   private Integer total;
   private Long packsToShip;
+  @JsonSerialize(using = MoneySerializer.class)
+  @JsonDeserialize(using = MoneyDeserializer.class)
   private Money pricePerPack;
   private Integer numberOfNewPatientsAdded;
+  @JsonSerialize(using = MoneySerializer.class)
+  @JsonDeserialize(using = MoneyDeserializer.class)
   private Money totalCost;
   private Boolean skipped;
   private Integer adjustedConsumption;

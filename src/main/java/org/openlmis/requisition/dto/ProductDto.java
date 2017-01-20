@@ -1,6 +1,11 @@
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.Money;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import org.joda.money.Money;
+import org.openlmis.utils.MoneyDeserializer;
+import org.openlmis.utils.MoneySerializer;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -20,5 +25,7 @@ public class ProductDto {
   private Integer displayOrder;
   private Integer maxMonthsOfStock;
   private Integer dosesPerMonth;
+  @JsonSerialize(using = MoneySerializer.class)
+  @JsonDeserialize(using = MoneyDeserializer.class)
   private Money pricePerPack;
 }

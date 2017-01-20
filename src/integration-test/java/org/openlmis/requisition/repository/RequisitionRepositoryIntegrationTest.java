@@ -1,8 +1,14 @@
 package org.openlmis.requisition.repository;
 
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -20,12 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -169,7 +169,7 @@ public class RequisitionRepositoryIntegrationTest
     PageRequest pageRequest = new PageRequest(page, size);
 
     Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
-            null, null, null, null, null, null, null, null, pageRequest);
+        null, null, null, null, null, null, null, null, pageRequest);
 
     List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
 
@@ -237,7 +237,7 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void shouldPersistWithMoney() {
-    Money pricePerPack = new Money("14.57");
+    Money pricePerPack = Money.of(CurrencyUnit.USD, 14.57);
     UUID productId = UUID.randomUUID();
 
     ProductDto programProduct = new ProductDto();

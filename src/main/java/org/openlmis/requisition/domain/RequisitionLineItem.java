@@ -9,9 +9,10 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
@@ -31,12 +32,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -137,14 +136,14 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Getter
   @Setter
-  @Embedded
-  @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "pricePerPack"))
+  @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
+      parameters = {@Parameter(name = "currencyCode", value = "USD")})
   private Money pricePerPack;
 
   @Getter
   @Setter
-  @Embedded
-  @AttributeOverride(name = Money.VALUE_FIELD, column = @Column(name = "totalCost"))
+  @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
+      parameters = {@Parameter(name = "currencyCode", value = "USD")})
   private Money totalCost;
 
   @Setter
@@ -220,7 +219,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
-        ? new Money(PRICE_PER_PACK_IF_NULL) : priceFromProduct;
+        ? Money.of(CurrencyUnit.USD, PRICE_PER_PACK_IF_NULL) : priceFromProduct;
     this.orderableProductId = approvedProduct.getProduct().getProductId();
   }
 
@@ -284,7 +283,6 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Returns order quantity.
    */
-  @JsonIgnore
   public Integer getOrderQuantity() {
     if (approvedQuantity != null) {
       return approvedQuantity;
