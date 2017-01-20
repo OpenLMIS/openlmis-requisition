@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import static org.apache.commons.lang.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -137,8 +139,8 @@ public class Requisition extends BaseTimestampedEntity {
 
   @ManyToMany
   @JoinTable(name = "requisitions_previousrequisitions",
-      joinColumns = { @JoinColumn(name = "requisition_id") },
-      inverseJoinColumns = { @JoinColumn(name = "previousrequisition_id") })
+      joinColumns = {@JoinColumn(name = "requisition_id")},
+      inverseJoinColumns = {@JoinColumn(name = "previousrequisition_id")})
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;
@@ -173,9 +175,9 @@ public class Requisition extends BaseTimestampedEntity {
       Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
-    
+
     this.draftStatusMessage = requisition.draftStatusMessage;
-    
+
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
   }
@@ -213,7 +215,7 @@ public class Requisition extends BaseTimestampedEntity {
           .findFirst().orElse(null);
 
       if (null == existing) {
-        if (item.isNonFullSupply()) {
+        if (isTrue(item.getNonFullSupply())) {
           item.setRequisition(this);
           updatedList.add(item);
         }
@@ -230,7 +232,7 @@ public class Requisition extends BaseTimestampedEntity {
     // added/updated/removed.
     requisitionLineItems
         .stream()
-        .filter(line -> !line.isNonFullSupply())
+        .filter(line -> isNotTrue(line.getNonFullSupply()))
         .filter(line -> updatedList
             .stream()
             .map(BaseEntity::getId)
@@ -394,7 +396,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
   }
-  
+
   public void setDraftStatusMessage(String draftStatusMessage) {
     this.draftStatusMessage = (draftStatusMessage == null) ? "" : draftStatusMessage;
   }
@@ -432,7 +434,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     return this.requisitionLineItems.stream()
         .filter(line -> !line.getSkipped())
-        .filter(line -> !line.isNonFullSupply())
+        .filter(line -> isNotTrue(line.getNonFullSupply()))
         .collect(Collectors.toList());
   }
 
@@ -499,7 +501,7 @@ public class Requisition extends BaseTimestampedEntity {
     void setSupervisoryNode(UUID supervisoryNode);
 
     void setTemplate(UUID template);
-    
+
     void setDraftStatusMessage(String draftStatusMessage);
 
     void setPreviousRequisitions(List<Requisition> previousRequisitions);

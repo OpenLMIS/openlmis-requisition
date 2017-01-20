@@ -21,7 +21,6 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,7 +42,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -181,10 +179,9 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private BigDecimal maxMonthsOfStock;
 
-  @Transient
   @Setter
-  @Getter(AccessLevel.PACKAGE)
-  private boolean nonFullSupply;
+  @Getter
+  private Boolean nonFullSupply;
 
   /**
    * Initiates a requisition line item.

@@ -1,5 +1,6 @@
 package org.openlmis.requisition.validate;
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
@@ -62,14 +63,31 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
           new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS)).toString());
     } else {
-      requisition.getNonSkippedRequisitionLineItems()
-          .forEach(lineItem ->
-              validateRequisitionLineItem(errors, requisition, lineItem));
+      for (RequisitionLineItem item : requisition.getNonSkippedRequisitionLineItems()) {
+        if (isTrue(item.getNonFullSupply())) {
+          validateNonFullSupplyLineItem(errors, requisition, item);
+        } else {
+          validateFullSupplyLineItem(errors, requisition, item);
+        }
+      }
     }
   }
 
-  private void validateRequisitionLineItem(
-      Errors errors, Requisition requisition, RequisitionLineItem item) {
+  private void validateNonFullSupplyLineItem(Errors errors, Requisition requisition,
+                                             RequisitionLineItem item) {
+    RequisitionTemplate template = requisition.getTemplate();
+
+    rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
+        REQUESTED_QUANTITY);
+
+    checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
+        REQUESTED_QUANTITY_EXPLANATION);
+
+    validateApprovedQuantity(errors, template, requisition, item);
+  }
+
+  private void validateFullSupplyLineItem(Errors errors, Requisition requisition,
+                                          RequisitionLineItem item) {
     RequisitionTemplate template = requisition.getTemplate();
     rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
         REQUESTED_QUANTITY);
