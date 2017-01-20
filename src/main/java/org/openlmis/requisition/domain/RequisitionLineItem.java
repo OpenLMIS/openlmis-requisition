@@ -91,9 +91,11 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer totalReceivedQuantity;
 
   @Getter
+  @Setter
   private Integer totalLossesAndAdjustments;
 
   @Getter
+  @Setter
   private Integer stockOnHand;
 
   @Getter
@@ -101,9 +103,11 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer requestedQuantity;
 
   @Getter
+  @Setter
   private Integer totalConsumedQuantity;
 
   @Getter
+  @Setter
   private Integer total;
 
   @Getter
@@ -165,9 +169,11 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer averageConsumption;
 
   @Getter
+  @Setter
   private Integer maximumStockQuantity;
 
   @Getter
+  @Setter
   private Integer calculatedOrderQuantity;
 
   @OneToMany(
@@ -388,14 +394,26 @@ public class RequisitionLineItem extends BaseEntity {
     }
   }
 
-  public void setTotalConsumedQuantity(Integer totalConsumedQuantity) {
-    this.totalConsumedQuantity = totalConsumedQuantity;
+  /**
+   * Calculate and set all calculated fields in this requisition line item.
+   */
+  public void calculateAndSetFields(RequisitionTemplate template,
+                                    Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
+                                    Integer numberOfMonthsInPeriod) {
+    calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
+    calculateAndSetStockOnHand(template);
+    calculateAndSetTotalConsumedQuantity(template);
+    calculateAndSetTotal(template);
+    calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
+    calculateAndSetAverageConsumption(template);
+    calculateAndSetMaximumStockQuantity(template);
+    calculateAndSetCalculatedOrderQuantity(template);
   }
 
   /**
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetTotalConsumedQuantity(RequisitionTemplate template) {
+  private void calculateAndSetTotalConsumedQuantity(RequisitionTemplate template) {
     if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
       if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
         setTotalConsumedQuantity(calculateTotalConsumedQuantity(this));
@@ -405,27 +423,19 @@ public class RequisitionLineItem extends BaseEntity {
     }
   }
 
-  public void setTotal(Integer total) {
-    this.total = total;
-  }
-
   /**
    * Sets appropriate value for Total field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetTotal(RequisitionTemplate template) {
+  private void calculateAndSetTotal(RequisitionTemplate template) {
     if (template.isColumnDisplayed(TOTAL_COLUMN)) {
       setTotal(calculateTotal(this));
     }
   }
 
-  public void setStockOnHand(Integer stockOnHand) {
-    this.stockOnHand = stockOnHand;
-  }
-
   /**
    * Sets appropriate value for Stock On Hand field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetStockOnHand(RequisitionTemplate template) {
+  private void calculateAndSetStockOnHand(RequisitionTemplate template) {
     if (template.isColumnDisplayed(STOCK_ON_HAND)) {
       if (template.isColumnCalculated(STOCK_ON_HAND)) {
         setStockOnHand(calculateStockOnHand(this));
@@ -435,14 +445,10 @@ public class RequisitionLineItem extends BaseEntity {
     }
   }
 
-  public void setTotalLossesAndAdjustments(Integer totalLossesAndAdjustments) {
-    this.totalLossesAndAdjustments = totalLossesAndAdjustments;
-  }
-
   /**
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetTotalLossesAndAdjustments(
+  private void calculateAndSetTotalLossesAndAdjustments(
       Collection<StockAdjustmentReasonDto> reasons) {
     setTotalLossesAndAdjustments(calculateTotalLossesAndAdjustments(this, reasons));
   }
@@ -450,7 +456,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetAdjustedConsumption(RequisitionTemplate template,
+  private void calculateAndSetAdjustedConsumption(RequisitionTemplate template,
                                                  Integer monthsInThePeriod) {
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       int calculated = calculateAdjustedConsumption(this, monthsInThePeriod);
@@ -466,7 +472,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem} on update.
    */
-  public void setAverageConsumptionOnUpdate(RequisitionTemplate template) {
+  private void calculateAndSetAverageConsumption(RequisitionTemplate template) {
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       Integer averageConsumptionPassed = this.getAverageConsumption();
       calculateAndSetAverageConsumption();
@@ -481,34 +487,26 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetAverageConsumption() {
+  void calculateAndSetAverageConsumption() {
     List<Integer> previous = getPreviousAdjustedConsumptions();
     previous.add(getAdjustedConsumption());
     Integer calculated = calculateAverageConsumption(previous);
     setAverageConsumption(calculated);
   }
 
-  public void setMaximumStockQuantity(Integer maximumStockQuantity) {
-    this.maximumStockQuantity = maximumStockQuantity;
-  }
-
   /**
    * Sets appropriate value for Maximum Stock Quantity field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetMaximumStockQuantity(RequisitionTemplate template) {
+  private void calculateAndSetMaximumStockQuantity(RequisitionTemplate template) {
     if (template.isColumnDisplayed(MAXIMUM_STOCK_QUANTITY)) {
       setMaximumStockQuantity(calculateMaximumStockQuantity(this, template));
     }
   }
 
-  public void setCalculatedOrderQuantity(Integer calculatedOrderQuantity) {
-    this.calculatedOrderQuantity = calculatedOrderQuantity;
-  }
-
   /**
    * Sets appropriate value for Calculated Order Quantity field in {@link RequisitionLineItem}.
    */
-  public void calculateAndSetCalculatedOrderQuantity(RequisitionTemplate template) {
+  private void calculateAndSetCalculatedOrderQuantity(RequisitionTemplate template) {
     if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
       setCalculatedOrderQuantity(calculateCalculatedOrderQuantity(this, template));
     }

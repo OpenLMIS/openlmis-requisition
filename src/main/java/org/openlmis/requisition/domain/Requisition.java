@@ -183,16 +183,9 @@ public class Requisition extends BaseTimestampedEntity {
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
                                                   Collection<StockAdjustmentReasonDto>
                                                       stockAdjustmentReasons) {
-    getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> {
-      line.calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
-      line.calculateAndSetStockOnHand(template);
-      line.calculateAndSetTotalConsumedQuantity(template);
-      line.calculateAndSetTotal(template);
-      line.calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
-      line.setAverageConsumptionOnUpdate(template);
-      line.calculateAndSetMaximumStockQuantity(template);
-      line.calculateAndSetCalculatedOrderQuantity(template);
-    });
+    getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
+            numberOfMonthsInPeriod));
   }
 
   private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {
