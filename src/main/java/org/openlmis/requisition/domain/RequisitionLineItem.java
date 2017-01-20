@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
@@ -151,6 +152,10 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer adjustedConsumption;
 
   @ElementCollection
+  @CollectionTable(
+      name = "previous_adjusted_consumptions",
+      joinColumns = @JoinColumn(name = "requisitionlineitemid"))
+  @Column(name = "previousAdjustedConsumption")
   @Setter
   @Getter
   private List<Integer> previousAdjustedConsumptions;
