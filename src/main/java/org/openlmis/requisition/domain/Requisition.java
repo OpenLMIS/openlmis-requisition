@@ -139,8 +139,8 @@ public class Requisition extends BaseTimestampedEntity {
 
   @ManyToMany
   @JoinTable(name = "requisitions_previous_requisitions",
-      joinColumns = { @JoinColumn(name = "requisitionid") },
-      inverseJoinColumns = { @JoinColumn(name = "previousrequisitionid") })
+      joinColumns = { @JoinColumn(name = "requisitionId") },
+      inverseJoinColumns = { @JoinColumn(name = "previousRequisitionId") })
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;

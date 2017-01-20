@@ -154,7 +154,7 @@ public class RequisitionLineItem extends BaseEntity {
   @ElementCollection
   @CollectionTable(
       name = "previous_adjusted_consumptions",
-      joinColumns = @JoinColumn(name = "requisitionlineitemid"))
+      joinColumns = @JoinColumn(name = "requisitionLineItemId"))
   @Column(name = "previousAdjustedConsumption")
   @Setter
   @Getter
