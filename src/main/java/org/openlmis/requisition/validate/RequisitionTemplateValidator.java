@@ -3,12 +3,14 @@ package org.openlmis.requisition.validate;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
@@ -19,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.util.Set;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
@@ -144,17 +148,27 @@ public class RequisitionTemplateValidator implements Validator {
 
   private void validateChosenSourcesAndOptions(Errors errors, RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
-      validateChosenSources(errors, column);
+      validateChosenSources(errors, template, column);
       validateChosenOptions(errors, column);
     }
   }
 
-  private void validateChosenSources(Errors errors, RequisitionTemplateColumn column) {
+  private void validateChosenSources(Errors errors, RequisitionTemplate template,
+                                     RequisitionTemplateColumn column) {
     SourceType chosenSource = column.getSource();
-    if (chosenSource != null
-        && !column.getColumnDefinition().getSources().contains(chosenSource)) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message(ERROR_SOURCE_NOT_AVAILABLE, chosenSource.toString())).toString());
+
+    if (null != chosenSource) {
+      AvailableRequisitionColumn definition = column.getColumnDefinition();
+      Set<SourceType> sources = definition.getSources();
+
+      if (sources.size() > 1 && template.isColumnUserInput(definition.getName())) {
+        rejectIfNotDisplayed(errors, template, definition.getName(), ERROR_MUST_BE_DISPLAYED);
+      }
+
+      if (!sources.contains(chosenSource)) {
+        errors.rejectValue(COLUMNS_MAP, messageService.localize(
+            new Message(ERROR_SOURCE_NOT_AVAILABLE, chosenSource.toString())).toString());
+      }
     }
   }
 

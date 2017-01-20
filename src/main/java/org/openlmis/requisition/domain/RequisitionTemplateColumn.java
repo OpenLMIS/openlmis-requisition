@@ -3,7 +3,6 @@ package org.openlmis.requisition.domain;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,7 +41,7 @@ public class RequisitionTemplateColumn {
   private Boolean isDisplayed;
 
   @Getter
-  @Setter(AccessLevel.PACKAGE)
+  @Setter
   private SourceType source;
 
   @ManyToOne(

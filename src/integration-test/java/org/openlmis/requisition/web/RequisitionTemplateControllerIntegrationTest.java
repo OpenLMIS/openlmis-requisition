@@ -264,7 +264,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .extract().asString();
 
     String expectedMessage = STOCK_ON_HAND
-        + " must be displayed when total consumed quantity is calculated.";
+        + " must be displayed";
 
     assertTrue(response.contains(expectedMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -308,7 +308,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .extract().asString();
 
     String expectedMessage = TOTAL_CONSUMED_QUANTITY
-        + " must be displayed when adjusted consumption is calculated.";
+        + " must be displayed";
 
     assertTrue(response.contains(expectedMessage));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
