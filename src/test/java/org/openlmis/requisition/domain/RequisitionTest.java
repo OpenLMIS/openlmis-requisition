@@ -1,8 +1,6 @@
 package org.openlmis.requisition.domain;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.BooleanUtils.isNotTrue;
-import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -145,7 +143,7 @@ public class RequisitionTest {
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
 
     RequisitionLineItem item = requisition.getRequisitionLineItems().get(0);
-    assertThat(item.getNonFullSupply(), is(true));
+    assertThat(item.isNonFullSupply(), is(true));
   }
 
   @Test
@@ -164,13 +162,13 @@ public class RequisitionTest {
 
     assertThat(
         requisition.getRequisitionLineItems().stream()
-            .filter(line -> isTrue(line.getNonFullSupply())).count(),
+            .filter(RequisitionLineItem::isNonFullSupply).count(),
         is(1L)
     );
 
     assertThat(
         requisition.getRequisitionLineItems().stream()
-            .filter(line -> isNotTrue(line.getNonFullSupply())).count(),
+            .filter(line -> !line.isNonFullSupply()).count(),
         is((long) count)
     );
   }

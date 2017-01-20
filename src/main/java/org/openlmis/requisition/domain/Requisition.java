@@ -1,7 +1,5 @@
 package org.openlmis.requisition.domain;
 
-import static org.apache.commons.lang.BooleanUtils.isNotTrue;
-import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -215,7 +213,7 @@ public class Requisition extends BaseTimestampedEntity {
           .findFirst().orElse(null);
 
       if (null == existing) {
-        if (isTrue(item.getNonFullSupply())) {
+        if (item.isNonFullSupply()) {
           item.setRequisition(this);
           updatedList.add(item);
         }
@@ -232,7 +230,7 @@ public class Requisition extends BaseTimestampedEntity {
     // added/updated/removed.
     requisitionLineItems
         .stream()
-        .filter(line -> isNotTrue(line.getNonFullSupply()))
+        .filter(line -> !line.isNonFullSupply())
         .filter(line -> updatedList
             .stream()
             .map(BaseEntity::getId)
@@ -434,7 +432,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     return this.requisitionLineItems.stream()
         .filter(line -> !line.getSkipped())
-        .filter(line -> isNotTrue(line.getNonFullSupply()))
+        .filter(line -> !line.isNonFullSupply())
         .collect(Collectors.toList());
   }
 

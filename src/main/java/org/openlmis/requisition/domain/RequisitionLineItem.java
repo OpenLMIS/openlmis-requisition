@@ -186,7 +186,7 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Setter
   @Getter
-  private Boolean nonFullSupply;
+  private boolean nonFullSupply;
 
   /**
    * Initiates a requisition line item.

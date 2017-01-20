@@ -1,6 +1,5 @@
 package org.openlmis.requisition.validate;
 
-import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
@@ -64,7 +63,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
           new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS)).toString());
     } else {
       for (RequisitionLineItem item : requisition.getNonSkippedRequisitionLineItems()) {
-        if (isTrue(item.getNonFullSupply())) {
+        if (item.isNonFullSupply()) {
           validateNonFullSupplyLineItem(errors, requisition, item);
         } else {
           validateFullSupplyLineItem(errors, requisition, item);
