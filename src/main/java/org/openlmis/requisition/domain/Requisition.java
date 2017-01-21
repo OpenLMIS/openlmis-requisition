@@ -243,30 +243,17 @@ public class Requisition extends BaseTimestampedEntity {
         line -> line.updatePacksToShip(products));
 
     if (!INITIATED.equals(status)) {
-      throw new ValidationMessageException(new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED,
-          getId()));
+      throw new ValidationMessageException(
+          new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
     }
 
     if (RequisitionHelper.areFieldsNotFilled(template,
         getNonSkippedFullSupplyRequisitionLineItems())) {
-      throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES,
-          getId()));
+      throw new ValidationMessageException(
+          new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
 
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-      ));
-    }
-
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
-    }
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
+    updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.SUBMITTED;
   }
@@ -285,20 +272,7 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-      ));
-    }
-
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
-    }
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
+    updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.AUTHORIZED;
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
@@ -313,20 +287,7 @@ public class Requisition extends BaseTimestampedEntity {
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
         line -> line.updatePacksToShip(products));
 
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-      ));
-    }
-
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
-    }
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
+    updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.APPROVED;
   }
@@ -445,6 +406,23 @@ public class Requisition extends BaseTimestampedEntity {
     getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
             numberOfMonthsInPeriod));
+  }
+
+  private void updateConsumptionsAndTotalCost() {
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+      ));
+    }
+
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
+          RequisitionLineItem::calculateAndSetAverageConsumption);
+    }
+
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
   }
 
   private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {
