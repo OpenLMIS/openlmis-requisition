@@ -22,9 +22,6 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +39,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -194,6 +194,52 @@ public class RequisitionLineItem extends BaseEntity {
   private boolean nonFullSupply;
 
   /**
+   * Creates new instance of RequisitionLineItem object based on data from
+   * {@link RequisitionLineItem.Importer}
+   *
+   * @param importer instance of {@link Importer}
+   * @return new instance of RequisitionLineItem.
+   */
+  public static RequisitionLineItem newRequisitionLineItem(Importer importer) {
+
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setId(importer.getId());
+    if (importer.getOrderableProduct() != null) {
+      requisitionLineItem.setOrderableProductId(importer.getOrderableProduct().getId());
+    }
+    requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
+    requisitionLineItem.setTotalReceivedQuantity(importer.getTotalReceivedQuantity());
+    requisitionLineItem.setTotalLossesAndAdjustments(importer.getTotalLossesAndAdjustments());
+    requisitionLineItem.setStockOnHand(importer.getStockOnHand());
+    requisitionLineItem.setRequestedQuantity(importer.getRequestedQuantity());
+    requisitionLineItem.setTotalConsumedQuantity(importer.getTotalConsumedQuantity());
+    requisitionLineItem.setRequestedQuantityExplanation(importer.getRequestedQuantityExplanation());
+    requisitionLineItem.setRemarks(importer.getRemarks());
+    requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
+    requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
+    requisitionLineItem.setTotal(importer.getTotal());
+    requisitionLineItem.setPacksToShip(importer.getPacksToShip());
+    requisitionLineItem.setPricePerPack(importer.getPricePerPack());
+    requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
+    requisitionLineItem.setTotalCost(importer.getTotalCost());
+    requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
+    requisitionLineItem.setPreviousAdjustedConsumptions(importer.getPreviousAdjustedConsumptions());
+    requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
+    requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
+    requisitionLineItem.setMaxMonthsOfStock(importer.getMaxMonthsOfStock());
+    requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
+
+    List<StockAdjustment> stockAdjustments = new ArrayList<>();
+    for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
+      stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
+    }
+
+    requisitionLineItem.setStockAdjustments(stockAdjustments);
+
+    return requisitionLineItem;
+  }
+
+  /**
    * Initiates a requisition line item.
    */
   public RequisitionLineItem() {
@@ -296,52 +342,6 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
-   * Creates new instance of RequisitionLineItem object based on data from
-   * {@link RequisitionLineItem.Importer}
-   *
-   * @param importer instance of {@link Importer}
-   * @return new instance of RequisitionLineItem.
-   */
-  public static RequisitionLineItem newRequisitionLineItem(Importer importer) {
-
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setId(importer.getId());
-    if (importer.getOrderableProduct() != null) {
-      requisitionLineItem.setOrderableProductId(importer.getOrderableProduct().getId());
-    }
-    requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
-    requisitionLineItem.setTotalReceivedQuantity(importer.getTotalReceivedQuantity());
-    requisitionLineItem.setTotalLossesAndAdjustments(importer.getTotalLossesAndAdjustments());
-    requisitionLineItem.setStockOnHand(importer.getStockOnHand());
-    requisitionLineItem.setRequestedQuantity(importer.getRequestedQuantity());
-    requisitionLineItem.setTotalConsumedQuantity(importer.getTotalConsumedQuantity());
-    requisitionLineItem.setRequestedQuantityExplanation(importer.getRequestedQuantityExplanation());
-    requisitionLineItem.setRemarks(importer.getRemarks());
-    requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
-    requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
-    requisitionLineItem.setTotal(importer.getTotal());
-    requisitionLineItem.setPacksToShip(importer.getPacksToShip());
-    requisitionLineItem.setPricePerPack(importer.getPricePerPack());
-    requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
-    requisitionLineItem.setTotalCost(importer.getTotalCost());
-    requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
-    requisitionLineItem.setPreviousAdjustedConsumptions(importer.getPreviousAdjustedConsumptions());
-    requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
-    requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
-    requisitionLineItem.setMaxMonthsOfStock(importer.getMaxMonthsOfStock());
-    requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
-
-    List<StockAdjustment> stockAdjustments = new ArrayList<>();
-    for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
-      stockAdjustments.add(StockAdjustment.newStockAdjustment(stockAdjustmentImporter));
-    }
-
-    requisitionLineItem.setStockAdjustments(stockAdjustments);
-
-    return requisitionLineItem;
-  }
-
-  /**
    * Export this object to the specified exporter (DTO).
    *
    * @param exporter exporter to export to
@@ -374,7 +374,31 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
   }
 
-  public void clearStockAdjustmentsAndPreviousAdjustedConsumptions() {
+  /**
+   * Resets all quantities and adjustments of a line item.
+   */
+  public void resetData() {
+    setBeginningBalance(null);
+    setBeginningBalance(null);
+    setTotalReceivedQuantity(null);
+    setTotalLossesAndAdjustments(null);
+    setStockOnHand(null);
+    setRequestedQuantityExplanation(null);
+    setRemarks(null);
+    setApprovedQuantity(null);
+    setRequestedQuantity(null);
+    setTotalConsumedQuantity(null);
+    setTotal(null);
+    setRequestedQuantityExplanation(null);
+    setTotalStockoutDays(null);
+    setPacksToShip(null);
+    setPricePerPack(null);
+    setTotalCost(null);
+    setNumberOfNewPatientsAdded(null);
+    setAdjustedConsumption(null);
+    setAverageConsumption(null);
+    setMaximumStockQuantity(null);
+    setCalculatedOrderQuantity(null);
     stockAdjustments.clear();
     previousAdjustedConsumptions.clear();
   }
@@ -406,6 +430,45 @@ public class RequisitionLineItem extends BaseEntity {
     calculateAndSetAverageConsumption(template);
     calculateAndSetMaximumStockQuantity(template);
     calculateAndSetCalculatedOrderQuantity(template);
+  }
+
+  /**
+   * Recalculates packs to ship.
+   *
+   * @param products list of orderable products.
+   */
+  public void updatePacksToShip(Collection<OrderableProductDto> products) {
+    this.packsToShip = products.stream()
+        .filter(product -> product.getId().equals(getOrderableProductId()))
+        .map(product -> getOrderQuantity() != null
+            ? product.packsToOrder(getOrderQuantity()) : null)
+        .findFirst()
+        .orElse(null);
+  }
+
+  /**
+   * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
+   */
+  void calculateAndSetAverageConsumption() {
+    List<Integer> previous = getPreviousAdjustedConsumptions();
+    previous.add(getAdjustedConsumption());
+    Integer calculated = calculateAverageConsumption(previous);
+    setAverageConsumption(calculated);
+  }
+
+  /**
+   * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem} on update.
+   */
+  private void calculateAndSetAverageConsumption(RequisitionTemplate template) {
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      Integer averageConsumptionPassed = this.getAverageConsumption();
+      calculateAndSetAverageConsumption();
+
+      if (averageConsumptionPassed != null
+          && !Objects.equals(averageConsumptionPassed, getAdjustedConsumption())) {
+        LOGGER.warn("Passed Average Consumption does not match calculated one.");
+      }
+    }
   }
 
   /**
@@ -465,31 +528,6 @@ public class RequisitionLineItem extends BaseEntity {
 
       setAdjustedConsumption(calculated);
     }
-  }
-
-  /**
-   * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem} on update.
-   */
-  private void calculateAndSetAverageConsumption(RequisitionTemplate template) {
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      Integer averageConsumptionPassed = this.getAverageConsumption();
-      calculateAndSetAverageConsumption();
-
-      if (averageConsumptionPassed != null
-          && !Objects.equals(averageConsumptionPassed, getAdjustedConsumption())) {
-        LOGGER.warn("Passed Average Consumption does not match calculated one.");
-      }
-    }
-  }
-
-  /**
-   * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
-   */
-  void calculateAndSetAverageConsumption() {
-    List<Integer> previous = getPreviousAdjustedConsumptions();
-    previous.add(getAdjustedConsumption());
-    Integer calculated = calculateAverageConsumption(previous);
-    setAverageConsumption(calculated);
   }
 
   /**

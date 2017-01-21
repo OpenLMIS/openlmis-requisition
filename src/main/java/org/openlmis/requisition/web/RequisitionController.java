@@ -2,20 +2,18 @@ package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_AUTHORIZATION_TO_BE_SKIPPED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
@@ -194,13 +192,7 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    Collection<OrderableProductDto> orderableProducts
-        = orderableProductReferenceDataService.findAll();
-
-    calculatePacksToShipForEachLineItem(requisition, orderableProducts);
-
-    requisition.submit();
-    
+    requisition.submit(orderableProductReferenceDataService.findAll());
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
@@ -366,13 +358,7 @@ public class RequisitionController extends BaseController {
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
-      Collection<OrderableProductDto> orderableProducts
-          = orderableProductReferenceDataService.findAll();
-
-      calculatePacksToShipForEachLineItem(requisition, orderableProducts);
-
-      requisition.approve();
-
+      requisition.approve(orderableProductReferenceDataService.findAll());
       saveStatusMessage(requisition);
 
       requisitionRepository.save(requisition);
@@ -447,13 +433,7 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    Collection<OrderableProductDto> orderableProducts
-        = orderableProductReferenceDataService.findAll();
-
-    calculatePacksToShipForEachLineItem(requisition, orderableProducts);
-
-    requisition.authorize();
-    nullDataValuesOfRequisitionLineItems(requisition.getSkippedRequisitionLineItems());
+    requisition.authorize(orderableProductReferenceDataService.findAll());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();
@@ -528,60 +508,6 @@ public class RequisitionController extends BaseController {
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
-  }
-
-  private void calculatePacksToShipForEachLineItem(Requisition requisition,
-                                               Collection<OrderableProductDto> orderableProducts) {
-    requisition.getNonSkippedRequisitionLineItems().forEach(
-        line -> line.setPacksToShip(getPacksToShip(orderableProducts, line)));
-  }
-
-  private Long getPacksToShip(Collection<OrderableProductDto> orderableProducts,
-                              RequisitionLineItem line) {
-    return orderableProducts.stream()
-        .filter(product -> isProductEquals(line, product))
-        .map(product -> calculatePacksToShip(line, product))
-        .findFirst()
-        .orElse(null);
-  }
-
-  private boolean isProductEquals(RequisitionLineItem line, OrderableProductDto product) {
-    return product.getId().equals(line.getOrderableProductId());
-  }
-
-  private Long calculatePacksToShip(RequisitionLineItem line, OrderableProductDto product) {
-    if (line.getOrderQuantity() != null) {
-      return product.packsToOrder(line.getOrderQuantity());
-    } else {
-      return null;
-    }
-  }
-
-  private void nullDataValuesOfRequisitionLineItems(
-      List<RequisitionLineItem> requisitionLineItems) {
-    for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
-      requisitionLineItem.setBeginningBalance(null);
-      requisitionLineItem.setTotalReceivedQuantity(null);
-      requisitionLineItem.setTotalLossesAndAdjustments((Integer) null);
-      requisitionLineItem.setStockOnHand((Integer) null);
-      requisitionLineItem.setRequestedQuantityExplanation(null);
-      requisitionLineItem.setRemarks(null);
-      requisitionLineItem.setApprovedQuantity(null);
-      requisitionLineItem.setRequestedQuantity(null);
-      requisitionLineItem.setTotalConsumedQuantity((Integer) null);
-      requisitionLineItem.setTotal((Integer) null);
-      requisitionLineItem.setRequestedQuantityExplanation(null);
-      requisitionLineItem.setTotalStockoutDays(null);
-      requisitionLineItem.setPacksToShip(null);
-      requisitionLineItem.setPricePerPack(null);
-      requisitionLineItem.setTotalCost(null);
-      requisitionLineItem.setNumberOfNewPatientsAdded(null);
-      requisitionLineItem.setAdjustedConsumption(null);
-      requisitionLineItem.setAverageConsumption(null);
-      requisitionLineItem.setMaximumStockQuantity((Integer) null);
-      requisitionLineItem.setCalculatedOrderQuantity((Integer) null);
-      requisitionLineItem.clearStockAdjustmentsAndPreviousAdjustedConsumptions();
-    }
   }
   
   private void saveStatusMessage(Requisition requisition) {

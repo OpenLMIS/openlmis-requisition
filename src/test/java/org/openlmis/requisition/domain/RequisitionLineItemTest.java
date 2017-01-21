@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +21,7 @@ import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -32,6 +34,57 @@ public class RequisitionLineItemTest {
   @Before
   public void setUp() {
     initiatedRequisition = mockReq(RequisitionStatus.INITIATED);
+  }
+
+  @Test
+  public void shouldResetData() {
+    RequisitionLineItem item = createDefaultRequisitionLineItem(createDefaultApprovedProduct(null));
+    item.resetData();
+
+    assertNull(item.getBeginningBalance());
+    assertNull(item.getBeginningBalance());
+    assertNull(item.getTotalReceivedQuantity());
+    assertNull(item.getTotalLossesAndAdjustments());
+    assertNull(item.getStockOnHand());
+    assertNull(item.getRequestedQuantityExplanation());
+    assertNull(item.getRemarks());
+    assertNull(item.getApprovedQuantity());
+    assertNull(item.getRequestedQuantity());
+    assertNull(item.getTotalConsumedQuantity());
+    assertNull(item.getTotal());
+    assertNull(item.getRequestedQuantityExplanation());
+    assertNull(item.getTotalStockoutDays());
+    assertNull(item.getPacksToShip());
+    assertNull(item.getPricePerPack());
+    assertNull(item.getTotalCost());
+    assertNull(item.getNumberOfNewPatientsAdded());
+    assertNull(item.getAdjustedConsumption());
+    assertNull(item.getAverageConsumption());
+    assertNull(item.getMaximumStockQuantity());
+    assertNull(item.getCalculatedOrderQuantity());
+    assertEquals(item.getStockAdjustments().size(), 0);
+    assertEquals(item.getPreviousAdjustedConsumptions().size(), 0);
+  }
+
+  @Test
+  public void shouldUpdatePacksToShip() {
+    // given
+    UUID productId = UUID.randomUUID();
+    long packsToShip = 5L;
+
+    OrderableProductDto product = mock(OrderableProductDto.class);
+    when(product.packsToOrder(anyLong())).thenReturn(packsToShip);
+    when(product.getId()).thenReturn(productId);
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(initiatedRequisition);
+    item.setOrderableProductId(productId);
+
+    // when
+    item.updatePacksToShip(Collections.singletonList(product));
+
+    // then
+    assertEquals(item.getPacksToShip().longValue(), packsToShip);
   }
 
   @Test
@@ -183,36 +236,49 @@ public class RequisitionLineItemTest {
     assertEquals(2L, requisitionLineItem.getAverageConsumption().longValue());
   }
 
-  private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
+  private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap) {
+    RequisitionLineItem item = new RequisitionLineItem(initiatedRequisition, ftap);
+
+    item.setId(UUID.randomUUID());
+    item.setBeginningBalance(3);
+    item.setTotalReceivedQuantity(4);
+    item.setTotalLossesAndAdjustments(0);
+    item.setStockOnHand(1);
+    item.setRequestedQuantity(5);
+    item.setTotalConsumedQuantity(2);
+    item.setTotal(7);
+    item.setApprovedQuantity(5);
+    item.setTotalStockoutDays(6);
+    item.setRemarks("remarks");
+    item.setRequestedQuantityExplanation("explanation");
+    item.setTotalCost(Money.of(CurrencyUnit.USD, 30));
+    item.setNumberOfNewPatientsAdded(10);
+
+    return item;
+  }
+
+  private ApprovedProductDto createDefaultApprovedProduct(Money pricePerPack) {
     UUID productId = UUID.randomUUID();
-    UUID programId = UUID.randomUUID();
-    ProgramDto program = new ProgramDto();
-    program.setId(programId);
     ProductDto programProduct = new ProductDto();
     programProduct.setPricePerPack(pricePerPack);
     programProduct.setProductId(productId);
     ApprovedProductDto ftap = new ApprovedProductDto();
     ftap.setProduct(programProduct);
     ftap.setMaxMonthsOfStock(7.25);
-    when(initiatedRequisition.getProgramId()).thenReturn(programId);
 
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem(initiatedRequisition, ftap);
+    return ftap;
+  }
 
-    requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setBeginningBalance(3);
-    requisitionLineItem.setTotalReceivedQuantity(4);
-    requisitionLineItem.setTotalLossesAndAdjustments(0);
-    requisitionLineItem.setStockOnHand(1);
-    requisitionLineItem.setRequestedQuantity(5);
-    requisitionLineItem.setTotalConsumedQuantity(2);
-    requisitionLineItem.setTotal(7);
-    requisitionLineItem.setApprovedQuantity(5);
-    requisitionLineItem.setTotalStockoutDays(6);
-    requisitionLineItem.setRemarks("remarks");
-    requisitionLineItem.setRequestedQuantityExplanation("explanation");
-    requisitionLineItem.setTotalCost(Money.of(CurrencyUnit.USD, 30));
-    requisitionLineItem.setNumberOfNewPatientsAdded(10);
+  private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
+    ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
 
+    ProductDto programProduct = ftap.getProduct();
+    ProgramDto program = new ProgramDto();
+    program.setId(UUID.randomUUID());
+
+    when(initiatedRequisition.getProgramId()).thenReturn(program.getId());
+
+    RequisitionLineItem requisitionLineItem = createDefaultRequisitionLineItem(ftap);
     OrderableProductDto orderableProductDto = generateOrderableProductDto(program, programProduct);
 
     RequisitionLineItemDto dto = new RequisitionLineItemDto();

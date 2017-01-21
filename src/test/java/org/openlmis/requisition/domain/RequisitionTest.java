@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
@@ -75,7 +77,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -83,7 +85,7 @@ public class RequisitionTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
   }
 
   @Test
@@ -103,7 +105,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -364,12 +366,59 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldUpdatePacksToShipOnSubmit() {
+    // given
+    long packsToShip = 5L;
+    OrderableProductDto product = mock(OrderableProductDto.class);
+
+    setUpTestUpdatePacksToShip(product, packsToShip);
+
+    // when
+    requisition.submit(Collections.singletonList(product));
+
+    // then
+    assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
+  }
+
+  @Test
+  public void shouldUpdatePacksToShipOnAuthorize() {
+    // given
+    long packsToShip = 5L;
+    OrderableProductDto product = mock(OrderableProductDto.class);
+
+    setUpTestUpdatePacksToShip(product, packsToShip);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    // when
+    requisition.authorize(Collections.singletonList(product));
+
+    // then
+    assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
+  }
+
+  @Test
+  public void shouldUpdatePacksToShipOnApprove() {
+    // given
+    long packsToShip = 5L;
+    OrderableProductDto product = mock(OrderableProductDto.class);
+
+    setUpTestUpdatePacksToShip(product, packsToShip);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+
+    // when
+    requisition.approve(Collections.singletonList(product));
+
+    // then
+    assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
+  }
+
+  @Test
   public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenSubmit() {
     // given
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit();
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -389,7 +438,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit();
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -409,7 +458,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit();
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -423,7 +472,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize();
+    requisition.authorize(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -438,7 +487,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve();
+    requisition.approve(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -535,6 +584,15 @@ public class RequisitionTest {
         requisitionLineItem.getPreviousAdjustedConsumptions());
   }
 
+  private void setUpTestUpdatePacksToShip(OrderableProductDto productMock, long packsToShip) {
+    requisitionLineItem.setPacksToShip(packsToShip);
+
+    when(productMock.packsToOrder(anyLong())).thenReturn(packsToShip);
+    when(productMock.getId()).thenReturn(requisitionLineItem.getOrderableProductId());
+
+    setUpValidRequisitionTemplate();
+  }
+
   private void prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption() {
     requisitionLineItem = new RequisitionLineItem();
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
@@ -566,6 +624,10 @@ public class RequisitionTest {
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
     ).thenReturn(ADJUSTED_CONSUMPTION);
 
+    setUpValidRequisitionTemplate();
+  }
+
+  private void setUpValidRequisitionTemplate() {
     when(template.isColumnInTemplate(RequisitionLineItem.ADJUSTED_CONSUMPTION)).thenReturn(true);
     when(template.isColumnInTemplate(RequisitionLineItem.AVERAGE_CONSUMPTION)).thenReturn(true);
     requisition.setTemplate(template);

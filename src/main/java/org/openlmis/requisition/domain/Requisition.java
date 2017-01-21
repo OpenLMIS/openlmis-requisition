@@ -15,16 +15,13 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -48,6 +45,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
 @Table(name = "requisitions")
 @NoArgsConstructor
@@ -65,7 +66,6 @@ public class Requisition extends BaseTimestampedEntity {
 
   private static final String UUID = "pg-uuid";
 
-  // TODO: determine why it has to be set explicitly
   @OneToMany(
       mappedBy = "requisition",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -180,160 +180,6 @@ public class Requisition extends BaseTimestampedEntity {
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
   }
 
-  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
-                                                  Collection<StockAdjustmentReasonDto>
-                                                      stockAdjustmentReasons) {
-    getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
-            numberOfMonthsInPeriod));
-  }
-
-  private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {
-    if (null == newLineItems) {
-      return;
-    }
-
-    if (null == requisitionLineItems) {
-      requisitionLineItems = new ArrayList<>();
-    }
-
-    List<RequisitionLineItem> updatedList = new ArrayList<>();
-
-    for (RequisitionLineItem item : newLineItems) {
-      RequisitionLineItem existing = requisitionLineItems
-          .stream()
-          .filter(l -> l.getId().equals(item.getId()))
-          .findFirst().orElse(null);
-
-      if (null == existing) {
-        if (item.isNonFullSupply()) {
-          item.setRequisition(this);
-          updatedList.add(item);
-        }
-      } else {
-        existing.setRequisition(this);
-        existing.updateFrom(item);
-        updatedList.add(existing);
-      }
-    }
-
-    // is there a full supply line that is not in update list
-    // it should be added. Those lines should not be removed
-    // during update. Only non full supply lines can be
-    // added/updated/removed.
-    requisitionLineItems
-        .stream()
-        .filter(line -> !line.isNonFullSupply())
-        .filter(line -> updatedList
-            .stream()
-            .map(BaseEntity::getId)
-            .noneMatch(id -> Objects.equals(id, line.getId()))
-        )
-        .forEach(updatedList::add);
-
-    requisitionLineItems.clear();
-    requisitionLineItems.addAll(updatedList);
-  }
-
-  /**
-   * Submits given requisition.
-   */
-  public void submit() {
-    if (!INITIATED.equals(status)) {
-      throw new ValidationMessageException(new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED,
-          getId()));
-    }
-
-
-    if (RequisitionHelper.areFieldsNotFilled(template,
-        getNonSkippedFullSupplyRequisitionLineItems())) {
-      throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES,
-          getId()));
-    }
-
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-      ));
-    }
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
-    }
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
-
-    status = RequisitionStatus.SUBMITTED;
-  }
-
-  /**
-   * Authorize given Requisition.
-   */
-  public void authorize() {
-    if (!RequisitionStatus.SUBMITTED.equals(status)) {
-      throw new ValidationMessageException(new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED,
-          getId()));
-    }
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-      ));
-    }
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
-    }
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
-
-    status = RequisitionStatus.AUTHORIZED;
-  }
-
-  /**
-   * Approves given requisition.
-   */
-  public void approve() {
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
-      ));
-    }
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
-    }
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line)
-    ));
-
-    status = RequisitionStatus.APPROVED;
-  }
-
-  /**
-   * Finds first RequisitionLineItem that have productId property equals to the given productId
-   * argument.
-   *
-   * @param productId UUID of orderable product
-   * @return first RequisitionLineItem that have productId property equals to the given productId
-   *     argument; otherwise null;
-   */
-  public RequisitionLineItem findLineByProductId(UUID productId) {
-    if (null == requisitionLineItems) {
-      return null;
-    }
-
-    return requisitionLineItems
-        .stream()
-        .filter(e -> Objects.equals(productId, e.getOrderableProductId()))
-        .findFirst()
-        .orElse(null);
-  }
-
   /**
    * Initiates the state of a requisition by creating line items based on products
    *
@@ -348,8 +194,7 @@ public class Requisition extends BaseTimestampedEntity {
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
                        List<Requisition> previousRequisitions,
-                       int numberOfPreviousPeriodsToAverage
-  ) {
+                       int numberOfPreviousPeriodsToAverage) {
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
@@ -386,6 +231,124 @@ public class Requisition extends BaseTimestampedEntity {
       });
     }
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
+  }
+
+  /**
+   * Submits given requisition.
+   *
+   * @param products orderable products that will be used by line items to update packs to ship.
+   */
+  public void submit(Collection<OrderableProductDto> products) {
+    RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
+        line -> line.updatePacksToShip(products));
+
+    if (!INITIATED.equals(status)) {
+      throw new ValidationMessageException(new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED,
+          getId()));
+    }
+
+    if (RequisitionHelper.areFieldsNotFilled(template,
+        getNonSkippedFullSupplyRequisitionLineItems())) {
+      throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES,
+          getId()));
+    }
+
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+      ));
+    }
+
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
+          RequisitionLineItem::calculateAndSetAverageConsumption);
+    }
+
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
+
+    status = RequisitionStatus.SUBMITTED;
+  }
+
+  /**
+   * Authorize given Requisition.
+   *
+   * @param products orderable products that will be used by line items to update packs to ship.
+   */
+  public void authorize(Collection<OrderableProductDto> products) {
+    RequisitionHelper.forEachLine(
+        getNonSkippedRequisitionLineItems(), line -> line.updatePacksToShip(products));
+
+    if (!RequisitionStatus.SUBMITTED.equals(status)) {
+      throw new ValidationMessageException(
+          new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
+    }
+
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+      ));
+    }
+
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
+          RequisitionLineItem::calculateAndSetAverageConsumption);
+    }
+
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
+
+    status = RequisitionStatus.AUTHORIZED;
+    RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
+  }
+
+  /**
+   * Approves given requisition.
+   *
+   * @param products orderable products that will be used by line items to update packs to ship.
+   */
+  public void approve(Collection<OrderableProductDto> products) {
+    RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
+        line -> line.updatePacksToShip(products));
+
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
+          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+      ));
+    }
+
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(
+          RequisitionLineItem::calculateAndSetAverageConsumption);
+    }
+
+    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
+        LineItemFieldsCalculator.calculateTotalCost(line)
+    ));
+
+    status = RequisitionStatus.APPROVED;
+  }
+
+  /**
+   * Finds first RequisitionLineItem that have productId property equals to the given productId
+   * argument.
+   *
+   * @param productId UUID of orderable product
+   * @return first RequisitionLineItem that have productId property equals to the given productId
+   *     argument; otherwise null;
+   */
+  public RequisitionLineItem findLineByProductId(UUID productId) {
+    if (null == requisitionLineItems) {
+      return null;
+    }
+
+    return requisitionLineItems
+        .stream()
+        .filter(e -> Objects.equals(productId, e.getOrderableProductId()))
+        .findFirst()
+        .orElse(null);
   }
 
   public void setDraftStatusMessage(String draftStatusMessage) {
@@ -474,6 +437,61 @@ public class Requisition extends BaseTimestampedEntity {
 
           line.setPreviousAdjustedConsumptions(adjustedConsumptions);
         });
+  }
+
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
+                                                  Collection<StockAdjustmentReasonDto>
+                                                      stockAdjustmentReasons) {
+    getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
+            numberOfMonthsInPeriod));
+  }
+
+  private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {
+    if (null == newLineItems) {
+      return;
+    }
+
+    if (null == requisitionLineItems) {
+      requisitionLineItems = new ArrayList<>();
+    }
+
+    List<RequisitionLineItem> updatedList = new ArrayList<>();
+
+    for (RequisitionLineItem item : newLineItems) {
+      RequisitionLineItem existing = requisitionLineItems
+          .stream()
+          .filter(l -> l.getId().equals(item.getId()))
+          .findFirst().orElse(null);
+
+      if (null == existing) {
+        if (item.isNonFullSupply()) {
+          item.setRequisition(this);
+          updatedList.add(item);
+        }
+      } else {
+        existing.setRequisition(this);
+        existing.updateFrom(item);
+        updatedList.add(existing);
+      }
+    }
+
+    // is there a full supply line that is not in update list
+    // it should be added. Those lines should not be removed
+    // during update. Only non full supply lines can be
+    // added/updated/removed.
+    requisitionLineItems
+        .stream()
+        .filter(line -> !line.isNonFullSupply())
+        .filter(line -> updatedList
+            .stream()
+            .map(BaseEntity::getId)
+            .noneMatch(id -> Objects.equals(id, line.getId()))
+        )
+        .forEach(updatedList::add);
+
+    requisitionLineItems.clear();
+    requisitionLineItems.addAll(updatedList);
   }
 
   public interface Exporter {
