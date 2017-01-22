@@ -1,24 +1,9 @@
 package org.openlmis.requisition.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static java.lang.Integer.valueOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.util.CollectionUtils.isEmpty;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +23,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.framework.PageImplRepresentation;
 import org.openlmis.requisition.i18n.ExposedMessageSource;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -48,8 +34,6 @@ import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -64,6 +48,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static java.lang.Integer.valueOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -197,26 +198,33 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
   }
 
+
   @Test
   public void shouldFindRequisitions() {
-    RequisitionDto[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, PROGRAM_UUID)
-        .queryParam("processingPeriod", PERIOD_UUID)
-        .queryParam(FACILITY, FACILITY_UUID)
-        .queryParam("supervisoryNode", supervisoryNode.getId())
-        .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
-        .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
-        .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto[].class);
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
+            .queryParam(PROGRAM, PROGRAM_UUID)
+            .queryParam("processingPeriod", PERIOD_UUID)
+            .queryParam(FACILITY, FACILITY_UUID)
+            .queryParam("supervisoryNode", supervisoryNode.getId())
+            .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
+            .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
+            .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
+            .when()
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+                                                    new TypeReference<List<RequisitionDto>>() { });
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(1, response.length);
-    for (RequisitionDto receivedRequisition : response) {
+    assertEquals(1, content.size());
+    for (RequisitionDto receivedRequisition : content) {
       assertEquals(
           receivedRequisition.getProgram().getId(),
           PROGRAM_UUID);

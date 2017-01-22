@@ -35,6 +35,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
+import org.openlmis.utils.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -292,7 +293,7 @@ public class RequisitionController extends BaseController {
    * Finds requisitions matching all of the provided parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
-  public ResponseEntity<?> searchRequisitions(
+  public ResponseEntity<Page<RequisitionDto>> searchRequisitions(
       @RequestParam(value = "facility", required = false) UUID facility,
       @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "createdDateFrom", required = false)
@@ -306,11 +307,15 @@ public class RequisitionController extends BaseController {
           RequisitionStatus[] requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
-    Page<Requisition> requisitions = requisitionService.searchRequisitions(facility, program,
+    Page<Requisition> requisitionsPage = requisitionService.searchRequisitions(facility, program,
         createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
-        emergency, null);
-    List<Requisition> result = requisitions.getContent();
-    return new ResponseEntity<>(requisitionDtoBuilder.build(result), HttpStatus.OK);
+        emergency, pageable);
+    List<Requisition> resultList = requisitionsPage.getContent();
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(resultList);
+    Page<RequisitionDto> dtoPage = Pagination.getPage(dtoList,
+                                                      pageable,
+                                                      requisitionsPage.getTotalElements());
+    return new ResponseEntity<Page<RequisitionDto>>(dtoPage, HttpStatus.OK);
   }
 
   /**

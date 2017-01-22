@@ -43,6 +43,7 @@ dependencies {
     compile "org.springframework:spring-test"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:2.4.0"
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.3'
     compile "net.sf.supercsv:super-csv-dozer:2.4.0"
     compile "org.springframework.boot:spring-boot-starter-security"
     compile "org.springframework.security.oauth:spring-security-oauth2"
