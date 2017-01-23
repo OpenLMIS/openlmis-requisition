@@ -1,5 +1,7 @@
 package org.openlmis.requisition.validate;
 
+import static org.apache.commons.lang3.StringUtils.length;
+import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
@@ -9,6 +11,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
@@ -26,7 +29,6 @@ import java.util.Set;
 
 @Component
 public class RequisitionTemplateValidator implements Validator {
-
   @Autowired
   MessageService messageService;
 
@@ -44,6 +46,8 @@ public class RequisitionTemplateValidator implements Validator {
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
 
+  static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
+
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -55,7 +59,7 @@ public class RequisitionTemplateValidator implements Validator {
     RequisitionTemplate requisitionTemplate = (RequisitionTemplate) target;
 
     validateRequestedQuantity(errors, requisitionTemplate);
-    validateChosenSourcesAndOptions(errors, requisitionTemplate);
+    validateColumns(errors, requisitionTemplate);
     validateCalculatedFields(errors, requisitionTemplate);
 
     if (!errors.hasErrors()) {
@@ -146,10 +150,11 @@ public class RequisitionTemplateValidator implements Validator {
     }
   }
 
-  private void validateChosenSourcesAndOptions(Errors errors, RequisitionTemplate template) {
+  private void validateColumns(Errors errors, RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
       validateChosenSources(errors, template, column);
       validateChosenOptions(errors, column);
+      validateDefinition(errors, column);
     }
   }
 
@@ -178,6 +183,14 @@ public class RequisitionTemplateValidator implements Validator {
         && !column.getColumnDefinition().getOptions().contains(chosenOption)) {
       errors.rejectValue(COLUMNS_MAP, messageService.localize(
           new Message(ERROR_OPTION_NOT_AVAILABLE, chosenOption.toString())).toString());
+    }
+  }
+
+  private void validateDefinition(Errors errors, RequisitionTemplateColumn column) {
+    if (length(column.getDefinition()) > MAX_COLUMN_DEFINITION_LENGTH) {
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(
+          new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG,
+              DEFINITION, MAX_COLUMN_DEFINITION_LENGTH)).toString());
     }
   }
 }

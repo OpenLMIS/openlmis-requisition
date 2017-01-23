@@ -54,6 +54,9 @@ public class AvailableRequisitionColumn extends BaseEntity {
 
   private Boolean canBeChangedByUser;
 
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  private String definition;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private ColumnType columnType;

@@ -62,7 +62,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void testChangeRequisitionTemplateColumnOrder() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn testColumn = new RequisitionTemplateColumn(
-        "name", "label", "I", 1, true, SOURCE, getColumn(), null);
+        "name", "label", "I", 1, true, SOURCE, getColumn(), null, null);
     columns.put(COLUMN_KEY, testColumn);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
@@ -83,7 +83,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn testColumn1 =
         new RequisitionTemplateColumn("testColumn1", "Test Column 1", "A", 1,
-            false, SourceType.CALCULATED, availableRequisitionColumn, null);
+            false, SourceType.CALCULATED, availableRequisitionColumn, null, null);
     columns.put(COLUMN_KEY, testColumn1);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
@@ -99,7 +99,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplateColumn testColumn1 =
         new RequisitionTemplateColumn(
             "testColumn2", "Test Column 2", "B", 1, false,
-            SourceType.CALCULATED, getColumn(), null);
+            SourceType.CALCULATED, getColumn(), null, null);
     columns.put(COLUMN_KEY, testColumn1);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
@@ -121,7 +121,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplateColumn testColumn1 =
         new RequisitionTemplateColumn(
             "testColumn3", "Test Column 3", "C", 1, false,
-            SourceType.CALCULATED, getColumn(), null);
+            SourceType.CALCULATED, getColumn(), null, null);
     columns.put(COLUMN_KEY, testColumn1);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
@@ -136,7 +136,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void testChangeRequisitionTemplateSource() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn column = new RequisitionTemplateColumn("column1", "label1", "I", 1,
-        false, SourceType.CALCULATED, getColumn(), null);
+        false, SourceType.CALCULATED, getColumn(), null, null);
     columns.put(COLUMN_KEY, column);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);
@@ -159,7 +159,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn column =
         new RequisitionTemplateColumn("column2", "label2", "I", 1,
-            false, SourceType.CALCULATED, getColumnWithOption(), option);
+            false, SourceType.CALCULATED, getColumnWithOption(), option, null);
     columns.put(COLUMN_KEY, column);
 
     RequisitionTemplate requisitionTemplate = generateInstance();
@@ -184,7 +184,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     RequisitionTemplateColumn column =
         new RequisitionTemplateColumn("productCode", "label", "I", 2,
-            false, SourceType.CALCULATED, getColumn(), null);
+            false, SourceType.CALCULATED, getColumn(), null, null);
     columns.put(COLUMN_KEY, column);
     RequisitionTemplate requisitionTemplate = generateInstance();
     requisitionTemplate.setColumnsMap(columns);

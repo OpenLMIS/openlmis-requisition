@@ -19,6 +19,7 @@
     "displayOrder": 2,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Unique identifier for each commodity/product.",
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
@@ -26,10 +27,11 @@
     "key": "productName",
     "name": "orderableProduct.name",
     "label": "Product",
-    "indicator": "N",
+    "indicator": "R",
     "displayOrder": 3,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Primary name of the product.",
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
   },
   {
@@ -41,6 +43,7 @@
     "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
@@ -52,6 +55,7 @@
     "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Total quantity received in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
@@ -63,6 +67,7 @@
     "displayOrder": 6,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Quantity dispensed/consumed in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
@@ -74,6 +79,7 @@
     "displayOrder": 7,
     "isDisplayed": true,
     "source": 0,
+    "definition": "All kind of losses/adjustments made at the facility.",
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
@@ -85,6 +91,7 @@
     "displayOrder": 8,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Current physical count of stock on hand. This is quantified in dispensing units.",
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
@@ -96,6 +103,7 @@
     "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Requested override of calculated quantity. This is quantified in dispensing units.",
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
@@ -107,6 +115,7 @@
     "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Explanation of request for a quantity other than calculated order quantity.",
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   },
   {
@@ -118,6 +127,7 @@
     "displayOrder": 11,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Final approved quantity. This is quantified in dispensing units.",
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
   {
@@ -129,6 +139,7 @@
     "displayOrder": 12,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Any additional remarks.",
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
@@ -140,6 +151,7 @@
     "displayOrder": 13,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Total number of days facility was out of stock.",
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
   {
@@ -151,6 +163,7 @@
     "displayOrder": 14,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total of beginning balance and quantity received.",
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
   {
@@ -162,6 +175,7 @@
     "displayOrder": 15,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Dispensing unit for this product.",
     "requisitionColumnId": "61e6d059-10ef-40c4-a6e3-fa7b9ad741ec"
   },
   {
@@ -173,6 +187,7 @@
     "displayOrder": 16,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total packs to be shipped based on pack size and applying rounding rules.",
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
   {
@@ -184,6 +199,7 @@
     "displayOrder": 17,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Price per pack. Will be blank if price is not defined.",
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   },
   {
@@ -195,6 +211,7 @@
     "displayOrder": 18,
     "isDisplayed": true,
     "source": 0,
+    "definition": "New patients data.",
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
     "requisitionColumnOptionId": "34b8e763-71a0-41f1-86b4-1829963f0704"
   },
@@ -207,6 +224,7 @@
     "displayOrder": 19,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total cost of the product based on quantity requested. Will be blank if price is not defined.",
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
   {
@@ -218,6 +236,7 @@
     "displayOrder": 20,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total consumed quantity after adjusting for stockout days. Quantified in dispensing units.",
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
   {
@@ -229,6 +248,7 @@
     "displayOrder": 21,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Average consumption over a specified number of periods/months. Quantified in dispensing units.",
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
   {
@@ -240,6 +260,7 @@
     "displayOrder": 22,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Maximum stock calculated based on consumption and max stock amounts. Quantified in dispensing units.",
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
@@ -252,6 +273,7 @@
     "displayOrder": 23,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Actual quantity needed after deducting stock in hand. This is quantified in dispensing units.",
     "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
   },
 
@@ -278,6 +300,7 @@
     "displayOrder": 2,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Unique identifier for each commodity/product.",
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
@@ -285,10 +308,11 @@
     "key": "productName",
     "name": "orderableProduct.name",
     "label": "Product",
-    "indicator": "N",
+    "indicator": "R",
     "displayOrder": 3,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Primary name of the product.",
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
   },
   {
@@ -300,6 +324,7 @@
     "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
@@ -311,6 +336,7 @@
     "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Total quantity received in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
@@ -322,6 +348,7 @@
     "displayOrder": 6,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Quantity dispensed/consumed in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
@@ -333,6 +360,7 @@
     "displayOrder": 7,
     "isDisplayed": true,
     "source": 0,
+    "definition": "All kind of losses/adjustments made at the facility.",
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
@@ -344,6 +372,7 @@
     "displayOrder": 8,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Current physical count of stock on hand. This is quantified in dispensing units.",
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
@@ -355,6 +384,7 @@
     "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Requested override of calculated quantity. This is quantified in dispensing units.",
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
@@ -366,6 +396,7 @@
     "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Explanation of request for a quantity other than calculated order quantity.",
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   },
   {
@@ -377,6 +408,7 @@
     "displayOrder": 11,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Final approved quantity. This is quantified in dispensing units.",
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
   {
@@ -388,6 +420,7 @@
     "displayOrder": 12,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Any additional remarks.",
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
@@ -399,6 +432,7 @@
     "displayOrder": 13,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Total number of days facility was out of stock.",
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
   {
@@ -410,6 +444,7 @@
     "displayOrder": 14,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total of beginning balance and quantity received.",
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
   {
@@ -421,6 +456,7 @@
     "displayOrder": 15,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total packs to be shipped based on pack size and applying rounding rules.",
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
   {
@@ -432,6 +468,7 @@
     "displayOrder": 16,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Price per pack. Will be blank if price is not defined.",
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   },
   {
@@ -443,6 +480,7 @@
     "displayOrder": 17,
     "isDisplayed": true,
     "source": 0,
+    "definition": "New patients data.",
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
     "requisitionColumnOptionId": "34b8e763-71a0-41f1-86b4-1829963f0704"
   },
@@ -455,6 +493,7 @@
     "displayOrder": 18,
     "isDisplayed": false,
     "source": 1,
+    "definition": "Total cost of the product based on quantity requested. Will be blank if price is not defined.",
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
   {
@@ -466,6 +505,7 @@
     "displayOrder": 19,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total consumed quantity after adjusting for stockout days. Quantified in dispensing units.",
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
   {
@@ -477,6 +517,7 @@
     "displayOrder": 20,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Average consumption over a specified number of periods/months. Quantified in dispensing units.",
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
   {
@@ -488,6 +529,7 @@
     "displayOrder": 21,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Maximum stock calculated based on consumption and max stock amounts. Quantified in dispensing units.",
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
@@ -500,6 +542,7 @@
     "displayOrder": 22,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Actual quantity needed after deducting stock in hand. This is quantified in dispensing units.",
     "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
   },
 
@@ -525,6 +568,7 @@
     "displayOrder": 2,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Unique identifier for each commodity/product.",
     "requisitionColumnId": "bde01507-3837-47b7-ae08-cec92c0c3cd2"
   },
   {
@@ -532,10 +576,11 @@
     "key": "productName",
     "name": "orderableProduct.name",
     "label": "Product",
-    "indicator": "N",
+    "indicator": "R",
     "displayOrder": 3,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Primary name of the product.",
     "requisitionColumnId": "e53e80de-fc63-4ecb-b6b2-ef376b34c926"
   },
   {
@@ -547,6 +592,7 @@
     "displayOrder": 4,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
   {
@@ -558,6 +604,7 @@
     "displayOrder": 5,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Total quantity received in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
   },
   {
@@ -569,6 +616,7 @@
     "displayOrder": 6,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Quantity dispensed/consumed in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
   },
   {
@@ -580,6 +628,7 @@
     "displayOrder": 7,
     "isDisplayed": true,
     "source": 0,
+    "definition": "All kind of losses/adjustments made at the facility.",
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
   },
   {
@@ -591,6 +640,7 @@
     "displayOrder": 8,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Current physical count of stock on hand. This is quantified in dispensing units.",
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
   {
@@ -602,6 +652,7 @@
     "displayOrder": 9,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Requested override of calculated quantity. This is quantified in dispensing units.",
     "requisitionColumnId": "4a2e9fd3-1127-4b68-9912-84a5c00f6999"
   },
   {
@@ -613,6 +664,7 @@
     "displayOrder": 10,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Explanation of request for a quantity other than calculated order quantity.",
     "requisitionColumnId": "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f5"
   },
   {
@@ -624,6 +676,7 @@
     "displayOrder": 11,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Final approved quantity. This is quantified in dispensing units.",
     "requisitionColumnId": "a62a5fed-c0b6-4d49-8a96-c631da0d0113"
   },
   {
@@ -635,6 +688,7 @@
     "displayOrder": 12,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Any additional remarks.",
     "requisitionColumnId": "2ed8c74a-f424-4742-bd14-cfbe67b6e7be"
   },
   {
@@ -646,6 +700,7 @@
     "displayOrder": 13,
     "isDisplayed": true,
     "source": 0,
+    "definition": "Total number of days facility was out of stock.",
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
   {
@@ -657,6 +712,7 @@
     "displayOrder": 14,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total of beginning balance and quantity received.",
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
   },
   {
@@ -668,6 +724,7 @@
     "displayOrder": 15,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total packs to be shipped based on pack size and applying rounding rules.",
     "requisitionColumnId": "dc9dde56-593d-4929-81be-d1faec7025a8"
   },
   {
@@ -679,6 +736,7 @@
     "displayOrder": 16,
     "isDisplayed": true,
     "source": 2,
+    "definition": "Price per pack. Will be blank if price is not defined.",
     "requisitionColumnId": "df524868-9d0a-18e6-80f5-76304ded7ab9"
   },
   {
@@ -690,6 +748,7 @@
     "displayOrder": 17,
     "isDisplayed": true,
     "source": 0,
+    "definition": "New patients data.",
     "requisitionColumnId": "5708ebf9-9317-4420-85aa-71b2ae92643d",
     "requisitionColumnOptionId": "4957ebb4-297c-459e-a291-812e72286eff"
   },
@@ -702,6 +761,7 @@
     "displayOrder": 18,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total cost of the product based on quantity requested. Will be blank if price is not defined.",
     "requisitionColumnId": "e3a0c1fc-c2d5-11e6-af2d-3417eb83144e"
   },
   {
@@ -713,6 +773,7 @@
     "displayOrder": 19,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Total consumed quantity after adjusting for stockout days. Quantified in dispensing units.",
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
   },
   {
@@ -724,6 +785,7 @@
     "displayOrder": 20,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Average consumption over a specified number of periods/months. Quantified in dispensing units.",
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
   },
   {
@@ -735,6 +797,7 @@
     "displayOrder": 21,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Maximum stock calculated based on consumption and max stock amounts. Quantified in dispensing units.",
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
@@ -747,6 +810,7 @@
     "displayOrder": 22,
     "isDisplayed": true,
     "source": 1,
+    "definition": "Actual quantity needed after deducting stock in hand. This is quantified in dispensing units.",
     "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
   }
 ]

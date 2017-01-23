@@ -1,5 +1,7 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.BaseEntity.TEXT_COLUMN_DEFINITION;
+
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 
@@ -12,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -21,6 +24,7 @@ import javax.persistence.ManyToOne;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequisitionTemplateColumn {
+  public static final String DEFINITION = "definition";
 
   @Getter
   @Setter
@@ -59,6 +63,11 @@ public class RequisitionTemplateColumn {
   @Getter
   @Setter
   private AvailableRequisitionColumnOption option;
+
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Getter
+  @Setter
+  private String definition;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
     this.columnDefinition = columnDefinition;

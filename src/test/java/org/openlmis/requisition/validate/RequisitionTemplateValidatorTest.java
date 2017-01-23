@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
@@ -16,9 +17,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.COLUMNS_MAP;
+import static org.openlmis.requisition.validate.RequisitionTemplateValidator.MAX_COLUMN_DEFINITION_LENGTH;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQUESTED_QUANTITY_EXPLANATION;
@@ -26,6 +29,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateValidator.STO
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -272,6 +276,26 @@ public class RequisitionTemplateValidatorTest {
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(COLUMNS_MAP, errorMessage);
+  }
+
+  @Test
+  public void shouldRejectIfColumnDefinitionIsTooLong() throws Exception {
+    Message message = new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG,
+        DEFINITION, MAX_COLUMN_DEFINITION_LENGTH);
+    String errorMessage = DEFINITION
+        + " is too long. The maximum length is "
+        + MAX_COLUMN_DEFINITION_LENGTH;
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+    columnMap.get(STOCK_ON_HAND).setDefinition(RandomStringUtils.random(200));
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
   }
 
   private RequisitionTemplate generateTemplate() {

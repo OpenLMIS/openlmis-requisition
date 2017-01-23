@@ -112,6 +112,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.mustBeDisplayed";
   public static final String ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED =
       ERROR_PREFIX + ".validation.requestedQuantityExplanationRequired";
+  public static final String ERROR_VALIDATION_FIELD_IS_TOO_LONG =
+      ERROR_PREFIX + ".validation.fieldIsTooLong";
   public static final String ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME = ERROR_PREFIX
       + ".validation.cannotCalculateAtTheSameTime";
   public static final String ERROR_SOURCE_NOT_AVAILABLE = ERROR_PREFIX
