@@ -57,7 +57,7 @@ dependencies {
     compile 'org.webjars:swagger-ui:2.2.6'
     compile 'org.openlmis:openlmis-service-util:3.0.0-SNAPSHOT'
     compile 'org.joda:joda-money:0.12'
-    compile group: 'org.jadira.usertype', name: 'usertype.core', version: '5.0.0.GA'
+    compile 'org.jadira.usertype:usertype.core:5.0.0.GA'
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'
