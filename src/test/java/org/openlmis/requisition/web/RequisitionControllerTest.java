@@ -185,7 +185,7 @@ public class RequisitionControllerTest {
   public void shouldReturnBadRequestWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
-    when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
+    when(requisitionDto.getTemplate()).thenReturn(null);
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
@@ -201,7 +201,6 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
 
     when(requisitionDto.getId()).thenReturn(uuid1);
-    when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
@@ -226,7 +225,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldNotUpdateWithInvalidRequisition() {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
-    when(requisitionDto.getTemplate()).thenReturn(UUID.randomUUID());
+    when(requisitionDto.getTemplate()).thenReturn(template);
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));

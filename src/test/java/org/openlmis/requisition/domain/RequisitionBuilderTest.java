@@ -46,7 +46,6 @@ public class RequisitionBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
-  private UUID templateUuid = UUID.randomUUID();
   private UUID creatorUuid = UUID.randomUUID();
 
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
@@ -61,7 +60,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getProgram()).thenReturn(programDto);
     when(requisitionDto.getProcessingPeriod()).thenReturn(processingPeriodDto);
     when(requisitionDto.getSupervisoryNode()).thenReturn(supervisoryNodeUuid);
-    when(requisitionDto.getTemplate()).thenReturn(templateUuid);
+    when(requisitionDto.getTemplate()).thenReturn(requisitionTemplate);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 

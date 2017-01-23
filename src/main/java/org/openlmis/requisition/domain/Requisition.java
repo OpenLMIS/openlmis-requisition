@@ -487,7 +487,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setSupervisoryNode(UUID supervisoryNode);
 
-    void setTemplate(UUID template);
+    void setTemplate(RequisitionTemplate template);
 
     void setDraftStatusMessage(String draftStatusMessage);
 
@@ -517,7 +517,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     UUID getSupervisoryNode();
 
-    UUID getTemplate();
+    RequisitionTemplate getTemplate();
 
     String getDraftStatusMessage();
 

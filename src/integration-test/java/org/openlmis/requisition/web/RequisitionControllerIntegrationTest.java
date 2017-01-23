@@ -1186,6 +1186,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         availableRequisitionColumnRepository.findAll()) {
       RequisitionTemplateColumn column = new RequisitionTemplateColumn(columnDefinition);
       column.setName(columnDefinition.getName());
+      column.setLabel(columnDefinition.getLabel());
       column.setIsDisplayed(true);
 
       if (!isEmpty(columnDefinition.getOptions())) {

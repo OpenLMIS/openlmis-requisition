@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private UUID template;
+  private RequisitionTemplate template;
 
   @Getter
   @Setter

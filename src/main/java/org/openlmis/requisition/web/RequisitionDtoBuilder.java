@@ -57,7 +57,7 @@ public class RequisitionDtoBuilder {
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
         requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
 
-    requisitionDto.setTemplate(requisition.getTemplate().getId());
+    requisitionDto.setTemplate(requisition.getTemplate());
     requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
     requisitionDto.setProgram(programReferenceDataService.findOne(requisition.getProgramId()));
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
