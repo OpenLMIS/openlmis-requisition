@@ -7,6 +7,11 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class provides pagination-related defaults and utility methods. It helps clients
+ * obtain a Page (courtesy of the getPage set of overridden methods) as well as work with
+ * existing pages (via the getPageNumber and getPageSize methods).
+ */
 public class Pagination {
 
   /*
