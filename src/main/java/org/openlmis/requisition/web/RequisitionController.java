@@ -17,6 +17,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
+import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -36,6 +37,7 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
+import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -473,9 +475,10 @@ public class RequisitionController extends BaseController {
       @RequestParam(required = false) Integer pageNumber,
       @RequestParam(required = false) Integer pageSize) {
     UserDto user = authenticationHelper.getCurrentUser();
+    RightDto right = authenticationHelper.getRight(RightName.REQUISITION_CONVERT_TO_ORDER);
 
     Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId())
+        .getFulfillmentFacilities(user.getId(), right.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
     Collection<RequisitionDto> approvedRequisitionList =

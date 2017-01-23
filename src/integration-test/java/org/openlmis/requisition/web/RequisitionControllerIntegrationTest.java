@@ -712,7 +712,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionDto previousRequisition = null;
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId())
+        .getFulfillmentFacilities(user.getId(), ID)
         .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {
@@ -764,7 +764,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionDto previousRequisition = null;
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId())
+        .getFulfillmentFacilities(user.getId(), ID)
         .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
     for (RequisitionWithSupplyingDepotsDto dto : response) {

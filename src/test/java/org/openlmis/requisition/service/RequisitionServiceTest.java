@@ -71,9 +71,11 @@ import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsRefe
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
+import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
@@ -176,6 +178,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private OrderDtoBuilder orderDtoBuilder;
+
+  @Mock
+  private AuthenticationHelper authenticationHelper;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -494,7 +499,7 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId, rightId))
         .thenReturn(facilities);
 
     // when
@@ -519,7 +524,7 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId, rightId))
         .thenReturn(facilities);
 
     for (ConvertToOrderDto requisition : requisitions) {
@@ -539,7 +544,7 @@ public class RequisitionServiceTest {
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId, rightId))
         .thenReturn(new ArrayList<>());
 
     // when
@@ -633,7 +638,7 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(), rightId))
         .thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(true);
 
@@ -660,7 +665,7 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(), rightId))
         .thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(false);
 
@@ -679,7 +684,7 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId()))
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(), rightId))
         .thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(true);
 
@@ -929,6 +934,11 @@ public class RequisitionServiceTest {
     when(programReferenceDataService
         .findOne(any()))
         .thenReturn(program);
+    when(authenticationHelper
+        .getRight(RightName.REQUISITION_CONVERT_TO_ORDER))
+        .thenReturn(right);
+
+    when(right.getId()).thenReturn(rightId);
 
     processingPeriodDto = new ProcessingPeriodDto();
     processingPeriodDto.setProcessingSchedule(processingScheduleDto);

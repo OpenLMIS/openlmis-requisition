@@ -41,10 +41,12 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
+import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +122,9 @@ public class RequisitionService {
 
   @Autowired
   private ConvertHelper convertHelper;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
@@ -340,9 +345,10 @@ public class RequisitionService {
    */
   public List<Requisition> releaseRequisitionsAsOrder(
       List<ConvertToOrderDto> convertToOrderDtos, UserDto user) {
+    RightDto right = authenticationHelper.getRight(RightName.REQUISITION_CONVERT_TO_ORDER);
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId()).stream().map(FacilityDto::getId)
+        .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
         .collect(Collectors.toSet());
 
     for (ConvertToOrderDto convertToOrderDto : convertToOrderDtos) {
