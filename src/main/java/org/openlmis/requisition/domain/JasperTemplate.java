@@ -89,7 +89,7 @@ public class JasperTemplate extends BaseEntity {
   }
 
   /**
-   * Create a new instance of Tamplate absed on data from {@link JasperTemplate.Importer}
+   * Create a new instance of Jasper template based on data from {@link JasperTemplate.Importer}
    *
    * @param importer instance of {@link JasperTemplate.Importer}
    * @return new instance od template.
