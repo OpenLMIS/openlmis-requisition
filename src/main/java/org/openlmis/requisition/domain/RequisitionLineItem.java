@@ -644,8 +644,6 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getAdjustedConsumption();
 
-    List<Integer> getPreviousAdjustedConsumptions();
-
     Integer getAverageConsumption();
 
     BigDecimal getMaxMonthsOfStock();

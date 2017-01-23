@@ -584,6 +584,24 @@ public class RequisitionTest {
         requisitionLineItem.getPreviousAdjustedConsumptions());
   }
 
+  @Test
+  public void shouldNotUpdatePreviousAdjustedConsumptions() {
+    requisitionLineItem.setPreviousAdjustedConsumptions(Lists.newArrayList(1));
+
+    RequisitionLineItem newLineItem = new RequisitionLineItem();
+    newLineItem.setPreviousAdjustedConsumptions(Collections.singletonList(2));
+    newLineItem.setId(requisitionLineItem.getId());
+
+    Requisition newRequisition = new Requisition();
+    newRequisition.setRequisitionLineItems(Lists.newArrayList(newLineItem));
+
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    requisition.setTemplate(requisitionTemplate);
+    requisition.updateFrom(newRequisition, Collections.emptyList());
+
+    assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
+  }
+
   private void setUpTestUpdatePacksToShip(OrderableProductDto productMock, long packsToShip) {
     requisitionLineItem.setPacksToShip(packsToShip);
 

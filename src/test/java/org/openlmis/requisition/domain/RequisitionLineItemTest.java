@@ -226,6 +226,15 @@ public class RequisitionLineItemTest {
   }
 
   @Test
+  public void shouldNotSetPreviousAdjustedConsumption() {
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    requisitionLineItemDto.setPreviousAdjustedConsumptions(Collections.singletonList(1));
+    RequisitionLineItem requisitionLineItem =
+        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
+    assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
+  }
+
+  @Test
   public void shouldSetAverageConsumption() throws Exception {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setPreviousAdjustedConsumptions(Lists.newArrayList(1, 2, 3));
