@@ -256,9 +256,10 @@ public class RequisitionTemplateValidatorTest {
   @Test
   public void shouldRejectIfColumnIsNotDisplayedHasUserInputSourceAndSeveralAvailableSources() {
     Message message = new Message(ERROR_MUST_BE_DISPLAYED, STOCK_ON_HAND);
+    String errorMessage = "stockOnHand must be displayed";
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        "stockOnHand must be displayed"
+        errorMessage
     ));
 
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
@@ -270,7 +271,7 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, never()).rejectValue(COLUMNS_MAP, "stockOnHand must be displayed");
+    verify(errors, never()).rejectValue(COLUMNS_MAP, errorMessage);
   }
 
   private RequisitionTemplate generateTemplate() {
