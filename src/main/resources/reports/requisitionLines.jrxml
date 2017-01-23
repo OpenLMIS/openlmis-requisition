@@ -62,7 +62,7 @@
 	<field name="totalConsumedQuantity" class="java.lang.Integer">
 		<fieldDescription><![CDATA[totalConsumedQuantity]]></fieldDescription>
 	</field>
-	<field name="pricePerPack" class="org.openlmis.requisition.domain.Money">
+	<field name="pricePerPack" class="org.joda.money.Money">
 		<fieldDescription><![CDATA[pricePerPack]]></fieldDescription>
 	</field>
 	<field name="requestedQuantity" class="java.lang.Integer">
@@ -83,7 +83,7 @@
 	<field name="remarks" class="java.lang.String">
 		<fieldDescription><![CDATA[remarks]]></fieldDescription>
 	</field>
-	<field name="totalCost" class="org.openlmis.requisition.domain.Money">
+	<field name="totalCost" class="org.joda.money.Money">
 		<fieldDescription><![CDATA[totalCost]]></fieldDescription>
 	</field>
 	<background>
