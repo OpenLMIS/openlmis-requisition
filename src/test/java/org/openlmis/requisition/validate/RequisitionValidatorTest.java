@@ -6,12 +6,15 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
@@ -101,7 +104,7 @@ public class RequisitionValidatorTest {
   @Test
   public void shouldRejectIfValueIsLessThanZero() {
     RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setRequestedQuantity(-1);
+    lineItem.setTotalStockoutDays(-1);
     requisitionLineItems.add(lineItem);
 
     Message message1 = new Message(ERROR_VALUE_MUST_BE_ENTERED,
@@ -111,34 +114,34 @@ public class RequisitionValidatorTest {
             + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
 
     Message message = new Message(ERROR_MUST_BE_NON_NEGATIVE,
-        RequisitionLineItem.REQUESTED_QUANTITY);
+        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        RequisitionLineItem.REQUESTED_QUANTITY
+        RequisitionLineItem.TOTAL_STOCKOUT_DAYS
             + " must be a non-negative value."));
 
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionLineItem.REQUESTED_QUANTITY
+        contains(RequisitionLineItem.TOTAL_STOCKOUT_DAYS
             + " must be a non-negative value."));
   }
 
   @Test
   public void shouldRejectIfValueIsNull() {
     RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setRequestedQuantity(null);
+    lineItem.setTotalStockoutDays(null);
     requisitionLineItems.add(lineItem);
 
     Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED,
-        RequisitionLineItem.REQUESTED_QUANTITY);
+        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        RequisitionLineItem.REQUESTED_QUANTITY
+        RequisitionLineItem.TOTAL_STOCKOUT_DAYS
             + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
 
     requisitionValidator.validate(requisition, errors);
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionLineItem.REQUESTED_QUANTITY
+        contains(RequisitionLineItem.TOTAL_STOCKOUT_DAYS
             + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
   }
 
@@ -312,6 +315,7 @@ public class RequisitionValidatorTest {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setMaximumStockQuantity(10);
     lineItem.setCalculatedOrderQuantity(9);
+    lineItem.setRequestedQuantity(9);
     requisitionLineItems.add(lineItem);
 
     Message message = new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
@@ -329,10 +333,11 @@ public class RequisitionValidatorTest {
   public void shouldRejectIfCalculatedOrderQuantityIsIncorrectlyCalculated() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setCalculatedOrderQuantity(9);
+    lineItem.setRequestedQuantity(9);
     requisitionLineItems.add(lineItem);
 
     Message message = new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
-        RequisitionLineItem.CALCULATED_ORDER_QUANTITY);
+        CALCULATED_ORDER_QUANTITY);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
         RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
 
@@ -358,6 +363,34 @@ public class RequisitionValidatorTest {
     verify(errors, times(0)).rejectValue(any(), any());
   }
 
+  @Test
+  public void shouldRejectIfRequiredQuantityIsDifferentCalculatedAndExplenationIsNotGiven() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED);
+    String msg = "Missing value in requested quantity explanation column";
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS), contains(msg));
+  }
+
+  @Test
+  public void shouldNotRejectIfRequiredQuantityIsDifferentCalculatedAndExplenationIsGiven() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
+    lineItem.setRequestedQuantityExplanation("I need more");
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
+  }
+
   private RequisitionLineItem generateLineItem() {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setRequestedQuantity(1);
@@ -374,6 +407,7 @@ public class RequisitionValidatorTest {
     lineItem.setMaximumStockQuantity(1);
     lineItem.setAverageConsumption(1);
     lineItem.setCalculatedOrderQuantity(0);
+    lineItem.setRequestedQuantity(0);
     lineItem.setStockAdjustments(new ArrayList<>());
     return lineItem;
   }

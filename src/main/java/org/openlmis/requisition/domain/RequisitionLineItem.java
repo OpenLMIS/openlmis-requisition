@@ -22,6 +22,9 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,9 +42,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -336,6 +336,10 @@ public class RequisitionLineItem extends BaseEntity {
 
     if (requestedQuantity != null) {
       return requestedQuantity;
+    }
+
+    if (calculatedOrderQuantity != null) {
+      return calculatedOrderQuantity;
     }
 
     return 0;

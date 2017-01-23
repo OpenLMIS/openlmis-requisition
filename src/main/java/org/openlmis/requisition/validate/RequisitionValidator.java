@@ -1,5 +1,6 @@
 package org.openlmis.requisition.validate;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
@@ -18,6 +19,7 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_STOCKOUT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -119,6 +121,23 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     validateCalculations(errors, template, item);
 
     validateStockAdjustments(errors, requisition, item);
+
+    validateOrderQuantity(errors, template, item);
+  }
+
+  private void validateOrderQuantity(Errors errors, RequisitionTemplate template,
+                                     RequisitionLineItem item) {
+    if (template.isColumnDisplayed(REQUESTED_QUANTITY)
+        && template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+      Integer requested = item.getRequestedQuantity();
+      Integer calculated = item.getCalculatedOrderQuantity();
+      String explanation = item.getRequestedQuantityExplanation();
+
+      if (!Objects.equals(requested, calculated) && isBlank(explanation)) {
+        errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
+            new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED)).toString());
+      }
+    }
   }
 
   private void validateStockAdjustments(
