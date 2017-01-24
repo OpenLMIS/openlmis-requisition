@@ -128,6 +128,8 @@ public abstract class MessageKeys {
       + ".validation.mustBeDisplayedWhenConsumptionIsCalculated";
   public static final String ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE = ERROR_PREFIX
       + ".validation.valueDoesNotMatchCalculatedValue";
+  public static final String ERROR_CANNOT_UPDATE_REQUISITION = ERROR_PREFIX
+      + ".validation.cannotUpdateRequisition";
   public static final String ERROR_USER_NOT_FOUND = ERROR_PREFIX
       + ".authentication.userCanNotBeFound";
   public static final String ERROR_RIGHT_NOT_FOUND = ERROR_PREFIX

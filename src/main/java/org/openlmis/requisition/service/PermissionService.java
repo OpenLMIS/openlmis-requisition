@@ -1,5 +1,6 @@
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
@@ -9,6 +10,7 @@ import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.PermissionMessageException;
@@ -74,7 +76,7 @@ public class PermissionService {
           hasPermission(REQUISITION_APPROVE, requisitionId);
           break;
         default:
-          throw new IllegalStateException("Requisition has incorrect status");
+          throw new ValidationMessageException(ERROR_CANNOT_UPDATE_REQUISITION);
       }
     }
   }
