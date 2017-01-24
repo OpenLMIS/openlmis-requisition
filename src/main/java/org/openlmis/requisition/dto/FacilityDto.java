@@ -1,9 +1,11 @@
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,8 +17,13 @@ public class FacilityDto {
   private String name;
   private String description;
   private Boolean active;
-  private Date goLiveDate;
-  private Date goDownDate;
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  private LocalDate goLiveDate;
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  private LocalDate goDownDate;
+  
   private String comment;
   private Boolean enabled;
   private Boolean openLmisAccessible;

@@ -14,14 +14,13 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FacilitySupportsProgramHelperTest {
 
-  private static final String SUPPORT_START_DATE = "2011-12-12";
+  private static final LocalDate SUPPORT_START_DATE = LocalDate.of(2011,12,12);
 
   @Mock
   FacilityReferenceDataService facilityReferenceDataService;
@@ -51,9 +50,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenProgramIsNotSupported() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(UUID.randomUUID());
-    supportedProgramDto.setSupportActive(true);
+    supportedProgramDto.setActive(true);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -64,9 +63,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldPassWhenProgramIsSupported() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
+    supportedProgramDto.setActive(true);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -77,9 +76,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenSupportIsNotActive() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(false);
+    supportedProgramDto.setActive(false);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -90,9 +89,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenProgramIsNotActive() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
+    supportedProgramDto.setActive(true);
     supportedProgramDto.setProgramActive(false);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -103,10 +102,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenStartDateIsAfterCurrentDate() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
+    supportedProgramDto.setActive(true);
     supportedProgramDto.setProgramActive(false);
-    String tomorrow = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-    supportedProgramDto.setSupportStartDate((tomorrow));
+    supportedProgramDto.setStartDate(LocalDate.now().plusDays(1));
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -117,9 +115,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldPassWhenProgramStartDateIsNull() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
+    supportedProgramDto.setActive(true);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(null);
+    supportedProgramDto.setStartDate(null);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 

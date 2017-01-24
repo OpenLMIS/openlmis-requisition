@@ -7,8 +7,8 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,15 +38,15 @@ public class FacilitySupportsProgramHelper {
       List<SupportedProgramDto> supportedPrograms, UUID programId) {
     return supportedPrograms.stream()
         .anyMatch(supportedProgram -> supportedProgram.getId().equals(programId)
-            && supportedProgram.isSupportActive() && supportedProgram.isProgramActive()
-            && isStartDateBeforeNow(supportedProgram.getZonedStartDate()));
+            && supportedProgram.isActive() && supportedProgram.isProgramActive()
+            && isStartDateBeforeNow(supportedProgram.getStartDate()));
   }
 
-  private boolean isStartDateBeforeNow(ZonedDateTime startDate) {
+  private boolean isStartDateBeforeNow(LocalDate startDate) {
     return (startDate == null) || startDate.isBefore(getCurrentUtcDate());
   }
 
-  private ZonedDateTime getCurrentUtcDate() {
-    return ZonedDateTime.now(ZoneId.of("UTC"));
+  private LocalDate getCurrentUtcDate() {
+    return LocalDate.now(ZoneId.of("UTC"));
   }
 }

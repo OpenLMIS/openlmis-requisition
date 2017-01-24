@@ -1,14 +1,11 @@
 package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
@@ -21,17 +18,8 @@ public class SupportedProgramDto {
   private boolean programActive;
   private boolean periodsSkippable;
   private boolean showNonFullSupplyTab;
-  private boolean supportActive;
-  private String supportStartDate;
+  private boolean active;
 
-  /**
-   * Get supportStartDate from string and turn it into ZonedDateTime. Use midnight for time and UTC
-   * for zone. If supportStartDate is null, return null.
-   */
-  @JsonIgnore
-  public ZonedDateTime getZonedStartDate() {
-    return (supportStartDate == null) ? null : ZonedDateTime.of(LocalDate.parse(supportStartDate),
-        LocalTime.MIDNIGHT, ZoneId.of("UTC"));
-  }
-
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  private LocalDate startDate;
 }

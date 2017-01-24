@@ -99,8 +99,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"programActive\": true,"
       + " \"periodsSkippable\": false,"
       + " \"showNonFullSupplyTab\": false,"
-      + " \"supportActive\": true,"
-      + " \"supportStartDate\": \"2011-12-03\""
+      + " \"active\": true,"
+      + " \"startDate\": \"2011-12-03\""
       + "}";
 
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
