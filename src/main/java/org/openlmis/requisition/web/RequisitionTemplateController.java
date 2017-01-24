@@ -79,6 +79,8 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<?> getAllRequisitionTemplates() {
+    permissionService.canViewRequisitionTemplate();
+
     Iterable<RequisitionTemplate> requisitionTemplates = requisitionTemplateRepository.findAll();
     return new ResponseEntity<>(requisitionTemplates, HttpStatus.OK);
   }
@@ -128,6 +130,8 @@ public class RequisitionTemplateController extends BaseController {
   public ResponseEntity<?> getRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
+    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+
     if (requisitionTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

@@ -2,9 +2,11 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSIONS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -17,8 +19,11 @@ import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +55,7 @@ public class PermissionService {
    * @throws PermissionMessageException if the current user has not a permission.
    */
   public void canInitRequisition(UUID program, UUID facility) {
-    hasPermission(REQUISITION_CREATE, program, facility, null);
+    checkPermission(REQUISITION_CREATE, program, facility, null);
   }
 
   /**
@@ -67,13 +72,13 @@ public class PermissionService {
     if (requisition != null) {
       switch (requisition.getStatus()) {
         case INITIATED:
-          hasPermission(REQUISITION_CREATE, requisitionId);
+          checkPermission(REQUISITION_CREATE, requisitionId);
           break;
         case SUBMITTED:
-          hasPermission(REQUISITION_AUTHORIZE, requisitionId);
+          checkPermission(REQUISITION_AUTHORIZE, requisitionId);
           break;
         case AUTHORIZED:
-          hasPermission(REQUISITION_APPROVE, requisitionId);
+          checkPermission(REQUISITION_APPROVE, requisitionId);
           break;
         default:
           throw new ValidationMessageException(ERROR_CANNOT_UPDATE_REQUISITION);
@@ -85,35 +90,35 @@ public class PermissionService {
    * Checks if current user has permission to submit a requisition.
    */
   public void canSubmitRequisition(UUID requisitionId) {
-    hasPermission(REQUISITION_CREATE, requisitionId);
+    checkPermission(REQUISITION_CREATE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to approve a requisition.
    */
   public void canApproveRequisition(UUID requisitionId) {
-    hasPermission(REQUISITION_APPROVE, requisitionId);
+    checkPermission(REQUISITION_APPROVE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to authorize a requisition.
    */
   public void canAuthorizeRequisition(UUID requisitionId) {
-    hasPermission(REQUISITION_AUTHORIZE, requisitionId);
+    checkPermission(REQUISITION_AUTHORIZE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to delete a requisition.
    */
   public void canDeleteRequisition(UUID requisitionId) {
-    hasPermission(REQUISITION_DELETE, requisitionId);
+    checkPermission(REQUISITION_DELETE, requisitionId);
   }
 
   /**
    * Checks if current user has permission to view a requisition.
    */
   public void canViewRequisition(UUID requisitionId) {
-    hasPermission(REQUISITION_VIEW, requisitionId);
+    checkPermission(REQUISITION_VIEW, requisitionId);
   }
 
   /**
@@ -129,8 +134,33 @@ public class PermissionService {
         throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
             convertToOrder.getRequisitionId()));
       }
-      hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
+      checkPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
           convertToOrder.getSupplyingDepotId());
+    }
+  }
+
+
+  /**
+   * Checks if current user has permission to view a requisition template.
+   */
+  public void canViewRequisitionTemplate() {
+    canViewRequisitionTemplate(null);
+  }
+
+  /**
+   * Checks if current user has permission to view a requisition template.
+   */
+  public void canViewRequisitionTemplate(RequisitionTemplate requisitionTemplate) {
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+        .getAuthentication();
+
+    if (!authentication.isClientOnly()) {
+      UUID programId = null;
+      if (requisitionTemplate != null) {
+        programId = requisitionTemplate.getProgramId();
+      }
+      checkAnyPermission(Arrays.asList(REQUISITION_TEMPLATES_MANAGE, REQUISITION_VIEW),
+          programId, null, null);
     }
   }
 
@@ -139,27 +169,40 @@ public class PermissionService {
    * Checks if current user has permission to manage a requisition template.
    */
   public void canManageRequisitionTemplate() {
-    hasPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
+    checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
   }
 
-  private void hasPermission(String rightName, UUID requisitionId) {
+  private void checkPermission(String rightName, UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (null != requisition) {
-      hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
+      checkPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
     }
   }
 
-  private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
+  private void checkPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
+    if (!hasPermission(rightName, program, facility, warehouse)) {
+      throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName));
+    }
+  }
+
+  private void checkAnyPermission(List<String> rightNames, UUID program,
+                                  UUID facility, UUID warehouse) {
+    if (!rightNames.stream().anyMatch(
+        right -> hasPermission(right, program, facility, warehouse))) {
+      throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSIONS,
+          String.join(", ", rightNames)));
+    }
+  }
+
+  private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result = userReferenceDataService.hasRight(
         user.getId(), right.getId(), program, facility, warehouse
     );
-
-    if (null == result || !result.getResult()) {
-      throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName));
-    }
+    return null != result && result.getResult();
   }
+
 
 }

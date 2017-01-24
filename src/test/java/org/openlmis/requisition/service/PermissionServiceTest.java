@@ -1,8 +1,10 @@
 package org.openlmis.requisition.service;
 
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSIONS;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -22,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -30,8 +33,14 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,6 +90,13 @@ public class PermissionServiceTest {
   @Mock
   private Requisition requisition;
 
+  @Mock
+  private RequisitionTemplate requisitionTemplate;
+
+  private SecurityContext securityContext;
+  private OAuth2Authentication trustedClient;
+  private OAuth2Authentication userClient;
+
   private UUID userId = UUID.randomUUID();
   private UUID requisitionCreateRightId = UUID.randomUUID();
   private UUID requisitionApproveRightId = UUID.randomUUID();
@@ -97,6 +113,11 @@ public class PermissionServiceTest {
 
   @Before
   public void setUp() {
+    securityContext = mock(SecurityContext.class);
+    SecurityContextHolder.setContext(securityContext);
+    trustedClient = new OAuth2Authentication(mock(OAuth2Request.class), null);
+    userClient = new OAuth2Authentication(mock(OAuth2Request.class), mock(Authentication.class));
+
     convertToOrderDto.setRequisitionId(requisitionId);
     convertToOrderDto.setSupplyingDepotId(facilityId);
     convertToOrderDtos.add(convertToOrderDto);
@@ -289,6 +310,34 @@ public class PermissionServiceTest {
     permissionService.canManageRequisitionTemplate();
   }
 
+  @Test
+  public void canViewRequisitionTemplate() throws Exception {
+    when(securityContext.getAuthentication()).thenReturn(userClient);
+
+    hasRight(manageRequisitionTemplateRightId, true);
+    hasRight(requisitionViewRightId, false);
+    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+
+    hasRight(manageRequisitionTemplateRightId, false);
+    hasRight(requisitionViewRightId, true);
+    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+  }
+
+  @Test
+  public void shouldAllowTrustedClientsViewRequisitionTemplate() {
+    when(securityContext.getAuthentication()).thenReturn(trustedClient);
+
+    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+  }
+
+  @Test
+  public void cannotViewRequisitionTemplate() throws Exception {
+    when(securityContext.getAuthentication()).thenReturn(userClient);
+    expectException(REQUISITION_TEMPLATES_MANAGE, REQUISITION_VIEW);
+
+    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+  }
+
   private void hasRight(UUID rightId, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService
@@ -305,6 +354,12 @@ public class PermissionServiceTest {
   private void expectException(String rightName) {
     exception.expect(PermissionMessageException.class);
     exception.expectMessage(ERROR_NO_FOLLOWING_PERMISSION + ": " + rightName);
+  }
+
+  private void expectException(String... rightNames) {
+    exception.expect(PermissionMessageException.class);
+    exception.expectMessage(ERROR_NO_FOLLOWING_PERMISSIONS + ": " + String.join(", ",
+        Arrays.asList(rightNames)));
   }
 
   private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {
