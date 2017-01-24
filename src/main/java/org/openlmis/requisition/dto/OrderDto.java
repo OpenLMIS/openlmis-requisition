@@ -19,4 +19,5 @@ public class OrderDto {
   private FacilityDto supplyingFacility;
   private BigDecimal quotedCost;
   private List<OrderLineItemDto> orderLineItems;
+  private List<StatusMessageDto> statusMessages;
 }
