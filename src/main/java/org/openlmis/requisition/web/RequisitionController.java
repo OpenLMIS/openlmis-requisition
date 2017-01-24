@@ -21,6 +21,7 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
@@ -134,7 +135,7 @@ public class RequisitionController extends BaseController {
                     @RequestParam(value = "emergency") boolean emergency) {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
-          new Message("requisition.error.initiate.missing-parameters"));
+          new Message(MessageKeys.ERROR_INITIALIZE_MISSING_PARAMETERS));
     }
 
     permissionService.canInitRequisition(program, facility);
@@ -161,7 +162,7 @@ public class RequisitionController extends BaseController {
                                             @RequestParam(value = "emergency") boolean emergency) {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
-          new Message("requisition.error.periods-for-initiate.missing-parameters"));
+          new Message(MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS));
     }
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
@@ -180,7 +181,8 @@ public class RequisitionController extends BaseController {
     permissionService.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
 
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
@@ -285,7 +287,8 @@ public class RequisitionController extends BaseController {
     permissionService.canViewRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     } else {
       return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
     }
@@ -348,7 +351,8 @@ public class RequisitionController extends BaseController {
     permissionService.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
 
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
@@ -373,7 +377,8 @@ public class RequisitionController extends BaseController {
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
     } else {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      throw new ValidationMessageException(new Message(
+          MessageKeys.ERROR_REQUISITION_MUST_BE_AUTHORIED_OR_SUBMITTED, requisitionId));
     }
   }
 
@@ -404,7 +409,8 @@ public class RequisitionController extends BaseController {
     /* TODO: It seems like this should never return HttpStatus.NOT_FOUND. Rather, if no results
              exist, simply return an empty list. Verify this an update this code accordingly. */
     if (submittedRequisitions == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(new Message(
+          MessageKeys.ERROR_NO_SUBMITTED_REQUISITIONS));
     } else {
       return new ResponseEntity<>(
           requisitionDtoBuilder.build(submittedRequisitions), HttpStatus.OK);
@@ -428,7 +434,8 @@ public class RequisitionController extends BaseController {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (requisition == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
 
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);

@@ -51,6 +51,14 @@ public abstract class MessageKeys {
       + ".requisitionNotFound";
   public static final String ERROR_ID_MISMATCH = ERROR_PREFIX
       + ".idMismatch";
+  public static final String ERROR_NO_SUBMITTED_REQUISITIONS = ERROR_PREFIX
+      + ".submittedRequisitionsNotFound";
+  public static final String ERROR_REQUISITION_MUST_BE_AUTHORIED_OR_SUBMITTED = ERROR_PREFIX
+      + ".approve.requisitionMustBeAuthorizedOrSubmittedIfSkipped";
+  public static final String ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS =
+      ERROR_PREFIX + ".periodsForInitiate.missingParameters";
+  public static final String ERROR_INITIALIZE_MISSING_PARAMETERS = ERROR_PREFIX
+      + "initiate.missingParameters";
   public static final String ERROR_INCORRECT_SUGGESTED_PERIOD = ERROR_PREFIX
       + ".initiate.incorrectSuggestedPeriod";
   public static final String ERROR_NULL_ID = ERROR_PREFIX
