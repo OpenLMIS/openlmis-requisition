@@ -200,6 +200,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    */
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
     this.programId = requisitionTemplate.getProgramId();
+    this.numberOfPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage();
     this.columnsMap = requisitionTemplate.getColumnsMap();
   }
 
