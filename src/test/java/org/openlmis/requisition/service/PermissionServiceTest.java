@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -89,9 +88,6 @@ public class PermissionServiceTest {
 
   @Mock
   private Requisition requisition;
-
-  @Mock
-  private RequisitionTemplate requisitionTemplate;
 
   private SecurityContext securityContext;
   private OAuth2Authentication trustedClient;
@@ -316,18 +312,18 @@ public class PermissionServiceTest {
 
     hasRight(manageRequisitionTemplateRightId, true);
     hasRight(requisitionViewRightId, false);
-    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+    permissionService.canViewRequisitionTemplate();
 
     hasRight(manageRequisitionTemplateRightId, false);
     hasRight(requisitionViewRightId, true);
-    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+    permissionService.canViewRequisitionTemplate();
   }
 
   @Test
   public void shouldAllowTrustedClientsViewRequisitionTemplate() {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
 
-    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+    permissionService.canViewRequisitionTemplate();
   }
 
   @Test
@@ -335,7 +331,7 @@ public class PermissionServiceTest {
     when(securityContext.getAuthentication()).thenReturn(userClient);
     expectException(REQUISITION_TEMPLATES_MANAGE, REQUISITION_VIEW);
 
-    permissionService.canViewRequisitionTemplate(requisitionTemplate);
+    permissionService.canViewRequisitionTemplate();
   }
 
   private void hasRight(UUID rightId, boolean assign) {

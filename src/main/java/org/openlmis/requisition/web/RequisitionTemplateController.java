@@ -128,10 +128,10 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.GET)
   public ResponseEntity<?> getRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
+    permissionService.canViewRequisitionTemplate();
+
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
-    permissionService.canViewRequisitionTemplate(requisitionTemplate);
-
     if (requisitionTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

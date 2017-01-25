@@ -6,7 +6,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -139,28 +138,16 @@ public class PermissionService {
     }
   }
 
-
   /**
    * Checks if current user has permission to view a requisition template.
    */
   public void canViewRequisitionTemplate() {
-    canViewRequisitionTemplate(null);
-  }
-
-  /**
-   * Checks if current user has permission to view a requisition template.
-   */
-  public void canViewRequisitionTemplate(RequisitionTemplate requisitionTemplate) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
         .getAuthentication();
 
     if (!authentication.isClientOnly()) {
-      UUID programId = null;
-      if (requisitionTemplate != null) {
-        programId = requisitionTemplate.getProgramId();
-      }
       checkAnyPermission(Arrays.asList(REQUISITION_TEMPLATES_MANAGE, REQUISITION_VIEW),
-          programId, null, null);
+          null, null, null);
     }
   }
 
