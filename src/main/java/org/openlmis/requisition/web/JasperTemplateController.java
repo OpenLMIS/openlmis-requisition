@@ -3,9 +3,12 @@ package org.openlmis.requisition.web;
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ReportingException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.service.JasperTemplateService;
+import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -103,7 +106,8 @@ public class JasperTemplateController extends BaseController {
     JasperTemplate jasperTemplate =
         jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(new Message(
+          MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
     } else {
       return new ResponseEntity<>(JasperTemplateDto.newInstance(jasperTemplate), HttpStatus.OK);
     }
@@ -119,7 +123,8 @@ public class JasperTemplateController extends BaseController {
   public ResponseEntity<JasperTemplateDto> deleteTemplate(@PathVariable("id") UUID templateId) {
     JasperTemplate jasperTemplate = jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(new Message(
+          MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
     } else {
       jasperTemplateRepository.delete(jasperTemplate);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -7,6 +7,7 @@ import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
@@ -72,14 +73,15 @@ public class ReportsController extends BaseController {
 
     Requisition requisition = requisitionRepository.findOne(id);
     if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          "requisition.error.requisition-not-found", id));
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, id));
     }
 
     JasperTemplate jasperTemplate =
         jasperTemplateService.getByName(REQUISITION_PRINT_TEMPLATE_NAME);
     if (jasperTemplate == null) {
-      throw new ValidationMessageException("requisition.error.reporting.template.notFound");
+      throw new ValidationMessageException(
+          new Message(MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND));
     }
 
     List<RequisitionLineItem> fullSupply = requisitionService.getFullSupplyItems(id)

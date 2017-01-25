@@ -1,10 +1,13 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.validate.RequisitionTemplateValidator;
+import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,7 +136,8 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplate == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(new Message(
+          MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
       return new ResponseEntity<>(requisitionTemplate, HttpStatus.OK);
     }
@@ -152,7 +156,8 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplate == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      throw new ContentNotFoundMessageException(new Message(
+          MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
       requisitionTemplateRepository.delete(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);

@@ -8,7 +8,8 @@ public abstract class MessageKeys {
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
 
   public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
-
+  public static final String ERROR_JASPER_TEMPLATE_NOT_FOUND = ERROR_PREFIX
+      + ".jasper.templateNotFound";
   public static final String ERROR_REPORTING_CREATION = ERROR_PREFIX + ".reporting.creation";
   public static final String ERROR_REPORTING_EXTRA_PROPERTIES = ERROR_PREFIX
       + ".reporting.extra-properties";
@@ -25,6 +26,8 @@ public abstract class MessageKeys {
       + ".reporting.parameter.missing";
   public static final String ERROR_REPORTING_TEMPLATE_EXIST = ERROR_PREFIX
       + ".reporting.template.exist";
+  public static final String ERROR_REPORTING_TEMPLATE_NOT_FOUND = ERROR_PREFIX
+      + ".reporting.template.notFound";
   public static final String ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED = ERROR_PREFIX
       + ".authorize.mustBeSubmittedToBeAuthorize";
   public static final String ERROR_FINISH_PROVIOUS_REQUISITION = ERROR_PREFIX
@@ -76,6 +79,8 @@ public abstract class MessageKeys {
       + ".programIdCannotBeNull";
   public static final String ERROR_REQUISITION_TEMPLATE_NOT_FOUND = ERROR_PREFIX
       + ".requisitionTemplateNotFound";
+  public static final String ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID = ERROR_PREFIX
+      + ".requisitionTemplateNotFoundForId";
   public static final String ERROR_REQUISITION_TEMPLATE_NOT_DEFINED = ERROR_PREFIX
       + ".requisitionTemplateNotDefined";
   public static final String ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN = ERROR_PREFIX

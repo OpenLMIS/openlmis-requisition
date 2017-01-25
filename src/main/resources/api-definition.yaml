@@ -754,6 +754,9 @@ resourceTypes:
                     application/json:
                       schema: templateDtoArray
               404:
+                  body:
+                    application/json:
+                        schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -767,6 +770,9 @@ resourceTypes:
               responses:
                   204:
                   404:
+                      body:
+                        application/json:
+                            schema: localizedMessage
           get:
               is: [ secured ]
               description: Get chosen template.
@@ -776,6 +782,9 @@ resourceTypes:
                         application/json:
                           schema: jasperTemplateDto
                   404:
+                      body:
+                        application/json:
+                            schema: localizedMessage
           put:
               is: [ secured ]
               description: Update existing template.
@@ -831,6 +840,9 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "404":
+                      body:
+                        application/json:
+                            schema: localizedMessage
                   "409":
           get:
               is: [ secured ]
@@ -840,6 +852,9 @@ resourceTypes:
                       body:
                         application/json:
                   "404":
+                      body:
+                        application/json:
+                            schema: localizedMessage
           put:
               is: [ secured ]
               description: Update existing requisitionTemplate.
