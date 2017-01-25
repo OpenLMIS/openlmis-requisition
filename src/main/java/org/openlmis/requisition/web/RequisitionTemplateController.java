@@ -91,15 +91,16 @@ public class RequisitionTemplateController extends BaseController {
   /**
    * Allows updating requisitionTemplates.
    *
-   * @param requisitionTemplate   A requisitionTemplate bound to the request body
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
+   * @param requisitionTemplate   A requisitionTemplate bound to the request body
    * @param bindingResult         Object used for validation.
    * @return ResponseEntity containing the updated requisitionTemplate
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<?> updateRequisitionTemplate(
+      @PathVariable("id") UUID requisitionTemplateId,
       @RequestBody @Valid RequisitionTemplate requisitionTemplate,
-      @PathVariable("id") UUID requisitionTemplateId, BindingResult bindingResult) {
+      BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
