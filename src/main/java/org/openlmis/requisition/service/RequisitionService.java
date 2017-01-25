@@ -16,7 +16,6 @@ import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -27,7 +26,6 @@ import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RightDto;
-import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -459,7 +457,6 @@ public class RequisitionService {
 
     for (Requisition requisition : releasedRequisitions) {
       OrderDto order = orderDtoBuilder.build(requisition, user);
-      order.setStatusMessages(getStatusMessages(requisition));
       if (orderFulfillmentService.create(order)) {
         requisitionRepository.save(requisition);
         requisitionStatusNotifier.notifyConvertToOrder(requisition);
@@ -469,20 +466,6 @@ public class RequisitionService {
       }
     }
   }
-
-  private List<StatusMessageDto> getStatusMessages(Requisition requisition) {
-    List<StatusMessageDto> statusMessageDtoList = new ArrayList<>();
-    List<StatusMessage> statusMessages = statusMessageRepository.findByRequisitionId(
-        requisition.getId());
-    for (StatusMessage statusMessage: statusMessages) {
-      StatusMessageDto statusMessageDto = new StatusMessageDto();
-      statusMessage.export(statusMessageDto);
-      statusMessageDto.setId(null);
-      statusMessageDtoList.add(statusMessageDto);
-    }
-    return statusMessageDtoList;
-  }
-
 
   private List<RequisitionLineItem> getSupplyItemsBase(UUID requisitionId, boolean fullSupply) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
