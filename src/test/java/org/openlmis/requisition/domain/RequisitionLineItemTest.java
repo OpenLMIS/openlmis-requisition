@@ -242,7 +242,7 @@ public class RequisitionLineItemTest {
 
     requisitionLineItem.calculateAndSetAverageConsumption();
 
-    assertEquals(2L, requisitionLineItem.getAverageConsumption().longValue());
+    assertEquals(3L, requisitionLineItem.getAverageConsumption().longValue());
   }
 
   private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap) {

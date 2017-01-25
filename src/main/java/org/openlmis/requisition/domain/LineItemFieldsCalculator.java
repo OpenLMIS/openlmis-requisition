@@ -183,8 +183,7 @@ public final class LineItemFieldsCalculator {
 
     int sum = adjustedConsumptions.stream().reduce(0, Integer::sum);
 
-
-    return sum / numberOfPeriods;
+    return (int) Math.ceil((double)sum / numberOfPeriods);
   }
 
   /**
