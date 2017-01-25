@@ -4,12 +4,9 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 
 import lombok.Data;
 
-import java.util.UUID;
-
 @Data
 public class OrderLineItemDto {
-  private UUID id;
-  private UUID orderableProductId;
+  private OrderableProductDto orderableProduct;
   private Long orderedQuantity;
   private Long filledQuantity;
   private Long approvedQuantity;
@@ -20,9 +17,10 @@ public class OrderLineItemDto {
    *
    * @param lineItem RequisitionLineItem to create instance from.
    */
-  public static OrderLineItemDto newOrderLineItem(RequisitionLineItem lineItem) {
+  public static OrderLineItemDto newOrderLineItem(RequisitionLineItem lineItem,
+                                                  OrderableProductDto productDto) {
     OrderLineItemDto orderLineItem = new OrderLineItemDto();
-    orderLineItem.setOrderableProductId(lineItem.getOrderableProductId());
+    orderLineItem.setOrderableProduct(productDto);
     orderLineItem.setFilledQuantity(0L);
     orderLineItem.setOrderedQuantity(lineItem.getRequestedQuantity().longValue());
     orderLineItem.setApprovedQuantity(lineItem.getApprovedQuantity().longValue());

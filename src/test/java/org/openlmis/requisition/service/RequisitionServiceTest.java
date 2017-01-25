@@ -979,7 +979,7 @@ public class RequisitionServiceTest {
                 requisition
                     .getRequisitionLineItems()
                     .stream()
-                    .map(OrderLineItemDto::newOrderLineItem)
+                    .map(line -> OrderLineItemDto.newOrderLineItem(line, null))
                     .collect(Collectors.toList())
             );
 
