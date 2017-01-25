@@ -7,8 +7,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.ObjectMapperConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -99,8 +102,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"programActive\": true,"
       + " \"periodsSkippable\": false,"
       + " \"showNonFullSupplyTab\": false,"
-      + " \"active\": true,"
-      + " \"startDate\": \"2011-12-03\""
+      + " \"supportActive\": true,"
+      + " \"supportStartDate\": \"2011-12-03\""
       + "}";
 
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
@@ -229,6 +232,9 @@ public abstract class BaseWebIntegrationTest {
   @Autowired
   private CleanRepositoryHelper cleanRepositoryHelper;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
 
@@ -237,6 +243,9 @@ public abstract class BaseWebIntegrationTest {
    */
   public BaseWebIntegrationTest() {
     RestAssured.baseURI = BASE_URL;
+    RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
+        new ObjectMapperConfig().jackson2ObjectMapperFactory((clazz, charset) -> objectMapper)
+    );
     restAssured = ramlDefinition.createRestAssured();
 
     // This mocks the auth check to always return valid admin credentials.
