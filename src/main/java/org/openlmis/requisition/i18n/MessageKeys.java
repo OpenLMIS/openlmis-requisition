@@ -25,7 +25,6 @@ public abstract class MessageKeys {
       + ".reporting.parameter.missing";
   public static final String ERROR_REPORTING_TEMPLATE_EXIST = ERROR_PREFIX
       + ".reporting.template.exist";
-
   public static final String ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED = ERROR_PREFIX
       + ".authorize.mustBeSubmittedToBeAuthorize";
   public static final String ERROR_FINISH_PROVIOUS_REQUISITION = ERROR_PREFIX
@@ -53,7 +52,7 @@ public abstract class MessageKeys {
       + ".idMismatch";
   public static final String ERROR_NO_SUBMITTED_REQUISITIONS = ERROR_PREFIX
       + ".submittedRequisitionsNotFound";
-  public static final String ERROR_REQUISITION_MUST_BE_AUTHORIED_OR_SUBMITTED = ERROR_PREFIX
+  public static final String ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED = ERROR_PREFIX
       + ".approve.requisitionMustBeAuthorizedOrSubmittedIfSkipped";
   public static final String ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS =
       ERROR_PREFIX + ".periodsForInitiate.missingParameters";

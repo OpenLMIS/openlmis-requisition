@@ -378,7 +378,7 @@ public class RequisitionController extends BaseController {
       return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
     } else {
       throw new ValidationMessageException(new Message(
-          MessageKeys.ERROR_REQUISITION_MUST_BE_AUTHORIED_OR_SUBMITTED, requisitionId));
+          MessageKeys.ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED, requisitionId));
     }
   }
 
