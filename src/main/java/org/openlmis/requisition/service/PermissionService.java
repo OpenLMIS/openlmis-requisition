@@ -2,7 +2,6 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSIONS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -22,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -121,7 +119,7 @@ public class PermissionService {
   }
 
   /**
-   * Chacks if current user has permission to convert requisition to order.
+   * Checks if current user has permission to convert requisition to order.
    *
    * @param list of ConvertToOrderDtos containing chosen requisitionId and supplyingDepotId.
    * @throws PermissionMessageException if the current user has not a permission.
@@ -139,24 +137,15 @@ public class PermissionService {
   }
 
   /**
-   * Checks if current user has permission to view a requisition template.
+   * Checks if current user has permission to manage a requisition template.
    */
-  public void canViewRequisitionTemplate() {
+  public void canManageRequisitionTemplate() {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
         .getAuthentication();
 
     if (!authentication.isClientOnly()) {
-      checkAnyPermission(Arrays.asList(REQUISITION_TEMPLATES_MANAGE, REQUISITION_VIEW),
-          null, null, null);
+      checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
     }
-  }
-
-
-  /**
-   * Checks if current user has permission to manage a requisition template.
-   */
-  public void canManageRequisitionTemplate() {
-    checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
   }
 
   private void checkPermission(String rightName, UUID requisitionId) {
@@ -170,15 +159,6 @@ public class PermissionService {
   private void checkPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
     if (!hasPermission(rightName, program, facility, warehouse)) {
       throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName));
-    }
-  }
-
-  private void checkAnyPermission(List<String> rightNames, UUID program,
-                                  UUID facility, UUID warehouse) {
-    if (!rightNames.stream().anyMatch(
-        right -> hasPermission(right, program, facility, warehouse))) {
-      throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSIONS,
-          String.join(", ", rightNames)));
     }
   }
 
