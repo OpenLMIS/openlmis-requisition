@@ -286,7 +286,6 @@ public class RequisitionLineItem extends BaseEntity {
       this.requestedQuantityExplanation = requisitionLineItem.getRequestedQuantityExplanation();
       this.totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
       this.total = requisitionLineItem.getTotal();
-      this.averageConsumption = requisitionLineItem.getAverageConsumption();
       this.numberOfNewPatientsAdded = requisitionLineItem.getNumberOfNewPatientsAdded();
       this.maximumStockQuantity = requisitionLineItem.getMaximumStockQuantity();
       this.calculatedOrderQuantity = requisitionLineItem.getCalculatedOrderQuantity();
