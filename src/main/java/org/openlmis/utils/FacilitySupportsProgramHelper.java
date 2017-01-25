@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,8 +37,8 @@ public class FacilitySupportsProgramHelper {
       List<SupportedProgramDto> supportedPrograms, UUID programId) {
     return supportedPrograms.stream()
         .anyMatch(supportedProgram -> supportedProgram.getId().equals(programId)
-            && supportedProgram.isActive() && supportedProgram.isProgramActive()
-            && isStartDateBeforeNow(supportedProgram.getStartDate()));
+            && supportedProgram.isSupportActive() && supportedProgram.isProgramActive()
+            && isStartDateBeforeNow(supportedProgram.getSupportStartDate()));
   }
 
   private boolean isStartDateBeforeNow(LocalDate startDate) {
@@ -47,6 +46,6 @@ public class FacilitySupportsProgramHelper {
   }
 
   private LocalDate getCurrentUtcDate() {
-    return LocalDate.now(ZoneId.of("UTC"));
+    return LocalDate.now();
   }
 }
