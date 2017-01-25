@@ -1,7 +1,5 @@
 package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,8 +16,6 @@ public class SupportedProgramDto {
   private boolean programActive;
   private boolean periodsSkippable;
   private boolean showNonFullSupplyTab;
-  private boolean active;
-
-  @JsonFormat(pattern = "yyyy-MM-dd")
-  private LocalDate startDate;
+  private boolean supportActive;
+  private LocalDate supportStartDate;
 }

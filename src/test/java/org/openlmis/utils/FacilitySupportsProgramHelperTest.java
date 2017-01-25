@@ -50,9 +50,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenProgramIsNotSupported() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(UUID.randomUUID());
-    supportedProgramDto.setActive(true);
+    supportedProgramDto.setSupportActive(true);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -63,9 +63,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldPassWhenProgramIsSupported() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setActive(true);
+    supportedProgramDto.setSupportActive(true);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -76,9 +76,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenSupportIsNotActive() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setActive(false);
+    supportedProgramDto.setSupportActive(false);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -89,9 +89,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenProgramIsNotActive() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setActive(true);
+    supportedProgramDto.setSupportActive(true);
     supportedProgramDto.setProgramActive(false);
-    supportedProgramDto.setStartDate(SUPPORT_START_DATE);
+    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -102,9 +102,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldThrowExceptionWhenStartDateIsAfterCurrentDate() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setActive(true);
+    supportedProgramDto.setSupportActive(true);
     supportedProgramDto.setProgramActive(false);
-    supportedProgramDto.setStartDate(LocalDate.now().plusDays(1));
+    supportedProgramDto.setSupportStartDate(LocalDate.now().plusDays(1));
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -115,9 +115,9 @@ public class FacilitySupportsProgramHelperTest {
   public void shouldPassWhenProgramStartDateIsNull() {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
-    supportedProgramDto.setActive(true);
+    supportedProgramDto.setSupportActive(true);
     supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setStartDate(null);
+    supportedProgramDto.setSupportStartDate(null);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
