@@ -321,7 +321,7 @@
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
-    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "orderableProductId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
     "requisition": { "id": "21d138bc-f2c2-4188-adf3-a3aae381abde" },
     "stockOnHand": 30000,
     "beginningBalance": 1000,
@@ -336,7 +336,7 @@
   },
   {
     "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
-    "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
+    "orderableProductId": "bfde33c3-83f1-4feb-a27c-842852f66b71",
     "requisition": { "id": "21d138bc-f2c2-4188-adf3-a3aae381abde" },
     "stockOnHand": 30000,
     "beginningBalance": 1000,
@@ -379,7 +379,7 @@
   },
   {
     "id": "682baaa0-9a68-40a2-97a4-a2cafb8fcce6",
-    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "orderableProductId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
     "requisition": { "id": "f152b9bb-c1e2-40b6-b381-28d739208662" },
     "beginningBalance": 100,
     "totalReceivedQuantity": 0,
@@ -397,7 +397,7 @@
   },
   {
     "id": "a2ab1bea-5833-4fa6-9c8f-ea4cba43a6da",
-    "orderableProductId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "orderableProductId": "bfde33c3-83f1-4feb-a27c-842852f66b71",
     "requisition": { "id": "f152b9bb-c1e2-40b6-b381-28d739208662" },
     "beginningBalance": 200,
     "totalReceivedQuantity": 0,
@@ -451,7 +451,7 @@
   },
   {
     "id": "982943fe-c8a7-468c-9622-dd1a345ce459",
-    "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "orderableProductId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
     "requisition": { "id": "276353fb-970f-4638-8ead-3e97c9450aa3" },
     "beginningBalance": 100,
     "totalReceivedQuantity": 0,
@@ -469,7 +469,7 @@
   },
   {
     "id": "14e25f19-1857-4ab0-b426-2893cef14663",
-    "orderableProductId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "orderableProductId": "bfde33c3-83f1-4feb-a27c-842852f66b71",
     "requisition": { "id": "276353fb-970f-4638-8ead-3e97c9450aa3" },
     "beginningBalance": 200,
     "totalReceivedQuantity": 0,

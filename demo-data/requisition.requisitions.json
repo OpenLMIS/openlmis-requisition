@@ -105,7 +105,7 @@
     "processingPeriodId": "516ac930-0d28-49f5-a178-64764e22b236",
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
     "status": "RELEASED",
-    "emergency": "false",
+    "emergency": "true",
     "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "templateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "numberOfMonthsInPeriod": 1
@@ -175,7 +175,7 @@
     "processingPeriodId": "516ac930-0d28-49f5-a178-64764e22b236",
     "supplyingFacilityId": "7938919f-6f61-4d1a-a4dc-923c31e9cd45",
     "status": "APPROVED",
-    "emergency" : "false",
+    "emergency" : "true",
     "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "templateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "numberOfMonthsInPeriod": 1
