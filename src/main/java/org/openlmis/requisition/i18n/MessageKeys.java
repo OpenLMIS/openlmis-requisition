@@ -104,6 +104,8 @@ public abstract class MessageKeys {
       + ".validation.onlyAvailableForApproval";
   public static final String ERROR_IS_INVARIANT = ERROR_PREFIX
       + ".validation.isInvariant";
+  public static final String ERROR_DATE_MODIFIED_MISMATCH =
+          "requisition.error.validation.dateModifiedMismatch";
   public static final String ERROR_IS_HIDDEN = ERROR_PREFIX
       + ".validation.isHidden";
   public static final String ERROR_MUST_BE_NON_NEGATIVE = ERROR_PREFIX

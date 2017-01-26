@@ -1,5 +1,6 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
@@ -16,6 +17,8 @@ import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
+
+import java.time.LocalDateTime;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
@@ -37,6 +40,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   public void validate(Object target, Errors errors) {
     Requisition requisition = (Requisition) target;
     Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
+
+    validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
     validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
@@ -111,6 +116,17 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     if (savedValue != null && !savedValue.equals(value)) {
       errors.rejectValue(field,
           messageService.localize(new Message(ERROR_IS_INVARIANT, field)).toString());
+    }
+  }
+
+  private void validateDateModifiedIsCorrect(Errors errors,
+                                             Requisition requisition,
+                                             Requisition requisitionToUpdate) {
+    LocalDateTime dateModified = requisition.getModifiedDate();
+    if (dateModified != null
+            && !dateModified.isEqual(requisitionToUpdate.getModifiedDate())) {
+      errors.rejectValue(Requisition.MODIFIED_DATE,
+          messageService.localize(new Message(ERROR_DATE_MODIFIED_MISMATCH)).toString());
     }
   }
 }

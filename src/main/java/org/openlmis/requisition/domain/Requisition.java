@@ -63,6 +63,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String CREATOR_ID = "creatorId";
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
+  public static final String MODIFIED_DATE = "modifiedDate";
 
   private static final String UUID = "pg-uuid";
 

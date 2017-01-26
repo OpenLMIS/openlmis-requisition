@@ -6,7 +6,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
@@ -30,13 +32,19 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class DraftRequisitionValidatorTest {
+
+  private static final String MODIFIED_DATE_ERROR =
+          "Modified date incorrect (mocked message)";
+
   @Mock
   private MessageService messageService;
 
@@ -61,6 +69,7 @@ public class DraftRequisitionValidatorTest {
   private UUID processingPeriodId = UUID.randomUUID();
   private UUID creatorId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
+  private String dateModifiedErrorMsg;
 
   @Before
   public void setUp() {
@@ -71,6 +80,7 @@ public class DraftRequisitionValidatorTest {
     requisitionTemplate.setColumnsMap(columnsMap);
     requisition = generateRequisition();
     mockRepositoriesAndObjects();
+    setUpErrorMsgs();
   }
 
   @Test
@@ -217,6 +227,55 @@ public class DraftRequisitionValidatorTest {
     verify(errors, times(0)).rejectValue(any(), any());
   }
 
+  @Test
+  public void shouldAcceptCorrectModifiedDate() {
+    LocalDateTime dateModified = LocalDateTime.now();
+
+    testModifiedDateValidation(dateModified, LocalDateTime.from(dateModified));
+
+    verifyZeroInteractions(errors);
+  }
+
+  @Test
+  public void shouldAcceptWithNoModifiedDate() {
+    LocalDateTime dateModified = LocalDateTime.now();
+
+    testModifiedDateValidation(null, dateModified);
+
+    verifyZeroInteractions(errors);
+  }
+
+  @Test
+  public void shouldRejectFutureModifiedDate() {
+    LocalDateTime dateModified = LocalDateTime.now();
+    LocalDateTime incomingDate = dateModified.plusYears(1);
+
+    testModifiedDateValidation(incomingDate, dateModified);
+
+    verify(errors).rejectValue(Requisition.MODIFIED_DATE, dateModifiedErrorMsg);
+  }
+
+  @Test
+  public void shouldRejectPastModifiedDate() {
+    LocalDateTime dateModified = LocalDateTime.now();
+    LocalDateTime incomingDate = dateModified.minusMinutes(5);
+
+    testModifiedDateValidation(incomingDate, dateModified);
+
+    verify(errors).rejectValue(Requisition.MODIFIED_DATE, dateModifiedErrorMsg);
+  }
+
+  private void testModifiedDateValidation(LocalDateTime incomingDate, LocalDateTime databaseDate) {
+    requisition.setModifiedDate(incomingDate);
+
+    Requisition existingRequisition = generateRequisition();
+    existingRequisition.setModifiedDate(databaseDate);
+
+    when(requisitionRepository.findOne(requisition.getId())).thenReturn(existingRequisition);
+
+    draftRequisitionValidator.validate(requisition, errors);
+  }
+
   private RequisitionLineItem generateLineItem() {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setRequestedQuantity(1);
@@ -251,5 +310,12 @@ public class DraftRequisitionValidatorTest {
     lineItem.setApprovedQuantity(1);
     lineItem.setRemarks("Remarks");
     return lineItem;
+  }
+
+  private void setUpErrorMsgs() {
+    Message msg = new Message(ERROR_DATE_MODIFIED_MISMATCH);
+    Message.LocalizedMessage lmsg = msg.new LocalizedMessage(MODIFIED_DATE_ERROR);
+    when(messageService.localize(msg)).thenReturn(lmsg);
+    dateModifiedErrorMsg = lmsg.toString();
   }
 }

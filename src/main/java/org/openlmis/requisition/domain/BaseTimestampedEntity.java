@@ -5,17 +5,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
-import org.openlmis.util.View;
-
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
+import org.openlmis.util.View;
 
 import javax.persistence.Convert;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import java.time.LocalDateTime;
 
 @MappedSuperclass
 public abstract class BaseTimestampedEntity extends BaseEntity {
@@ -28,8 +26,21 @@ public abstract class BaseTimestampedEntity extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @Convert(converter = LocalDateTimePersistenceConverter.class)
+  @JsonView(View.BasicInformation.class)
+  @Getter
+  @Setter
+  private LocalDateTime modifiedDate;
+
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
+  }
+
+  @PreUpdate
+  private void preUpdate() {
+    this.modifiedDate = LocalDateTime.now();
   }
 }
