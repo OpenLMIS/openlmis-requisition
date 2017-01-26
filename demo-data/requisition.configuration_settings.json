@@ -10,5 +10,9 @@
   {
     "key": "requisition.email.convert-to-order.content",
     "value": "Dear {0} {1},\n\nThe Requisition for Program {2} and Period {3} has been converted to order."
+  },
+  {
+    "key": "requisition.time.zoneId",
+    "value": "UTC"
   }
 ]

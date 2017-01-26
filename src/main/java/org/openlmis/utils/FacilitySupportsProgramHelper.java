@@ -4,18 +4,24 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
 @Component
 public class FacilitySupportsProgramHelper {
+  public static final String REQUISITION_TIME_ZONE_ID = "requisition.time.zoneId";
 
   @Autowired
   FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   /**
    * Method check if facility supports program.
@@ -46,6 +52,7 @@ public class FacilitySupportsProgramHelper {
   }
 
   private LocalDate getCurrentUtcDate() {
-    return LocalDate.now();
+    String zone = configurationSettingService.getStringValue(REQUISITION_TIME_ZONE_ID);
+    return LocalDate.now(ZoneId.of(zone));
   }
 }

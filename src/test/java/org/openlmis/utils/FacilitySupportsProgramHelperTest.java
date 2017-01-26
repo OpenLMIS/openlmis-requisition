@@ -1,6 +1,7 @@
 package org.openlmis.utils;
 
 import static org.mockito.Mockito.when;
+import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_ZONE_ID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.settings.service.ConfigurationSettingService;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -25,6 +27,9 @@ public class FacilitySupportsProgramHelperTest {
   @Mock
   FacilityReferenceDataService facilityReferenceDataService;
 
+  @Mock
+  ConfigurationSettingService configurationSettingService;
+
   @InjectMocks
   FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
@@ -37,6 +42,7 @@ public class FacilitySupportsProgramHelperTest {
     facilityDto = new FacilityDto();
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
+    when(configurationSettingService.getStringValue(REQUISITION_TIME_ZONE_ID)).thenReturn("UTC");
   }
 
   @Test(expected = ValidationMessageException.class)
