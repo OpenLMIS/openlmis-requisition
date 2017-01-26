@@ -76,6 +76,7 @@ import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -771,6 +772,7 @@ public class RequisitionServiceTest {
     requisitionLineItems.add(lineItem2);
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setTemplate(requisitionTemplate);
+    ReflectionTestUtils.setField(requisitionService, "currencyCode", "USD");
     return requisition;
   }
 

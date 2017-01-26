@@ -10,6 +10,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 
+import org.joda.money.CurrencyUnit;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -48,6 +49,7 @@ import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -123,6 +125,9 @@ public class RequisitionService {
   @Autowired
   private UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
+  @Value("${currencyCode}")
+  private String currencyCode;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -170,7 +175,7 @@ public class RequisitionService {
       numberOfPreviousPeriodsToAverage = previousRequisitions.size();
     }
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
-        numberOfPreviousPeriodsToAverage);
+        numberOfPreviousPeriodsToAverage, CurrencyUnit.of(currencyCode));
 
     requisitionRepository.save(requisition);
     return requisition;

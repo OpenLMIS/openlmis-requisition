@@ -13,6 +13,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import org.openlmis.BuildConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
@@ -137,13 +138,13 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
-      parameters = {@Parameter(name = "currencyCode", value = "USD")})
+      parameters = {@Parameter(name = "currencyCode", value = BuildConfig.CURRENCY_CODE)})
   private Money pricePerPack;
 
   @Getter
   @Setter
   @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
-      parameters = {@Parameter(name = "currencyCode", value = "USD")})
+      parameters = {@Parameter(name = "currencyCode", value = BuildConfig.CURRENCY_CODE)})
   private Money totalCost;
 
   @Setter
@@ -254,7 +255,8 @@ public class RequisitionLineItem extends BaseEntity {
    * @param requisition     requisition to apply
    * @param approvedProduct facilityTypeApprovedProduct to apply
    */
-  public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct) {
+  public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct,
+                             CurrencyUnit currencyUnit) {
     this();
     this.requisition = requisition;
     this.maxMonthsOfStock = BigDecimal.valueOf(approvedProduct.getMaxMonthsOfStock());
@@ -264,7 +266,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
-        ? Money.of(CurrencyUnit.USD, PRICE_PER_PACK_IF_NULL) : priceFromProduct;
+        ? Money.of(currencyUnit, PRICE_PER_PACK_IF_NULL) : priceFromProduct;
     this.orderableProductId = approvedProduct.getProduct().getProductId();
   }
 
