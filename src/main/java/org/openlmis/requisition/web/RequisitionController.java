@@ -18,6 +18,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -365,11 +366,24 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+    if (requisition.isApprovable()
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
+      SupervisoryNodeDto supervisoryNodeDto =
+          supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
+      SupervisoryNodeDto parentNode = null;
+      if (supervisoryNodeDto != null) {
+        parentNode = supervisoryNodeDto.getParentNode();
+      }
+      if (parentNode == null) {
+        requisition.setStatus(RequisitionStatus.APPROVED);
+      } else {
+        requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+        requisition.setSupervisoryNodeId(parentNode.getId());
+      }
       requisition.approve(orderableProductReferenceDataService.findAll());
+
       saveStatusMessage(requisition);
 
       requisitionRepository.save(requisition);

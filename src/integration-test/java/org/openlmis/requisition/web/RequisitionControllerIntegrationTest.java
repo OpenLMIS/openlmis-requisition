@@ -97,6 +97,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String MESSAGE = "message";
   private static final String FACILITY_CODE = "facilityCode";
   private static final String SUPERVISORY_SEARCH_URL = "/api/supervisoryNodes/search";
+  private static final String SUPERVISORY_URL = "/api/supervisoryNodes/";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -124,6 +125,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ProgramDto programDto = new ProgramDto();
   private FacilityDto facilityDto = new FacilityDto();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
+  private SupervisoryNodeDto parentSupervisoryNode = new SupervisoryNodeDto();
   private UserDto user;
   private LocalDateTime localDateTime = LocalDateTime.now();
   private RequisitionTemplate template;
@@ -165,6 +167,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     supervisoryNode.setCode("code");
     supervisoryNode.setDescription("description");
     supervisoryNode.setFacility(facilityDto);
+    parentSupervisoryNode.setId(UUID.randomUUID());
+    supervisoryNode.setParentNode(parentSupervisoryNode);
 
     template = new RequisitionTemplate();
     template.setColumnsMap(generateTemplateColumns());
@@ -203,29 +207,29 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configurationSettingRepository.save(new ConfigurationSetting(REQUISITION_TIME_ZONE_ID, "UTC"));
   }
 
-
   @Test
   public void shouldFindRequisitions() {
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
-            .queryParam(ACCESS_TOKEN, getToken())
-            .queryParam(PROGRAM, PROGRAM_UUID)
-            .queryParam("processingPeriod", PERIOD_UUID)
-            .queryParam(FACILITY, FACILITY_UUID)
-            .queryParam("supervisoryNode", supervisoryNode.getId())
-            .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
-            .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
-            .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
-            .when()
-            .get(SEARCH_URL)
-            .then()
-            .statusCode(200)
-            .extract().as(PageImplRepresentation.class);
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, PROGRAM_UUID)
+        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam("supervisoryNode", supervisoryNode.getId())
+        .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
+        .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
+        .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
 
     //Extract typed content from the PageImpl response
     ObjectMapper mapper = new ObjectMapper();
     mapper.findAndRegisterModules();
     List<RequisitionDto> content = mapper.convertValue(response.getContent(),
-                                                    new TypeReference<List<RequisitionDto>>() { });
+        new TypeReference<List<RequisitionDto>>() {
+        });
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, content.size());
@@ -437,6 +441,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
+    mockFacility();
+    mockDetailedRoleAssignmentDto();
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
@@ -1116,7 +1122,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private void testApproveRequisition(Requisition requisition) {
-
+    mockSupervisoryNode();
     RequisitionDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisition.getId())
@@ -1128,7 +1134,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertNotNull(response.getId());
     assertEquals(requisition.getId(), response.getId());
-    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+
+    if (supervisoryNode.getParentNode() == null) {
+      assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+    } else {
+      assertEquals(RequisitionStatus.IN_APPROVAL, response.getStatus());
+    }
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1220,6 +1231,48 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     );
   }
 
+  private void mockSupervisoryNode() {
+    wireMockRule.stubFor(
+        get(urlMatching(SUPERVISORY_URL + UUID_REGEX + ".*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{"
+                    + "\"id\":\"" + supervisoryNode.getId() + "\",\n"
+                    + "\"code\":\"C1234\",\n"
+                    + "\"name\":\"N1234\",\n"
+                    + "\"description\":\"D1234\",\n"
+                    + "\"parentNode\":{ \"id\":\"" + parentSupervisoryNode.getId() + "\"\n }\n"
+                    + "}"))
+    );
+  }
+
+  private void mockDetailedRoleAssignmentDto() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/roleAssignments.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("[{ "
+                    + " \"programId\":\"86191d25-4846-4775-a968-12df732e6004\","
+                    + " \"supervisoryNodeId\":\"bb0c6821-df46-44d2-ba3f-48f613abe4c4\" }]"))
+    );
+  }
+
+  private void mockFacility() {
+    wireMockRule.stubFor(get(urlMatching("/api/facilities/aaf12a5a-8b16-11e6-ae22-56b6b6499611.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("{"
+                + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+                + " \"name\":\"facilityName\",\n"
+                + " \"code\":\"facilityCode\",\n"
+                + " \"active\":true,\n"
+                + " \"enabled\":true,\n"
+                + " \"geographicZone\":\"bf2b810b-cdbf-48b2-b569-149b3cf42387\","
+                + " \"operator\":\"9456c3e9-c4a6-4a28-9e08-47ceb16a4121\","
+                + " \"type\":\"ac1d268b-ce10-455f-bf87-9c667da8f060\""
+                + "}")));
+  }
+
   private void setProgramIdInRequisitionAndTemplate(UUID programId) {
     requisition.setProgramId(programId);
     requisitionRepository.save(requisition);
@@ -1229,6 +1282,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private String getMessage(UUID facilityId, UUID programId) {
     return messageSource.getMessage("requisition.error.facility-does-not-support-program",
-        new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
+        new Object[] {facilityId, programId}, LocaleContextHolder.getLocale());
   }
 }

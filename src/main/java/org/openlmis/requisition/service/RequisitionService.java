@@ -5,8 +5,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRON
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
-import static org.openlmis.requisition.i18n.MessageKeys
-    .ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
@@ -18,6 +17,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
@@ -36,10 +36,8 @@ import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDa
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
@@ -78,7 +76,6 @@ public class RequisitionService {
       "requisition.error.canNotSkipPeriod.program";
   private static final String CAN_NOT_SKIP_EMERGENCY_REQUISITION =
       "requisition.error.canNotSkipPeriod.emergency";
-  private static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
 
   @Autowired
@@ -106,15 +103,6 @@ public class RequisitionService {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private UserSupervisedFacilitiesReferenceDataService supervisedFacilitiesReferenceDataService;
-
-  @Autowired
-  private UserSupervisedProgramsReferenceDataService userProgramsReferenceDataService;
-
-  @Autowired
-  private RightReferenceDataService rightReferenceDataService;
-
-  @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Autowired
@@ -131,6 +119,9 @@ public class RequisitionService {
 
   @Autowired
   private OrderDtoBuilder orderDtoBuilder;
+
+  @Autowired
+  private UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -308,28 +299,32 @@ public class RequisitionService {
    */
   public Set<Requisition> getRequisitionsForApproval(UUID userId) {
     Set<Requisition> requisitionsForApproval = new HashSet<>();
-    Collection<ProgramDto> programsForUser = getAllProgramsForUser(userId);
-    RightDto right = rightReferenceDataService.findRight(REQUISITION_APPROVE);
-    for (ProgramDto program : programsForUser) {
-      Collection<FacilityDto> supervisedFacilities = supervisedFacilitiesReferenceDataService
-          .getFacilitiesSupervisedByUser(userId, program.getId(), right.getId());
-      requisitionsForApproval.addAll(findAuthorizedRequisitions(supervisedFacilities, program));
+    Set<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
+        .getRoleAssignments(userId).stream().collect(Collectors.toSet());
+    if (roleAssignments != null) {
+      for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
+        if (roleAssignment.getSupervisoryNodeId() != null
+            && roleAssignment.getProgramId() != null) {
+          requisitionsForApproval.addAll(getApprovableRequisitions(
+              roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
+        }
+      }
     }
 
     return requisitionsForApproval;
   }
 
   /**
-   * Get authorized requisitions for specified program.
+   * Get approvable requisitions for specified program and supervisoryNode.
    */
-  public List<Requisition> getAuthorizedRequisitions(FacilityDto facility, ProgramDto program) {
+  public List<Requisition> getApprovableRequisitions(UUID programId, UUID supervisoryNodeId) {
     List<Requisition> requisitions = new ArrayList<>();
-    Page<Requisition> reqList = searchRequisitions(facility.getId(), program.getId(),
-        null, null, null, null, null, null, null);
+    Page<Requisition> reqList = searchRequisitions(null, programId,
+        null, null, null, supervisoryNodeId, null, null, null);
     if (reqList != null) {
-      for (Requisition req : reqList.getContent()) {
-        if (req.getStatus() == RequisitionStatus.AUTHORIZED) {
-          requisitions.add(req);
+      for (Requisition requisition : reqList.getContent()) {
+        if (requisition.isApprovable()) {
+          requisitions.add(requisition);
         }
       }
     }
@@ -529,25 +524,7 @@ public class RequisitionService {
   private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
                                                     ProcessingPeriodDto period) {
     Page<Requisition> requisitions = searchRequisitions(requisition.getFacilityId(),
-            requisition.getProgramId(), period.getId(), null);
+        requisition.getProgramId(), period.getId(), null);
     return requisitions.getContent();
-  }
-
-  private Set<ProgramDto> getAllProgramsForUser(UUID userId) {
-    Set<ProgramDto> allPrograms = new HashSet<>(userProgramsReferenceDataService
-        .getProgramsSupervisedByUser(userId));
-    allPrograms.addAll(userProgramsReferenceDataService
-        .getHomeFacilityProgramsByUser(userId));
-
-    return allPrograms;
-  }
-
-  private List<Requisition> findAuthorizedRequisitions(Collection<FacilityDto> supervisedFacilities,
-                                                      ProgramDto program) {
-    List<Requisition> requisitions = new ArrayList<>();
-    for (FacilityDto facility : supervisedFacilities) {
-      requisitions.addAll(getAuthorizedRequisitions(facility, program));
-    }
-    return requisitions;
   }
 }

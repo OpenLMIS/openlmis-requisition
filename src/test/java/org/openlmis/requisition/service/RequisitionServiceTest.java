@@ -20,7 +20,6 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -39,6 +38,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
@@ -66,8 +66,7 @@ import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataServi
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserSupervisedFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserSupervisedProgramsReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
@@ -153,12 +152,6 @@ public class RequisitionServiceTest {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Mock
-  private UserSupervisedFacilitiesReferenceDataService supervisedFacilitiesReferenceDataService;
-
-  @Mock
-  private UserSupervisedProgramsReferenceDataService supervisedProgramsReferenceDataService;
-
-  @Mock
   private RightReferenceDataService rightReferenceDataService;
 
   @Mock
@@ -182,6 +175,9 @@ public class RequisitionServiceTest {
   @Mock
   private AuthenticationHelper authenticationHelper;
 
+  @Mock
+  UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -194,7 +190,7 @@ public class RequisitionServiceTest {
   private UUID facilityId = UUID.randomUUID();
   private UUID suggestedPeriodId = UUID.randomUUID();
   private UUID rightId = UUID.randomUUID();
-
+  private UUID supervisoryNodeId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -334,49 +330,47 @@ public class RequisitionServiceTest {
   public void shouldGetAuthorizedRequisitions() {
     when(facility.getId()).thenReturn(facilityId);
     when(program.getId()).thenReturn(programId);
+    when(supervisoryNode.getId()).thenReturn(suggestedPeriodId);
     requisition.setStatus(AUTHORIZED);
     requisition.setProgramId(program.getId());
     requisition.setFacilityId(facility.getId());
 
     Page page = Pagination.getPage(Collections.singletonList(requisition), null);
 
-    when(requisitionRepository
-        .searchRequisitions(facilityId, programId, null, null, null, null, null, null, null))
+    when(requisitionRepository.searchRequisitions(
+        null, programId, null, null, null, supervisoryNode.getId(), null, null, null))
         .thenReturn(page);
 
     List<Requisition> authorizedRequisitions =
-        requisitionService.getAuthorizedRequisitions(facility, program);
+        requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
     List<Requisition> expected = Collections.singletonList(requisition);
 
     assertEquals(expected, authorizedRequisitions);
   }
 
   @Test
-  public void shouldGetRequisitionsForApprovalIfUserHasSupervisedProgramsAndFacilities() {
+  public void shouldGetRequisitionsForApproval() {
     when(facility.getId()).thenReturn(facilityId);
     when(program.getId()).thenReturn(programId);
-    when(right.getId()).thenReturn(rightId);
+    when(supervisoryNode.getId()).thenReturn(suggestedPeriodId);
     requisition.setFacilityId(facilityId);
     requisition.setProgramId(programId);
+    requisition.setSupervisoryNodeId(supervisoryNodeId);
     requisition.setStatus(AUTHORIZED);
     Page page = Pagination.getPage(Collections.singletonList(requisition), null);
-    UserDto user = mock(UserDto.class);
 
-    when(requisitionRepository
-        .searchRequisitions(facilityId, programId, null, null, null, null, null, null, null))
+    when(requisitionRepository.searchRequisitions(
+        null, programId, null, null, null, supervisoryNodeId, null, null, null))
         .thenReturn(page);
-    when(supervisedFacilitiesReferenceDataService
-        .getFacilitiesSupervisedByUser(user.getId(), programId, rightId))
-        .thenReturn(Collections.singletonList(facility));
-    when(supervisedProgramsReferenceDataService
-        .getProgramsSupervisedByUser(user.getId()))
-        .thenReturn(Collections.singletonList(program));
-    when(supervisedProgramsReferenceDataService
-        .getHomeFacilityProgramsByUser(user.getId()))
-        .thenReturn(Collections.singletonList(program));
-    when(rightReferenceDataService
-        .findRight("REQUISITION_APPROVE"))
-        .thenReturn(right);
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto =  new DetailedRoleAssignmentDto();
+    detailedRoleAssignmentDto.setProgramId(programId);
+    detailedRoleAssignmentDto.setSupervisoryNodeId(supervisoryNodeId);
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    UserDto user = mock(UserDto.class);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
 
     Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId());

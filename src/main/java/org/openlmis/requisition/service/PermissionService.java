@@ -75,6 +75,7 @@ public class PermissionService {
           checkPermission(REQUISITION_AUTHORIZE, requisitionId);
           break;
         case AUTHORIZED:
+        case IN_APPROVAL:
           checkPermission(REQUISITION_APPROVE, requisitionId);
           break;
         default:

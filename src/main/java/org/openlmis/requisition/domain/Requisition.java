@@ -9,7 +9,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -44,10 +46,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "requisitions")
@@ -280,6 +278,14 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Check if the requisition is approvable.
+   *
+   */
+  public boolean isApprovable() {
+    return status == RequisitionStatus.AUTHORIZED || status == RequisitionStatus.IN_APPROVAL;
+  }
+
+  /**
    * Approves given requisition.
    *
    * @param products orderable products that will be used by line items to update packs to ship.
@@ -289,8 +295,6 @@ public class Requisition extends BaseTimestampedEntity {
         line -> line.updatePacksToShip(products));
 
     updateConsumptionsAndTotalCost();
-
-    status = RequisitionStatus.APPROVED;
   }
 
   /**
