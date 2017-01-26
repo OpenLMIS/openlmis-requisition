@@ -511,7 +511,6 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
-                        text/plain:
                   "404":
                   "403":
                       body:
