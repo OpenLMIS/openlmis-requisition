@@ -21,7 +21,6 @@ abstract class AbstractRequisitionValidator implements Validator {
 
   static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
-
   public boolean supports(Class<?> clazz) {
     return Requisition.class.equals(clazz);
   }
