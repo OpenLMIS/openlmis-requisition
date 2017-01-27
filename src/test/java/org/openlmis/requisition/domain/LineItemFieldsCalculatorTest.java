@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
@@ -141,8 +140,7 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 3.25));
     requisitionLineItem.setPacksToShip(40L);
 
-    Money totalCost =
-        LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
+    Money totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
 
     assertEquals(Money.of(CurrencyUnit.USD, 130), totalCost);
   }
@@ -153,17 +151,16 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 3.25));
     requisitionLineItem.setPacksToShip(null);
 
-    Money totalCost =
-        LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
+    Money totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+    assertEquals(BigDecimal.ZERO.setScale(2), totalCost.getAmount());
 
     requisitionLineItem.setPricePerPack(null);
-    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
+    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+    assertEquals(BigDecimal.ZERO.setScale(2), totalCost.getAmount());
 
     requisitionLineItem.setPacksToShip(20L);
-    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
+    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem);
+    assertEquals(BigDecimal.ZERO.setScale(2), totalCost.getAmount());
   }
 
   @Test

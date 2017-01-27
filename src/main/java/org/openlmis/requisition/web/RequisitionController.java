@@ -8,7 +8,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FO
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import org.joda.money.CurrencyUnit;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -44,7 +43,6 @@ import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -121,9 +119,6 @@ public class RequisitionController extends BaseController {
   
   @Autowired
   private StatusMessageRepository statusMessageRepository;
-
-  @Value("${currencyCode}")
-  private String currencyCode;
 
   /**
    * Allows creating new requisitions.
@@ -203,8 +198,7 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    requisition.submit(orderableProductReferenceDataService.findAll(),
-        CurrencyUnit.of(currencyCode));
+    requisition.submit(orderableProductReferenceDataService.findAll());
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
@@ -388,8 +382,7 @@ public class RequisitionController extends BaseController {
         requisition.setStatus(RequisitionStatus.IN_APPROVAL);
         requisition.setSupervisoryNodeId(parentNode.getId());
       }
-      requisition.approve(orderableProductReferenceDataService.findAll(),
-          CurrencyUnit.of(currencyCode));
+      requisition.approve(orderableProductReferenceDataService.findAll());
 
       saveStatusMessage(requisition);
 
@@ -468,8 +461,7 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    requisition.authorize(orderableProductReferenceDataService.findAll(),
-        CurrencyUnit.of(currencyCode));
+    requisition.authorize(orderableProductReferenceDataService.findAll());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();

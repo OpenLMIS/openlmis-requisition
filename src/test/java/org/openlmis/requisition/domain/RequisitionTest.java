@@ -42,11 +42,10 @@ import java.util.UUID;
 public class RequisitionTest {
   private static final UUID ORDERABLE_PRODUCT_ID = UUID.randomUUID();
 
-  private static final CurrencyUnit CURRENCY_UNIT = CurrencyUnit.USD;
-  private static final Money PRICE_PER_PACK = Money.of(CURRENCY_UNIT, 9);
+  private static final Money PRICE_PER_PACK = Money.of(CurrencyUnit.USD, 9);
   private static final int ADJUSTED_CONSUMPTION = 1;
   private static final int AVERAGE_CONSUMPTION = 1;
-  private static final Money TOTAL_COST = Money.of(CURRENCY_UNIT, 5);
+  private static final Money TOTAL_COST = Money.of(CurrencyUnit.USD, 5);
   private static final int MONTHS_IN_PERIOD = 1;
 
   private Requisition requisition;
@@ -78,7 +77,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -86,7 +85,7 @@ public class RequisitionTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
   }
 
   @Test
@@ -106,7 +105,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -259,7 +258,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, CURRENCY_UNIT);
+        Collections.singletonList(previousRequisition), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -282,8 +281,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0,
-        CURRENCY_UNIT);
+    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -312,7 +310,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, CURRENCY_UNIT);
+        Collections.singletonList(previousRequisition), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -376,7 +374,7 @@ public class RequisitionTest {
     setUpTestUpdatePacksToShip(product, packsToShip);
 
     // when
-    requisition.submit(Collections.singletonList(product), CURRENCY_UNIT);
+    requisition.submit(Collections.singletonList(product));
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -392,7 +390,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     // when
-    requisition.authorize(Collections.singletonList(product),CURRENCY_UNIT);
+    requisition.authorize(Collections.singletonList(product));
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -408,7 +406,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.approve(Collections.singletonList(product), CURRENCY_UNIT);
+    requisition.approve(Collections.singletonList(product));
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -420,7 +418,7 @@ public class RequisitionTest {
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -440,7 +438,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -460,7 +458,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -474,7 +472,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -489,7 +487,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -621,7 +619,7 @@ public class RequisitionTest {
     when(LineItemFieldsCalculator
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
     ).thenReturn(ADJUSTED_CONSUMPTION);
-    when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CURRENCY_UNIT))
+    when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem))
         .thenReturn(TOTAL_COST);
     when(LineItemFieldsCalculator
         .calculateAverageConsumption(Collections.singletonList(ADJUSTED_CONSUMPTION)))
