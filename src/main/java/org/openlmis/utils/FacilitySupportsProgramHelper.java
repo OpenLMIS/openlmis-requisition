@@ -48,10 +48,10 @@ public class FacilitySupportsProgramHelper {
   }
 
   private boolean isStartDateBeforeNow(LocalDate startDate) {
-    return (startDate == null) || startDate.isBefore(getCurrentUtcDate());
+    return (startDate == null) || startDate.isBefore(getCurrentDateWithSystemZone());
   }
 
-  private LocalDate getCurrentUtcDate() {
+  private LocalDate getCurrentDateWithSystemZone() {
     String zone = configurationSettingService.getStringValue(REQUISITION_TIME_ZONE_ID);
     return LocalDate.now(ZoneId.of(zone));
   }
