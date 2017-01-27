@@ -22,6 +22,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +52,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 
@@ -116,6 +119,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private ExposedMessageSource messageSource;
+
+  @Value("${currencyCode}")
+  private String currencyCode;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -197,6 +203,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setMaximumStockQuantity(4);
     requisitionLineItem.setCalculatedOrderQuantity(2);
     requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.of(currencyCode), 13.55));
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -272,6 +279,24 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals(requisition.getId(), response.getId());
     assertEquals(RequisitionStatus.SUBMITTED, response.getStatus());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldSerializeMoneyOnSubmit() {
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+    assertNotNull(response.getId());
+
+    RequisitionLineItem.Importer importer = response.getRequisitionLineItems().get(0);
+    assertEquals(new BigDecimal("13.55"), importer.getPricePerPack().getAmount());
+    assertEquals(CurrencyUnit.of(currencyCode), importer.getPricePerPack().getCurrencyUnit());
   }
 
   @Test

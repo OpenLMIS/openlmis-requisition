@@ -187,7 +187,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"id\":\"047cb32a-8962-11e6-ae22-56b6b6499611\","
       + " \"programId\": \"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
       + " \"productId\": \"cd9e1412-8703-11e6-ae22-56b6b6499611\","
-      + " \"productCategoryId\": \"6d469a06-8962-11e6-ae22-56b6b6499611\""
+      + " \"productCategoryId\": \"6d469a06-8962-11e6-ae22-56b6b6499611\","
+      + " \"pricePerPack\": 13.77"
       + "}";
 
   private static final String MOCK_SEARCH_SUPPLY_LINE_RESULT = "[{\n"

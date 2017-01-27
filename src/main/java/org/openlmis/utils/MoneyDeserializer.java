@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import org.openlmis.BuildConfig;
+
 import java.io.IOException;
 
 /**
@@ -16,7 +18,8 @@ public class MoneyDeserializer extends JsonDeserializer<Money> {
   @Override
   public Money deserialize(JsonParser jsonParser, DeserializationContext ctxt)
       throws IOException {
-    return Money.parse(CurrencyUnit.USD.getCurrencyCode() + " " + jsonParser.getText());
+    return Money.parse(
+        CurrencyUnit.of(BuildConfig.CURRENCY_CODE).getCode() + " " + jsonParser.getText());
   }
 }
 

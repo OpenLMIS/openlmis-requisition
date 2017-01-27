@@ -113,10 +113,10 @@ public final class LineItemFieldsCalculator {
    * @param lineItem the line item to calculate the value for
    * @return a {@link Money} object representing the total cost for this line
    */
-  public static Money calculateTotalCost(RequisitionLineItem lineItem) {
+  public static Money calculateTotalCost(RequisitionLineItem lineItem, CurrencyUnit currencyUnit) {
     Money pricePerPack = lineItem.getPricePerPack();
     if (pricePerPack == null) {
-      pricePerPack = Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
+      pricePerPack = Money.of(currencyUnit, RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
     }
 
     long packsToShip = zeroIfNull(lineItem.getPacksToShip());

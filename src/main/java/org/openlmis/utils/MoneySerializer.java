@@ -11,7 +11,6 @@ import java.io.IOException;
 /**
  * MoneySerializer class represents the serializer for Joda-Money.
  */
-
 public class MoneySerializer extends JsonSerializer<Money> {
 
   @Override
