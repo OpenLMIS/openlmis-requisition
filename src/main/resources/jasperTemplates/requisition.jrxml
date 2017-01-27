@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-01-13T19:02:23 -->
+<!-- 2017-01-27T12:16:58 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisition" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
@@ -220,6 +220,9 @@
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{nonFullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport(getClass().getResourceAsStream($P{subreport_dir} + "requisitionLines.jrxml"))]]></subreportExpression>
 			</subreport>
+			<break>
+				<reportElement x="0" y="54" width="841" height="1" uuid="c083deb9-ccd9-448e-a604-a95950748b94"/>
+			</break>
 		</band>
 	</detail>
 	<pageFooter>
