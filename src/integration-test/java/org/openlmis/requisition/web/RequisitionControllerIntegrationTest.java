@@ -36,7 +36,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -124,7 +124,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Requisition requisition = new Requisition();
   private Requisition requisitionForSearch = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
-  private OrderableProductDto product = new OrderableProductDto();
+  private OrderableDto ordereble = new OrderableDto();
   private ProgramDto programDto = new ProgramDto();
   private FacilityDto facilityDto = new FacilityDto();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
@@ -142,7 +142,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     user.setLastName("User");
     user.setEmail("example@mail.com");
 
-    product.setId(UUID.fromString("cd9e1412-8703-11e6-ae22-56b6b6499611"));
+    ordereble.setId(UUID.fromString("cd9e1412-8703-11e6-ae22-56b6b6499611"));
 
     programDto.setId(UUID.fromString("86191d25-4846-4775-a968-12df732e6004"));
     programDto.setCode(REQUISITION_REPOSITORY_NAME);
@@ -183,7 +183,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configureRequisition(requisition);
     configureRequisitionForSearch(requisitionForSearch);
 
-    requisitionLineItem.setOrderableProductId(product.getId());
+    requisitionLineItem.setOrderableId(ordereble.getId());
     requisitionLineItem.setMaxMonthsOfStock(BigDecimal.valueOf(2));
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");

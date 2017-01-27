@@ -183,11 +183,11 @@ public abstract class BaseWebIntegrationTest {
       + " \"durationInMonths\":1"
       + " }";
 
-  private static final String MOCK_FIND_PROGRAM_PRODUCT = "{"
+  private static final String MOCK_FIND_PROGRAM_ORDERABLE = "{"
       + " \"id\":\"047cb32a-8962-11e6-ae22-56b6b6499611\","
       + " \"programId\": \"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
       + " \"productId\": \"cd9e1412-8703-11e6-ae22-56b6b6499611\","
-      + " \"productCategoryId\": \"6d469a06-8962-11e6-ae22-56b6b6499611\","
+      + " \"ordereableDisplayCategoryId\": \"6d469a06-8962-11e6-ae22-56b6b6499611\","
       + " \"pricePerPack\": 13.77"
       + "}";
 
@@ -200,7 +200,7 @@ public abstract class BaseWebIntegrationTest {
 
   private static final String MOCK_SEARCH_APPROVED_PRODUCTS = "[{"
       + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
-      + " \"product\":" + MOCK_FIND_PROGRAM_PRODUCT + ","
+      + " \"product\":" + MOCK_FIND_PROGRAM_ORDERABLE + ","
       + " \"maxMonthsOfStock\": 2"
       + "}]";
 
@@ -333,14 +333,14 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_SEARCH_APPROVED_PRODUCTS)));
 
-    // This mocks for find all orderableProducts
-    wireMockRule.stubFor(get(urlPathEqualTo("/api/orderableProducts/"))
+    // This mocks for find all orderable
+    wireMockRule.stubFor(get(urlPathEqualTo("/api/orderables/"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody("[" + MOCK_FIND_PRODUCT_RESULT + "]")));
 
-    // This mocks for find one orderableProduct
-    wireMockRule.stubFor(get(urlMatching("/api/orderableProducts/" + UUID_REGEX + ".*"))
+    // This mocks for find one orderable
+    wireMockRule.stubFor(get(urlMatching("/api/orderables/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));

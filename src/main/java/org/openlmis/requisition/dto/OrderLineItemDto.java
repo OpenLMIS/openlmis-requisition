@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class OrderLineItemDto {
-  private OrderableProductDto orderableProduct;
+  private OrderableDto orderable;
   private Long orderedQuantity;
   private Long filledQuantity;
   private Long approvedQuantity;
@@ -18,9 +18,9 @@ public class OrderLineItemDto {
    * @param lineItem RequisitionLineItem to create instance from.
    */
   public static OrderLineItemDto newOrderLineItem(RequisitionLineItem lineItem,
-                                                  OrderableProductDto productDto) {
+                                                  OrderableDto productDto) {
     OrderLineItemDto orderLineItem = new OrderLineItemDto();
-    orderLineItem.setOrderableProduct(productDto);
+    orderLineItem.setOrderable(productDto);
     orderLineItem.setFilledQuantity(0L);
     orderLineItem.setOrderedQuantity(lineItem.getRequestedQuantity().longValue());
     orderLineItem.setApprovedQuantity(lineItem.getApprovedQuantity().longValue());

@@ -22,7 +22,7 @@ import org.joda.money.CurrencyUnit;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
@@ -271,7 +271,7 @@ public class Requisition extends BaseTimestampedEntity {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
         RequisitionLineItem previousLine = previousRequisitions.get(0)
-            .findLineByProductId(currentLine.getOrderableProductId());
+            .findLineByProductId(currentLine.getOrderableId());
 
         // ... and in the end we use it to calculate beginning balance in a new line.
         currentLine.setBeginningBalance(
@@ -286,7 +286,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void submit(Collection<OrderableProductDto> products, UUID submitter) {
+  public void submit(Collection<OrderableDto> products, UUID submitter) {
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
         line -> line.updatePacksToShip(products));
 
@@ -312,7 +312,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void authorize(Collection<OrderableProductDto> products, UUID authorizer) {
+  public void authorize(Collection<OrderableDto> products, UUID authorizer) {
     RequisitionHelper.forEachLine(
         getNonSkippedRequisitionLineItems(), line -> line.updatePacksToShip(products));
 
@@ -342,7 +342,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param parentNodeId supervisoryNodeDto parent node of the supervisoryNode for this requisition.
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void approve(UUID parentNodeId, Collection<OrderableProductDto> products) {
+  public void approve(UUID parentNodeId, Collection<OrderableDto> products) {
     if (parentNodeId == null) {
       status = RequisitionStatus.APPROVED;
     } else {
@@ -371,7 +371,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     return requisitionLineItems
         .stream()
-        .filter(e -> Objects.equals(productId, e.getOrderableProductId()))
+        .filter(e -> Objects.equals(productId, e.getOrderableId()))
         .findFirst()
         .orElse(null);
   }
@@ -460,7 +460,7 @@ public class Requisition extends BaseTimestampedEntity {
     RequisitionHelper.forEachLine(requisitionLineItems,
         line -> {
           List<RequisitionLineItem> withProductId = RequisitionHelper
-              .findByProductId(previousRequisitionLineItems, line.getOrderableProductId());
+              .findByProductId(previousRequisitionLineItems, line.getOrderableId());
           List<Integer> adjustedConsumptions = RequisitionHelper
               .mapToAdjustedConsumptions(withProductId);
 
@@ -608,6 +608,6 @@ public class Requisition extends BaseTimestampedEntity {
 
     List<Requisition> getPreviousRequisitions();
 
-    Set<OrderableProductDto> getAvailableNonFullSupplyProducts();
+    Set<OrderableDto> getAvailableNonFullSupplyProducts();
   }
 }

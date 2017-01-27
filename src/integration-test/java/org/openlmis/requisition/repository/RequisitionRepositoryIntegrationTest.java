@@ -16,7 +16,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -241,12 +241,12 @@ public class RequisitionRepositoryIntegrationTest
     Money pricePerPack = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 14.57);
     UUID productId = UUID.randomUUID();
 
-    ProductDto programProduct = new ProductDto();
-    programProduct.setPricePerPack(pricePerPack);
-    programProduct.setProductId(productId);
+    ProgramOrderableDto programOrderable = new ProgramOrderableDto();
+    programOrderable.setPricePerPack(pricePerPack);
+    programOrderable.setProductId(productId);
 
     ApprovedProductDto ftap = new ApprovedProductDto();
-    ftap.setProduct(programProduct);
+    ftap.setProduct(programOrderable);
     ftap.setMaxMonthsOfStock(7.25);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),

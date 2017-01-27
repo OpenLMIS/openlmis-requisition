@@ -8,18 +8,18 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class OrderableProductDto {
+public class OrderableDto {
   private UUID id;
   private String productCode;
   private String name;
   private long packSize;
   private long packRoundingThreshold;
   private boolean roundToZero;
-  private Set<ProductDto> programs;
+  private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
 
   /**
-   * Returns the number of packs to order. For this OrderableProduct given a desired number of
+   * Returns the number of packs to order. For this Orderable given a desired number of
    * dispensing units, will return the number of packs that should be ordered.
    *
    * @param dispensingUnits # of dispensing units we'd like to order for
@@ -45,16 +45,16 @@ public class OrderableProductDto {
   }
 
   /**
-   * Find ProductDto in programs using programId.
+   * Find ProgramOrderableDto in programs using programId.
    *
    * @param programId programId
    * @return product
    */
-  public ProductDto findProgramProductDto(UUID programId) {
+  public ProgramOrderableDto findProgramOrderableDto(UUID programId) {
     if (programs != null) {
-      for (ProductDto productDto : programs) {
-        if (productDto.getProgramId().equals(programId)) {
-          return productDto;
+      for (ProgramOrderableDto programOrderableDto : programs) {
+        if (programOrderableDto.getProgramId().equals(programId)) {
+          return programOrderableDto;
         }
       }
     }

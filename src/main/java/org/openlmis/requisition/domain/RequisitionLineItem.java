@@ -15,8 +15,8 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
@@ -75,7 +75,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID orderableProductId;
+  private UUID orderableId;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "requisitionId")
@@ -206,8 +206,8 @@ public class RequisitionLineItem extends BaseEntity {
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
-    if (importer.getOrderableProduct() != null) {
-      requisitionLineItem.setOrderableProductId(importer.getOrderableProduct().getId());
+    if (importer.getOrderable() != null) {
+      requisitionLineItem.setOrderableId(importer.getOrderable().getId());
     }
     requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
     requisitionLineItem.setTotalReceivedQuantity(importer.getTotalReceivedQuantity());
@@ -261,14 +261,14 @@ public class RequisitionLineItem extends BaseEntity {
     this.requisition = requisition;
     this.maxMonthsOfStock = BigDecimal.valueOf(approvedProduct.getMaxMonthsOfStock());
 
-    ProductDto product = approvedProduct.getProduct();
-    this.orderableProductId = product.getProductId();
+    ProgramOrderableDto product = approvedProduct.getProduct();
+    this.orderableId = product.getProductId();
 
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
         ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
         : priceFromProduct;
-    this.orderableProductId = approvedProduct.getProduct().getProductId();
+    this.orderableId = approvedProduct.getProduct().getProductId();
   }
 
   /**
@@ -351,7 +351,7 @@ public class RequisitionLineItem extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(Exporter exporter, OrderableProductDto orderableProductDto) {
+  public void export(Exporter exporter, OrderableDto orderableDto) {
     exporter.setId(id);
     exporter.setBeginningBalance(beginningBalance);
     exporter.setTotalReceivedQuantity(totalReceivedQuantity);
@@ -366,7 +366,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
-    exporter.setOrderableProduct(orderableProductDto);
+    exporter.setOrderable(orderableDto);
     exporter.setPricePerPack(pricePerPack);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setTotalCost(totalCost);
@@ -452,9 +452,9 @@ public class RequisitionLineItem extends BaseEntity {
    *
    * @param products list of orderable products.
    */
-  public void updatePacksToShip(Collection<OrderableProductDto> products) {
+  public void updatePacksToShip(Collection<OrderableDto> products) {
     this.packsToShip = products.stream()
-        .filter(product -> product.getId().equals(getOrderableProductId()))
+        .filter(product -> product.getId().equals(getOrderableId()))
         .map(product -> getOrderQuantity() != null
             ? product.packsToOrder(getOrderQuantity()) : null)
         .findFirst()
@@ -592,7 +592,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setPacksToShip(Long packsToShip);
 
-    void setOrderableProduct(OrderableProductDto orderableProductDto);
+    void setOrderable(OrderableDto orderableDto);
 
     void setPricePerPack(Money pricePerPack);
 
@@ -624,7 +624,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getTotalReceivedQuantity();
 
-    OrderableProductDto getOrderableProduct();
+    OrderableDto getOrderable();
 
     Integer getTotalLossesAndAdjustments();
 

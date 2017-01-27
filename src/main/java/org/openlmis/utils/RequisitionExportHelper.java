@@ -3,9 +3,9 @@ package org.openlmis.utils;
 import static java.util.stream.Collectors.toList;
 
 import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ import java.util.List;
 public class RequisitionExportHelper {
 
   @Autowired
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   /**
    * Return list of RequisitionLineItemDtos for a given RequisitionLineItem.
@@ -30,9 +30,9 @@ public class RequisitionExportHelper {
 
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    OrderableProductDto orderableProductDto = orderableProductReferenceDataService.findOne(
-        requisitionLineItem.getOrderableProductId());
-    requisitionLineItem.export(dto, orderableProductDto);
+    OrderableDto orderableDto = orderableReferenceDataService.findOne(
+        requisitionLineItem.getOrderableId());
+    requisitionLineItem.export(dto, orderableDto);
     return dto;
   }
 }

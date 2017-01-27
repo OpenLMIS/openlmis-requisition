@@ -13,7 +13,7 @@
   {
     "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "productCode",
-    "name": "orderableProduct.productCode",
+    "name": "orderable.productCode",
     "label": "Product code",
     "indicator": "O",
     "displayOrder": 2,
@@ -25,7 +25,7 @@
   {
     "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "productName",
-    "name": "orderableProduct.name",
+    "name": "orderable.name",
     "label": "Product",
     "indicator": "R",
     "displayOrder": 3,
@@ -169,7 +169,7 @@
   {
     "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "dispensingUnit",
-    "name": "orderableProduct.dispensable.dispensingUnit",
+    "name": "orderable.dispensable.dispensingUnit",
     "label": "Unit/unit of issue",
     "indicator": "U",
     "displayOrder": 15,
@@ -294,7 +294,7 @@
   {
     "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "productCode",
-    "name": "orderableProduct.productCode",
+    "name": "orderable.productCode",
     "label": "Product code",
     "indicator": "O",
     "displayOrder": 2,
@@ -306,7 +306,7 @@
   {
     "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "productName",
-    "name": "orderableProduct.name",
+    "name": "orderable.name",
     "label": "Product",
     "indicator": "R",
     "displayOrder": 3,
@@ -562,7 +562,7 @@
   {
     "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productCode",
-    "name": "orderableProduct.productCode",
+    "name": "orderable.productCode",
     "label": "Product code",
     "indicator": "O",
     "displayOrder": 2,
@@ -574,7 +574,7 @@
   {
     "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productName",
-    "name": "orderableProduct.name",
+    "name": "orderable.name",
     "label": "Product",
     "indicator": "R",
     "displayOrder": 3,

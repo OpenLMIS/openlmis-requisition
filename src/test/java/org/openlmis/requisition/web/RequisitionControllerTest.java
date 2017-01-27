@@ -35,7 +35,7 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -105,7 +105,7 @@ public class RequisitionControllerTest {
   private AuthenticationHelper authenticationHelper;
 
   @Mock
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @InjectMocks
   private RequisitionController requisitionController;

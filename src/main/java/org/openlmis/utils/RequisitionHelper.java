@@ -45,7 +45,7 @@ public class RequisitionHelper {
   public static List<RequisitionLineItem> findByProductId(List<RequisitionLineItem> list,
                                                           UUID productId) {
     return list.stream()
-        .filter(line -> productId.equals(line.getOrderableProductId()))
+        .filter(line -> productId.equals(line.getOrderableId()))
         .collect(Collectors.toList());
   }
 
