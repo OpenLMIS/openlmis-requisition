@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class OrderableProductDtoTest {
+public class OrderableDtoTest {
 
-  private OrderableProductDto orderableProductDto;
-  private Set<ProductDto> products;
+  private OrderableDto orderableDto;
+  private Set<ProgramOrderableDto> products;
   private ProgramDto program;
 
   @Before
@@ -22,13 +22,13 @@ public class OrderableProductDtoTest {
 
     program = new ProgramDto();
     program.setId(UUID.randomUUID());
-    orderableProductDto = new OrderableProductDto();
-    orderableProductDto.setId(UUID.randomUUID());
+    orderableDto = new OrderableDto();
+    orderableDto.setId(UUID.randomUUID());
   }
 
   @Test
   public void shouldCalculatePacksToOrderWhenPackRoundingThresholdIsSmallerThanRemainder() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(10);
     productDto.setPackRoundingThreshold(4);
     productDto.setRoundToZero(false);
@@ -40,7 +40,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldCalculatePacksToOrderWhenPackRoundingThresholdIsGreaterThanRemainder() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(false);
@@ -52,7 +52,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldCalculatePacksToOrderWhenCanRoundToZero() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
@@ -64,7 +64,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldCalculatePacksToOrderWhenCanNotRoundToZero() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(false);
@@ -76,7 +76,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldReturnZeroPacksToOrderIfPackSizeIsZero() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(0);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
@@ -87,7 +87,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldReturnZeroPacksToOrderIfOrderQuantityIsZero() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(10);
     productDto.setRoundToZero(false);
 
@@ -98,7 +98,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldReturnZeroPackToOrderIfOrderQuantityIsOneAndRoundToZeroTrueWithPackSizeTen() {
-    OrderableProductDto productDto = new OrderableProductDto();
+    OrderableDto productDto = new OrderableDto();
     productDto.setPackSize(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
@@ -110,7 +110,7 @@ public class OrderableProductDtoTest {
 
   @Test
   public void shouldNotRoundUpWhenEqualToThreshold() {
-    OrderableProductDto product = new OrderableProductDto();
+    OrderableDto product = new OrderableDto();
     product.setPackSize(100);
     product.setPackRoundingThreshold(50);
 
@@ -122,32 +122,32 @@ public class OrderableProductDtoTest {
   }
 
   @Test
-  public void shouldFindProgramProduct() {
-    ProductDto productDto = new ProductDto();
-    productDto.setProductId(orderableProductDto.getId());
-    productDto.setProgramId(program.getId());
-    products.add(productDto);
-    orderableProductDto.setPrograms(products);
+  public void shouldFindProgramOrderable() {
+    ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
+    programOrderableDto.setProductId(orderableDto.getId());
+    programOrderableDto.setProgramId(program.getId());
+    products.add(programOrderableDto);
+    orderableDto.setPrograms(products);
 
-    ProductDto productDtoAfterFind =
-        orderableProductDto.findProgramProductDto(program.getId());
+    ProgramOrderableDto programOrderableDtoAfterFind =
+        orderableDto.findProgramOrderableDto(program.getId());
 
-    assertEquals(productDtoAfterFind, productDto);
-    assertEquals(productDtoAfterFind.getProgramId(), productDto.getProgramId());
-    assertEquals(productDtoAfterFind.getProductId(), productDto.getProductId());
+    assertEquals(programOrderableDtoAfterFind, programOrderableDto);
+    assertEquals(programOrderableDtoAfterFind.getProgramId(), programOrderableDto.getProgramId());
+    assertEquals(programOrderableDtoAfterFind.getProductId(), programOrderableDto.getProductId());
   }
 
-  private Set<ProductDto> genereteProducts(int instances) {
-    Set<ProductDto> programs = new HashSet<>();
+  private Set<ProgramOrderableDto> genereteProducts(int instances) {
+    Set<ProgramOrderableDto> programs = new HashSet<>();
     for (int i = 0; i < instances; i++) {
       ProgramDto program = new ProgramDto();
       program.setId(UUID.randomUUID());
-      OrderableProductDto orderableProductDto = new OrderableProductDto();
-      orderableProductDto.setId(UUID.randomUUID());
-      ProductDto productDto = new ProductDto();
-      productDto.setProductId(orderableProductDto.getId());
-      productDto.setProgramId(program.getId());
-      programs.add(productDto);
+      OrderableDto orderableDto = new OrderableDto();
+      orderableDto.setId(UUID.randomUUID());
+      ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
+      programOrderableDto.setProductId(orderableDto.getId());
+      programOrderableDto.setProgramId(program.getId());
+      programs.add(programOrderableDto);
     }
     return programs;
   }

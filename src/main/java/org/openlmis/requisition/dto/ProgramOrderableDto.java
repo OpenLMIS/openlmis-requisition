@@ -14,10 +14,10 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class ProductDto {
+public class ProgramOrderableDto {
   private UUID programId;
-  private UUID productId;
-  private UUID productCategoryId;
+  private UUID orderableId;
+  private UUID orderableDisplayCategoryId;
   private String productCategoryDisplayName;
   private Integer productCategoryDisplayOrder;
   private Boolean active;

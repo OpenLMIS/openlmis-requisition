@@ -20,9 +20,9 @@ import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -34,7 +34,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
@@ -103,7 +103,7 @@ public class RequisitionService {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
@@ -477,10 +477,10 @@ public class RequisitionService {
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
 
     for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
-      OrderableProductDto orderableProduct = orderableProductReferenceDataService
-          .findOne(lineItem.getOrderableProductId());
+      OrderableDto orderable = orderableReferenceDataService
+          .findOne(lineItem.getOrderableId());
 
-      Optional<ProductDto> product = orderableProduct.getPrograms().stream()
+      Optional<ProgramOrderableDto> product = orderable.getPrograms().stream()
           .filter(e -> requisition.getProgramId().equals(e.getProgramId())).findFirst();
 
       product.ifPresent(p -> {

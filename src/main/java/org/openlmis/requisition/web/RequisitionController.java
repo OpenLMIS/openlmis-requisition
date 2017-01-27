@@ -28,7 +28,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -115,7 +115,7 @@ public class RequisitionController extends BaseController {
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
   @Autowired
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
   
   @Autowired
   private StatusMessageRepository statusMessageRepository;
@@ -198,7 +198,8 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    requisition.submit(orderableProductReferenceDataService.findAll());
+    requisition.submit(orderableReferenceDataService.findAll());
+
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
@@ -379,7 +380,7 @@ public class RequisitionController extends BaseController {
           parentNodeId = parentNode.getId();
         }
       }
-      requisition.approve(parentNodeId, orderableProductReferenceDataService.findAll());
+      requisition.approve(parentNodeId, orderableReferenceDataService.findAll());
 
       saveStatusMessage(requisition);
 
@@ -457,7 +458,7 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    requisition.authorize(orderableProductReferenceDataService.findAll());
+    requisition.authorize(orderableReferenceDataService.findAll());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();

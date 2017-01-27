@@ -20,16 +20,16 @@ schemas:
 
   - geographicZoneDto: !include schemas/geographicZoneDto.json
 
-  - orderableProductDto: |
+  - orderableDto: |
       {    "type": "object",
            "$schema": "http://json-schema.org/draft-03/schema",
-           "title": "OrderableProductDto",
-           "description": "A single orderableProductDto",
+           "title": "OrderableDto",
+           "description": "A single orderableDto",
            "properties": {
                "id": { "type": "string", "required": true, "title": "id" },
                "productCode": { "type": "string", "required": true, "title": "code" },
                "name": { "type": "string", "required": true, "title": "name" },
-               "programs": {"type": "array", "required": false, "title": "programs", "items": {"type": "object", "$ref": "schemas/productDto.json"}, "uniqueItems": false}
+               "programs": {"type": "array", "required": false, "title": "programs", "items": {"type": "object", "$ref": "schemas/programOrderableDto.json"}, "uniqueItems": false}
            }
       }
 
@@ -51,7 +51,7 @@ schemas:
 
   - programDto: !include schemas/programDto.json
 
-  - productDto: !include schemas/productDto.json
+  - programOrderableDto: !include schemas/programOrderableDto.json
 
   - requisition: |
       {   "type": "object",
@@ -106,7 +106,7 @@ schemas:
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
               "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
-              "orderableProductId": { "type": "string", "required": true, "title": "orderableProductId" },
+              "orderableId": { "type": "string", "required": true, "title": "orderableId" },
               "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
               "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
               "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },
@@ -133,7 +133,7 @@ schemas:
           "description": "A single requisitionLineItemDto",
           "properties": {
               "id": { "type": "string", "required": true, "title": "id" },
-              "orderableProduct": { "type": "object", "$ref": "#/schemas/orderableProductDto", "required": true, "title": "orderableProduct" },
+              "orderable": { "type": "object", "$ref": "#/schemas/orderableDto", "required": true, "title": "orderable" },
               "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
               "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
               "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },

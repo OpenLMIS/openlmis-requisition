@@ -5,7 +5,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class RequisitionDtoBuilder {
   private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private RequisitionExportHelper requisitionExportHelper;
@@ -74,7 +74,7 @@ public class RequisitionDtoBuilder {
           requisition.getAvailableNonFullSupplyProducts()
               .stream()
               .filter(Objects::nonNull)
-              .map(orderableProductReferenceDataService::findOne)
+              .map(orderableReferenceDataService::findOne)
               .collect(Collectors.toSet())
       );
     }

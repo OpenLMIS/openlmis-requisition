@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -40,7 +40,7 @@ import java.util.UUID;
 @RunWith(PowerMockRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTest {
-  private static final UUID ORDERABLE_PRODUCT_ID = UUID.randomUUID();
+  private static final UUID ORDERABLE_ID = UUID.randomUUID();
 
   private static final CurrencyUnit CURRENCY_UNIT = CurrencyUnit.USD;
   private static final Money PRICE_PER_PACK = Money.of(CURRENCY_UNIT, 9);
@@ -67,7 +67,7 @@ public class RequisitionTest {
     requisitionLineItem.setStockOnHand(20);
     requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableProductId(productId);
+    requisitionLineItem.setOrderableId(productId);
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
@@ -241,14 +241,14 @@ public class RequisitionTest {
     firstRequisitionLineItem.setRequestedQuantity(10);
     firstRequisitionLineItem.setStockOnHand(20);
     firstRequisitionLineItem.setRequisition(newRequisition);
-    firstRequisitionLineItem.setOrderableProductId(productId);
+    firstRequisitionLineItem.setOrderableId(productId);
 
     // new line
     RequisitionLineItem secondRequisitionLineItem = new RequisitionLineItem();
     secondRequisitionLineItem.setRequestedQuantity(10);
     secondRequisitionLineItem.setStockOnHand(20);
     secondRequisitionLineItem.setRequisition(newRequisition);
-    secondRequisitionLineItem.setOrderableProductId(productId);
+    secondRequisitionLineItem.setOrderableId(productId);
 
     newRequisition.setId(UUID.randomUUID());
     newRequisition.setStatus(RequisitionStatus.INITIATED);
@@ -414,7 +414,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnSubmit() {
     // given
     long packsToShip = 5L;
-    OrderableProductDto product = mock(OrderableProductDto.class);
+    OrderableDto product = mock(OrderableDto.class);
 
     setUpTestUpdatePacksToShip(product, packsToShip);
 
@@ -429,7 +429,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnAuthorize() {
     // given
     long packsToShip = 5L;
-    OrderableProductDto product = mock(OrderableProductDto.class);
+    OrderableDto product = mock(OrderableDto.class);
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -445,7 +445,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnApprove() {
     // given
     long packsToShip = 5L;
-    OrderableProductDto product = mock(OrderableProductDto.class);
+    OrderableDto product = mock(OrderableDto.class);
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -543,11 +543,11 @@ public class RequisitionTest {
   @Test
   public void shouldSetPreviousAdjustedConsumptionsWhenOnePreviousRequisition() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    requisitionLineItem.setOrderableId(ORDERABLE_ID);
 
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(5);
-    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
     Requisition previousRequisition = new Requisition();
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
@@ -565,11 +565,11 @@ public class RequisitionTest {
   @Test
   public void shouldSetPreviousAdjustedConsumptionsFromManyPreviousRequisitions() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    requisitionLineItem.setOrderableId(ORDERABLE_ID);
 
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(5);
-    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
     Requisition previousRequisition = new Requisition();
     previousRequisition
         .setRequisitionLineItems(Arrays.asList(previousRequisitionLineItem,
@@ -587,12 +587,12 @@ public class RequisitionTest {
   @Test
   public void shouldNotAddPreviousAdjustedConsumptionIfLineSkipped() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    requisitionLineItem.setOrderableId(ORDERABLE_ID);
 
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(5);
     previousRequisitionLineItem.setSkipped(true);
-    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
     Requisition previousRequisition = new Requisition();
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
@@ -610,11 +610,11 @@ public class RequisitionTest {
   @Test
   public void shouldNotAddPreviousAdjustedConsumptionIfNull() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    requisitionLineItem.setOrderableId(ORDERABLE_ID);
 
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(null);
-    previousRequisitionLineItem.setOrderableProductId(ORDERABLE_PRODUCT_ID);
+    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
     Requisition previousRequisition = new Requisition();
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
@@ -647,11 +647,11 @@ public class RequisitionTest {
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
 
-  private void setUpTestUpdatePacksToShip(OrderableProductDto productMock, long packsToShip) {
+  private void setUpTestUpdatePacksToShip(OrderableDto productMock, long packsToShip) {
     requisitionLineItem.setPacksToShip(packsToShip);
 
     when(productMock.packsToOrder(anyLong())).thenReturn(packsToShip);
-    when(productMock.getId()).thenReturn(requisitionLineItem.getOrderableProductId());
+    when(productMock.getId()).thenReturn(requisitionLineItem.getOrderableId());
 
     setUpValidRequisitionTemplate();
   }
@@ -676,9 +676,9 @@ public class RequisitionTest {
 
   private void prepareForTestAverageConsumption(
       List<Integer> adjustedConsumptions) {
-    UUID orderableProductId = UUID.randomUUID();
+    UUID orderableId = UUID.randomUUID();
     requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableProductId(orderableProductId);
+    requisitionLineItem.setOrderableId(orderableId);
     requisitionLineItem.setPreviousAdjustedConsumptions(adjustedConsumptions);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
@@ -699,18 +699,18 @@ public class RequisitionTest {
   private void mockReqLine(Requisition requisition, UUID productId,
                            int stockOnHand, int approvedQuantity) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
-    when(item.getOrderableProductId()).thenReturn(productId);
+    when(item.getOrderableId()).thenReturn(productId);
     when(item.getStockOnHand()).thenReturn(stockOnHand);
     when(item.getApprovedQuantity()).thenReturn(approvedQuantity);
 
     when(requisition.findLineByProductId(productId)).thenReturn(item);
   }
 
-  private ApprovedProductDto mockApprovedProduct(UUID orderableProductId) {
+  private ApprovedProductDto mockApprovedProduct(UUID orderableId) {
     ApprovedProductDto approvedProductDto = mock(ApprovedProductDto.class);
-    ProductDto programProduct = mock(ProductDto.class);
-    when(approvedProductDto.getProduct()).thenReturn(programProduct);
-    when(programProduct.getProductId()).thenReturn(orderableProductId);
+    ProgramOrderableDto programOrderable = mock(ProgramOrderableDto.class);
+    when(approvedProductDto.getProduct()).thenReturn(programOrderable);
+    when(programOrderable.getProductId()).thenReturn(orderableId);
     return approvedProductDto;
   }
 

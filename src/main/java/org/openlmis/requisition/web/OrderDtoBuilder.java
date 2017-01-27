@@ -9,7 +9,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.referencedata.BaseReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class OrderDtoBuilder {
   private ProgramReferenceDataService programs;
 
   @Autowired
-  private OrderableProductReferenceDataService products;
+  private OrderableReferenceDataService products;
 
   /**
    * Create a new instance of OrderDto based on data from {@link Requisition}.
@@ -73,7 +73,7 @@ public class OrderDtoBuilder {
             .getRequisitionLineItems()
             .stream()
             .map(line -> OrderLineItemDto.newOrderLineItem(
-                line, getIfPresent(products, line.getOrderableProductId())
+                line, getIfPresent(products, line.getOrderableId())
             ))
             .collect(Collectors.toList())
     );

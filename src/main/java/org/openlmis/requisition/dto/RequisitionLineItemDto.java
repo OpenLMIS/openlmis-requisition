@@ -26,7 +26,7 @@ public class RequisitionLineItemDto
     implements RequisitionLineItem.Exporter, RequisitionLineItem.Importer {
 
   private UUID id;
-  private OrderableProductDto orderableProduct;
+  private OrderableDto orderable;
   private Integer beginningBalance;
   private Integer totalReceivedQuantity;
   private Integer totalLossesAndAdjustments;

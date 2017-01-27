@@ -3,8 +3,8 @@ package org.openlmis.requisition.domain;
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 
-import org.openlmis.requisition.dto.OrderableProductDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 
@@ -71,8 +71,8 @@ public final class RequisitionBuilder {
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
-        Optional<ProductDto> program = requisitionLineItem
-            .getOrderableProduct()
+        Optional<ProgramOrderableDto> program = requisitionLineItem
+            .getOrderable()
             .getPrograms()
             .stream()
             .filter(e -> requisition.getProgramId().equals(e.getProgramId()))
@@ -95,7 +95,7 @@ public final class RequisitionBuilder {
       requisition.setAvailableNonFullSupplyProducts(
           importer.getAvailableNonFullSupplyProducts()
           .stream()
-          .map(OrderableProductDto::getId)
+          .map(OrderableDto::getId)
           .collect(Collectors.toSet())
       );
     }

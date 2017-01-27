@@ -45,10 +45,10 @@ import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -62,7 +62,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
@@ -147,7 +147,7 @@ public class RequisitionServiceTest {
   private ScheduleReferenceDataService scheduleReferenceDataService;
 
   @Mock
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
   private ApprovedProductReferenceDataService approvedProductReferenceDataService;
@@ -877,31 +877,31 @@ public class RequisitionServiceTest {
   private void setupStubsForTestFindSupplyItems(
       Requisition requisition, List<RequisitionLineItem> fullSupply,
       List<RequisitionLineItem> nonFullSupply) {
-    ProductDto fullSupplyProduct = mock(ProductDto.class);
+    ProgramOrderableDto fullSupplyProduct = mock(ProgramOrderableDto.class);
     when(fullSupplyProduct.getProgramId()).thenReturn(requisition.getProgramId());
     when(fullSupplyProduct.getFullSupply()).thenReturn(true);
 
-    ProductDto nonFullSupplyProduct = mock(ProductDto.class);
+    ProgramOrderableDto nonFullSupplyProduct = mock(ProgramOrderableDto.class);
     when(nonFullSupplyProduct.getProgramId()).thenReturn(requisition.getProgramId());
     when(nonFullSupplyProduct.getFullSupply()).thenReturn(false);
 
-    OrderableProductDto fullSupplyOrderableProduct = mock(OrderableProductDto.class);
+    OrderableDto fullSupplyOrderable = mock(OrderableDto.class);
     UUID fullSupplyLineProductId = UUID.randomUUID();
-    when(orderableProductReferenceDataService.findOne(fullSupplyLineProductId))
-        .thenReturn(fullSupplyOrderableProduct);
-    when(fullSupplyOrderableProduct.getPrograms())
+    when(orderableReferenceDataService.findOne(fullSupplyLineProductId))
+        .thenReturn(fullSupplyOrderable);
+    when(fullSupplyOrderable.getPrograms())
         .thenReturn(Collections.singleton(fullSupplyProduct));
 
-    OrderableProductDto nonFullSupplyOrderableProduct = mock(OrderableProductDto.class);
+    OrderableDto nonFullSupplyOrderable = mock(OrderableDto.class);
     UUID nonFullSupplyLineProductId = UUID.randomUUID();
-    when(orderableProductReferenceDataService.findOne(nonFullSupplyLineProductId))
-        .thenReturn(nonFullSupplyOrderableProduct);
-    when(nonFullSupplyOrderableProduct.getPrograms())
+    when(orderableReferenceDataService.findOne(nonFullSupplyLineProductId))
+        .thenReturn(nonFullSupplyOrderable);
+    when(nonFullSupplyOrderable.getPrograms())
         .thenReturn(Collections.singleton(nonFullSupplyProduct));
 
-    fullSupply.forEach(line -> when(line.getOrderableProductId())
+    fullSupply.forEach(line -> when(line.getOrderableId())
         .thenReturn(fullSupplyLineProductId));
-    nonFullSupply.forEach(line -> when(line.getOrderableProductId())
+    nonFullSupply.forEach(line -> when(line.getOrderableId())
         .thenReturn(nonFullSupplyLineProductId));
   }
 
@@ -938,7 +938,7 @@ public class RequisitionServiceTest {
   private void mockPreviousRequisition() {
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(ADJUSTED_CONSUMPTION);
-    previousRequisitionLineItem.setOrderableProductId(PRODUCT_ID);
+    previousRequisitionLineItem.setOrderableId(PRODUCT_ID);
     Requisition previousRequisition = new Requisition();
     previousRequisition.setId(UUID.randomUUID());
     previousRequisition
@@ -959,8 +959,8 @@ public class RequisitionServiceTest {
   }
 
   private void mockApprovedProduct(UUID productId, boolean fullSupply) {
-    ProductDto product = new ProductDto();
-    product.setProductId(productId);
+    ProgramOrderableDto product = new ProgramOrderableDto();
+    product.setOrderableId(productId);
     product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
     approvedProductDto.setProduct(product);

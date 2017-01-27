@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class ProductCategoryDto {
+public class OrderableDisplayCategoryDto {
   private UUID id;
   private CodeDto code;
   private OrderedDisplayValueDto orderedDisplayValue;

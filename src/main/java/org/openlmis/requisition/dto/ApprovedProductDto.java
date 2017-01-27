@@ -7,7 +7,7 @@ import java.util.UUID;
 @Data
 public class ApprovedProductDto {
   private UUID id;
-  private ProductDto product;
+  private ProgramOrderableDto product;
   private Double maxMonthsOfStock;
   private Double minMonthsOfStock;
   private Double emergencyOrderPoint;

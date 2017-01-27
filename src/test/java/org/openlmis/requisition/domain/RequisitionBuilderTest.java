@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -197,9 +197,9 @@ public class RequisitionBuilderTest {
   }
 
   private void prepareForTestSkip(RequisitionLineItemDto lineItemDto) {
-    OrderableProductDto orderableProduct = new OrderableProductDto();
-    orderableProduct.setPrograms(Collections.emptySet());
-    lineItemDto.setOrderableProduct(orderableProduct);
+    OrderableDto orderable = new OrderableDto();
+    orderable.setPrograms(Collections.emptySet());
+    lineItemDto.setOrderable(orderable);
     when(requisitionDto.getRequisitionLineItems())
         .thenReturn(Collections.singletonList(lineItemDto));
   }

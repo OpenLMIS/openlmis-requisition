@@ -17,13 +17,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.dto.OrderableProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 
 import java.time.LocalDate;
@@ -43,7 +43,7 @@ public class RequisitionExportHelperTest {
   private static final long PACK_SIZE = 2;
 
   private Requisition requisition;
-  private OrderableProductDto orderableProductDto;
+  private OrderableDto orderableDto;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -58,7 +58,7 @@ public class RequisitionExportHelperTest {
   private ProcessingPeriodDto periodDto3;
 
   @Mock
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @InjectMocks
   private RequisitionExportHelper requisitionExportHelper;
@@ -78,13 +78,13 @@ public class RequisitionExportHelperTest {
   @Test
   public void shouldExportRequisitionLinesToDtos() {
     RequisitionLineItem requisitionLineItem =
-        generateRequisitionLineItemToExport(orderableProductDto.getId());
+        generateRequisitionLineItemToExport(orderableDto.getId());
     List<RequisitionLineItemDto> items =
         requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
     assertEquals(item.getId(), requisitionLineItem.getId());
-    assertEquals(item.getOrderableProduct().getId(), requisitionLineItem.getOrderableProductId());
+    assertEquals(item.getOrderable().getId(), requisitionLineItem.getOrderableId());
     assertEquals(item.getBeginningBalance(), requisitionLineItem.getBeginningBalance());
     assertEquals(item.getTotalReceivedQuantity(), requisitionLineItem.getTotalReceivedQuantity());
     assertEquals(item.getTotalLossesAndAdjustments(),
@@ -103,17 +103,17 @@ public class RequisitionExportHelperTest {
         requisitionLineItem.getNumberOfNewPatientsAdded());
   }
 
-  private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableProductDtoUuid) {
-    ProductDto productDto = new ProductDto();
-    productDto.setProductId(orderableProductDto.getId());
-    productDto.setProgramId(program);
-    Set<ProductDto> products = new HashSet<>();
-    products.add(productDto);
-    orderableProductDto.setPrograms(products);
+  private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid) {
+    ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
+    programOrderableDto.setProductId(orderableDto.getId());
+    programOrderableDto.setProgramId(program);
+    Set<ProgramOrderableDto> products = new HashSet<>();
+    products.add(programOrderableDto);
+    orderableDto.setPrograms(products);
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableProductId(orderableProductDtoUuid);
+    requisitionLineItem.setOrderableId(orderableDtoUuid);
     requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setBeginningBalance(3);
     requisitionLineItem.setTotalReceivedQuantity(4);
@@ -139,9 +139,9 @@ public class RequisitionExportHelperTest {
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         singletonList(requisitionLineItem)));
-    orderableProductDto = new OrderableProductDto();
-    orderableProductDto.setId(UUID.randomUUID());
-    orderableProductDto.setPackSize(PACK_SIZE);
+    orderableDto = new OrderableDto();
+    orderableDto.setId(UUID.randomUUID());
+    orderableDto.setPackSize(PACK_SIZE);
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
@@ -161,7 +161,7 @@ public class RequisitionExportHelperTest {
     requisitionLineItem.setRequestedQuantity(quantityRequested);
     requisitionLineItem.setStockOnHand(stockOnHand);
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableProductId(productId);
+    requisitionLineItem.setOrderableId(productId);
     requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
     return requisitionLineItem;
   }
@@ -184,7 +184,7 @@ public class RequisitionExportHelperTest {
         .thenReturn(period2);
     when(periodDto3.getId())
         .thenReturn(period3);
-    when(orderableProductReferenceDataService.findOne(orderableProductDto.getId()))
-        .thenReturn(orderableProductDto);
+    when(orderableReferenceDataService.findOne(orderableDto.getId()))
+        .thenReturn(orderableDto);
   }
 }

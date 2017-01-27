@@ -78,7 +78,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private Set<OrderableProductDto> availableNonFullSupplyProducts;
+  private Set<OrderableDto> availableNonFullSupplyProducts;
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
