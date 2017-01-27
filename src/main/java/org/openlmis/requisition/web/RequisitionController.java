@@ -378,23 +378,12 @@ public class RequisitionController extends BaseController {
 
       SupervisoryNodeDto supervisoryNodeDto =
           supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
-      SupervisoryNodeDto parentNode = null;
-      if (supervisoryNodeDto != null) {
-        parentNode = supervisoryNodeDto.getParentNode();
-      }
-      if (parentNode == null) {
-        requisition.setStatus(RequisitionStatus.APPROVED);
-      } else {
-        requisition.setStatus(RequisitionStatus.IN_APPROVAL);
-        requisition.setSupervisoryNodeId(parentNode.getId());
-      }
-      requisition.approve(orderableProductReferenceDataService.findAll(),
+      requisition.approve(supervisoryNodeDto, orderableProductReferenceDataService.findAll(),
           CurrencyUnit.of(currencyCode));
 
       saveStatusMessage(requisition);
 
       requisitionRepository.save(requisition);
-
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
     } else {

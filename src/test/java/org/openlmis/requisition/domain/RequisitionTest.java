@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -25,6 +24,7 @@ import org.mockito.Mock;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -81,6 +81,52 @@ public class RequisitionTest {
     requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test
+  public void shouldInApprovalRequisitionIfItStatusIsAuthorized() {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
+
+    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
+  }
+
+  @Test
+  public void shouldInApprovalRequisitionIfItStatusIsInApproval() {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
+
+    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
+  }
+
+  @Test
+  public void shouldApproveRequisitionIfItStatusIsAuthorized() {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
+    when(supervisoryNode.getParentNode()).thenReturn(null);
+
+    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
+  }
+
+  @Test
+  public void shouldApproveRequisitionIfItStatusIsInApproval() {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
+    when(supervisoryNode.getParentNode()).thenReturn(null);
+
+    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -408,7 +454,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.approve(Collections.singletonList(product), CURRENCY_UNIT);
+    requisition.approve(null, Collections.singletonList(product), CURRENCY_UNIT);
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -489,7 +535,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(null, Collections.emptyList(), CURRENCY_UNIT);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -669,6 +715,13 @@ public class RequisitionTest {
     when(approvedProductDto.getProduct()).thenReturn(programProduct);
     when(programProduct.getProductId()).thenReturn(orderableProductId);
     return approvedProductDto;
+  }
+
+  private SupervisoryNodeDto mockSupervisoryNode(UUID supervisoryNodeId) {
+    SupervisoryNodeDto supervisoryNodeDto = mock(SupervisoryNodeDto.class);
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(supervisoryNodeDto.getParentNode()).thenReturn(parentNode);
+    return supervisoryNodeDto;
   }
 
   private RequisitionLineItem getRequisitionLineItem(boolean skipped) {
