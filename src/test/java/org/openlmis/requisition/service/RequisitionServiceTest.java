@@ -15,6 +15,7 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALA
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.RequisitionStatus.IN_APPROVAL;
 import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
@@ -227,6 +228,27 @@ public class RequisitionServiceTest {
     requisitionService.delete(requisition.getId());
   }
 
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotDeleteRequisitionWhenStatusIsAuthorized() throws
+      ValidationMessageException {
+    requisition.setStatus(AUTHORIZED);
+    requisitionService.delete(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotDeleteRequisitionWhenStatusIsInApprval() throws
+      ValidationMessageException {
+    requisition.setStatus(IN_APPROVAL);
+    requisitionService.delete(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotDeleteRequisitionWhenStatusIsApproved() throws
+      ValidationMessageException {
+    requisition.setStatus(APPROVED);
+    requisitionService.delete(requisition.getId());
+  }
+
   @Test(expected = ContentNotFoundMessageException.class)
   public void shouldThrowExceptionWhenDeletingNotExistingRequisition()
       throws ContentNotFoundMessageException {
@@ -240,6 +262,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSkipRequisitionIfItIsValid() {
     when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setStatus(INITIATED);
     Requisition skippedRequisition = requisitionService.skip(requisition.getId());
     verify(lineItem1).skipLineItem(requisition.getTemplate());
     verify(lineItem2).skipLineItem(requisition.getTemplate());
@@ -265,6 +288,13 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenSkippingAuthorizedRequisition() {
     when(program.getPeriodsSkippable()).thenReturn(true);
     requisition.setStatus(AUTHORIZED);
+    requisitionService.skip(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenSkippingInApprovalRequisition() {
+    when(program.getPeriodsSkippable()).thenReturn(true);
+    requisition.setStatus(IN_APPROVAL);
     requisitionService.skip(requisition.getId());
   }
 
@@ -314,6 +344,13 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = ValidationMessageException.class)
+  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusInApproval()
+      throws ValidationMessageException {
+    requisition.setStatus(IN_APPROVAL);
+    requisitionService.reject(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws ValidationMessageException {
     requisition.setStatus(APPROVED);
@@ -328,18 +365,12 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldGetAuthorizedRequisitions() {
-    when(facility.getId()).thenReturn(facilityId);
-    when(program.getId()).thenReturn(programId);
-    when(supervisoryNode.getId()).thenReturn(suggestedPeriodId);
+  public void shouldGetApprovableRequisitionsWhenStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
-    requisition.setProgramId(program.getId());
-    requisition.setFacilityId(facility.getId());
-
     Page page = Pagination.getPage(Collections.singletonList(requisition), null);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNode.getId(), null, null, null))
+        null, programId, null, null, null, supervisoryNodeId, null, null, null))
         .thenReturn(page);
 
     List<Requisition> authorizedRequisitions =
@@ -350,15 +381,30 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldGetRequisitionsForApproval() {
-    when(facility.getId()).thenReturn(facilityId);
-    when(program.getId()).thenReturn(programId);
-    when(supervisoryNode.getId()).thenReturn(suggestedPeriodId);
-    requisition.setFacilityId(facilityId);
-    requisition.setProgramId(programId);
-    requisition.setSupervisoryNodeId(supervisoryNodeId);
-    requisition.setStatus(AUTHORIZED);
+  public void shouldGetApprovableRequisitionsWhenStatusIsInApproval() {
+    requisition.setStatus(IN_APPROVAL);
     Page page = Pagination.getPage(Collections.singletonList(requisition), null);
+
+    when(requisitionRepository.searchRequisitions(
+        null, programId, null, null, null, supervisoryNodeId, null, null, null))
+        .thenReturn(page);
+
+    List<Requisition> inApprovalRequisitions =
+        requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
+    List<Requisition> expected = Collections.singletonList(requisition);
+
+    assertEquals(expected, inApprovalRequisitions);
+  }
+
+  @Test
+  public void shouldGetRequisitionsForApproval() {
+    requisition.setStatus(IN_APPROVAL);
+    List<Requisition> requisitions = new ArrayList<>();
+    requisitions.add(requisition);
+    Requisition requisition2 = generateRequisition();
+    requisition2.setStatus(AUTHORIZED);
+    requisitions.add(requisition2);
+    Page page = Pagination.getPage(requisitions, null);
 
     when(requisitionRepository.searchRequisitions(
         null, programId, null, null, null, supervisoryNodeId, null, null, null))
@@ -376,8 +422,9 @@ public class RequisitionServiceTest {
     Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId());
 
-    assertEquals(1, requisitionsForApproval.size());
+    assertEquals(2, requisitionsForApproval.size());
     assertTrue(requisitionsForApproval.contains(requisition));
+    assertTrue(requisitionsForApproval.contains(requisition2));
   }
 
   @Test
@@ -773,6 +820,10 @@ public class RequisitionServiceTest {
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setTemplate(requisitionTemplate);
     ReflectionTestUtils.setField(requisitionService, "currencyCode", "USD");
+    requisition.setFacilityId(facilityId);
+    requisition.setProgramId(programId);
+    requisition.setSupervisoryNodeId(supervisoryNodeId);
+    requisition.setStatus(AUTHORIZED);
     return requisition;
   }
 
@@ -913,7 +964,6 @@ public class RequisitionServiceTest {
         .thenReturn(periodDto);
   }
 
-
   private void mockRepositories() {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
@@ -935,6 +985,9 @@ public class RequisitionServiceTest {
         .thenReturn(right);
 
     when(right.getId()).thenReturn(rightId);
+    when(facility.getId()).thenReturn(facilityId);
+    when(program.getId()).thenReturn(programId);
+    when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);
 
     processingPeriodDto = new ProcessingPeriodDto();
     processingPeriodDto.setProcessingSchedule(processingScheduleDto);

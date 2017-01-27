@@ -490,10 +490,43 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldInApprovalAuthorizedRequisition() {
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    mockSupervisoryNodeWithParent();
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.IN_APPROVAL, response.getStatus());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldApproveAuthorizedRequisition() {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
-    testApproveRequisition(requisition);
+
+    mockSupervisoryNode();
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -501,7 +534,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
-    testApproveRequisition(requisition);
+
+    mockSupervisoryNode();
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -1146,28 +1192,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(400);
   }
 
-  private void testApproveRequisition(Requisition requisition) {
-    mockSupervisoryNode();
-    RequisitionDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisition.getId())
-        .when()
-        .post(APPROVE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto.class);
-
-    assertNotNull(response.getId());
-    assertEquals(requisition.getId(), response.getId());
-
-    if (supervisoryNode.getParentNode() == null) {
-      assertEquals(RequisitionStatus.APPROVED, response.getStatus());
-    } else {
-      assertEquals(RequisitionStatus.IN_APPROVAL, response.getStatus());
-    }
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
   private Requisition configureRequisition(Requisition requisition) {
     requisition.setFacilityId(facilityDto.getId());
     requisition.setProcessingPeriodId(period.getId());
@@ -1257,6 +1281,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private void mockSupervisoryNode() {
+    wireMockRule.stubFor(
+        get(urlMatching(SUPERVISORY_URL + UUID_REGEX + ".*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{"
+                    + "\"id\":\"" + supervisoryNode.getId() + "\",\n"
+                    + "\"code\":\"C1234\",\n"
+                    + "\"name\":\"N1234\",\n"
+                    + "\"description\":\"D1234\"\n"
+                    + "}"))
+    );
+  }
+
+  private void mockSupervisoryNodeWithParent() {
     wireMockRule.stubFor(
         get(urlMatching(SUPERVISORY_URL + UUID_REGEX + ".*"))
             .willReturn(aResponse()
