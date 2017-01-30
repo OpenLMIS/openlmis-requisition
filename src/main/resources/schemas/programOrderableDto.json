@@ -8,21 +8,21 @@
       "type": "string",
       "title": "programId"
     },
-    "productId": {
+    "orderableId": {
       "type": "string",
-      "title": "productId"
+      "title": "orderableId"
     },
     "orderableDisplayCategoryId": {
       "type": "string",
       "title": "orderableDisplayCategoryId"
     },
-    "orderableDisplayCategoryDisplayName": {
+    "productCategoryDisplayName": {
       "type": "string",
-      "title": "orderableDisplayCategoryDisplayName"
+      "title": "productCategoryDisplayName"
     },
-    "porderableDisplayCategoryDisplayOrder": {
+    "productCategoryDisplayOrder": {
       "type": "integer",
-      "title": "orderableDisplayCategoryDisplayOrder"
+      "title": "productCategoryDisplayOrder"
     },
     "active": {
       "type": "boolean",
@@ -49,7 +49,7 @@
       "title": "pricePerPack"
     }
   },
-  "required": ["programId", "productId", "orderableDisplayCategoryId",
-    "orderableDisplayCategoryDisplayName", "orderableDisplayCategoryDisplayOrder", "active",
+  "required": ["programId", "orderableId", "orderableDisplayCategoryId",
+    "productCategoryDisplayName", "productCategoryDisplayOrder", "active",
     "fullSupply", "displayOrder", "maxMonthsOfStock", "dosesPerMonth"]
 }

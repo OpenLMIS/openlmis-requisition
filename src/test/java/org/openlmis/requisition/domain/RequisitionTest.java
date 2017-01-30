@@ -710,7 +710,7 @@ public class RequisitionTest {
     ApprovedProductDto approvedProductDto = mock(ApprovedProductDto.class);
     ProgramOrderableDto programOrderable = mock(ProgramOrderableDto.class);
     when(approvedProductDto.getProduct()).thenReturn(programOrderable);
-    when(programOrderable.getProductId()).thenReturn(orderableId);
+    when(programOrderable.getOrderableId()).thenReturn(orderableId);
     return approvedProductDto;
   }
 
