@@ -23,14 +23,12 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -43,6 +41,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -376,6 +377,16 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setMaxMonthsOfStock(maxMonthsOfStock);
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
+
+    // Set product category display name
+    if (orderableProductDto.getPrograms() != null) {
+      Optional<ProductDto> product = orderableProductDto.getPrograms().stream()
+          .filter(p -> p.getProgramId().equals(requisition.getProgramId())).findFirst();
+
+      if (product.isPresent()) {
+        exporter.setProductCategoryDisplayName(product.get().getProductCategoryDisplayName());
+      }
+    }
   }
 
   /**
@@ -602,6 +613,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setMaximumStockQuantity(Integer maximumStockQuantity);
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
+
+    void setProductCategoryDisplayName(String name);
   }
 
   public interface Importer {

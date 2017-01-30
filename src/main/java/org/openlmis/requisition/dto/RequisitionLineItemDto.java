@@ -11,14 +11,14 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.utils.MoneyDeserializer;
 import org.openlmis.utils.MoneySerializer;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -53,6 +53,7 @@ public class RequisitionLineItemDto
   private BigDecimal maxMonthsOfStock;
   private Integer maximumStockQuantity;
   private Integer calculatedOrderQuantity;
+  private String productCategoryDisplayName;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;

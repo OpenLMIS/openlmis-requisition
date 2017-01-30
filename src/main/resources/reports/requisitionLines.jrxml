@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-01-29T23:43:16 -->
+<!-- 2017-01-30T15:14:14 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisitionLines" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="8eeca41d-cefe-475b-b89b-f898f69a4087">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -87,6 +87,29 @@
 	<field name="totalCost" class="org.joda.money.Money">
 		<fieldDescription><![CDATA[totalCost]]></fieldDescription>
 	</field>
+	<field name="productCategoryDisplayName" class="java.lang.String">
+		<fieldDescription><![CDATA[productCategoryDisplayName]]></fieldDescription>
+	</field>
+	<group name="ProductCategory">
+		<groupExpression><![CDATA[$F{productCategoryDisplayName}]]></groupExpression>
+		<groupHeader>
+			<band height="10">
+				<rectangle>
+					<reportElement x="10" y="0" width="820" height="10" backcolor="#CCCCCC" uuid="7079c950-9a76-43ee-954f-0349c39803cd"/>
+				</rectangle>
+				<textField>
+					<reportElement x="10" y="0" width="820" height="10" uuid="29f84432-f48e-467d-b3fb-fc018b725111">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{productCategoryDisplayName}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -345,7 +368,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="790" y="0" width="42" height="25" backcolor="#CCCCCC" uuid="856d2220-e43a-4111-8ec0-b630b1bdc0bb"/>
+				<reportElement mode="Opaque" x="790" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="856d2220-e43a-4111-8ec0-b630b1bdc0bb"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -362,7 +385,7 @@
 	<detail>
 		<band height="20" splitType="Stretch">
 			<rectangle>
-				<reportElement x="10" y="0" width="822" height="20" backcolor="#DEDEDE" uuid="2a65185a-b9a9-41e7-92b5-f269c9622440">
+				<reportElement x="10" y="0" width="820" height="20" backcolor="#DEDEDE" uuid="2a65185a-b9a9-41e7-92b5-f269c9622440">
 					<printWhenExpression><![CDATA[$V{PAGE_COUNT}.intValue() % 2 == 0]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
@@ -637,7 +660,7 @@
 				<textFieldExpression><![CDATA[$F{totalCost}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="790" y="0" width="42" height="20" uuid="2a43948d-6150-4c4f-ba77-2ad782def76b">
+				<reportElement x="790" y="0" width="40" height="20" uuid="2a43948d-6150-4c4f-ba77-2ad782def76b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
