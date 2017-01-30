@@ -1,9 +1,10 @@
 package org.openlmis.requisition.service;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -186,6 +187,7 @@ public class RequisitionServiceTest {
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
   private static final UUID PRODUCT_ID = UUID.randomUUID();
+  private static final UUID NON_FULL_PRODUCT_ID = UUID.randomUUID();
 
   private ProcessingPeriodDto processingPeriodDto;
   private UUID programId = UUID.randomUUID();
@@ -469,7 +471,7 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
-    mockApprovedProduct();
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
@@ -484,7 +486,7 @@ public class RequisitionServiceTest {
   public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
     prepareForTestInitiate(null);
     mockPreviousRequisition();
-    mockApprovedProduct();
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
@@ -501,7 +503,7 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
-    mockApprovedProduct();
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
@@ -514,7 +516,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct();
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
@@ -522,6 +524,21 @@ public class RequisitionServiceTest {
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
+  }
+
+  @Test
+  public void shouldSetAvailableNonFullSupplyProductsForRequisition() {
+    prepareForTestInitiate(SETTING);
+    mockApprovedProduct(PRODUCT_ID, true);
+    mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+    );
+
+    Set<UUID> availableNonFullSupplyProducts = initiatedRequisition
+        .getAvailableNonFullSupplyProducts();
+    assertThat(availableNonFullSupplyProducts, hasItem(NON_FULL_PRODUCT_ID));
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -933,16 +950,20 @@ public class RequisitionServiceTest {
         .thenReturn(page);
   }
 
-  private void mockApprovedProduct() {
+  private void mockApprovedProduct(UUID productId, boolean fullSupply) {
     ProductDto product = new ProductDto();
-    product.setProductId(PRODUCT_ID);
+    product.setProductId(productId);
     product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
     approvedProductDto.setProduct(product);
     approvedProductDto.setMaxMonthsOfStock(7.25);
 
-    when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), anyBoolean()))
+    when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), eq(fullSupply)))
         .thenReturn(Collections.singletonList(approvedProductDto));
+  }
+
+  private void mockNonFullSupplyApprovedProduct() {
+    mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
   }
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
