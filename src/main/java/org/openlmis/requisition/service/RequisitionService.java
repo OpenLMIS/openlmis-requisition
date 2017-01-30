@@ -123,6 +123,9 @@ public class RequisitionService {
   @Autowired
   private UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
+  @Autowired
+  private PermissionService permissionService;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -264,7 +267,7 @@ public class RequisitionService {
     if (requisition == null) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
-    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+    } else if (requisition.isApprovable()) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
       requisition.setStatus(RequisitionStatus.INITIATED);
       return requisitionRepository.save(requisition);
@@ -329,6 +332,7 @@ public class RequisitionService {
         null, null, null, supervisoryNodeId, null, null, null);
     if (reqList != null) {
       for (Requisition requisition : reqList.getContent()) {
+        permissionService.canApproveRequisition(requisition.getId());
         if (requisition.isApprovable()) {
           requisitions.add(requisition);
         }

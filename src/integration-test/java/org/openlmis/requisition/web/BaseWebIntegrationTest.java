@@ -218,7 +218,7 @@ public abstract class BaseWebIntegrationTest {
       + "}"
       + "]";
 
-  private static final String MOCK_RIGHT_SEARCH = "["
+  protected static final String MOCK_RIGHT_SEARCH = "["
       + "{"
       + "\"id\":\"00fb0d27-7ea7-4196-adf0-61103058e0e8\",\n"
       + "\"name\":\"rightName\"\n"

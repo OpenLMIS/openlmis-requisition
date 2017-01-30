@@ -69,6 +69,7 @@ import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataServi
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.exception.ConfigurationSettingException;
@@ -94,7 +95,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
+@SuppressWarnings( {"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
@@ -176,10 +177,16 @@ public class RequisitionServiceTest {
   private OrderDtoBuilder orderDtoBuilder;
 
   @Mock
-  private AuthenticationHelper authenticationHelper;
+  UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @Mock
-  UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
+  private UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  private PermissionService permissionService;
+
+  @Mock
+  private AuthenticationHelper authenticationHelper;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -238,7 +245,7 @@ public class RequisitionServiceTest {
   }
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldNotDeleteRequisitionWhenStatusIsInApprval() throws
+  public void shouldNotDeleteRequisitionWhenStatusIsInApproval() throws
       ValidationMessageException {
     requisition.setStatus(IN_APPROVAL);
     requisitionService.delete(requisition.getId());
@@ -338,17 +345,18 @@ public class RequisitionServiceTest {
     assertEquals(returnedRequisition.getStatus(), INITIATED);
   }
 
+  @Test
+  public void shouldRejectRequisitionIfRequisitionStatusIsInApproval() {
+    requisition.setStatus(IN_APPROVAL);
+    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
+
+    assertEquals(returnedRequisition.getStatus(), INITIATED);
+  }
+
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
       throws ValidationMessageException {
     requisition.setStatus(SUBMITTED);
-    requisitionService.reject(requisition.getId());
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenRejectingRequisitionWithStatusInApproval()
-      throws ValidationMessageException {
-    requisition.setStatus(IN_APPROVAL);
     requisitionService.reject(requisition.getId());
   }
 
@@ -412,9 +420,9 @@ public class RequisitionServiceTest {
         null, programId, null, null, null, supervisoryNodeId, null, null, null))
         .thenReturn(page);
 
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto =  new DetailedRoleAssignmentDto();
-    detailedRoleAssignmentDto.setProgramId(programId);
-    detailedRoleAssignmentDto.setSupervisoryNodeId(supervisoryNodeId);
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(programId);
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
     UserDto user = mock(UserDto.class);
@@ -622,7 +630,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisition.getStatus()}, null, null))
+        new RequisitionStatus[] {requisition.getStatus()}, null, null))
         .thenReturn(page);
 
     Page<Requisition> receivedRequisitionsPage = requisitionService.searchRequisitions(
@@ -632,7 +640,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisition.getStatus()}, null, null);
+        new RequisitionStatus[] {requisition.getStatus()}, null, null);
 
     List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
 
@@ -1002,6 +1010,9 @@ public class RequisitionServiceTest {
         .thenReturn(program);
     when(authenticationHelper
         .getRight(RightName.REQUISITION_CONVERT_TO_ORDER))
+        .thenReturn(right);
+    when(rightReferenceDataService
+        .findRight(RightName.REQUISITION_APPROVE))
         .thenReturn(right);
 
     when(right.getId()).thenReturn(rightId);

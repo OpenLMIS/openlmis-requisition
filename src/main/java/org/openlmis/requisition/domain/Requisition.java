@@ -21,7 +21,6 @@ import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
@@ -305,20 +304,15 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Approves given requisition.
    *
-   * @param supervisoryNode supervisoryNodeDto the supervisoryNode for this requisition.
+   * @param parentNodeId supervisoryNodeDto parent node of the supervisoryNode for this requisition.
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void approve(SupervisoryNodeDto supervisoryNode,
-                      Collection<OrderableProductDto> products) {
-    SupervisoryNodeDto parentNode = null;
-    if (supervisoryNode != null) {
-      parentNode = supervisoryNode.getParentNode();
-    }
-    if (parentNode == null) {
+  public void approve(UUID parentNodeId, Collection<OrderableProductDto> products) {
+    if (parentNodeId == null) {
       status = RequisitionStatus.APPROVED;
     } else {
       status = RequisitionStatus.IN_APPROVAL;
-      supervisoryNodeId = parentNode.getId();
+      supervisoryNodeId = parentNodeId;
     }
 
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),

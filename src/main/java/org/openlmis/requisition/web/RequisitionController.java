@@ -372,7 +372,14 @@ public class RequisitionController extends BaseController {
 
       SupervisoryNodeDto supervisoryNodeDto =
           supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
-      requisition.approve(supervisoryNodeDto, orderableProductReferenceDataService.findAll());
+      UUID parentNodeId = null;
+      if (supervisoryNodeDto != null) {
+        SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
+        if (parentNode != null) {
+          parentNodeId = parentNode.getId();
+        }
+      }
+      requisition.approve(parentNodeId, orderableProductReferenceDataService.findAll());
 
       saveStatusMessage(requisition);
 

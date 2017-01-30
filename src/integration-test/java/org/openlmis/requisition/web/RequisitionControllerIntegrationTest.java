@@ -489,46 +489,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldInApprovalAuthorizedRequisition() {
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    mockSupervisoryNodeWithParent();
-    RequisitionDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisition.getId())
-        .when()
-        .post(APPROVE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto.class);
-
-    assertEquals(requisition.getId(), response.getId());
-    assertEquals(RequisitionStatus.IN_APPROVAL, response.getStatus());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldApproveAuthorizedRequisition() {
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
-
-    mockSupervisoryNode();
-    RequisitionDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisition.getId())
-        .when()
-        .post(APPROVE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto.class);
-
-    assertEquals(requisition.getId(), response.getId());
-    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldApproveSubmittedRequisitionIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -1293,27 +1253,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     );
   }
 
-  private void mockSupervisoryNodeWithParent() {
-    wireMockRule.stubFor(
-        get(urlMatching(SUPERVISORY_URL + UUID_REGEX + ".*"))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .withBody("{"
-                    + "\"id\":\"" + supervisoryNode.getId() + "\",\n"
-                    + "\"code\":\"C1234\",\n"
-                    + "\"name\":\"N1234\",\n"
-                    + "\"description\":\"D1234\",\n"
-                    + "\"parentNode\":{ \"id\":\"" + parentSupervisoryNode.getId() + "\"\n }\n"
-                    + "}"))
-    );
-  }
-
   private void mockDetailedRoleAssignmentDto() {
     wireMockRule.stubFor(
         get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/roleAssignments.*"))
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("[{ "
+                    + "\"role\":{ \"rights\":" + MOCK_RIGHT_SEARCH + "},"
                     + " \"programId\":\"86191d25-4846-4775-a968-12df732e6004\","
                     + " \"supervisoryNodeId\":\"bb0c6821-df46-44d2-ba3f-48f613abe4c4\" }]"))
     );
