@@ -78,7 +78,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -89,7 +89,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
 
-    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(supervisoryNode, Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -100,7 +100,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
 
-    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(supervisoryNode, Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -112,7 +112,7 @@ public class RequisitionTest {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
     when(supervisoryNode.getParentNode()).thenReturn(null);
 
-    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(supervisoryNode, Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -124,7 +124,7 @@ public class RequisitionTest {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNode(UUID.randomUUID());
     when(supervisoryNode.getParentNode()).thenReturn(null);
 
-    requisition.approve(supervisoryNode, Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(supervisoryNode, Collections.emptyList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -132,7 +132,7 @@ public class RequisitionTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
   }
 
   @Test
@@ -152,7 +152,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -305,7 +305,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, CURRENCY_UNIT);
+        Collections.singletonList(previousRequisition), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -328,8 +328,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0,
-        CURRENCY_UNIT);
+    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -358,7 +357,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, CURRENCY_UNIT);
+        Collections.singletonList(previousRequisition), 0);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -422,7 +421,7 @@ public class RequisitionTest {
     setUpTestUpdatePacksToShip(product, packsToShip);
 
     // when
-    requisition.submit(Collections.singletonList(product), CURRENCY_UNIT);
+    requisition.submit(Collections.singletonList(product));
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -438,7 +437,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     // when
-    requisition.authorize(Collections.singletonList(product),CURRENCY_UNIT);
+    requisition.authorize(Collections.singletonList(product));
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -454,7 +453,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.approve(null, Collections.singletonList(product), CURRENCY_UNIT);
+    requisition.approve(null, Collections.singletonList(product));
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -466,7 +465,7 @@ public class RequisitionTest {
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -486,7 +485,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -506,7 +505,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.submit(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -520,7 +519,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(Collections.emptyList(), CURRENCY_UNIT);
+    requisition.authorize(Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -535,7 +534,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(null, Collections.emptyList(), CURRENCY_UNIT);
+    requisition.approve(null, Collections.emptyList());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());

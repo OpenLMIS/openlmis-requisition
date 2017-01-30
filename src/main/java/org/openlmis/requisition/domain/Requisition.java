@@ -14,6 +14,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
+import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableProductDto;
@@ -197,15 +198,14 @@ public class Requisition extends BaseTimestampedEntity {
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
                        List<Requisition> previousRequisitions,
-                       int numberOfPreviousPeriodsToAverage,
-                       CurrencyUnit currencyUnit) {
+                       int numberOfPreviousPeriodsToAverage) {
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
     setRequisitionLineItems(
         products
             .stream()
-            .map(ftap -> new RequisitionLineItem(this, ftap, currencyUnit))
+            .map(ftap -> new RequisitionLineItem(this, ftap))
             .collect(Collectors.toList())
     );
 
@@ -242,7 +242,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void submit(Collection<OrderableProductDto> products, CurrencyUnit currencyUnit) {
+  public void submit(Collection<OrderableProductDto> products) {
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
         line -> line.updatePacksToShip(products));
 
@@ -257,7 +257,7 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
 
-    updateConsumptionsAndTotalCost(currencyUnit);
+    updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.SUBMITTED;
   }
@@ -267,7 +267,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void authorize(Collection<OrderableProductDto> products, CurrencyUnit currencyUnit) {
+  public void authorize(Collection<OrderableProductDto> products) {
     RequisitionHelper.forEachLine(
         getNonSkippedRequisitionLineItems(), line -> line.updatePacksToShip(products));
 
@@ -276,7 +276,7 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    updateConsumptionsAndTotalCost(currencyUnit);
+    updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.AUTHORIZED;
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
@@ -296,8 +296,8 @@ public class Requisition extends BaseTimestampedEntity {
    * @param supervisoryNode supervisoryNodeDto the supervisoryNode for this requisition.
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void approve(SupervisoryNodeDto supervisoryNode, Collection<OrderableProductDto> products,
-                      CurrencyUnit currencyUnit) {
+  public void approve(SupervisoryNodeDto supervisoryNode,
+                      Collection<OrderableProductDto> products) {
     SupervisoryNodeDto parentNode = null;
     if (supervisoryNode != null) {
       parentNode = supervisoryNode.getParentNode();
@@ -312,7 +312,7 @@ public class Requisition extends BaseTimestampedEntity {
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
         line -> line.updatePacksToShip(products));
 
-    updateConsumptionsAndTotalCost(currencyUnit);
+    updateConsumptionsAndTotalCost();
   }
 
   /**
@@ -431,7 +431,7 @@ public class Requisition extends BaseTimestampedEntity {
             numberOfMonthsInPeriod));
   }
 
-  private void updateConsumptionsAndTotalCost(CurrencyUnit currencyUnit) {
+  private void updateConsumptionsAndTotalCost() {
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
@@ -444,7 +444,8 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line, currencyUnit)
+        LineItemFieldsCalculator.calculateTotalCost(line,
+            CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE))
     ));
   }
 

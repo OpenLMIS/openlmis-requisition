@@ -27,6 +27,7 @@ import org.joda.money.Money;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -52,7 +53,6 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 
@@ -119,9 +119,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Autowired
   private ExposedMessageSource messageSource;
-
-  @Value("${currencyCode}")
-  private String currencyCode;
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
@@ -203,7 +200,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionLineItem.setMaximumStockQuantity(4);
     requisitionLineItem.setCalculatedOrderQuantity(2);
     requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.of(currencyCode), 13.55));
+    requisitionLineItem.setPricePerPack(
+        Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 13.55));
 
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(requisitionLineItem);
@@ -296,7 +294,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     RequisitionLineItem.Importer importer = response.getRequisitionLineItems().get(0);
     assertEquals(new BigDecimal("13.55"), importer.getPricePerPack().getAmount());
-    assertEquals(CurrencyUnit.of(currencyCode), importer.getPricePerPack().getCurrencyUnit());
+    assertEquals(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE),
+        importer.getPricePerPack().getCurrencyUnit());
   }
 
   @Test

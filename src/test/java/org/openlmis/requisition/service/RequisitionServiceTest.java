@@ -21,6 +21,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
+
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -77,7 +78,6 @@ import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -819,7 +819,6 @@ public class RequisitionServiceTest {
     requisitionLineItems.add(lineItem2);
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setTemplate(requisitionTemplate);
-    ReflectionTestUtils.setField(requisitionService, "currencyCode", "USD");
     requisition.setFacilityId(facilityId);
     requisition.setProgramId(programId);
     requisition.setSupervisoryNodeId(supervisoryNodeId);

@@ -9,6 +9,7 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -17,7 +18,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
@@ -37,9 +37,6 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private RequisitionTemplateRepository templateRepository;
-
-  @Value("${currencyCode}")
-  private String currencyCode;
 
   private RequisitionTemplate testTemplate;
 
@@ -241,7 +238,7 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void shouldPersistWithMoney() {
-    Money pricePerPack = Money.of(CurrencyUnit.of(currencyCode), 14.57);
+    Money pricePerPack = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 14.57);
     UUID productId = UUID.randomUUID();
 
     ProductDto programProduct = new ProductDto();
@@ -255,7 +252,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0, CurrencyUnit.of(currencyCode));
+        Collections.emptyList(), 0);
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

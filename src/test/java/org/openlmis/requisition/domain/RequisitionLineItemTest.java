@@ -247,7 +247,7 @@ public class RequisitionLineItemTest {
 
   private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap) {
     RequisitionLineItem item =
-        new RequisitionLineItem(initiatedRequisition, ftap, CurrencyUnit.USD);
+        new RequisitionLineItem(initiatedRequisition, ftap);
 
     item.setId(UUID.randomUUID());
     item.setBeginningBalance(3);

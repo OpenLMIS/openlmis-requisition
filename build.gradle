@@ -11,7 +11,6 @@ plugins {
     id "org.flywaydb.flyway" version "4.0"
     id "org.sonarqube" version "2.2.1"
     id "com.moowork.node" version "0.12"
-    id 'de.fuerstenau.buildconfig' version '1.1.7'
 }
 
 apply plugin: 'java'
@@ -99,15 +98,6 @@ flyway {
     sqlMigrationPrefix = ''
     placeholderPrefix = '#['
     placeholderSuffix = ']'
-}
-
-buildConfig {
-    def properties = new Properties()
-    file('src/main/resources/application.properties').withInputStream {
-        properties.load(it)
-    }
-
-    buildConfigField 'String', 'CURRENCY_CODE', properties['currencyCode']
 }
 
 sourceSets {

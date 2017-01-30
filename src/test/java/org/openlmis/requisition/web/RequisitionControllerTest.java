@@ -41,7 +41,6 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
@@ -160,10 +159,9 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
 
-    ReflectionTestUtils.setField(requisitionController, "currencyCode", "USD");
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any());
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
   }
@@ -195,7 +193,6 @@ public class RequisitionControllerTest {
     when(requisitionRepository.findOne(uuid2)).thenReturn(initiatedRequsition);
 
     requisitionController.updateRequisition(requisitionDto, uuid2);
-
   }
 
   @Test
@@ -294,7 +291,7 @@ public class RequisitionControllerTest {
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
-    verify(requisition, never()).submit(eq(Collections.emptyList()), any());
+    verify(requisition, never()).submit(eq(Collections.emptyList()));
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
