@@ -172,6 +172,12 @@ public class RequisitionService {
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
         numberOfPreviousPeriodsToAverage);
 
+    requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
+        .getApprovedProducts(facility.getId(), program.getId(), false)
+        .stream()
+        .map(ap -> ap.getProduct().getProductId())
+        .collect(Collectors.toSet()));
+
     requisitionRepository.save(requisition);
     return requisition;
   }

@@ -1,20 +1,21 @@
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -74,6 +75,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;
+
+  @Getter
+  @Setter
+  private Set<OrderableProductDto> availableNonFullSupplyProducts;
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {

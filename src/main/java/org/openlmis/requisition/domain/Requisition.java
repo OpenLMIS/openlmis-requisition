@@ -36,11 +36,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -146,6 +149,15 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;
+
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = UUID.class)
+  @Column(name = "value")
+  @CollectionTable(
+      name = "available_non_full_supply_products",
+      joinColumns = @JoinColumn(name = "requisitionId"))
+  @Getter
+  @Setter
+  private Set<UUID> availableNonFullSupplyProducts;
 
   /**
    * Constructor.
@@ -516,6 +528,7 @@ public class Requisition extends BaseTimestampedEntity {
     void setDraftStatusMessage(String draftStatusMessage);
 
     void setPreviousRequisitions(List<Requisition> previousRequisitions);
+
   }
 
   public interface Importer {
@@ -546,5 +559,7 @@ public class Requisition extends BaseTimestampedEntity {
     String getDraftStatusMessage();
 
     List<Requisition> getPreviousRequisitions();
+
+    Set<OrderableProductDto> getAvailableNonFullSupplyProducts();
   }
 }

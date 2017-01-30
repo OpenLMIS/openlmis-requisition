@@ -3,6 +3,7 @@ package org.openlmis.requisition.domain;
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 
+import org.openlmis.requisition.dto.OrderableProductDto;
 import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
@@ -10,6 +11,7 @@ import org.openlmis.utils.Message;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class RequisitionBuilder {
 
@@ -88,6 +90,15 @@ public final class RequisitionBuilder {
 
     requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
     requisition.setPreviousRequisitions(importer.getPreviousRequisitions());
+
+    if (null != importer.getAvailableNonFullSupplyProducts()) {
+      requisition.setAvailableNonFullSupplyProducts(
+          importer.getAvailableNonFullSupplyProducts()
+          .stream()
+          .map(OrderableProductDto::getId)
+          .collect(Collectors.toSet())
+      );
+    }
 
     return requisition;
   }
