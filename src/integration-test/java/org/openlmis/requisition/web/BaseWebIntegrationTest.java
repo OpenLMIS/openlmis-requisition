@@ -156,8 +156,8 @@ public abstract class BaseWebIntegrationTest {
 
   private static final String MOCK_FIND_PRODUCT_RESULT = "{"
       + " \"id\":\"cd9e1412-8703-11e6-ae22-56b6b6499611\",\n"
-      + " \"productCode\":\"Product Code\",\n"
-      + " \"productName\":\"Product Name\",\n"
+      + " \"orderableCode\":\"Orderable Code\",\n"
+      + " \"orderableName\":\"Orderable Name\",\n"
       + " \"packSize\":10,\n"
       + " \"packRoundingThreshold\":5,\n"
       + " \"roundToZero\":false\n"
@@ -186,7 +186,7 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_FIND_PROGRAM_ORDERABLE = "{"
       + " \"id\":\"047cb32a-8962-11e6-ae22-56b6b6499611\","
       + " \"programId\": \"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
-      + " \"productId\": \"cd9e1412-8703-11e6-ae22-56b6b6499611\","
+      + " \"orderableId\": \"cd9e1412-8703-11e6-ae22-56b6b6499611\","
       + " \"ordereableDisplayCategoryId\": \"6d469a06-8962-11e6-ae22-56b6b6499611\","
       + " \"pricePerPack\": 13.77"
       + "}";

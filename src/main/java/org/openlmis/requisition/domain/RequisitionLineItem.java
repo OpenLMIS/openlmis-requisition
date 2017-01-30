@@ -262,13 +262,13 @@ public class RequisitionLineItem extends BaseEntity {
     this.maxMonthsOfStock = BigDecimal.valueOf(approvedProduct.getMaxMonthsOfStock());
 
     ProgramOrderableDto product = approvedProduct.getProduct();
-    this.orderableId = product.getProductId();
+    this.orderableId = product.getOrderableId();
 
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
         ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
         : priceFromProduct;
-    this.orderableId = approvedProduct.getProduct().getProductId();
+    this.orderableId = approvedProduct.getProduct().getOrderableId();
   }
 
   /**

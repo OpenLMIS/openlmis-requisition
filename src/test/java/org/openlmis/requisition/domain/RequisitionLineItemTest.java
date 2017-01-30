@@ -268,10 +268,10 @@ public class RequisitionLineItemTest {
   }
 
   private ApprovedProductDto createDefaultApprovedProduct(Money pricePerPack) {
-    UUID productId = UUID.randomUUID();
+    UUID orderableId = UUID.randomUUID();
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
-    programOrderable.setProductId(productId);
+    programOrderable.setOrderableId(orderableId);
     ApprovedProductDto ftap = new ApprovedProductDto();
     ftap.setProduct(programOrderable);
     ftap.setMaxMonthsOfStock(7.25);
@@ -320,9 +320,9 @@ public class RequisitionLineItemTest {
   private OrderableDto generateOrderableDto(ProgramDto program,
                                             ProgramOrderableDto programOrderableDto) {
     OrderableDto orderableDto = new OrderableDto();
-    orderableDto.setId(programOrderableDto.getProductId());
+    orderableDto.setId(programOrderableDto.getOrderableId());
     program.setId(UUID.randomUUID());
-    programOrderableDto.setProductId(orderableDto.getId());
+    programOrderableDto.setOrderableId(orderableDto.getId());
     programOrderableDto.setProgramId(program.getId());
     Set<ProgramOrderableDto> products = new HashSet<>();
     products.add(programOrderableDto);

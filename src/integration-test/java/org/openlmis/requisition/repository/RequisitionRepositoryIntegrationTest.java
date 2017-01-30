@@ -243,7 +243,7 @@ public class RequisitionRepositoryIntegrationTest
 
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
-    programOrderable.setProductId(productId);
+    programOrderable.setOrderableId(productId);
 
     ApprovedProductDto ftap = new ApprovedProductDto();
     ftap.setProduct(programOrderable);

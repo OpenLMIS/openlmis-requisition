@@ -178,7 +178,7 @@ public class RequisitionService {
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId(), false)
         .stream()
-        .map(ap -> ap.getProduct().getProductId())
+        .map(ap -> ap.getProduct().getOrderableId())
         .collect(Collectors.toSet()));
 
     requisitionRepository.save(requisition);
