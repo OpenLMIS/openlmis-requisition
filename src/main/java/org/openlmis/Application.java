@@ -1,6 +1,8 @@
 package org.openlmis;
 
+import org.javers.spring.auditable.AuthorProvider;
 import org.openlmis.requisition.i18n.ExposedMessageSourceImpl;
+import org.openlmis.security.UserNameProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -44,5 +46,15 @@ public class Application {
     messageSource.setUseCodeAsDefaultMessage(true);
     return messageSource;
   }
+
+  /**
+   * Create and return a UserNameProvider. By default, if we didn't do so, an instance of
+   * SpringSecurityAuthorProvider would automatically be created and returned instead.
+   */
+  @Bean
+  public AuthorProvider authorProvider() {
+    return new UserNameProvider();
+  }
+
 
 }
