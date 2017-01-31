@@ -11,6 +11,7 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.CurrencyConfig;
@@ -47,6 +48,7 @@ import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
+@TypeName("RequisitionLineItem")
 @Table(name = "requisition_line_items")
 public class RequisitionLineItem extends BaseEntity {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
