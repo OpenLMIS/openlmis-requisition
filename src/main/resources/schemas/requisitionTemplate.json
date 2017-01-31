@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "RequisitionTemplate",
+  "description": "A single requisitionTemplate",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "createdDate": {
+      "type": "string",
+      "title": "createdDate"
+    },
+    "modifiedDate": {
+      "type": ["string", "null"],
+      "title": "modifiedDate"
+    },
+    "programId": {
+      "type": ["string", "null"],
+      "title": "programId"
+    },
+    "numberOfPeriodsToAverage": {
+      "type": ["number", "null"],
+      "title": "numberOfPeriodsToAverage"
+    },
+    "columnsMap": {
+      "type": "object",
+      "$ref": "requisitionTemplateColumnsMap.json",
+      "title": "columnsMap"
+    }
+  }
+}

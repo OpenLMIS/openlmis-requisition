@@ -53,6 +53,10 @@
       "type": "boolean",
       "title": "canBeChangedByUser"
     },
+    "definition": {
+      "type": "string",
+      "title": "definition"
+    },
     "columnType": {
       "type": "string",
       "title": "columnType"

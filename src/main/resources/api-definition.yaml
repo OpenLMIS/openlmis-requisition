@@ -22,7 +22,7 @@ schemas:
 
   - orderableProductDto: |
       {    "type": "object",
-           "$schema": "http://json-schema.org/draft-03/schema",
+           "$schema": "http://json-schema.org/draft-04/schema",
            "title": "OrderableProductDto",
            "description": "A single orderableProductDto",
            "properties": {
@@ -37,7 +37,7 @@ schemas:
 
   - processingScheduleDto: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "ProcessingScheduleDto",
           "description": "A single processingScheduleDto",
           "properties": {
@@ -55,7 +55,7 @@ schemas:
 
   - requisition: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "Requisition",
           "description": "A single requisition",
           "properties": {
@@ -100,7 +100,7 @@ schemas:
 
   - requisitionLineItem: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "RequisitionLineItem",
           "description": "A single requisitionLineItem",
           "properties": {
@@ -128,7 +128,7 @@ schemas:
 
   - requisitionLineItemDto: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "RequisitionLineItemDto",
           "description": "A single requisitionLineItemDto",
           "properties": {
@@ -146,45 +146,19 @@ schemas:
               "total": {"type": "integer", "required": false, "title": "total" },
               "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
               "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
-              "skipped": {"type": "boolean", "required": false, "title": "boolean" },
+              "skipped": {"type": "boolean", "required": false, "title": "skipped" },
               "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" },
               "averageConsumption": {"type": "number", "required": false, "title": "averageConsumption" }
           }
       }
 
-  - requisitionTemplate: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "RequisitionTemplate",
-          "description": "A single requisitionTemplate",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "programId": { "type": "string", "required": true, "title": "programId" },
-              "columnsMap": { "type": "array", "required": false, "title": "columnsMap", "items": { "type": "string", "title": "columnsMap" }, "uniqueItems": false }
-          }
-      }
+  - requisitionTemplate: !include schemas/requisitionTemplate.json
 
-  - requisitionTemplateColumn: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
-          "title": "RequisitionTemplateColumn",
-          "description": "A single requisitionTemplateColumn",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "name": { "type": "string", "required": false, "title": "name" },
-              "label": { "type": "string", "required": false, "title": "label" },
-              "indicator": { "type": "string", "required": false, "title": "indicator" },
-              "displayOrder": { "type": "integer", "required": false, "title": "displayOrder" },
-              "isDisplayed": { "type": "boolean", "required": false, "title": "isDisplayed" },
-              "source": { "type": "string", "required": false, "title": "source" },
-              "columnDefinition": { "type": "object", "$ref": "#/schemas/availableRequisitionColumn", "required": true, "title": "columnDefinition" },
-              "option": { "type": "object", "$ref": "#/schemas/availableRequisitionColumnOption", "required": false, "title": "option" }
-          }
-      }
-
-  - availableRequisitionColumn: !include schemas/availableRequisitionColumn.json
-
-  - availableRequisitionColumnOption: !include schemas/availableRequisitionColumnOption.json
+  - requisitionTemplateArray: |
+       {
+           "type": "array",
+           "items": { "type": "object", "$ref": "schemas/requisitionTemplate.json" }
+       }
 
   - convertedRequisitionMap: |
       {
@@ -197,7 +171,7 @@ schemas:
 
   - programDto: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "ProgramDto",
           "description": "A single programDto",
           "properties": {
@@ -213,7 +187,7 @@ schemas:
 
   - configurationSetting: |
       {   "type": "object",
-          "$schema": "http://json-schema.org/draft-03/schema",
+          "$schema": "http://json-schema.org/draft-04/schema",
           "title": "ConfigurationSetting",
           "description": "A single configurationSetting",
           "properties": {
@@ -827,16 +801,19 @@ resourceTypes:
               "200":
                   body:
                     application/json:
+                        schema: requisitionTemplateArray
               "404":
       post:
           is: [ secured ]
           description: Creates new requisitionTemplate.
           body:
               application/json:
+                schema: requisitionTemplate
           responses:
               "201":
                   body:
                     application/json:
+                        schema: requisitionTemplate
               "400":
                   body:
                     application/json:
@@ -872,6 +849,7 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
+                            schema: requisitionTemplate
                   "404":
                       body:
                         application/json:
@@ -881,10 +859,12 @@ resourceTypes:
               description: Update existing requisitionTemplate.
               body:
                   application/json:
+                    schema: requisitionTemplate
               responses:
                   "200":
                       body:
                         application/json:
+                            schema: requisitionTemplate
                   "400":
                       body:
                         application/json:
@@ -907,6 +887,7 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
+                            schema: requisitionTemplate
                   "404":
                   "500":
   /settings:
