@@ -84,7 +84,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldInApprovalRequisitionIfItsStatusIsAuthorized() {
+  public void shouldInApprovalRequisitionIfItsStatusIsAuthorizedAndParentNodeExists() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
@@ -95,7 +95,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldInApprovalRequisitionIfItsStatusIsInApproval() {
+  public void shouldInApprovalRequisitionIfItsStatusIsInApprovalAndParentNodeExists() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
@@ -106,7 +106,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldApproveRequisitionIfItsStatusIsAuthorized() {
+  public void shouldInApprovalRequisitionIfItsStatusIsAuthorizedAndParentNodeNotExists() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
@@ -117,7 +117,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldApproveRequisitionIfItsStatusIsInApproval() {
+  public void shouldApproveRequisitionIfItsStatusIsInApprovalAndParentNodeNotExists() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);

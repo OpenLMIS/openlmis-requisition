@@ -36,6 +36,7 @@ import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDa
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
@@ -124,7 +125,7 @@ public class RequisitionService {
   private UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @Autowired
-  private PermissionService permissionService;
+  private RightReferenceDataService rightReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -308,8 +309,13 @@ public class RequisitionService {
    */
   public Set<Requisition> getRequisitionsForApproval(UUID userId) {
     Set<Requisition> requisitionsForApproval = new HashSet<>();
+    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
     Set<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
-        .getRoleAssignments(userId).stream().collect(Collectors.toSet());
+        .getRoleAssignments(userId)
+        .stream()
+        .filter(r -> r.getRole().getRights().contains(right))
+        .collect(Collectors.toSet());
+
     if (roleAssignments != null) {
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
         if (roleAssignment.getSupervisoryNodeId() != null
@@ -319,7 +325,6 @@ public class RequisitionService {
         }
       }
     }
-
     return requisitionsForApproval;
   }
 
@@ -332,7 +337,6 @@ public class RequisitionService {
         null, null, null, supervisoryNodeId, null, null, null);
     if (reqList != null) {
       for (Requisition requisition : reqList.getContent()) {
-        permissionService.canApproveRequisition(requisition.getId());
         if (requisition.isApprovable()) {
           requisitions.add(requisition);
         }

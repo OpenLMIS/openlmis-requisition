@@ -52,6 +52,7 @@ import org.openlmis.requisition.dto.ProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -118,6 +119,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RightDto right;
+
+  @Mock
+  private RoleDto role;
 
   @Mock
   private SupervisoryNodeDto supervisoryNode;
@@ -423,6 +427,12 @@ public class RequisitionServiceTest {
     DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
     when(detailedRoleAssignmentDto.getProgramId()).thenReturn(programId);
     when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(right);
+    when(role.getRights()).thenReturn(rights);
+
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
     UserDto user = mock(UserDto.class);
