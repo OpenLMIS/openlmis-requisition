@@ -15,11 +15,21 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_PARAMETE
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.JasperTemplateParameter;
@@ -29,15 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-
 @Service
+@SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateService {
 
   private static final Logger LOGGER = Logger.getLogger(JasperTemplateService.class);
@@ -60,8 +63,8 @@ public class JasperTemplateService {
   }
 
   /**
-   * Validate ".jrmxl" file and insert if template not exist.
-   * If this name of template already exist, remove older template and insert new.
+   * Validate ".jrmxl" file and insert if template not exist. If this name of template already
+   * exist, remove older template and insert new.
    */
   public void validateFileAndSaveTemplate(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
@@ -85,7 +88,7 @@ public class JasperTemplateService {
    */
   public File convertJasperToXml(JasperTemplate jasperTemplate) throws ReportingException {
     try (InputStream inputStream = new ByteArrayInputStream(jasperTemplate.getData());
-         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       JasperCompileManager.writeReportToXmlStream(inputStream, outputStream);
       File xmlReport = createTempFile(jasperTemplate.getName(), ".jrxml");
       writeByteArrayToFile(xmlReport, outputStream.toByteArray());
@@ -96,11 +99,10 @@ public class JasperTemplateService {
   }
 
   /**
-   * Validate ".jrxml" report file with JasperCompileManager.
-   * If report is valid create additional report parameters.
-   * Save additional report parameters as JasperTemplateParameter list.
-   * Save report file as ".jasper" in byte array in Template class.
-   * If report is not valid throw exception.
+   * Validate ".jrxml" report file with JasperCompileManager. If report is valid create additional
+   * report parameters. Save additional report parameters as JasperTemplateParameter list. Save
+   * report file as ".jasper" in byte array in Template class. If report is not valid throw
+   * exception.
    */
   private void validateFile(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
@@ -178,6 +180,48 @@ public class JasperTemplateService {
           .getText().replace("\"", "").replace("\'", ""));
     }
     return jasperTemplateParameter;
+  }
+
+  /**
+   * Map request parameters to the template parameters in the template. If there are no template
+   * parameters, returns an empty Map.
+   *
+   * @param request  request with parameters
+   * @param template template with parameters
+   * @return Map of matching parameters, empty Map if none match
+   */
+  public Map<String, Object> mapRequestParametersToTemplate(HttpServletRequest request,
+      JasperTemplate template) {
+
+    List<JasperTemplateParameter> templateParameters = template.getTemplateParameters();
+    if (templateParameters == null) {
+      return new HashMap<>();
+    }
+
+    Map<String, String[]> requestParameterMap = request.getParameterMap();
+    Map<String, Object> map = new HashMap<>();
+
+    for (JasperTemplateParameter templateParameter : templateParameters) {
+      String templateParameterName = templateParameter.getName();
+
+      for (String requestParamName : requestParameterMap.keySet()) {
+
+        if (templateParameterName.equalsIgnoreCase(requestParamName)) {
+          String requestParamValue = "";
+          if (requestParameterMap.get(templateParameterName).length > 0) {
+            requestParamValue = requestParameterMap.get(templateParameterName)[0];
+          }
+
+          if (!(isBlank(requestParamValue)
+              || "null".equals(requestParamValue)
+              || "undefined".equals(requestParamValue))) {
+            map.put(templateParameterName, requestParamValue);
+          }
+        }
+      }
+    }
+
+    return map;
   }
 
   private void throwIfTemplateWithSameNameAlreadyExists(String name) throws ReportingException {

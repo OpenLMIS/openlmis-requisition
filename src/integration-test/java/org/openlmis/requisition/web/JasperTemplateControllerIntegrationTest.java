@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
@@ -19,10 +20,12 @@ import java.util.UUID;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-@SuppressWarnings({"PMD.UnusedPrivateField"})
+@SuppressWarnings({"PMD.UnusedPrivateField","PMD.TooManyMethods"})
 public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/reports/templates/requisitions";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String FORMAT_PARAM = "format";
+  private static final String REPORT_URL = ID_URL + "/{" + FORMAT_PARAM + "}";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
@@ -178,6 +181,73 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
         .pathParam("id", jasperTemplate.getId())
         .when()
         .get(ID_URL)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+  
+  @Test
+  @Ignore //Once the integration tests actually mock services, this should be re-enabled with mocks
+  public void generateReportShouldReturnReports() {
+
+    jasperTemplate = jasperTemplateRepository.save(jasperTemplate);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", jasperTemplate.getId())
+        .pathParam(FORMAT_PARAM, "pdf")
+        .when()
+        .get(REPORT_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", jasperTemplate.getId())
+        .pathParam(FORMAT_PARAM, "csv")
+        .when()
+        .get(REPORT_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", jasperTemplate.getId())
+        .pathParam(FORMAT_PARAM, "xls")
+        .when()
+        .get(REPORT_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", jasperTemplate.getId())
+        .pathParam(FORMAT_PARAM, "html")
+        .when()
+        .get(REPORT_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void generateReportShouldReturnNotFoundIfReportTemplateDoesNotExist() {
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", jasperTemplate.getId())
+        .pathParam(FORMAT_PARAM, "pdf")
+        .when()
+        .get(REPORT_URL)
         .then()
         .statusCode(404);
 

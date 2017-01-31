@@ -3,7 +3,9 @@ package org.openlmis.requisition.service;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,12 +22,21 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRPropertiesMap;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,6 +46,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.domain.JasperTemplateParameter;
 import org.openlmis.requisition.exception.ReportingException;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -43,13 +55,10 @@ import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(BlockJUnit4ClassRunner.class)
 @PrepareForTest({JasperTemplateService.class, JasperCompileManager.class})
+@SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateServiceTest {
 
   @Mock
@@ -64,7 +73,17 @@ public class JasperTemplateServiceTest {
   private static final String NAME_OF_FILE = "report.jrxml";
   private static final String DISPLAY_NAME = "displayName";
   private static final String PARAM_DISPLAY_NAME = "Param Display Name";
-
+  private static final String PARAM1 = "param1";
+  
+  private HttpServletRequest request;
+  private JasperTemplate template;
+  
+  @Before
+  public void setUp() {
+    request = mock(HttpServletRequest.class);
+    template = mock(JasperTemplate.class);
+  }
+  
   @Test
   public void shouldThrowErrorIfFileNotOfTypeJasperXml() throws Exception {
     expectedException.expect(ReportingException.class);
@@ -269,5 +288,92 @@ public class JasperTemplateServiceTest {
     verify(jasperTemplateRepository).save(jasperTemplate);
     assertThat(jasperTemplate.getTemplateParameters().get(0).getDisplayName(),
         is(PARAM_DISPLAY_NAME));
+  }
+  
+  @Test
+  public void mapRequestParametersToTemplateShouldReturnEmptyMapIfNoParameters() {
+    when(request.getParameterMap()).thenReturn(Collections.emptyMap());
+    when(template.getTemplateParameters()).thenReturn(null);
+    
+    Map<String, Object> resultMap = jasperTemplateService.mapRequestParametersToTemplate(request, 
+        template);
+    
+    assertThat(resultMap.size(), is(0));
+  }
+
+  @Test
+  public void mapRequestParametersToTemplateShouldReturnEmptyMapIfNoTemplateParameters() {
+    when(request.getParameterMap()).thenReturn(Collections.singletonMap("key1",
+        new String[]{"value1"}));
+    when(template.getTemplateParameters()).thenReturn(null);
+
+    Map<String, Object> resultMap = jasperTemplateService.mapRequestParametersToTemplate(request,
+        template);
+
+    assertThat(resultMap.size(), is(0));
+  }
+
+  @Test
+  public void mapRequestParametersToTemplateShouldReturnEmptyMapIfNoRequestParameters() {
+    JasperTemplateParameter templateParameter = new JasperTemplateParameter(template, PARAM1, 
+        null, null, null, null, null, null);
+
+    when(request.getParameterMap()).thenReturn(Collections.emptyMap());
+    when(template.getTemplateParameters()).thenReturn(Collections.singletonList(templateParameter));
+
+    Map<String, Object> resultMap = jasperTemplateService.mapRequestParametersToTemplate(request,
+        template);
+
+    assertThat(resultMap.size(), is(0));
+  }
+
+  @Test
+  public void mapRequestParametersToTemplateShouldReturnMatchingParameters() {
+    List<JasperTemplateParameter> templateParameterList = new ArrayList<>();
+    templateParameterList.add(new JasperTemplateParameter(template, PARAM1, null, null, null, 
+        null, null, null));
+    templateParameterList.add(new JasperTemplateParameter(template, "param2", null, null, null, 
+        null, null, null));
+    
+    Map<String, String[]> requestParameterMap = new HashMap<>();
+    requestParameterMap.put(PARAM1, new String[]{"value1"});
+    requestParameterMap.put("param3", new String[]{"value3"});
+
+    when(request.getParameterMap()).thenReturn(requestParameterMap);
+    when(template.getTemplateParameters()).thenReturn(templateParameterList);
+
+    Map<String, Object> resultMap = jasperTemplateService.mapRequestParametersToTemplate(request,
+        template);
+
+    assertThat(resultMap.size(), is(1));
+    assertTrue(resultMap.containsKey(PARAM1));
+    assertEquals("value1", resultMap.get(PARAM1));
+  }
+
+  @Test
+  public void mapRequestParametersToTemplateShouldNotReturnBlankNullOrUndefinedStringValues() {
+    List<JasperTemplateParameter> templateParameterList = new ArrayList<>();
+    templateParameterList.add(new JasperTemplateParameter(template, PARAM1, null, null, null,
+        null, null, null));
+    templateParameterList.add(new JasperTemplateParameter(template, "param2", null, null, null,
+        null, null, null));
+    templateParameterList.add(new JasperTemplateParameter(template, "param3", null, null, null,
+        null, null, null));
+    templateParameterList.add(new JasperTemplateParameter(template, "param4", null, null, null,
+        null, null, null));
+
+    Map<String, String[]> requestParameterMap = new HashMap<>();
+    requestParameterMap.put(PARAM1, new String[]{""});
+    requestParameterMap.put("param2", new String[]{" "});
+    requestParameterMap.put("param3", new String[]{"null"});
+    requestParameterMap.put("param4", new String[]{"undefined"});
+
+    when(request.getParameterMap()).thenReturn(requestParameterMap);
+    when(template.getTemplateParameters()).thenReturn(templateParameterList);
+
+    Map<String, Object> resultMap = jasperTemplateService.mapRequestParametersToTemplate(request,
+        template);
+
+    assertThat(resultMap.size(), is(0));
   }
 }

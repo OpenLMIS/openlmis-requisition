@@ -3,15 +3,19 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.JasperTemplateParameter;
 import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.ReportingException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
+import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @Controller
 @RequestMapping("/api/reports/templates/requisitions")
@@ -40,6 +46,9 @@ public class JasperTemplateController extends BaseController {
 
   @Autowired
   private JasperTemplateRepository jasperTemplateRepository;
+
+  @Autowired
+  private JasperReportsViewService jasperReportsViewService;
 
   /**
    * Adding report templates with ".jrxml" format to database.
@@ -143,5 +152,33 @@ public class JasperTemplateController extends BaseController {
       jasperTemplateRepository.delete(jasperTemplate);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+  }
+
+  /**
+   * Generate a report based on the template, the format and the request parameters.
+   *
+   * @param request    request (to get the request parameters)
+   * @param templateId report template ID
+   * @param format     report format to generate, default is PDF
+   * @return the generated report
+   */
+  @RequestMapping(value = "/{id}/{format}", method = RequestMethod.GET)
+  public ModelAndView generateReport(HttpServletRequest request,
+      @PathVariable("id") UUID templateId,
+      @PathVariable("format") String format) throws JasperReportViewException {
+
+    JasperTemplate template = jasperTemplateRepository.findOne(templateId);
+    if (template == null) {
+      throw new ContentNotFoundMessageException(new Message(
+          MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
+    }
+
+    JasperReportsMultiFormatView jasperView = jasperReportsViewService.getJasperReportsView(
+        template, request);
+    Map<String, Object> map = jasperTemplateService.mapRequestParametersToTemplate(
+        request, template);
+    map.put("format", format);
+
+    return new ModelAndView(jasperView, map);
   }
 }
