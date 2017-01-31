@@ -17,6 +17,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,9 @@ public class JasperTemplateController extends BaseController {
   @Autowired
   private JasperReportsViewService jasperReportsViewService;
 
+  @Autowired
+  private PermissionService permissionService;
+
   /**
    * Adding report templates with ".jrxml" format to database.
    *
@@ -62,6 +66,7 @@ public class JasperTemplateController extends BaseController {
   public void createJasperReportTemplate(
       @RequestPart("file") MultipartFile file, String name, String description)
       throws ReportingException {
+    permissionService.canEditReportTemplates();
     JasperTemplate jasperTemplate = new JasperTemplate(
         name, null, null, CONSISTENCY_REPORT, description);
     jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
@@ -75,6 +80,7 @@ public class JasperTemplateController extends BaseController {
   @RequestMapping(method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Iterable<JasperTemplateDto>> getAllTemplates() {
+    permissionService.canViewReports();
     Iterable<JasperTemplateDto> templates =
         JasperTemplateDto.newInstance(jasperTemplateRepository.findAll());
     return new ResponseEntity<>(templates, HttpStatus.OK);
@@ -90,6 +96,7 @@ public class JasperTemplateController extends BaseController {
   @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
   public ResponseEntity<JasperTemplateDto> updateTemplate(
       @RequestBody JasperTemplateDto jasperTemplateDto, @PathVariable("id") UUID templateId) {
+    permissionService.canEditReportTemplates();
     JasperTemplate jasperTemplate = JasperTemplate.newInstance(jasperTemplateDto);
     JasperTemplate jasperTemplateToUpdate = jasperTemplateRepository.findOne(templateId);
     if (jasperTemplateToUpdate == null) {
@@ -115,6 +122,7 @@ public class JasperTemplateController extends BaseController {
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
   public ResponseEntity<JasperTemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
+    permissionService.canViewReports();
     JasperTemplate jasperTemplate =
         jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
@@ -144,6 +152,7 @@ public class JasperTemplateController extends BaseController {
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<JasperTemplateDto> deleteTemplate(@PathVariable("id") UUID templateId) {
+    permissionService.canEditReportTemplates();
     JasperTemplate jasperTemplate = jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
       throw new ContentNotFoundMessageException(new Message(
@@ -166,6 +175,8 @@ public class JasperTemplateController extends BaseController {
   public ModelAndView generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
+    
+    permissionService.canViewReports();
 
     JasperTemplate template = jasperTemplateRepository.findOne(templateId);
     if (template == null) {
