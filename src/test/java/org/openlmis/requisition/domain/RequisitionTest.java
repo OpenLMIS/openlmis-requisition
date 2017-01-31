@@ -709,7 +709,7 @@ public class RequisitionTest {
   private ApprovedProductDto mockApprovedProduct(UUID orderableId) {
     ApprovedProductDto approvedProductDto = mock(ApprovedProductDto.class);
     ProgramOrderableDto programOrderable = mock(ProgramOrderableDto.class);
-    when(approvedProductDto.getProduct()).thenReturn(programOrderable);
+    when(approvedProductDto.getProgramOrderable()).thenReturn(programOrderable);
     when(programOrderable.getOrderableId()).thenReturn(orderableId);
     return approvedProductDto;
   }

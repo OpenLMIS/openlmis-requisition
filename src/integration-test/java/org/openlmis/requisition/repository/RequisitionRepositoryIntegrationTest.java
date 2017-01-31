@@ -246,7 +246,7 @@ public class RequisitionRepositoryIntegrationTest
     programOrderable.setOrderableId(productId);
 
     ApprovedProductDto ftap = new ApprovedProductDto();
-    ftap.setProduct(programOrderable);
+    ftap.setProgramOrderable(programOrderable);
     ftap.setMaxMonthsOfStock(7.25);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),

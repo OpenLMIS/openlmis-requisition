@@ -261,14 +261,14 @@ public class RequisitionLineItem extends BaseEntity {
     this.requisition = requisition;
     this.maxMonthsOfStock = BigDecimal.valueOf(approvedProduct.getMaxMonthsOfStock());
 
-    ProgramOrderableDto product = approvedProduct.getProduct();
+    ProgramOrderableDto product = approvedProduct.getProgramOrderable();
     this.orderableId = product.getOrderableId();
 
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
         ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
         : priceFromProduct;
-    this.orderableId = approvedProduct.getProduct().getOrderableId();
+    this.orderableId = approvedProduct.getProgramOrderable().getOrderableId();
   }
 
   /**
@@ -379,8 +379,8 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
 
     // Set product category display name
-    if (orderableProductDto.getPrograms() != null) {
-      Optional<ProductDto> product = orderableProductDto.getPrograms().stream()
+    if (orderableDto.getPrograms() != null) {
+      Optional<ProgramOrderableDto> product = orderableDto.getPrograms().stream()
           .filter(p -> p.getProgramId().equals(requisition.getProgramId())).findFirst();
 
       if (product.isPresent()) {
