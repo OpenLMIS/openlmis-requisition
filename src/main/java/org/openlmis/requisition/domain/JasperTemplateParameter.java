@@ -1,18 +1,19 @@
 package org.openlmis.requisition.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "template_parameters")
@@ -56,6 +57,11 @@ public class JasperTemplateParameter extends BaseEntity {
   @Setter
   private String description;
 
+  @Transient
+  @Getter
+  @Setter
+  private List<String> selectValues = new ArrayList<>();
+
   /**
    * Create new instance of JasperTemplateParameter based on given
    * {@link JasperTemplateParameter.Importer}
@@ -88,6 +94,7 @@ public class JasperTemplateParameter extends BaseEntity {
     exporter.setDefaultValue(defaultValue);
     exporter.setDisplayName(displayName);
     exporter.setSelectSql(selectSql);
+    exporter.setSelectValues(selectValues);
   }
 
   public interface Exporter {
@@ -104,6 +111,8 @@ public class JasperTemplateParameter extends BaseEntity {
     void setSelectSql(String selectSql);
 
     void setDescription(String description);
+    
+    void setSelectValues(List<String> selectValues);
 
   }
 

@@ -1,7 +1,12 @@
 package org.openlmis.requisition.web;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import java.util.List;
+import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.domain.JasperTemplateParameter;
 import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ReportingException;
@@ -21,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/api/reports/templates/requisitions")
@@ -72,7 +75,7 @@ public class JasperTemplateController extends BaseController {
    * Allows updating templates.
    *
    * @param jasperTemplateDto A template bound to the request body
-   * @param templateId  UUID of template which we want to update
+   * @param templateId        UUID of template which we want to update
    * @return ResponseEntity containing the updated template
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
@@ -109,6 +112,17 @@ public class JasperTemplateController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
     } else {
+      // run select sql and populate returned values for every template parameter
+      for (JasperTemplateParameter tp : jasperTemplate.getTemplateParameters()) {
+        if (isNotBlank(tp.getSelectSql())) {
+          LOGGER.debug("Template Parameter " + jasperTemplate.getName() + " has select sql: "
+              + tp.getSelectSql());
+          List<String> selectValues = jasperTemplateRepository.runArbitrarySql(tp.getSelectSql());
+          LOGGER.debug("Template Parameter " + jasperTemplate.getName() + " select values: "
+              + selectValues);
+          tp.setSelectValues(selectValues);
+        }
+      }
       return new ResponseEntity<>(JasperTemplateDto.newInstance(jasperTemplate), HttpStatus.OK);
     }
   }

@@ -1,11 +1,13 @@
 package org.openlmis.requisition.repository;
 
+import java.util.UUID;
 import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.repository.custom.JasperTemplateRepositoryCustom;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.util.UUID;
+public interface JasperTemplateRepository extends PagingAndSortingRepository<JasperTemplate, UUID>,
+    JasperTemplateRepositoryCustom {
 
-public interface JasperTemplateRepository extends PagingAndSortingRepository<JasperTemplate, UUID> {
   JasperTemplate findByName(@Param("name") String name);
 }
