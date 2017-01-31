@@ -6,20 +6,25 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +53,9 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
+  private RequisitionRepository requisitionRepository;
+
+  @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   private RequisitionTemplate requisitionTemplate;
@@ -57,6 +65,11 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void setUp() {
     currentInstanceNumber = 0;
     requisitionTemplate = generateRequisitionTemplate();
+  }
+
+  @After
+  public void cleanUp() {
+    requisitionRepository.deleteAll();
   }
 
   @Test
@@ -94,6 +107,23 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .statusCode(204);
 
     assertFalse(requisitionTemplateRepository.exists(requisitionTemplate.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+
+  @Test
+  public void shouldReturnBadRequestWhenNotAllowedToDeleteRequisition() {
+    generateRequisition();
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionTemplate.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(400);
+
+    assertTrue(requisitionTemplateRepository.exists(requisitionTemplate.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -421,6 +451,18 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     program.setCode("code" + generateInstanceNumber());
     program.setPeriodsSkippable(false);
     return program;
+  }
+
+  private Requisition generateRequisition() {
+    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, true);
+
+    requisition.setId(UUID.randomUUID());
+    requisition.setCreatorId(UUID.randomUUID());
+    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setTemplate(requisitionTemplate);
+    requisition.setNumberOfMonthsInPeriod(1);
+    return requisitionRepository.save(requisition);
   }
 
   private Integer generateInstanceNumber() {

@@ -833,6 +833,10 @@ resourceTypes:
               description: Delete chosen requisitionTemplate.
               responses:
                   "204":
+                  "400":
+                      body:
+                        application/json:
+                            schema: localizedMessage
                   "403":
                       body:
                         application/json:

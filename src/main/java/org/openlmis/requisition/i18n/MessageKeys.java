@@ -156,6 +156,8 @@ public abstract class MessageKeys {
       + ".authentication.rightCanNotBeFound";
   public static final String ERROR_NO_FOLLOWING_PERMISSION = ERROR_PREFIX
       + ".authorization.noFollowingPermission";
+  public static final String ERROR_REQUISITION_TEMPLATE_IN_USE = ERROR_PREFIX
+      + ".requisitionTemplateInUse";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

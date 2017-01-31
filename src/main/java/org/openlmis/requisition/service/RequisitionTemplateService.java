@@ -3,8 +3,11 @@ package org.openlmis.requisition.service;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,5 +54,21 @@ public class RequisitionTemplateService {
     }
 
     return requisitionTemplateRepository.save(template);
+  }
+
+  /**
+   * Safe delete of a requisition template. If the requisition template is used by any
+   * requisition, a {@link ValidationMessageException} signals that it cannot be removed.
+   *
+   * @param template the template to remove
+   */
+  public void delete(RequisitionTemplate template) {
+    if (!requisitionRepository.findByTemplateId(template.getId()).isEmpty()) {
+      throw new ValidationMessageException(new Message(
+          MessageKeys.ERROR_REQUISITION_TEMPLATE_IN_USE,
+          template.getId()));
+    } else {
+      requisitionTemplateRepository.delete(template);
+    }
   }
 }

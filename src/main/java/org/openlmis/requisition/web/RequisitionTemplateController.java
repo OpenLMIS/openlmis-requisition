@@ -160,7 +160,7 @@ public class RequisitionTemplateController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
-      requisitionTemplateRepository.delete(requisitionTemplate);
+      requisitionTemplateService.delete(requisitionTemplate);
       return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);
     }
   }
