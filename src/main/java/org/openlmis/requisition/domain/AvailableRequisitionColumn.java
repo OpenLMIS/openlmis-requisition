@@ -1,10 +1,12 @@
 package org.openlmis.requisition.domain;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -75,12 +77,37 @@ public class AvailableRequisitionColumn extends BaseEntity {
       return false;
     }
 
-    AvailableRequisitionColumn column = (AvailableRequisitionColumn) obj;
-    return Objects.equals(column.getName(), getName());
+    AvailableRequisitionColumn that = (AvailableRequisitionColumn) obj;
+
+    return new EqualsBuilder()
+        .append(name, that.name)
+        .append(sources, that.sources)
+        .append(options, that.options)
+        .append(label, that.label)
+        .append(indicator, that.indicator)
+        .append(mandatory, that.mandatory)
+        .append(isDisplayRequired, that.isDisplayRequired)
+        .append(canChangeOrder, that.canChangeOrder)
+        .append(canBeChangedByUser, that.canBeChangedByUser)
+        .append(definition, that.definition)
+        .append(columnType, that.columnType)
+        .isEquals();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName());
+    return new HashCodeBuilder(17, 37)
+        .append(name)
+        .append(sources)
+        .append(options)
+        .append(label)
+        .append(indicator)
+        .append(mandatory)
+        .append(isDisplayRequired)
+        .append(canChangeOrder)
+        .append(canBeChangedByUser)
+        .append(definition)
+        .append(columnType)
+        .toHashCode();
   }
 }

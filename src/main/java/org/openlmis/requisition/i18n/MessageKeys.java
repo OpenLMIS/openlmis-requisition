@@ -128,6 +128,10 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.requestedQuantityExplanationRequired";
   public static final String ERROR_VALIDATION_FIELD_IS_TOO_LONG =
       ERROR_PREFIX + ".validation.fieldIsTooLong";
+  public static final String ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND =
+      ERROR_PREFIX + ".validation.columnDefinitionNotFound";
+  public static final String ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED =
+      ERROR_PREFIX + ".validation.columnDefinitionModified";
   public static final String ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME = ERROR_PREFIX
       + ".validation.cannotCalculateAtTheSameTime";
   public static final String ERROR_SOURCE_NOT_AVAILABLE = ERROR_PREFIX

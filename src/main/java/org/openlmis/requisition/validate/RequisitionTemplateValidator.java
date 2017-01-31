@@ -11,6 +11,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -19,6 +21,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,12 +31,16 @@ import org.springframework.validation.Validator;
 import java.util.Set;
 
 @Component
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateValidator implements Validator {
   @Autowired
   MessageService messageService;
 
   @Autowired
   ValidatorUtil validatorUtil;
+
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
@@ -152,9 +159,24 @@ public class RequisitionTemplateValidator implements Validator {
 
   private void validateColumns(Errors errors, RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+      validateColumnDefinition(errors, column);
       validateChosenSources(errors, template, column);
       validateChosenOptions(errors, column);
       validateDefinition(errors, column);
+    }
+  }
+
+  private void validateColumnDefinition(Errors errors, RequisitionTemplateColumn column) {
+    AvailableRequisitionColumn actual = column.getColumnDefinition();
+    AvailableRequisitionColumn expected = availableRequisitionColumnRepository
+        .findOne(actual.getId());
+
+    if (null == expected) {
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(
+          new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND, column.getLabel())).toString());
+    } else if (!expected.equals(actual)) {
+      errors.rejectValue(COLUMNS_MAP, messageService.localize(
+          new Message(ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED, column.getLabel())).toString());
     }
   }
 

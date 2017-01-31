@@ -24,6 +24,7 @@ import javax.persistence.ManyToOne;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequisitionTemplateColumn {
+  public static final String COLUMN_DEFINITION = "columnDefinition";
   public static final String DEFINITION = "definition";
 
   @Getter

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
@@ -17,6 +18,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
@@ -42,6 +44,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
@@ -51,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
@@ -69,6 +73,9 @@ public class RequisitionTemplateValidatorTest {
 
   @Mock
   private ValidatorUtil validatorUtil;
+
+  @Mock
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   @InjectMocks
   private RequisitionTemplateValidator validator;
@@ -113,7 +120,6 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message8)).thenReturn(message8.new LocalizedMessage(
         "must be displayed when stock on hand is calculated."));
-
   }
 
   @Test
@@ -298,6 +304,43 @@ public class RequisitionTemplateValidatorTest {
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
   }
 
+  @Test
+  public void shouldRejectIfColumnDefinitionCannotBeFound() throws Exception {
+    Message message = new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND,
+        COLUMN_DEFINITION, "mocked");
+    String errorMessage = "Cannot find column definition for column mocked";
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+
+    when(availableRequisitionColumnRepository.findOne(columnMap.get(STOCK_ON_HAND)
+        .getColumnDefinition().getId())).thenReturn(null);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
+  public void shouldRejectIfColumnDefinitionWasModified() throws Exception {
+    Message message = new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND,
+        COLUMN_DEFINITION, "mocked");
+    String errorMessage = "Cannot find column definition for column mocked";
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+    columnMap.get(STOCK_ON_HAND).setColumnDefinition(new AvailableRequisitionColumn());
+    
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
   private RequisitionTemplate generateTemplate() {
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
     RequisitionTemplateColumn column = generateTemplateColumn(COLUMN_NAME, "T");
@@ -335,6 +378,7 @@ public class RequisitionTemplateValidatorTest {
 
   private RequisitionTemplateColumn generateTemplateColumn(String name, String indicator) {
     AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
+    columnDefinition.setId(UUID.randomUUID());
     columnDefinition.setName(name);
     columnDefinition.setIndicator(indicator);
     columnDefinition.setIsDisplayRequired(false);
@@ -351,6 +395,9 @@ public class RequisitionTemplateValidatorTest {
     }
 
     columnDefinition.setSources(sources);
+
+    when(availableRequisitionColumnRepository.findOne(columnDefinition.getId()))
+        .thenReturn(columnDefinition);
 
     RequisitionTemplateColumn requisitionTemplateColumn =
         new RequisitionTemplateColumn(columnDefinition);
