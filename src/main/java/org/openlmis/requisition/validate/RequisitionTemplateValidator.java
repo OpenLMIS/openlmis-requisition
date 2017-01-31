@@ -14,6 +14,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
@@ -21,6 +22,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ import org.springframework.validation.Errors;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Component
 public class RequisitionTemplateValidator extends BaseValidator {
@@ -35,8 +38,13 @@ public class RequisitionTemplateValidator extends BaseValidator {
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
+  static final String PROGRAM_ID = "programId";
+  static final String PROGRAM = "program";
 
   static final String REQUESTED_QUANTITY = "requestedQuantity";
   static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
@@ -94,6 +102,13 @@ public class RequisitionTemplateValidator extends BaseValidator {
       rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
           new Message("requisition.error.validation.fieldMustBeGreaterOrEqual",
               NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
+    }
+
+    UUID programId = requisitionTemplate.getProgramId();
+    if (null != programId && null == programReferenceDataService.findOne(programId)) {
+      rejectValue(errors, PROGRAM_ID,
+          new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
+              PROGRAM, programId));
     }
   }
 

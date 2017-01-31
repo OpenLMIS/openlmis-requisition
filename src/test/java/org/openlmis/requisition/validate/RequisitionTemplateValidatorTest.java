@@ -21,11 +21,14 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.COLUMNS_MAP;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.MAX_COLUMN_DEFINITION_LENGTH;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE;
+import static org.openlmis.requisition.validate.RequisitionTemplateValidator.PROGRAM;
+import static org.openlmis.requisition.validate.RequisitionTemplateValidator.PROGRAM_ID;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.STOCK_ON_HAND;
@@ -46,6 +49,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
@@ -74,6 +78,9 @@ public class RequisitionTemplateValidatorTest {
 
   @Mock
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Mock
+  private ProgramReferenceDataService programReferenceDataService;
 
   @InjectMocks
   private RequisitionTemplateValidator validator;
@@ -339,6 +346,23 @@ public class RequisitionTemplateValidatorTest {
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
+  public void shouldRejectIfProgramWithSpecifiedIdDoesNotExist() throws Exception {
+    UUID programId = UUID.randomUUID();
+    when(programReferenceDataService.findOne(programId)).thenReturn(null);
+
+    RequisitionTemplate requisitionTemplate = generateTemplate();
+    requisitionTemplate.setProgramId(programId);
+
+    Message message = new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
+        PROGRAM, programId);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        message.toString()));
+
+    validator.validate(requisitionTemplate, errors);
+    verify(errors).rejectValue(eq(PROGRAM_ID), contains(message.toString()));
   }
 
   private RequisitionTemplate generateTemplate() {
