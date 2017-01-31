@@ -273,7 +273,7 @@ public class RequisitionLineItemTest {
     programOrderable.setPricePerPack(pricePerPack);
     programOrderable.setOrderableId(orderableId);
     ApprovedProductDto ftap = new ApprovedProductDto();
-    ftap.setProduct(programOrderable);
+    ftap.setProgramOrderable(programOrderable);
     ftap.setMaxMonthsOfStock(7.25);
 
     return ftap;
@@ -282,7 +282,7 @@ public class RequisitionLineItemTest {
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
     ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
 
-    ProgramOrderableDto programOrderable = ftap.getProduct();
+    ProgramOrderableDto programOrderable = ftap.getProgramOrderable();
     ProgramDto program = new ProgramDto();
     program.setId(UUID.randomUUID());
 

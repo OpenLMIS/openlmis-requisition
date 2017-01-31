@@ -973,7 +973,7 @@ public class RequisitionServiceTest {
     product.setOrderableId(productId);
     product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
-    approvedProductDto.setProduct(product);
+    approvedProductDto.setProgramOrderable(product);
     approvedProductDto.setMaxMonthsOfStock(7.25);
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), eq(fullSupply)))
