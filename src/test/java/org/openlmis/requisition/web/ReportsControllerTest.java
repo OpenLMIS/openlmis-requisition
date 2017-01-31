@@ -23,8 +23,6 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.utils.RequisitionExportHelper;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
@@ -47,16 +45,10 @@ public class ReportsControllerTest {
   private PermissionService permissionService;
 
   @Mock
-  private RequisitionDtoBuilder requisitionDtoBuilder;
-
-  @Mock
-  private RequisitionExportHelper requisitionExportHelper;
-
-  @Mock
-  private RequisitionService requisitionService;
-
-  @Mock
   private JasperTemplateService jasperTemplateService;
+
+  @Mock
+  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
 
   @Mock
   private JasperReportsViewService jasperReportsViewService;

@@ -8,7 +8,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -22,12 +27,9 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.util.View;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -53,6 +56,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "requisitions")
@@ -140,6 +147,32 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   @Type(type = UUID)
   private UUID creatorId;
+
+  @Getter
+  @Setter
+  @Type(type = UUID)
+  private UUID submitterId;
+
+  @Getter
+  @Setter
+  @Type(type = UUID)
+  private UUID authorizerId;
+
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @Convert(converter = LocalDateTimePersistenceConverter.class)
+  @JsonView(View.BasicInformation.class)
+  @Getter
+  @Setter
+  private LocalDateTime submittedDate;
+
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @Convert(converter = LocalDateTimePersistenceConverter.class)
+  @JsonView(View.BasicInformation.class)
+  @Getter
+  @Setter
+  private LocalDateTime authorizedDate;
 
   @ManyToMany
   @JoinTable(name = "requisitions_previous_requisitions",
@@ -253,7 +286,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void submit(Collection<OrderableProductDto> products) {
+  public void submit(Collection<OrderableProductDto> products, UUID submitter) {
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
         line -> line.updatePacksToShip(products));
 
@@ -271,6 +304,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.SUBMITTED;
+    submitterId = submitter;
   }
 
   /**
@@ -278,7 +312,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void authorize(Collection<OrderableProductDto> products) {
+  public void authorize(Collection<OrderableProductDto> products, UUID authorizer) {
     RequisitionHelper.forEachLine(
         getNonSkippedRequisitionLineItems(), line -> line.updatePacksToShip(products));
 
@@ -290,6 +324,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptionsAndTotalCost();
 
     status = RequisitionStatus.AUTHORIZED;
+    authorizerId = authorizer;
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
   }
 
@@ -402,6 +437,10 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setId(id);
     exporter.setCreatedDate(getCreatedDate());
     exporter.setCreatorId(creatorId);
+    exporter.setSubmittedDate(getSubmittedDate());
+    exporter.setSubmitterId(submitterId);
+    exporter.setAuthorizedDate(getAuthorizedDate());
+    exporter.setAuthorizerId(authorizerId);
     exporter.setStatus(status);
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
@@ -429,9 +468,8 @@ public class Requisition extends BaseTimestampedEntity {
         });
   }
 
-  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
-                                                  Collection<StockAdjustmentReasonDto>
-                                                      stockAdjustmentReasons) {
+  private void calculateAndValidateTemplateFields(
+      RequisitionTemplate template, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
     getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
             numberOfMonthsInPeriod));
@@ -509,6 +547,14 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setCreatorId(UUID creatorId);
 
+    void setSubmittedDate(LocalDateTime createdDate);
+
+    void setSubmitterId(UUID creatorId);
+
+    void setAuthorizedDate(LocalDateTime createdDate);
+
+    void setAuthorizerId(UUID creatorId);
+
     void setStatus(RequisitionStatus status);
 
     void setEmergency(Boolean emergency);
@@ -531,6 +577,14 @@ public class Requisition extends BaseTimestampedEntity {
     LocalDateTime getCreatedDate();
 
     UUID getCreatorId();
+
+    LocalDateTime getSubmittedDate();
+
+    UUID getSubmitterId();
+
+    LocalDateTime getAuthorizedDate();
+
+    UUID getAuthorizerId();
 
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
 

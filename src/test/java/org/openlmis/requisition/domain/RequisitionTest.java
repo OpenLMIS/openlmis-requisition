@@ -78,7 +78,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItsStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -130,7 +130,7 @@ public class RequisitionTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
   }
 
   @Test
@@ -150,7 +150,7 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
     requisition.updateFrom(new Requisition(), Lists.newArrayList());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
@@ -419,7 +419,7 @@ public class RequisitionTest {
     setUpTestUpdatePacksToShip(product, packsToShip);
 
     // when
-    requisition.submit(Collections.singletonList(product));
+    requisition.submit(Collections.singletonList(product), UUID.randomUUID());
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -435,7 +435,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     // when
-    requisition.authorize(Collections.singletonList(product));
+    requisition.authorize(Collections.singletonList(product), UUID.randomUUID());
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -463,7 +463,7 @@ public class RequisitionTest {
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit(Collections.emptyList());
+    requisition.submit(Collections.emptyList(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -483,7 +483,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList());
+    requisition.submit(Collections.emptyList(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -503,7 +503,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList());
+    requisition.submit(Collections.emptyList(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -517,7 +517,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(Collections.emptyList());
+    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());

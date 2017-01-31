@@ -28,6 +28,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -38,13 +39,13 @@ import org.openlmis.requisition.service.referencedata.OrderableProductReferenceD
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -99,6 +100,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @Mock
+  private AuthenticationHelper authenticationHelper;
 
   @Mock
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
@@ -156,12 +160,16 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldSubmitValidInitiatedRequisition() {
+    UserDto submitter = mock(UserDto.class);
+    when(submitter.getId()).thenReturn(UUID.randomUUID());
+
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()));
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
   }
@@ -275,13 +283,13 @@ public class RequisitionControllerTest {
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid1, false))
         .thenReturn(new ArrayList<>());
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid2, false))
-        .thenReturn(Arrays.asList(initiatedRequsition));
+        .thenReturn(Collections.singletonList(initiatedRequsition));
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid3, false))
-        .thenReturn(Arrays.asList(submittedRequsition));
+        .thenReturn(Collections.singletonList(submittedRequsition));
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid4, false))
-        .thenReturn(Arrays.asList(authorizedRequsition));
+        .thenReturn(Collections.singletonList(authorizedRequsition));
     when(requisitionRepository.searchByProcessingPeriodAndType(uuid5, false))
-        .thenReturn(Arrays.asList(approvedRequsition));
+        .thenReturn(Collections.singletonList(approvedRequsition));
     when(requisitionRepository.save(initiatedRequsition))
         .thenReturn(initiatedRequsition);
     when(requisitionRepository.findOne(uuid1))
@@ -291,7 +299,7 @@ public class RequisitionControllerTest {
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyZeroInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
-    verify(requisition, never()).submit(eq(Collections.emptyList()));
+    verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class));
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {

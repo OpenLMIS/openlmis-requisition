@@ -33,6 +33,22 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Setter
   private UUID creatorId;
 
+  @Getter
+  @Setter
+  private LocalDateTime submittedDate;
+
+  @Getter
+  @Setter
+  private UUID submitterId;
+
+  @Getter
+  @Setter
+  private LocalDateTime authorizedDate;
+
+  @Getter
+  @Setter
+  private UUID authorizerId;
+
   @Setter
   private List<RequisitionLineItemDto> requisitionLineItems;
 

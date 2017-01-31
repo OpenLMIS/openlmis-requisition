@@ -64,6 +64,11 @@ public final class RequisitionBuilder {
     requisition.setId(importer.getId());
     requisition.setCreatedDate(importer.getCreatedDate());
 
+    requisition.setSubmittedDate(importer.getSubmittedDate());
+    requisition.setSubmitterId(importer.getSubmitterId());
+    requisition.setAuthorizedDate(importer.getAuthorizedDate());
+    requisition.setAuthorizerId(importer.getAuthorizerId());
+
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());
     requisition.setRequisitionLineItems(new ArrayList<>());

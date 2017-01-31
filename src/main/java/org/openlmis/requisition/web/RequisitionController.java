@@ -198,7 +198,8 @@ public class RequisitionController extends BaseController {
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
-    requisition.submit(orderableProductReferenceDataService.findAll());
+    UserDto user = authenticationHelper.getCurrentUser();
+    requisition.submit(orderableProductReferenceDataService.findAll(), user.getId());
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
@@ -457,7 +458,8 @@ public class RequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
-    requisition.authorize(orderableProductReferenceDataService.findAll());
+    UserDto user = authenticationHelper.getCurrentUser();
+    requisition.authorize(orderableProductReferenceDataService.findAll(), user.getId());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();

@@ -10,6 +10,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -61,6 +64,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -474,6 +478,25 @@ public class RequisitionService {
             order.getExternalId()));
       }
     }
+  }
+
+  /**
+   * Calculates combined cost of all requisition line items.
+   *
+   * @param requisitionLineItems items to calculate the sum for.
+   * @return sum of total costs.
+   */
+  public Money calculateTotalCost(List<RequisitionLineItem> requisitionLineItems) {
+    Money defaultValue = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 0);
+
+    if (requisitionLineItems.isEmpty()) {
+      return defaultValue;
+    }
+
+    Optional<Money> money = requisitionLineItems.stream()
+        .map(RequisitionLineItem::getTotalCost).filter(Objects::nonNull).reduce(Money::plus);
+
+    return money.isPresent() ? money.get() : defaultValue;
   }
 
   private List<RequisitionLineItem> getSupplyItemsBase(UUID requisitionId, boolean fullSupply) {
