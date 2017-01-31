@@ -14,7 +14,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 10,
-    "averageConsumption": 10
+    "averageConsumption": 10,
+    "pricePerPack": 5.1
   },
   {
     "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
@@ -31,7 +32,8 @@
     "skipped": "false",
     "nonFullSupply": true,
     "adjustedConsumption": 1200,
-    "averageConsumption": 1200
+    "averageConsumption": 1200,
+    "pricePerPack": 20.77
   },
   {
     "id": "f27415c4-7049-46a6-9e59-818990c85390",
@@ -48,7 +50,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 16,
-    "averageConsumption": 13
+    "averageConsumption": 13,
+    "pricePerPack": 5.1
   },
   {
     "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
@@ -64,7 +67,8 @@
     "skipped": "false",
     "nonFullSupply": true,
     "adjustedConsumption": 100,
-    "averageConsumption": 650
+    "averageConsumption": 650,
+    "pricePerPack": 20.77
   },
   {
     "id": "2efd35db-fa98-4a1a-b711-1aaa9d6b1fcc",
@@ -84,7 +88,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 50,
-    "averageConsumption": 50
+    "averageConsumption": 50,
+    "pricePerPack": 5.23
   },
   {
     "id": "90df5393-16e8-419b-8a36-3f5daf9a0f89",
@@ -104,7 +109,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 200,
-    "averageConsumption": 200
+    "averageConsumption": 200,
+    "pricePerPack": 15.94
   },
   {
     "id": "4b5cde6e-2771-4b64-afd1-5ee4f4452fda",
@@ -124,7 +130,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 10,
-    "averageConsumption": 10
+    "averageConsumption": 10,
+    "pricePerPack": 25.46
   },
   {
     "id": "6e3b9044-eb81-45a9-9567-3461cfa6e1d7",
@@ -144,7 +151,8 @@
     "skipped": "false",
     "nonFullSupply": true,
     "adjustedConsumption": 500,
-    "averageConsumption": 500
+    "averageConsumption": 500,
+    "pricePerPack": 30.98
   },
   {
     "id": "8e724d8f-d714-409b-baa9-fe732d7175a7",
@@ -164,7 +172,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 50,
-    "averageConsumption": 33
+    "averageConsumption": 33,
+    "pricePerPack": 5.1
   },
   {
     "id": "46c607b1-a8da-40de-93d6-9dcae3a34068",
@@ -184,7 +193,8 @@
     "skipped": "false",
     "nonFullSupply": true,
     "adjustedConsumption": 200,
-    "averageConsumption": 150
+    "averageConsumption": 150,
+    "pricePerPack": 20.77
   },
   {
     "id": "8c8026b8-0ae8-4adb-b2ca-bfb0dfb030a5",
@@ -201,7 +211,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 0,
-    "averageConsumption": 25
+    "averageConsumption": 25,
+    "pricePerPack": 5.23
   },
   {
     "id": "552eb0f7-fc57-4916-bb54-0c3c9540420a",
@@ -218,7 +229,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 0,
-    "averageConsumption": 100
+    "averageConsumption": 100,
+    "pricePerPack": 15.94
   },
   {
     "id": "bcbd9a7c-6068-40d9-90ab-cb090fd6ed8c",
@@ -235,7 +247,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 0,
-    "averageConsumption": 5
+    "averageConsumption": 5,
+    "pricePerPack": 25.46
   },
   {
     "id": "502eb011-27bc-4f7f-bb1f-6425ae66a5d5",
@@ -252,7 +265,8 @@
     "skipped": "false",
     "nonFullSupply": true,
     "adjustedConsumption": 0,
-    "averageConsumption": 250
+    "averageConsumption": 250,
+    "pricePerPack": 30.98
   },
   {
     "id": "5b449a32-aedf-4a8b-a9d7-c3b665ad76e2",
@@ -269,7 +283,8 @@
     "skipped": "false",
     "nonFullSupply": false,
     "adjustedConsumption": 0,
-    "averageConsumption": 25
+    "averageConsumption": 25,
+    "pricePerPack": 5.1
   },
   {
     "id": "89e46600-aa5a-4cc9-8bfd-67be8e907778",
@@ -286,7 +301,8 @@
     "skipped": "false",
     "nonFullSupply": true,
     "adjustedConsumption": 0,
-    "averageConsumption": 100
+    "averageConsumption": 100,
+    "pricePerPack": 4.34
   },
 
   {
@@ -302,7 +318,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 10,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 2.13
   },
   {
     "id": "1d0d970f-c619-40db-ae81-6d8990505502",
@@ -317,7 +334,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 10,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 2.13
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
@@ -332,7 +350,8 @@
     "approvedQuantity": 0,
     "maxMonthsOfStock": 500,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 5.1
   },
   {
     "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
@@ -347,7 +366,8 @@
     "approvedQuantity": 0,
     "maxMonthsOfStock": 500,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 25.46
   },
   {
     "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
@@ -361,7 +381,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 30,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 5.153
   },
   {
     "id": "f2ccd66c-f608-4eaa-8eea-22daba187a5a",
@@ -375,7 +396,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 30,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 4.1344
   },
   {
     "id": "682baaa0-9a68-40a2-97a4-a2cafb8fcce6",
@@ -393,7 +415,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 500,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 5.1
   },
   {
     "id": "a2ab1bea-5833-4fa6-9c8f-ea4cba43a6da",
@@ -411,7 +434,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 500,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 25.46
   },
   {
     "id": "d2529049-6e96-4ca0-870e-6d9819bfb17d",
@@ -429,7 +453,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 5.5,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 3.16
   },
   {
     "id": "818b66c2-27c3-4662-9644-db8da5afacbe",
@@ -447,7 +472,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 10,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 2.13
   },
   {
     "id": "982943fe-c8a7-468c-9622-dd1a345ce459",
@@ -465,7 +491,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 500,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 5.1
   },
   {
     "id": "14e25f19-1857-4ab0-b426-2893cef14663",
@@ -483,7 +510,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 500,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 25.46
   },
   {
     "id": "a9280f48-5d7f-48b8-9064-10e4d4c567fb",
@@ -501,7 +529,8 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 5.5,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 3.16
   },
   {
     "id": "21297efb-af7c-4342-8b00-d15c324d5282",
@@ -519,6 +548,7 @@
     "totalStockoutDays": 0,
     "maxMonthsOfStock": 10,
     "skipped": "false",
-    "nonFullSupply": false
+    "nonFullSupply": false,
+    "pricePerPack": 2.13
   }
 ]
