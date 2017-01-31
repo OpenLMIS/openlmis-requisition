@@ -20,6 +20,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.COLUMNS_MAP;
@@ -70,9 +71,6 @@ public class RequisitionTemplateValidatorTest {
 
   @Mock
   private MessageService messageService;
-
-  @Mock
-  private ValidatorUtil validatorUtil;
 
   @Mock
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
@@ -190,6 +188,7 @@ public class RequisitionTemplateValidatorTest {
         getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.changeColumnDisplay(
         TOTAL_STOCKOUT_DAYS, false);
+    requisitionTemplate.setNumberOfPeriodsToAverage(2);
 
     Message message6 = new Message(ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED,
         TOTAL_STOCKOUT_DAYS);
@@ -207,7 +206,7 @@ public class RequisitionTemplateValidatorTest {
   @Test
   public void shouldRejectWhenAverageInTemplateAndAdjustedConsumptionNotInTemplate() {
     when(messageService.localize(
-        new Message("requisition.error.validation.fieldMustBeInTemplate")))
+        new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
         .thenReturn(message);
 
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
@@ -215,9 +214,10 @@ public class RequisitionTemplateValidatorTest {
         generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.setNumberOfPeriodsToAverage(2);
     validator.validate(requisitionTemplate, errors);
 
-    verify(validatorUtil).rejectValue(errors, COLUMNS_MAP, message);
+    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
   }
 
   @Test
@@ -232,7 +232,7 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(validatorUtil).rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE, message);
+    verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, message.toString());
   }
 
   @Test
@@ -248,7 +248,7 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(validatorUtil).rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE, message);
+    verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, message.toString());
   }
 
   @Test

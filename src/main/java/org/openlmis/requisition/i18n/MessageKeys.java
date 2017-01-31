@@ -105,7 +105,7 @@ public abstract class MessageKeys {
   public static final String ERROR_IS_INVARIANT = ERROR_PREFIX
       + ".validation.isInvariant";
   public static final String ERROR_DATE_MODIFIED_MISMATCH =
-          "requisition.error.validation.dateModifiedMismatch";
+      "requisition.error.validation.dateModifiedMismatch";
   public static final String ERROR_IS_HIDDEN = ERROR_PREFIX
       + ".validation.isHidden";
   public static final String ERROR_MUST_BE_NON_NEGATIVE = ERROR_PREFIX
@@ -148,6 +148,8 @@ public abstract class MessageKeys {
       + ".validation.valueDoesNotMatchCalculatedValue";
   public static final String ERROR_CANNOT_UPDATE_REQUISITION = ERROR_PREFIX
       + ".validation.cannotUpdateRequisition";
+  public static final String ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE = ERROR_PREFIX
+      + ".validation.fieldMustBeInTemplate";
   public static final String ERROR_USER_NOT_FOUND = ERROR_PREFIX
       + ".authentication.userCanNotBeFound";
   public static final String ERROR_RIGHT_NOT_FOUND = ERROR_PREFIX

@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class RequisitionValidator extends AbstractRequisitionValidator {
-
   static final String STOCK_ADJUSTMENT_REASON = "reasonId";
   static final String VALUE_IS_INCORRECTLY_CALCULATED = " has incorrect value, it does not match"
       + " the calculated value.";
@@ -61,8 +60,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     Requisition requisition = (Requisition) target;
 
     if (isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS)).toString());
+      rejectValue(errors, REQUISITION_LINE_ITEMS,
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS));
     } else {
       for (RequisitionLineItem item : requisition.getNonSkippedRequisitionLineItems()) {
         if (item.isNonFullSupply()) {
@@ -134,8 +133,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       String explanation = item.getRequestedQuantityExplanation();
 
       if (!Objects.equals(requested, calculated) && isBlank(explanation)) {
-        errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-            new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED)).toString());
+        rejectValue(errors, REQUISITION_LINE_ITEMS,
+            new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED));
       }
     }
   }
@@ -148,13 +147,13 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
     for (StockAdjustment adjustment : item.getStockAdjustments()) {
       if (!reasons.contains(adjustment.getReasonId())) {
-        errors.rejectValue(STOCK_ADJUSTMENT_REASON, messageService.localize(
-            new Message(ERROR_STOCK_ADJUSTMENT_NOT_FOUND, adjustment.getReasonId())).toString());
+        rejectValue(errors, STOCK_ADJUSTMENT_REASON,
+            new Message(ERROR_STOCK_ADJUSTMENT_NOT_FOUND, adjustment.getReasonId()));
       }
 
       if (adjustment.getQuantity() == null || adjustment.getQuantity() < 0) {
-        errors.rejectValue(STOCK_ADJUSTMENT_REASON, messageService.localize(
-            new Message(ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE, adjustment.getReasonId())).toString());
+        rejectValue(errors, STOCK_ADJUSTMENT_REASON,
+            new Message(ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE, adjustment.getReasonId()));
       }
     }
   }
@@ -179,27 +178,22 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
 
     if (templateValid && !Objects.equals(item.getStockOnHand(), calculateStockOnHand(item))) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(ERROR_INCORRECT_VALUE, RequisitionLineItem.STOCK_ON_HAND,
-              RequisitionLineItem.TOTAL_CONSUMED_QUANTITY)).toString());
+      rejectValue(errors, REQUISITION_LINE_ITEMS,
+          new Message(ERROR_INCORRECT_VALUE, STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY));
     }
 
     if (checkTemplate(errors, template, item.getMaximumStockQuantity(), MAXIMUM_STOCK_QUANTITY)
         && !Objects.equals(item.getMaximumStockQuantity(), calculateMaximumStockQuantity(item,
         template))) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS, messageService.localize(new Message(
-              ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
-              MAXIMUM_STOCK_QUANTITY)).toString());
+      rejectValue(errors, REQUISITION_LINE_ITEMS,
+          new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE, MAXIMUM_STOCK_QUANTITY));
     }
 
     if (checkTemplate(errors, template, item.getCalculatedOrderQuantity(),
         CALCULATED_ORDER_QUANTITY) && !Objects.equals(item.getCalculatedOrderQuantity(),
         calculateCalculatedOrderQuantity(item, template))) {
-      errors.rejectValue(
-          REQUISITION_LINE_ITEMS, messageService.localize(new Message(
-              ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
-              CALCULATED_ORDER_QUANTITY)).toString());
+      rejectValue(errors, REQUISITION_LINE_ITEMS,
+          new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE, CALCULATED_ORDER_QUANTITY));
     }
   }
 

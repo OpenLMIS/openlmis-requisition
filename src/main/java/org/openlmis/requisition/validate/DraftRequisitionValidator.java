@@ -1,5 +1,12 @@
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.domain.Requisition.CREATOR_ID;
+import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
+import static org.openlmis.requisition.domain.Requisition.FACILITY_ID;
+import static org.openlmis.requisition.domain.Requisition.MODIFIED_DATE;
+import static org.openlmis.requisition.domain.Requisition.PROCESSING_PERIOD_ID;
+import static org.openlmis.requisition.domain.Requisition.PROGRAM_ID;
+import static org.openlmis.requisition.domain.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
@@ -10,7 +17,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
@@ -22,8 +28,6 @@ import java.time.LocalDateTime;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
-  @Autowired
-  private MessageService messageService;
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
@@ -54,21 +58,21 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   private void validateInvariantsDidntChange(Errors errors, Requisition requisition,
                                              Requisition savedRequisition) {
     rejectIfValueChanged(errors, requisition.getFacilityId(),
-        savedRequisition.getFacilityId(), Requisition.FACILITY_ID);
+        savedRequisition.getFacilityId(), FACILITY_ID);
     rejectIfValueChanged(errors, requisition.getProgramId(),
-        savedRequisition.getProgramId(), Requisition.PROGRAM_ID);
+        savedRequisition.getProgramId(), PROGRAM_ID);
     rejectIfValueChanged(errors, requisition.getProcessingPeriodId(),
-        savedRequisition.getProcessingPeriodId(), Requisition.PROCESSING_PERIOD_ID);
+        savedRequisition.getProcessingPeriodId(), PROCESSING_PERIOD_ID);
     rejectIfValueChanged(errors, requisition.getEmergency(),
-        savedRequisition.getEmergency(), Requisition.EMERGENCY);
+        savedRequisition.getEmergency(), EMERGENCY);
     rejectIfValueChanged(errors, requisition.getCreatorId(),
-        savedRequisition.getCreatorId(), Requisition.CREATOR_ID);
+        savedRequisition.getCreatorId(), CREATOR_ID);
     rejectIfValueChanged(errors, requisition.getSupervisoryNodeId(),
-        savedRequisition.getSupervisoryNodeId(), Requisition.SUPERVISORY_NODE_ID);
+        savedRequisition.getSupervisoryNodeId(), SUPERVISORY_NODE_ID);
   }
 
-  private void validateRequisitionLineItem(
-      Errors errors, Requisition requisition, RequisitionLineItem item) {
+  private void validateRequisitionLineItem(Errors errors, Requisition requisition,
+                                           RequisitionLineItem item) {
     RequisitionTemplate template = requisition.getTemplate();
     rejectIfCalculatedAndNotNull(errors, template, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND);
@@ -87,46 +91,40 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
       expectedStatus = RequisitionStatus.AUTHORIZED;
     }
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
-        expectedStatus, messageService.localize(new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
-            RequisitionLineItem.APPROVED_QUANTITY)).toString());
+        expectedStatus, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
+            RequisitionLineItem.APPROVED_QUANTITY));
 
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getRemarks(),
-        expectedStatus, messageService.localize(new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
-            RequisitionLineItem.REMARKS_COLUMN)).toString());
+        expectedStatus, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
+            RequisitionLineItem.REMARKS_COLUMN));
 
   }
 
   private void rejectIfCalculatedAndNotNull(Errors errors, RequisitionTemplate template,
                                             Object value, String field) {
     if (template.isColumnCalculated(field) && value != null) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, messageService.localize(
-          new Message(ERROR_FIELD_IS_CALCULATED, field)).toString());
+      rejectValue(errors, REQUISITION_LINE_ITEMS, new Message(ERROR_FIELD_IS_CALCULATED, field));
     }
   }
 
   private void rejectIfInvalidStatusAndNotNull(Errors errors, Requisition requisition, Object value,
-                                               RequisitionStatus expectedStatus, String errorCode) {
+                                               RequisitionStatus expectedStatus, Message message) {
     if (requisition.getStatus() != expectedStatus && value != null) {
-      errors.rejectValue(REQUISITION_LINE_ITEMS, errorCode);
+      rejectValue(errors, REQUISITION_LINE_ITEMS, message);
     }
   }
 
-  private void rejectIfValueChanged(Errors errors, Object value,
-                                    Object savedValue, String field) {
+  private void rejectIfValueChanged(Errors errors, Object value, Object savedValue, String field) {
     if (savedValue != null && !savedValue.equals(value)) {
-      errors.rejectValue(field,
-          messageService.localize(new Message(ERROR_IS_INVARIANT, field)).toString());
+      rejectValue(errors, field, new Message(ERROR_IS_INVARIANT, field));
     }
   }
 
-  private void validateDateModifiedIsCorrect(Errors errors,
-                                             Requisition requisition,
+  private void validateDateModifiedIsCorrect(Errors errors, Requisition requisition,
                                              Requisition requisitionToUpdate) {
     LocalDateTime dateModified = requisition.getModifiedDate();
-    if (dateModified != null
-            && !dateModified.isEqual(requisitionToUpdate.getModifiedDate())) {
-      errors.rejectValue(Requisition.MODIFIED_DATE,
-          messageService.localize(new Message(ERROR_DATE_MODIFIED_MISMATCH)).toString());
+    if (dateModified != null && !dateModified.isEqual(requisitionToUpdate.getModifiedDate())) {
+      rejectValue(errors, MODIFIED_DATE, new Message(ERROR_DATE_MODIFIED_MISMATCH));
     }
   }
 }

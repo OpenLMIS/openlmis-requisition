@@ -1,6 +1,5 @@
 package org.openlmis.requisition.validate;
 
-import static org.apache.commons.lang3.StringUtils.length;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
@@ -14,30 +13,24 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Component
-@SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionTemplateValidator implements Validator {
-  @Autowired
-  MessageService messageService;
-
-  @Autowired
-  ValidatorUtil validatorUtil;
+public class RequisitionTemplateValidator extends BaseValidator {
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
@@ -84,23 +77,23 @@ public class RequisitionTemplateValidator implements Validator {
       }
       if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
         if (!requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-          validatorUtil.rejectValue(errors, COLUMNS_MAP, messageService.localize(
+          rejectValue(errors, COLUMNS_MAP,
               new Message("requisition.error.validation.fieldMustBeInTemplate",
-                  AVERAGE_CONSUMPTION, ADJUSTED_CONSUMPTION)));
+                  AVERAGE_CONSUMPTION, ADJUSTED_CONSUMPTION));
         }
         if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
-          validatorUtil.rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE, messageService.localize(
+          rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
               new Message("requisition.error.validation.fieldCanNotBeNull",
-                  NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION)));
+                  NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION));
         }
       }
     }
 
     if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
         && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
-      validatorUtil.rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE, messageService.localize(
+      rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
           new Message("requisition.error.validation.fieldMustBeGreaterOrEqual",
-              NUMBER_OF_PERIODS_TO_AVERAGE, "2")));
+              NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
     }
   }
 
@@ -110,16 +103,15 @@ public class RequisitionTemplateValidator implements Validator {
 
     if (quantityDisplayed) {
       if (!explanationDisplayed) {
-        errors.rejectValue(COLUMNS_MAP, messageService.localize(
+        rejectValue(errors, COLUMNS_MAP,
             new Message(ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED,
-                REQUESTED_QUANTITY_EXPLANATION)).toString());
+                REQUESTED_QUANTITY_EXPLANATION));
       }
     } else {
       if (explanationDisplayed) {
-        errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
-            ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED,
-            REQUESTED_QUANTITY)).toString());
-
+        rejectValue(errors, COLUMNS_MAP,
+            new Message(ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED,
+                REQUESTED_QUANTITY));
       }
     }
   }
@@ -127,9 +119,8 @@ public class RequisitionTemplateValidator implements Validator {
   private void validateCalculatedFields(Errors errors, RequisitionTemplate template) {
     if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
         && template.isColumnCalculated(STOCK_ON_HAND)) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
-          ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME, TOTAL_CONSUMED_QUANTITY,
-          STOCK_ON_HAND)).toString());
+      rejectValue(errors, COLUMNS_MAP, new Message(ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME,
+          TOTAL_CONSUMED_QUANTITY, STOCK_ON_HAND));
     }
   }
 
@@ -138,22 +129,16 @@ public class RequisitionTemplateValidator implements Validator {
     if (template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
         if (!template.isColumnInTemplate(requiredField)) {
-          errors.rejectValue(COLUMNS_MAP, messageService.localize(new Message(
-              "requisition.error.validation.fieldMustBeInTemplate", requiredField, field))
-              .toString());
+          rejectValue(
+              errors, COLUMNS_MAP,
+              new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE, requiredField, field)
+          );
         }
         if (template.isColumnUserInput(requiredField)) {
-          rejectIfNotDisplayed(errors, template, requiredField, suffix);
+          rejectIfNotDisplayed(errors, template, requiredField, COLUMNS_MAP,
+              new Message(suffix, requiredField));
         }
       }
-    }
-  }
-
-  private void rejectIfNotDisplayed(Errors errors, RequisitionTemplate template,
-                                    String field, String suffix) {
-    if (!template.isColumnDisplayed(field)) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message(suffix, field)).toString());
     }
   }
 
@@ -161,8 +146,16 @@ public class RequisitionTemplateValidator implements Validator {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
       validateColumnDefinition(errors, column);
       validateChosenSources(errors, template, column);
-      validateChosenOptions(errors, column);
-      validateDefinition(errors, column);
+
+      Set<AvailableRequisitionColumnOption> options = column.getColumnDefinition().getOptions();
+      Optional.ofNullable(column.getOption())
+          .ifPresent(option -> rejectIfNotContains(errors, options, option, COLUMNS_MAP,
+              new Message(ERROR_OPTION_NOT_AVAILABLE, option.toString())));
+
+      rejectIfLengthTooLong(
+          errors, column.getDefinition(), MAX_COLUMN_DEFINITION_LENGTH, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG, DEFINITION, MAX_COLUMN_DEFINITION_LENGTH)
+      );
     }
   }
 
@@ -172,11 +165,15 @@ public class RequisitionTemplateValidator implements Validator {
         .findOne(actual.getId());
 
     if (null == expected) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND, column.getLabel())).toString());
+      rejectValue(
+          errors, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND, column.getLabel())
+      );
     } else if (!expected.equals(actual)) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message(ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED, column.getLabel())).toString());
+      rejectValue(
+          errors, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED, column.getLabel())
+      );
     }
   }
 
@@ -189,30 +186,17 @@ public class RequisitionTemplateValidator implements Validator {
       Set<SourceType> sources = definition.getSources();
 
       if (sources.size() > 1 && template.isColumnUserInput(definition.getName())) {
-        rejectIfNotDisplayed(errors, template, definition.getName(), ERROR_MUST_BE_DISPLAYED);
+        rejectIfNotDisplayed(
+            errors, template, definition.getName(), COLUMNS_MAP,
+            new Message(ERROR_MUST_BE_DISPLAYED, definition.getName())
+        );
       }
 
-      if (!sources.contains(chosenSource)) {
-        errors.rejectValue(COLUMNS_MAP, messageService.localize(
-            new Message(ERROR_SOURCE_NOT_AVAILABLE, chosenSource.toString())).toString());
-      }
+      rejectIfNotContains(
+          errors, sources, chosenSource, COLUMNS_MAP,
+          new Message(ERROR_SOURCE_NOT_AVAILABLE, chosenSource.toString())
+      );
     }
   }
 
-  private void validateChosenOptions(Errors errors, RequisitionTemplateColumn column) {
-    AvailableRequisitionColumnOption chosenOption = column.getOption();
-    if (chosenOption != null
-        && !column.getColumnDefinition().getOptions().contains(chosenOption)) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message(ERROR_OPTION_NOT_AVAILABLE, chosenOption.toString())).toString());
-    }
-  }
-
-  private void validateDefinition(Errors errors, RequisitionTemplateColumn column) {
-    if (length(column.getDefinition()) > MAX_COLUMN_DEFINITION_LENGTH) {
-      errors.rejectValue(COLUMNS_MAP, messageService.localize(
-          new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG,
-              DEFINITION, MAX_COLUMN_DEFINITION_LENGTH)).toString());
-    }
-  }
 }
