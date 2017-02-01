@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import org.hibernate.annotations.Type;
-import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 
@@ -29,7 +28,6 @@ import javax.persistence.Table;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
-@TypeName("RequisitionTemplate")
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseTimestampedEntity {

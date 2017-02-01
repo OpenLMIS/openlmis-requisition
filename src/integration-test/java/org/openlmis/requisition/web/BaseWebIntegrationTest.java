@@ -21,7 +21,6 @@ import org.openlmis.utils.CleanRepositoryHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import guru.nidi.ramltester.RamlDefinition;
@@ -31,7 +30,6 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import java.util.UUID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ActiveProfiles("test")
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest("server.port:8080")
 public abstract class BaseWebIntegrationTest {

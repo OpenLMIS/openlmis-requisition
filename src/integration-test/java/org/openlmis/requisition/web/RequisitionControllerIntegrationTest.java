@@ -183,7 +183,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configureRequisition(requisition);
     configureRequisitionForSearch(requisitionForSearch);
 
-    requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setOrderableProductId(product.getId());
     requisitionLineItem.setMaxMonthsOfStock(BigDecimal.valueOf(2));
     requisitionLineItem.setRequestedQuantity(1);
@@ -1185,6 +1184,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
     Requisition requisition = new Requisition(facility, UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), requisitionStatus, true);
+    requisition.setId(UUID.randomUUID());
     requisition.setCreatorId(user.getId());
     requisition.setCreatedDate(LocalDateTime.now());
     requisition.setTemplate(template);
