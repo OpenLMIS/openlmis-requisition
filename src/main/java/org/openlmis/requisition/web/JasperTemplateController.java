@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -66,10 +65,22 @@ public class JasperTemplateController extends BaseController {
   public void createJasperReportTemplate(
       @RequestPart("file") MultipartFile file, String name, String description)
       throws ReportingException {
+
     permissionService.canEditReportTemplates();
-    JasperTemplate jasperTemplate = new JasperTemplate(
-        name, null, null, CONSISTENCY_REPORT, description);
-    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
+
+    JasperTemplate jasperTemplateToUpdate = jasperTemplateRepository.findByName(name);
+    if (jasperTemplateToUpdate == null) {
+      LOGGER.debug("Creating new template");
+      jasperTemplateToUpdate = new JasperTemplate(name, null, null, CONSISTENCY_REPORT,
+          description);
+      jasperTemplateService.validateFileAndInsertTemplate(jasperTemplateToUpdate, file);
+    } else {
+      LOGGER.debug("Template found, updating template");
+      jasperTemplateToUpdate.setDescription(description);
+      jasperTemplateService.validateFileAndSaveTemplate(jasperTemplateToUpdate, file);
+    }
+
+    LOGGER.debug("Saved template with id: " + jasperTemplateToUpdate.getId());
   }
 
   /**
@@ -84,34 +95,6 @@ public class JasperTemplateController extends BaseController {
     Iterable<JasperTemplateDto> templates =
         JasperTemplateDto.newInstance(jasperTemplateRepository.findAll());
     return new ResponseEntity<>(templates, HttpStatus.OK);
-  }
-
-  /**
-   * Allows updating templates.
-   *
-   * @param jasperTemplateDto A template bound to the request body
-   * @param templateId        UUID of template which we want to update
-   * @return ResponseEntity containing the updated template
-   */
-  @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<JasperTemplateDto> updateTemplate(
-      @RequestBody JasperTemplateDto jasperTemplateDto, @PathVariable("id") UUID templateId) {
-    permissionService.canEditReportTemplates();
-    JasperTemplate jasperTemplate = JasperTemplate.newInstance(jasperTemplateDto);
-    JasperTemplate jasperTemplateToUpdate = jasperTemplateRepository.findOne(templateId);
-    if (jasperTemplateToUpdate == null) {
-      jasperTemplateToUpdate = new JasperTemplate();
-      LOGGER.info("Creating new template");
-    } else {
-      LOGGER.debug("Updating template with id: " + templateId);
-    }
-
-    jasperTemplateToUpdate.updateFrom(jasperTemplate);
-    jasperTemplateToUpdate = jasperTemplateRepository.save(jasperTemplateToUpdate);
-
-    LOGGER.debug("Saved template with id: " + jasperTemplateToUpdate.getId());
-    return new ResponseEntity<>(
-        JasperTemplateDto.newInstance(jasperTemplateToUpdate), HttpStatus.OK);
   }
 
   /**
@@ -175,7 +158,7 @@ public class JasperTemplateController extends BaseController {
   public ModelAndView generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
-    
+
     permissionService.canViewReports();
 
     JasperTemplate template = jasperTemplateRepository.findOne(templateId);

@@ -684,7 +684,7 @@ resourceTypes:
       displayName: Report Template
       post:
           is: [ secured ]
-          description: Add report template to database.
+          description: Add or update report template to database.
           body:
               multipart/form-data:
                 formParameters:
@@ -758,21 +758,6 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   404:
-                      body:
-                        application/json:
-                            schema: localizedMessage
-          put:
-              is: [ secured ]
-              description: Update existing template.
-              body:
-                  application/json:
-                    schema: jasperTemplateDto
-              responses:
-                  200:
-                      body:
-                        application/json:
-                          schema: jasperTemplateDto
-                  403:
                       body:
                         application/json:
                             schema: localizedMessage

@@ -100,44 +100,6 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   }
 
   @Test
-  public void shouldUpdateTemplate() {
-    jasperTemplateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
-
-    JasperTemplateDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", jasperTemplate.getId())
-        .body(jasperTemplateDto)
-        .when()
-        .put(ID_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(JasperTemplateDto.class);
-
-    assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldCreateNewTemplateIfDoesNotExist() {
-    jasperTemplateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
-
-    JasperTemplateDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", ID)
-        .body(jasperTemplateDto)
-        .when()
-        .put(ID_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(JasperTemplateDto.class);
-
-    assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldGetAllTemplates() {
     jasperTemplateRepository.save(jasperTemplate);
 
