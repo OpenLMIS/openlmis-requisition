@@ -10,6 +10,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -37,8 +39,10 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
@@ -107,6 +111,12 @@ public class RequisitionControllerTest {
   @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @Mock
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
+
   @InjectMocks
   private RequisitionController requisitionController;
 
@@ -127,6 +137,9 @@ public class RequisitionControllerTest {
     when(submittedRequsition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
     when(approvedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    when(authorizedRequsition.getId()).thenReturn(uuid4);
+    when(authorizedRequsition.isApprovable()).thenReturn(true);
 
     when(periodService.getPeriods(programUuid, facilityUuid, false))
         .thenReturn(processingPeriods);
@@ -257,6 +270,39 @@ public class RequisitionControllerTest {
     requisitionController.initiate(null, facilityUuid, null, false);
   }
 
+  @Test
+  public void shouldApproveAuthorizedRequisitionWithParentNode() {
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode();
+
+    UUID parentNodeId = UUID.randomUUID();
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any());
+  }
+
+  @Test
+  public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
+    mockSupervisoryNode();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(authorizedRequsition, times(1)).approve(eq(null), any());
+  }
+
+  private SupervisoryNodeDto mockSupervisoryNode() {
+    UUID supervisoryNodeId = UUID.randomUUID();
+    SupervisoryNodeDto supervisoryNodeDto = mock(SupervisoryNodeDto.class);
+    when(supervisoryNodeDto.getId()).thenReturn(supervisoryNodeId);
+    when(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
+        .thenReturn(supervisoryNodeDto);
+    when(authorizedRequsition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
+    return supervisoryNodeDto;
+  }
+
   private List<ProcessingPeriodDto> generateProcessingPeriods() {
     ProcessingPeriodDto period = new ProcessingPeriodDto();
     period.setId(uuid1);
@@ -294,6 +340,8 @@ public class RequisitionControllerTest {
         .thenReturn(initiatedRequsition);
     when(requisitionRepository.findOne(uuid1))
         .thenReturn(initiatedRequsition);
+    when(requisitionRepository.findOne(authorizedRequsition.getId()))
+        .thenReturn(authorizedRequsition);
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
