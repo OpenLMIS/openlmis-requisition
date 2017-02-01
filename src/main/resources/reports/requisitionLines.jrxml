@@ -87,11 +87,11 @@
 	<field name="totalCost" class="org.joda.money.Money">
 		<fieldDescription><![CDATA[totalCost]]></fieldDescription>
 	</field>
-	<field name="productCategoryDisplayName" class="java.lang.String">
-		<fieldDescription><![CDATA[productCategoryDisplayName]]></fieldDescription>
+	<field name="orderableCategoryDisplayName" class="java.lang.String">
+		<fieldDescription><![CDATA[orderableCategoryDisplayName]]></fieldDescription>
 	</field>
 	<group name="OrderableDisplayCategory">
-		<groupExpression><![CDATA[$F{productCategoryDisplayName}]]></groupExpression>
+		<groupExpression><![CDATA[$F{orderableCategoryDisplayName}]]></groupExpression>
 		<groupHeader>
 			<band height="10">
 				<rectangle>
@@ -105,7 +105,7 @@
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{productCategoryDisplayName}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{orderableCategoryDisplayName}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

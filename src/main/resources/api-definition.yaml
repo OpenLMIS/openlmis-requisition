@@ -122,7 +122,7 @@ schemas:
               "skipped": {"type": "boolean", "required": false, "title": "boolean" },
               "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" },
               "averageConsumption": {"type": "number", "required": false, "title": "averageConsumption" },
-              "productCategoryDisplayName": {"type": "string", "required": false, "title": "productCategoryDisplayName" }
+              "orderableCategoryDisplayName": {"type": "string", "required": false, "title": "orderableCategoryDisplayName" }
           }
       }
 

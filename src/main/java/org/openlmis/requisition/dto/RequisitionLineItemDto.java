@@ -53,7 +53,7 @@ public class RequisitionLineItemDto
   private BigDecimal maxMonthsOfStock;
   private Integer maximumStockQuantity;
   private Integer calculatedOrderQuantity;
-  private String productCategoryDisplayName;
+  private String orderableCategoryDisplayName;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;

@@ -16,13 +16,13 @@
       "type": "string",
       "title": "orderableDisplayCategoryId"
     },
-    "productCategoryDisplayName": {
+    "orderableCategoryDisplayName": {
       "type": "string",
-      "title": "productCategoryDisplayName"
+      "title": "orderableCategoryDisplayName"
     },
-    "productCategoryDisplayOrder": {
+    "orderableCategoryDisplayOrder": {
       "type": "integer",
-      "title": "productCategoryDisplayOrder"
+      "title": "orderableCategoryDisplayOrder"
     },
     "active": {
       "type": "boolean",
@@ -50,6 +50,6 @@
     }
   },
   "required": ["programId", "orderableId", "orderableDisplayCategoryId",
-    "productCategoryDisplayName", "productCategoryDisplayOrder", "active",
+    "orderableCategoryDisplayName", "orderableCategoryDisplayOrder", "active",
     "fullSupply", "displayOrder", "maxMonthsOfStock", "dosesPerMonth"]
 }

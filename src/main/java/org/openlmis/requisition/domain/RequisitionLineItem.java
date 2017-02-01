@@ -384,7 +384,7 @@ public class RequisitionLineItem extends BaseEntity {
           .filter(p -> p.getProgramId().equals(requisition.getProgramId())).findFirst();
 
       if (product.isPresent()) {
-        exporter.setProductCategoryDisplayName(product.get().getProductCategoryDisplayName());
+        exporter.setOrderableCategoryDisplayName(product.get().getOrderableCategoryDisplayName());
       }
     }
   }
@@ -614,7 +614,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
 
-    void setProductCategoryDisplayName(String name);
+    void setOrderableCategoryDisplayName(String name);
   }
 
   public interface Importer {
