@@ -106,7 +106,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldInApprovalRequisitionIfItsStatusIsAuthorizedAndParentNodeNotExists() {
+  public void shouldApproveRequisitionIfItsStatusIsAuthorizedAndParentNodeDoesNotExist() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
