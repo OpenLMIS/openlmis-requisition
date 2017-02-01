@@ -135,7 +135,9 @@ public class JasperTemplateService {
 
     for (JRParameter jrParameter : jrParameters) {
       if (!jrParameter.isSystemDefined()) {
-        parameters.add(createParameter(jrParameter));
+        JasperTemplateParameter jasperTemplateParameter = createParameter(jrParameter);
+        jasperTemplateParameter.setTemplate(jasperTemplate);
+        parameters.add(jasperTemplateParameter);
       }
     }
 
