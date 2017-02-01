@@ -543,7 +543,10 @@ public class RequisitionController extends BaseController {
   private void saveStatusMessage(Requisition requisition) {
     if (isNotBlank(requisition.getDraftStatusMessage())) {
       StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
-          authenticationHelper.getCurrentUser().getId(), requisition.getDraftStatusMessage());
+          authenticationHelper.getCurrentUser().getId(),
+          authenticationHelper.getCurrentUser().getFirstName(),
+          authenticationHelper.getCurrentUser().getLastName(),
+          requisition.getDraftStatusMessage());
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
     }

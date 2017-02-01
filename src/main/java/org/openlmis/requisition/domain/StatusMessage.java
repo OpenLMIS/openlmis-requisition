@@ -1,10 +1,10 @@
 package org.openlmis.requisition.domain;
 
+import org.hibernate.annotations.Type;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -37,6 +37,14 @@ public class StatusMessage extends BaseTimestampedEntity {
   @Type(type = UUID)
   private UUID authorId;
 
+  @Getter
+  @Setter
+  private String authorFirstName;
+
+  @Getter
+  @Setter
+  private String authorLastName;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   @Getter
@@ -48,16 +56,20 @@ public class StatusMessage extends BaseTimestampedEntity {
   @Setter
   private String body;
 
-  private StatusMessage(Requisition requisition, UUID authorId, String body) {
+  private StatusMessage(Requisition requisition, UUID authorId, String authorFirstName,
+                        String authorLastName, String body) {
     this.requisition = Objects.requireNonNull(requisition);
     this.authorId = authorId;
+    this.authorFirstName = authorFirstName;
+    this.authorLastName = authorLastName;
     this.status = Objects.requireNonNull(requisition.getStatus());
     this.body = Objects.requireNonNull(body);
   }
   
   public static StatusMessage newStatusMessage(Requisition requisition, UUID authorId,
+                                               String authorFirstName, String authorLastName,
                                                String body) {
-    return new StatusMessage(requisition, authorId, body);
+    return new StatusMessage(requisition, authorId, authorFirstName, authorLastName, body);
   }
 
   /**
@@ -68,6 +80,8 @@ public class StatusMessage extends BaseTimestampedEntity {
   public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setAuthorId(authorId);
+    exporter.setAuthorFirstName(authorFirstName);
+    exporter.setAuthorLastName(authorLastName);
     exporter.setRequisitionId(requisition.getId());
     exporter.setStatus(status);
     exporter.setBody(body);
@@ -79,6 +93,10 @@ public class StatusMessage extends BaseTimestampedEntity {
     void setId(UUID id);
 
     void setAuthorId(UUID authorId);
+
+    void setAuthorFirstName(String authorFirstName);
+
+    void setAuthorLastName(String authorLastName);
 
     void setRequisitionId(UUID requisitionId);
 

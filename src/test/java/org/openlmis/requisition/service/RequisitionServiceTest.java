@@ -230,7 +230,7 @@ public class RequisitionServiceTest {
   public void shouldDeleteStatusMessagesWhenDeletingRequisition() {
     requisition.setStatus(INITIATED);
     List<StatusMessage> statusMessages = Collections.singletonList(
-        StatusMessage.newStatusMessage(requisition, null, "Message 1"));
+        StatusMessage.newStatusMessage(requisition, null, null, null, "Message 1"));
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(statusMessages);
     requisitionService.delete(requisition.getId());

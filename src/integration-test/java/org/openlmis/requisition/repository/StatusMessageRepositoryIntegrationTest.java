@@ -31,13 +31,16 @@ public class StatusMessageRepositoryIntegrationTest
   private RequisitionTemplate requisitionTemplate;
   private Requisition requisition;
   private UUID userId = UUID.randomUUID();
+  private String userFirstName = "FirstName";
+  private String userLastName = "LastName";
 
   StatusMessageRepository getRepository() {
     return this.repository;
   }
 
   StatusMessage generateInstance() {
-    return StatusMessage.newStatusMessage(requisition, userId, "Status Message");
+    return StatusMessage.newStatusMessage(requisition, userId, userFirstName, userLastName,
+        "Status Message");
   }
   
   @Before
