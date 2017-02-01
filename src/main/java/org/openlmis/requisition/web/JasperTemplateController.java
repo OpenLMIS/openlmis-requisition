@@ -184,8 +184,8 @@ public class JasperTemplateController extends BaseController {
           MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
     }
 
-    JasperReportsMultiFormatView jasperView = jasperReportsViewService.getJasperReportsView(
-        template, request);
+    JasperReportsMultiFormatView jasperView = jasperReportsViewService
+        .getJasperReportsViewWithJdbcDatasource(template, request);
     Map<String, Object> map = jasperTemplateService.mapRequestParametersToTemplate(
         request, template);
     map.put("format", format);

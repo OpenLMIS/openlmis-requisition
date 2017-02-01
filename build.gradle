@@ -57,6 +57,7 @@ dependencies {
     compile 'org.openlmis:openlmis-service-util:3.0.0-SNAPSHOT'
     compile 'org.joda:joda-money:0.12'
     compile 'org.jadira.usertype:usertype.core:5.0.0.GA'
+    compile 'org.apache.poi:poi:3.10.1'
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'
