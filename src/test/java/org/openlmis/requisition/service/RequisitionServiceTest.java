@@ -118,7 +118,10 @@ public class RequisitionServiceTest {
   private FacilityDto facility;
 
   @Mock
-  private RightDto right;
+  private RightDto convertToOrderRight;
+
+  @Mock
+  private RightDto approveRequisitionRight;
 
   @Mock
   private RoleDto role;
@@ -204,7 +207,8 @@ public class RequisitionServiceTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID suggestedPeriodId = UUID.randomUUID();
-  private UUID rightId = UUID.randomUUID();
+  private UUID convertToOrderRightId = UUID.randomUUID();
+  private UUID approveRequisitionRightId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
 
   @Before
@@ -412,17 +416,8 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetRequisitionsForApproval() {
-    requisition.setStatus(IN_APPROVAL);
-    List<Requisition> requisitions = new ArrayList<>();
-    requisitions.add(requisition);
-    Requisition requisition2 = generateRequisition();
-    requisition2.setStatus(AUTHORIZED);
-    requisitions.add(requisition2);
-    Page page = Pagination.getPage(requisitions, null);
-
-    when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, null))
-        .thenReturn(page);
+    List<Requisition> requisitions = mockSearchRequisitionsForApproval();
+    assertEquals(2, requisitions.size());
 
     DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
     when(detailedRoleAssignmentDto.getProgramId()).thenReturn(programId);
@@ -430,21 +425,103 @@ public class RequisitionServiceTest {
     when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
 
     Set<RightDto> rights = new HashSet<>();
-    rights.add(right);
+    rights.add(approveRequisitionRight);
     when(role.getRights()).thenReturn(rights);
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    UUID userId = UUID.randomUUID();
     UserDto user = mock(UserDto.class);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+    when(user.getId()).thenReturn(userId);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
     Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user.getId());
+        requisitionService.getRequisitionsForApproval(userId);
 
     assertEquals(2, requisitionsForApproval.size());
-    assertTrue(requisitionsForApproval.contains(requisition));
-    assertTrue(requisitionsForApproval.contains(requisition2));
+    assertTrue(requisitionsForApproval.contains(requisitions.get(0)));
+    assertTrue(requisitionsForApproval.contains(requisitions.get(1)));
+  }
+
+  @Test
+  public void shouldntGetRequisitionsForApprovalWithoutApproveRight() {
+    mockSearchRequisitionsForApproval();
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(programId);
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    when(role.getRights()).thenReturn(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    UUID userId = UUID.randomUUID();
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(userId);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+        .thenReturn(roleAssignmentDtos);
+
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
+
+    assertEquals(0, requisitionsForApproval.size());
+  }
+
+  @Test
+  public void shouldntGetRequisitionsForApprovalWithIncorrectSupervisoryNode() {
+    mockSearchRequisitionsForApproval();
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(programId);
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(UUID.randomUUID());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    when(role.getRights()).thenReturn(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    UUID userId = UUID.randomUUID();
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(userId);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+        .thenReturn(roleAssignmentDtos);
+
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
+
+    assertEquals(0, requisitionsForApproval.size());
+  }
+
+  @Test
+  public void shouldntGetRequisitionsForApprovalWithIncorrectProgram() {
+    mockSearchRequisitionsForApproval();
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(UUID.randomUUID());
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    when(role.getRights()).thenReturn(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    UUID userId = UUID.randomUUID();
+    UserDto user = mock(UserDto.class);
+    when(user.getId()).thenReturn(userId);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+        .thenReturn(roleAssignmentDtos);
+
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
+
+    assertEquals(0, requisitionsForApproval.size());
   }
 
   @Test
@@ -576,8 +653,8 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId, rightId))
-        .thenReturn(facilities);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
+        convertToOrderRightId)).thenReturn(facilities);
 
     // when
     List<Requisition> expectedRequisitions = requisitionService
@@ -601,8 +678,8 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId, rightId))
-        .thenReturn(facilities);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
+        convertToOrderRightId)).thenReturn(facilities);
 
     for (ConvertToOrderDto requisition : requisitions) {
       requisition.setSupplyingDepotId(null);
@@ -621,8 +698,8 @@ public class RequisitionServiceTest {
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId, rightId))
-        .thenReturn(new ArrayList<>());
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
+        convertToOrderRightId)).thenReturn(new ArrayList<>());
 
     // when
     requisitionService.releaseRequisitionsAsOrder(requisitions, user);
@@ -715,8 +792,8 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(), rightId))
-        .thenReturn(facilities);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
+        convertToOrderRightId)).thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(true);
 
     // when
@@ -742,8 +819,8 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(), rightId))
-        .thenReturn(facilities);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
+        convertToOrderRightId)).thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(false);
 
     // when
@@ -761,8 +838,8 @@ public class RequisitionServiceTest {
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(), rightId))
-        .thenReturn(facilities);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
+        convertToOrderRightId)).thenReturn(facilities);
     when(orderFulfillmentService.create(any())).thenReturn(true);
 
     requisitionService.convertToOrder(list, user);
@@ -1002,6 +1079,21 @@ public class RequisitionServiceTest {
         .thenReturn(periodDto);
   }
 
+  private List<Requisition> mockSearchRequisitionsForApproval() {
+    requisition.setStatus(IN_APPROVAL);
+    List<Requisition> requisitions = new ArrayList<>();
+    requisitions.add(requisition);
+    Requisition requisition2 = generateRequisition();
+    requisition2.setStatus(AUTHORIZED);
+    requisitions.add(requisition2);
+    Page page = Pagination.getPage(requisitions, null);
+
+    when(requisitionRepository.searchRequisitions(
+        null, programId, null, null, null, supervisoryNodeId, null, null, null))
+        .thenReturn(page);
+    return requisitions;
+  }
+
   private void mockRepositories() {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
@@ -1020,12 +1112,13 @@ public class RequisitionServiceTest {
         .thenReturn(program);
     when(authenticationHelper
         .getRight(RightName.REQUISITION_CONVERT_TO_ORDER))
-        .thenReturn(right);
+        .thenReturn(convertToOrderRight);
     when(rightReferenceDataService
         .findRight(RightName.REQUISITION_APPROVE))
-        .thenReturn(right);
+        .thenReturn(approveRequisitionRight);
 
-    when(right.getId()).thenReturn(rightId);
+    when(convertToOrderRight.getId()).thenReturn(convertToOrderRightId);
+    when(approveRequisitionRight.getId()).thenReturn(approveRequisitionRightId);
     when(facility.getId()).thenReturn(facilityId);
     when(program.getId()).thenReturn(programId);
     when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);
