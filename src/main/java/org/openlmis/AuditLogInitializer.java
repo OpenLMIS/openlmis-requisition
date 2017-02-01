@@ -8,6 +8,7 @@ import org.openlmis.requisition.domain.BaseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,8 @@ import java.util.Map;
  * <a href="https://github.com/javers/javers/issues/214">this issue</a>.
  */
 
-@Component //@Profile("!test") //import org.springframework.context.annotation.Profile;
+@Component
+@Profile("!test")
 public class AuditLogInitializer implements CommandLineRunner {
 
   @Autowired
