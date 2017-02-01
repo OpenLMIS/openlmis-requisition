@@ -90,7 +90,7 @@
 	<field name="productCategoryDisplayName" class="java.lang.String">
 		<fieldDescription><![CDATA[productCategoryDisplayName]]></fieldDescription>
 	</field>
-	<group name="ProductCategory">
+	<group name="OrderableDisplayCategory">
 		<groupExpression><![CDATA[$F{productCategoryDisplayName}]]></groupExpression>
 		<groupHeader>
 			<band height="10">
