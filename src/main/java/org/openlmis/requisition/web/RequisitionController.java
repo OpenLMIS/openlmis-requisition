@@ -481,18 +481,17 @@ public class RequisitionController extends BaseController {
    *                    "all".
    * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
    * @param descending  Descending direction for sort.
-   * @param pageNumber  Page number to return.
-   * @param pageSize    Quantity for one page.
+   * @param pageable     Pageable object that allows client to optionally add "page" (page number)
+   *                     and "size" (page size) query parameters to the request.
    * @return ResponseEntity with list of approved requisitions.
    */
   @RequestMapping(value = "/requisitions/requisitionsForConvert", method = RequestMethod.GET)
-  public ResponseEntity<?> listForConvertToOrder(
+  public ResponseEntity<Page<RequisitionWithSupplyingDepotsDto>> listForConvertToOrder(
       @RequestParam(required = false) String filterValue,
       @RequestParam(required = false) String filterBy,
       @RequestParam(required = false, defaultValue = "programName") String sortBy,
       @RequestParam(required = false, defaultValue = "true") boolean descending,
-      @RequestParam(required = false) Integer pageNumber,
-      @RequestParam(required = false) Integer pageSize) {
+      Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(RightName.REQUISITION_CONVERT_TO_ORDER);
 
@@ -500,22 +499,26 @@ public class RequisitionController extends BaseController {
         .getFulfillmentFacilities(user.getId(), right.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
-    Collection<RequisitionDto> approvedRequisitionList =
+    Page<RequisitionDto> approvedRequisitions =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-            filterValue, filterBy, sortBy, descending, pageNumber, pageSize);
+            filterValue, filterBy, sortBy, descending, pageable);
+    List<RequisitionDto> approvedRequisitionsList = approvedRequisitions.getContent();
 
-    List<RequisitionWithSupplyingDepotsDto> response = new ArrayList<>();
-    for (RequisitionDto requisition : approvedRequisitionList) {
+    List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
+    for (RequisitionDto requisition : approvedRequisitionsList) {
       List<FacilityDto> facilities = requisitionService
           .getAvailableSupplyingDepots(requisition.getId()).stream()
           .filter(f -> userManagedFacilities.contains(f.getId())).collect(Collectors.toList());
 
       if (!facilities.isEmpty()) {
-        response.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
+        responseList.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
       }
     }
 
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    Page<RequisitionWithSupplyingDepotsDto> response =
+        Pagination.getPage(responseList, pageable, approvedRequisitions.getTotalElements());
+
+    return new ResponseEntity<Page<RequisitionWithSupplyingDepotsDto>>(response, HttpStatus.OK);
   }
 
   /**

@@ -47,13 +47,11 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
-import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +59,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -434,29 +431,21 @@ public class RequisitionService {
    *                    "all".
    * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
    * @param descending  Descending direction for sort.
-   * @param pageNumber  Page number to return.
-   * @param pageSize    Quantity for one page.
+   * @param pageable     Pageable object that allows to optionally add "page" (page number)
+   *                     and "size" (page size) query parameters.
    * @return List of requisitions.
    */
-  public List<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
-      String filterValue, String filterBy, String sortBy, Boolean descending,
-      Integer pageNumber, Integer pageSize) {
+  public Page<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
+      String filterValue, String filterBy, String sortBy, Boolean descending, Pageable pageable) {
 
     List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
-    List<Requisition> requisitions =
-        requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
-    List<RequisitionDto> requisitionDtos = convertHelper
-        .convertRequisitionListToRequisitionDtoList(requisitions);
-
-    requisitionDtos.sort(new RequisitionDtoComparator(sortBy));
-    if (descending) {
-      Collections.reverse(requisitionDtos);
-    }
-    if (pageNumber != null && pageSize != null) {
-      PageRequest pageRequest = new PageRequest(pageNumber, pageSize);
-      Page<RequisitionDto> requisitionDtoPage = Pagination.getPage(requisitionDtos, pageRequest);
-      requisitionDtos = requisitionDtoPage.getContent();
-    }
+    Page<Requisition> requisitions =
+        requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids, pageable);
+    List<Requisition> requisitionsList = requisitions.getContent();
+    List<RequisitionDto> requisitionDtosList =
+        convertHelper.convertRequisitionListToRequisitionDtoList(requisitionsList);
+    Page<RequisitionDto> requisitionDtos =
+        Pagination.getPage(requisitionDtosList, pageable, requisitions.getTotalElements());
 
     return requisitionDtos;
   }

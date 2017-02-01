@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static java.lang.Integer.valueOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -729,33 +728,38 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
-    generateRequisitions(20);
-    Integer pageSize = 10;
+    int numberOfRequisitions = 20;
+    generateRequisitions(numberOfRequisitions);
     String filterValue = "facilityNameA";
 
-    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", "facilityName")
         .queryParam("sortBy", FACILITY_CODE)
         .queryParam("descending", Boolean.FALSE.toString())
-        .queryParam("pageNumber", valueOf(1))
-        .queryParam("pageSize", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
+        .extract().as(PageImplRepresentation.class);
 
-    Assert.assertTrue(response.length <= pageSize);
+    Assert.assertEquals(response.getTotalElements(), numberOfRequisitions);
 
     RequisitionDto previousRequisition = null;
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), ID)
         .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
-    for (RequisitionWithSupplyingDepotsDto dto : response) {
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionWithSupplyingDepotsDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionWithSupplyingDepotsDto>>() {
+        });
+
+    for (RequisitionWithSupplyingDepotsDto dto : content) {
       RequisitionDto requisition = dto.getRequisition();
       Assert.assertTrue(requisition.getStatus().equals(RequisitionStatus.APPROVED));
 
@@ -782,32 +786,37 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
-    generateRequisitions(30);
-    Integer pageSize = 20;
+    int numberOfRequisitions = 30;
+    generateRequisitions(numberOfRequisitions);
 
-    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", FACILITY)
         .queryParam("filterBy", FACILITY_CODE)
         .queryParam("sortBy", "programName")
         .queryParam("descending", Boolean.TRUE.toString())
-        .queryParam("pageNumber", valueOf(1))
-        .queryParam("pageSize", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
+        .extract().as(PageImplRepresentation.class);
 
-    Assert.assertTrue(response.length <= pageSize);
+    Assert.assertEquals(response.getTotalElements(), numberOfRequisitions);
 
     RequisitionDto previousRequisition = null;
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), ID)
         .stream().map(FacilityDto::getId).collect(Collectors.toSet());
 
-    for (RequisitionWithSupplyingDepotsDto dto : response) {
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionWithSupplyingDepotsDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionWithSupplyingDepotsDto>>() {
+        });
+
+    for (RequisitionWithSupplyingDepotsDto dto : content) {
       RequisitionDto requisition = dto.getRequisition();
       Assert.assertTrue(requisition.getStatus().equals(RequisitionStatus.APPROVED));
 
@@ -845,17 +854,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
                 .withBody(fulfillmentFacilitiesResult)));
 
     // when
-    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
+        .extract().as(PageImplRepresentation.class);
 
     // then
-    assertEquals(response.length, 0);
+    assertEquals(response.getContent().size(), 0);
   }
 
   @Test
@@ -886,19 +895,26 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
 
     // when
-    RequisitionWithSupplyingDepotsDto[] response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionWithSupplyingDepotsDto[].class);
+        .extract().as(PageImplRepresentation.class);
 
     // then
-    assertEquals(requisitionsAmount, response.length);
+    assertEquals(requisitionsAmount, response.getNumberOfElements());
 
-    for (RequisitionWithSupplyingDepotsDto dto : response) {
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionWithSupplyingDepotsDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionWithSupplyingDepotsDto>>() {
+        });
+
+    for (RequisitionWithSupplyingDepotsDto dto : content) {
       Assert.assertTrue(dto.getRequisition().getStatus().equals(RequisitionStatus.APPROVED));
     }
   }

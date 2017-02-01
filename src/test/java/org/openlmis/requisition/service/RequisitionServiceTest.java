@@ -760,22 +760,21 @@ public class RequisitionServiceTest {
     // given
     List<RequisitionDto> requisitionDtos = getRequisitionDtoList();
     String filterAndSortBy = "programName";
-    int pageNumber = 0;
-    int pageSize = 5;
 
-    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy,
-        pageNumber, pageSize, filterAndSortBy);
+    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy);
 
     requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
     Collections.reverse(requisitionDtos);
 
     //when
-    List<RequisitionDto> requisitionDtosRetrieved =
+    Page<RequisitionDto> requisitionDtosRetrieved =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, filterAndSortBy, true, pageNumber, pageSize);
+            filterAndSortBy, filterAndSortBy, true, null);
+
+    List<RequisitionDto> requisitionDtosRetrievedList = requisitionDtosRetrieved.getContent();
 
     //then
-    assertEquals(requisitionDtos, requisitionDtosRetrieved);
+    assertEquals(requisitionDtos, requisitionDtosRetrievedList);
   }
 
   @Test
@@ -993,15 +992,15 @@ public class RequisitionServiceTest {
   }
 
   private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
-                                                    String filterBy, int pageNumber, int pageSize,
-                                                    String programName) {
+                                                    String filterBy, String programName) {
     List<UUID> desiredUuids = new ArrayList<>();
     List<Requisition> requisitions = new ArrayList<>();
+    Page page = Pagination.getPage(Collections.singletonList(requisitions), null);
     when(programReferenceDataService.search(programName))
         .thenReturn(Collections.emptyList());
-    when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
-        .thenReturn(requisitions);
-    when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
+    when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids, null))
+        .thenReturn(page);
+    when(convertHelper.convertRequisitionListToRequisitionDtoList(page.getContent()))
         .thenReturn(requisitionDtos);
   }
 
