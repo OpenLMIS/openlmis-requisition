@@ -189,7 +189,7 @@ public final class LineItemFieldsCalculator {
   /**
    * Calculates Maximum Stock Quantity (H) value and returns it.
    * The formula depends on selected option:
-   * default => P * MaxMonthsStock
+   * default => P * MaxStock
    * P = Average Consumption
    *
    * @param line     the line item to calculate the value for.
@@ -214,10 +214,10 @@ public final class LineItemFieldsCalculator {
     }
 
     int averageConsumption = zeroIfNull(line.getAverageConsumption());
-    BigDecimal maxMonthsOfStock = zeroIfNull(line.getMaxMonthsOfStock());
+    BigDecimal maxStock = zeroIfNull(line.getMaxStock());
 
     return BigDecimal.valueOf(averageConsumption)
-        .multiply(maxMonthsOfStock)
+        .multiply(maxStock)
         .setScale(0, BigDecimal.ROUND_HALF_UP)
         .intValue();
   }

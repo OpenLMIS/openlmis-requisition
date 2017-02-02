@@ -274,7 +274,7 @@ public class RequisitionLineItemTest {
     programOrderable.setOrderableId(orderableId);
     ApprovedProductDto ftap = new ApprovedProductDto();
     ftap.setProgramOrderable(programOrderable);
-    ftap.setMaxMonthsOfStock(7.25);
+    ftap.setMaxStock(7.25);
 
     return ftap;
   }

@@ -183,7 +183,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configureRequisitionForSearch(requisitionForSearch);
 
     requisitionLineItem.setOrderableId(ordereble.getId());
-    requisitionLineItem.setMaxMonthsOfStock(BigDecimal.valueOf(2));
+    requisitionLineItem.setMaxStock(BigDecimal.valueOf(2));
     requisitionLineItem.setRequestedQuantity(1);
     requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
     requisitionLineItem.setStockOnHand(2);

@@ -8,7 +8,7 @@ import java.util.UUID;
 public class ApprovedProductDto {
   private UUID id;
   private ProgramOrderableDto programOrderable;
-  private Double maxMonthsOfStock;
-  private Double minMonthsOfStock;
+  private Double maxStock;
+  private Double minStock;
   private Double emergencyOrderPoint;
 }
