@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -57,6 +59,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@TypeName("Requisition")
 @Table(name = "requisitions")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -80,6 +83,7 @@ public class Requisition extends BaseTimestampedEntity {
       fetch = FetchType.EAGER,
       orphanRemoval = true)
   @Fetch(FetchMode.SELECT)
+  @DiffIgnore
   @Getter
   @Setter
   private List<RequisitionLineItem> requisitionLineItems;
@@ -89,6 +93,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @ManyToOne
   @JoinColumn(name = "templateId", nullable = false)
+  @DiffIgnore
   @Getter
   @Setter
   private RequisitionTemplate template;
@@ -169,6 +174,7 @@ public class Requisition extends BaseTimestampedEntity {
   @JoinTable(name = "requisitions_previous_requisitions",
       joinColumns = { @JoinColumn(name = "requisitionId") },
       inverseJoinColumns = { @JoinColumn(name = "previousRequisitionId") })
+  @DiffIgnore
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;

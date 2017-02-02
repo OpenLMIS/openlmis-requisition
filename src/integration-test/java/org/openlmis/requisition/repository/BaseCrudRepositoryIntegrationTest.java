@@ -7,6 +7,7 @@ import org.openlmis.Application;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+@ActiveProfiles("test")
 @SpringApplicationConfiguration(Application.class)
 @Transactional
 public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
