@@ -84,7 +84,7 @@ import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -923,7 +923,7 @@ public class RequisitionServiceTest {
     requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), INITIATED, false);
     requisition.setId(UUID.randomUUID());
-    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setSupplyingFacilityId(facilityId);
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(lineItem1);

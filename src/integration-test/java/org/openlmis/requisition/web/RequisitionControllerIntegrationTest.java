@@ -60,7 +60,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -129,7 +129,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private SupervisoryNodeDto parentSupervisoryNode = new SupervisoryNodeDto();
   private UserDto user;
-  private LocalDateTime localDateTime = LocalDateTime.now();
+  private ZonedDateTime createdDate = ZonedDateTime.now();
   private RequisitionTemplate template;
 
   @Before
@@ -220,8 +220,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
-        .queryParam("createdDateFrom", localDateTime.minusDays(2).toString())
-        .queryParam("createdDateTo", localDateTime.plusDays(2).toString())
+        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
+        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -254,9 +254,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
           receivedRequisition.getStatus(),
           RequisitionStatus.INITIATED);
       assertTrue(
-          receivedRequisition.getCreatedDate().isBefore(localDateTime.plusDays(2)));
+          receivedRequisition.getCreatedDate().isBefore(createdDate.plusDays(2)));
       assertTrue(
-          receivedRequisition.getCreatedDate().isAfter(localDateTime.minusDays(2)));
+          receivedRequisition.getCreatedDate().isAfter(createdDate.minusDays(2)));
     }
   }
 
@@ -1174,7 +1174,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setCreatorId(user.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
-    requisition.setCreatedDate(localDateTime);
+    requisition.setCreatedDate(createdDate);
     requisition.setEmergency(false);
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
@@ -1189,7 +1189,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setCreatorId(user.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
-    requisition.setCreatedDate(localDateTime);
+    requisition.setCreatedDate(createdDate);
     requisition.setEmergency(false);
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
@@ -1202,7 +1202,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         UUID.randomUUID(), requisitionStatus, true);
     requisition.setId(UUID.randomUUID());
     requisition.setCreatorId(user.getId());
-    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setCreatedDate(createdDate.now());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
     requisitionRepository.save(requisition);

@@ -24,7 +24,7 @@ import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -459,7 +459,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     requisition.setId(UUID.randomUUID());
     requisition.setCreatorId(UUID.randomUUID());
-    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setTemplate(requisitionTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
     return requisitionRepository.save(requisition);

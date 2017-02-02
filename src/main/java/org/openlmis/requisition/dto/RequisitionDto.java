@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +27,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private LocalDateTime createdDate;
+  private ZonedDateTime createdDate;
 
   @Getter
   @Setter
@@ -35,7 +35,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private LocalDateTime submittedDate;
+  private ZonedDateTime submittedDate;
 
   @Getter
   @Setter
@@ -43,7 +43,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private LocalDateTime authorizedDate;
+  private ZonedDateTime authorizedDate;
 
   @Getter
   @Setter

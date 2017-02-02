@@ -12,7 +12,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -218,7 +218,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     // given
     UUID programId = UUID.randomUUID();
     Integer numberOfPeriodsToAverage = 5;
-    LocalDateTime createdDate = LocalDateTime.now().minusMonths(1);
+    ZonedDateTime createdDate = ZonedDateTime.now().minusMonths(1);
 
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       createdDate = createdDate.plusDays(1);

@@ -32,7 +32,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -229,16 +229,16 @@ public class DraftRequisitionValidatorTest {
 
   @Test
   public void shouldAcceptCorrectModifiedDate() {
-    LocalDateTime dateModified = LocalDateTime.now();
+    ZonedDateTime dateModified = ZonedDateTime.now();
 
-    testModifiedDateValidation(dateModified, LocalDateTime.from(dateModified));
+    testModifiedDateValidation(dateModified, ZonedDateTime.from(dateModified));
 
     verifyZeroInteractions(errors);
   }
 
   @Test
   public void shouldAcceptWithNoModifiedDate() {
-    LocalDateTime dateModified = LocalDateTime.now();
+    ZonedDateTime dateModified = ZonedDateTime.now();
 
     testModifiedDateValidation(null, dateModified);
 
@@ -247,8 +247,8 @@ public class DraftRequisitionValidatorTest {
 
   @Test
   public void shouldRejectFutureModifiedDate() {
-    LocalDateTime dateModified = LocalDateTime.now();
-    LocalDateTime incomingDate = dateModified.plusYears(1);
+    ZonedDateTime dateModified = ZonedDateTime.now();
+    ZonedDateTime incomingDate = dateModified.plusYears(1);
 
     testModifiedDateValidation(incomingDate, dateModified);
 
@@ -257,15 +257,15 @@ public class DraftRequisitionValidatorTest {
 
   @Test
   public void shouldRejectPastModifiedDate() {
-    LocalDateTime dateModified = LocalDateTime.now();
-    LocalDateTime incomingDate = dateModified.minusMinutes(5);
+    ZonedDateTime dateModified = ZonedDateTime.now();
+    ZonedDateTime incomingDate = dateModified.minusMinutes(5);
 
     testModifiedDateValidation(incomingDate, dateModified);
 
     verify(errors).rejectValue(Requisition.MODIFIED_DATE, dateModifiedErrorMsg);
   }
 
-  private void testModifiedDateValidation(LocalDateTime incomingDate, LocalDateTime databaseDate) {
+  private void testModifiedDateValidation(ZonedDateTime incomingDate, ZonedDateTime databaseDate) {
     requisition.setModifiedDate(incomingDate);
 
     Requisition existingRequisition = generateRequisition();

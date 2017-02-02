@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -104,6 +104,6 @@ public class StatusMessage extends BaseTimestampedEntity {
     
     void setStatus(RequisitionStatus status);
 
-    void setCreatedDate(LocalDateTime createdDate);
+    void setCreatedDate(ZonedDateTime createdDate);
   }
 }

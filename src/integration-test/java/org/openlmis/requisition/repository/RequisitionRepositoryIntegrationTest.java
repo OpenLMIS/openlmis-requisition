@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +50,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED,
         getNextInstanceNumber() % 2 == 0);
-    requisition.setCreatedDate(LocalDateTime.now().plusDays(requisitions.size()));
+    requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setTemplate(testTemplate);

@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -23,5 +23,5 @@ public class StatusMessageDto implements StatusMessage.Exporter {
   private String authorLastName;
   private RequisitionStatus status;
   private String body;
-  private LocalDateTime createdDate;
+  private ZonedDateTime createdDate;
 }

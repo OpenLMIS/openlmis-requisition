@@ -19,7 +19,7 @@ import org.springframework.http.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -83,7 +83,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
     requisition.setId(UUID.randomUUID());
     requisition.setCreatorId(UUID.randomUUID());
-    requisition.setCreatedDate(LocalDateTime.now());
+    requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
     return requisitionRepository.save(requisition);

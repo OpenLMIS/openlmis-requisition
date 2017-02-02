@@ -10,10 +10,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -31,7 +27,7 @@ import org.openlmis.util.View;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +40,6 @@ import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -158,21 +153,17 @@ public class Requisition extends BaseTimestampedEntity {
   @Type(type = UUID)
   private UUID authorizerId;
 
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
+  @Column(columnDefinition = "timestamp with time zone")
   @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
-  private LocalDateTime submittedDate;
+  private ZonedDateTime submittedDate;
 
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
+  @Column(columnDefinition = "timestamp with time zone")
   @JsonView(View.BasicInformation.class)
   @Getter
   @Setter
-  private LocalDateTime authorizedDate;
+  private ZonedDateTime authorizedDate;
 
   @ManyToMany
   @JoinTable(name = "requisitions_previous_requisitions",
@@ -543,15 +534,15 @@ public class Requisition extends BaseTimestampedEntity {
   public interface Exporter {
     void setId(UUID id);
 
-    void setCreatedDate(LocalDateTime createdDate);
+    void setCreatedDate(ZonedDateTime createdDate);
 
     void setCreatorId(UUID creatorId);
 
-    void setSubmittedDate(LocalDateTime createdDate);
+    void setSubmittedDate(ZonedDateTime createdDate);
 
     void setSubmitterId(UUID creatorId);
 
-    void setAuthorizedDate(LocalDateTime createdDate);
+    void setAuthorizedDate(ZonedDateTime createdDate);
 
     void setAuthorizerId(UUID creatorId);
 
@@ -574,15 +565,15 @@ public class Requisition extends BaseTimestampedEntity {
   public interface Importer {
     UUID getId();
 
-    LocalDateTime getCreatedDate();
+    ZonedDateTime getCreatedDate();
 
     UUID getCreatorId();
 
-    LocalDateTime getSubmittedDate();
+    ZonedDateTime getSubmittedDate();
 
     UUID getSubmitterId();
 
-    LocalDateTime getAuthorizedDate();
+    ZonedDateTime getAuthorizedDate();
 
     UUID getAuthorizerId();
 

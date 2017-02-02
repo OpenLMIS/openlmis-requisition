@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -304,9 +304,9 @@ public class RequisitionController extends BaseController {
       @RequestParam(value = "facility", required = false) UUID facility,
       @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "createdDateFrom", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateFrom,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime createdDateFrom,
       @RequestParam(value = "createdDateTo", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateTo,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime createdDateTo,
       @RequestParam(value = "processingPeriod", required = false)
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,

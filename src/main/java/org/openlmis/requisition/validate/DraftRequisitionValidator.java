@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
@@ -122,7 +122,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateDateModifiedIsCorrect(Errors errors, Requisition requisition,
                                              Requisition requisitionToUpdate) {
-    LocalDateTime dateModified = requisition.getModifiedDate();
+    ZonedDateTime dateModified = requisition.getModifiedDate();
     if (dateModified != null && !dateModified.isEqual(requisitionToUpdate.getModifiedDate())) {
       rejectValue(errors, MODIFIED_DATE, new Message(ERROR_DATE_MODIFIED_MISMATCH));
     }
