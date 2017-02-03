@@ -2,6 +2,7 @@ package org.openlmis.errorhandling;
 
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.exception.VersionMismatchException;
 import org.openlmis.requisition.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.util.ErrorResponse;
@@ -50,6 +51,13 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.FORBIDDEN)
   @ResponseBody
   public Message.LocalizedMessage handlePermissionException(PermissionMessageException ex) {
+    return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(VersionMismatchException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ResponseBody
+  public Message.LocalizedMessage handlePermissionException(VersionMismatchException ex) {
     return getLocalizedMessage(ex);
   }
 }

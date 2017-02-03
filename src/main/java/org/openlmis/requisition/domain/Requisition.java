@@ -433,6 +433,7 @@ public class Requisition extends BaseTimestampedEntity {
   public void export(Requisition.Exporter exporter) {
     exporter.setId(id);
     exporter.setCreatedDate(getCreatedDate());
+    exporter.setModifiedDate(getModifiedDate());
     exporter.setCreatorId(creatorId);
     exporter.setSubmittedDate(getSubmittedDate());
     exporter.setSubmitterId(submitterId);
@@ -542,6 +543,8 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setCreatedDate(ZonedDateTime createdDate);
 
+    void setModifiedDate(ZonedDateTime createdDate);
+
     void setCreatorId(UUID creatorId);
 
     void setSubmittedDate(ZonedDateTime createdDate);
@@ -572,6 +575,8 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getId();
 
     ZonedDateTime getCreatedDate();
+
+    ZonedDateTime getModifiedDate();
 
     UUID getCreatorId();
 

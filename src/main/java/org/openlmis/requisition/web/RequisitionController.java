@@ -33,6 +33,7 @@ import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonRefer
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
+import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
@@ -118,6 +119,9 @@ public class RequisitionController extends BaseController {
   
   @Autowired
   private StatusMessageRepository statusMessageRepository;
+
+  @Autowired
+  private RequisitionVersionValidator requisitionVersionValidator;
 
   /**
    * Allows creating new requisitions.
@@ -246,12 +250,15 @@ public class RequisitionController extends BaseController {
       throw new ValidationMessageException(new Message(ERROR_ID_MISMATCH));
     }
 
+    requisitionVersionValidator.validateRequisitionTimestamps(
+        requisition, requisitionToUpdate
+    );
 
     RequisitionStatus status = requisitionToUpdate.getStatus();
     if (status != RequisitionStatus.APPROVED
         && status != RequisitionStatus.SKIPPED
         && status != RequisitionStatus.RELEASED) {
-      LOGGER.debug("Updating requisition with id: " + requisitionId);
+      LOGGER.debug("Updating requisition with id: {}", requisitionId);
 
       BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
       draftValidator.validate(requisition, bindingResult);
@@ -321,7 +328,7 @@ public class RequisitionController extends BaseController {
     Page<RequisitionDto> dtoPage = Pagination.getPage(dtoList,
                                                       pageable,
                                                       requisitionsPage.getTotalElements());
-    return new ResponseEntity<Page<RequisitionDto>>(dtoPage, HttpStatus.OK);
+    return new ResponseEntity<>(dtoPage, HttpStatus.OK);
   }
 
   /**

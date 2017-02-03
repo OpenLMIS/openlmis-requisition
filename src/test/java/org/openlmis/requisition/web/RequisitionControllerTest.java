@@ -44,6 +44,7 @@ import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -116,6 +117,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
+
+  @Mock
+  private RequisitionVersionValidator requisitionVersionValidator;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -237,6 +241,8 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList());
     verify(requisitionRepository).save(initiatedRequsition);
+    verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
+        eq(initiatedRequsition));
     verify(stockAdjustmentReasonReferenceDataService)
         .getStockAdjustmentReasonsByProgram(any(UUID.class));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);

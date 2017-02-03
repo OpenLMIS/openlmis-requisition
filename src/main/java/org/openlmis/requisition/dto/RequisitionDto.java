@@ -31,6 +31,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
+  private ZonedDateTime modifiedDate;
+
+  @Getter
+  @Setter
   private UUID creatorId;
 
   @Getter
