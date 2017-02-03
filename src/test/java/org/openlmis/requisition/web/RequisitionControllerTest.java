@@ -1,5 +1,6 @@
 package org.openlmis.requisition.web;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -8,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -297,6 +299,24 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(authorizedRequsition, times(1)).approve(eq(null), any());
+  }
+
+  @Test
+  public void shouldRejectRequisitionWhenUserCanApproveRequisition() {
+    requisitionController.rejectRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).reject(authorizedRequsition.getId());
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionWhenUserCanNotApproveRequisition() {
+    doThrow(PermissionMessageException.class)
+        .when(permissionService).canApproveRequisition(uuid4);
+
+    assertThatThrownBy(() -> requisitionController.rejectRequisition(uuid4))
+        .isInstanceOf(PermissionMessageException.class);
+
+    verify(requisitionService, times(0)).reject(uuid4);
   }
 
   private SupervisoryNodeDto mockSupervisoryNode() {

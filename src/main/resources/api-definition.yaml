@@ -453,6 +453,10 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
+                  "403":
+                      body:
+                        application/json:
+                            schema: localizedMessage
       /{id}/submit:
           post:
               is: [ secured ]

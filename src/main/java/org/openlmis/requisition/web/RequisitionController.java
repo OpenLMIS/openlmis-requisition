@@ -347,7 +347,9 @@ public class RequisitionController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id) {
+    permissionService.canApproveRequisition(id);
     Requisition rejectedRequisition = requisitionService.reject(id);
+
     return new ResponseEntity<>(requisitionDtoBuilder.build(rejectedRequisition), HttpStatus.OK);
   }
 

@@ -394,6 +394,25 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotRejectRequisitionIfUserHasNoRights() {
+
+    denyUserAllRights();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotRejectWithWrongStatus() {
 
     restAssured.given()
@@ -1306,6 +1325,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private String getMessage(UUID facilityId, UUID programId) {
     return messageSource.getMessage("requisition.error.facility-does-not-support-program",
-        new Object[] {facilityId, programId}, LocaleContextHolder.getLocale());
+        new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
   }
 }
