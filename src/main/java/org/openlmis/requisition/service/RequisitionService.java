@@ -220,8 +220,7 @@ public class RequisitionService {
     if (requisition == null) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
-    } else if (requisition.getStatus() != RequisitionStatus.INITIATED
-            && requisition.getStatus() != RequisitionStatus.SUBMITTED) {
+    } else if (!requisition.isPreAuthorize()) {
       throw new ValidationMessageException(new Message(ERROR_DELETE_FAILED_WRONG_STATUS));
     } else {
       statusMessageRepository.delete(statusMessageRepository.findByRequisitionId(requisitionId));
