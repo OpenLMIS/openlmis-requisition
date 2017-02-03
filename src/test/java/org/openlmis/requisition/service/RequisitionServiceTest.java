@@ -227,6 +227,15 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
+    requisition.setStatus(SUBMITTED);
+    when(statusMessageRepository.findByRequisitionId(requisition.getId()))
+            .thenReturn(Collections.emptyList());
+    requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
+  }
+
+  @Test
   public void shouldDeleteStatusMessagesWhenDeletingRequisition() {
     requisition.setStatus(INITIATED);
     List<StatusMessage> statusMessages = Collections.singletonList(
@@ -236,13 +245,6 @@ public class RequisitionServiceTest {
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
     verify(statusMessageRepository).delete(statusMessages);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldNotDeleteRequisitionWhenStatusIsSubmitted() throws
-      ValidationMessageException {
-    requisition.setStatus(SUBMITTED);
-    requisitionService.delete(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)

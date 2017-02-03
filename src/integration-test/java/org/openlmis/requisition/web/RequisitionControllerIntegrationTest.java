@@ -447,7 +447,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotDeleteRequisitionWithWrongStatus() {
 
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
 
     restAssured.given()
