@@ -57,7 +57,7 @@ public abstract class BaseWebIntegrationTest {
   protected static final String APPLICATION_JSON = "application/json";
 
   protected static final String FACILITY_ID = "1d5bdd9c-8702-11e6-ae22-56b6b6499611";
-  
+
   protected static final String ACCESS_TOKEN = "access_token";
 
   private static final String MOCK_CHECK_RESULT = "{"
@@ -111,14 +111,14 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"" + FACILITY_ID + "\",\n"
       + " \"code\":\"facilityCode\",\n"
-      + " \"name\":\"facilityNameA\",\n"
+      + " \"name\":\"facility NameA\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
       + "}";
 
   private static final String MOCK_FIND_FACILITY_RESULT_WITH_SUPPORTED_PROGRAMS = "{"
       + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
-      + " \"name\":\"facilityNameA\",\n"
+      + " \"name\":\"facility NameA\",\n"
       + " \"code\":\"facilityCode\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true,\n"
@@ -214,7 +214,7 @@ public abstract class BaseWebIntegrationTest {
       + "{"
       + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
       + " \"code\":\"facilityCode\",\n"
-      + " \"name\":\"facilityNameA\",\n"
+      + " \"name\":\"facility NameA\",\n"
       + " \"active\":true,\n"
       + " \"enabled\":true\n"
       + "}"

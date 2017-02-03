@@ -730,7 +730,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
     int numberOfRequisitions = 20;
     generateRequisitions(numberOfRequisitions);
-    String filterValue = "facilityNameA";
+    String filterValue = "facility NameA";
 
     PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
