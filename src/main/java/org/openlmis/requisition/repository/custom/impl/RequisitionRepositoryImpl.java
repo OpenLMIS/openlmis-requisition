@@ -135,13 +135,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param filterBy     Field used to filter: "programName","facilityCode","facilityName" or
    *                     "all".
    * @param desiredUuids Desired UUID list.
-   * @param pageable     Pageable object that allows to optionally add "page" (page number)
-   *                     and "size" (page size) query parameters.
    * @return List of requisitions.
    */
   @Override
-  public Page<Requisition> searchApprovedRequisitions(String filterBy, List<UUID> desiredUuids,
-                                                      Pageable pageable) {
+  public List<Requisition> searchApprovedRequisitions(String filterBy, List<UUID> desiredUuids) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
 
@@ -153,24 +150,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Predicate predicate =
         setFiltering(filterBy, builder, root, facility, program, desiredUuids);
 
-    int pageNumber = Pagination.getPageNumber(pageable);
-    int pageSize = Pagination.getPageSize(pageable);
-
     criteriaQuery = criteriaQuery.where(predicate);
-    List<Requisition> results = entityManager.createQuery(criteriaQuery)
-                                      .setFirstResult(pageNumber * pageSize)
-                                      .setMaxResults(pageSize)
-                                      .getResultList();
 
-    //Having retrieved just paginated values we care about, determine
-    //the total number of values in the system which meet our criteria.
-    CriteriaQuery<Long> queryCount = builder.createQuery(Long.class);
-    Root<Requisition> rootQueryCount = queryCount.from(Requisition.class);
-    queryCount.select(builder.count(rootQueryCount));
-    queryCount.where(predicate);
-    Long count = entityManager.createQuery(queryCount).getSingleResult();
-
-    return Pagination.getPage(results, pageable, count);
+    return entityManager.createQuery(criteriaQuery).getResultList();
   }
 
   /**

@@ -28,6 +28,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -47,6 +48,7 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
+import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -436,19 +439,47 @@ public class RequisitionService {
    *                     and "size" (page size) query parameters.
    * @return List of requisitions.
    */
-  public Page<RequisitionDto> searchApprovedRequisitionsWithSortAndFilterAndPaging(
-      String filterValue, String filterBy, String sortBy, Boolean descending, Pageable pageable) {
-
+  public Page<RequisitionWithSupplyingDepotsDto>
+      searchApprovedRequisitionsWithSortAndFilterAndPaging(String filterValue,
+                                                           String filterBy,
+                                                           String sortBy,
+                                                           Boolean descending,
+                                                           Pageable pageable,
+                                                           Collection<UUID> userManagedFacilities) {
     List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
-    Page<Requisition> requisitions =
-        requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids, pageable);
-    List<Requisition> requisitionsList = requisitions.getContent();
+    List<Requisition> requisitionsList =
+        requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
     List<RequisitionDto> requisitionDtosList =
         convertHelper.convertRequisitionListToRequisitionDtoList(requisitionsList);
-    Page<RequisitionDto> requisitionDtos =
-        Pagination.getPage(requisitionDtosList, pageable, requisitions.getTotalElements());
 
-    return requisitionDtos;
+    List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
+    for (RequisitionDto requisition : requisitionDtosList) {
+      List<FacilityDto> facilities = getAvailableSupplyingDepots(requisition.getId())
+          .stream()
+          .filter(f -> userManagedFacilities.contains(f.getId()))
+          .collect(Collectors.toList());
+
+      if (!facilities.isEmpty()) {
+        responseList.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
+      }
+    }
+
+    requisitionDtosList.sort(new RequisitionDtoComparator(sortBy));
+    if (descending) {
+      Collections.reverse(responseList);
+    }
+
+    int fromIndex = pageable.getPageNumber() * pageable.getPageSize();
+    int toIndex = fromIndex + pageable.getPageSize();
+    int size = responseList.size();
+
+    List<RequisitionWithSupplyingDepotsDto> responseListFinished = new ArrayList<>();
+    if (fromIndex < size && fromIndex >= 0 && toIndex > 0 && fromIndex < toIndex) {
+      toIndex = Math.min(size, toIndex);
+      responseListFinished = responseList.subList(fromIndex, toIndex);
+    }
+
+    return Pagination.getPage(responseListFinished, pageable, size);
   }
 
   /**

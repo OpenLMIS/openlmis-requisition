@@ -51,6 +51,7 @@ import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -81,12 +82,14 @@ import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -761,22 +764,36 @@ public class RequisitionServiceTest {
   public void shouldFindAndSortAndPageApprovedRequisitions() {
     // given
     List<RequisitionDto> requisitionDtos = getRequisitionDtoList();
-    String filterAndSortBy = "programName";
 
-    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy);
+    String filterAndSortBy = "programName";
+    UUID supplyingDepot = UUID.randomUUID();
+    Pageable pageable = mock(Pageable.class);
+
+    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
+        supplyingDepot, pageable);
 
     requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
     Collections.reverse(requisitionDtos);
 
-    //when
-    Page<RequisitionDto> requisitionDtosRetrieved =
-        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, filterAndSortBy, true, null);
+    List<RequisitionWithSupplyingDepotsDto> requisitionWithSupplyingDepotDtos = new ArrayList<>();
+    for (RequisitionDto requisitionDto: requisitionDtos) {
+      RequisitionWithSupplyingDepotsDto newRequisition = new RequisitionWithSupplyingDepotsDto();
+      newRequisition.setRequisition(requisitionDto);
+    }
 
-    List<RequisitionDto> requisitionDtosRetrievedList = requisitionDtosRetrieved.getContent();
+    Collection<UUID> userManagedFacilities = new ArrayList<>();
+    userManagedFacilities.add(supplyingDepot);
+
+    //when
+    Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
+        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
+            filterAndSortBy, filterAndSortBy, true, pageable, userManagedFacilities);
+
+    List<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrievedList =
+        requisitionDtosRetrieved.getContent();
 
     //then
-    assertEquals(requisitionDtos, requisitionDtosRetrievedList);
+    assertEquals(requisitionWithSupplyingDepotDtos, requisitionDtosRetrievedList);
   }
 
   @Test
@@ -957,7 +974,6 @@ public class RequisitionServiceTest {
       ProgramDto programDto = new ProgramDto();
       programDto.setName(programName);
       requisitionDto.setProgram(programDto);
-      requisitionDtos.add(requisitionDto);
     }
     return requisitionDtos;
   }
@@ -994,16 +1010,23 @@ public class RequisitionServiceTest {
   }
 
   private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
-                                                    String filterBy, String programName) {
+                                                    String filterBy, String programName,
+                                                    UUID supplyingDepotId, Pageable pageable) {
     List<UUID> desiredUuids = new ArrayList<>();
     List<Requisition> requisitions = new ArrayList<>();
-    Page page = Pagination.getPage(Collections.singletonList(requisitions), null);
     when(programReferenceDataService.search(programName))
         .thenReturn(Collections.emptyList());
-    when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids, null))
-        .thenReturn(page);
-    when(convertHelper.convertRequisitionListToRequisitionDtoList(page.getContent()))
+    when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
+        .thenReturn(requisitions);
+    when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
         .thenReturn(requisitionDtos);
+    when(requisitionRepository.findOne(any())).thenReturn(mock(Requisition.class));
+    FacilityDto facilityDto = new FacilityDto();
+    facilityDto.setId(supplyingDepotId);
+    when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))
+        .thenReturn(Arrays.asList(facilityDto));
+    when(pageable.getPageNumber()).thenReturn(0);
+    when(pageable.getPageSize()).thenReturn(10);
   }
 
   private RequisitionTemplate getRequisitionTemplate() {

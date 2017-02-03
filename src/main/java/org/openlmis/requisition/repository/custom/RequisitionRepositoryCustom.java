@@ -22,9 +22,8 @@ public interface RequisitionRepositoryCustom {
 
   List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod, Boolean emergency);
 
-  Page<Requisition> searchApprovedRequisitions(String filterBy,
-                                               List<UUID> desiredUuids,
-                                               Pageable pageable);
+  List<Requisition> searchApprovedRequisitions(String filterBy,
+                                               List<UUID> desiredUuids);
 
   Requisition getLastRegularRequisition(UUID facility, UUID program);
 }

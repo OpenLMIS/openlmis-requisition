@@ -61,7 +61,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -499,26 +498,12 @@ public class RequisitionController extends BaseController {
         .getFulfillmentFacilities(user.getId(), right.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
-    Page<RequisitionDto> approvedRequisitions =
+    Page<RequisitionWithSupplyingDepotsDto> approvedRequisitions =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-            filterValue, filterBy, sortBy, descending, pageable);
-    List<RequisitionDto> approvedRequisitionsList = approvedRequisitions.getContent();
+            filterValue, filterBy, sortBy, descending, pageable, userManagedFacilities);
 
-    List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
-    for (RequisitionDto requisition : approvedRequisitionsList) {
-      List<FacilityDto> facilities = requisitionService
-          .getAvailableSupplyingDepots(requisition.getId()).stream()
-          .filter(f -> userManagedFacilities.contains(f.getId())).collect(Collectors.toList());
-
-      if (!facilities.isEmpty()) {
-        responseList.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
-      }
-    }
-
-    Page<RequisitionWithSupplyingDepotsDto> response =
-        Pagination.getPage(responseList, pageable, approvedRequisitions.getTotalElements());
-
-    return new ResponseEntity<Page<RequisitionWithSupplyingDepotsDto>>(response, HttpStatus.OK);
+    return new ResponseEntity<Page<RequisitionWithSupplyingDepotsDto>>(
+        approvedRequisitions, HttpStatus.OK);
   }
 
   /**
