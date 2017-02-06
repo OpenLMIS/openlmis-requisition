@@ -34,10 +34,11 @@ public class PermissionService {
   static final String REQUISITION_AUTHORIZE = REQUISITION_BASE + "AUTHORIZE";
   static final String REQUISITION_DELETE = REQUISITION_BASE + "DELETE";
   static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
-  static final String REQUISITION_CONVERT_TO_ORDER = REQUISITION_BASE + "CONVERT_TO_ORDER";
   static final String REQUISITION_TEMPLATES_MANAGE = "REQUISITION_TEMPLATES_MANAGE";
   static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
   static final String REPORTS_VIEW = "REPORTS_VIEW";
+
+  static final String ORDERS_EDIT = "ORDERS_EDIT";
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -134,8 +135,7 @@ public class PermissionService {
         throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
             convertToOrder.getRequisitionId()));
       }
-      checkPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
-          convertToOrder.getSupplyingDepotId());
+      checkPermission(ORDERS_EDIT, null, null, convertToOrder.getSupplyingDepotId());
     }
   }
 

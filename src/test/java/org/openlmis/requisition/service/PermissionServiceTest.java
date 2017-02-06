@@ -4,12 +4,12 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
+import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
 import org.junit.Before;
@@ -139,7 +139,7 @@ public class PermissionServiceTest {
         .thenReturn(requisitionAuthorizeRight);
     when(authenticationHelper.getRight(REQUISITION_DELETE)).thenReturn(requisitionDeleteRight);
     when(authenticationHelper.getRight(REQUISITION_VIEW)).thenReturn(requisitionViewRight);
-    when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
+    when(authenticationHelper.getRight(ORDERS_EDIT)).thenReturn(
         requisitionConvertRight);
     when(authenticationHelper.getRight(REQUISITION_TEMPLATES_MANAGE)).thenReturn(
         manageRequisitionTemplateRight);
@@ -277,12 +277,12 @@ public class PermissionServiceTest {
     permissionService.canConvertToOrder(convertToOrderDtos);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
+    verifyFulfillmentRight(order, ORDERS_EDIT, requisitionConvertRightId);
   }
 
   @Test
   public void cannotConvertToOrder() throws Exception {
-    expectException(REQUISITION_CONVERT_TO_ORDER);
+    expectException(ORDERS_EDIT);
 
     permissionService.canConvertToOrder(convertToOrderDtos);
   }
