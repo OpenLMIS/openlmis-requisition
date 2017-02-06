@@ -63,6 +63,7 @@ public final class RequisitionBuilder {
         importer.getCreatorId(), importer.getStatus(), importer.getEmergency());
     requisition.setId(importer.getId());
     requisition.setCreatedDate(importer.getCreatedDate());
+    requisition.setModifiedDate(importer.getModifiedDate());
 
     requisition.setSubmittedDate(importer.getSubmittedDate());
     requisition.setSubmitterId(importer.getSubmitterId());

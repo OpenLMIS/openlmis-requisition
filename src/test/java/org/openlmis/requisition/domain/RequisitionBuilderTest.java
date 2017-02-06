@@ -18,6 +18,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,7 @@ public class RequisitionBuilderTest {
   private UUID creatorUuid = UUID.randomUUID();
   private UUID submitterUuid = UUID.randomUUID();
   private UUID authorizerUuid = UUID.randomUUID();
+  private ZonedDateTime modifiedDate = ZonedDateTime.now();
 
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
 
@@ -67,6 +69,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getTemplate()).thenReturn(requisitionTemplate);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    when(requisitionDto.getModifiedDate()).thenReturn(modifiedDate);
 
     when(processingPeriodDto.getId()).thenReturn(processingPeriodUuid);
     when(facilityDto.getId()).thenReturn(facilityUuid);
@@ -124,6 +127,7 @@ public class RequisitionBuilderTest {
     assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());
+    assertEquals(modifiedDate, requisition.getModifiedDate());
   }
 
   @Test
