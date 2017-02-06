@@ -501,7 +501,7 @@ public class RequisitionController extends BaseController {
       @RequestParam(required = false, defaultValue = "true") boolean descending,
       Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
-    RightDto right = authenticationHelper.getRight(RightName.REQUISITION_CONVERT_TO_ORDER);
+    RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
 
     Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), right.getId())

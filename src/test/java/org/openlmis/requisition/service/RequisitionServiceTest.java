@@ -1135,7 +1135,7 @@ public class RequisitionServiceTest {
         .findOne(any()))
         .thenReturn(program);
     when(authenticationHelper
-        .getRight(RightName.REQUISITION_CONVERT_TO_ORDER))
+        .getRight(RightName.ORDERS_EDIT))
         .thenReturn(convertToOrderRight);
     when(rightReferenceDataService
         .findRight(RightName.REQUISITION_APPROVE))

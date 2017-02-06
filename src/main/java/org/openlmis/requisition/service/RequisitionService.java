@@ -358,7 +358,7 @@ public class RequisitionService {
    */
   public List<Requisition> releaseRequisitionsAsOrder(
       List<ConvertToOrderDto> convertToOrderDtos, UserDto user) {
-    RightDto right = authenticationHelper.getRight(RightName.REQUISITION_CONVERT_TO_ORDER);
+    RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
