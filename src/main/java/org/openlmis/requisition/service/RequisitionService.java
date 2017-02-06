@@ -451,6 +451,11 @@ public class RequisitionService {
     List<RequisitionDto> requisitionDtosList =
         convertHelper.convertRequisitionListToRequisitionDtoList(requisitionsList);
 
+    requisitionDtosList.sort(new RequisitionDtoComparator(sortBy));
+    if (descending) {
+      Collections.reverse(requisitionDtosList);
+    }
+
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     for (RequisitionDto requisition : requisitionDtosList) {
       List<FacilityDto> facilities = getAvailableSupplyingDepots(requisition.getId())
@@ -463,22 +468,7 @@ public class RequisitionService {
       }
     }
 
-    requisitionDtosList.sort(new RequisitionDtoComparator(sortBy));
-    if (descending) {
-      Collections.reverse(responseList);
-    }
-
-    int fromIndex = pageable.getPageNumber() * pageable.getPageSize();
-    int toIndex = fromIndex + pageable.getPageSize();
-    int size = responseList.size();
-
-    List<RequisitionWithSupplyingDepotsDto> responseListFinished = new ArrayList<>();
-    if (fromIndex < size && fromIndex >= 0 && toIndex > 0 && fromIndex < toIndex) {
-      toIndex = Math.min(size, toIndex);
-      responseListFinished = responseList.subList(fromIndex, toIndex);
-    }
-
-    return Pagination.getPage(responseListFinished, pageable, size);
+    return Pagination.getPage(responseList, pageable);
   }
 
   /**
