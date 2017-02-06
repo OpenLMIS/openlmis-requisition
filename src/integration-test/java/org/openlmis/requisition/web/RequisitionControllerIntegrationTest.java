@@ -748,6 +748,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
     int numberOfRequisitions = 20;
+    int pageSize = 10;
     generateRequisitions(numberOfRequisitions);
     String filterValue = "facility NameA";
 
@@ -757,6 +758,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("filterBy", "facilityName")
         .queryParam("sortBy", FACILITY_CODE)
         .queryParam("descending", Boolean.FALSE.toString())
+        .queryParam("page", 0)
+        .queryParam("size", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -765,6 +768,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(PageImplRepresentation.class);
 
     Assert.assertEquals(response.getTotalElements(), numberOfRequisitions);
+    Assert.assertEquals(response.getNumberOfElements(), pageSize);
+    Assert.assertTrue(response.isFirst());
+    Assert.assertFalse(response.isLast());
 
     RequisitionDto previousRequisition = null;
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
@@ -814,6 +820,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("filterBy", FACILITY_CODE)
         .queryParam("sortBy", "programName")
         .queryParam("descending", Boolean.TRUE.toString())
+        .queryParam("page", 0)
+        .queryParam("size", numberOfRequisitions)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -822,6 +830,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(PageImplRepresentation.class);
 
     Assert.assertEquals(response.getTotalElements(), numberOfRequisitions);
+    Assert.assertEquals(response.getNumberOfElements(), numberOfRequisitions);
+    Assert.assertTrue(response.isFirst());
+    Assert.assertTrue(response.isLast());
 
     RequisitionDto previousRequisition = null;
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
