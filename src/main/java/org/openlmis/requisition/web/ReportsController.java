@@ -1,18 +1,13 @@
 package org.openlmis.requisition.web;
 
-import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
-import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.utils.Message;
-import org.openlmis.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,17 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
 @Controller
 public class ReportsController extends BaseController {
-  private static final String REQUISITION_PRINT_TEMPLATE_NAME = "Print Requisition";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -39,13 +30,7 @@ public class ReportsController extends BaseController {
   private PermissionService permissionService;
 
   @Autowired
-  private JasperTemplateService jasperTemplateService;
-
-  @Autowired
   private JasperReportsViewService jasperReportsViewService;
-
-  @Autowired
-  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
 
   /**
    * Print out requisition as a PDF file.
@@ -66,21 +51,6 @@ public class ReportsController extends BaseController {
           new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, id));
     }
 
-    JasperTemplate template = jasperTemplateService.getByName(REQUISITION_PRINT_TEMPLATE_NAME);
-    if (template == null) {
-      throw new ValidationMessageException(
-          new Message(MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND));
-    }
-
-    RequisitionReportDto reportDto = requisitionReportDtoBuilder.build(requisition);
-
-    Map<String, Object> params = ReportUtils.createParametersMap();
-    params.put("datasource", Collections.singletonList(reportDto));
-    params.put("template", requisition.getTemplate());
-
-    JasperReportsMultiFormatView jasperView =
-        jasperReportsViewService.getJasperReportsView(template, request);
-
-    return new ModelAndView(jasperView, params);
+    return jasperReportsViewService.getRequisitionJasperReportView(requisition, request);
   }
 }

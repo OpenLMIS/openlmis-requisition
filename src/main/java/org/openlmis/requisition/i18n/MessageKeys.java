@@ -7,6 +7,7 @@ public abstract class MessageKeys {
   public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
 
+  public static final String ERROR_JASPER_FILE_FORMAT = ERROR_PREFIX + ".jasper.file.format";
   public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
   public static final String ERROR_JASPER_TEMPLATE_NOT_FOUND = ERROR_PREFIX
       + ".jasper.templateNotFound";

@@ -30,7 +30,14 @@ public class RequisitionReportDtoBuilder {
   @Autowired
   private UserReferenceDataService userReferenceDataService;
 
-  RequisitionReportDto build(Requisition requisition) {
+
+  /**
+   * Create a {@link RequisitionReportDto} based on a given {@link Requisition}
+   *
+   * @param requisition a single {@link Requisition} to be converted to report dto.
+   * @return a single {@link RequisitionReportDto}
+   */
+  public RequisitionReportDto build(Requisition requisition) {
     UUID id = requisition.getId();
 
     List<RequisitionLineItem> fullSupply = requisitionService.getFullSupplyItems(id)
