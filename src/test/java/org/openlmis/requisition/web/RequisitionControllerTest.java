@@ -33,6 +33,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -44,15 +45,14 @@ import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonRefer
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -157,11 +157,8 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldReturnCurrentPeriodForEmergency() throws Exception {
-    ResponseEntity<?> response =
+    Collection<ProcessingPeriodDto> periods =
         requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<ProcessingPeriodDto> periods = (List<ProcessingPeriodDto>) response.getBody();
 
     verify(periodService).getPeriods(programUuid, facilityUuid, true);
     verifyZeroInteractions(periodService, requisitionRepository);
@@ -203,7 +200,8 @@ public class RequisitionControllerTest {
     }).when(validator).validate(eq(initiatedRequsition), any(Errors.class));
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
-    requisitionController.submitRequisition(uuid1);
+    assertThatThrownBy(() -> requisitionController.submitRequisition(uuid1))
+        .isInstanceOf(BindingResultException.class);
 
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
@@ -236,11 +234,9 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
-    ResponseEntity responseEntity = requisitionController.updateRequisition(requisitionDto, uuid1);
+    requisitionController.updateRequisition(requisitionDto, uuid1);
 
-    assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     assertEquals(template, initiatedRequsition.getTemplate());
-
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
@@ -265,7 +261,8 @@ public class RequisitionControllerTest {
       return null;
     }).when(draftValidator).validate(any(Requisition.class), any(Errors.class));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1);
+    assertThatThrownBy(() -> requisitionController.updateRequisition(requisitionDto, uuid1))
+        .isInstanceOf(BindingResultException.class);
 
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }

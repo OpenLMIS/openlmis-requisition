@@ -1,6 +1,7 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -12,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -23,12 +24,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.UUID;
 
 import javax.validation.Valid;
 
 @Controller
+@Transactional
 public class RequisitionTemplateController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionTemplateController.class);
@@ -56,14 +59,16 @@ public class RequisitionTemplateController extends BaseController {
    *
    * @param requisitionTemplate A requisitionTemplate bound to the request body
    * @param bindingResult       Object used for validation.
-   * @return ResponseEntity containing the created requisitionTemplate
+   * @return created requisitionTemplate.
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
-  public ResponseEntity<?> createRequisitionTemplate(
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public RequisitionTemplate createRequisitionTemplate(
       @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      throw new BindingResultException(getErrors(bindingResult));
     }
 
     LOGGER.debug("Creating new requisitionTemplate");
@@ -71,7 +76,7 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate newRequisitionTemplate =
         requisitionTemplateRepository.save(requisitionTemplate);
     LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
-    return new ResponseEntity<>(newRequisitionTemplate, HttpStatus.CREATED);
+    return newRequisitionTemplate;
   }
 
   /**
@@ -80,12 +85,12 @@ public class RequisitionTemplateController extends BaseController {
    * @return RequisitionTemplates.
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public ResponseEntity<?> getAllRequisitionTemplates() {
+  public Iterable<RequisitionTemplate> getAllRequisitionTemplates() {
     permissionService.canManageRequisitionTemplate();
 
-    Iterable<RequisitionTemplate> requisitionTemplates = requisitionTemplateRepository.findAll();
-    return new ResponseEntity<>(requisitionTemplates, HttpStatus.OK);
+    return requisitionTemplateRepository.findAll();
   }
 
   /**
@@ -94,16 +99,18 @@ public class RequisitionTemplateController extends BaseController {
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
    * @param requisitionTemplate   A requisitionTemplate bound to the request body
    * @param bindingResult         Object used for validation.
-   * @return ResponseEntity containing the updated requisitionTemplate
+   * @return updated requisitionTemplate.
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisitionTemplate(
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionTemplate updateRequisitionTemplate(
       @PathVariable("id") UUID requisitionTemplateId,
       @RequestBody @Valid RequisitionTemplate requisitionTemplate,
       BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      throw new BindingResultException(getErrors(bindingResult));
     }
 
     RequisitionTemplate requisitionTemplateToUpdate =
@@ -121,7 +128,7 @@ public class RequisitionTemplateController extends BaseController {
     requisitionTemplateToUpdate = requisitionTemplateService.save(requisitionTemplateToUpdate);
 
     LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
-    return new ResponseEntity<>(requisitionTemplateToUpdate, HttpStatus.OK);
+    return requisitionTemplateToUpdate;
   }
 
   /**
@@ -131,7 +138,10 @@ public class RequisitionTemplateController extends BaseController {
    * @return RequisitionTemplate.
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionTemplate getRequisitionTemplate(
+      @PathVariable("id") UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate();
 
     RequisitionTemplate requisitionTemplate =
@@ -140,7 +150,7 @@ public class RequisitionTemplateController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
-      return new ResponseEntity<>(requisitionTemplate, HttpStatus.OK);
+      return requisitionTemplate;
     }
   }
 
@@ -148,10 +158,10 @@ public class RequisitionTemplateController extends BaseController {
    * Allows deleting requisitionTemplate.
    *
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to delete
-   * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteRequisitionTemplate(@PathVariable("id")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteRequisitionTemplate(@PathVariable("id")
                                                          UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate();
     RequisitionTemplate requisitionTemplate =
@@ -161,7 +171,6 @@ public class RequisitionTemplateController extends BaseController {
           MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
       requisitionTemplateService.delete(requisitionTemplate);
-      return new ResponseEntity<RequisitionTemplate>(HttpStatus.NO_CONTENT);
     }
   }
 
@@ -169,10 +178,10 @@ public class RequisitionTemplateController extends BaseController {
    * Returns requisition template for the given program.
    *
    * @param program program of searched requisition templates.
-   * @return ResponseEntity with list of all requisition templates matching provided parameters and
-   *     OK httpStatus.
+   * @return RequisitionTemplate matching provided parameters.
    */
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionTemplate getTemplateByProgram(
       @RequestParam(value = "program", required = false) UUID program) {

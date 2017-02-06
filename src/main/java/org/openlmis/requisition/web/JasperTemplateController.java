@@ -2,10 +2,6 @@ package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.JasperTemplateParameter;
@@ -21,8 +17,8 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,7 +29,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+
 @Controller
+@Transactional
 @RequestMapping("/api/reports/templates/requisitions")
 public class JasperTemplateController extends BaseController {
 
@@ -89,12 +92,13 @@ public class JasperTemplateController extends BaseController {
    * @return Templates.
    */
   @RequestMapping(method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public ResponseEntity<Iterable<JasperTemplateDto>> getAllTemplates() {
+  public Iterable<JasperTemplateDto> getAllTemplates() {
     permissionService.canViewReports();
     Iterable<JasperTemplateDto> templates =
         JasperTemplateDto.newInstance(jasperTemplateRepository.findAll());
-    return new ResponseEntity<>(templates, HttpStatus.OK);
+    return templates;
   }
 
   /**
@@ -104,7 +108,9 @@ public class JasperTemplateController extends BaseController {
    * @return Template.
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-  public ResponseEntity<JasperTemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public JasperTemplateDto getTemplate(@PathVariable("id") UUID templateId) {
     permissionService.canViewReports();
     JasperTemplate jasperTemplate =
         jasperTemplateRepository.findOne(templateId);
@@ -123,7 +129,7 @@ public class JasperTemplateController extends BaseController {
           tp.setSelectValues(selectValues);
         }
       }
-      return new ResponseEntity<>(JasperTemplateDto.newInstance(jasperTemplate), HttpStatus.OK);
+      return JasperTemplateDto.newInstance(jasperTemplate);
     }
   }
 
@@ -131,10 +137,10 @@ public class JasperTemplateController extends BaseController {
    * Allows deleting template.
    *
    * @param templateId UUID of template which we want to delete
-   * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<JasperTemplateDto> deleteTemplate(@PathVariable("id") UUID templateId) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteTemplate(@PathVariable("id") UUID templateId) {
     permissionService.canEditReportTemplates();
     JasperTemplate jasperTemplate = jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
@@ -142,7 +148,6 @@ public class JasperTemplateController extends BaseController {
           MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
     } else {
       jasperTemplateRepository.delete(jasperTemplate);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
   }
 
@@ -155,6 +160,7 @@ public class JasperTemplateController extends BaseController {
    * @return the generated report
    */
   @RequestMapping(value = "/{id}/{format}", method = RequestMethod.GET)
+  @ResponseBody
   public ModelAndView generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {

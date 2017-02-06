@@ -20,6 +20,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -33,8 +34,8 @@ import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonRefer
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
-import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
+import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
@@ -48,8 +49,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -60,6 +61,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -70,6 +72,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
+@Transactional
 public class RequisitionController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
@@ -130,10 +133,12 @@ public class RequisitionController extends BaseController {
    * @param facility        UUID of Facility.
    * @param emergency       Emergency status.
    * @param suggestedPeriod Period for requisition.
-   * @return ResponseEntity containing the created requisition
+   * @return created requisition.
    */
   @RequestMapping(value = "/requisitions/initiate", method = POST)
-  public ResponseEntity<?> initiate(@RequestParam(value = "program") UUID program,
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public RequisitionDto initiate(@RequestParam(value = "program") UUID program,
                     @RequestParam(value = "facility") UUID facility,
                     @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                     @RequestParam(value = "emergency") boolean emergency) {
@@ -149,7 +154,7 @@ public class RequisitionController extends BaseController {
 
     Requisition newRequisition = requisitionService
         .initiate(program, facility, suggestedPeriod, user.getId(), emergency);
-    return new ResponseEntity<>(requisitionDtoBuilder.build(newRequisition), HttpStatus.CREATED);
+    return requisitionDtoBuilder.build(newRequisition);
   }
 
   /**
@@ -158,12 +163,15 @@ public class RequisitionController extends BaseController {
    * @param program   UUID of the Program.
    * @param facility  UUID of the Facility.
    * @param emergency true for periods to initiate an emergency requisition; false otherwise.
-   * @return ResponseEntity containing processing periods
+   * @return processing periods.
    */
   @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
-  public ResponseEntity<?> getProcessingPeriodIds(@RequestParam(value = "programId") UUID program,
-                                            @RequestParam(value = "facilityId") UUID facility,
-                                            @RequestParam(value = "emergency") boolean emergency) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public Collection<ProcessingPeriodDto> getProcessingPeriodIds(
+      @RequestParam(value = "programId") UUID program,
+      @RequestParam(value = "facilityId") UUID facility,
+      @RequestParam(value = "emergency") boolean emergency) {
     if (null == facility || null == program) {
       throw new ValidationMessageException(
           new Message(MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS));
@@ -171,17 +179,18 @@ public class RequisitionController extends BaseController {
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
-    Collection<ProcessingPeriodDto> periods = periodService.getPeriods(
+    return periodService.getPeriods(
         program, facility, emergency
     );
-    return new ResponseEntity<>(periods, HttpStatus.OK);
   }
 
   /**
    * Submits earlier initiated requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
-  public ResponseEntity<?> submitRequisition(@PathVariable("id") UUID requisitionId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -194,7 +203,7 @@ public class RequisitionController extends BaseController {
 
     if (bindingResult.hasErrors()) {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      throw new BindingResultException(getErrors(bindingResult));
     }
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
@@ -208,30 +217,30 @@ public class RequisitionController extends BaseController {
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
-    return new ResponseEntity<>(
-        requisitionDtoBuilder.build(requisition), HttpStatus.OK
-    );
+    return requisitionDtoBuilder.build(requisition);
   }
 
   /**
    * Deletes requisition with the given id.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteRequisition(@PathVariable("id") UUID requisitionId) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canDeleteRequisition(requisitionId);
     requisitionService.delete(requisitionId);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   /**
    * Allows updating requisitions.
    *
-   * @param requisitionDto A requisitionDto bound to the request body
-   * @param requisitionId  UUID of requisition which we want to update
-   * @return ResponseEntity containing the updated requisition
+   * @param requisitionDto A requisitionDto bound to the request body.
+   * @param requisitionId  UUID of requisition which we want to update.
+   * @return updated requisition.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateRequisition(@RequestBody RequisitionDto requisitionDto,
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                              @PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
 
@@ -265,7 +274,7 @@ public class RequisitionController extends BaseController {
 
       if (bindingResult.hasErrors()) {
         LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-        return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+        throw new BindingResultException(getErrors(bindingResult));
       }
 
       requisitionToUpdate.updateFrom(requisition,
@@ -275,9 +284,7 @@ public class RequisitionController extends BaseController {
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
       LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-      return new ResponseEntity<>(
-          requisitionDtoBuilder.build(requisitionToUpdate), HttpStatus.OK
-      );
+      return requisitionDtoBuilder.build(requisitionToUpdate);
     } else {
       throw new ValidationMessageException(new Message(ERROR_CANNOT_UPDATE_WITH_STATUS,
           requisition.getStatus()));
@@ -291,14 +298,16 @@ public class RequisitionController extends BaseController {
    * @return Requisition.
    */
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getRequisition(@PathVariable("id") UUID requisitionId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canViewRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new ContentNotFoundMessageException(
           new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     } else {
-      return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
+      return requisitionDtoBuilder.build(requisition);
     }
   }
 
@@ -306,7 +315,9 @@ public class RequisitionController extends BaseController {
    * Finds requisitions matching all of the provided parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
-  public ResponseEntity<Page<RequisitionDto>> searchRequisitions(
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public Page<RequisitionDto> searchRequisitions(
       @RequestParam(value = "facility", required = false) UUID facility,
       @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "createdDateFrom", required = false)
@@ -325,39 +336,42 @@ public class RequisitionController extends BaseController {
         emergency, pageable);
     List<Requisition> resultList = requisitionsPage.getContent();
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(resultList);
-    Page<RequisitionDto> dtoPage = Pagination.getPage(dtoList,
-                                                      pageable,
-                                                      requisitionsPage.getTotalElements());
-    return new ResponseEntity<>(dtoPage, HttpStatus.OK);
+    return Pagination.getPage(dtoList, pageable, requisitionsPage.getTotalElements());
   }
 
   /**
    * Skipping chosen requisition period.
    */
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
-  public ResponseEntity<RequisitionDto> skipRequisition(@PathVariable("id") UUID requisitionId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisition = requisitionService.skip(requisitionId);
-    return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
+    return requisitionDtoBuilder.build(requisition);
   }
 
   /**
    * Rejecting requisition which is waiting for approve.
    */
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
-  public ResponseEntity<RequisitionDto> rejectRequisition(@PathVariable("id") UUID id) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto rejectRequisition(@PathVariable("id") UUID id) {
     permissionService.canApproveRequisition(id);
     Requisition rejectedRequisition = requisitionService.reject(id);
 
-    return new ResponseEntity<>(requisitionDtoBuilder.build(rejectedRequisition), HttpStatus.OK);
+    return requisitionDtoBuilder.build(rejectedRequisition);
   }
 
   /**
    * Approve specified by id requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
-  public ResponseEntity<?> approveRequisition(@PathVariable("id") UUID requisitionId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -370,7 +384,7 @@ public class RequisitionController extends BaseController {
 
     if (bindingResult.hasErrors()) {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      throw new BindingResultException(getErrors(bindingResult));
     }
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
@@ -394,7 +408,7 @@ public class RequisitionController extends BaseController {
 
       requisitionRepository.save(requisition);
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
-      return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
+      return requisitionDtoBuilder.build(requisition);
     } else {
       throw new ValidationMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED, requisitionId));
@@ -405,11 +419,13 @@ public class RequisitionController extends BaseController {
    * Get requisitions to approve for right supervisor.
    */
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
-  public ResponseEntity<Collection<RequisitionDto>> listForApproval() {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public Collection<RequisitionDto> listForApproval() {
     UserDto user = authenticationHelper.getCurrentUser();
     Set<Requisition> approvalRequisitions = requisitionService
         .getRequisitionsForApproval(user.getId());
-    return new ResponseEntity<>(requisitionDtoBuilder.build(approvalRequisitions), HttpStatus.OK);
+    return requisitionDtoBuilder.build(approvalRequisitions);
   }
 
   /**
@@ -418,8 +434,9 @@ public class RequisitionController extends BaseController {
    * @return Submitted requisitions.
    */
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public ResponseEntity<?> getSubmittedRequisitions() {
+  public List<RequisitionDto> getSubmittedRequisitions() {
     Page<Requisition> submittedRequisitionsPage = requisitionService.searchRequisitions(
         null, null, null, null, null, null,
         new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null, null);
@@ -431,8 +448,7 @@ public class RequisitionController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_NO_SUBMITTED_REQUISITIONS));
     } else {
-      return new ResponseEntity<>(
-          requisitionDtoBuilder.build(submittedRequisitions), HttpStatus.OK);
+      return requisitionDtoBuilder.build(submittedRequisitions);
     }
   }
 
@@ -440,10 +456,12 @@ public class RequisitionController extends BaseController {
    * Authorize given requisition.
    *
    * @param requisitionId UUID of Requisition to authorize.
-   * @return ResponseEntity with authorized Requisition if authorization was successful.
+   * @return authorized Requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
-  public ResponseEntity<?> authorizeRequisition(@PathVariable("id") UUID requisitionId) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canAuthorizeRequisition(requisitionId);
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
@@ -461,7 +479,7 @@ public class RequisitionController extends BaseController {
     validator.validate(requisition, bindingResult);
 
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      throw new BindingResultException(getErrors(bindingResult));
     }
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
@@ -478,7 +496,7 @@ public class RequisitionController extends BaseController {
     requisitionRepository.save(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 
-    return new ResponseEntity<>(requisitionDtoBuilder.build(requisition), HttpStatus.OK);
+    return requisitionDtoBuilder.build(requisition);
   }
 
   /**
@@ -491,10 +509,12 @@ public class RequisitionController extends BaseController {
    * @param descending  Descending direction for sort.
    * @param pageable     Pageable object that allows client to optionally add "page" (page number)
    *                     and "size" (page size) query parameters to the request.
-   * @return ResponseEntity with list of approved requisitions.
+   * @return Page of approved requisitions.
    */
   @RequestMapping(value = "/requisitions/requisitionsForConvert", method = RequestMethod.GET)
-  public ResponseEntity<Page<RequisitionWithSupplyingDepotsDto>> listForConvertToOrder(
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) String filterValue,
       @RequestParam(required = false) String filterBy,
       @RequestParam(required = false, defaultValue = "programName") String sortBy,
@@ -507,26 +527,21 @@ public class RequisitionController extends BaseController {
         .getFulfillmentFacilities(user.getId(), right.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
-    Page<RequisitionWithSupplyingDepotsDto> approvedRequisitions =
-        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    return requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
             filterValue, filterBy, sortBy, descending, pageable, userManagedFacilities);
-
-    return new ResponseEntity<Page<RequisitionWithSupplyingDepotsDto>>(
-        approvedRequisitions, HttpStatus.OK);
   }
 
   /**
    * Converting Requisition list to orders.
    *
    * @param list List of Requisitions with their supplyingDepots that will be converted to Orders
-   * @return ResponseEntity with the "#200 OK" HTTP response status on success
    */
   @RequestMapping(value = "/requisitions/convertToOrder", method = RequestMethod.POST)
-  public ResponseEntity<?> convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
+  @ResponseStatus(HttpStatus.CREATED)
+  public void convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
     UserDto user = authenticationHelper.getCurrentUser();
     permissionService.canConvertToOrder(list);
     requisitionService.convertToOrder(list, user);
-    return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
   @InitBinder("requisition")

@@ -4,11 +4,13 @@ import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +26,11 @@ public class StatusMessageController extends BaseController {
    * Get all status messages for the specified requisition.
    */
   @RequestMapping(value = "/requisitions/{id}/statusMessages", method = RequestMethod.GET)
-  public ResponseEntity getAllRequisitionStatusMessages(@PathVariable("id") UUID id) {
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public List<StatusMessageDto> getAllRequisitionStatusMessages(@PathVariable("id") UUID id) {
     List<StatusMessage> statusMessages = statusMessageRepository.findByRequisitionId(id);
-    return ResponseEntity.ok(exportToDtos(statusMessages));
+    return exportToDtos(statusMessages);
   }
 
   private List<StatusMessageDto> exportToDtos(List<StatusMessage> statusMessages) {
