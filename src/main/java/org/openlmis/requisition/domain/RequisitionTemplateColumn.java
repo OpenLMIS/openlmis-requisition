@@ -45,6 +45,7 @@ public class RequisitionTemplateColumn {
   @Getter
   private Boolean isDisplayed;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   private SourceType source;

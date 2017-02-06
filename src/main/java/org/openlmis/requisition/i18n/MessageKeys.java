@@ -160,6 +160,8 @@ public abstract class MessageKeys {
       + ".authorization.noFollowingPermission";
   public static final String ERROR_REQUISITION_TEMPLATE_IN_USE = ERROR_PREFIX
       + ".requisitionTemplateInUse";
+  public static final String ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL =
+      ERROR_PREFIX + ".validation.sourceOfRequisitionTemplateColumnCannotBeNull";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

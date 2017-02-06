@@ -18,6 +18,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
@@ -332,15 +334,17 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectIfColumnDefinitionWasModified() throws Exception {
-    Message message = new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND,
+    Message message = new Message(ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED,
         COLUMN_DEFINITION, "mocked");
     String errorMessage = "Cannot find column definition for column mocked";
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
-    columnMap.get(STOCK_ON_HAND).setColumnDefinition(new AvailableRequisitionColumn());
-    
+    when(availableRequisitionColumnRepository
+        .findOne(columnMap.get(STOCK_ON_HAND).getColumnDefinition().getId()))
+        .thenReturn(columnMap.get(REQUESTED_QUANTITY).getColumnDefinition());
+
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
 
     validator.validate(requisitionTemplate, errors);
@@ -363,6 +367,20 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
     verify(errors).rejectValue(eq(PROGRAM_ID), contains(message.toString()));
+  }
+
+  @Test
+  public void shouldRejectWhenSourceInRequisitionTemplateColumnIsNull() throws Exception {
+    RequisitionTemplate requisitionTemplate = generateTemplate();
+    requisitionTemplate.findColumn(REQUESTED_QUANTITY_EXPLANATION).setSource(null);
+
+    Message message = new Message(ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL,
+        REQUESTED_QUANTITY_EXPLANATION);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        message.toString()));
+
+    validator.validate(requisitionTemplate, errors);
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
   }
 
   private RequisitionTemplate generateTemplate() {
@@ -396,7 +414,6 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnSource(AVERAGE_CONSUMPTION, SourceType.CALCULATED);
     requisitionTemplate.changeColumnSource(TOTAL_STOCKOUT_DAYS, SourceType.USER_INPUT);
     requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
-
     return requisitionTemplate;
   }
 
@@ -427,6 +444,7 @@ public class RequisitionTemplateValidatorTest {
         new RequisitionTemplateColumn(columnDefinition);
     requisitionTemplateColumn.setName(name);
     requisitionTemplateColumn.setIsDisplayed(true);
+    requisitionTemplateColumn.setSource(columnDefinition.getSources().iterator().next());
 
     return requisitionTemplateColumn;
   }

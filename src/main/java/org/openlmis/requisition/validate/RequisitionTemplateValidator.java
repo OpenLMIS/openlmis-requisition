@@ -10,6 +10,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
@@ -35,17 +36,10 @@ import java.util.UUID;
 @Component
 public class RequisitionTemplateValidator extends BaseValidator {
 
-  @Autowired
-  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
   static final String PROGRAM_ID = "programId";
   static final String PROGRAM = "program";
-
   static final String REQUESTED_QUANTITY = "requestedQuantity";
   static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
   static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
@@ -53,9 +47,12 @@ public class RequisitionTemplateValidator extends BaseValidator {
   static final String AVERAGE_CONSUMPTION = "averageConsumption";
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
-
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
 
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -196,7 +193,11 @@ public class RequisitionTemplateValidator extends BaseValidator {
                                      RequisitionTemplateColumn column) {
     SourceType chosenSource = column.getSource();
 
-    if (null != chosenSource) {
+    if (chosenSource == null) {
+      rejectValue(errors, COLUMNS_MAP,
+          new Message(ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL,
+              column.getLabel()));
+    } else {
       AvailableRequisitionColumn definition = column.getColumnDefinition();
       Set<SourceType> sources = definition.getSources();
 
@@ -206,7 +207,6 @@ public class RequisitionTemplateValidator extends BaseValidator {
             new Message(ERROR_MUST_BE_DISPLAYED, definition.getName())
         );
       }
-
       rejectIfNotContains(
           errors, sources, chosenSource, COLUMNS_MAP,
           new Message(ERROR_SOURCE_NOT_AVAILABLE, chosenSource.toString())

@@ -1261,6 +1261,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       if (!isEmpty(columnDefinition.getOptions())) {
         column.setOption(columnDefinition.getOptions().iterator().next());
       }
+      if (!isEmpty(columnDefinition.getSources())) {
+        column.setSource(columnDefinition.getSources().iterator().next());
+      }
 
       columns.put(columnDefinition.getName(), column);
     }
