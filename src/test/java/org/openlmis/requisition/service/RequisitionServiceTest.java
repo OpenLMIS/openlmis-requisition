@@ -2,6 +2,7 @@ package org.openlmis.requisition.service;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -766,23 +767,33 @@ public class RequisitionServiceTest {
     List<RequisitionDto> requisitionDtos = getRequisitionDtoList();
 
     String filterAndSortBy = "programName";
-    UUID supplyingDepot = UUID.randomUUID();
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    FacilityDto supplyingDepot = new FacilityDto();
+    supplyingDepot.setId(supplyingDepotId);
+    List<FacilityDto> supplyingDepots = new ArrayList<>(Arrays.asList(supplyingDepot));
+
+    int pageSize = 3;
+    int pageNumber = 0;
     Pageable pageable = mock(Pageable.class);
 
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
-        supplyingDepot, pageable);
+        supplyingDepots, pageable, pageSize, pageNumber);
 
     requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
     Collections.reverse(requisitionDtos);
 
-    List<RequisitionWithSupplyingDepotsDto> requisitionWithSupplyingDepotDtos = new ArrayList<>();
-    for (RequisitionDto requisitionDto: requisitionDtos) {
-      RequisitionWithSupplyingDepotsDto newRequisition = new RequisitionWithSupplyingDepotsDto();
-      newRequisition.setRequisition(requisitionDto);
-    }
+    List<RequisitionDto> requisitionDtosSubList =
+        requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
 
-    Collection<UUID> userManagedFacilities = new ArrayList<>();
-    userManagedFacilities.add(supplyingDepot);
+    List<RequisitionWithSupplyingDepotsDto> requisitionWithSupplyingDepotDtos =
+        requisitionDtosSubList
+            .stream()
+            .map(requisitionDto ->
+                new RequisitionWithSupplyingDepotsDto(requisitionDto, supplyingDepots))
+            .collect(Collectors.toList());
+
+    Collection<UUID> userManagedFacilities = new ArrayList<>(Arrays.asList(supplyingDepotId));
 
     //when
     Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
@@ -793,7 +804,20 @@ public class RequisitionServiceTest {
         requisitionDtosRetrieved.getContent();
 
     //then
-    assertEquals(requisitionWithSupplyingDepotDtos, requisitionDtosRetrievedList);
+    for (int i = 0; i < requisitionDtosRetrievedList.size(); i++) {
+      assertEquals(
+          requisitionWithSupplyingDepotDtos.get(i).getRequisition(),
+          requisitionDtosRetrievedList.get(i).getRequisition()
+      );
+      assertEquals(
+          requisitionWithSupplyingDepotDtos.get(i).getSupplyingDepots(),
+          requisitionDtosRetrievedList.get(i).getSupplyingDepots()
+      );
+    }
+    assertEquals(requisitionDtos.size(), requisitionDtosRetrieved.getTotalElements());
+    assertEquals(pageSize, requisitionDtosRetrieved.getNumberOfElements());
+    assertTrue(requisitionDtosRetrieved.isFirst());
+    assertFalse(requisitionDtosRetrieved.isLast());
   }
 
   @Test
@@ -974,6 +998,7 @@ public class RequisitionServiceTest {
       ProgramDto programDto = new ProgramDto();
       programDto.setName(programName);
       requisitionDto.setProgram(programDto);
+      requisitionDtos.add(requisitionDto);
     }
     return requisitionDtos;
   }
@@ -1011,7 +1036,9 @@ public class RequisitionServiceTest {
 
   private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
                                                     String filterBy, String programName,
-                                                    UUID supplyingDepotId, Pageable pageable) {
+                                                    List<FacilityDto> supplyingDepots,
+                                                    Pageable pageable, int pageSize,
+                                                    int pageNumber) {
     List<UUID> desiredUuids = new ArrayList<>();
     List<Requisition> requisitions = new ArrayList<>();
     when(programReferenceDataService.search(programName))
@@ -1021,12 +1048,10 @@ public class RequisitionServiceTest {
     when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
         .thenReturn(requisitionDtos);
     when(requisitionRepository.findOne(any())).thenReturn(mock(Requisition.class));
-    FacilityDto facilityDto = new FacilityDto();
-    facilityDto.setId(supplyingDepotId);
     when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))
-        .thenReturn(Arrays.asList(facilityDto));
-    when(pageable.getPageNumber()).thenReturn(0);
-    when(pageable.getPageSize()).thenReturn(10);
+        .thenReturn(supplyingDepots);
+    when(pageable.getPageSize()).thenReturn(pageSize);
+    when(pageable.getPageNumber()).thenReturn(pageNumber);
   }
 
   private RequisitionTemplate getRequisitionTemplate() {
