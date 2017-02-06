@@ -434,8 +434,9 @@ public class RequisitionService {
    *                    "all".
    * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
    * @param descending  Descending direction for sort.
-   * @param pageable     Pageable object that allows to optionally add "page" (page number)
+   * @param pageable    Pageable object that allows to optionally add "page" (page number)
    *                     and "size" (page size) query parameters.
+   * @param userManagedFacilities List of UUIDs of facilities that are managed by logged in user.
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto>
