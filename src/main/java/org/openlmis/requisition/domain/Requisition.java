@@ -421,7 +421,7 @@ public class Requisition extends BaseTimestampedEntity {
     if (requisitionLineItems == null) {
       return Collections.emptyList();
     }
-    return this.requisitionLineItems.stream()`
+    return this.requisitionLineItems.stream()
         .filter(line -> !line.getSkipped())
         .filter(line -> !line.isNonFullSupply())
         .collect(Collectors.toList());
