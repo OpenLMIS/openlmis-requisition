@@ -17,6 +17,7 @@ import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -35,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -58,6 +60,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @TypeName("Requisition")
 @Table(name = "requisitions")
@@ -302,6 +305,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     status = RequisitionStatus.SUBMITTED;
     submitterId = submitter;
+    submittedDate = ZonedDateTime.now();
   }
 
   /**
@@ -322,6 +326,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     status = RequisitionStatus.AUTHORIZED;
     authorizerId = authorizer;
+    authorizedDate = ZonedDateTime.now();
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
   }
 
@@ -350,6 +355,14 @@ public class Requisition extends BaseTimestampedEntity {
     RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
         line -> line.updatePacksToShip(products));
 
+    updateConsumptionsAndTotalCost();
+  }
+
+  /**
+   * Rejects given requisition.
+   */
+  public void reject() {
+    status = RequisitionStatus.INITIATED;
     updateConsumptionsAndTotalCost();
   }
 
@@ -415,6 +428,21 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Filter out requisitionLineItems that are skipped and not-full supply.
+   *
+   * @return requisitionLineItems that are not skipped
+   */
+  public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems() {
+    if (requisitionLineItems == null) {
+      return Collections.emptyList();
+    }
+    return this.requisitionLineItems.stream()
+        .filter(line -> !line.getSkipped())
+        .filter(RequisitionLineItem::isNonFullSupply)
+        .collect(Collectors.toList());
+  }
+
+  /**
    * Filter out requisitionLineItems that are not skipped.
    *
    * @return requisitionLineItems that are skipped
@@ -423,6 +451,33 @@ public class Requisition extends BaseTimestampedEntity {
     return this.requisitionLineItems.stream()
         .filter(RequisitionLineItem::getSkipped)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Calculates combined cost of all requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getTotalCost() {
+    return calculateTotalCostForLines(requisitionLineItems);
+  }
+
+  /**
+   * Calculates combined cost of non-full supply non-skipped requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getNonFullSupplyTotalCost() {
+    return calculateTotalCostForLines(getNonSkippedNonFullSupplyRequisitionLineItems());
+  }
+
+  /**
+   * Calculates combined cost of full supply non-skipped requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getFullSupplyTotalCost() {
+    return calculateTotalCostForLines(getNonSkippedFullSupplyRequisitionLineItems());
   }
 
   /**
@@ -464,6 +519,19 @@ public class Requisition extends BaseTimestampedEntity {
 
           line.setPreviousAdjustedConsumptions(adjustedConsumptions);
         });
+  }
+
+  private Money calculateTotalCostForLines(List<RequisitionLineItem> requisitionLineItems) {
+    Money defaultValue = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 0);
+
+    if (requisitionLineItems.isEmpty()) {
+      return defaultValue;
+    }
+
+    Optional<Money> money = requisitionLineItems.stream()
+        .map(RequisitionLineItem::getTotalCost).filter(Objects::nonNull).reduce(Money::plus);
+
+    return money.isPresent() ? money.get() : defaultValue;
   }
 
   private void calculateAndValidateTemplateFields(

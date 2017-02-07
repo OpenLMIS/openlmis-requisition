@@ -4,13 +4,11 @@ import static net.sf.jasperreports.engine.JRParameter.REPORT_LOCALE;
 import static net.sf.jasperreports.engine.JRParameter.REPORT_RESOURCE_BUNDLE;
 
 import net.sf.jasperreports.engine.JRBand;
-import net.sf.jasperreports.engine.JRChild;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -68,26 +66,43 @@ public final class ReportUtils {
    * @param margin page margin, to adjust initial column positions.
    */
   public static void customizeBandWithTemplateFields(
-      JRBand band, Map<String, RequisitionTemplateColumn> columns, int margin) {
-    List<JRDesignTextField> foundFields = new ArrayList<>();
+      JRBand band, Map<String, RequisitionTemplateColumn> columns, int width, int margin) {
+    List<String> foundTemplateKeys = columns.keySet().stream()
+        .filter(key -> band.getElementByKey(key) != null)
+        .collect(Collectors.toList());
+    List<JRDesignTextField> foundColumns = band.getChildren().stream()
+        .filter(child -> child instanceof JRDesignTextField)
+        .map(child -> (JRDesignTextField)child)
+        .collect(Collectors.toList());
+    double widthMultipier = (double)foundColumns.size() / foundTemplateKeys.size();
 
     JRDesignTextField prevField = null;
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
-      String fieldName = entry.getKey();
-      JRDesignTextField field = (JRDesignTextField)band.getElementByKey(fieldName);
+    for (String key : foundTemplateKeys) {
+      JRDesignTextField field = (JRDesignTextField)band.getElementByKey(key);
 
-      if (field != null) {
-        setPositionAfterPreviousField(field, prevField, margin);
-        foundFields.add(field);
-        prevField = field;
-      }
+      field.setWidth((int) (field.getWidth() * widthMultipier));
+      setPositionAfterPreviousField(field, prevField, margin);
+      prevField = field;
     }
 
-    for (JRChild child : band.getChildren()) {
-      if (child instanceof JRDesignTextField && !foundFields.contains(child)) {
-        JRDesignTextField field = (JRDesignTextField)child;
-        setPositionAfterPreviousField(field, prevField, margin);
-        prevField = field;
+    fillWidthGap(prevField, width, margin);
+    removeSpareColumns(band, foundColumns, foundTemplateKeys);
+  }
+
+  private static void removeSpareColumns(
+      JRBand band, List<JRDesignTextField> children, List<String> foundKeys) {
+    for (JRDesignTextField child : children) {
+      if (!foundKeys.contains(child.getKey())) {
+        band.getChildren().remove(child);
+      }
+    }
+  }
+
+  private static void fillWidthGap(JRDesignTextField lastField, int width, int margin) {
+    if (lastField != null) {
+      int widthGap = (width - margin) - (lastField.getX() + lastField.getWidth());
+      if (widthGap > 0) {
+        lastField.setWidth(lastField.getWidth() + widthGap);
       }
     }
   }
