@@ -415,22 +415,22 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Filter out requisitionLineItems that are skipped and not-full supply.
    *
-   * @return requisitionLineItems that are not skipped
+   * @return non-skipped full supply requisition line items
    */
   public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems() {
     if (requisitionLineItems == null) {
       return Collections.emptyList();
     }
-    return this.requisitionLineItems.stream()
+    return this.requisitionLineItems.stream()`
         .filter(line -> !line.getSkipped())
         .filter(line -> !line.isNonFullSupply())
         .collect(Collectors.toList());
   }
 
   /**
-   * Filter out requisitionLineItems that are skipped and not-full supply.
+   * Filter out requisitionLineItems that are skipped and full supply.
    *
-   * @return requisitionLineItems that are not skipped
+   * @return non-skipped non-full supply requisition line items
    */
   public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems() {
     if (requisitionLineItems == null) {
