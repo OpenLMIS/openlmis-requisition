@@ -20,7 +20,10 @@ public interface RequisitionRepositoryCustom {
                                        Boolean emergency,
                                        Pageable pageable);
 
-  List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod, Boolean emergency);
+  List<Requisition> searchRequisitions(UUID processingPeriod,
+                                       UUID facility,
+                                       UUID program,
+                                       Boolean emergency);
 
   List<Requisition> searchApprovedRequisitions(String filterBy,
                                                List<UUID> desiredUuids);

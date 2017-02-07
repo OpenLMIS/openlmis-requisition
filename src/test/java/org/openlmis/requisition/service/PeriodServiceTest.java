@@ -41,6 +41,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,6 +79,7 @@ public class PeriodServiceTest {
 
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
+  private UUID facility2Id = UUID.randomUUID();
 
   private ProcessingPeriodDto period1;
   private ProcessingPeriodDto period2;
@@ -100,19 +102,19 @@ public class PeriodServiceTest {
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period1.getId(), false);
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(initiatedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period2.getId(), false);
+        .searchRequisitions(period2.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(submittedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period3.getId(), false);
+        .searchRequisitions(period3.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(authorizedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period4.getId(), false);
+        .searchRequisitions(period4.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(approvedRequsition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(currentPeriod.getId(), false);
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
   }
 
   @Test
@@ -126,7 +128,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period1.getId(), false);
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -151,10 +153,10 @@ public class PeriodServiceTest {
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period1.getId(), false);
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period6.getId(), false);
+        .searchRequisitions(period6.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -176,7 +178,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period1.getId(), false);
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -207,7 +209,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchByProcessingPeriodAndType(period1.getId(), false);
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -228,7 +230,8 @@ public class PeriodServiceTest {
     Collection<ProcessingPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, false);
 
-    verify(requisitionRepository, times(5)).searchByProcessingPeriodAndType(any(UUID.class), any());
+    verify(requisitionRepository, times(5)).searchRequisitions(
+        any(UUID.class), any(UUID.class), any(UUID.class), any());
 
     assertNotNull(periods);
     assertEquals(3, periods.size());
@@ -388,6 +391,48 @@ public class PeriodServiceTest {
     assertEquals(period1, period);
   }
 
+  @Test
+  public void shouldUseNextAvailablePeriodWhenOneIsTaken() {
+    //given
+    Requisition requisition = getRequisition(APPROVED);
+    setMockForFindPeriod(requisition);
+
+    //we mock the requisition search to return a requisition for the first period
+    // but not for the second
+    doReturn(Collections.singletonList(initiatedRequsition))
+        .when(requisitionRepository)
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
+    doReturn(Collections.EMPTY_LIST)
+        .when(requisitionRepository)
+        .searchRequisitions(period2.getId(), facilityId, programId, false);
+
+    //when
+    ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
+
+    // then, we expect a second period to be returned
+    assertEquals(period2, period);
+  }
+
+  @Test
+  public void shouldAllowUsingTheSamePeriodInMultipleFacilities() {
+    //given
+    Requisition requisition = getRequisition(APPROVED);
+    setMockForFindPeriod(requisition);
+
+    // we mock the requisition search to return a requisition for the first period
+    // in facility with ID facilityId
+    doReturn(Collections.singletonList(initiatedRequsition))
+        .when(requisitionRepository)
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
+
+    //when
+    ProcessingPeriodDto period = periodService.findPeriod(programId, facility2Id, null, false);
+
+    // then, we expect a first period to be returned for second facility, despite it being used in
+    // the first facility
+    assertEquals(period1, period);
+  }
+
   private Requisition getRequisition(RequisitionStatus status) {
     Requisition requisition = new Requisition();
     requisition.setStatus(status);
@@ -397,15 +442,24 @@ public class PeriodServiceTest {
   private void setMockForFindPeriod(Requisition requisition) {
     when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
         .thenReturn(requisition);
+    List<ProcessingPeriodDto> periods = new ArrayList<>();
+    periods.add(period1);
+    periods.add(period2);
+    periods.add(period3);
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Collections.singletonList(period1));
+        .thenReturn(periods);
+    when(periodReferenceDataService.searchByProgramAndFacility(programId, facility2Id))
+        .thenReturn(periods);
 
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     UUID id = UUID.randomUUID();
     processingScheduleDto.setId(id);
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Collections.singletonList(processingScheduleDto));
+    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facility2Id))
+        .thenReturn(Collections.singletonList(processingScheduleDto));
     when(period1.getProcessingSchedule().getId()).thenReturn(id);
+    when(period2.getProcessingSchedule().getId()).thenReturn(id);
   }
 
 }

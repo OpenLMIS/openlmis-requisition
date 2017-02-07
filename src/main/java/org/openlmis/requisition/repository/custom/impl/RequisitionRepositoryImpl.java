@@ -21,6 +21,14 @@ import javax.persistence.criteria.Root;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
+  private static final String FACILITY_ID = "facilityId";
+  private static final String PROGRAM_ID = "programId";
+  private static final String EMERGENCY = "emergency";
+  private static final String STATUS = "status";
+  private static final String CREATED_DATE = "createdDate";
+  private static final String PROCESSING_PERIOD_ID = "processingPeriodId";
+  private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
+
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -52,31 +60,31 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     Predicate predicate = builder.conjunction();
     if (facility != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("facilityId"), facility));
+      predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
     }
     if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
+      predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
     }
     if (createdDateFrom != null) {
       predicate = builder.and(predicate,
-          builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
+          builder.greaterThanOrEqualTo(root.get(CREATED_DATE), createdDateFrom));
     }
     if (createdDateTo != null) {
       predicate = builder.and(predicate,
-          builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
+          builder.lessThanOrEqualTo(root.get(CREATED_DATE), createdDateTo));
     }
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get("processingPeriodId"), processingPeriod));
+          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
     }
     if (supervisoryNode != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get("supervisoryNodeId"), supervisoryNode));
+          builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNode));
     }
     predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
     if (null != emergency) {
       predicate = builder.and(predicate,
-          builder.equal(root.get("emergency"), emergency));
+          builder.equal(root.get(EMERGENCY), emergency));
     }
 
     queryMain.where(predicate);
@@ -110,20 +118,29 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    *                         if {@code null} the method will check all requisitions.
    * @return List of Requisitions with matched parameters.
    */
-  public List<Requisition> searchByProcessingPeriodAndType(UUID processingPeriod,
-                                                           Boolean emergency) {
+  public List<Requisition> searchRequisitions(UUID processingPeriod,
+                                              UUID facility,
+                                              UUID program,
+                                              Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
     Predicate predicate = builder.conjunction();
 
     if (null != emergency) {
-      predicate = builder.and(predicate, builder.equal(root.get("emergency"), emergency));
+      predicate = builder.and(predicate, builder.equal(root.get(EMERGENCY), emergency));
     }
-
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get("processingPeriodId"), processingPeriod));
+          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
+    }
+    if (facility != null) {
+      predicate = builder.and(predicate,
+          builder.equal(root.get(FACILITY_ID), facility));
+    }
+    if (program != null) {
+      predicate = builder.and(predicate,
+          builder.equal(root.get(PROGRAM_ID), program));
     }
     query.where(predicate);
     return entityManager.createQuery(query).getResultList();
@@ -144,8 +161,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     Root<Requisition> root = criteriaQuery.from(Requisition.class);
 
-    Path<UUID> facility = root.get("facilityId");
-    Path<UUID> program = root.get("programId");
+    Path<UUID> facility = root.get(FACILITY_ID);
+    Path<UUID> program = root.get(PROGRAM_ID);
 
     Predicate predicate =
         setFiltering(filterBy, builder, root, facility, program, desiredUuids);
@@ -176,12 +193,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Root<Requisition> root = query.from(Requisition.class);
 
     Predicate predicate = builder.conjunction();
-    predicate = builder.and(predicate, builder.equal(root.get("emergency"), false));
-    predicate = builder.and(predicate, builder.equal(root.get("facilityId"), facility));
-    predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
+    predicate = builder.and(predicate, builder.equal(root.get(EMERGENCY), false));
+    predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
+    predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
 
     query.where(predicate);
-    query.orderBy(builder.desc(root.get("createdDate")));
+    query.orderBy(builder.desc(root.get(CREATED_DATE)));
 
     List<Requisition> list = entityManager.createQuery(query).setMaxResults(1).getResultList();
     return null == list || list.isEmpty() ? null : list.get(0);
@@ -191,7 +208,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                  Path<UUID> facility, Path<UUID> program, List<UUID> desiredUuids) {
 
     //Add first important filter
-    Predicate predicate = builder.equal(root.get("status"), RequisitionStatus.APPROVED);
+    Predicate predicate = builder.equal(root.get(STATUS), RequisitionStatus.APPROVED);
 
     if (filterBy != null && !filterBy.isEmpty()) {
       //Add second important filter
@@ -218,7 +235,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
         statusPredicate = builder.or(statusPredicate,
-            builder.equal(root.get("status"), status));
+            builder.equal(root.get(STATUS), status));
       }
       predicateToUse = builder.and(predicate, statusPredicate);
     }

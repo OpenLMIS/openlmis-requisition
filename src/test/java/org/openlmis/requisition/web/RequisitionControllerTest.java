@@ -349,15 +349,15 @@ public class RequisitionControllerTest {
   }
 
   private void mockRequisitionRepository() {
-    when(requisitionRepository.searchByProcessingPeriodAndType(uuid1, false))
+    when(requisitionRepository.searchRequisitions(uuid1, facilityUuid, programUuid, false))
         .thenReturn(new ArrayList<>());
-    when(requisitionRepository.searchByProcessingPeriodAndType(uuid2, false))
+    when(requisitionRepository.searchRequisitions(uuid2, facilityUuid, programUuid, false))
         .thenReturn(Collections.singletonList(initiatedRequsition));
-    when(requisitionRepository.searchByProcessingPeriodAndType(uuid3, false))
+    when(requisitionRepository.searchRequisitions(uuid3, facilityUuid, programUuid, false))
         .thenReturn(Collections.singletonList(submittedRequsition));
-    when(requisitionRepository.searchByProcessingPeriodAndType(uuid4, false))
+    when(requisitionRepository.searchRequisitions(uuid4, facilityUuid, programUuid, false))
         .thenReturn(Collections.singletonList(authorizedRequsition));
-    when(requisitionRepository.searchByProcessingPeriodAndType(uuid5, false))
+    when(requisitionRepository.searchRequisitions(uuid5, facilityUuid, programUuid, false))
         .thenReturn(Collections.singletonList(approvedRequsition));
     when(requisitionRepository.save(initiatedRequsition))
         .thenReturn(initiatedRequsition);

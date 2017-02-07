@@ -1189,7 +1189,7 @@ public class RequisitionServiceTest {
     when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriodDto));
 
-    when(requisitionRepository.searchByProcessingPeriodAndType(any(), any()))
+    when(requisitionRepository.searchRequisitions(any(), any(), any(), any()))
         .thenReturn(new ArrayList<>());
 
     when(orderDtoBuilder.build(any(Requisition.class), any(UserDto.class)))
