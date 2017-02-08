@@ -8,8 +8,6 @@ CREATE TABLE available_non_full_supply_products (
 );
 
 
-ALTER TABLE available_non_full_supply_products OWNER TO postgres;
-
 --
 -- Name: available_requisition_column_options; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -22,8 +20,6 @@ CREATE TABLE available_requisition_column_options (
 );
 
 
-ALTER TABLE available_requisition_column_options OWNER TO postgres;
-
 --
 -- Name: available_requisition_column_sources; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -33,8 +29,6 @@ CREATE TABLE available_requisition_column_sources (
     value character varying(255)
 );
 
-
-ALTER TABLE available_requisition_column_sources OWNER TO postgres;
 
 --
 -- Name: available_requisition_columns; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -53,8 +47,6 @@ CREATE TABLE available_requisition_columns (
     name character varying(255)
 );
 
-
-ALTER TABLE available_requisition_columns OWNER TO postgres;
 
 --
 -- Name: columns_maps; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -75,8 +67,6 @@ CREATE TABLE columns_maps (
 );
 
 
-ALTER TABLE columns_maps OWNER TO postgres;
-
 --
 -- Name: configuration_settings; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -86,8 +76,6 @@ CREATE TABLE configuration_settings (
     value character varying(255) NOT NULL
 );
 
-
-ALTER TABLE configuration_settings OWNER TO postgres;
 
 --
 -- Name: jasper_templates; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -102,8 +90,6 @@ CREATE TABLE jasper_templates (
 );
 
 
-ALTER TABLE jasper_templates OWNER TO postgres;
-
 --
 -- Name: previous_adjusted_consumptions; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -113,8 +99,6 @@ CREATE TABLE previous_adjusted_consumptions (
     previousadjustedconsumption integer
 );
 
-
-ALTER TABLE previous_adjusted_consumptions OWNER TO postgres;
 
 --
 -- Name: requisition_line_items; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -149,8 +133,6 @@ CREATE TABLE requisition_line_items (
 );
 
 
-ALTER TABLE requisition_line_items OWNER TO postgres;
-
 --
 -- Name: requisition_templates; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -163,8 +145,6 @@ CREATE TABLE requisition_templates (
     programid uuid
 );
 
-
-ALTER TABLE requisition_templates OWNER TO postgres;
 
 --
 -- Name: requisitions; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -192,8 +172,6 @@ CREATE TABLE requisitions (
 );
 
 
-ALTER TABLE requisitions OWNER TO postgres;
-
 --
 -- Name: requisitions_previous_requisitions; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -203,8 +181,6 @@ CREATE TABLE requisitions_previous_requisitions (
     previousrequisitionid uuid NOT NULL
 );
 
-
-ALTER TABLE requisitions_previous_requisitions OWNER TO postgres;
 
 --
 -- Name: status_messages; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -223,8 +199,6 @@ CREATE TABLE status_messages (
 );
 
 
-ALTER TABLE status_messages OWNER TO postgres;
-
 --
 -- Name: stock_adjustments; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
 --
@@ -236,8 +210,6 @@ CREATE TABLE stock_adjustments (
     requisitionlineitemid uuid
 );
 
-
-ALTER TABLE stock_adjustments OWNER TO postgres;
 
 --
 -- Name: template_parameters; Type: TABLE; Schema: requisition; Owner: postgres; Tablespace: 
@@ -254,8 +226,6 @@ CREATE TABLE template_parameters (
     templateid uuid NOT NULL
 );
 
-
-ALTER TABLE template_parameters OWNER TO postgres;
 
 --
 -- Name: available_requisition_column_options_pkey; Type: CONSTRAINT; Schema: requisition; Owner: postgres; Tablespace: 
