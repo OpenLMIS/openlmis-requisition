@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -53,6 +54,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -187,6 +189,16 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private Set<UUID> availableNonFullSupplyProducts;
+
+  /*
+   * Used to convey a small subset of the requisition-related data collected via JaVers' audit-log.
+   * This is primarily used to allow users the ability to see when the RequisitionStatus changed.
+   * A more holistic approach to audit logging is forthcoming.
+   */
+  @Transient
+  @Getter
+  @Setter
+  private Map<String, AuditLogEntry> metaData;
 
   /**
    * Constructor.
