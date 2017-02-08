@@ -189,7 +189,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Column
   @Setter
   @Getter
-  private BigDecimal maxStock;
+  private BigDecimal maxPeriodsOfStock;
 
   @Setter
   @Getter
@@ -227,7 +227,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
     requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
     requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
-    requisitionLineItem.setMaxStock(importer.getMaxStock());
+    requisitionLineItem.setMaxPeriodsOfStock(importer.getMaxPeriodsOfStock());
     requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
@@ -259,7 +259,7 @@ public class RequisitionLineItem extends BaseEntity {
   public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct) {
     this();
     this.requisition = requisition;
-    this.maxStock = BigDecimal.valueOf(approvedProduct.getMaxStock());
+    this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
 
     ProgramOrderableDto product = approvedProduct.getProgramOrderable();
     this.orderableId = product.getOrderableId();
@@ -374,7 +374,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setAdjustedConsumption(adjustedConsumption);
     exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
     exporter.setMaximumStockQuantity(maximumStockQuantity);
-    exporter.setMaxStock(maxStock);
+    exporter.setMaxPeriodsOfStock(maxPeriodsOfStock);
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
 
@@ -608,7 +608,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setAverageConsumption(Integer averageConsumption);
 
-    void setMaxStock(BigDecimal maxStock);
+    void setMaxPeriodsOfStock(BigDecimal maxPeriodsOfStock);
 
     void setMaximumStockQuantity(Integer maximumStockQuantity);
 
@@ -660,7 +660,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getAverageConsumption();
 
-    BigDecimal getMaxStock();
+    BigDecimal getMaxPeriodsOfStock();
 
     Integer getMaximumStockQuantity();
 

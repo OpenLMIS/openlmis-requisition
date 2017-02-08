@@ -50,7 +50,7 @@ public class RequisitionLineItemDto
   private Integer adjustedConsumption;
   private List<Integer> previousAdjustedConsumptions;
   private Integer averageConsumption;
-  private BigDecimal maxStock;
+  private BigDecimal maxPeriodsOfStock;
   private Integer maximumStockQuantity;
   private Integer calculatedOrderQuantity;
   private String orderableCategoryDisplayName;

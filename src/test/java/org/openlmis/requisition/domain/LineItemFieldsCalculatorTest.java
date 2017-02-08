@@ -217,7 +217,7 @@ public class LineItemFieldsCalculatorTest {
     template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
 
     RequisitionLineItem item = new RequisitionLineItem();
-    item.setMaxStock(BigDecimal.valueOf(7.25));
+    item.setMaxPeriodsOfStock(BigDecimal.valueOf(7.25));
     item.setAverageConsumption(2);
 
     assertThat(
@@ -234,7 +234,7 @@ public class LineItemFieldsCalculatorTest {
     template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
 
     RequisitionLineItem item = new RequisitionLineItem();
-    item.setMaxStock(BigDecimal.valueOf(7.25));
+    item.setMaxPeriodsOfStock(BigDecimal.valueOf(7.25));
     item.setAverageConsumption(2);
 
     assertThat(
@@ -266,7 +266,7 @@ public class LineItemFieldsCalculatorTest {
     template.setColumnsMap(ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column));
 
     RequisitionLineItem item = new RequisitionLineItem();
-    item.setMaxStock(BigDecimal.valueOf(7));
+    item.setMaxPeriodsOfStock(BigDecimal.valueOf(7));
     item.setAverageConsumption(2);
     item.setStockOnHand(4);
 
