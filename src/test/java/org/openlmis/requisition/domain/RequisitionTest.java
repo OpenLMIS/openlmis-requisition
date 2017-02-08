@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -312,7 +311,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertTrue(amount.compareTo(BigDecimal.ZERO) == 0);
+    assertEquals(amount.doubleValue(), 0, 0);
   }
 
   @Test
@@ -325,7 +324,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertTrue(amount.compareTo(new BigDecimal(2)) == 0);
+    assertEquals(amount.doubleValue(), 2, 0);
   }
 
   @Test
@@ -338,7 +337,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertTrue(amount.compareTo(BigDecimal.ONE) == 0);
+    assertEquals(amount.doubleValue(), 1, 0);
   }
 
   @Test
@@ -351,7 +350,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertTrue(amount.compareTo(BigDecimal.ONE) == 0);
+    assertEquals(amount.doubleValue(), 1, 0);
   }
 
   @Test
