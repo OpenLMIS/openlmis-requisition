@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -22,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -31,6 +33,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,6 +76,19 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
     requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
+  }
+
+  @Test
+  public void shouldChangeStatusToInitiatedAfterReject() {
+    // given
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+
+    // when
+    requisition.reject();
+
+    // then
+    assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
   @Test
@@ -287,6 +303,58 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldReturnZeroIfNoTotalCosts() {
+    // given;
+    requisition.setRequisitionLineItems(Collections.emptyList());
+
+    // when
+    Money result = requisition.getTotalCost();
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertTrue(amount.compareTo(BigDecimal.ZERO) == 0);
+  }
+
+  @Test
+  public void shouldGetTotalCost() {
+    // given;
+    setUpGetTotalCost(BigDecimal.ONE, BigDecimal.ONE);
+
+    // when
+    Money result = requisition.getTotalCost();
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertTrue(amount.compareTo(new BigDecimal(2)) == 0);
+  }
+
+  @Test
+  public void shouldGetFullSupplyTotalCost() {
+    // given;
+    setUpGetTotalCost(BigDecimal.ONE, BigDecimal.ZERO);
+
+    // when
+    Money result = requisition.getFullSupplyTotalCost();
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertTrue(amount.compareTo(BigDecimal.ONE) == 0);
+  }
+
+  @Test
+  public void shouldGetNonFullSupplyTotalCost() {
+    // given;
+    setUpGetTotalCost(BigDecimal.ZERO, BigDecimal.ONE);
+
+    // when
+    Money result = requisition.getNonFullSupplyTotalCost();
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertTrue(amount.compareTo(BigDecimal.ONE) == 0);
+  }
+
+  @Test
   public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided() {
     // given
     final UUID productId1 = UUID.randomUUID();
@@ -397,6 +465,21 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldGetNonSkippedNonFullSupplyRequisitionLineItems() {
+    // given
+    RequisitionLineItem notSkipped = getRequisitionLineItem(false, false);
+    RequisitionLineItem skipped = getRequisitionLineItem(true, false);
+    Requisition requisition = getRequisition(notSkipped, skipped);
+
+    // when
+    List<RequisitionLineItem> result = requisition.getNonSkippedNonFullSupplyRequisitionLineItems();
+
+    // then
+    assertEquals(1, result.size());
+    assertEquals(notSkipped.getId(), result.get(0).getId());
+  }
+
+  @Test
   public void shouldReturnSkippedRequisitionLineItems() {
     RequisitionLineItem notSkipped = getRequisitionLineItem(false);
     RequisitionLineItem skipped = getRequisitionLineItem(true);
@@ -465,6 +548,21 @@ public class RequisitionTest {
 
     //when
     requisition.submit(Collections.emptyList(), UUID.randomUUID());
+
+    //then
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenReject() {
+    // given
+    prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+
+    //when
+    requisition.reject();
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -648,6 +746,22 @@ public class RequisitionTest {
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
 
+
+
+  private void setUpGetTotalCost(BigDecimal fullSupplyCost, BigDecimal nonFullSupplyCost) {
+    CurrencyUnit currency = CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE);
+
+    RequisitionLineItem fullSupplyItem = getRequisitionLineItem(false, true);
+    fullSupplyItem.setTotalCost(Money.of(currency, fullSupplyCost));
+
+    RequisitionLineItem nonFullSupplyItem = getRequisitionLineItem(false, false);
+    nonFullSupplyItem.setTotalCost(Money.of(currency, nonFullSupplyCost));
+
+    requisition.getRequisitionLineItems().clear();
+    requisition.getRequisitionLineItems().add(fullSupplyItem);
+    requisition.getRequisitionLineItems().add(nonFullSupplyItem);
+  }
+
   private void setUpTestUpdatePacksToShip(OrderableDto productMock, long packsToShip) {
     requisitionLineItem.setPacksToShip(packsToShip);
 
@@ -725,11 +839,17 @@ public class RequisitionTest {
   }
 
   private RequisitionLineItem getRequisitionLineItem(boolean skipped) {
-    RequisitionLineItem notSkipped = new RequisitionLineItem();
-    notSkipped.setSkipped(skipped);
-    notSkipped.setNonFullSupply(false);
-    notSkipped.setId(UUID.randomUUID());
-    return notSkipped;
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setSkipped(skipped);
+    item.setNonFullSupply(false);
+    item.setId(UUID.randomUUID());
+    return item;
+  }
+
+  private RequisitionLineItem getRequisitionLineItem(boolean skipped, boolean fullSupply) {
+    RequisitionLineItem item = getRequisitionLineItem(skipped);
+    item.setNonFullSupply(!fullSupply);
+    return item;
   }
 
   private Requisition getRequisition(RequisitionLineItem notSkipped, RequisitionLineItem skipped) {
