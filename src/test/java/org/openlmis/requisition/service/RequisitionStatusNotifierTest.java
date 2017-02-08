@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -58,7 +61,11 @@ public class RequisitionStatusNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
+    AuditLogEntry auditLogEntry = mock(AuditLogEntry.class);
 
+    when(requisition.getMetaData()).thenReturn(Collections.singletonMap(
+        RequisitionStatus.INITIATED.toString(), auditLogEntry));
+    when(auditLogEntry.getAuthorId()).thenReturn(userId);
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
 
@@ -77,8 +84,6 @@ public class RequisitionStatusNotifierTest {
         mock(ProgramDto.class));
     when(periodReferenceDataService.findOne(any())).thenReturn(
         mock(ProcessingPeriodDto.class));
-    // TODO: OLMIS-1182 fix this to match code in notifyConvertToOrder() when it uses Javers
-    when(userReferenceDataService
-        .findOne(eq(UUID.fromString("86495466-6966-4bf8-ae90-1fd1d0c6ce22")))).thenReturn(user);
+    when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
   }
 }
