@@ -1,5 +1,15 @@
 package org.openlmis.requisition.service;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,17 +24,6 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
-
-import java.util.UUID;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -59,7 +58,6 @@ public class RequisitionStatusNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getCreatorId()).thenReturn(userId);
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
@@ -79,6 +77,8 @@ public class RequisitionStatusNotifierTest {
         mock(ProgramDto.class));
     when(periodReferenceDataService.findOne(any())).thenReturn(
         mock(ProcessingPeriodDto.class));
-    when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
+    // TODO: OLMIS-1182 fix this to match code in notifyConvertToOrder() when it uses Javers
+    when(userReferenceDataService
+        .findOne(eq(UUID.fromString("86495466-6966-4bf8-ae90-1fd1d0c6ce22")))).thenReturn(user);
   }
 }

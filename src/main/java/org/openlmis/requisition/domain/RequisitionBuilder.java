@@ -19,22 +19,19 @@ public final class RequisitionBuilder {
   }
 
   /**
-   * Create a new instance of Requisition with given facility, program and creator IDs
-   * and emergency flag.
+   * Create a new instance of Requisition with given facility, program IDs and emergency flag.
    *
    * @param facilityId UUID of facility
    * @param programId  UUID of program
-   * @param creatorId  UUID of creator
    * @param emergency  flag
    * @return a new instance of Requisition
    * @throws ValidationMessageException if any of arguments is {@code null}
    */
-  public static Requisition newRequisition(UUID facilityId, UUID programId, UUID creatorId,
-                                           Boolean emergency) {
-    if (facilityId == null || programId == null || creatorId == null || emergency == null) {
+  public static Requisition newRequisition(UUID facilityId, UUID programId, Boolean emergency) {
+    if (facilityId == null || programId == null || emergency == null) {
       throw new ValidationMessageException(new Message(ERROR_NULL_ID));
     }
-    return new Requisition(facilityId, programId, null, creatorId, null, emergency);
+    return new Requisition(facilityId, programId, null, null, emergency);
   }
 
   /**
@@ -60,15 +57,10 @@ public final class RequisitionBuilder {
     UUID processingPeriodId = importer.getProcessingPeriod().getId();
 
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
-        importer.getCreatorId(), importer.getStatus(), importer.getEmergency());
+        importer.getStatus(), importer.getEmergency());
     requisition.setId(importer.getId());
     requisition.setCreatedDate(importer.getCreatedDate());
     requisition.setModifiedDate(importer.getModifiedDate());
-
-    requisition.setSubmittedDate(importer.getSubmittedDate());
-    requisition.setSubmitterId(importer.getSubmitterId());
-    requisition.setAuthorizedDate(importer.getAuthorizedDate());
-    requisition.setAuthorizerId(importer.getAuthorizerId());
 
     requisition.setSupplyingFacilityId(importer.getSupplyingFacility());
     requisition.setSupervisoryNodeId(importer.getSupervisoryNode());

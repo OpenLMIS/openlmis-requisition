@@ -52,7 +52,6 @@ public class StatusMessageRepositoryIntegrationTest
         UUID.randomUUID(),
         UUID.randomUUID(),
         UUID.randomUUID(),
-        UUID.randomUUID(),
         RequisitionStatus.INITIATED,
         false);
     requisition.setNumberOfMonthsInPeriod(3);

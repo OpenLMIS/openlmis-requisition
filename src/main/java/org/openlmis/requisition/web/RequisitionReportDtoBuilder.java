@@ -1,5 +1,9 @@
 package org.openlmis.requisition.web;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -9,11 +13,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class RequisitionReportDtoBuilder {
@@ -49,16 +48,20 @@ public class RequisitionReportDtoBuilder {
     reportDto.setNonFullSupplyTotalCost(nonFullSupplyTotalCost);
     reportDto.setTotalCost(fullSupplyTotalCost.plus(nonFullSupplyTotalCost));
 
-    if (Objects.nonNull(requisition.getCreatorId())) {
-      reportDto.setCreatedBy(userReferenceDataService.findOne(requisition.getCreatorId()));
+    UUID creatorId = null; // TODO: OLMIS-1182 get from Javers
+    UUID submitterId = null; // TODO: OLMIS-1182 get from Javers
+    UUID authorizerId = null; // TODO: OLMIS-1182 get from Javers
+
+    if (Objects.nonNull(creatorId)) {
+      reportDto.setCreatedBy(userReferenceDataService.findOne(creatorId));
     }
 
-    if (Objects.nonNull(requisition.getSubmitterId())) {
-      reportDto.setSubmittedBy(userReferenceDataService.findOne(requisition.getSubmitterId()));
+    if (Objects.nonNull(submitterId)) {
+      reportDto.setSubmittedBy(userReferenceDataService.findOne(submitterId));
     }
 
-    if (Objects.nonNull(requisition.getAuthorizerId())) {
-      reportDto.setAuthorizedBy(userReferenceDataService.findOne(requisition.getAuthorizerId()));
+    if (Objects.nonNull(authorizerId)) {
+      reportDto.setAuthorizedBy(userReferenceDataService.findOne(authorizerId));
     }
 
     return reportDto;

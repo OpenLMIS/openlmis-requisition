@@ -57,10 +57,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     if (program != null) {
       predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
     }
+    createdDateFrom = null; // TODO: OLMIS-1182 different date?
     if (createdDateFrom != null) {
       predicate = builder.and(predicate,
           builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
     }
+    createdDateTo = null; // TODO: OLMIS-1182 different date?
     if (createdDateTo != null) {
       predicate = builder.and(predicate,
           builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
@@ -181,7 +183,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
 
     query.where(predicate);
-    query.orderBy(builder.desc(root.get("createdDate")));
+    query.orderBy(builder.desc(root.get("createdDate"))); // TODO: OLMIS-1182 different date?
 
     List<Requisition> list = entityManager.createQuery(query).setMaxResults(1).getResultList();
     return null == list || list.isEmpty() ? null : list.get(0);

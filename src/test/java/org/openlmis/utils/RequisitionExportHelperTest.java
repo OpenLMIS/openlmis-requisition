@@ -132,7 +132,7 @@ public class RequisitionExportHelperTest {
 
   private void generateInstances() {
     requisition = createTestRequisition(UUID.randomUUID(), period1, program,
-        UUID.randomUUID(), RequisitionStatus.INITIATED);
+        RequisitionStatus.INITIATED);
     RequisitionLineItem requisitionLineItem = createTestRequisitionLineItem(
         10, 20, requisition
     );
@@ -145,10 +145,8 @@ public class RequisitionExportHelperTest {
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
-                                            UUID program, UUID creator,
-                                            RequisitionStatus requisitionStatus) {
-    Requisition requisition = new Requisition(facility, program, period, creator,
-        requisitionStatus, false);
+                                            UUID program, RequisitionStatus requisitionStatus) {
+    Requisition requisition = new Requisition(facility, program, period, requisitionStatus, false);
     requisition.setId(UUID.randomUUID());
     return requisition;
   }
