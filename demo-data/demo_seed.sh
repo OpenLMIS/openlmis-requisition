@@ -18,7 +18,7 @@ ${GENERATOR} ${FILES}
 # Also prepend starter SQL file because Flyway only likes one afterMigrate.sql file
 CAT_ARGS=()
 
-# this small function add path to the given file ($1) only if the file exist.
+# this small function adds path to the given file ($1) only if the file exist.
 function addCatArg {
   if [ -f $1 ]; then
     CAT_ARGS+=($1)
