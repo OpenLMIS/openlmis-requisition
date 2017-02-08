@@ -203,7 +203,7 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_SEARCH_APPROVED_PRODUCTS = "[{"
       + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
       + " \"programOrderable\":" + MOCK_FIND_PROGRAM_ORDERABLE + ","
-      + " \"maxMonthsOfStock\": 2"
+      + " \"maxPeriodsOfStock\": 2"
       + "}]";
 
   private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["
