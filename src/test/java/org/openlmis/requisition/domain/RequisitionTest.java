@@ -311,7 +311,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(amount.doubleValue(), 0, 0);
+    assertEquals(0, amount.doubleValue(), 0);
   }
 
   @Test
@@ -324,7 +324,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(amount.doubleValue(), 2, 0);
+    assertEquals(2, amount.doubleValue(), 0);
   }
 
   @Test
@@ -337,7 +337,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(amount.doubleValue(), 1, 0);
+    assertEquals(1, amount.doubleValue(), 0);
   }
 
   @Test
@@ -350,7 +350,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(amount.doubleValue(), 1, 0);
+    assertEquals(1, amount.doubleValue(), 0);
   }
 
   @Test
