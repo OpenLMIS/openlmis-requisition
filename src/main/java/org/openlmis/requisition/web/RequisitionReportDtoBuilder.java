@@ -1,12 +1,15 @@
 package org.openlmis.requisition.web;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.joda.money.Money;
+import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -48,20 +51,28 @@ public class RequisitionReportDtoBuilder {
     reportDto.setNonFullSupplyTotalCost(nonFullSupplyTotalCost);
     reportDto.setTotalCost(fullSupplyTotalCost.plus(nonFullSupplyTotalCost));
 
-    UUID creatorId = null; // TODO: OLMIS-1182 get from Javers
-    UUID submitterId = null; // TODO: OLMIS-1182 get from Javers
-    UUID authorizerId = null; // TODO: OLMIS-1182 get from Javers
+    Map<String, AuditLogEntry> metaData = requisition.getMetaData();
+    if (metaData != null) {
+      AuditLogEntry initiatedEntry = metaData.get(RequisitionStatus.INITIATED.toString()) != null
+          ? metaData.get(RequisitionStatus.INITIATED.toString()) : null;
+      if (Objects.nonNull(initiatedEntry)) {
+        reportDto.setInitiatedBy(userReferenceDataService.findOne(initiatedEntry.getAuthorId()));
+        reportDto.setInitiatedDate(initiatedEntry.getChangeDate());
+      }
 
-    if (Objects.nonNull(creatorId)) {
-      reportDto.setCreatedBy(userReferenceDataService.findOne(creatorId));
-    }
+      AuditLogEntry submittedEntry = metaData.get(RequisitionStatus.SUBMITTED.toString()) != null
+          ? metaData.get(RequisitionStatus.SUBMITTED.toString()) : null;
+      if (Objects.nonNull(submittedEntry)) {
+        reportDto.setSubmittedBy(userReferenceDataService.findOne(submittedEntry.getAuthorId()));
+        reportDto.setSubmittedDate(submittedEntry.getChangeDate());
+      }
 
-    if (Objects.nonNull(submitterId)) {
-      reportDto.setSubmittedBy(userReferenceDataService.findOne(submitterId));
-    }
-
-    if (Objects.nonNull(authorizerId)) {
-      reportDto.setAuthorizedBy(userReferenceDataService.findOne(authorizerId));
+      AuditLogEntry authorizedEntry = metaData.get(RequisitionStatus.AUTHORIZED.toString()) != null
+          ? metaData.get(RequisitionStatus.AUTHORIZED.toString()) : null;
+      if (Objects.nonNull(authorizedEntry)) {
+        reportDto.setAuthorizedBy(userReferenceDataService.findOne(authorizedEntry.getAuthorId()));
+        reportDto.setAuthorizedDate(authorizedEntry.getChangeDate());
+      }
     }
 
     return reportDto;

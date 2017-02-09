@@ -5,12 +5,15 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,13 +30,6 @@ import org.openlmis.requisition.service.PermissionService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 public class ReportsControllerTest {
@@ -53,7 +49,7 @@ public class ReportsControllerTest {
 
   @Mock
   private JasperReportsViewService jasperReportsViewService;
-
+  
   @InjectMocks
   private ReportsController reportsController;
 
@@ -79,7 +75,6 @@ public class ReportsControllerTest {
     reportsController.print(mock(HttpServletRequest.class), UUID.randomUUID());
   }
 
-  @Ignore // TODO: OLMIS-1182 need to fix this, as it expects dates in Requisition
   @Test
   public void shouldPrintRequisition()
       throws JasperReportViewException, IOException, JRException {
