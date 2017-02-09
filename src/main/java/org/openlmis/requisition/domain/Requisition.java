@@ -198,7 +198,7 @@ public class Requisition extends BaseTimestampedEntity {
   @Transient
   @Getter
   @Setter
-  private Map<String, AuditLogEntry> metaData;
+  private Map<String, AuditLogEntry> statusChanges;
 
   /**
    * Constructor.
