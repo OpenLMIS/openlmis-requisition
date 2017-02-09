@@ -73,7 +73,6 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
-  public static final String PACKS_TO_SHIP = "packsToShip";
   public static final String CREATOR_ID = "creatorId";
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
@@ -536,9 +535,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   private void updateConsumptionsAndTotalCost(Collection<OrderableDto> products) {
-    if (template.isColumnInTemplate(PACKS_TO_SHIP)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
-    }
+    getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
 
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
