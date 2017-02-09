@@ -438,20 +438,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public List<RequisitionDto> getSubmittedRequisitions() {
+  public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
     Page<Requisition> submittedRequisitionsPage = requisitionService.searchRequisitions(
-        null, null, null, null, null, null,
-        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null, null);
-    List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
+        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, pageable);
 
-    /* TODO: It seems like this should never return HttpStatus.NOT_FOUND. Rather, if no results
-             exist, simply return an empty list. Verify this an update this code accordingly. */
-    if (submittedRequisitions == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_NO_SUBMITTED_REQUISITIONS));
-    } else {
-      return requisitionDtoBuilder.build(submittedRequisitions);
-    }
+    List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(submittedRequisitions);
+
+    return Pagination.getPage(dtoList, pageable, submittedRequisitionsPage.getTotalElements());
   }
 
   /**

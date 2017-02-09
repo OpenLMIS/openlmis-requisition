@@ -305,6 +305,15 @@ public class RequisitionService {
   }
 
   /**
+   * Finds requisitions matching all of the provided parameters.
+   */
+  public Page<Requisition> searchRequisitions(RequisitionStatus[] requisitionStatuses,
+                                              Pageable pageable) {
+    return requisitionRepository.searchRequisitions(null, null, null, null, null,
+        null, requisitionStatuses, null, pageable);
+  }
+
+  /**
    * Get requisitions to approve for the specified user.
    */
   public Set<Requisition> getRequisitionsForApproval(UUID userId) {

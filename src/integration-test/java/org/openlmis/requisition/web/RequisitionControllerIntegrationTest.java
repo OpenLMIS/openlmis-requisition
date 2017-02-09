@@ -570,16 +570,17 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
-    RequisitionDto[] response = restAssured.given()
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
+    response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(SUBMITTED_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionDto[].class);
+        .extract().as(response.getClass());
 
-    Iterable<RequisitionDto> requisitions = Arrays.asList(response);
+    Iterable<RequisitionDto> requisitions = response.getContent();
     assertTrue(requisitions.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
