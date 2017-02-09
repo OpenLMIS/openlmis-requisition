@@ -1,5 +1,6 @@
 package org.openlmis.requisition.service;
 
+import org.javers.core.diff.Change;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +29,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONV
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
-public class RequisitionStatusNotifierTest {
+public class ConvertToOrderNotifierTest {
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
@@ -46,7 +47,7 @@ public class RequisitionStatusNotifierTest {
   private UserReferenceDataService userReferenceDataService;
 
   @InjectMocks
-  private RequisitionStatusNotifier requisitionStatusNotifier;
+  private ConvertToOrderNotifier convertToOrderNotifier;
 
   private UserDto user = mock(UserDto.class);
   private UUID userId = UUID.randomUUID();
@@ -67,7 +68,7 @@ public class RequisitionStatusNotifierTest {
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
 
-    requisitionStatusNotifier.notifyConvertToOrder(requisition);
+    convertToOrderNotifier.notifyStatusChanged(requisition, mock(Change.class));
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),

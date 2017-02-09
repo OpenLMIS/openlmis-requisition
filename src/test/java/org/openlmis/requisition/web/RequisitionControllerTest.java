@@ -40,6 +40,7 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -122,6 +123,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionVersionValidator requisitionVersionValidator;
+
+  @Mock
+  private RequisitionStatusProcessor requisitionStatusProcessor;
 
   @InjectMocks
   private RequisitionController requisitionController;

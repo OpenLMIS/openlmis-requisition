@@ -176,9 +176,6 @@ public class RequisitionServiceTest {
   private OrderFulfillmentService orderFulfillmentService;
 
   @Mock
-  private RequisitionStatusNotifier requisitionStatusNotifier;
-
-  @Mock
   private ConvertHelper convertHelper;
 
   @Mock
@@ -198,6 +195,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private AuthenticationHelper authenticationHelper;
+
+  @Mock
+  private RequisitionStatusProcessor requisitionStatusProcessor;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -870,7 +870,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotifyUserWhenConvertingRequisitionToOrder() throws Exception {
+  public void shouldProcessStatusChangeWhenConvertingRequisitionToOrder() throws Exception {
     UserDto user = mock(UserDto.class);
     when(user.getId()).thenReturn(UUID.randomUUID());
 
@@ -886,7 +886,7 @@ public class RequisitionServiceTest {
 
     requisitionService.convertToOrder(list, user);
 
-    verify(requisitionStatusNotifier).notifyConvertToOrder(any(Requisition.class));
+    verify(requisitionStatusProcessor).statusChange(any(Requisition.class));
   }
 
   @Test

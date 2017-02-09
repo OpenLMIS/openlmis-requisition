@@ -29,6 +29,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -126,6 +127,9 @@ public class RequisitionController extends BaseController {
   @Autowired
   private RequisitionVersionValidator requisitionVersionValidator;
 
+  @Autowired
+  private RequisitionStatusProcessor requisitionStatusProcessor;
+
   /**
    * Allows creating new requisitions.
    *
@@ -154,6 +158,7 @@ public class RequisitionController extends BaseController {
 
     Requisition newRequisition = requisitionService
         .initiate(program, facility, suggestedPeriod, user.getId(), emergency);
+
     return requisitionDtoBuilder.build(newRequisition);
   }
 
@@ -216,6 +221,7 @@ public class RequisitionController extends BaseController {
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
+    requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
     return requisitionDtoBuilder.build(requisition);
@@ -351,6 +357,7 @@ public class RequisitionController extends BaseController {
     permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisition = requisitionService.skip(requisitionId);
+    requisitionStatusProcessor.statusChange(requisition);
     return requisitionDtoBuilder.build(requisition);
   }
 
@@ -363,6 +370,7 @@ public class RequisitionController extends BaseController {
   public RequisitionDto rejectRequisition(@PathVariable("id") UUID id) {
     permissionService.canApproveRequisition(id);
     Requisition rejectedRequisition = requisitionService.reject(id);
+    requisitionStatusProcessor.statusChange(rejectedRequisition);
 
     return requisitionDtoBuilder.build(rejectedRequisition);
   }
@@ -409,6 +417,7 @@ public class RequisitionController extends BaseController {
       saveStatusMessage(requisition);
 
       requisitionRepository.save(requisition);
+      requisitionStatusProcessor.statusChange(requisition);
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return requisitionDtoBuilder.build(requisition);
     } else {
@@ -490,6 +499,7 @@ public class RequisitionController extends BaseController {
     saveStatusMessage(requisition);
 
     requisitionRepository.save(requisition);
+    requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 
     return requisitionDtoBuilder.build(requisition);

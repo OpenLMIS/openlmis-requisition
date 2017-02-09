@@ -116,9 +116,6 @@ public class RequisitionService {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
-  private RequisitionStatusNotifier requisitionStatusNotifier;
-
-  @Autowired
   private OrderDtoBuilder orderDtoBuilder;
 
   @Autowired
@@ -126,6 +123,9 @@ public class RequisitionService {
 
   @Autowired
   private RightReferenceDataService rightReferenceDataService;
+
+  @Autowired
+  private RequisitionStatusProcessor requisitionStatusProcessor;
 
   /**
    * Initiated given requisition if possible.
@@ -488,7 +488,7 @@ public class RequisitionService {
       OrderDto order = orderDtoBuilder.build(requisition, user);
       if (orderFulfillmentService.create(order)) {
         requisitionRepository.save(requisition);
-        requisitionStatusNotifier.notifyConvertToOrder(requisition);
+        requisitionStatusProcessor.statusChange(requisition);
       } else {
         throw new ValidationMessageException(new Message(ERROR_CONVERTING_REQUISITION_TO_ORDER,
             order.getExternalId()));
