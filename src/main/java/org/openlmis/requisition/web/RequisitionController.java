@@ -317,10 +317,10 @@ public class RequisitionController extends BaseController {
   public Page<RequisitionDto> searchRequisitions(
       @RequestParam(value = "facility", required = false) UUID facility,
       @RequestParam(value = "program", required = false) UUID program,
-      @RequestParam(value = "createdDateFrom", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime createdDateFrom,
-      @RequestParam(value = "createdDateTo", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime createdDateTo,
+      @RequestParam(value = "initiatedDateFrom", required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime initiatedDateFrom,
+      @RequestParam(value = "initiatedDateTo", required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime initiatedDateTo,
       @RequestParam(value = "processingPeriod", required = false)
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
@@ -329,7 +329,7 @@ public class RequisitionController extends BaseController {
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
     Page<Requisition> requisitionsPage = requisitionService.searchRequisitions(facility, program,
-        createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
+        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency, pageable);
     List<Requisition> resultList = requisitionsPage.getContent();
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(resultList);

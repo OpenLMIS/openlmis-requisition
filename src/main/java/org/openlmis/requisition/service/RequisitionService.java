@@ -285,15 +285,16 @@ public class RequisitionService {
    * Finds requisitions matching all of the provided parameters.
    */
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              ZonedDateTime createdDateFrom,
-                                              ZonedDateTime createdDateTo,
+                                              ZonedDateTime initiatedDateFrom,
+                                              ZonedDateTime initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               RequisitionStatus[] requisitionStatuses,
                                               Boolean emergency,
                                               Pageable pageable) {
-    return requisitionRepository.searchRequisitions(facility, program, createdDateFrom,
-        createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency, pageable);
+    return requisitionRepository.searchRequisitions(facility, program, initiatedDateFrom,
+        initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency,
+        pageable);
   }
 
   /**

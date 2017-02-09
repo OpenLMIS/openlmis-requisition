@@ -29,16 +29,16 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    *
    * @param facility            Facility of searched Requisitions.
    * @param program             Program of searched Requisitions.
-   * @param createdDateFrom     After what date should searched Requisition be created.
-   * @param createdDateTo       Before what date should searched Requisition be created.
+   * @param initiatedDateFrom   After what date should searched Requisition be created.
+   * @param initiatedDateTo     Before what date should searched Requisition be created.
    * @param processingPeriod    ProcessingPeriod of searched Requisitions.
    * @param supervisoryNode     SupervisoryNode of searched Requisitions.
    * @param requisitionStatuses Statuses of searched Requisitions.
    * @return List of Requisitions with matched parameters.
    */
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              ZonedDateTime createdDateFrom,
-                                              ZonedDateTime createdDateTo,
+                                              ZonedDateTime initiatedDateFrom,
+                                              ZonedDateTime initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               RequisitionStatus[] requisitionStatuses,
@@ -57,15 +57,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     if (program != null) {
       predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
     }
-    createdDateFrom = null; // TODO: OLMIS-1182 different date?
-    if (createdDateFrom != null) {
+    initiatedDateFrom = null; // TODO: OLMIS-1182 this needs to search Javers for initiated date
+    if (initiatedDateFrom != null) {
       predicate = builder.and(predicate,
-          builder.greaterThanOrEqualTo(root.get("createdDate"), createdDateFrom));
+          builder.greaterThanOrEqualTo(root.get("createdDate"), initiatedDateFrom));
     }
-    createdDateTo = null; // TODO: OLMIS-1182 different date?
-    if (createdDateTo != null) {
+    initiatedDateTo = null; // TODO: OLMIS-1182 this needs to search Javers for initiated date
+    if (initiatedDateTo != null) {
       predicate = builder.and(predicate,
-          builder.lessThanOrEqualTo(root.get("createdDate"), createdDateTo));
+          builder.lessThanOrEqualTo(root.get("createdDate"), initiatedDateTo));
     }
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
@@ -183,7 +183,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     predicate = builder.and(predicate, builder.equal(root.get("programId"), program));
 
     query.where(predicate);
-    query.orderBy(builder.desc(root.get("createdDate"))); // TODO: OLMIS-1182 different date?
+    // TODO: OLMIS-1182 this needs to search Javers for initiated date
+    query.orderBy(builder.desc(root.get("createdDate")));
 
     List<Requisition> list = entityManager.createQuery(query).setMaxResults(1).getResultList();
     return null == list || list.isEmpty() ? null : list.get(0);

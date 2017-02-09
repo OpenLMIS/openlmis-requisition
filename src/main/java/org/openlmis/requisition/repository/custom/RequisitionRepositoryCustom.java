@@ -12,8 +12,8 @@ import java.util.UUID;
 public interface RequisitionRepositoryCustom {
 
   Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                       ZonedDateTime createdDateFrom,
-                                       ZonedDateTime createdDateTo,
+                                       ZonedDateTime initiatedDateFrom,
+                                       ZonedDateTime initiatedDateTo,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
                                        RequisitionStatus[] requisitionStatuses,

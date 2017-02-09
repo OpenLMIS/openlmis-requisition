@@ -8,7 +8,6 @@ import java.util.UUID;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.Requisition;
@@ -60,7 +59,6 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(400);
   }
 
-  @Ignore // TODO: OLMIS-1182 Re-enable once Javers adds dates to Requisition/RequisitionDto
   @Test
   public void shouldPrintRequisition() throws IOException, JRException {
     Requisition requisition = generateRequisition();

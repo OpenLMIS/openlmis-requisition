@@ -219,8 +219,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
-        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
-        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
+        .queryParam("initiatedDateFrom", createdDate.minusDays(2).toString())
+        .queryParam("initiatedDateTo", createdDate.plusDays(2).toString())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -1112,7 +1112,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore // TODO: OLMIS-1788 re-enable when Javers fills in metaData
+  @Ignore // TODO: OLMIS-1788 re-enable when Javers fills in statusChanges on retrieving from db
   @Test
   public void shouldConvertRequisitionToOrder() {
 
