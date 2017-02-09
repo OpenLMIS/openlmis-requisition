@@ -187,7 +187,7 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList());
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList(), anyList());
   }
 
   @Test
@@ -237,7 +237,7 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(), anyList());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
@@ -369,7 +369,7 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyZeroInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyList());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyList());
     verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class));
   }
 

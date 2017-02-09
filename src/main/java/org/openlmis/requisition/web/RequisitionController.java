@@ -205,6 +205,7 @@ public class RequisitionController extends BaseController {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
+
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
@@ -250,6 +251,7 @@ public class RequisitionController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
+
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate());
 
@@ -279,7 +281,7 @@ public class RequisitionController extends BaseController {
 
       requisitionToUpdate.updateFrom(requisition,
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-              requisition.getProgramId()));
+              requisition.getProgramId()), orderableReferenceDataService.findAll());
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 

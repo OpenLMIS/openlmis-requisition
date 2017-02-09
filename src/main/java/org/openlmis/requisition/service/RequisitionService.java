@@ -270,7 +270,7 @@ public class RequisitionService {
           requisitionId));
     } else if (requisition.isApprovable()) {
       LOGGER.debug("Requisition rejected: " + requisitionId);
-      requisition.reject();
+      requisition.reject(orderableReferenceDataService.findAll());
       return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(

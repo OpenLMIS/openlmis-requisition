@@ -73,6 +73,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
+  public static final String PACKS_TO_SHIP = "packsToShip";
   public static final String CREATOR_ID = "creatorId";
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
@@ -218,7 +219,8 @@ public class Requisition extends BaseTimestampedEntity {
    * @param stockAdjustmentReasons Collection of stockAdjustmentReasons.
    */
   public void updateFrom(
-      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
+      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
+      Collection<OrderableDto> products) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
@@ -226,6 +228,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
+    updateConsumptionsAndTotalCost(products);
   }
 
   /**
@@ -287,9 +290,6 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products orderable products that will be used by line items to update packs to ship.
    */
   public void submit(Collection<OrderableDto> products, UUID submitter) {
-    RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
-        line -> line.updatePacksToShip(products));
-
     if (!INITIATED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -301,7 +301,7 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
 
-    updateConsumptionsAndTotalCost();
+    updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.SUBMITTED;
     submitterId = submitter;
@@ -314,15 +314,12 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products orderable products that will be used by line items to update packs to ship.
    */
   public void authorize(Collection<OrderableDto> products, UUID authorizer) {
-    RequisitionHelper.forEachLine(
-        getNonSkippedRequisitionLineItems(), line -> line.updatePacksToShip(products));
-
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    updateConsumptionsAndTotalCost();
+    updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.AUTHORIZED;
     authorizerId = authorizer;
@@ -352,18 +349,15 @@ public class Requisition extends BaseTimestampedEntity {
       supervisoryNodeId = parentNodeId;
     }
 
-    RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
-        line -> line.updatePacksToShip(products));
-
-    updateConsumptionsAndTotalCost();
+    updateConsumptionsAndTotalCost(products);
   }
 
   /**
    * Rejects given requisition.
    */
-  public void reject() {
+  public void reject(Collection<OrderableDto> products) {
     status = RequisitionStatus.INITIATED;
-    updateConsumptionsAndTotalCost();
+    updateConsumptionsAndTotalCost(products);
   }
 
   /**
@@ -541,7 +535,11 @@ public class Requisition extends BaseTimestampedEntity {
             numberOfMonthsInPeriod));
   }
 
-  private void updateConsumptionsAndTotalCost() {
+  private void updateConsumptionsAndTotalCost(Collection<OrderableDto> products) {
+    if (template.isColumnInTemplate(PACKS_TO_SHIP)) {
+      getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
+    }
+
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
