@@ -1,15 +1,17 @@
 package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
+import org.openlmis.util.View;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.util.View;
+
+import java.time.ZonedDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import java.time.ZonedDateTime;
 
 @MappedSuperclass
 public abstract class BaseTimestampedEntity extends BaseEntity {
@@ -29,10 +31,5 @@ public abstract class BaseTimestampedEntity extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = ZonedDateTime.now();
-  }
-
-  @PreUpdate
-  private void preUpdate() {
-    this.modifiedDate = ZonedDateTime.now();
   }
 }

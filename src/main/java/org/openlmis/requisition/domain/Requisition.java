@@ -228,6 +228,9 @@ public class Requisition extends BaseTimestampedEntity {
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
     updateConsumptionsAndTotalCost(products);
+
+    // do this manually here, since JPA won't catch updates to collections (line items)
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**
