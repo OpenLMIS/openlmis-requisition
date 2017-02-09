@@ -556,7 +556,7 @@ resourceTypes:
                       displayName: supervisoryNode
                       type: string
                       required: false
-                      repeat: false
+                      repeat: true
                   emergency:
                       displayName: emergency
                       type: boolean

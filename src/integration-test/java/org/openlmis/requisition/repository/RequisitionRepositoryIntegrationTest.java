@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,7 +86,7 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getCreatedDate().plusDays(2),
         requisitions.get(0).getProcessingPeriodId(),
         requisitions.get(0).getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisitions.get(0).getStatus()},
+        EnumSet.of(requisitions.get(0).getStatus()),
         requisitions.get(0).getEmergency(),
         null);
 

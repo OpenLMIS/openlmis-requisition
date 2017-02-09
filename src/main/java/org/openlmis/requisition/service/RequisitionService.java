@@ -297,7 +297,7 @@ public class RequisitionService {
                                               ZonedDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
-                                              RequisitionStatus[] requisitionStatuses,
+                                              Set<RequisitionStatus> requisitionStatuses,
                                               Boolean emergency,
                                               Pageable pageable) {
     return requisitionRepository.searchRequisitions(facility, program, createdDateFrom,
@@ -318,7 +318,7 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public Page<Requisition> searchRequisitions(RequisitionStatus[] requisitionStatuses,
+  public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
                                               Pageable pageable) {
     return requisitionRepository.searchRequisitions(null, null, null, null, null,
         null, requisitionStatuses, null, pageable);

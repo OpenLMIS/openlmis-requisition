@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface RequisitionRepositoryCustom {
@@ -16,7 +17,7 @@ public interface RequisitionRepositoryCustom {
                                        ZonedDateTime createdDateTo,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
-                                       RequisitionStatus[] requisitionStatuses,
+                                       Set<RequisitionStatus> requisitionStatuses,
                                        Boolean emergency,
                                        Pageable pageable);
 

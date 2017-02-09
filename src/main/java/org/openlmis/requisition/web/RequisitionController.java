@@ -66,6 +66,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -336,7 +337,7 @@ public class RequisitionController extends BaseController {
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
-          RequisitionStatus[] requisitionStatuses,
+          Set<RequisitionStatus> requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
     Page<Requisition> requisitionsPage = requisitionService.searchRequisitions(facility, program,
@@ -449,7 +450,7 @@ public class RequisitionController extends BaseController {
   @ResponseBody
   public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
     Page<Requisition> submittedRequisitionsPage = requisitionService.searchRequisitions(
-        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, pageable);
+        EnumSet.of(RequisitionStatus.SUBMITTED), pageable);
 
     List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(submittedRequisitions);

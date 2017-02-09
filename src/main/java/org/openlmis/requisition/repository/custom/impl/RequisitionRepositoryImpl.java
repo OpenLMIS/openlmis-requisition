@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -49,7 +50,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                               ZonedDateTime createdDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
-                                              RequisitionStatus[] requisitionStatuses,
+                                              Set<RequisitionStatus> requisitionStatuses,
                                               Boolean emergency,
                                               Pageable pageable) {
     //Retrieve a paginated set of results
@@ -226,12 +227,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   private Predicate filterByStatuses(CriteriaBuilder builder, Predicate predicate,
-                                     RequisitionStatus[] requisitionStatuses,
+                                     Set<RequisitionStatus> requisitionStatuses,
                                      Root<Requisition> root) {
 
     Predicate predicateToUse = predicate;
 
-    if (requisitionStatuses != null && requisitionStatuses.length > 0) {
+    if (requisitionStatuses != null && requisitionStatuses.size() > 0) {
       Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
         statusPredicate = builder.or(statusPredicate,

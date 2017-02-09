@@ -180,6 +180,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionTemplateRepository.save(template);
 
     configureRequisition(requisition);
+    requisitionForSearch.setStatus(RequisitionStatus.INITIATED);
     configureRequisitionForSearch(requisitionForSearch);
 
     requisitionLineItem.setOrderableId(ordereble.getId());
@@ -258,6 +259,39 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       assertTrue(
           receivedRequisition.getCreatedDate().isAfter(createdDate.minusDays(2)));
     }
+  }
+
+  @Test
+  public void shouldFindRequisitionsWithStatuses() {
+    Requisition req = new Requisition();
+    req.setStatus(RequisitionStatus.SUBMITTED);
+    configureRequisitionForSearch(req);
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, PROGRAM_UUID)
+        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam("supervisoryNode", supervisoryNode.getId())
+        .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
+        .queryParam("requisitionStatus", RequisitionStatus.SUBMITTED)
+        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
+        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionDto>>() {
+        });
+
+    assertEquals(2, content.size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -1218,7 +1252,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setProcessingPeriodId(PERIOD_UUID);
     requisition.setProgramId(PROGRAM_UUID);
     requisition.setCreatorId(user.getId());
-    requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(createdDate);
     requisition.setEmergency(false);

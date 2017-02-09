@@ -38,7 +38,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
@@ -97,6 +96,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -731,7 +731,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisition.getStatus()}, null, null))
+        EnumSet.of(requisition.getStatus()), null, null))
         .thenReturn(page);
 
     Page<Requisition> receivedRequisitionsPage = requisitionService.searchRequisitions(
@@ -741,7 +741,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisition.getStatus()}, null, null);
+        EnumSet.of(requisition.getStatus()), null, null);
 
     List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
 
