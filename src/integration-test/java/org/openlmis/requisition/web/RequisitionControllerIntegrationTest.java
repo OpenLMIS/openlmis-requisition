@@ -1127,7 +1127,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setMetaData(Collections.singletonMap(
+    requisition.setStatusChanges(Collections.singletonMap(
         RequisitionStatus.INITIATED.toString(), auditLogEntry));
 
     configurationSettingRepository.save(

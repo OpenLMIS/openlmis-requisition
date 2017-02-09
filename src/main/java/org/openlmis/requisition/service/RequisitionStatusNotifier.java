@@ -51,13 +51,13 @@ public class RequisitionStatusNotifier {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
 
-    Map<String, AuditLogEntry> metaData = requisition.getMetaData();
-    if (metaData == null) {
+    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    if (statusChanges == null) {
       LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
       return false;
     }
 
-    AuditLogEntry initiateAuditEntry = metaData.get(RequisitionStatus.INITIATED.toString());
+    AuditLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
     if (initiateAuditEntry == null) {
       LOGGER.warn("Could not find requisition initiator to notify for convert to order.");
       return false;

@@ -51,24 +51,27 @@ public class RequisitionReportDtoBuilder {
     reportDto.setNonFullSupplyTotalCost(nonFullSupplyTotalCost);
     reportDto.setTotalCost(fullSupplyTotalCost.plus(nonFullSupplyTotalCost));
 
-    Map<String, AuditLogEntry> metaData = requisition.getMetaData();
-    if (metaData != null) {
-      AuditLogEntry initiatedEntry = metaData.get(RequisitionStatus.INITIATED.toString()) != null
-          ? metaData.get(RequisitionStatus.INITIATED.toString()) : null;
+    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    if (statusChanges != null) {
+      AuditLogEntry initiatedEntry = 
+          statusChanges.get(RequisitionStatus.INITIATED.toString()) != null
+          ? statusChanges.get(RequisitionStatus.INITIATED.toString()) : null;
       if (Objects.nonNull(initiatedEntry)) {
         reportDto.setInitiatedBy(userReferenceDataService.findOne(initiatedEntry.getAuthorId()));
         reportDto.setInitiatedDate(initiatedEntry.getChangeDate());
       }
 
-      AuditLogEntry submittedEntry = metaData.get(RequisitionStatus.SUBMITTED.toString()) != null
-          ? metaData.get(RequisitionStatus.SUBMITTED.toString()) : null;
+      AuditLogEntry submittedEntry = 
+          statusChanges.get(RequisitionStatus.SUBMITTED.toString()) != null
+          ? statusChanges.get(RequisitionStatus.SUBMITTED.toString()) : null;
       if (Objects.nonNull(submittedEntry)) {
         reportDto.setSubmittedBy(userReferenceDataService.findOne(submittedEntry.getAuthorId()));
         reportDto.setSubmittedDate(submittedEntry.getChangeDate());
       }
 
-      AuditLogEntry authorizedEntry = metaData.get(RequisitionStatus.AUTHORIZED.toString()) != null
-          ? metaData.get(RequisitionStatus.AUTHORIZED.toString()) : null;
+      AuditLogEntry authorizedEntry = 
+          statusChanges.get(RequisitionStatus.AUTHORIZED.toString()) != null
+          ? statusChanges.get(RequisitionStatus.AUTHORIZED.toString()) : null;
       if (Objects.nonNull(authorizedEntry)) {
         reportDto.setAuthorizedBy(userReferenceDataService.findOne(authorizedEntry.getAuthorId()));
         reportDto.setAuthorizedDate(authorizedEntry.getChangeDate());

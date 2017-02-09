@@ -63,7 +63,7 @@ public class RequisitionStatusNotifierTest {
     Requisition requisition = mock(Requisition.class);
     AuditLogEntry auditLogEntry = mock(AuditLogEntry.class);
 
-    when(requisition.getMetaData()).thenReturn(Collections.singletonMap(
+    when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
         RequisitionStatus.INITIATED.toString(), auditLogEntry));
     when(auditLogEntry.getAuthorId()).thenReturn(userId);
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
