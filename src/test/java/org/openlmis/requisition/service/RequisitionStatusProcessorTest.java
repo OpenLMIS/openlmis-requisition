@@ -1,8 +1,11 @@
 package org.openlmis.requisition.service;
 
+import org.javers.common.collections.Optional;
 import org.javers.core.Javers;
+import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
 import org.javers.repository.jql.JqlQuery;
+import org.joda.time.LocalDateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -38,8 +41,13 @@ public class RequisitionStatusProcessorTest {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.RELEASED);
 
     Change change = mock(Change.class);
+
     when(javers.findChanges(any(JqlQuery.class)))
         .thenReturn(Collections.singletonList(change));
+
+    CommitMetadata commitMetadata = mock(CommitMetadata.class);
+    when(commitMetadata.getCommitDate()).thenReturn(LocalDateTime.now());
+    when(change.getCommitMetadata()).thenReturn(Optional.of(commitMetadata));
 
     requisitionStatusProcessor.statusChange(requisition);
 

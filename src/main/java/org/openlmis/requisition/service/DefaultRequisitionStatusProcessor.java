@@ -25,13 +25,8 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
    * @param requisition a requisition that has just changed its status
    */
   public void statusChange(Requisition requisition) throws JaversChangeNotFoundException {
-    List<Change> statusChanges = javers.findChanges(QueryBuilder
-        .byInstance(requisition)
-        .andProperty(Requisition.STATUS)
-        .build()
-    );
-    if (!statusChanges.isEmpty()) {
-      Change lastChange = statusChanges.get(statusChanges.size() - 1);
+    Change lastChange = findLastChange(requisition);
+    if (lastChange != null) {
       if (requisition.getStatus() == RequisitionStatus.RELEASED) {
         convertToOrderNotifier.notifyStatusChanged(requisition, lastChange);
       }
@@ -39,5 +34,30 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
       throw new JaversChangeNotFoundException("Requisition's status change not found. "
           + "Make sure that it was saved before calling RequisitionStatusProcessor.statusChange()");
     }
+  }
+
+  private Change findLastChange(Requisition requisition) {
+    List<Change> statusChanges = javers.findChanges(QueryBuilder
+        .byInstance(requisition)
+        .andProperty(Requisition.STATUS)
+        .build()
+    );
+    List<Change> nodeChanges = javers.findChanges(QueryBuilder
+        .byInstance(requisition)
+        .andProperty(Requisition.SUPERVISORY_NODE_ID)
+        .build()
+    );
+    Change lastStatusChange = (statusChanges.isEmpty()) ? null :
+        statusChanges.get(statusChanges.size() - 1);
+    Change lastNodeChange = (nodeChanges.isEmpty()) ? null :
+        nodeChanges.get(nodeChanges.size() - 1);
+    // If node change was after status change, return it
+    if (lastStatusChange != null && lastNodeChange != null
+        && lastNodeChange.getCommitMetadata().get().getCommitDate().isAfter(
+            lastStatusChange.getCommitMetadata().get().getCommitDate())) {
+      return lastNodeChange;
+    }
+    // otherwise return last status change
+    return lastStatusChange;
   }
 }
