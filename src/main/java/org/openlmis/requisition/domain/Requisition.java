@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -24,11 +25,17 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.util.View;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -55,10 +62,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -248,7 +251,8 @@ public class Requisition extends BaseTimestampedEntity {
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
                        List<Requisition> previousRequisitions,
-                       int numberOfPreviousPeriodsToAverage) {
+                       int numberOfPreviousPeriodsToAverage,
+                       ProofOfDeliveryDto proofOfDelivery) {
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
@@ -284,6 +288,24 @@ public class Requisition extends BaseTimestampedEntity {
             LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
       });
     }
+
+    // Thirdly, if Proof Of Delivery exists and it is submitted ...
+    if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
+      // .. for each line from the current requisition ...
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(requisitionLine -> {
+        // ... we try to find line in POD for the same product ...
+        ProofOfDeliveryLineItemDto proofOfDeliveryLine = proofOfDelivery
+            .findLineByProductId(requisitionLine.getOrderableId());
+
+        // ... and if line exists we set value for Total Received Quantity (B) column
+        if (null != proofOfDeliveryLine) {
+          requisitionLine.setTotalReceivedQuantity(
+              (int) zeroIfNull(proofOfDeliveryLine.getQuantityReceived())
+          );
+        }
+      });
+    }
+
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
   }
 

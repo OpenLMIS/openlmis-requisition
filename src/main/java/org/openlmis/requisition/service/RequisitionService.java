@@ -1,5 +1,6 @@
 package org.openlmis.requisition.service;
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
@@ -9,7 +10,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_B
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -24,6 +27,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -33,6 +37,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -127,6 +132,9 @@ public class RequisitionService {
   @Autowired
   private RequisitionStatusProcessor requisitionStatusProcessor;
 
+  @Autowired
+  private ProofOfDeliveryFulfillmentService proofOfDeliveryFulfillmentService;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -173,8 +181,11 @@ public class RequisitionService {
     if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
       numberOfPreviousPeriodsToAverage = previousRequisitions.size();
     }
+
+    ProofOfDeliveryDto pod = emergency ? null : getProofOfDelivery(requisition);
+
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
-        numberOfPreviousPeriodsToAverage);
+        numberOfPreviousPeriodsToAverage, pod);
 
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId(), false)
@@ -560,5 +571,37 @@ public class RequisitionService {
     Page<Requisition> requisitions = searchRequisitions(requisition.getFacilityId(),
         requisition.getProgramId(), period.getId(), null);
     return requisitions.getContent();
+  }
+
+  private ProofOfDeliveryDto getProofOfDelivery(Requisition currentRequisition) {
+    ProcessingPeriodDto previousPeriod = periodService
+        .findPreviousPeriod(currentRequisition.getProcessingPeriodId());
+
+    if (null == previousPeriod) {
+      return null;
+    }
+
+    List<Requisition> previousRequisitions = requisitionRepository.searchRequisitions(
+        previousPeriod.getId(), currentRequisition.getFacilityId(),
+        currentRequisition.getProgramId(), false
+    );
+
+    if (previousRequisitions.isEmpty()) {
+      return null;
+    }
+
+    previousRequisitions.sort((one, two) ->
+        ObjectUtils.compare(two.getCreatedDate(), one.getCreatedDate())
+    );
+    Requisition previousRequisition = previousRequisitions.get(0);
+
+    if (RequisitionStatus.SKIPPED == previousRequisition.getStatus()
+        || isTrue(previousRequisition.getEmergency())) {
+      return null;
+    }
+
+    Collection<ProofOfDeliveryDto> list = proofOfDeliveryFulfillmentService
+        .findByExternalId(previousRequisition.getId());
+    return isEmpty(list) ? null : list.iterator().next();
   }
 }

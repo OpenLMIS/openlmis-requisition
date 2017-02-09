@@ -1,6 +1,7 @@
 package org.openlmis.requisition.service;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
@@ -49,8 +51,10 @@ import org.openlmis.requisition.dto.OrderLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -63,6 +67,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -100,7 +105,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SuppressWarnings( {"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
@@ -199,6 +204,9 @@ public class RequisitionServiceTest {
   @Mock
   private RequisitionStatusProcessor requisitionStatusProcessor;
 
+  @Mock
+  private ProofOfDeliveryFulfillmentService proofOfDeliveryFulfillmentService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -234,7 +242,7 @@ public class RequisitionServiceTest {
   public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
     requisition.setStatus(SUBMITTED);
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
-            .thenReturn(Collections.emptyList());
+        .thenReturn(Collections.emptyList());
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
   }
@@ -723,7 +731,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[] {requisition.getStatus()}, null, null))
+        new RequisitionStatus[]{requisition.getStatus()}, null, null))
         .thenReturn(page);
 
     Page<Requisition> receivedRequisitionsPage = requisitionService.searchRequisitions(
@@ -733,7 +741,7 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        new RequisitionStatus[] {requisition.getStatus()}, null, null);
+        new RequisitionStatus[]{requisition.getStatus()}, null, null);
 
     List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
 
@@ -932,6 +940,113 @@ public class RequisitionServiceTest {
     assertTrue(resultSet.equals(nonFullSupplySet));
   }
 
+  @Test
+  public void shouldNotRetrievePodIfThereIsNoPreviousPeriod() throws Exception {
+    prepareForPodTest();
+
+    when(periodService.findPreviousPeriod(any(UUID.class))).thenReturn(null);
+
+    Requisition requisition = requisitionService
+        .initiate(programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false);
+
+    verifyZeroInteractions(proofOfDeliveryFulfillmentService);
+
+    requisition.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> assertThat(line.getTotalReceivedQuantity(), is(0)));
+  }
+
+  @Test
+  public void shouldNotRetrievePodIfThereIsNoPreviousRequisitions() throws Exception {
+    prepareForPodTest();
+
+    UUID userId = UUID.randomUUID();
+    when(periodService.findPreviousPeriod(any(UUID.class))).thenReturn(new ProcessingPeriodDto());
+    when(requisitionRepository
+        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), eq(false)))
+        .thenReturn(Lists.newArrayList());
+
+    Requisition requisition = requisitionService
+        .initiate(programId, facilityId, suggestedPeriodId, userId, false);
+
+    verifyZeroInteractions(proofOfDeliveryFulfillmentService);
+
+    requisition.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> assertThat(line.getTotalReceivedQuantity(), is(0)));
+  }
+
+  @Test
+  public void shouldNotRetrievePodIfPreviousRequisitionIsSkipped() throws Exception {
+    prepareForPodTest();
+
+    Requisition previousRequisition = mock(Requisition.class);
+    when(previousRequisition.getStatus()).thenReturn(SKIPPED);
+
+    UUID userId = UUID.randomUUID();
+    when(periodService.findPreviousPeriod(any(UUID.class))).thenReturn(new ProcessingPeriodDto());
+    when(requisitionRepository
+        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), eq(false)))
+        .thenReturn(Lists.newArrayList(previousRequisition));
+
+    Requisition requisition = requisitionService
+        .initiate(programId, facilityId, suggestedPeriodId, userId, false);
+
+    verifyZeroInteractions(proofOfDeliveryFulfillmentService);
+
+    requisition.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> assertThat(line.getTotalReceivedQuantity(), is(0)));
+  }
+
+  @Test
+  public void shouldNotRetrievePodIfPreviousRequisitionIsEmergency() throws Exception {
+    prepareForPodTest();
+
+    Requisition previousRequisition = mock(Requisition.class);
+    when(previousRequisition.getEmergency()).thenReturn(true);
+
+    UUID userId = UUID.randomUUID();
+    when(periodService.findPreviousPeriod(any(UUID.class))).thenReturn(new ProcessingPeriodDto());
+    when(requisitionRepository
+        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), eq(false)))
+        .thenReturn(Lists.newArrayList(previousRequisition));
+
+    Requisition requisition = requisitionService
+        .initiate(programId, facilityId, suggestedPeriodId, userId, false);
+
+    verifyZeroInteractions(proofOfDeliveryFulfillmentService);
+
+    requisition.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> assertThat(line.getTotalReceivedQuantity(), is(0)));
+  }
+
+  @Test
+  public void shouldRetrievePodForStandardRequisition() throws Exception {
+    prepareForPodTest();
+
+    Requisition previousRequisition = mock(Requisition.class);
+    when(previousRequisition.getEmergency()).thenReturn(false);
+
+    ProofOfDeliveryDto pod = mock(ProofOfDeliveryDto.class);
+    ProofOfDeliveryLineItemDto podLine = mock(ProofOfDeliveryLineItemDto.class);
+
+    when(podLine.getQuantityReceived()).thenReturn(10L);
+    when(pod.findLineByProductId(PRODUCT_ID)).thenReturn(podLine);
+    when(pod.isSubmitted()).thenReturn(true);
+
+    UUID userId = UUID.randomUUID();
+    when(periodService.findPreviousPeriod(any(UUID.class))).thenReturn(new ProcessingPeriodDto());
+    when(requisitionRepository
+        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), eq(false)))
+        .thenReturn(Lists.newArrayList(previousRequisition));
+    when(proofOfDeliveryFulfillmentService.findByExternalId(any(UUID.class)))
+        .thenReturn(Lists.newArrayList(pod));
+
+    Requisition requisition = requisitionService
+        .initiate(programId, facilityId, suggestedPeriodId, userId, false);
+
+    requisition.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(line -> assertThat(line.getTotalReceivedQuantity(), is(10)));
+  }
+
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
@@ -1108,6 +1223,27 @@ public class RequisitionServiceTest {
 
   private void mockNonFullSupplyApprovedProduct() {
     mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
+  }
+
+  private void prepareForPodTest() {
+    prepareForTestInitiate(SETTING);
+    mockApprovedProduct(PRODUCT_ID, true);
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
+    when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
+
+    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
+
+    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
+    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
+    doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
+
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
+    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
+    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
+    periodDto.setDurationInMonths(1);
+    doReturn(periodDto).when(periodService).findPeriod(programId, facilityId, suggestedPeriodId,
+        false);
   }
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {

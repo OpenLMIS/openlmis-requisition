@@ -24,8 +24,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderDto;
+import org.openlmis.requisition.dto.OrderLineItemDto;
+import org.openlmis.requisition.dto.OrderStatus;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
@@ -38,6 +43,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
@@ -371,7 +378,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0);
+        Collections.singletonList(previousRequisition), 0, null);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -379,6 +386,8 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
   }
 
   @Test
@@ -394,7 +403,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0);
+    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0, null);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -402,6 +411,8 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(0));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(0));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
   }
 
   @Test
@@ -423,7 +434,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0);
+        Collections.singletonList(previousRequisition), 0, null);
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -431,6 +442,77 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(0));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(0));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
+  }
+
+  @Test
+  public void shouldInsertValueFromProofOfDeliveryToTotalReceivedQuantity() throws Exception {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    Requisition previousRequisition = mock(Requisition.class);
+    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
+    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
+
+    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
+
+    ProofOfDeliveryDto pod = createProofOfDelivery(productId1, productId2);
+    pod.getOrder().setStatus(OrderStatus.RECEIVED);
+    pod.findLineByProductId(productId1).setQuantityReceived(10L);
+    pod.findLineByProductId(productId2).setQuantityReceived(15L);
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
+
+    // when
+    Requisition req = new Requisition();
+    req.initiate(template, asList(product1, product2),
+        Collections.singletonList(previousRequisition), 0, pod);
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(10));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(15));
+  }
+
+  @Test
+  public void shouldNotInsertValueFromProofOfDeliveryIfNotSubmitted() throws Exception {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    Requisition previousRequisition = mock(Requisition.class);
+    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
+    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
+
+    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
+
+    ProofOfDeliveryDto pod = createProofOfDelivery(productId1, productId2);
+    pod.findLineByProductId(productId1).setQuantityReceived(10L);
+    pod.findLineByProductId(productId2).setQuantityReceived(15L);
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
+
+    // when
+    Requisition req = new Requisition();
+    req.initiate(template, asList(product1, product2),
+        Collections.singletonList(previousRequisition), 0, pod);
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
   }
 
   @Test
@@ -855,5 +937,29 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(Arrays.asList(notSkipped, skipped));
     return requisition;
+  }
+
+  private ProofOfDeliveryDto createProofOfDelivery(UUID... orderableIds) {
+    ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
+    pod.setOrder(new OrderDto());
+    
+    pod.setProofOfDeliveryLineItems(
+        Stream.of(orderableIds)
+            .map(orderableId -> {
+              OrderableDto orderable = new OrderableDto();
+              orderable.setId(orderableId);
+
+              OrderLineItemDto orderLineItem = new OrderLineItemDto();
+              orderLineItem.setOrderable(orderable);
+
+              ProofOfDeliveryLineItemDto line = new ProofOfDeliveryLineItemDto();
+              line.setOrderLineItem(orderLineItem);
+
+              return line;
+            })
+            .collect(Collectors.toList())
+    );
+
+    return pod;
   }
 }
