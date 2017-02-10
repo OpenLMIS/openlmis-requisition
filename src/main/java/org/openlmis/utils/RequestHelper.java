@@ -15,6 +15,9 @@ public final class RequestHelper {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Creates a {@link URI} from the given string representation and with the given parameters.
+   */
   public static URI createUri(String url, RequestParameters parameters) {
     UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
 

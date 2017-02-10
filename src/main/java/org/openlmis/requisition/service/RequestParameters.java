@@ -15,6 +15,9 @@ public final class RequestParameters {
     return new RequestParameters();
   }
 
+  /**
+   * Set parameter (key argument) with the value only if the value is not null.
+   */
   public RequestParameters set(String key, Object value) {
     if (null != value) {
       params.put(key, value);
@@ -31,5 +34,5 @@ public final class RequestParameters {
   public void forEach(Consumer<Map.Entry<String, Object>> action) {
     params.entrySet().forEach(action);
   }
-  
+
 }

@@ -39,6 +39,9 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
     return true;
   }
 
+  /**
+   * Finds orders that matched the provided parameters.
+   */
   public List<OrderDto> search(UUID supplyingFacility, UUID requestingFacility,
                                UUID program, UUID processingPeriod, String status) {
     RequestParameters parameters = RequestParameters

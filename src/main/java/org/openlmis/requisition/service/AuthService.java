@@ -29,7 +29,12 @@ public class AuthService {
 
   private RestOperations restTemplate = new RestTemplate();
 
-  public String obtainAccessToken() {
+  /**
+   * Retrieves access token from the auth service.
+   *
+   * @return token.
+   */
+  String obtainAccessToken() {
     String plainCreds = clientId + ":" + clientSecret;
     byte[] plainCredsBytes = plainCreds.getBytes();
     byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
