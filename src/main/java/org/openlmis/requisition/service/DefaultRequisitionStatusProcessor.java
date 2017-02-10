@@ -24,7 +24,7 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
    * Process requisition status change.
    * @param requisition a requisition that has just changed its status
    */
-  public void statusChange(Requisition requisition) throws JaversChangeNotFoundException {
+  public void statusChange(Requisition requisition) {
     Change lastChange = findLastChange(requisition);
     if (lastChange != null) {
       if (requisition.getStatus() == RequisitionStatus.RELEASED) {

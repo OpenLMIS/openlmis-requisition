@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.javers.common.exception.JaversException;
 import org.openlmis.requisition.domain.Requisition;
 
 public interface RequisitionStatusProcessor {
@@ -10,5 +9,5 @@ public interface RequisitionStatusProcessor {
    *
    * @param requisition a requisition that has just changed its status
    */
-  void statusChange(Requisition requisition) throws JaversException;
+  void statusChange(Requisition requisition);
 }
