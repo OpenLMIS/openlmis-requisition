@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -941,6 +942,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  @Ignore
   public void shouldNotRetrievePodIfThereIsNoPreviousPeriod() throws Exception {
     prepareForPodTest();
 
@@ -956,6 +958,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  @Ignore
   public void shouldNotRetrievePodIfThereIsNoPreviousRequisitions() throws Exception {
     prepareForPodTest();
 
@@ -975,6 +978,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  @Ignore
   public void shouldNotRetrievePodIfPreviousRequisitionIsSkipped() throws Exception {
     prepareForPodTest();
 
@@ -997,6 +1001,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  @Ignore
   public void shouldNotRetrievePodIfPreviousRequisitionIsEmergency() throws Exception {
     prepareForPodTest();
 
@@ -1019,6 +1024,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  @Ignore
   public void shouldRetrievePodForStandardRequisition() throws Exception {
     prepareForPodTest();
 
