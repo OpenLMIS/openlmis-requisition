@@ -1,12 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -32,11 +30,12 @@ public class SupervisoryNodeReferenceDataService
    * Find a correct supervisory node by the provided facility and program.
    */
   public SupervisoryNodeDto findSupervisoryNode(UUID program, UUID facility) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("programId", program);
-    parameters.put("facilityId", facility);
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("programId", program)
+        .set("facilityId", facility);
 
-    List<SupervisoryNodeDto> supervisoryNodeDtos = new ArrayList<>(findAll("search", parameters));
+    List<SupervisoryNodeDto> supervisoryNodeDtos = findAll("search", parameters);
     return supervisoryNodeDtos.isEmpty() ? null : supervisoryNodeDtos.get(0);
   }
 

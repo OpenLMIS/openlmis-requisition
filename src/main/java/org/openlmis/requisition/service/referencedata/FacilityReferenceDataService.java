@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -35,13 +34,10 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @return List of FacilityDtos with similar code or name.
    */
   public Collection<FacilityDto> search(String code, String name) {
-    Map<String, Object> parameters = new HashMap<>();
-    if (code != null) {
-      parameters.put("code", code);
-    }
-    if (name != null) {
-      parameters.put("name", name);
-    }
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("code", code)
+        .set("name", name);
 
     return findAll("search", parameters);
   }
@@ -54,9 +50,10 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @return A list of supply lines matching search criteria
    */
   public Collection<FacilityDto> searchSupplyingDepots(UUID programId, UUID supervisoryNodeId) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("programId", programId);
-    parameters.put("supervisoryNodeId", supervisoryNodeId);
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("programId", programId)
+        .set("supervisoryNodeId", supervisoryNodeId);
 
     return findAll("supplying", parameters);
   }

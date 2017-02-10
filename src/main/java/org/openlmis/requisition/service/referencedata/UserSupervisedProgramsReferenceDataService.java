@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,9 +22,10 @@ public class UserSupervisedProgramsReferenceDataService extends ProgramReference
    * @return a collection of programs supervised by user
    */
   public Collection<ProgramDto> getProgramsSupervisedByUser(UUID userUuid) {
-    Map<String, Object> searchParameters = new HashMap<>();
-    searchParameters.put("forHomeFacility", false);
-    return findAll(userUuid + "/programs", searchParameters);
+    return findAll(
+        userUuid + "/programs",
+        RequestParameters.init().set("forHomeFacility", false)
+    );
   }
 
   /**

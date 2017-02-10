@@ -1,12 +1,11 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -35,9 +34,10 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
    * @return A list of periods matching search criteria
    */
   public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate startDate) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("processingScheduleId", processingScheduleId);
-    parameters.put("startDate", startDate);
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("processingScheduleId", processingScheduleId)
+        .set("startDate", startDate);
 
     return findAll("searchByScheduleAndDate", parameters);
   }
@@ -51,10 +51,11 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
    */
   public Collection<ProcessingPeriodDto> searchByProgramAndFacility(UUID programId,
                                                                     UUID facilityId) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("programId", programId);
-    parameters.put("facilityId", facilityId);
-
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("programId", programId)
+        .set("facilityId", facilityId);
+    
     return findAll("search", parameters);
   }
 }

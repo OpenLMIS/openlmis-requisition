@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -26,10 +25,9 @@ public class UserSupervisedFacilitiesReferenceDataService extends FacilityRefere
    */
   public Collection<FacilityDto> getFacilitiesSupervisedByUser(UUID userId, UUID programId,
                                                                UUID rightId) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("rightId", rightId);
-    parameters.put("programId", programId);
-
-    return findAll(userId + "/supervisedFacilities", parameters);
+    return findAll(
+        userId + "/supervisedFacilities",
+        RequestParameters.init().set("rightId", rightId).set("programId", programId)
+    );
   }
 }
