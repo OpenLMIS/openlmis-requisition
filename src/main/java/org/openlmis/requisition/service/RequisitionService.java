@@ -182,7 +182,7 @@ public class RequisitionService {
       numberOfPreviousPeriodsToAverage = previousRequisitions.size();
     }
 
-    ProofOfDeliveryDto pod = emergency ? null : getProofOfDelivery(requisition);
+    ProofOfDeliveryDto pod = null; //emergency ? null : getProofOfDelivery(requisition);
 
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
         numberOfPreviousPeriodsToAverage, pod);
