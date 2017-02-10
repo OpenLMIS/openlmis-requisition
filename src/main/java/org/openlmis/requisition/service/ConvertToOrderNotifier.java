@@ -18,7 +18,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONV
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
 @Component
-public class ConvertToOrderNotifier implements RequisitionStatusNotifier {
+public class ConvertToOrderNotifier {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
