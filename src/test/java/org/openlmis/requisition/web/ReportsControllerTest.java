@@ -1,35 +1,29 @@
 package org.openlmis.requisition.web;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperReport;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 public class ReportsControllerTest {
@@ -49,7 +43,7 @@ public class ReportsControllerTest {
 
   @Mock
   private JasperReportsViewService jasperReportsViewService;
-  
+
   @InjectMocks
   private ReportsController reportsController;
 
@@ -65,45 +59,21 @@ public class ReportsControllerTest {
     reportsController.print(mock(HttpServletRequest.class), UUID.randomUUID());
   }
 
-  @Test(expected = ValidationMessageException.class)
-  public void shouldNotPrintRequisitionIfTemplateDoesNotExist()
-      throws JasperReportViewException {
-    // given
-    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
-
-    // when
-    reportsController.print(mock(HttpServletRequest.class), UUID.randomUUID());
-  }
-
   @Test
   public void shouldPrintRequisition()
       throws JasperReportViewException, IOException, JRException {
     // given
-    JasperTemplate template = mock(JasperTemplate.class);
     HttpServletRequest request = mock(HttpServletRequest.class);
-    byte[] data = getTemplateData(REQUISITION_TEMPLATE_PATH);
+    ModelAndView view = new ModelAndView();
 
     when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
-    when(jasperReportsViewService.getJasperReportsView(template, request))
-        .thenReturn(new JasperReportsMultiFormatView());
-    when(jasperTemplateService.getByName(any(String.class))).thenReturn(template);
-    when(template.getData()).thenReturn(data);
+    when(jasperReportsViewService.getRequisitionJasperReportView(
+        any(Requisition.class), any(HttpServletRequest.class))).thenReturn(view);
 
     // when
-    ModelAndView view = reportsController.print(request, UUID.randomUUID());
+    ModelAndView result = reportsController.print(request, UUID.randomUUID());
 
     // then
-    assertTrue(view.getView() instanceof JasperReportsMultiFormatView);
-  }
-
-  private byte[] getTemplateData(String path) throws IOException, JRException {
-    ClassPathResource resource = new ClassPathResource(path);
-    JasperReport report = JasperCompileManager.compileReport(resource.getInputStream());
-
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    ObjectOutputStream out = new ObjectOutputStream(bos);
-    out.writeObject(report);
-
-    return bos.toByteArray();
+    assertEquals(result, view);
   }
 }

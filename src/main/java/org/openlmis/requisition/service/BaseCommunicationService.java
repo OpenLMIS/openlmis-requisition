@@ -8,6 +8,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
@@ -21,7 +22,7 @@ import java.util.Map;
 public abstract class BaseCommunicationService {
   protected static final String ACCESS_TOKEN = "access_token";
 
-  protected RestTemplate restTemplate;
+  protected RestOperations restTemplate = new RestTemplate();
 
   @Value("${auth.server.clientId}")
   private String clientId;
@@ -31,10 +32,6 @@ public abstract class BaseCommunicationService {
 
   @Value("${auth.server.authorizationUrl}")
   private String authorizationUrl;
-
-  public BaseCommunicationService() {
-    this.restTemplate = new RestTemplate();
-  }
 
   protected String obtainAccessToken() {
     String plainCreds = clientId + ":" + clientSecret;
@@ -71,4 +68,9 @@ public abstract class BaseCommunicationService {
 
     return builder.build(true).toUri();
   }
+
+  public void setRestTemplate(RestOperations template) {
+    this.restTemplate = template;
+  }
+
 }

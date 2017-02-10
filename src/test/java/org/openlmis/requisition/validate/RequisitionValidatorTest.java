@@ -403,7 +403,7 @@ public class RequisitionValidatorTest {
     lineItem.setTotalStockoutDays(1);
     lineItem.setTotal(1);
     lineItem.setRequisition(requisition);
-    lineItem.setMaxMonthsOfStock(BigDecimal.ONE);
+    lineItem.setMaxPeriodsOfStock(BigDecimal.ONE);
     lineItem.setMaximumStockQuantity(1);
     lineItem.setAverageConsumption(1);
     lineItem.setCalculatedOrderQuantity(0);

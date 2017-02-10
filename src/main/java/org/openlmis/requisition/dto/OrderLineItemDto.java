@@ -4,8 +4,11 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class OrderLineItemDto {
+  private UUID id;
   private OrderableDto orderable;
   private Long orderedQuantity;
   private Long filledQuantity;

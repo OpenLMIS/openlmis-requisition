@@ -91,10 +91,6 @@
     "stockAdjustments": {
       "type": "object",
       "$ref": "requisitionTemplateColumn.json"
-    },
-    "maxMonthsOfStock": {
-      "type": "object",
-      "$ref": "requisitionTemplateColumn.json"
     }
   }
 }

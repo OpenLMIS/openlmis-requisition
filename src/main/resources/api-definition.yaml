@@ -331,13 +331,12 @@ resourceTypes:
                             schema: localizedMessage
       /submitted:
           get:
-              is: [ secured ]
+              is: [ secured, paginated ]
               description: Get all requisitions with submitted status.
               responses:
                   "200":
                       body:
                         application/json:
-                  "404":
                   "403":
                       body:
                         application/json:
@@ -557,7 +556,7 @@ resourceTypes:
                       displayName: supervisoryNode
                       type: string
                       required: false
-                      repeat: false
+                      repeat: true
                   emergency:
                       displayName: emergency
                       type: boolean

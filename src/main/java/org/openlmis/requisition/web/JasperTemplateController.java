@@ -174,7 +174,7 @@ public class JasperTemplateController extends BaseController {
     }
 
     JasperReportsMultiFormatView jasperView = jasperReportsViewService
-        .getJasperReportsViewWithJdbcDatasource(template, request);
+        .getJasperReportsView(template, request);
     Map<String, Object> map = jasperTemplateService.mapRequestParametersToTemplate(
         request, template);
     map.put("format", format);

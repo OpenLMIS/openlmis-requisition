@@ -13,12 +13,16 @@ import org.javers.spring.boot.sql.JaversProperties;
 import org.javers.spring.jpa.TransactionalJaversBuilder;
 import org.openlmis.requisition.i18n.ExposedMessageSourceImpl;
 import org.openlmis.security.UserNameProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
@@ -28,6 +32,7 @@ import java.util.Locale;
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
 public class Application {
+  private Logger logger = LoggerFactory.getLogger(Application.class);
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
@@ -93,26 +98,42 @@ public class Application {
   public Javers javersProvidor(ConnectionProvider connectionProvider,
                                PlatformTransactionManager transactionManager) {
     JaversSqlRepository sqlRepository = SqlRepositoryBuilder
-            .sqlRepository()
-            .withConnectionProvider(connectionProvider)
-            .withDialect(dialectName)
-            .withSchema(preferredSchema)
-            .build();
+        .sqlRepository()
+        .withConnectionProvider(connectionProvider)
+        .withDialect(dialectName)
+        .withSchema(preferredSchema)
+        .build();
 
     return TransactionalJaversBuilder
-            .javers()
-            .withTxManager(transactionManager)
-            .registerJaversRepository(sqlRepository)
-            .withObjectAccessHook(new HibernateUnproxyObjectAccessHook())
-            .withListCompareAlgorithm(
-                      ListCompareAlgorithm.valueOf(javersProperties.getAlgorithm().toUpperCase()))
-            .withMappingStyle(
-                    MappingStyle.valueOf(javersProperties.getMappingStyle().toUpperCase()))
-            .withNewObjectsSnapshot(javersProperties.isNewObjectSnapshot())
-            .withPrettyPrint(javersProperties.isPrettyPrint())
-            .withTypeSafeValues(javersProperties.isTypeSafeValues())
-            .withPackagesToScan(javersProperties.getPackagesToScan())
-            .build();
+        .javers()
+        .withTxManager(transactionManager)
+        .registerJaversRepository(sqlRepository)
+        .withObjectAccessHook(new HibernateUnproxyObjectAccessHook())
+        .withListCompareAlgorithm(
+            ListCompareAlgorithm.valueOf(javersProperties.getAlgorithm().toUpperCase()))
+        .withMappingStyle(
+            MappingStyle.valueOf(javersProperties.getMappingStyle().toUpperCase()))
+        .withNewObjectsSnapshot(javersProperties.isNewObjectSnapshot())
+        .withPrettyPrint(javersProperties.isPrettyPrint())
+        .withTypeSafeValues(javersProperties.isTypeSafeValues())
+        .withPackagesToScan(javersProperties.getPackagesToScan())
+        .build();
+  }
+
+  /**
+   * Configures the Flyway migration strategy to clean the DB before migration first. This is used
+   * as the default unless the Spring Profile "production" is active.
+   *
+   * @return the clean-migrate strategy
+   */
+  @Bean
+  @Profile("!production")
+  public FlywayMigrationStrategy cleanMigrationStrategy() {
+    return flyway -> {
+      logger.info("Using clean-migrate flyway strategy -- production profile not active");
+      flyway.clean();
+      flyway.migrate();
+    };
   }
 
 

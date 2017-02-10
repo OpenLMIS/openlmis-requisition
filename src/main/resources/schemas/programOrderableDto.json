@@ -36,13 +36,9 @@
       "type": "integer",
       "title": "displayOrder"
     },
-    "maxMonthsOfStock": {
+    "dosesPerPatient": {
       "type": "integer",
-      "title": "maxMonthsOfStock"
-    },
-    "dosesPerMonth": {
-      "type": "integer",
-      "title": "dosesPerMonth"
+      "title": "dosesPerPatient"
     },
     "pricePerPack": {
       "type": "number",
@@ -51,5 +47,5 @@
   },
   "required": ["programId", "orderableId", "orderableDisplayCategoryId",
     "orderableCategoryDisplayName", "orderableCategoryDisplayOrder", "active",
-    "fullSupply", "displayOrder", "maxMonthsOfStock", "dosesPerMonth"]
+    "fullSupply", "displayOrder", "dosesPerPatient"]
 }

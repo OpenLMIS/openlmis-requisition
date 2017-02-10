@@ -1,5 +1,6 @@
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -9,6 +10,31 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.javers.core.metamodel.annotation.TypeName;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.openlmis.CurrencyConfig;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
+import org.openlmis.utils.RequisitionHelper;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,26 +62,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Type;
-import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.javers.core.metamodel.annotation.TypeName;
-import org.joda.money.CurrencyUnit;
-import org.openlmis.CurrencyConfig;
-import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.RequisitionHelper;
-
+@SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @TypeName("Requisition")
 @Table(name = "requisitions")
@@ -70,6 +78,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
   public static final String MODIFIED_DATE = "modifiedDate";
+  public static final String STATUS = "status";
 
   private static final String UUID = "pg-uuid";
 
@@ -176,7 +185,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param emergency          whether this Requisition is emergency
    */
   public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId,
-      RequisitionStatus status, Boolean emergency) {
+                     RequisitionStatus status, Boolean emergency) {
     this.facilityId = facilityId;
     this.programId = programId;
     this.processingPeriodId = processingPeriodId;
@@ -191,7 +200,8 @@ public class Requisition extends BaseTimestampedEntity {
    * @param stockAdjustmentReasons Collection of stockAdjustmentReasons.
    */
   public void updateFrom(
-      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
+      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
+      Collection<OrderableDto> products) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
@@ -199,6 +209,10 @@ public class Requisition extends BaseTimestampedEntity {
 
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
+    updateConsumptionsAndTotalCost(products);
+
+    // do this manually here, since JPA won't catch updates to collections (line items)
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**
@@ -215,7 +229,8 @@ public class Requisition extends BaseTimestampedEntity {
   public void initiate(RequisitionTemplate template,
                        Collection<ApprovedProductDto> products,
                        List<Requisition> previousRequisitions,
-                       int numberOfPreviousPeriodsToAverage) {
+                       int numberOfPreviousPeriodsToAverage,
+                       ProofOfDeliveryDto proofOfDelivery) {
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
@@ -251,6 +266,24 @@ public class Requisition extends BaseTimestampedEntity {
             LineItemFieldsCalculator.calculateBeginningBalance(previousLine));
       });
     }
+
+    // Thirdly, if Proof Of Delivery exists and it is submitted ...
+    if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
+      // .. for each line from the current requisition ...
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(requisitionLine -> {
+        // ... we try to find line in POD for the same product ...
+        ProofOfDeliveryLineItemDto proofOfDeliveryLine = proofOfDelivery
+            .findLineByProductId(requisitionLine.getOrderableId());
+
+        // ... and if line exists we set value for Total Received Quantity (B) column
+        if (null != proofOfDeliveryLine) {
+          requisitionLine.setTotalReceivedQuantity(
+              (int) zeroIfNull(proofOfDeliveryLine.getQuantityReceived())
+          );
+        }
+      });
+    }
+
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
   }
 
@@ -260,9 +293,6 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products orderable products that will be used by line items to update packs to ship.
    */
   public void submit(Collection<OrderableDto> products, UUID submitter) {
-    RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
-        line -> line.updatePacksToShip(products));
-
     if (!INITIATED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -274,7 +304,7 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
 
-    updateConsumptionsAndTotalCost();
+    updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.SUBMITTED;
   }
@@ -285,15 +315,12 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products orderable products that will be used by line items to update packs to ship.
    */
   public void authorize(Collection<OrderableDto> products, UUID authorizer) {
-    RequisitionHelper.forEachLine(
-        getNonSkippedRequisitionLineItems(), line -> line.updatePacksToShip(products));
-
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    updateConsumptionsAndTotalCost();
+    updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.AUTHORIZED;
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
@@ -321,10 +348,15 @@ public class Requisition extends BaseTimestampedEntity {
       supervisoryNodeId = parentNodeId;
     }
 
-    RequisitionHelper.forEachLine(getNonSkippedRequisitionLineItems(),
-        line -> line.updatePacksToShip(products));
+    updateConsumptionsAndTotalCost(products);
+  }
 
-    updateConsumptionsAndTotalCost();
+  /**
+   * Rejects given requisition.
+   */
+  public void reject(Collection<OrderableDto> products) {
+    status = RequisitionStatus.INITIATED;
+    updateConsumptionsAndTotalCost(products);
   }
 
   /**
@@ -376,7 +408,7 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Filter out requisitionLineItems that are skipped and not-full supply.
    *
-   * @return requisitionLineItems that are not skipped
+   * @return non-skipped full supply requisition line items
    */
   public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems() {
     if (requisitionLineItems == null) {
@@ -389,6 +421,21 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Filter out requisitionLineItems that are skipped and full supply.
+   *
+   * @return non-skipped non-full supply requisition line items
+   */
+  public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems() {
+    if (requisitionLineItems == null) {
+      return Collections.emptyList();
+    }
+    return this.requisitionLineItems.stream()
+        .filter(line -> !line.getSkipped())
+        .filter(RequisitionLineItem::isNonFullSupply)
+        .collect(Collectors.toList());
+  }
+
+  /**
    * Filter out requisitionLineItems that are not skipped.
    *
    * @return requisitionLineItems that are skipped
@@ -397,6 +444,33 @@ public class Requisition extends BaseTimestampedEntity {
     return this.requisitionLineItems.stream()
         .filter(RequisitionLineItem::getSkipped)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Calculates combined cost of all requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getTotalCost() {
+    return calculateTotalCostForLines(requisitionLineItems);
+  }
+
+  /**
+   * Calculates combined cost of non-full supply non-skipped requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getNonFullSupplyTotalCost() {
+    return calculateTotalCostForLines(getNonSkippedNonFullSupplyRequisitionLineItems());
+  }
+
+  /**
+   * Calculates combined cost of full supply non-skipped requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getFullSupplyTotalCost() {
+    return calculateTotalCostForLines(getNonSkippedFullSupplyRequisitionLineItems());
   }
 
   /**
@@ -435,6 +509,19 @@ public class Requisition extends BaseTimestampedEntity {
         });
   }
 
+  private Money calculateTotalCostForLines(List<RequisitionLineItem> requisitionLineItems) {
+    Money defaultValue = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 0);
+
+    if (requisitionLineItems.isEmpty()) {
+      return defaultValue;
+    }
+
+    Optional<Money> money = requisitionLineItems.stream()
+        .map(RequisitionLineItem::getTotalCost).filter(Objects::nonNull).reduce(Money::plus);
+
+    return money.isPresent() ? money.get() : defaultValue;
+  }
+
   private void calculateAndValidateTemplateFields(
       RequisitionTemplate template, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
     getNonSkippedFullSupplyRequisitionLineItems()
@@ -442,7 +529,9 @@ public class Requisition extends BaseTimestampedEntity {
             numberOfMonthsInPeriod));
   }
 
-  private void updateConsumptionsAndTotalCost() {
+  private void updateConsumptionsAndTotalCost(Collection<OrderableDto> products) {
+    getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
+
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)

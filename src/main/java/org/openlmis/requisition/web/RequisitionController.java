@@ -8,12 +8,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FO
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -35,6 +29,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -68,6 +63,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -124,6 +127,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionVersionValidator requisitionVersionValidator;
+
+  @Autowired
+  private RequisitionStatusProcessor requisitionStatusProcessor;
 
   /**
    * Allows creating new requisitions.
@@ -202,6 +208,7 @@ public class RequisitionController extends BaseController {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
+
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
         requisition.getProgramId());
 
@@ -212,6 +219,7 @@ public class RequisitionController extends BaseController {
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
+    requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
     return requisitionDtoBuilder.build(requisition);
@@ -247,6 +255,7 @@ public class RequisitionController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
+
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate());
 
@@ -276,7 +285,7 @@ public class RequisitionController extends BaseController {
 
       requisitionToUpdate.updateFrom(requisition,
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-              requisition.getProgramId()));
+              requisition.getProgramId()), orderableReferenceDataService.findAll());
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
@@ -325,7 +334,7 @@ public class RequisitionController extends BaseController {
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
       @RequestParam(value = "requisitionStatus", required = false)
-          RequisitionStatus[] requisitionStatuses,
+          Set<RequisitionStatus> requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
     Page<Requisition> requisitionsPage = requisitionService.searchRequisitions(facility, program,
@@ -346,6 +355,7 @@ public class RequisitionController extends BaseController {
     permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisition = requisitionService.skip(requisitionId);
+    requisitionStatusProcessor.statusChange(requisition);
     return requisitionDtoBuilder.build(requisition);
   }
 
@@ -358,6 +368,7 @@ public class RequisitionController extends BaseController {
   public RequisitionDto rejectRequisition(@PathVariable("id") UUID id) {
     permissionService.canApproveRequisition(id);
     Requisition rejectedRequisition = requisitionService.reject(id);
+    requisitionStatusProcessor.statusChange(rejectedRequisition);
 
     return requisitionDtoBuilder.build(rejectedRequisition);
   }
@@ -404,6 +415,7 @@ public class RequisitionController extends BaseController {
       saveStatusMessage(requisition);
 
       requisitionRepository.save(requisition);
+      requisitionStatusProcessor.statusChange(requisition);
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return requisitionDtoBuilder.build(requisition);
     } else {
@@ -433,20 +445,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public List<RequisitionDto> getSubmittedRequisitions() {
+  public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
     Page<Requisition> submittedRequisitionsPage = requisitionService.searchRequisitions(
-        null, null, null, null, null, null,
-        new RequisitionStatus[]{RequisitionStatus.SUBMITTED}, null, null);
-    List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
+        EnumSet.of(RequisitionStatus.SUBMITTED), pageable);
 
-    /* TODO: It seems like this should never return HttpStatus.NOT_FOUND. Rather, if no results
-             exist, simply return an empty list. Verify this an update this code accordingly. */
-    if (submittedRequisitions == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_NO_SUBMITTED_REQUISITIONS));
-    } else {
-      return requisitionDtoBuilder.build(submittedRequisitions);
-    }
+    List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(submittedRequisitions);
+
+    return Pagination.getPage(dtoList, pageable, submittedRequisitionsPage.getTotalElements());
   }
 
   /**
@@ -491,6 +497,7 @@ public class RequisitionController extends BaseController {
     saveStatusMessage(requisition);
 
     requisitionRepository.save(requisition);
+    requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 
     return requisitionDtoBuilder.build(requisition);

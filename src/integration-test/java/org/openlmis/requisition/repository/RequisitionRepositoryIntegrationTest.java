@@ -5,12 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -26,6 +20,14 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -82,7 +84,7 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getCreatedDate().plusDays(2),
         requisitions.get(0).getProcessingPeriodId(),
         requisitions.get(0).getSupervisoryNodeId(),
-        new RequisitionStatus[]{requisitions.get(0).getStatus()},
+        EnumSet.of(requisitions.get(0).getStatus()),
         requisitions.get(0).getEmergency(),
         null);
 
@@ -201,8 +203,9 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByPeriodAndEmergencyFlag() throws Exception {
     requisitions.forEach(requisition -> {
-      List<Requisition> found = repository.searchByProcessingPeriodAndType(
-          requisition.getProcessingPeriodId(), requisition.getEmergency()
+      List<Requisition> found = repository.searchRequisitions(
+          requisition.getProcessingPeriodId(), requisition.getFacilityId(), requisition
+              .getProgramId(), requisition.getEmergency()
       );
 
       found.forEach(element -> {
@@ -244,12 +247,12 @@ public class RequisitionRepositoryIntegrationTest
 
     ApprovedProductDto ftap = new ApprovedProductDto();
     ftap.setProgramOrderable(programOrderable);
-    ftap.setMaxMonthsOfStock(7.25);
+    ftap.setMaxPeriodsOfStock(7.25);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0);
+        Collections.emptyList(), 0, null);
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

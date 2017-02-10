@@ -1,3 +1,7 @@
+--
+-- Data for Name: available_requisition_columns; Type: TABLE DATA; Schema: requisition; Owner: postgres
+--
+
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType, definition) VALUES('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'requestedQuantity', 'Requested quantity', 'J', false, false, true, false, 'NUMERIC', 'Requested override of calculated quantity. This is quantified in dispensing units.');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType, definition) VALUES('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'totalReceivedQuantity', 'Total received quantity', 'B', false, false, true, false, 'NUMERIC', 'Total quantity received in the reporting period. This is quantified in dispensing units.');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType, definition) VALUES('33b2d2e9-3167-46b0-95d4-1295be9afc22', 'beginningBalance', 'Beginning balance', 'A', false, false, true, false, 'NUMERIC', 'Based on the Stock On Hand from the previous period. This is quantified in dispensing units.');
@@ -21,6 +25,10 @@ INSERT INTO requisition.available_requisition_columns (id, name, label, indicato
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType, definition) VALUES('89113ec3-40e9-4d81-9516-b56adba7f8cd', 'averageConsumption', 'Average consumption', 'P', false, false, true, false, 'NUMERIC', 'Average consumption over a specified number of periods/months. Quantified in dispensing units.');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType, definition) VALUES('913e1a4f-f3b0-40c6-a422-2f73608c6f3d', 'maximumStockQuantity', 'Maximum stock quantity', 'H', false, false, true, false, 'NUMERIC', 'Maximum stock calculated based on consumption and max stock amounts. Quantified in dispensing units.');
 INSERT INTO requisition.available_requisition_columns (id, name, label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser, columnType, definition) VALUES('5528576b-b1e7-48d9-bf32-fd0eefefaa9a', 'calculatedOrderQuantity', 'Calculated order quantity', 'I', false, false, true, false, 'NUMERIC', 'Actual quantity needed after deducting stock in hand. This is quantified in dispensing units.');
+
+--
+-- Data for Name: available_requisition_column_sources; Type: TABLE DATA; Schema: requisition; Owner: postgres
+--
 
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('4a2e9fd3-1127-4b68-9912-84a5c00f6999', 'USER_INPUT'); -- requestedQuantity
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('5ba8b72d-277a-4da8-b10a-23f0cda23cb4', 'USER_INPUT'); -- totalReceivedQuantity
@@ -47,6 +55,10 @@ INSERT INTO requisition.available_requisition_column_sources (columnId, value) V
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('89113ec3-40e9-4d81-9516-b56adba7f8cd', 'CALCULATED'); -- averageConsumption
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('913e1a4f-f3b0-40c6-a422-2f73608c6f3d', 'CALCULATED'); -- maximumStockQuantity
 INSERT INTO requisition.available_requisition_column_sources (columnId, value) VALUES ('5528576b-b1e7-48d9-bf32-fd0eefefaa9a', 'CALCULATED'); -- calculatedOrderQuantity
+
+--
+-- Data for Name: available_requisition_column_options; Type: TABLE DATA; Schema: requisition; Owner: postgres
+--
 
 INSERT INTO requisition.available_requisition_column_options (id, columnId, optionName, optionLabel) VALUES ('34b8e763-71a0-41f1-86b4-1829963f0704', '5708ebf9-9317-4420-85aa-71b2ae92643d', 'newPatientCount', 'New patient count'); -- numberOfNewPatientsAdded
 INSERT INTO requisition.available_requisition_column_options (id, columnId, optionName, optionLabel) VALUES ('4957ebb4-297c-459e-a291-812e72286eff', '5708ebf9-9317-4420-85aa-71b2ae92643d', 'dispensingUnitsForNewPatients', 'Dispensing units for new patients'); -- numberOfNewPatientsAdded
