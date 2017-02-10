@@ -34,7 +34,7 @@ public class AuthService {
    *
    * @return token.
    */
-  String obtainAccessToken() {
+  public String obtainAccessToken() {
     String plainCreds = clientId + ":" + clientSecret;
     byte[] plainCredsBytes = plainCreds.getBytes();
     byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);

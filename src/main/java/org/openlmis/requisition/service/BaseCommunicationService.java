@@ -1,10 +1,10 @@
 package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
+import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.utils.DynamicParameterizedTypeReference;
-import org.openlmis.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ public abstract class BaseCommunicationService<T> {
 
   protected RestOperations restTemplate = new RestTemplate();
 
-  private AuthService authService;
+  protected AuthService authService;
 
   protected abstract String getServiceUrl();
 
@@ -60,7 +59,7 @@ public abstract class BaseCommunicationService<T> {
     RequestParameters params = RequestParameters
         .init()
         .setAll(parameters)
-        .set(ACCESS_TOKEN, obtainAccessToken());
+        .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
     try {
       return restTemplate
@@ -128,7 +127,7 @@ public abstract class BaseCommunicationService<T> {
     RequestParameters params = RequestParameters
         .init()
         .setAll(parameters)
-        .set(ACCESS_TOKEN, obtainAccessToken());
+        .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
     try {
       ResponseEntity<P[]> response;
@@ -153,7 +152,7 @@ public abstract class BaseCommunicationService<T> {
     RequestParameters params = RequestParameters
         .init()
         .setAll(parameters)
-        .set(ACCESS_TOKEN, obtainAccessToken());
+        .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
     ResponseEntity<ResultDto<P>> response = restTemplate.exchange(
         createUri(url, params),
@@ -163,14 +162,6 @@ public abstract class BaseCommunicationService<T> {
     );
 
     return response.getBody();
-  }
-
-  protected String obtainAccessToken() {
-    return authService.obtainAccessToken();
-  }
-
-  protected URI createUri(String url, RequestParameters parameters) {
-    return RequestHelper.createUri(url, parameters);
   }
 
   private DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {

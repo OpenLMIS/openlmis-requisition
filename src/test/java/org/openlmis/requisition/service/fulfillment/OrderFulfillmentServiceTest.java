@@ -70,8 +70,6 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
   @Test
   public void shouldGetProofOfDeliveries() throws Exception {
     // given
-    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
-    OrderDto order = generateInstance();
     ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
     pod.setId(UUID.randomUUID());
 
@@ -81,6 +79,8 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     when(response.getBody()).thenReturn(new ProofOfDeliveryDto[]{pod});
 
     // when
+    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
+    OrderDto order = generateInstance();
     List<ProofOfDeliveryDto> list = service.getProofOfDeliveries(order.getId());
 
     // then

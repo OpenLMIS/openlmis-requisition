@@ -17,9 +17,6 @@ import java.util.Collection;
 public class ProofOfDeliveryService {
 
   @Autowired
-  private PeriodService periodService;
-
-  @Autowired
   private OrderFulfillmentService orderFulfillmentService;
 
   ProofOfDeliveryDto get(Requisition requisition) {

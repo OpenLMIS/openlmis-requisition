@@ -25,9 +25,6 @@ import java.util.UUID;
 public class ProofOfDeliveryServiceTest {
 
   @Mock
-  private PeriodService periodService;
-
-  @Mock
   private OrderFulfillmentService orderFulfillmentService;
 
   @InjectMocks

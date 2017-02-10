@@ -1,6 +1,7 @@
 package org.openlmis.requisition.service.fulfillment;
 
 import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
+import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
@@ -26,7 +27,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
 
     RequestParameters parameters = RequestParameters
         .init()
-        .set(ACCESS_TOKEN, obtainAccessToken());
+        .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
     HttpEntity<OrderDto> body = new HttpEntity<>(order);
 
