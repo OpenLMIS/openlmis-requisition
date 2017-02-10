@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-09T15:30:02 -->
+<!-- 2017-02-10T14:11:03 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisitionLines" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="8eeca41d-cefe-475b-b89b-f898f69a4087">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -12,6 +12,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="org.openlmis.util.money.*"/>
 	<import value="java.util.*"/>
 	<import value="org.openlmis.requisition.dto.*"/>
 	<parameter name="template" class="org.openlmis.requisition.domain.RequisitionTemplate" isForPrompting="false">
@@ -160,7 +161,9 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productCode").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="beginningBalance" mode="Opaque" x="160" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="ba36ed17-bea4-4f3c-9a77-1e1adb90aedb"/>
+				<reportElement key="beginningBalance" mode="Opaque" x="160" y="0" width="35" height="25" backcolor="#CCCCCC" uuid="ba36ed17-bea4-4f3c-9a77-1e1adb90aedb">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,7 +176,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("beginningBalance").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="totalReceivedQuantity" mode="Opaque" x="200" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="925448c8-3d6b-4b79-93b2-38b441c379fa">
+				<reportElement key="totalReceivedQuantity" mode="Opaque" x="195" y="0" width="35" height="25" backcolor="#CCCCCC" uuid="925448c8-3d6b-4b79-93b2-38b441c379fa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -188,7 +191,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalReceivedQuantity").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="totalConsumedQuantity" mode="Opaque" x="240" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="7b859dc6-720f-43e0-9092-886ad01a9d50"/>
+				<reportElement key="totalConsumedQuantity" mode="Opaque" x="230" y="0" width="35" height="25" backcolor="#CCCCCC" uuid="7b859dc6-720f-43e0-9092-886ad01a9d50"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -201,7 +204,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalConsumedQuantity").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="totalLossesAndAdjustments" mode="Opaque" x="280" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="dc09a9f2-acf7-4dab-84ef-a500845dde6d"/>
+				<reportElement key="totalLossesAndAdjustments" mode="Opaque" x="265" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="dc09a9f2-acf7-4dab-84ef-a500845dde6d"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -214,7 +217,9 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalLossesAndAdjustments").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="stockOnHand" mode="Opaque" x="320" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="ff7df6d1-53e7-49c8-a94a-0e026f345a39"/>
+				<reportElement key="stockOnHand" mode="Opaque" x="305" y="0" width="35" height="25" backcolor="#CCCCCC" uuid="ff7df6d1-53e7-49c8-a94a-0e026f345a39">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -227,7 +232,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("stockOnHand").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="requestedQuantity" mode="Opaque" x="360" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="39121943-899a-42d8-93c2-974a7b408fb0"/>
+				<reportElement key="requestedQuantity" mode="Opaque" x="340" y="0" width="35" height="25" backcolor="#CCCCCC" uuid="39121943-899a-42d8-93c2-974a7b408fb0"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -240,7 +245,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantity").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="requestedQuantityExplanation" mode="Opaque" x="400" y="0" width="80" height="25" backcolor="#CCCCCC" uuid="344870d7-8dd4-49a3-b597-d4b615a20eee"/>
+				<reportElement key="requestedQuantityExplanation" mode="Opaque" x="375" y="0" width="80" height="25" backcolor="#CCCCCC" uuid="344870d7-8dd4-49a3-b597-d4b615a20eee"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -253,7 +258,9 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantityExplanation").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="approvedQuantity" mode="Opaque" x="480" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="5ca60a9a-32ae-47e4-b72f-6be575361d5c"/>
+				<reportElement key="approvedQuantity" mode="Opaque" x="455" y="0" width="35" height="25" backcolor="#CCCCCC" uuid="5ca60a9a-32ae-47e4-b72f-6be575361d5c">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -266,7 +273,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("approvedQuantity").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="remarks" mode="Opaque" x="520" y="0" width="90" height="25" backcolor="#CCCCCC" uuid="037372e2-a4c6-4675-9eb1-cd3d955c2961"/>
+				<reportElement key="remarks" mode="Opaque" x="490" y="0" width="90" height="25" backcolor="#CCCCCC" uuid="037372e2-a4c6-4675-9eb1-cd3d955c2961"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -279,7 +286,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("remarks").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="totalStockoutDays" mode="Opaque" x="610" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="38ca3046-107c-49cf-ab32-b6b2a0ad659c"/>
+				<reportElement key="totalStockoutDays" mode="Opaque" x="580" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="38ca3046-107c-49cf-ab32-b6b2a0ad659c"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -292,7 +299,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalStockoutDays").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="total" mode="Opaque" x="640" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="be01de2b-4274-413e-bb50-9463735e2c87"/>
+				<reportElement key="total" mode="Opaque" x="610" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="be01de2b-4274-413e-bb50-9463735e2c87"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -318,7 +325,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("dispensingUnit").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="packsToShip" mode="Opaque" x="670" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="b7f0ed2c-71bf-47b6-a4cc-f74ab3a5688d"/>
+				<reportElement key="packsToShip" mode="Opaque" x="640" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="b7f0ed2c-71bf-47b6-a4cc-f74ab3a5688d"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -331,7 +338,9 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("packsToShip").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="pricePerPack" mode="Opaque" x="700" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="74eb88e0-bdb7-49df-8556-5ee3e4b78647"/>
+				<reportElement key="pricePerPack" mode="Opaque" x="670" y="0" width="45" height="25" backcolor="#CCCCCC" uuid="74eb88e0-bdb7-49df-8556-5ee3e4b78647">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -344,7 +353,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="numberOfNewPatientsAdded" mode="Opaque" x="730" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="326f1d21-fe28-4c47-a971-747e3b295acc">
+				<reportElement key="numberOfNewPatientsAdded" mode="Opaque" x="715" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="326f1d21-fe28-4c47-a971-747e3b295acc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -359,7 +368,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("numberOfNewPatientsAdded").getLabel()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="totalCost" mode="Opaque" x="760" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="4b173290-a1ae-4c11-bc47-dfb8fb4e1710"/>
+				<reportElement key="totalCost" mode="Opaque" x="745" y="0" width="45" height="25" backcolor="#CCCCCC" uuid="4b173290-a1ae-4c11-bc47-dfb8fb4e1710"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -427,7 +436,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productCode").getIsDisplayed() ? $F{orderable}.getProductCode() : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="beginningBalance" x="160" y="0" width="40" height="20" uuid="a7672f9a-30bd-4bf9-96af-324baa7e2280">
+				<reportElement key="beginningBalance" x="160" y="0" width="35" height="20" uuid="a7672f9a-30bd-4bf9-96af-324baa7e2280">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -442,7 +451,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("beginningBalance").getIsDisplayed() ? $F{beginningBalance} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="totalReceivedQuantity" x="200" y="0" width="40" height="20" uuid="547fa08c-24e6-4617-aa94-09384a952a19">
+				<reportElement key="totalReceivedQuantity" x="195" y="0" width="35" height="20" uuid="547fa08c-24e6-4617-aa94-09384a952a19">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -457,7 +466,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalReceivedQuantity").getIsDisplayed() ? $F{totalReceivedQuantity} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="totalConsumedQuantity" x="240" y="0" width="40" height="20" uuid="a2c8fc54-7cdc-442a-9ced-608a01ef270b">
+				<reportElement key="totalConsumedQuantity" x="230" y="0" width="35" height="20" uuid="a2c8fc54-7cdc-442a-9ced-608a01ef270b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -472,7 +481,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalConsumedQuantity").getIsDisplayed() ? $F{totalConsumedQuantity} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="totalLossesAndAdjustments" x="280" y="0" width="40" height="20" uuid="86886d4d-e188-4bbf-bfc7-113325f40773">
+				<reportElement key="totalLossesAndAdjustments" x="265" y="0" width="40" height="20" uuid="86886d4d-e188-4bbf-bfc7-113325f40773">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -487,7 +496,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalLossesAndAdjustments").getIsDisplayed() ? $F{totalLossesAndAdjustments} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="stockOnHand" x="320" y="0" width="40" height="20" uuid="0185ea38-1d83-4eed-929f-508e1ffe010c">
+				<reportElement key="stockOnHand" x="305" y="0" width="35" height="20" uuid="0185ea38-1d83-4eed-929f-508e1ffe010c">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -502,9 +511,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("stockOnHand").getIsDisplayed() ? $F{stockOnHand} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="requestedQuantity" x="360" y="0" width="40" height="20" uuid="e0b2c183-8945-4262-8a8a-5c892513d0ee">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+				<reportElement key="requestedQuantity" x="340" y="0" width="35" height="20" uuid="e0b2c183-8945-4262-8a8a-5c892513d0ee"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -517,7 +524,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantity").getIsDisplayed() ? $F{requestedQuantity} : null]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="requestedQuantityExplanation" x="400" y="0" width="80" height="20" uuid="1e2e903d-a271-40f0-a2a3-ba25d101182f">
+				<reportElement key="requestedQuantityExplanation" x="375" y="0" width="80" height="20" uuid="1e2e903d-a271-40f0-a2a3-ba25d101182f">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -532,7 +539,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantityExplanation").getIsDisplayed() ? $F{requestedQuantityExplanation} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="approvedQuantity" x="480" y="0" width="40" height="20" uuid="123d5789-9a0e-493b-9dcb-8fd89100a599">
+				<reportElement key="approvedQuantity" x="455" y="0" width="35" height="20" uuid="123d5789-9a0e-493b-9dcb-8fd89100a599">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -547,7 +554,7 @@
 				<textFieldExpression><![CDATA[($P{template}.getColumnsMap().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{approvedQuantity} : ""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="remarks" x="520" y="0" width="90" height="20" uuid="b995a245-0802-4412-b304-d4dc8741b567">
+				<reportElement key="remarks" x="490" y="0" width="90" height="20" uuid="b995a245-0802-4412-b304-d4dc8741b567">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -562,7 +569,7 @@
 				<textFieldExpression><![CDATA[($P{template}.getColumnsMap().get("remarks").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{remarks} : ""]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="totalStockoutDays" x="610" y="0" width="30" height="20" uuid="0b535dc6-aa7d-41e4-bf5f-092d578c0ced">
+				<reportElement key="totalStockoutDays" x="580" y="0" width="30" height="20" uuid="0b535dc6-aa7d-41e4-bf5f-092d578c0ced">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -577,7 +584,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalStockoutDays").getIsDisplayed() ? $F{totalStockoutDays} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="total" x="640" y="0" width="30" height="20" uuid="2aef1b8a-a7cb-4972-9506-22d1ccc2a945">
+				<reportElement key="total" x="610" y="0" width="30" height="20" uuid="2aef1b8a-a7cb-4972-9506-22d1ccc2a945">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -607,7 +614,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("dispensingUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDispensingUnit() : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="packsToShip" x="670" y="0" width="30" height="20" uuid="97268fb4-abce-44f3-9162-3376a5e64000">
+				<reportElement key="packsToShip" x="640" y="0" width="30" height="20" uuid="97268fb4-abce-44f3-9162-3376a5e64000">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -622,7 +629,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("packsToShip").getIsDisplayed() ? $F{packsToShip} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="pricePerPack" x="700" y="0" width="30" height="20" uuid="8a78859d-6649-4ac8-9538-48ce2f44ad67">
+				<reportElement key="pricePerPack" x="670" y="0" width="45" height="20" uuid="8a78859d-6649-4ac8-9538-48ce2f44ad67">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -634,10 +641,10 @@
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getIsDisplayed() ? $F{pricePerPack} : null]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getIsDisplayed() ? MoneyFormat.format($F{pricePerPack}) : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="numberOfNewPatientsAdded" x="730" y="0" width="30" height="20" uuid="fea4bade-1ea2-4739-83fa-93be949392a2">
+				<reportElement key="numberOfNewPatientsAdded" x="715" y="0" width="30" height="20" uuid="fea4bade-1ea2-4739-83fa-93be949392a2">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box padding="2">
@@ -652,9 +659,7 @@
 				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("numberOfNewPatientsAdded").getIsDisplayed() ? $F{numberOfNewPatientsAdded} : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="totalCost" x="760" y="0" width="30" height="20" uuid="09db620a-d11c-40e3-9981-bb0aed1b3ad9">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+				<reportElement key="totalCost" x="745" y="0" width="45" height="20" uuid="09db620a-d11c-40e3-9981-bb0aed1b3ad9"/>
 				<box padding="2">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -664,7 +669,7 @@
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getIsDisplayed() ? $F{totalCost} : null]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getIsDisplayed() ? MoneyFormat.format($F{totalCost}) : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="adjustedConsumption" x="790" y="0" width="42" height="20" uuid="2a43948d-6150-4c4f-ba77-2ad782def76b"/>

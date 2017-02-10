@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-07T16:15:28 -->
+<!-- 2017-02-10T14:14:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisition" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
@@ -13,6 +13,7 @@
 	<import value="net.sf.jasperreports.engine.design.*"/>
 	<import value="java.lang.*"/>
 	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="org.openlmis.util.money.*"/>
 	<import value="java.util.*"/>
 	<import value="org.openlmis.requisition.dto.*"/>
 	<import value="org.joda.money.*"/>
@@ -285,25 +286,25 @@
 				<text><![CDATA[Total Cost]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="250" y="40" width="180" height="10" uuid="35a72954-5841-4f9b-abf2-711eea0bd17f"/>
+				<reportElement x="250" y="40" width="240" height="10" uuid="35a72954-5841-4f9b-abf2-711eea0bd17f"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{fullSupplyTotalCost}.toString()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MoneyFormat.format($F{fullSupplyTotalCost})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="250" y="60" width="180" height="10" uuid="a6e8c1b3-5480-4e60-a44a-0c1c29e21473"/>
+				<reportElement x="250" y="60" width="240" height="10" uuid="a6e8c1b3-5480-4e60-a44a-0c1c29e21473"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nonFullSupplyTotalCost}.toString()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MoneyFormat.format($F{nonFullSupplyTotalCost})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="250" y="80" width="180" height="10" uuid="526378e0-d374-40c9-a7ec-3a20c4337a25"/>
+				<reportElement x="250" y="80" width="240" height="10" uuid="526378e0-d374-40c9-a7ec-3a20c4337a25"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalCost}.toString()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MoneyFormat.format($F{totalCost})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="20" y="110" width="60" height="10" uuid="c7929aee-d4b2-4b69-86ea-26ffd9ea0be0"/>
