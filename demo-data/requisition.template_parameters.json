@@ -1,0 +1,10 @@
+[
+  {
+    "id": "5a3ae444-681e-4c6f-8728-94776ba55935",
+    "dataType": "java.lang.String",
+    "displayName": "Program Name",
+    "name": "Program",
+    "selectSql": "SELECT p.name FROM referencedata.programs p ORDER BY p.name",
+    "templateId": "4a052c83-4607-4a32-9e78-1f18c94d88e4"
+  }
+]
