@@ -20,6 +20,9 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
   @Autowired
   private ConvertToOrderNotifier convertToOrderNotifier;
 
+  @Autowired
+  private RequisitionStatusNotifier requisitionStatusNotifier;
+
   /**
    * Process requisition status change.
    * @param requisition a requisition that has just changed its status
@@ -28,7 +31,9 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
     Change lastChange = findLastChange(requisition);
     if (lastChange != null) {
       if (requisition.getStatus() == RequisitionStatus.RELEASED) {
-        convertToOrderNotifier.notifyStatusChanged(requisition, lastChange);
+        convertToOrderNotifier.notifyConvertToOrder(requisition);
+      } else {
+        requisitionStatusNotifier.notifyStatusChanged(requisition, lastChange);
       }
     } else {
       throw new RuntimeException("Requisition's status change not found. "

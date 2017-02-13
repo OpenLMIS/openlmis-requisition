@@ -51,7 +51,7 @@ public class RequisitionStatusProcessorTest {
 
     requisitionStatusProcessor.statusChange(requisition);
 
-    verify(convertToOrderNotifier).notifyStatusChanged(eq(requisition), eq(change));
+    verify(convertToOrderNotifier).notifyConvertToOrder(eq(requisition));
   }
 
 }

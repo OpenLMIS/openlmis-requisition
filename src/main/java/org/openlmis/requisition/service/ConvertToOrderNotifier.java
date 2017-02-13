@@ -1,6 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.javers.core.diff.Change;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -37,11 +36,10 @@ public class ConvertToOrderNotifier {
 
   /**
    * Notify requisition's creator that it was converted to order.
+   *  @param requisition requisition that was converted
    *
-   * @param requisition requisition that was converted
-   * @param change Javers change containing requisition's status, the author, the time, etc.
    */
-  public void notifyStatusChanged(Requisition requisition, Change change) {
+  public void notifyConvertToOrder(Requisition requisition) {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());

@@ -13,6 +13,8 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_ZONE_ID;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -210,6 +212,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     configurationSettingRepository.save(new ConfigurationSetting(REQUISITION_TIME_ZONE_ID, "UTC"));
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, "subject"));
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, "content"));
   }
 
   @Test
@@ -1167,8 +1175,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, "subject"));
     configurationSettingRepository.save(
         new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, "content"));
-    configurationSettingRepository.save(
-        new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
 
     wireMockRule.stubFor(
         post(urlMatching("/api/orders.*"))
