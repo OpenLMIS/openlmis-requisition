@@ -3,6 +3,7 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,9 @@ public class StatusMessageController extends BaseController {
   @Autowired
   StatusMessageRepository statusMessageRepository;
 
+  @Autowired
+  PermissionService permissionService;
+
   /**
    * Get all status messages for the specified requisition.
    */
@@ -31,6 +35,7 @@ public class StatusMessageController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public List<StatusMessageDto> getAllRequisitionStatusMessages(@PathVariable("id") UUID id) {
+    permissionService.canViewRequisition(id);
     List<StatusMessage> statusMessages = statusMessageRepository.findByRequisitionId(id);
     return exportToDtos(statusMessages);
   }

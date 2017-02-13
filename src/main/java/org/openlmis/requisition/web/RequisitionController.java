@@ -65,6 +65,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -178,6 +179,9 @@ public class RequisitionController extends BaseController {
       @RequestParam(value = "programId") UUID program,
       @RequestParam(value = "facilityId") UUID facility,
       @RequestParam(value = "emergency") boolean emergency) {
+
+    permissionService.canInitRequisition(program, facility);
+
     if (null == facility || null == program) {
       throw new ValidationMessageException(
           new Message(MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS));
@@ -344,7 +348,18 @@ public class RequisitionController extends BaseController {
         createdDateFrom, createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency, pageable);
     List<Requisition> resultList = requisitionsPage.getContent();
-    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(resultList);
+    List<Requisition> filteredList = new ArrayList<>();
+
+    filteredList = resultList.stream().filter(req -> {
+      try {
+        permissionService.canViewRequisition(req.getId());
+      } catch (PermissionMessageException ex) {
+        return false;
+      }
+      return true;
+    }).collect(Collectors.toList());
+
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
     return Pagination.getPage(dtoList, pageable, requisitionsPage.getTotalElements());
   }
 
@@ -453,7 +468,16 @@ public class RequisitionController extends BaseController {
         EnumSet.of(RequisitionStatus.SUBMITTED), pageable);
 
     List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
-    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(submittedRequisitions);
+    List<Requisition> filteredList = submittedRequisitions.stream().filter(req -> {
+      try {
+        permissionService.canViewRequisition(req.getId());
+      } catch (PermissionMessageException ex) {
+        return false;
+      }
+      return true;
+    }).collect(Collectors.toList());
+
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
 
     return Pagination.getPage(dtoList, pageable, submittedRequisitionsPage.getTotalElements());
   }

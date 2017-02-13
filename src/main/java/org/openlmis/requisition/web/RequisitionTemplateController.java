@@ -185,6 +185,7 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseBody
   public RequisitionTemplate getTemplateByProgram(
       @RequestParam(value = "program", required = false) UUID program) {
+    permissionService.canManageRequisitionTemplate();
     return requisitionTemplateService.getTemplateForProgram(program);
   }
 }

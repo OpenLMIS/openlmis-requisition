@@ -164,6 +164,9 @@ public class PermissionService {
 
     if (null != requisition) {
       checkPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
+    } else {
+      throw new ContentNotFoundMessageException( new Message(ERROR_REQUISITION_NOT_FOUND,
+          requisitionId));
     }
   }
 

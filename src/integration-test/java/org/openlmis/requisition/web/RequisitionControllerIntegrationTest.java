@@ -86,6 +86,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitionsForApproval";
+  private static final String PERIODS_FOR_INITIATE = RESOURCE_URL + "/periodsForInitiate";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String FACILITY = "facility";
   private static final String APPROVED_REQUISITIONS_SEARCH_URL =
@@ -98,6 +99,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String EMERGENCY = "emergency";
   private static final String MESSAGE = "message";
   private static final String FACILITY_CODE = "facilityCode";
+  private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String SUPERVISORY_SEARCH_URL = "/api/supervisoryNodes/search";
   private static final String SUPERVISORY_URL = "/api/supervisoryNodes/";
 
@@ -220,7 +222,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("processingPeriod", PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
-        .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
         .queryParam("createdDateTo", createdDate.plusDays(2).toString())
         .when()
@@ -273,8 +275,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam("processingPeriod", PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
-        .queryParam("requisitionStatus", RequisitionStatus.INITIATED)
-        .queryParam("requisitionStatus", RequisitionStatus.SUBMITTED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
         .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
         .queryParam("createdDateTo", createdDate.plusDays(2).toString())
         .when()
@@ -291,6 +293,37 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         });
 
     assertEquals(2, content.size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfUserHasNoRightsToSeeFoundedRequisitions() {
+    denyUserAllRights();
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, PROGRAM_UUID)
+        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam("supervisoryNode", supervisoryNode.getId())
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
+        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
+        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionDto>>() {
+        });
+
+    assertTrue(content.isEmpty());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -355,6 +388,24 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .pathParam("id", requisition.getId())
         .when()
         .put(SKIP_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotReturnPeriodsForInitiateIfUserHasNoRightsToInitiateRequisition() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("programId", PROGRAM_UUID)
+        .queryParam("facilityId", FACILITY_UUID)
+        .queryParam("emergency", false)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(PERIODS_FOR_INITIATE)
         .then()
         .statusCode(403);
 
@@ -616,6 +667,25 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     Iterable<RequisitionDto> requisitions = response.getContent();
     assertTrue(requisitions.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfUserHaNoRightsToSeeSubmittedRequisitions() {
+    denyUserAllRights();
+
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
+    response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(SUBMITTED_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(response.getClass());
+
+    Iterable<RequisitionDto> requisitions = response.getContent();
+    assertFalse(requisitions.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

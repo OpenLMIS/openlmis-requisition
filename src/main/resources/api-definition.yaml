@@ -517,6 +517,10 @@ resourceTypes:
                       body:
                         application/json:
                           schema: statusMessageArray
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /search:
           get:
               is: [ secured, paginated ]
@@ -682,6 +686,10 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
+                  "403":
+                      body:
+                        application/json:
+                          schema: localizedMessage
 
   /reports/templates/requisitions:
       displayName: Report Template
@@ -890,6 +898,10 @@ resourceTypes:
                       body:
                         application/json:
                             schema: requisitionTemplate
+                  "403":
+                      body:
+                        application/json:
+                            schema: localizedMessage
                   "404":
                   "500":
   /settings:
