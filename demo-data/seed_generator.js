@@ -15,7 +15,9 @@ var filesOrdered = [
     "requisition.requisition_templates",
     "requisition.requisitions",
     "requisition.columns_maps",
-    "requisition.requisition_line_items"
+    "requisition.requisition_line_items",
+    "requisition.jasper_templates",
+    "requisition.template_parameters"
 ]
 
 // Detects if the given key/value pair represents a foreign key.
