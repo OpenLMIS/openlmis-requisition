@@ -1,16 +1,10 @@
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
-import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
-
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -31,21 +25,6 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -61,6 +40,25 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
+import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -132,6 +130,16 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private RequisitionStatus status;
 
+  /*
+   * Used to convey a small subset of the requisition-related data collected via JaVers' audit-log.
+   * This is primarily used to allow users the ability to see when the RequisitionStatus changed.
+   * A more holistic approach to audit logging is forthcoming.
+   */
+  @Transient
+  @Getter
+  @Setter
+  private Map<String, AuditLogEntry> statusChanges;
+
   @Column(nullable = false)
   @Getter
   @Setter
@@ -165,15 +173,6 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private Set<UUID> availableNonFullSupplyProducts;
 
-  /*
-   * Used to convey a small subset of the requisition-related data collected via JaVers' audit-log.
-   * This is primarily used to allow users the ability to see when the RequisitionStatus changed.
-   * A more holistic approach to audit logging is forthcoming.
-   */
-  @Transient
-  @Getter
-  @Setter
-  private Map<String, AuditLogEntry> statusChanges;
 
   /**
    * Constructor.
@@ -483,6 +482,7 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
     exporter.setStatus(status);
+    exporter.setStatusChanges(statusChanges);
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
@@ -605,6 +605,8 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setStatus(RequisitionStatus status);
 
+    void setStatusChanges(Map<String, AuditLogEntry> statusChanges);
+
     void setEmergency(Boolean emergency);
 
     void setSupplyingFacility(UUID supplyingFacility);
@@ -635,6 +637,8 @@ public class Requisition extends BaseTimestampedEntity {
     ProcessingPeriodDto getProcessingPeriod();
 
     RequisitionStatus getStatus();
+
+    Map<String, AuditLogEntry> getStatusChanges();
 
     Boolean getEmergency();
 

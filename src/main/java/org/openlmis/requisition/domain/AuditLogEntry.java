@@ -10,6 +10,8 @@ public class AuditLogEntry {
   private UUID authorId;
   private ZonedDateTime changeDate;
 
+  public AuditLogEntry(){}
+
   public AuditLogEntry(UUID authorId, ZonedDateTime changeDate) {
     this.authorId = authorId;
     this.changeDate = changeDate;
