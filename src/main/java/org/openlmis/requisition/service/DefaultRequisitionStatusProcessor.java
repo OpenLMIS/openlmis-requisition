@@ -5,13 +5,13 @@ import org.javers.core.diff.Change;
 import org.javers.repository.jql.QueryBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.exception.JaversChangeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class DefaultRequisitionStatusProcessor implements RequisitionStatusProcessor {
 
   @Autowired
@@ -31,7 +31,7 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
         convertToOrderNotifier.notifyStatusChanged(requisition, lastChange);
       }
     } else {
-      throw new JaversChangeNotFoundException("Requisition's status change not found. "
+      throw new RuntimeException("Requisition's status change not found. "
           + "Make sure that it was saved before calling RequisitionStatusProcessor.statusChange()");
     }
   }
