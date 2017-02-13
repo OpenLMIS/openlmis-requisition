@@ -10,6 +10,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
@@ -102,6 +104,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String FACILITY_CODE = "facilityCode";
   private static final String SUPERVISORY_SEARCH_URL = "/api/supervisoryNodes/search";
   private static final String SUPERVISORY_URL = "/api/supervisoryNodes/";
+  private static final String SUBJECT = "subject";
+  private static final String CONTENT = "content";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -212,12 +216,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     configurationSettingRepository.save(new ConfigurationSetting(REQUISITION_TIME_ZONE_ID, "UTC"));
-    configurationSettingRepository.save(
-        new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
-    configurationSettingRepository.save(
-        new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, "subject"));
-    configurationSettingRepository.save(
-        new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, "content"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, SUBJECT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, CONTENT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT, SUBJECT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT, CONTENT));
   }
 
   @Test
@@ -371,7 +379,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotSkipRequisitionIfItIsNotInitiated() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     restAssured.given()
@@ -551,7 +559,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldApproveSubmittedRequisitionIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     mockSupervisoryNode();
@@ -609,7 +617,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetSubmittedRequisitions() {
 
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
@@ -629,7 +637,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldAuthorizeRequisition() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     mockSupervisoryNodeSearch();
@@ -713,7 +721,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private RequisitionDto getRequisitionDtoForCheckNullingLineItemsValues() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
 
     requisitionLineItem.setSkipped(true);
 
@@ -740,7 +748,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotAuthorizeIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
 
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     restAssured.given()
@@ -1380,5 +1388,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private String getMessage(UUID facilityId, UUID programId) {
     return messageSource.getMessage("requisition.error.facility-does-not-support-program",
         new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
+  }
+
+  private void setSubmitted() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisition.setSubmittedDate(ZonedDateTime.now());
   }
 }

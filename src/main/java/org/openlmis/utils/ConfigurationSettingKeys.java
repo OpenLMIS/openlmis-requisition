@@ -12,7 +12,10 @@ public abstract class ConfigurationSettingKeys {
       = "requisition.email.status-update.subject";
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_CONTENT
       = "requisition.email.status-update.content";
-
+  public static final String REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT
+      = "requisition.email.action-required.subject";
+  public static final String REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT
+      = "requisition.email.action-required.content";
 
   private ConfigurationSettingKeys() {
     throw new UnsupportedOperationException();

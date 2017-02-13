@@ -23,6 +23,9 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
+  @Autowired
+  private ApprovalNotifier approvalNotifier;
+
   /**
    * Process requisition status change.
    * @param requisition a requisition that has just changed its status
@@ -34,6 +37,10 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
         convertToOrderNotifier.notifyConvertToOrder(requisition);
       } else {
         requisitionStatusNotifier.notifyStatusChanged(requisition, lastChange);
+      }
+      if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+          || requisition.getStatus() == RequisitionStatus.IN_APPROVAL) {
+        approvalNotifier.notifyApprovers(requisition);
       }
     } else {
       throw new RuntimeException("Requisition's status change not found. "

@@ -20,6 +20,14 @@
     "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} has been {6} by {7} on {8}.\nPlease login to see the requisition.\n<a href=\"{9}\">{9}</a>\nThank you."
   },
   {
+    "key": "requisition.email.action-required.subject",
+    "value": "Action Required"
+  },
+  {
+    "key": "requisition.email.action-required.content",
+    "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} is ready for review. Please login to review the requisition. <a href=\"{6}\">{6}</a>\nThank you"
+  },
+  {
     "key": "requisition.time.zoneId",
     "value": "UTC"
   }
