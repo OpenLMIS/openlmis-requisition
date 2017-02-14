@@ -9,12 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 import org.javers.common.collections.Optional;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
@@ -39,6 +35,12 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.context.MessageSource;
+
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -102,6 +104,9 @@ public class RequisitionStatusNotifierTest {
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT))
         .thenReturn(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+
+    when(configurationSettingService.getStringValue(REQUISITION_URI))
+        .thenReturn("/requisition/");
 
     requisitionStatusNotifier.notifyStatusChanged(requisition, change);
 
