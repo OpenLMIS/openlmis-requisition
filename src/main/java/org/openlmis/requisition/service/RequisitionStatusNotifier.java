@@ -66,12 +66,12 @@ public class RequisitionStatusNotifier {
   public void notifyStatusChanged(Requisition requisition, Change change) {
     Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
-      LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
+      LOGGER.warn("Could not find requisition audit data to notify for requisition status change.");
       return;
     }
 
     AuditLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
-    if (initiateAuditEntry == null) {
+    if (initiateAuditEntry == null || initiateAuditEntry.getAuthorId() == null) {
       LOGGER.warn("Could not find requisition initiator to notify for requisition status change.");
       return;
     }
