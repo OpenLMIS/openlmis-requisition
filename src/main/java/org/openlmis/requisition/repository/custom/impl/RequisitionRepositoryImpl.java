@@ -46,6 +46,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private static final String CREATED_DATE = "createdDate";
   private static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
+  private static final String ID = "id";
 
   @Autowired
   private Javers javers;
@@ -294,6 +295,32 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return null;
+  }
+
+  /**
+   * Get lrequisition with the given id.
+   *
+   * @param requisition UUID of requisition.
+   * @return requisition with given id. {@code null} if not found.
+   * @throws IllegalArgumentException if any of arguments is {@code null}.
+   */
+  public Requisition findOne(UUID requisition) {
+    if (requisition == null) {
+      throw new IllegalArgumentException("requisition must be provided");
+    }
+
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    Predicate predicate = builder.conjunction();
+    predicate = builder.and(predicate, builder.equal(root.get(ID), requisition));
+    query.where(predicate);
+
+    List<Requisition> requisitions = entityManager.createQuery(query)
+        .setMaxResults(1).getResultList();
+
+    return requisitions.isEmpty() ? null : addStatusChangesToRequisition(requisitions.get(0));
   }
 
   private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,
