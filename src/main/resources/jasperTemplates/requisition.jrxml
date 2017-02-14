@@ -20,6 +20,7 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<import value="java.text.*"/>
 	<import value="java.util.stream.*"/>
+	<import value="org.springframework.context.i18n.*"/>
 	<parameter name="template" class="org.openlmis.requisition.domain.RequisitionTemplate" isForPrompting="false">
 		<property name="displayName" value="template"/>
 	</parameter>
@@ -293,21 +294,21 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MoneyFormat.format($F{fullSupplyTotalCost})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MoneyFormat.format($F{fullSupplyTotalCost}, LocaleContextHolder.getLocale())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="250" y="60" width="240" height="10" uuid="a6e8c1b3-5480-4e60-a44a-0c1c29e21473"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MoneyFormat.format($F{nonFullSupplyTotalCost})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MoneyFormat.format($F{nonFullSupplyTotalCost}, LocaleContextHolder.getLocale())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="250" y="80" width="240" height="10" uuid="526378e0-d374-40c9-a7ec-3a20c4337a25"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MoneyFormat.format($F{totalCost})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MoneyFormat.format($F{totalCost}, LocaleContextHolder.getLocale())]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="20" y="110" width="60" height="10" uuid="c7929aee-d4b2-4b69-86ea-26ffd9ea0be0"/>

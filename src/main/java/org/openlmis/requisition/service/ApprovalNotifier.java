@@ -20,7 +20,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisedUsersReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
@@ -50,7 +50,7 @@ public class ApprovalNotifier {
   private ConfigurationSettingService configurationSettingService;
 
   @Autowired
-  private SupervisedUsersReferenceDataService supervisedUsersReferenceDataService;
+  private SupervisingUsersReferenceDataService supervisingUsersReferenceDataService;
 
   @Autowired
   private RightReferenceDataService rightReferenceDataService;
@@ -108,7 +108,7 @@ public class ApprovalNotifier {
 
   private Collection<UserDto> getApprovers(Requisition requisition) {
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
-    return supervisedUsersReferenceDataService
+    return supervisingUsersReferenceDataService
         .findAll(requisition.getSupervisoryNodeId(), right.getId(), requisition.getProgramId());
   }
 }

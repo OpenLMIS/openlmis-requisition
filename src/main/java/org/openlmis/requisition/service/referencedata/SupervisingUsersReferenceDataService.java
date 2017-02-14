@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 @Service
-public class SupervisedUsersReferenceDataService extends UserReferenceDataService {
+public class SupervisingUsersReferenceDataService extends UserReferenceDataService {
 
   @Override
   protected String getUrl() {
@@ -24,7 +24,7 @@ public class SupervisedUsersReferenceDataService extends UserReferenceDataServic
    * @return a collection of supervised users.
    */
   public Collection<UserDto> findAll(UUID supervisoryNode, UUID right, UUID program) {
-    return findAll(supervisoryNode + "/supervisedUsers",
+    return findAll(supervisoryNode + "/supervisingUsers",
         RequestParameters.init().set("rightId", right).set("programId", program));
   }
 }
