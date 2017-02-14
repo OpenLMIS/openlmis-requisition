@@ -281,7 +281,7 @@ public abstract class BaseWebIntegrationTest {
 
     // This mocks searching for supervised users
     wireMockRule
-        .stubFor(get(urlMatching("/api/supervisoryNodes/" + UUID_REGEX + "/supervisedUsers.*"))
+        .stubFor(get(urlMatching("/api/supervisoryNodes/" + UUID_REGEX + "/supervisingUsers.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_USER_SEARCH_RESULT)));

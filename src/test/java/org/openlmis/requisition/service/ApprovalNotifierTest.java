@@ -31,7 +31,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisedUsersReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
@@ -51,7 +51,7 @@ public class ApprovalNotifierTest {
   private NotificationService notificationService;
 
   @Mock
-  private SupervisedUsersReferenceDataService supervisedUsersReferenceDataService;
+  private SupervisingUsersReferenceDataService supervisingUsersReferenceDataService;
 
   @Mock
   private RightReferenceDataService rightReferenceDataService;
@@ -103,7 +103,7 @@ public class ApprovalNotifierTest {
 
   private void mockServices() {
     when(rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE)).thenReturn(right);
-    when(supervisedUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
         .thenReturn(Collections.singletonList(approver));
     when(periodReferenceDataService.findOne(any())).thenReturn(mock(ProcessingPeriodDto.class));
     when(programReferenceDataService.findOne(any())).thenReturn(mock(ProgramDto.class));

@@ -14,7 +14,7 @@ import org.openlmis.requisition.service.RequestParameters;
 import java.util.Collections;
 import java.util.UUID;
 
-public class SupervisedUsersReferenceDataServiceTest {
+public class SupervisingUsersReferenceDataServiceTest {
 
   private UUID supervisoryNode = UUID.randomUUID();
   private UUID right = UUID.randomUUID();
@@ -22,12 +22,12 @@ public class SupervisedUsersReferenceDataServiceTest {
 
   @Test
   public void testFindAll() {
-    SupervisedUsersReferenceDataService spy = spy(new SupervisedUsersReferenceDataService());
+    SupervisingUsersReferenceDataService spy = spy(new SupervisingUsersReferenceDataService());
     doReturn(Collections.emptyList()).when(spy).findAll(anyString(), any(RequestParameters.class));
 
     spy.findAll(supervisoryNode, right, program);
 
-    Mockito.verify(spy).findAll(eq(supervisoryNode + "/supervisedUsers"),
+    Mockito.verify(spy).findAll(eq(supervisoryNode + "/supervisingUsers"),
         refEq(RequestParameters.init().set("rightId", right).set("programId", program)));
   }
 }
