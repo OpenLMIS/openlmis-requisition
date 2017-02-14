@@ -97,8 +97,8 @@ public class ApprovalNotifier {
 
     for (UserDto approver : approvers) {
       if (NotifierHelper.canBeNotified(approver)) {
-        String url = System.getenv("BASE_URL") + configurationSettingService
-            .getStringValue(REQUISITION_URI) + requisition.getId();
+        String url = System.getenv("BASE_URL") + MessageFormat.format(
+            configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
         Object[] msgArgs = {approver.getUsername(), reqType, submittedDate, period.getName(),
             program.getName(), facility.getName(), url};
         content = MessageFormat.format(content, msgArgs);

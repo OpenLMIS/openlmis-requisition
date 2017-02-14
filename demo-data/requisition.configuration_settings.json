@@ -33,6 +33,6 @@
   },
   {
     "key": "requisition.requisitionUri",
-    "value": "/#!/requisition/"
+    "value": "/#!/requisition/{0}"
   }
 ]

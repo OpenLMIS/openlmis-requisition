@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -173,6 +174,8 @@ public class ApprovalNotifierTest {
         .thenReturn(SUBJECT);
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT))
         .thenReturn(CONTENT);
+    when(configurationSettingService.getStringValue(REQUISITION_URI))
+        .thenReturn("/requisition/");
   }
 
   private void mockMessages() {

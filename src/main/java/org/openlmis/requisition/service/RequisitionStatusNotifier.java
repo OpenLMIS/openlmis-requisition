@@ -6,9 +6,6 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STAT
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
-import java.text.MessageFormat;
-import java.time.ZonedDateTime;
-import java.util.Map;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
 import org.openlmis.requisition.domain.AuditLogEntry;
@@ -29,6 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.text.MessageFormat;
+import java.time.ZonedDateTime;
+import java.util.Map;
 
 @Component
 public class RequisitionStatusNotifier {
@@ -90,8 +91,8 @@ public class RequisitionStatusNotifier {
     String content = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
 
-    String requisitionUrl = System.getenv("BASE_URL") + configurationSettingService
-        .getStringValue(REQUISITION_URI) + requisition.getId();
+    String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
+        configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
     String requisitionType = messageService.localize(new Message(requisition.getEmergency()
         ? REQUISITION_TYPE_REGULAR : REQUISITION_TYPE_EMERGENCY)).toString();
 
