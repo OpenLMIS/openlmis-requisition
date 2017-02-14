@@ -3,6 +3,7 @@ package org.openlmis.requisition.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,11 +13,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProofOfDeliveryDto {
   private UUID id;
   private OrderDto order;

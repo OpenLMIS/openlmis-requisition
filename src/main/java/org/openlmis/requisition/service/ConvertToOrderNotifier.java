@@ -1,11 +1,5 @@
 package org.openlmis.requisition.service;
 
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
-
-import java.text.MessageFormat;
-import java.util.Map;
-import org.javers.core.diff.Change;
 import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -21,8 +15,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.MessageFormat;
+import java.util.Map;
+
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+
 @Component
-public class ConvertToOrderNotifier implements RequisitionStatusNotifier {
+public class ConvertToOrderNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConvertToOrderNotifier.class);
 
@@ -43,11 +43,10 @@ public class ConvertToOrderNotifier implements RequisitionStatusNotifier {
 
   /**
    * Notify requisition's creator that it was converted to order.
+   *  @param requisition requisition that was converted
    *
-   * @param requisition requisition that was converted
-   * @param change Javers change containing requisition's status, the author, the time, etc.
    */
-  public void notifyStatusChanged(Requisition requisition, Change change) {
+  public void notifyConvertToOrder(Requisition requisition) {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());

@@ -24,8 +24,7 @@ public class RequisitionReportDtoBuilder {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
-
-
+  
   /**
    * Create a {@link RequisitionReportDto} based on a given {@link Requisition}
    *

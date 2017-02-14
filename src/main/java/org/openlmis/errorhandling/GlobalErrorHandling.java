@@ -3,7 +3,7 @@ package org.openlmis.errorhandling;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
-import org.openlmis.requisition.service.referencedata.ReferenceDataRetrievalException;
+import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.Message;
@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class GlobalErrorHandling extends AbstractErrorHandling {
   
-  @ExceptionHandler(ReferenceDataRetrievalException.class)
+  @ExceptionHandler(DataRetrievalException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
+  public ErrorResponse handleRefDataException(DataRetrievalException ex) {
     return logErrorAndRespond("Error fetching from reference data", ex);
   }
 

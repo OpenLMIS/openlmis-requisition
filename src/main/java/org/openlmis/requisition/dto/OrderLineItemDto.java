@@ -2,11 +2,19 @@ package org.openlmis.requisition.dto;
 
 import org.openlmis.requisition.domain.RequisitionLineItem;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderLineItemDto {
   private UUID id;
   private OrderableDto orderable;

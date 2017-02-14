@@ -2,11 +2,9 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +28,6 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     return UserDto[].class;
   }
 
-  public Collection<UserDto> findUsers(Map<String, Object> parameters) {
-    return findAll("search", parameters);
-  }
-
   /**
    * This method retrieves a user with given name.
    *
@@ -44,8 +38,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     Map<String, Object> requestBody = new HashMap<>();
     requestBody.put("username", name);
 
-    List<UserDto> users = new ArrayList<>(postFindAll("search", Collections.emptyMap(),
-        requestBody));
+    List<UserDto> users = findAll("search", RequestParameters.init(), requestBody);
     return users.isEmpty() ? null : users.get(0);
   }
 
@@ -61,21 +54,13 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    */
   public ResultDto<Boolean> hasRight(UUID user, UUID right, UUID program, UUID facility,
                                      UUID warehouse) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("rightId", right);
-
-    if (null != program) {
-      parameters.put("programId", program);
-    }
-
-    if (null != facility) {
-      parameters.put("facilityId", facility);
-    }
-
-    if (null != warehouse) {
-      parameters.put("warehouseId", warehouse);
-    }
-
-    return getValue(user + "/hasRight", parameters, Boolean.class);
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("rightId", right)
+        .set("programId", program)
+        .set("facilityId", facility)
+        .set("warehouseId", warehouse);
+    
+    return getResult(user + "/hasRight", parameters, Boolean.class);
   }
 }

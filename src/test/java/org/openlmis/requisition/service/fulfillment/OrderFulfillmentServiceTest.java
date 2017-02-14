@@ -1,86 +1,100 @@
 package org.openlmis.requisition.service.fulfillment;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.dto.FacilityDto;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.openlmis.requisition.dto.OrderDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.UserDto;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.service.BaseCommunicationService;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.UUID;
 
+public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<OrderDto> {
 
-@RunWith(MockitoJUnitRunner.class)
-public class OrderFulfillmentServiceTest {
+  @Captor
+  protected ArgumentCaptor<HttpEntity> entityCaptor;
 
-  @InjectMocks
-  private OrderFulfillmentService orderFulfillmentService;
-
-  @Mock
-  private RestTemplate restTemplate;
-
-  @Before
-  public void setUp() {
-
-    orderFulfillmentService = new OrderFulfillmentService(restTemplate) {
-      @Override
-      protected String obtainAccessToken() {
-        return getToken();
-      }
-    };
-    ReflectionTestUtils.setField(orderFulfillmentService, "fulfillmentUrl",
-        "https://localhost");
+  @Override
+  protected BaseCommunicationService<OrderDto> getService() {
+    return new OrderFulfillmentService();
   }
 
-  @Test
-  public void shouldUseProperUrl() throws Exception {
-    OrderDto orderDto = generate();
-    orderFulfillmentService.create(orderDto);
-
-    Map<String, String> paramsCreate = new HashMap<>();
-    paramsCreate.put("access_token", getToken());
-
-    verify(restTemplate, times(1)).postForObject(Matchers.eq(buildUri(
-        "https://localhost/api/orders/", paramsCreate)), any(),
-        Matchers.eq(OrderDto.class));
-  }
-
-  private OrderDto generate() {
+  @Override
+  protected OrderDto generateInstance() {
     OrderDto order = new OrderDto();
-    order.setCreatedBy(new UserDto());
-    order.setProgram(new ProgramDto());
-    order.setRequestingFacility(new FacilityDto());
-    order.setReceivingFacility(new FacilityDto());
-    order.setSupplyingFacility(new FacilityDto());
-    order.setOrderLineItems(new ArrayList<>());
+    order.setId(UUID.randomUUID());
+    
     return order;
   }
 
-  private String getToken() {
-    return "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
+  @Test
+  public void shouldSendRequestToCreateOrder() throws Exception {
+    // given
+    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
+    OrderDto order = generateInstance();
+
+    // then
+    service.create(order);
+
+    // then
+    verify(restTemplate)
+        .postForEntity(uriCaptor.capture(), entityCaptor.capture(), eq(Object.class));
+
+    URI uri = uriCaptor.getValue();
+    String url = service.getServiceUrl() + service.getUrl() + "?" + ACCESS_TOKEN;
+
+    assertThat(uri.toString(), is(equalTo(url)));
+
+    HttpEntity entity = entityCaptor.getValue();
+    Object body = entity.getBody();
+
+    assertThat(body, instanceOf(OrderDto.class));
+    assertThat(((OrderDto) body).getId(), is(equalTo(order.getId())));
   }
 
-  private URI buildUri(String url, Map<String, ?> params) {
-    UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
+  @Test
+  public void shouldGetProofOfDeliveries() throws Exception {
+    // given
+    ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
+    pod.setId(UUID.randomUUID());
 
-    params.entrySet().forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
+    ResponseEntity<ProofOfDeliveryDto[]> response = mock(ResponseEntity.class);
+    when(restTemplate.getForEntity(any(URI.class), eq(ProofOfDeliveryDto[].class)))
+        .thenReturn(response);
+    when(response.getBody()).thenReturn(new ProofOfDeliveryDto[]{pod});
 
-    return builder.build(true).toUri();
+    // when
+    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
+    OrderDto order = generateInstance();
+    List<ProofOfDeliveryDto> list = service.getProofOfDeliveries(order.getId());
+
+    // then
+    verify(restTemplate).getForEntity(
+        uriCaptor.capture(), eq(ProofOfDeliveryDto[].class)
+    );
+
+    URI uri = uriCaptor.getValue();
+    String url = service.getServiceUrl() + service.getUrl() + order.getId()
+        + "/proofOfDeliveries?" + ACCESS_TOKEN;
+
+    assertThat(uri.toString(), is(equalTo(url)));
+    
+    assertThat(list, hasSize(1));
+    assertThat(list.get(0).getId(), is(equalTo(pod.getId())));
   }
-
 }

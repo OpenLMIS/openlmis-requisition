@@ -12,26 +12,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.util.NotificationRequest;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.powermock.api.mockito.PowerMockito;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.openlmis.util.NotificationRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationServiceTest {
-
   private static final String ACCESS_TOKEN = "token";
   private static final String USER_EMAIL = "test@test.te";
   private static final String MAIL_SUBJECT = "subject";
@@ -41,24 +32,21 @@ public class NotificationServiceTest {
   @Mock
   private ConfigurationSettingService configurationSettingService;
 
-  @Spy
+  @Mock
+  private AuthService authService;
+
+  @Mock
+  private RestTemplate restTemplate;
+
   @InjectMocks
   private NotificationService notificationService;
 
-  private RestTemplate restTemplate = PowerMockito.mock(RestTemplate.class);
-
   @Before
   public void before() {
+    when(authService.obtainAccessToken()).thenReturn(ACCESS_TOKEN);
+
+    notificationService.setRestTemplate(restTemplate);
     ReflectionTestUtils.setField(notificationService, "notificationUrl", BASE_URL);
-    ReflectionTestUtils.setField(notificationService, "authorizationUrl", BASE_URL);
-    ReflectionTestUtils.setField(notificationService, "restTemplate", restTemplate);
-    ReflectionTestUtils.setField(notificationService, "configurationSettingService",
-        configurationSettingService);
-    Map<String, String> body = Collections.singletonMap(NotificationService.ACCESS_TOKEN,
-        ACCESS_TOKEN);
-    ResponseEntity<Object> response = new ResponseEntity<>(body, HttpStatus.OK);
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST),
-        any(HttpEntity.class), eq(Object.class))).thenReturn(response);
   }
 
   @Test

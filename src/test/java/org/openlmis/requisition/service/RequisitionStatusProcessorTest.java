@@ -1,5 +1,11 @@
 package org.openlmis.requisition.service;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.javers.common.collections.Optional;
 import org.javers.core.Javers;
 import org.javers.core.commit.CommitMetadata;
@@ -16,12 +22,6 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 
 import java.util.Collections;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionStatusProcessorTest {
@@ -32,6 +32,12 @@ public class RequisitionStatusProcessorTest {
   @Mock
   private ConvertToOrderNotifier convertToOrderNotifier;
 
+  @Mock
+  private ApprovalNotifier approvalNotifier;
+
+  @Mock
+  private RequisitionStatusNotifier requisitionStatusNotifier;
+
   @InjectMocks
   private DefaultRequisitionStatusProcessor requisitionStatusProcessor;
 
@@ -39,7 +45,36 @@ public class RequisitionStatusProcessorTest {
   public void shouldNotifyConvertToOrder() {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.RELEASED);
+    mockChange();
 
+    requisitionStatusProcessor.statusChange(requisition);
+
+    verify(convertToOrderNotifier).notifyConvertToOrder(eq(requisition));
+  }
+
+  @Test
+  public void shouldNotifyApproversWhenAuthorized() {
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+    mockChange();
+
+    requisitionStatusProcessor.statusChange(requisition);
+
+    verify(approvalNotifier).notifyApprovers(eq(requisition));
+  }
+
+  @Test
+  public void shouldNotifyApproversWhenInApproval() {
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+    mockChange();
+
+    requisitionStatusProcessor.statusChange(requisition);
+
+    verify(approvalNotifier).notifyApprovers(eq(requisition));
+  }
+
+  private void mockChange() {
     Change change = mock(Change.class);
 
     when(javers.findChanges(any(JqlQuery.class)))
@@ -48,10 +83,6 @@ public class RequisitionStatusProcessorTest {
     CommitMetadata commitMetadata = mock(CommitMetadata.class);
     when(commitMetadata.getCommitDate()).thenReturn(LocalDateTime.now());
     when(change.getCommitMetadata()).thenReturn(Optional.of(commitMetadata));
-
-    requisitionStatusProcessor.statusChange(requisition);
-
-    verify(convertToOrderNotifier).notifyStatusChanged(eq(requisition), eq(change));
   }
 
 }

@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,8 +23,9 @@ public class UserFulfillmentFacilitiesReferenceDataService extends FacilityRefer
    * @return a collection of facilities the user has fulfillment rights for
    */
   public Collection<FacilityDto> getFulfillmentFacilities(UUID userUuid, UUID rightUuid) {
-    Map<String, Object> searchParams = new HashMap<>();
-    searchParams.put("rightId", rightUuid);
-    return findAll(userUuid + "/fulfillmentFacilities", searchParams);
+    return findAll(
+        userUuid + "/fulfillmentFacilities",
+        RequestParameters.init().set("rightId", rightUuid)
+    );
   }
 }

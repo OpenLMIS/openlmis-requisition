@@ -1,12 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class RightReferenceDataService extends BaseReferenceDataService<RightDto> {
@@ -33,10 +31,7 @@ public class RightReferenceDataService extends BaseReferenceDataService<RightDto
    * @return right related with the name or {@code null}.
    */
   public RightDto findRight(String name) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("name", name);
-
-    List<RightDto> rights = new ArrayList<>(findAll("search", parameters));
+    List<RightDto> rights = findAll("search", RequestParameters.init().set("name", name));
     return rights.isEmpty() ? null : rights.get(0);
   }
 

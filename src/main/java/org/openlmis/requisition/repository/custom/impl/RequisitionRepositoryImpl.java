@@ -69,6 +69,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param requisitionStatuses Statuses of searched Requisitions.
    * @return List of Requisitions with matched parameters.
    */
+  @Override
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                               ZonedDateTime initiatedDateFrom,
                                               ZonedDateTime initiatedDateTo,
@@ -172,6 +173,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    *                         if {@code null} the method will check all requisitions.
    * @return List of Requisitions with matched parameters.
    */
+  @Override
   public List<Requisition> searchRequisitions(UUID processingPeriod,
                                               UUID facility,
                                               UUID program,
@@ -321,7 +323,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     Predicate predicateToUse = predicate;
 
-    if (requisitionStatuses != null && requisitionStatuses.size() > 0) {
+    if (requisitionStatuses != null && !requisitionStatuses.isEmpty()) {
       Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
         statusPredicate = builder.or(statusPredicate,

@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -34,9 +33,10 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
    * @return A list of supply lines matching search criteria
    */
   public Collection<SupplyLineDto> search(UUID programId, UUID supervisoryNodeId) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("programId", programId);
-    parameters.put("supervisoryNodeId", supervisoryNodeId);
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("programId", programId)
+        .set("supervisoryNodeId", supervisoryNodeId);
 
     return findAll("searchByUUID", parameters);
   }

@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -34,9 +33,6 @@ public class StockAdjustmentReasonReferenceDataService
    * @return a collection of stock adjustment reasons the user has fulfillment rights for
    */
   public Collection<StockAdjustmentReasonDto> getStockAdjustmentReasonsByProgram(UUID programId) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("program", programId);
-
-    return findAll("search", parameters);
+    return findAll("search", RequestParameters.init().set("program", programId));
   }
 }

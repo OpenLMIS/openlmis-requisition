@@ -1,11 +1,10 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -38,9 +37,10 @@ public class ApprovedProductReferenceDataService extends
    */
   public Collection<ApprovedProductDto> getApprovedProducts(UUID facilityId, UUID programId,
                                                             boolean fullSupply) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("programId", programId);
-    parameters.put("fullSupply", fullSupply);
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("programId", programId)
+        .set("fullSupply", fullSupply);
 
     return findAll(facilityId + "/approvedProducts", parameters);
   }

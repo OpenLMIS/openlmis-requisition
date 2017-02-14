@@ -1,7 +1,6 @@
 package org.openlmis.requisition.service;
 
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -11,8 +10,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
@@ -66,8 +65,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
-import org.openlmis.requisition.dto.ProofOfDeliveryDto;
-import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -80,7 +77,6 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
-import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -201,9 +197,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionStatusProcessor requisitionStatusProcessor;
-
-  @Mock
-  private ProofOfDeliveryFulfillmentService proofOfDeliveryFulfillmentService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -597,7 +590,7 @@ public class RequisitionServiceTest {
         this.programId, facilityId, suggestedPeriodId, false
     );
 
-    verify(periodService).findPreviousPeriods(any(), eq(1));
+    verify(periodService, times(2)).findPreviousPeriods(any(), eq(1));
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
   }

@@ -2,14 +2,18 @@ package org.openlmis.requisition.dto;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
-@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
-@Data
+@AllArgsConstructor
 public class ProofOfDeliveryLineItemDto {
   private UUID id;
   private OrderLineItemDto orderLineItem;
