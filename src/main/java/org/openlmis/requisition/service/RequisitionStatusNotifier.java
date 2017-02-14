@@ -73,20 +73,23 @@ public class RequisitionStatusNotifier {
   public void notifyStatusChanged(Requisition requisition, Change change) {
     Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
-      LOGGER.warn("Could not find requisition audit data to notify for requisition status change.");
+      LOGGER.error("Could not find status changes for requisition " + requisition.getId() + "to " 
+          + "notify for requisition status change.");
       return;
     }
 
     AuditLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
     if (initiateAuditEntry == null || initiateAuditEntry.getAuthorId() == null) {
-      LOGGER.warn("Could not find requisition initiator to notify for requisition status change.");
+      LOGGER.warn("Could not find initiator for requisition " + requisition.getId() + " to notify " 
+          + "for requisition status change.");
       return;
     }
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.getAuthorId());
 
     AuditLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
     if (submitAuditEntry == null) {
-      LOGGER.warn("Could not find requisition submitter to notify for requisition status change.");
+      LOGGER.warn("Could not find submitter for requisition " + requisition.getId() + " to notify "
+          + "for requisition status change.");
       return;
     }
     ZonedDateTime submittedDate = submitAuditEntry.getChangeDate();

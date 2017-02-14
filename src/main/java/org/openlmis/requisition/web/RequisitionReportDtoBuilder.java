@@ -47,25 +47,22 @@ public class RequisitionReportDtoBuilder {
 
     Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges != null) {
-      AuditLogEntry initiatedEntry = 
-          statusChanges.get(RequisitionStatus.INITIATED.toString()) != null
-          ? statusChanges.get(RequisitionStatus.INITIATED.toString()) : null;
+      AuditLogEntry initiatedEntry = statusChanges.getOrDefault(
+          RequisitionStatus.INITIATED.toString(), null);
       if (Objects.nonNull(initiatedEntry)) {
         reportDto.setInitiatedBy(userReferenceDataService.findOne(initiatedEntry.getAuthorId()));
         reportDto.setInitiatedDate(initiatedEntry.getChangeDate());
       }
 
-      AuditLogEntry submittedEntry = 
-          statusChanges.get(RequisitionStatus.SUBMITTED.toString()) != null
-          ? statusChanges.get(RequisitionStatus.SUBMITTED.toString()) : null;
+      AuditLogEntry submittedEntry = statusChanges.getOrDefault(
+          RequisitionStatus.SUBMITTED.toString(), null);
       if (Objects.nonNull(submittedEntry)) {
         reportDto.setSubmittedBy(userReferenceDataService.findOne(submittedEntry.getAuthorId()));
         reportDto.setSubmittedDate(submittedEntry.getChangeDate());
       }
 
-      AuditLogEntry authorizedEntry = 
-          statusChanges.get(RequisitionStatus.AUTHORIZED.toString()) != null
-          ? statusChanges.get(RequisitionStatus.AUTHORIZED.toString()) : null;
+      AuditLogEntry authorizedEntry = statusChanges.getOrDefault(
+          RequisitionStatus.AUTHORIZED.toString(), null);
       if (Objects.nonNull(authorizedEntry)) {
         reportDto.setAuthorizedBy(userReferenceDataService.findOne(authorizedEntry.getAuthorId()));
         reportDto.setAuthorizedDate(authorizedEntry.getChangeDate());
