@@ -481,7 +481,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotSkipRequisitionIfItIsNotInitiated() {
-    setSubmitted();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
     restAssured.given()
@@ -661,7 +661,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldApproveSubmittedRequisitionIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
-    setSubmitted();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
     mockSupervisoryNode();
@@ -717,7 +717,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetSubmittedRequisitions() {
 
-    setSubmitted();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
@@ -756,7 +756,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldAuthorizeRequisition() {
-    setSubmitted();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
     mockSupervisoryNodeSearch();
@@ -840,8 +840,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private RequisitionDto getRequisitionDtoForCheckNullingLineItemsValues() {
-    setSubmitted();
-
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionLineItem.setSkipped(true);
 
     List<RequisitionLineItem> requisitionLineItems =
@@ -867,7 +866,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotAuthorizeIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
 
-    setSubmitted();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
     requisitionRepository.save(requisition);
 
     restAssured.given()
@@ -1504,9 +1503,5 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private String getMessage(UUID facilityId, UUID programId) {
     return messageSource.getMessage("requisition.error.facility-does-not-support-program",
         new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
-  }
-
-  private void setSubmitted() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
   }
 }

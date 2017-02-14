@@ -13,6 +13,7 @@
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<import value="org.openlmis.util.money.*"/>
+	<import value="org.joda.money.format.*"/>
 	<import value="java.util.*"/>
 	<import value="org.openlmis.requisition.dto.*"/>
 	<import value="org.springframework.context.i18n.*"/>
@@ -642,7 +643,7 @@
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getIsDisplayed() ? MoneyFormat.format($F{pricePerPack}, LocaleContextHolder.getLocale()) : null]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getIsDisplayed() ? MoneyFormat.format($F{pricePerPack}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA) : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="numberOfNewPatientsAdded" x="715" y="0" width="30" height="20" uuid="fea4bade-1ea2-4739-83fa-93be949392a2">
@@ -670,7 +671,7 @@
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getIsDisplayed() ? MoneyFormat.format($F{totalCost}, LocaleContextHolder.getLocale()) : null]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getIsDisplayed() ? MoneyFormat.format($F{totalCost}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA) : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="adjustedConsumption" x="790" y="0" width="42" height="20" uuid="2a43948d-6150-4c4f-ba77-2ad782def76b"/>

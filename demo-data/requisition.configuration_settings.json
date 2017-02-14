@@ -4,27 +4,27 @@
     "value": "noreply@openlmis.org"
   },
   {
-    "key": "requisition.email.convert-to-order.subject",
+    "key": "requisition.email.convertToOrder.subject",
     "value": "Requisition converted to order"
   },
   {
-    "key": "requisition.email.convert-to-order.content",
+    "key": "requisition.email.convertToOrder.content",
     "value": "Dear {0} {1},\n\nThe Requisition for Program {2} and Period {3} has been converted to order."
   },
   {
-    "key": "requisition.email.status-update.subject",
+    "key": "requisition.email.statusUpdate.subject",
     "value": "Requisition Status Update"
   },
   {
-    "key": "requisition.email.status-update.content",
+    "key": "requisition.email.statusUpdate.content",
     "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} has been {6} by {7} on {8}.\nPlease login to see the requisition.\n<a href=\"{9}\">{9}</a>\nThank you."
   },
   {
-    "key": "requisition.email.action-required.subject",
+    "key": "requisition.email.actionRequired.subject",
     "value": "Action Required"
   },
   {
-    "key": "requisition.email.action-required.content",
+    "key": "requisition.email.actionRequired.content",
     "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} is ready for review. Please login to review the requisition. <a href=\"{6}\">{6}</a>\nThank you"
   },
   {
