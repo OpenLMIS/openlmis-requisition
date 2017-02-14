@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,6 +110,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SUPERVISORY_URL = "/api/supervisoryNodes/";
   private static final String SUBJECT = "subject";
   private static final String CONTENT = "content";
+  private static final String SUPERVISORY_NODE = "supervisoryNode";
   static final String PROCESSING_PERIOD = "processingPeriod";
   static final String INITIATED_DATE_FROM = "initiatedDateFrom";
   static final String INITIATED_DATE_TO = "initiatedDateTo";
@@ -133,16 +135,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
   private Requisition requisition = new Requisition();
+  private Requisition requisition2 = new Requisition();
   private Requisition requisitionForSearch = new Requisition();
   private ProcessingPeriodDto period = new ProcessingPeriodDto();
   private OrderableDto ordereble = new OrderableDto();
   private ProgramDto programDto = new ProgramDto();
+  private ProgramDto programDto2 = new ProgramDto();
   private FacilityDto facilityDto = new FacilityDto();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private SupervisoryNodeDto parentSupervisoryNode = new SupervisoryNodeDto();
   private UserDto user;
   private ZonedDateTime createdDate = ZonedDateTime.now();
   private RequisitionTemplate template;
+  private RequisitionTemplate template2;
 
   @Before
   public void setUp() throws IOException {
@@ -158,6 +163,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     programDto.setId(UUID.fromString("86191d25-4846-4775-a968-12df732e6004"));
     programDto.setCode(REQUISITION_REPOSITORY_NAME);
     programDto.setPeriodsSkippable(true);
+
+    programDto2.setId(UUID.fromString("20518141-779c-47b0-92a6-ed2247c2b4bc"));
+    programDto2.setCode(REQUISITION_REPOSITORY_NAME);
+    programDto2.setPeriodsSkippable(true);
 
     facilityDto.setId(getSharedFacilityId());
     facilityDto.setCode(FACILITY_CODE);
@@ -189,7 +198,24 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     template.setProgramId(programDto.getId());
     template.setNumberOfPeriodsToAverage(5);
 
+    template2 = new RequisitionTemplate();
+    template2.setColumnsMap(generateTemplateColumns());
+    template2.setProgramId(programDto2.getId());
+    template2.setNumberOfPeriodsToAverage(5);
+
     requisitionTemplateRepository.save(template);
+    requisitionTemplateRepository.save(template2);
+
+    requisition2.setFacilityId(FACILITY_UUID);
+    requisition2.setProcessingPeriodId(PERIOD_UUID);
+    requisition2.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition2.setCreatedDate(createdDate);
+    requisition2.setEmergency(false);
+    requisition2.setNumberOfMonthsInPeriod(1);
+    requisition2.setStatus(RequisitionStatus.SUBMITTED);
+    requisition2.setProgramId(programDto2.getId());
+    requisition2.setTemplate(template2);
+    requisitionRepository.save(requisition2);
 
     configureRequisition(requisition);
     requisitionForSearch.setStatus(RequisitionStatus.INITIATED);
@@ -243,7 +269,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(PROGRAM, PROGRAM_UUID)
         .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
-        .queryParam("supervisoryNode", supervisoryNode.getId())
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
         .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
@@ -344,7 +370,44 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(PROGRAM, PROGRAM_UUID)
         .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
-        .queryParam("supervisoryNode", supervisoryNode.getId())
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionDto>>() {
+        });
+
+    assertEquals(2, content.size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldFindOnlyTwoRequisitionsWithStatusesOutOfThree() {
+    denyUserRightToProgram(programDto2.getId());
+
+    Requisition req = new Requisition();
+    req.setStatus(RequisitionStatus.INITIATED);
+    configureRequisitionForSearch(req);
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
         .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
@@ -375,7 +438,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(PROGRAM, PROGRAM_UUID)
         .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
-        .queryParam("supervisoryNode", supervisoryNode.getId())
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
         .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
@@ -739,7 +802,32 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldReturnEmptyListIfUserHaNoRightsToSeeSubmittedRequisitions() {
+  public void shouldGetOnlyOneSubmittedRequisitionOutOfTwo() {
+    denyUserRightToProgram(programDto2.getId());
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
+    response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(SUBMITTED_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(response.getClass());
+
+
+    Iterable<RequisitionDto> requisitions = response.getContent();
+    Iterator<RequisitionDto> iterator = requisitions.iterator();
+    iterator.next();
+    assertFalse(iterator.hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfUserHasNoRightsToSeeSubmittedRequisitions() {
     denyUserAllRights();
 
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
@@ -1434,15 +1522,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       columns.put(columnDefinition.getName(), column);
     }
     return columns;
-  }
-
-  private void denyUserAllRights() {
-    wireMockRule.stubFor(
-        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .withBody("{ \"result\":\"false\" }"))
-    );
   }
 
   private void mockSupervisoryNodeSearch() {

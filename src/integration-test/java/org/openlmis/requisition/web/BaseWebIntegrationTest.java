@@ -429,6 +429,25 @@ public abstract class BaseWebIntegrationTest {
     );
   }
 
+  protected void denyUserAllRights() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{ \"result\":\"false\" }"))
+    );
+  }
+
+  protected void denyUserRightToProgram(UUID programId) {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*programId=" + programId
+            + ".*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{ \"result\":\"false\" }"))
+    );
+  }
+
   @After
   public void cleanRepositories() {
     cleanRepositoryHelper.cleanAll();
