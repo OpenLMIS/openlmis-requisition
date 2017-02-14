@@ -13,9 +13,9 @@ public abstract class ConfigurationSettingKeys {
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_CONTENT
       = "requisition.email.status-update.content";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT
-      = "requisition.email.action-required.subject";
+      = "requisition.email.actionRequired.subject";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT
-      = "requisition.email.action-required.content";
+      = "requisition.email.actionRequired.content";
 
   private ConfigurationSettingKeys() {
     throw new UnsupportedOperationException();
