@@ -1,5 +1,16 @@
 package org.openlmis.requisition.service;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+
+import java.util.Collections;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,18 +27,6 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
-
-import java.util.Collections;
-import java.util.UUID;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -62,11 +61,11 @@ public class ConvertToOrderNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    AuditLogEntry auditLogEntry = mock(AuditLogEntry.class);
+    AuditLogEntry initiateAuditEntry = mock(AuditLogEntry.class);
 
     when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
-        RequisitionStatus.INITIATED.toString(), auditLogEntry));
-    when(auditLogEntry.getAuthorId()).thenReturn(userId);
+        RequisitionStatus.INITIATED.toString(), initiateAuditEntry));
+    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
 

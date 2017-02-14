@@ -9,13 +9,18 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -30,10 +35,6 @@ import org.openlmis.requisition.service.referencedata.SupervisedUsersReferenceDa
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
-
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApprovalNotifierTest {
@@ -85,6 +86,11 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
+    AuditLogEntry submitAuditEntry = mock(AuditLogEntry.class);
+    when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
+        RequisitionStatus.SUBMITTED.toString(), submitAuditEntry));
+    when(submitAuditEntry.getChangeDate()).thenReturn(ZonedDateTime.now());
+
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
@@ -93,7 +99,6 @@ public class ApprovalNotifierTest {
   private void mockRequisition() {
     when(requisition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
     when(requisition.getProgramId()).thenReturn(programId);
-    when(requisition.getSubmittedDate()).thenReturn(ZonedDateTime.now());
   }
 
   private void mockServices() {

@@ -5,7 +5,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 
+import java.time.ZonedDateTime;
+import java.util.Map;
+import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -20,6 +24,8 @@ import org.openlmis.requisition.service.referencedata.SupervisedUsersReferenceDa
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +34,8 @@ import java.util.Collection;
 
 @Component
 public class ApprovalNotifier {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ApprovalNotifier.class);
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -70,6 +78,19 @@ public class ApprovalNotifier {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
 
+    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    if (statusChanges == null) {
+      LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
+      return;
+    }
+
+    AuditLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
+    if (submitAuditEntry == null) {
+      LOGGER.warn("Could not find requisition submitter to notify for requisition status change.");
+      return;
+    }
+    ZonedDateTime submittedDate = submitAuditEntry.getChangeDate();
+
     String subject = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT);
     String content = configurationSettingService
@@ -77,7 +98,7 @@ public class ApprovalNotifier {
 
     for (UserDto approver : approvers) {
       Object[] msgArgs = {approver.getUsername(), reqType,
-          requisition.getSubmittedDate().toString(), period.getName(), program.getName(),
+          submittedDate, period.getName(), program.getName(),
           facility.getName(), REQUISITION_URL + requisition.getId()};
       content = MessageFormat.format(content, msgArgs);
 

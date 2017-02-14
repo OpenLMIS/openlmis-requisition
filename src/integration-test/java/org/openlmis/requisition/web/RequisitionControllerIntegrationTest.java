@@ -1439,6 +1439,5 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void setSubmitted() {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.setSubmittedDate(ZonedDateTime.now());
   }
 }

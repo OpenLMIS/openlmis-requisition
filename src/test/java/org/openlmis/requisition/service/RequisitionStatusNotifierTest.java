@@ -1,5 +1,20 @@
 package org.openlmis.requisition.service;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import org.javers.common.collections.Optional;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
@@ -9,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -23,19 +39,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.context.MessageSource;
-
-import java.util.Locale;
-import java.util.UUID;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -79,7 +82,15 @@ public class RequisitionStatusNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getCreatorId()).thenReturn(userId);
+    AuditLogEntry initiateAuditEntry = mock(AuditLogEntry.class);
+    AuditLogEntry submitAuditEntry = mock(AuditLogEntry.class);
+    Map<String, AuditLogEntry> statusChangesMap = new HashMap<>();
+    statusChangesMap.put(RequisitionStatus.INITIATED.toString(), initiateAuditEntry);
+    statusChangesMap.put(RequisitionStatus.SUBMITTED.toString(), submitAuditEntry);
+
+    when(requisition.getStatusChanges()).thenReturn(statusChangesMap);
+    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
+    when(submitAuditEntry.getChangeDate()).thenReturn(ZonedDateTime.now());
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
 
     Change change = mock(Change.class);
