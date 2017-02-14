@@ -10,9 +10,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_ZONE_ID;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -102,6 +106,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String SUPERVISORY_SEARCH_URL = "/api/supervisoryNodes/search";
   private static final String SUPERVISORY_URL = "/api/supervisoryNodes/";
+  private static final String SUBJECT = "subject";
+  private static final String CONTENT = "content";
+  static final String PROCESSING_PERIOD = "processingPeriod";
+  static final String INITIATED_DATE_FROM = "initiatedDateFrom";
+  static final String INITIATED_DATE_TO = "initiatedDateTo";
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -212,6 +221,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition = requisitionRepository.save(requisition);
 
     configurationSettingRepository.save(new ConfigurationSetting(REQUISITION_TIME_ZONE_ID, "UTC"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, SUBJECT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, CONTENT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT, SUBJECT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT, CONTENT));
   }
 
   @Test
@@ -219,12 +238,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam(PROGRAM, PROGRAM_UUID)
-        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
-        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
-        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -263,22 +282,70 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
   }
 
+
+  @Test
+  public void shouldTrackRequisitionStatusChanges() {
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisitionRepository.save(requisition);
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
+            .queryParam(PROGRAM, requisition.getProgramId())
+            .queryParam(PROCESSING_PERIOD, requisition.getProcessingPeriodId())
+            .queryParam(FACILITY, requisition.getFacilityId())
+            .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+            .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+            .when()
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+          new TypeReference<List<RequisitionDto>>() {
+          });
+
+    assertEquals(1, content.size());
+    RequisitionDto requisitionDto = content.get(0);
+    assertTrue(requisitionDto.getStatusChanges().containsKey("INITIATED"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("SUBMITTED"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("AUTHORIZED"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("IN_APPROVAL"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("APPROVED"));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   @Test
   public void shouldFindRequisitionsWithStatuses() {
     Requisition req = new Requisition();
-    req.setStatus(RequisitionStatus.SUBMITTED);
+    req.setStatus(RequisitionStatus.INITIATED);
     configureRequisitionForSearch(req);
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
 
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam(PROGRAM, PROGRAM_UUID)
-        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
-        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
-        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -303,13 +370,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam(PROGRAM, PROGRAM_UUID)
-        .queryParam("processingPeriod", PERIOD_UUID)
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
         .queryParam(FACILITY, FACILITY_UUID)
         .queryParam("supervisoryNode", supervisoryNode.getId())
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
-        .queryParam("createdDateFrom", createdDate.minusDays(2).toString())
-        .queryParam("createdDateTo", createdDate.plusDays(2).toString())
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -414,7 +481,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldNotSkipRequisitionIfItIsNotInitiated() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     restAssured.given()
@@ -594,7 +661,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldApproveSubmittedRequisitionIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     mockSupervisoryNode();
@@ -633,7 +700,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisitionRepository.delete(requisition);
     requisitionRepository.delete(requisitionForSearch);
 
-    RequisitionDto response = restAssured.given()
+    restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam(PROGRAM, programDto.getId())
         .queryParam(FACILITY, facilityDto.getId())
@@ -642,17 +709,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .post(INITIATE_URL)
         .then()
-        .statusCode(201)
-        .extract().as(RequisitionDto.class);
+        .statusCode(201);
 
-    assertEquals(user.getId(), response.getCreatorId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldGetSubmittedRequisitions() {
 
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
@@ -691,7 +756,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldAuthorizeRequisition() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     mockSupervisoryNodeSearch();
@@ -775,7 +840,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private RequisitionDto getRequisitionDtoForCheckNullingLineItemsValues() {
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
 
     requisitionLineItem.setSkipped(true);
 
@@ -802,7 +867,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotAuthorizeIfSkippedAuthorization() {
     configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
 
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    setSubmitted();
     requisitionRepository.save(requisition);
 
     restAssured.given()
@@ -1222,6 +1287,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldConvertRequisitionToOrder() {
+
     Requisition requisition = new Requisition();
     requisition.setProgramId(programDto.getId());
     requisition.setFacilityId(facilityDto.getId());
@@ -1231,14 +1297,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setCreatorId(user.getId());
 
     configurationSettingRepository.save(
         new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, "subject"));
     configurationSettingRepository.save(
         new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, "content"));
-    configurationSettingRepository.save(
-        new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
 
     wireMockRule.stubFor(
         post(urlMatching("/api/orders.*"))
@@ -1306,7 +1369,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setFacilityId(facilityDto.getId());
     requisition.setProcessingPeriodId(period.getId());
     requisition.setProgramId(programDto.getId());
-    requisition.setCreatorId(user.getId());
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(createdDate);
@@ -1321,7 +1383,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setFacilityId(FACILITY_UUID);
     requisition.setProcessingPeriodId(PERIOD_UUID);
     requisition.setProgramId(PROGRAM_UUID);
-    requisition.setCreatorId(user.getId());
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setCreatedDate(createdDate);
     requisition.setEmergency(false);
@@ -1333,9 +1394,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
     Requisition requisition = new Requisition(facility, UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), requisitionStatus, true);
+        requisitionStatus, true);
     requisition.setId(UUID.randomUUID());
-    requisition.setCreatorId(user.getId());
     requisition.setCreatedDate(createdDate.now());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
@@ -1444,5 +1504,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private String getMessage(UUID facilityId, UUID programId) {
     return messageSource.getMessage("requisition.error.facility-does-not-support-program",
         new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
+  }
+
+  private void setSubmitted() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
   }
 }

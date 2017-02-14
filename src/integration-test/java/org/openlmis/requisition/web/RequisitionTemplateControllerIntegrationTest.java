@@ -9,6 +9,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,14 +30,6 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -473,10 +471,9 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
   private Requisition generateRequisition() {
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, true);
+        UUID.randomUUID(), RequisitionStatus.INITIATED, true);
 
     requisition.setId(UUID.randomUUID());
-    requisition.setCreatorId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setTemplate(requisitionTemplate);
     requisition.setNumberOfMonthsInPeriod(1);

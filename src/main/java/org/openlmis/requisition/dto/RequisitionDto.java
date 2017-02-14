@@ -1,19 +1,20 @@
 package org.openlmis.requisition.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -32,26 +33,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private ZonedDateTime modifiedDate;
-
-  @Getter
-  @Setter
-  private UUID creatorId;
-
-  @Getter
-  @Setter
-  private ZonedDateTime submittedDate;
-
-  @Getter
-  @Setter
-  private UUID submitterId;
-
-  @Getter
-  @Setter
-  private ZonedDateTime authorizedDate;
-
-  @Getter
-  @Setter
-  private UUID authorizerId;
 
   @Setter
   private List<RequisitionLineItemDto> requisitionLineItems;
@@ -99,6 +80,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private Set<OrderableDto> availableNonFullSupplyProducts;
+
+  @Getter
+  @Setter
+  private Map<String, AuditLogEntry> statusChanges;
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {

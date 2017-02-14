@@ -1,6 +1,5 @@
 package org.openlmis.security;
 
-import org.apache.commons.lang3.StringUtils;
 import org.javers.spring.auditable.AuthorProvider;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.utils.AuthenticationHelper;
@@ -19,8 +18,8 @@ public class UserNameProvider implements AuthorProvider {
   public String provide() {
     try {
       UserDto currentUser = authenticationHelper.getCurrentUser();
-      if (currentUser != null && StringUtils.isNotBlank(currentUser.getUsername())) {
-        return currentUser.getUsername();
+      if (currentUser != null && currentUser.getId() != null) {
+        return currentUser.getId().toString();
       } else {
         return "unauthenticated user";
       }

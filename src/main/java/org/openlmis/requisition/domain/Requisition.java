@@ -1,17 +1,10 @@
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
-import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
-
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -29,24 +22,8 @@ import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.util.View;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -62,6 +39,26 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
+import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -76,7 +73,6 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
-  public static final String CREATOR_ID = "creatorId";
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
   public static final String MODIFIED_DATE = "modifiedDate";
@@ -134,6 +130,16 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private RequisitionStatus status;
 
+  /*
+   * Used to convey a small subset of the requisition-related data collected via JaVers' audit-log.
+   * This is primarily used to allow users the ability to see when the RequisitionStatus changed.
+   * A more holistic approach to audit logging is forthcoming.
+   */
+  @Transient
+  @Getter
+  @Setter
+  private Map<String, AuditLogEntry> statusChanges;
+
   @Column(nullable = false)
   @Getter
   @Setter
@@ -148,34 +154,6 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   @Type(type = UUID)
   private UUID supervisoryNodeId;
-
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  @Type(type = UUID)
-  private UUID creatorId;
-
-  @Getter
-  @Setter
-  @Type(type = UUID)
-  private UUID submitterId;
-
-  @Getter
-  @Setter
-  @Type(type = UUID)
-  private UUID authorizerId;
-
-  @Column(columnDefinition = "timestamp with time zone")
-  @JsonView(View.BasicInformation.class)
-  @Getter
-  @Setter
-  private ZonedDateTime submittedDate;
-
-  @Column(columnDefinition = "timestamp with time zone")
-  @JsonView(View.BasicInformation.class)
-  @Getter
-  @Setter
-  private ZonedDateTime authorizedDate;
 
   @ManyToMany
   @JoinTable(name = "requisitions_previous_requisitions",
@@ -195,22 +173,21 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private Set<UUID> availableNonFullSupplyProducts;
 
+
   /**
    * Constructor.
    *
    * @param facilityId         id of the Facility
    * @param programId          id of the Program
    * @param processingPeriodId id of the ProcessingPeriod
-   * @param creatorId          id of the creator
    * @param status             status of the Requisition
    * @param emergency          whether this Requisition is emergency
    */
-  public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId, UUID creatorId,
+  public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId,
                      RequisitionStatus status, Boolean emergency) {
     this.facilityId = facilityId;
     this.programId = programId;
     this.processingPeriodId = processingPeriodId;
-    this.creatorId = creatorId;
     this.status = status;
     this.emergency = emergency;
   }
@@ -329,8 +306,6 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.SUBMITTED;
-    submitterId = submitter;
-    submittedDate = ZonedDateTime.now();
   }
 
   /**
@@ -347,8 +322,6 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.AUTHORIZED;
-    authorizerId = authorizer;
-    authorizedDate = ZonedDateTime.now();
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
   }
 
@@ -508,12 +481,8 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setId(id);
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
-    exporter.setCreatorId(creatorId);
-    exporter.setSubmittedDate(getSubmittedDate());
-    exporter.setSubmitterId(submitterId);
-    exporter.setAuthorizedDate(getAuthorizedDate());
-    exporter.setAuthorizerId(authorizerId);
     exporter.setStatus(status);
+    exporter.setStatusChanges(statusChanges);
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
@@ -634,17 +603,9 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setModifiedDate(ZonedDateTime createdDate);
 
-    void setCreatorId(UUID creatorId);
-
-    void setSubmittedDate(ZonedDateTime createdDate);
-
-    void setSubmitterId(UUID creatorId);
-
-    void setAuthorizedDate(ZonedDateTime createdDate);
-
-    void setAuthorizerId(UUID creatorId);
-
     void setStatus(RequisitionStatus status);
+
+    void setStatusChanges(Map<String, AuditLogEntry> statusChanges);
 
     void setEmergency(Boolean emergency);
 
@@ -667,16 +628,6 @@ public class Requisition extends BaseTimestampedEntity {
 
     ZonedDateTime getModifiedDate();
 
-    UUID getCreatorId();
-
-    ZonedDateTime getSubmittedDate();
-
-    UUID getSubmitterId();
-
-    ZonedDateTime getAuthorizedDate();
-
-    UUID getAuthorizerId();
-
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
 
     FacilityDto getFacility();
@@ -686,6 +637,8 @@ public class Requisition extends BaseTimestampedEntity {
     ProcessingPeriodDto getProcessingPeriod();
 
     RequisitionStatus getStatus();
+
+    Map<String, AuditLogEntry> getStatusChanges();
 
     Boolean getEmergency();
 

@@ -41,9 +41,12 @@
 	<field name="fullSupplyTotalCost" class="org.joda.money.Money"/>
 	<field name="nonFullSupplyTotalCost" class="org.joda.money.Money"/>
 	<field name="totalCost" class="org.joda.money.Money"/>
-	<field name="createdBy" class="org.openlmis.requisition.dto.UserDto"/>
+	<field name="initiatedBy" class="org.openlmis.requisition.dto.UserDto"/>
+	<field name="initiatedDate" class="java.time.ZonedDateTime"/>
 	<field name="submittedBy" class="org.openlmis.requisition.dto.UserDto"/>
+	<field name="submittedDate" class="java.time.ZonedDateTime"/>
 	<field name="authorizedBy" class="org.openlmis.requisition.dto.UserDto"/>
+	<field name="authorizedDate" class="java.time.ZonedDateTime"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -68,7 +71,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requisition}.getCreatedDate().toLocalDate().toString()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{initiatedDate}.toLocalDate().toString()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="495" y="65" width="115" height="10" uuid="a32b06c8-fec6-4c4e-b229-7e98a0f51657"/>
@@ -336,7 +339,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{createdBy}.getFirstName(), $F{createdBy}.getLastName(), $F{requisition}.getCreatedDate().toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{initiatedBy}.getFirstName(), $F{initiatedBy}.getLastName(), $F{initiatedDate}.toLocalDate().toString())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="140" y="130" width="350" height="10" uuid="ffd6b808-1a5a-4b04-aa73-cd434c8c1bdf">
@@ -345,7 +348,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{submittedBy}.getFirstName(), $F{submittedBy}.getLastName(), $F{requisition}.getSubmittedDate().toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{submittedBy}.getFirstName(), $F{submittedBy}.getLastName(), $F{submittedDate}.toLocalDate().toString())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="140" y="150" width="350" height="10" uuid="4372bf9c-feff-4449-8944-1726d7d65d43">
@@ -354,7 +357,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{authorizedBy}.getFirstName(), $F{authorizedBy}.getLastName(), $F{requisition}.getAuthorizedDate().toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{authorizedBy}.getFirstName(), $F{authorizedBy}.getLastName(), $F{authorizedDate}.toLocalDate().toString())]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

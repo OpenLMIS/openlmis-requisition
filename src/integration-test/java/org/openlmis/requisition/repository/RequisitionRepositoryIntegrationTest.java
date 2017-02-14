@@ -49,8 +49,7 @@ public class RequisitionRepositoryIntegrationTest
 
   Requisition generateInstance() {
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED,
-        getNextInstanceNumber() % 2 == 0);
+        UUID.randomUUID(), RequisitionStatus.INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
@@ -71,8 +70,7 @@ public class RequisitionRepositoryIntegrationTest
   public void testSearchRequisitionsByAllProperties() {
     Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(), requisitions.get(0).getProcessingPeriodId(),
-        requisitions.get(0).getCreatorId(), requisitions.get(0).getStatus(),
-        requisitions.get(0).getEmergency());
+        requisitions.get(0).getStatus(), requisitions.get(0).getEmergency());
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
@@ -124,7 +122,7 @@ public class RequisitionRepositoryIntegrationTest
   public void testSearchRequisitionsByFacilityAndProgram() {
     Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(), requisitions.get(0).getProcessingPeriodId(),
-        requisitions.get(0).getCreatorId(), requisitions.get(0).getStatus(), false);
+        requisitions.get(0).getStatus(), false);
     requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
@@ -252,7 +250,7 @@ public class RequisitionRepositoryIntegrationTest
     ftap.setMaxPeriodsOfStock(7.25);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
         Collections.emptyList(), 0, null);
 
@@ -265,7 +263,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void shouldPersistWithPreviousRequisitions() {
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     requisition.setPreviousRequisitions(requisitions);
 
     requisition = repository.save(requisition);

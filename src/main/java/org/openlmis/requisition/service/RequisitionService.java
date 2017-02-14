@@ -137,15 +137,14 @@ public class RequisitionService {
    *
    * @param programId         UUID of Program.
    * @param facilityId        UUID of Facility.
-   * @param creatorId         UUID of the user that initiates the requisition.
    * @param emergency         Emergency status.
    * @param suggestedPeriodId Period for requisition.
    * @return Initiated requisition.
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                              UUID creatorId, boolean emergency) {
+                              boolean emergency) {
     Requisition requisition = RequisitionBuilder.newRequisition(
-        facilityId, programId, creatorId, emergency);
+        facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
     ProcessingPeriodDto period = periodService
@@ -301,15 +300,16 @@ public class RequisitionService {
    * Finds requisitions matching all of the provided parameters.
    */
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              ZonedDateTime createdDateFrom,
-                                              ZonedDateTime createdDateTo,
+                                              ZonedDateTime initiatedDateFrom,
+                                              ZonedDateTime initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,
                                               Boolean emergency,
                                               Pageable pageable) {
-    return requisitionRepository.searchRequisitions(facility, program, createdDateFrom,
-        createdDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency, pageable);
+    return requisitionRepository.searchRequisitions(facility, program, initiatedDateFrom,
+        initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency,
+        pageable);
   }
 
   /**

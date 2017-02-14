@@ -72,9 +72,6 @@ public class RequisitionDtoBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
-  private UUID creatorUuid = UUID.randomUUID();
-  private UUID submitterUuid = UUID.randomUUID();
-  private UUID authorizerUuid = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -98,9 +95,6 @@ public class RequisitionDtoBuilderTest {
 
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
-    assertEquals(requisition.getCreatorId(), requisitionDto.getCreatorId());
-    assertEquals(requisition.getSubmitterId(), requisitionDto.getSubmitterId());
-    assertEquals(requisition.getAuthorizerId(), requisitionDto.getAuthorizerId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
     assertEquals(requisition.getTemplate(), requisitionDto.getTemplate());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
@@ -128,11 +122,9 @@ public class RequisitionDtoBuilderTest {
 
   private Requisition buildRequisition() {
     Requisition requisition = new Requisition(facilityUuid, programUuid, processingPeriodUuid,
-        creatorUuid, RequisitionStatus.INITIATED, false);
+        RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
-    requisition.setSubmitterId(submitterUuid);
-    requisition.setAuthorizerId(authorizerUuid);
     requisition.setTemplate(requisitionTemplate);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 

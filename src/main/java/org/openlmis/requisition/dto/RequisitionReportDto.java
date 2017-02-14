@@ -1,5 +1,6 @@
 package org.openlmis.requisition.dto;
 
+import java.time.ZonedDateTime;
 import org.joda.money.Money;
 
 import java.util.List;
@@ -20,7 +21,10 @@ public class RequisitionReportDto {
   private Money fullSupplyTotalCost;
   private Money nonFullSupplyTotalCost;
   private Money totalCost;
-  private UserDto createdBy;
+  private UserDto initiatedBy;
+  private ZonedDateTime initiatedDate;
   private UserDto submittedBy;
+  private ZonedDateTime submittedDate;
   private UserDto authorizedBy;
+  private ZonedDateTime authorizedDate;
 }

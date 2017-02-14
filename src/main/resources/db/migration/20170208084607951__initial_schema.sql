@@ -154,9 +154,6 @@ CREATE TABLE requisitions (
     id uuid NOT NULL,
     createddate timestamp with time zone,
     modifieddate timestamp with time zone,
-    authorizeddate timestamp with time zone,
-    authorizerid uuid,
-    creatorid uuid NOT NULL,
     draftstatusmessage character varying(255),
     emergency boolean NOT NULL,
     facilityid uuid NOT NULL,
@@ -164,8 +161,6 @@ CREATE TABLE requisitions (
     processingperiodid uuid NOT NULL,
     programid uuid NOT NULL,
     status character varying(255) NOT NULL,
-    submitteddate timestamp with time zone,
-    submitterid uuid,
     supervisorynodeid uuid,
     supplyingfacilityid uuid,
     templateid uuid NOT NULL

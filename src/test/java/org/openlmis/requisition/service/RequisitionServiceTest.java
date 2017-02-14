@@ -24,7 +24,21 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -84,22 +98,6 @@ import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -235,7 +233,7 @@ public class RequisitionServiceTest {
   public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
     requisition.setStatus(SUBMITTED);
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
-        .thenReturn(Collections.emptyList());
+            .thenReturn(Collections.emptyList());
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
   }
@@ -557,13 +555,11 @@ public class RequisitionServiceTest {
     /*when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
         .thenReturn(periodDto);*/
 
-    UUID userId = UUID.randomUUID();
     Requisition initiatedRequisition = requisitionService.initiate(
-        programId, facilityId, suggestedPeriodId, userId, false
+        programId, facilityId, suggestedPeriodId, false
     );
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
-    assertEquals(userId, initiatedRequisition.getCreatorId());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
   }
 
@@ -576,7 +572,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+        this.programId, facilityId, suggestedPeriodId, false
     );
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
@@ -591,7 +587,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+        this.programId, facilityId, suggestedPeriodId, false
     );
 
     verify(periodService, times(2)).findPreviousPeriods(any(), eq(1));
@@ -608,7 +604,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+        this.programId, facilityId, suggestedPeriodId, false
     );
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
@@ -621,7 +617,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+        this.programId, facilityId, suggestedPeriodId, false
     );
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
@@ -635,7 +631,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, UUID.randomUUID(), false
+        this.programId, facilityId, suggestedPeriodId, false
     );
 
     Set<UUID> availableNonFullSupplyProducts = initiatedRequisition
@@ -645,7 +641,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition() {
-    requisitionService.initiate(null, null, null, null, false);
+    requisitionService.initiate(null, null, null, false);
   }
 
   @Test
@@ -783,7 +779,7 @@ public class RequisitionServiceTest {
 
     requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
     Collections.reverse(requisitionDtos);
-
+    
     List<RequisitionDto> requisitionDtosSubList =
         requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
 
@@ -932,7 +928,7 @@ public class RequisitionServiceTest {
     // then
     assertTrue(resultSet.equals(nonFullSupplySet));
   }
-
+  
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
@@ -945,7 +941,7 @@ public class RequisitionServiceTest {
       when(facility.getId()).thenReturn(UUID.randomUUID());
 
       Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-          UUID.randomUUID(), UUID.randomUUID(), APPROVED, false);
+          UUID.randomUUID(), APPROVED, false);
       requisition.setId(UUID.randomUUID());
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
@@ -965,7 +961,7 @@ public class RequisitionServiceTest {
 
   private Requisition generateRequisition() {
     requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), INITIATED, false);
+        INITIATED, false);
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setSupplyingFacilityId(facilityId);

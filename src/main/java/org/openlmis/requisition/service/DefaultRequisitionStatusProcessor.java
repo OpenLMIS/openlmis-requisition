@@ -5,13 +5,13 @@ import org.javers.core.diff.Change;
 import org.javers.repository.jql.QueryBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.exception.JaversChangeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class DefaultRequisitionStatusProcessor implements RequisitionStatusProcessor {
 
   @Autowired
@@ -19,6 +19,12 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
 
   @Autowired
   private ConvertToOrderNotifier convertToOrderNotifier;
+
+  @Autowired
+  private RequisitionStatusNotifier requisitionStatusNotifier;
+
+  @Autowired
+  private ApprovalNotifier approvalNotifier;
 
   /**
    * Process requisition status change.
@@ -28,10 +34,16 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
     Change lastChange = findLastChange(requisition);
     if (lastChange != null) {
       if (requisition.getStatus() == RequisitionStatus.RELEASED) {
-        convertToOrderNotifier.notifyStatusChanged(requisition, lastChange);
+        convertToOrderNotifier.notifyConvertToOrder(requisition);
+      } else {
+        requisitionStatusNotifier.notifyStatusChanged(requisition, lastChange);
+      }
+      if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+          || requisition.getStatus() == RequisitionStatus.IN_APPROVAL) {
+        approvalNotifier.notifyApprovers(requisition);
       }
     } else {
-      throw new JaversChangeNotFoundException("Requisition's status change not found. "
+      throw new RuntimeException("Requisition's status change not found. "
           + "Make sure that it was saved before calling RequisitionStatusProcessor.statusChange()");
     }
   }

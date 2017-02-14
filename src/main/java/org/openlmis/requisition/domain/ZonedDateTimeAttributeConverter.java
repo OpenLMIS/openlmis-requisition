@@ -1,9 +1,10 @@
 package org.openlmis.requisition.domain;
 
+import static java.time.ZoneId.of;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
@@ -17,12 +18,13 @@ public class ZonedDateTimeAttributeConverter
 
   @Override
   public Timestamp convertToDatabaseColumn(ZonedDateTime entityValue) {
-    return (entityValue == null) ? null : Timestamp.from(entityValue.toInstant());
+    return (entityValue == null) ? null : Timestamp.valueOf(
+        entityValue.withZoneSameInstant(of("UTC")).toLocalDateTime());
   }
 
   @Override
   public ZonedDateTime convertToEntityAttribute(Timestamp databaseValue) {
     return (databaseValue == null) ? null : databaseValue.toLocalDateTime().atZone(
-        ZoneId.of("UTC"));
+        of("UTC"));
   }
 }

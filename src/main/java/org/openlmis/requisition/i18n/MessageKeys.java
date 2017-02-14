@@ -163,6 +163,8 @@ public abstract class MessageKeys {
       + ".requisitionTemplateInUse";
   public static final String ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL =
       ERROR_PREFIX + ".validation.sourceOfRequisitionTemplateColumnCannotBeNull";
+  public static final String REQUISITION_TYPE_REGULAR = "requisition.type.regular";
+  public static final String REQUISITION_TYPE_EMERGENCY = "requisition.type.emergency";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

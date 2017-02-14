@@ -1,23 +1,5 @@
 package org.openlmis.requisition.service;
 
-import org.javers.core.diff.Change;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
-
-import java.util.UUID;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
@@ -26,6 +8,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+
+import java.util.Collections;
+import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.settings.service.ConfigurationSettingService;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -60,15 +61,18 @@ public class ConvertToOrderNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getCreatorId()).thenReturn(userId);
+    AuditLogEntry initiateAuditEntry = mock(AuditLogEntry.class);
 
+    when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
+        RequisitionStatus.INITIATED.toString(), initiateAuditEntry));
+    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
 
-    convertToOrderNotifier.notifyStatusChanged(requisition, mock(Change.class));
+    convertToOrderNotifier.notifyConvertToOrder(requisition);
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),

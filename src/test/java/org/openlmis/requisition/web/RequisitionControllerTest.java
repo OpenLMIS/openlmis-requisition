@@ -132,7 +132,6 @@ public class RequisitionControllerTest {
 
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
-
   private UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
   private UUID uuid2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
   private UUID uuid3 = UUID.fromString("00000000-0000-0000-0000-000000000003");
@@ -148,6 +147,7 @@ public class RequisitionControllerTest {
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
     when(approvedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
+    when(submittedRequsition.getId()).thenReturn(uuid3);
     when(authorizedRequsition.getId()).thenReturn(uuid4);
     when(authorizedRequsition.isApprovable()).thenReturn(true);
 
@@ -320,6 +320,34 @@ public class RequisitionControllerTest {
     verify(requisitionService, times(0)).reject(uuid4);
   }
 
+  @Test
+  public void shouldProcessStatusChangeWhenApprovingRequisition() throws Exception {
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionStatusProcessor).statusChange(authorizedRequsition);
+  }
+
+  @Test
+  public void shouldProcessStatusChangeWhenAuthorizingRequisition() throws Exception {
+    UserDto submitter = mock(UserDto.class);
+    when(submitter.getId()).thenReturn(UUID.randomUUID());
+    when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
+
+    mockSupervisoryNodeForAuthorize();
+
+    requisitionController.authorizeRequisition(submittedRequsition.getId());
+
+    verify(requisitionStatusProcessor).statusChange(submittedRequsition);
+  }
+
+  private void mockSupervisoryNodeForAuthorize() {
+    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
+    when(supervisoryNode.getId()).thenReturn(UUID.randomUUID());
+
+    when(supervisoryNodeReferenceDataService.findSupervisoryNode(any(), any()))
+        .thenReturn(supervisoryNode);
+  }
+
   private SupervisoryNodeDto mockSupervisoryNode() {
     UUID supervisoryNodeId = UUID.randomUUID();
     SupervisoryNodeDto supervisoryNodeDto = mock(SupervisoryNodeDto.class);
@@ -369,6 +397,8 @@ public class RequisitionControllerTest {
         .thenReturn(initiatedRequsition);
     when(requisitionRepository.findOne(authorizedRequsition.getId()))
         .thenReturn(authorizedRequsition);
+    when(requisitionRepository.findOne(submittedRequsition.getId()))
+        .thenReturn(submittedRequsition);
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {

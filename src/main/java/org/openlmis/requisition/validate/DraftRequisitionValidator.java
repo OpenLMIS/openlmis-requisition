@@ -1,6 +1,5 @@
 package org.openlmis.requisition.validate;
 
-import static org.openlmis.requisition.domain.Requisition.CREATOR_ID;
 import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
 import static org.openlmis.requisition.domain.Requisition.FACILITY_ID;
 import static org.openlmis.requisition.domain.Requisition.MODIFIED_DATE;
@@ -13,6 +12,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.time.ZonedDateTime;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -23,8 +23,6 @@ import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
-import java.time.ZonedDateTime;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
@@ -65,8 +63,6 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         savedRequisition.getProcessingPeriodId(), PROCESSING_PERIOD_ID);
     rejectIfValueChanged(errors, requisition.getEmergency(),
         savedRequisition.getEmergency(), EMERGENCY);
-    rejectIfValueChanged(errors, requisition.getCreatorId(),
-        savedRequisition.getCreatorId(), CREATOR_ID);
     rejectIfValueChanged(errors, requisition.getSupervisoryNodeId(),
         savedRequisition.getSupervisoryNodeId(), SUPERVISORY_NODE_ID);
   }

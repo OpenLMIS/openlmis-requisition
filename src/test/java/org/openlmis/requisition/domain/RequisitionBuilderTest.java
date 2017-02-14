@@ -6,6 +6,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -17,12 +22,6 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionBuilderTest {
@@ -47,9 +46,6 @@ public class RequisitionBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
-  private UUID creatorUuid = UUID.randomUUID();
-  private UUID submitterUuid = UUID.randomUUID();
-  private UUID authorizerUuid = UUID.randomUUID();
   private ZonedDateTime modifiedDate = ZonedDateTime.now();
 
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
@@ -59,9 +55,6 @@ public class RequisitionBuilderTest {
     MockitoAnnotations.initMocks(this);
 
     when(requisitionDto.getId()).thenReturn(requisitionUuid);
-    when(requisitionDto.getCreatorId()).thenReturn(creatorUuid);
-    when(requisitionDto.getSubmitterId()).thenReturn(submitterUuid);
-    when(requisitionDto.getAuthorizerId()).thenReturn(authorizerUuid);
     when(requisitionDto.getFacility()).thenReturn(facilityDto);
     when(requisitionDto.getProgram()).thenReturn(programDto);
     when(requisitionDto.getProcessingPeriod()).thenReturn(processingPeriodDto);
@@ -79,32 +72,24 @@ public class RequisitionBuilderTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenFacilityIdIsMissing()
       throws ValidationMessageException {
-    RequisitionBuilder.newRequisition(null, UUID.randomUUID(), UUID.randomUUID(), true);
+    RequisitionBuilder.newRequisition(null, UUID.randomUUID(), true);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenProgramIdIsMissing() throws
       ValidationMessageException {
-    RequisitionBuilder.newRequisition(UUID.randomUUID(), null, UUID.randomUUID(), true);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenCreatorIdIsMissing() throws
-      ValidationMessageException {
-    RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), null, true);
+    RequisitionBuilder.newRequisition(UUID.randomUUID(), null, true);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenEmergencyFlagIsMissing() throws
       ValidationMessageException {
-    RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        null);
+    RequisitionBuilder.newRequisition(UUID.randomUUID(), UUID.randomUUID(), null);
   }
 
   @Test
   public void shouldInitializeRequisitionWithGivenProgramFacilityAndEmergencyFlag() {
-    Requisition requisition = RequisitionBuilder.newRequisition(facilityUuid, programUuid,
-        creatorUuid,  false);
+    Requisition requisition = RequisitionBuilder.newRequisition(facilityUuid, programUuid, false);
 
     assertFalse(requisition.getEmergency());
     assertEquals(programUuid, requisition.getProgramId());
@@ -118,9 +103,6 @@ public class RequisitionBuilderTest {
 
     assertNotNull(requisition);
     assertEquals(requisitionUuid, requisition.getId());
-    assertEquals(creatorUuid, requisition.getCreatorId());
-    assertEquals(submitterUuid, requisition.getSubmitterId());
-    assertEquals(authorizerUuid, requisition.getAuthorizerId());
     assertEquals(facilityUuid, requisition.getFacilityId());
     assertEquals(programUuid, requisition.getProgramId());
     assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());

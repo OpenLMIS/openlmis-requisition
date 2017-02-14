@@ -536,13 +536,13 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
-                  createdDateFrom:
-                      displayName: createdDateFrom
+                  initiatedDateFrom:
+                      displayName: initiatedDateFrom
                       type: string
                       required: false
                       repeat: false
-                  createdDateTo:
-                      displayName: createdDateTo
+                  initiatedDateTo:
+                      displayName: initiatedDateTo
                       type: string
                       required: false
                       repeat: false

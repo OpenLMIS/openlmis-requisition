@@ -1,7 +1,6 @@
 package org.openlmis.requisition.web;
 
 import net.sf.jasperreports.engine.JRException;
-
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -53,10 +52,9 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
   private Requisition generateRequisition() {
     RequisitionTemplate template = requisitionTemplateRepository.save(new RequisitionTemplate());
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), UUID.randomUUID(), RequisitionStatus.INITIATED, true);
+        UUID.randomUUID(), RequisitionStatus.INITIATED, true);
 
     requisition.setId(UUID.randomUUID());
-    requisition.setCreatorId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
