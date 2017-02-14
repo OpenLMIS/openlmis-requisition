@@ -318,25 +318,6 @@ public class RequisitionController extends BaseController {
   }
 
   /**
-   * Endpoint intended exclusively for testing and development.
-   * @param requisitionId This is a placeholder description.
-   * @param requisitionStatus This is a placeholder description.
-   * @return This is a placeholder description.
-   */
-  @RequestMapping(value = "/requisitions/{id}/update", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public RequisitionStatus tempUpdateRequisition(
-          @PathVariable("id") UUID requisitionId,
-          @RequestParam(value = "requisitionStatus") RequisitionStatus requisitionStatus) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    requisition.setStatus(requisitionStatus);
-    requisitionRepository.save(requisition);
-    return requisition.getStatus();
-  }
-
-
-  /**
    * Finds requisitions matching all of the provided parameters.
    */
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)

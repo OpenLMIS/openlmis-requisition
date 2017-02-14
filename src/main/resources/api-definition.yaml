@@ -430,14 +430,6 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
-      /{id}/update:
-          uriParameters:
-              id:
-                  displayName: id
-                  type: string
-                  required: true
-                  repeat: false
-          get:
       /{id}/reject:
           uriParameters:
               id:

@@ -260,11 +260,59 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
   }
 
+
+  @Test
+  public void shouldTrackRequisitionStatusChanges() {
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    requisitionRepository.save(requisition);
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisitionRepository.save(requisition);
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
+            .queryParam(PROGRAM, requisition.getProgramId())
+            .queryParam("processingPeriod", requisition.getProcessingPeriodId())
+            .queryParam(FACILITY, requisition.getFacilityId())
+            .queryParam("initiatedDateFrom", createdDate.minusDays(2).toString())
+            .queryParam("initiatedDateTo", createdDate.plusDays(2).toString())
+            .when()
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+          new TypeReference<List<RequisitionDto>>() {
+          });
+
+    assertEquals(1, content.size());
+    RequisitionDto requisitionDto = content.get(0);
+    assertTrue(requisitionDto.getStatusChanges().containsKey("INITIATED"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("SUBMITTED"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("AUTHORIZED"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("IN_APPROVAL"));
+    assertTrue(requisitionDto.getStatusChanges().containsKey("APPROVED"));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   @Test
   public void shouldFindRequisitionsWithStatuses() {
     Requisition req = new Requisition();
-    req.setStatus(RequisitionStatus.SUBMITTED);
+    req.setStatus(RequisitionStatus.INITIATED);
     configureRequisitionForSearch(req);
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
 
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

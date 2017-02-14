@@ -24,10 +24,11 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +123,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
 
     /*
+    int pageNumber = Pagination.getPageNumber(pageable);
+    int pageSize = Pagination.getPageSize(pageable);
+
     List<Requisition> results = entityManager.createQuery(queryMain)
                                 .setFirstResult(pageNumber * pageSize)
                                 .setMaxResults(pageSize)
@@ -135,7 +139,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                                                             initiatedDateTo, true);
 
     //Remove requisitions which aren't included in the above list
-    for (int i=0; i<results.size(); i++) {
+    for (int i = 0; i < results.size(); i++) {
       UUID resultId = results.get(i).getId();
       if (!validIds.contains(resultId)) {
         results.remove(i);
@@ -155,9 +159,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Long count = entityManager.createQuery(queryCount).getSingleResult(); */
 
 
-    //int pageNumber = Pagination.getPageNumber(pageable);
-    //int pageSize = Pagination.getPageSize(pageable);
-
     return Pagination.getPage(results, pageable);
   }
 
@@ -174,7 +175,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   public List<Requisition> searchRequisitions(UUID processingPeriod,
                                               UUID facility,
                                               UUID program,
-                                                           Boolean emergency) {
+                                              Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
@@ -260,7 +261,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     query.orderBy(builder.desc(root.get(CREATED_DATE)));
 
     /*
-    List<Requisition> requisitionList = entityManager.createQuery(query).setMaxResults(1).getResultList();
+    List<Requisition> requisitionList = entityManager.createQuery(query)
+                                        .setMaxResults(1).getResultList();
 
     if (requisitionList == null || requisitionList.isEmpty()) {
       return null;
@@ -279,9 +281,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     //Return the first requisition in sortedIds which appears in requisitionList
     UUID uuid;
     Requisition requisition;
-    for (int i=0; i<sortedIds.size(); i++) {
+    for (int i = 0; i < sortedIds.size(); i++) {
       uuid = sortedIds.get(i);
-      for (int x=0; x<requisitionList.size(); x++) {
+      for (int x = 0; x < requisitionList.size(); x++) {
         requisition = requisitionList.get(x);
         if (requisition.getId().equals(uuid)) {
           return addStatusChangesToRequisition(requisition);
@@ -333,19 +335,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
 
   /**
-   * Returns the UUID values of requisitions which have had their status set to INITIATED within a
-   * specified time range.
-   *
+   * <p> Returns the UUID values of requisitions which have had their status set to INITIATED
+   * within a specified time range.
+   * </p><p>
    * Note that it's possible for requisitions to be set to INITIATED, then to something else,
    * and then back to INITIATED. This might happen several times. Only the initial or the most
    * recent status change to INITIATED is examined by this method, depending on the value of
    * useInitialChange.
-   *
+   * </p><p>
    * The UUIDs are returned in order of their associated changes. If useInitialChange is true, the
    * order is ascending. Otherwise it's descending.
-   *
+   * </p><p>
    * The startDate and endDate arguments may be null, in which case they're effectively ignored.
-   *
+   * </p>
    * @param startDate The DateTime before which requisitions set to INITIATED should be excluded.
    * @param endDate The DateTime after which requisitions set to INITIATED should be excluded.
    * @param useInitialChange If true, specifies that the DateTime of the first status-change to
@@ -381,11 +383,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     List<UUID> results = new ArrayList<UUID>();
 
     if (startDate == null) {
-      startDate = ZonedDateTime.from(LocalDate.MIN);
+      Date minDate = getMinDate();
+      LocalDateTime ldt = LocalDateTime.fromDateFields(minDate);
+      startDate = ZonedDateTime.ofInstant(getInstant(ldt) , getTimeZoneId());
     }
 
     if (endDate == null) {
-      endDate = ZonedDateTime.from(LocalDate.MAX);
+      Date maxDate = getMaxDate();
+      LocalDateTime ldt = LocalDateTime.fromDateFields(maxDate);
+      endDate = ZonedDateTime.ofInstant(getInstant(ldt) , getTimeZoneId());
     }
 
     for (int i = 0; i < changes.size(); i++) {
@@ -407,9 +413,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       requisitionId = UUID.fromString(idString);
 
       //Note the commit if appropriate
-      if ( !results.contains(requisitionId) &&
-              (!javaZonedDateTime.isBefore(startDate) && !javaZonedDateTime.isAfter(endDate))  ) {
-          results.add(requisitionId);
+      if ( !results.contains(requisitionId)
+           && (!javaZonedDateTime.isBefore(startDate) && !javaZonedDateTime.isAfter(endDate))  ) {
+        results.add(requisitionId);
       }
     }
 
@@ -470,11 +476,33 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return requisition;
   }
 
+  private Date getMinDate() {
+    Date minDate = new Date(Long.MIN_VALUE);
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(minDate);
+    calendar.add(Calendar.YEAR, 1);
+    return calendar.getTime();
+  }
+
+  private Date getMaxDate() {
+    Date minDate = new Date(Long.MAX_VALUE);
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(minDate);
+    calendar.add(Calendar.YEAR, -1);
+    return calendar.getTime();
+  }
+
   private ZonedDateTime getZonedDateTime(LocalDateTime ldt) {
+    Instant instant = getInstant(ldt);
+    return ZonedDateTime.ofInstant( instant, getTimeZoneId() );
+  }
+
+  private Instant getInstant(LocalDateTime ldt) {
     long epoch = ldt.toDateTime().getMillis();
-    java.time.Instant instant = Instant.ofEpochMilli(epoch);
-    //ZoneId systemZoneId = ZoneId.systemDefault();
-    //ZoneId systemZoneId = ZoneId.of("UTC");
+    return Instant.ofEpochMilli(epoch);
+  }
+
+  private ZoneId getTimeZoneId() {
     ZoneId systemZoneId;
     try {
       systemZoneId = ZoneId.of(
@@ -482,7 +510,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     } catch (Exception ex) {
       systemZoneId = ZoneId.of("UTC");
     }
-    return ZonedDateTime.ofInstant( instant, systemZoneId );
+    return systemZoneId;
   }
 
 }
