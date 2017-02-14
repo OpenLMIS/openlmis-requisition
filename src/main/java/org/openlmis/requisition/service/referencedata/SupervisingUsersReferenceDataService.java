@@ -16,12 +16,12 @@ public class SupervisingUsersReferenceDataService extends UserReferenceDataServi
   }
 
   /**
-   * Get a list of supervised users for a certain supervisory node, program and right.
+   * Get a list of supervising users for a certain supervisory node, program and right.
    *
    * @param supervisoryNode the UUID of the supervisory node.
    * @param right the UUID of the right.
    * @param program the UUID of the program.
-   * @return a collection of supervised users.
+   * @return a collection of supervising users.
    */
   public Collection<UserDto> findAll(UUID supervisoryNode, UUID right, UUID program) {
     return findAll(supervisoryNode + "/supervisingUsers",
