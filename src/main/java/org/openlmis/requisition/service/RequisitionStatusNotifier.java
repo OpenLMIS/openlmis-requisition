@@ -25,11 +25,18 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
+import java.time.chrono.Chronology;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class RequisitionStatusNotifier {
@@ -85,6 +92,13 @@ public class RequisitionStatusNotifier {
     ZonedDateTime submittedDate = submitAuditEntry.getChangeDate();
 
     CommitMetadata commitMetadata = change.getCommitMetadata().get();
+    UUID commitAuthorUuid;
+    try {
+      commitAuthorUuid = UUID.fromString(commitMetadata.getAuthor());
+    } catch (Exception ex) {
+      LOGGER.warn("Could not find valid commit author UUID.");
+      return;
+    }
 
     String subject = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
@@ -94,16 +108,22 @@ public class RequisitionStatusNotifier {
     String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
         configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
     String requisitionType = messageService.localize(new Message(requisition.getEmergency()
-        ? REQUISITION_TYPE_REGULAR : REQUISITION_TYPE_EMERGENCY)).toString();
+        ? REQUISITION_TYPE_REGULAR : REQUISITION_TYPE_EMERGENCY)).asMessage();
 
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
+    UserDto author = userReferenceDataService.findOne(commitAuthorUuid);
 
-    Object[] msgArgs = {initiator.getUsername(), requisitionType, submittedDate,
-        period.getName(), program.getName(), facility.getName(), requisition.getStatus().toString(),
-        commitMetadata.getAuthor(), commitMetadata.getCommitDate(), requisitionUrl};
+    Locale locale = LocaleContextHolder.getLocale();
+    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
+        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
+
+    Object[] msgArgs = {initiator.getUsername(), requisitionType, submittedDate.format(
+        DateTimeFormatter.ofPattern(datePattern)), period.getName(), program.getName(),
+        facility.getName(), requisition.getStatus().toString(), author.getUsername(),
+        commitMetadata.getCommitDate().toString(datePattern), requisitionUrl};
 
     content = MessageFormat.format(content, msgArgs);
 

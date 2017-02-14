@@ -14,6 +14,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 import org.javers.common.collections.Optional;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
+import org.joda.time.LocalDateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,6 +98,8 @@ public class RequisitionStatusNotifierTest {
 
     Change change = mock(Change.class);
     CommitMetadata commitMetadata = mock(CommitMetadata.class);
+    when(commitMetadata.getAuthor()).thenReturn(userId.toString());
+    when(commitMetadata.getCommitDate()).thenReturn(LocalDateTime.now());
     when(change.getCommitMetadata()).thenReturn(Optional.of(commitMetadata));
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT))
