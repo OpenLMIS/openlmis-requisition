@@ -16,6 +16,8 @@ public abstract class ConfigurationSettingKeys {
       = "requisition.email.actionRequired.subject";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT
       = "requisition.email.actionRequired.content";
+  public static final String REQUISITION_URI
+      = "requisition.requisitionUri";
 
   private ConfigurationSettingKeys() {
     throw new UnsupportedOperationException();

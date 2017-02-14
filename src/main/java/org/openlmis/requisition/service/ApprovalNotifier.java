@@ -4,6 +4,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGEN
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
 import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
@@ -62,9 +63,6 @@ public class ApprovalNotifier {
   @Autowired
   private MessageService messageService;
 
-  private static final String REQUISITION_URL =
-      System.getenv("BASE_URL") + "/#!/requisition/";
-
   /**
    * Notify requisition's creator that it was converted to order.
    *
@@ -99,9 +97,10 @@ public class ApprovalNotifier {
 
     for (UserDto approver : approvers) {
       if (NotifierHelper.checkNotify(approver)) {
-        Object[] msgArgs = {approver.getUsername(), reqType,
-            submittedDate, period.getName(), program.getName(),
-            facility.getName(), REQUISITION_URL + requisition.getId()};
+        String url = System.getenv("BASE_URL") + configurationSettingService
+            .getStringValue(REQUISITION_URI) + requisition.getId();
+        Object[] msgArgs = {approver.getUsername(), reqType, submittedDate, period.getName(),
+            program.getName(), facility.getName(), url};
         content = MessageFormat.format(content, msgArgs);
 
         notificationService.notify(approver, subject, content);

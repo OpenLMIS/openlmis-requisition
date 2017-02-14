@@ -17,6 +17,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONV
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_ZONE_ID;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -223,6 +224,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configurationSettingRepository.save(new ConfigurationSetting(REQUISITION_TIME_ZONE_ID, "UTC"));
     configurationSettingRepository
         .save(new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_URI, "/requisition/"));
     configurationSettingRepository
         .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, SUBJECT));
     configurationSettingRepository

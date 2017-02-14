@@ -30,5 +30,9 @@
   {
     "key": "requisition.time.zoneId",
     "value": "UTC"
+  },
+  {
+    "key": "requisition.requisitionUri",
+    "value": "/#!/requisition/"
   }
 ]

@@ -142,6 +142,18 @@ public abstract class BaseWebIntegrationTest {
       + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
       + "}]";
 
+  private static final String MOCK_APPROVERS = "[{"
+      + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
+      + "\"username\":\"admin\","
+      + "\"firstName\":\"Admin\","
+      + "\"lastName\":\"User\","
+      + "\"email\":\"example@mail.com\","
+      + "\"verified\":true,"
+      + "\"active\":true,"
+      + "\"allowNotify\":true,"
+      + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
+      + "}]";
+
   private static final String MOCK_FIND_USER_RESULT = "{"
       + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
       + "\"username\":\"admin\","
@@ -284,7 +296,7 @@ public abstract class BaseWebIntegrationTest {
         .stubFor(get(urlMatching("/api/supervisoryNodes/" + UUID_REGEX + "/supervisingUsers.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_USER_SEARCH_RESULT)));
+            .withBody(MOCK_APPROVERS)));
 
     // This mocks for find one user
     wireMockRule.stubFor(get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + ".*"))
