@@ -25,7 +25,7 @@
   },
   {
     "key": "requisition.email.actionRequired.content",
-    "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} is ready for review. Please login to review the requisition. <a href=\"{6}\">{6}</a>\nThank you"
+    "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} is ready for review. Please login to review the requisition. {6}\nThank you"
   },
   {
     "key": "requisition.time.zoneId",

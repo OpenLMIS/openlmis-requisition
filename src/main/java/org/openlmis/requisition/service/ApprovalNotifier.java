@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
 
@@ -97,10 +98,12 @@ public class ApprovalNotifier {
 
     for (UserDto approver : approvers) {
       if (NotifierHelper.canBeNotified(approver)) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm");
         String url = System.getenv("BASE_URL") + MessageFormat.format(
             configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
-        Object[] msgArgs = {approver.getUsername(), reqType, submittedDate, period.getName(),
-            program.getName(), facility.getName(), url};
+        Object[] msgArgs = {approver.getUsername(), reqType,
+            submittedDate.format(dateTimeFormatter), period.getName(), program.getName(),
+            facility.getName(), url};
         content = MessageFormat.format(content, msgArgs);
 
         notificationService.notify(approver, subject, content);
