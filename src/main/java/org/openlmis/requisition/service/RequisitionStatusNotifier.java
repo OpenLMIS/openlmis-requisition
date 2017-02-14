@@ -4,6 +4,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGEN
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
@@ -89,7 +90,8 @@ public class RequisitionStatusNotifier {
     String content = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
 
-    String requisitionUrl = System.getenv("BASE_URL") + "/#!/requisition/" + requisition.getId();
+    String requisitionUrl = System.getenv("BASE_URL") + configurationSettingService
+        .getStringValue(REQUISITION_URI) + requisition.getId();
     String requisitionType = messageService.localize(new Message(requisition.getEmergency()
         ? REQUISITION_TYPE_REGULAR : REQUISITION_TYPE_EMERGENCY)).toString();
 
