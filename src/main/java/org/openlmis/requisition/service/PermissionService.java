@@ -59,6 +59,20 @@ public class PermissionService {
   }
 
   /**
+   * Checks if current user has permission to initiate or authorize a requisition.
+   *
+   * @throws PermissionMessageException if the current user has not a permission.
+   */
+  public void canInitOrAuthorizeRequisition(UUID program, UUID facility) {
+    if (!hasPermission(REQUISITION_CREATE, program, facility, null)
+        && !hasPermission(REQUISITION_AUTHORIZE, program, facility, null)) {
+      throw new PermissionMessageException(
+          new Message(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_CREATE, REQUISITION_AUTHORIZE)
+      );
+    }
+  }
+
+  /**
    * Checks if current user has permission to update a requisition.
    * Permissions needed to perform update action depend on the requisition status.
    *
@@ -150,7 +164,7 @@ public class PermissionService {
       checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
     }
   }
-  
+
   public void canEditReportTemplates() {
     checkPermission(REPORT_TEMPLATES_EDIT, null, null, null);
   }
@@ -165,14 +179,14 @@ public class PermissionService {
     if (null != requisition) {
       checkPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
     } else {
-      throw new ContentNotFoundMessageException( new Message(ERROR_REQUISITION_NOT_FOUND,
+      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
     }
   }
 
   private void checkPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
     if (!hasPermission(rightName, program, facility, warehouse)) {
-      throw new PermissionMessageException( new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName));
+      throw new PermissionMessageException(new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName));
     }
   }
 

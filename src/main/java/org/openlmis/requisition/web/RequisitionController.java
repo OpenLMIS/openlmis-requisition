@@ -176,13 +176,12 @@ public class RequisitionController extends BaseController {
       @RequestParam(value = "programId") UUID program,
       @RequestParam(value = "facilityId") UUID facility,
       @RequestParam(value = "emergency") boolean emergency) {
-
-    permissionService.canInitRequisition(program, facility);
-
     if (null == facility || null == program) {
       throw new ValidationMessageException(
           new Message(MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS));
     }
+
+    permissionService.canInitOrAuthorizeRequisition(program, facility);
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
