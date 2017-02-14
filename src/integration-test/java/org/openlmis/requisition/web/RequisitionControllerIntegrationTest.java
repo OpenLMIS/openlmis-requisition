@@ -315,6 +315,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @Test
   public void shouldTrackRequisitionStatusChanges() {
+    //save a requisition with different statuses to test if jasper logs are created for each
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisitionRepository.save(requisition);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
