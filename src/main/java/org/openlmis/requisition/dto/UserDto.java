@@ -17,4 +17,6 @@ public class UserDto {
   private boolean verified;
   private FacilityDto homeFacility;
   private Set<RoleAssignmentDto> roleAssignments;
+  private Boolean allowNotify;
+  private boolean active;
 }
