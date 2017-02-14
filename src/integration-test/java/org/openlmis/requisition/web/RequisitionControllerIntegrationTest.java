@@ -383,12 +383,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
 
-    //Extract typed content from the PageImpl response
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.findAndRegisterModules();
-    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
-        new TypeReference<List<RequisitionDto>>() {
-        });
+    List<RequisitionDto> content = Lists.newArrayList(response.getContent());
 
     assertEquals(2, content.size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -420,12 +415,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
 
-    //Extract typed content from the PageImpl response
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.findAndRegisterModules();
-    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
-        new TypeReference<List<RequisitionDto>>() {
-        });
+    List<RequisitionDto> content = Lists.newArrayList(response.getContent());
 
     assertEquals(2, content.size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -451,12 +441,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
 
-    //Extract typed content from the PageImpl response
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.findAndRegisterModules();
-    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
-        new TypeReference<List<RequisitionDto>>() {
-        });
+    List<RequisitionDto> content = Lists.newArrayList(response.getContent());
 
     assertTrue(content.isEmpty());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
