@@ -5,13 +5,13 @@ public abstract class ConfigurationSettingKeys {
   public static final String REQUISITION_EMAIL_NOREPLY
       = "requisition.email.noreply";
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
-      = "requisition.email.convert-to-order.subject";
+      = "requisition.email.convertToOrder.subject";
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT
-      = "requisition.email.convert-to-order.content";
+      = "requisition.email.convertToOrder.content";
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT
-      = "requisition.email.status-update.subject";
+      = "requisition.email.statusUpdate.subject";
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_CONTENT
-      = "requisition.email.status-update.content";
+      = "requisition.email.statusUpdate.content";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT
       = "requisition.email.actionRequired.subject";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT
