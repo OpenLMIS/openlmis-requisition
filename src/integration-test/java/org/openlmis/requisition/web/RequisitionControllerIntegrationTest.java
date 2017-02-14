@@ -42,10 +42,8 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.CurrencyConfig;
-import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -1211,12 +1209,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore // TODO: OLMIS-1788 re-enable when Javers fills in statusChanges on retrieving from db
   @Test
   public void shouldConvertRequisitionToOrder() {
 
-    AuditLogEntry auditLogEntry = new AuditLogEntry(UUID.randomUUID(), ZonedDateTime.now());
-    
     Requisition requisition = new Requisition();
     requisition.setProgramId(programDto.getId());
     requisition.setFacilityId(facilityDto.getId());
@@ -1226,8 +1221,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setSupervisoryNodeId(supervisoryNode.getId());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(Collections.singletonMap(
-        RequisitionStatus.INITIATED.toString(), auditLogEntry));
 
     configurationSettingRepository.save(
         new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, "subject"));
