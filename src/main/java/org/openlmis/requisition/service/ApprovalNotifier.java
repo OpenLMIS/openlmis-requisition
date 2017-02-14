@@ -96,7 +96,7 @@ public class ApprovalNotifier {
         .getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
 
     for (UserDto approver : approvers) {
-      if (NotifierHelper.checkNotify(approver)) {
+      if (NotifierHelper.canBeNotified(approver)) {
         String url = System.getenv("BASE_URL") + configurationSettingService
             .getStringValue(REQUISITION_URI) + requisition.getId();
         Object[] msgArgs = {approver.getUsername(), reqType, submittedDate, period.getName(),

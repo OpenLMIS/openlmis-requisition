@@ -11,7 +11,7 @@ public class NotifierHelper {
   /**
    * Check if user want notifications: (enabled, verified, allowNotify all true).
    */
-  public static boolean checkNotify(UserDto user) {
+  public static boolean canBeNotified(UserDto user) {
     return user.getAllowNotify() != null && user.getAllowNotify()
         && user.isActive() && user.isVerified();
   }
