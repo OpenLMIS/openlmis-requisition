@@ -22,6 +22,8 @@ import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import com.google.common.collect.Lists;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
@@ -393,7 +395,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldFindOnlyTwoRequisitionsWithStatusesOutOfThree() {
+  public void shouldReturnOnlyRequisitionsForWhichUserHasRights() {
     denyUserRightToProgram(programDto2.getId());
 
     Requisition req = new Requisition();
@@ -802,7 +804,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
-  public void shouldGetOnlyOneSubmittedRequisitionOutOfTwo() {
+  public void shouldReturnOnlySubmittedRequisitionsForWhichUserHasRight() {
     denyUserRightToProgram(programDto2.getId());
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -818,11 +820,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200)
         .extract().as(response.getClass());
 
-
-    Iterable<RequisitionDto> requisitions = response.getContent();
-    Iterator<RequisitionDto> iterator = requisitions.iterator();
-    iterator.next();
-    assertFalse(iterator.hasNext());
+    List<RequisitionDto> resultList = Lists.newArrayList(response.getContent());
+    assertEquals(1, resultList.size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
