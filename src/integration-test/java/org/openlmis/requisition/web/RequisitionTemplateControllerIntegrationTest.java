@@ -1,5 +1,8 @@
 package org.openlmis.requisition.web;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -90,6 +93,21 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertEquals(
         requisitionTemplate.getId(),
         response.getId());
+  }
+
+  @Test
+  public void shouldReturn403IfUserHasNoRightsToSearchForRequisitionTemplates() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(PROGRAM, requisitionTemplate.getProgramId())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -465,5 +483,14 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private Integer generateInstanceNumber() {
     currentInstanceNumber += 1;
     return currentInstanceNumber;
+  }
+
+  private void denyUserAllRights() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{ \"result\":\"false\" }"))
+    );
   }
 }
