@@ -3,6 +3,7 @@
 title: OpenLMIS Requisition API
 version: "@version@"
 baseUri: "@baseUrl@"
+protocols: [ HTTP, HTTPS ]
 
 documentation:
     - title: Getting Started
