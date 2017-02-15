@@ -6,6 +6,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTI
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -37,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.FormatStyle;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -109,15 +111,31 @@ public class ApprovalNotifier {
     String url = System.getenv("BASE_URL") + MessageFormat.format(
         configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
 
+    Map<String, String> valuesMap =
+        getValuesMap(reqType, period, program, facility, submittedDate, dateTimeFormatter, url);
+
+    StrSubstitutor sub = new StrSubstitutor(valuesMap);
+
     for (UserDto approver : approvers) {
       if (NotifierHelper.canBeNotified(approver)) {
-        Object[] msgArgs = {approver.getUsername(), reqType,
-            submittedDate.format(dateTimeFormatter), period.getName(), program.getName(),
-            facility.getName(), url};
-
-        notificationService.notify(approver, subject, MessageFormat.format(content, msgArgs));
+        valuesMap.put("approver", approver.getUsername());
+        notificationService.notify(approver, subject, sub.replace(content));
       }
     }
+  }
+
+  private Map<String, String> getValuesMap(String reqType, ProcessingPeriodDto period,
+                                           ProgramDto program, FacilityDto facility,
+                                           ZonedDateTime submittedDate,
+                                           DateTimeFormatter dateTimeFormatter, String url) {
+    Map<String, String> valuesMap = new HashMap<>();
+    valuesMap.put("requisitionType", reqType);
+    valuesMap.put("submittedDate", submittedDate.format(dateTimeFormatter));
+    valuesMap.put("periodName", period.getName());
+    valuesMap.put("programName", program.getName());
+    valuesMap.put("facilityName", facility.getName());
+    valuesMap.put("requisitionUrl", url);
+    return valuesMap;
   }
 
   private Collection<UserDto> getApprovers(Requisition requisition) {

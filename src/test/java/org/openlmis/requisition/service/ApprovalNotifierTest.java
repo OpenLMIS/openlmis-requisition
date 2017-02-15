@@ -82,9 +82,10 @@ public class ApprovalNotifierTest {
   private Requisition requisition = mock(Requisition.class);
 
   private static final String SUBJECT = "subject";
-  private static final String CONTENT = "Dear {0}: This email is informing you that the {1} "
-      + "requisition submitted on {2} for the Period {3} and {4} at {5} is ready for review. "
-      + "Please login to review the requisition. {6} Thank you";
+  private static final String CONTENT = "Dear ${approver}: This email is informing you that the "
+      + "${requisitionType} requisition submitted on ${submittedDate} for the Period ${periodName} "
+      + "and ${programName} at ${facilityName} is ready for review. Please login to review "
+      + "the requisition.${requisitionUrl}Thank you.";
 
   @Before
   public void setUp() {
