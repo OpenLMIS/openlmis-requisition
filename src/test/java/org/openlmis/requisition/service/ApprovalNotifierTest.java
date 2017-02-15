@@ -99,7 +99,7 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
-    allowNotify(approver, "approver");
+    allowNotifyAndMockUsername(approver, "approver");
 
     mockChangeDate();
 
@@ -117,8 +117,8 @@ public class ApprovalNotifierTest {
     when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-    allowNotify(approver, "approver1");
-    allowNotify(approver2, "approver2");
+    allowNotifyAndMockUsername(approver, "approver1");
+    allowNotifyAndMockUsername(approver2, "approver2");
 
     mockChangeDate();
 
@@ -190,7 +190,7 @@ public class ApprovalNotifierTest {
     verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
   }
 
-  private void allowNotify(UserDto approver, String username) {
+  private void allowNotifyAndMockUsername(UserDto approver, String username) {
     when(approver.getAllowNotify()).thenReturn(true);
     when(approver.isVerified()).thenReturn(true);
     when(approver.isActive()).thenReturn(true);
