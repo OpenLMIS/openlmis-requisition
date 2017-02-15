@@ -28,6 +28,8 @@ import org.springframework.validation.Errors;
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
+  private static final int DAYS_IN_MONTH = 30;
+
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
@@ -107,7 +109,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     int totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
 
-    if (totalStockoutDays > monthsInPeriod * 30) {
+    if (totalStockoutDays > monthsInPeriod * DAYS_IN_MONTH) {
       rejectValue(errors, REQUISITION_LINE_ITEMS,
           new Message(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
     }
