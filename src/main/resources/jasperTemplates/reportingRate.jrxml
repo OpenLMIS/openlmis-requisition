@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-15T11:16:05 -->
+<!-- 2017-02-15T17:51:59 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportingRate" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4e1d9a97-c93a-4ad3-87e1-e305d6e7da2e">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="java.util.*"/>
@@ -15,7 +15,7 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="Table_CH" mode="Opaque" backcolor="#E0E0E0">
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
@@ -24,7 +24,7 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+	<style name="Table_CH" mode="Opaque" backcolor="#E0E0E0">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
@@ -48,7 +48,14 @@
 	</subDataset>
 	<parameter name="Program" class="java.lang.String">
 		<property name="displayName" value="Program"/>
-		<property name="selectSql" value="select CONCAT(CONCAT(email, &apos; HAS PASSWORD: &apos;), password) from auth.auth_users"/>
+		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
+	<parameter name="Period" class="java.lang.String">
+		<property name="displayName" value="Period"/>
+		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
+	<parameter name="GeographicZone" class="java.lang.String">
+		<property name="displayName" value="Geographic Zone"/>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
@@ -277,32 +284,34 @@
 			</componentElement>
 			<stackedBarChart>
 				<chart evaluationTime="Report">
-					<reportElement x="0" y="50" width="555" height="230" uuid="05246f67-71c3-41e5-a470-6a2b482146a3"/>
+					<reportElement x="0" y="50" width="555" height="230" uuid="4495baf6-87b8-45d6-aba3-304d18b383a9"/>
 					<chartTitle/>
 					<chartSubtitle/>
 					<chartLegend/>
 				</chart>
 				<categoryDataset>
 					<dataset>
-						<datasetRun subDataset="ReportingRateByPeriod" uuid="1ba91c2b-a1ef-4781-8ce9-a704d0cf79cf"/>
+						<datasetRun subDataset="ReportingRateByPeriod" uuid="3b779a1f-9537-4353-b463-2a2284a8f3ad">
+							<dataSourceExpression><![CDATA[$F{completionByPeriod}]]></dataSourceExpression>
+						</datasetRun>
 					</dataset>
 					<categorySeries>
 						<seriesExpression><![CDATA["OnTimeSeries"]]></seriesExpression>
 						<categoryExpression><![CDATA["MONTH"]]></categoryExpression>
 						<valueExpression><![CDATA[String.format("%.2f%", $F{onTime})]]></valueExpression>
-						<labelExpression><![CDATA[On Time]]></labelExpression>
+						<labelExpression><![CDATA["On Time"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
 						<seriesExpression><![CDATA["MissedSeries"]]></seriesExpression>
 						<categoryExpression><![CDATA["MONTH"]]></categoryExpression>
 						<valueExpression><![CDATA[String.format("%.2f%", $F{late})]]></valueExpression>
-						<labelExpression><![CDATA[Not Reported]]></labelExpression>
+						<labelExpression><![CDATA["Not Reported"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
 						<seriesExpression><![CDATA["LateSeries"]]></seriesExpression>
 						<categoryExpression><![CDATA["MONTH"]]></categoryExpression>
 						<valueExpression><![CDATA[String.format("%.2f%", $F{missed})]]></valueExpression>
-						<labelExpression><![CDATA[Late]]></labelExpression>
+						<labelExpression><![CDATA["Late"]]></labelExpression>
 					</categorySeries>
 				</categoryDataset>
 				<barPlot>
