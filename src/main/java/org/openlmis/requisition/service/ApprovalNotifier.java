@@ -72,7 +72,7 @@ public class ApprovalNotifier {
   public void notifyApprovers(Requisition requisition) {
     Collection<UserDto> approvers = getApprovers(requisition);
     String reqType = messageService.localize(new Message(requisition.getEmergency()
-        ? REQUISITION_TYPE_REGULAR : REQUISITION_TYPE_EMERGENCY)).asMessage();
+        ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
     ProcessingPeriodDto period =
         periodReferenceDataService.findOne(requisition.getProcessingPeriodId());
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());

@@ -111,7 +111,7 @@ public class RequisitionStatusNotifier {
     String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
         configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
     String requisitionType = messageService.localize(new Message(requisition.getEmergency()
-        ? REQUISITION_TYPE_REGULAR : REQUISITION_TYPE_EMERGENCY)).asMessage();
+        ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
 
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
