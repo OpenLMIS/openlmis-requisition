@@ -106,16 +106,16 @@ public class ApprovalNotifier {
         FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern);
 
+    String url = System.getenv("BASE_URL") + MessageFormat.format(
+        configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
+
     for (UserDto approver : approvers) {
       if (NotifierHelper.canBeNotified(approver)) {
-        String url = System.getenv("BASE_URL") + MessageFormat.format(
-            configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
         Object[] msgArgs = {approver.getUsername(), reqType,
             submittedDate.format(dateTimeFormatter), period.getName(), program.getName(),
             facility.getName(), url};
-        content = MessageFormat.format(content, msgArgs);
 
-        notificationService.notify(approver, subject, content);
+        notificationService.notify(approver, subject, MessageFormat.format(content, msgArgs));
       }
     }
   }

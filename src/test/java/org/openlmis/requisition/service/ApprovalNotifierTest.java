@@ -1,6 +1,8 @@
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
@@ -14,6 +16,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -36,7 +39,9 @@ import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -69,6 +74,7 @@ public class ApprovalNotifierTest {
   private ApprovalNotifier approvalNotifier;
 
   private UserDto approver = mock(UserDto.class);
+  private UserDto approver2 = mock(UserDto.class);
   private RightDto right = mock(RightDto.class);
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID rightId = UUID.randomUUID();
@@ -76,7 +82,9 @@ public class ApprovalNotifierTest {
   private Requisition requisition = mock(Requisition.class);
 
   private static final String SUBJECT = "subject";
-  private static final String CONTENT = "content";
+  private static final String CONTENT = "Dear {0}: This email is informing you that the {1} "
+      + "requisition submitted on {2} for the Period {3} and {4} at {5} is ready for review. "
+      + "Please login to review the requisition. {6} Thank you";
 
   @Before
   public void setUp() {
@@ -85,6 +93,8 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldCallNotificationService() throws Exception {
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+        .thenReturn(Collections.singletonList(approver));
     when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
@@ -92,16 +102,42 @@ public class ApprovalNotifierTest {
     when(approver.getAllowNotify()).thenReturn(true);
     when(approver.isVerified()).thenReturn(true);
     when(approver.isActive()).thenReturn(true);
+    when(approver.getUsername()).thenReturn("approver");
 
     mockChangeDate();
 
     approvalNotifier.notifyApprovers(requisition);
 
-    verify(notificationService).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
+    verify(notificationService).notify(refEq(approver), eq(SUBJECT), contains("Dear approver: "
+        + "This email is informing you that the test requisition"));
+  }
+
+  @Test
+  public void shouldCallNotificationServiceTwoTimes() throws Exception {
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+        .thenReturn(Arrays.asList(approver, approver2));
+    when(right.getId()).thenReturn(rightId);
+    mockRequisition();
+    mockMessages();
+    allowNotify();
+
+    mockChangeDate();
+
+    approvalNotifier.notifyApprovers(requisition);
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+
+    verify(notificationService, times(2)).notify(refEq(approver), eq(SUBJECT), argument.capture());
+
+    List<String> values = argument.getAllValues();
+
+    assertTrue(values.get(0).contains("approver1"));
+    assertTrue(values.get(1).contains("approver2"));
   }
 
   @Test
   public void shouldNotCallNotificationServiceWhenUserNotActive() throws Exception {
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+        .thenReturn(Collections.singletonList(approver));
     when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
@@ -119,6 +155,8 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceWhenUserNotVerified() throws Exception {
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+        .thenReturn(Collections.singletonList(approver));
     when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
@@ -136,6 +174,8 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceWhenUserNotAllowNotify() throws Exception {
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+        .thenReturn(Collections.singletonList(approver));
     when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
@@ -149,6 +189,18 @@ public class ApprovalNotifierTest {
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
+  }
+
+  private void allowNotify() {
+    when(approver.getAllowNotify()).thenReturn(true);
+    when(approver.isVerified()).thenReturn(true);
+    when(approver.isActive()).thenReturn(true);
+    when(approver.getUsername()).thenReturn("approver1");
+
+    when(approver2.getAllowNotify()).thenReturn(true);
+    when(approver2.isVerified()).thenReturn(true);
+    when(approver2.isActive()).thenReturn(true);
+    when(approver2.getUsername()).thenReturn("approver2");
   }
 
   private void mockChangeDate() {
@@ -165,8 +217,6 @@ public class ApprovalNotifierTest {
 
   private void mockServices() {
     when(rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE)).thenReturn(right);
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
-        .thenReturn(Collections.singletonList(approver));
     when(periodReferenceDataService.findOne(any())).thenReturn(mock(ProcessingPeriodDto.class));
     when(programReferenceDataService.findOne(any())).thenReturn(mock(ProgramDto.class));
     when(facilityReferenceDataService.findOne(any())).thenReturn(mock(FacilityDto.class));
