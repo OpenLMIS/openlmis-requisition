@@ -33,6 +33,6 @@
   },
   {
     "key": "requisition.requisitionUri",
-    "value": "/#!/requisition/{0}"
+    "value": "/#!/requisition/{0}/fullSupply"
   }
 ]
