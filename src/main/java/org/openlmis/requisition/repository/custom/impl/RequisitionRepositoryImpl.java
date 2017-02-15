@@ -6,11 +6,11 @@ import org.javers.core.diff.changetype.ValueChange;
 import org.javers.repository.jql.JqlQuery;
 import org.javers.repository.jql.QueryBuilder;
 import org.joda.time.LocalDateTime;
+import org.openlmis.JaVersDateProvider;
 import org.openlmis.requisition.domain.AuditLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,19 +23,14 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_ZONE_ID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -52,9 +47,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @PersistenceContext
   private EntityManager entityManager;
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
 
   /**
@@ -91,19 +83,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     if (program != null) {
       predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
     }
-
-    /*
-    initiatedDateFrom = null; // TODO: OLMIS-1182 this needs to search Javers for initiated date
-    if (initiatedDateFrom != null) {
-      predicate = builder.and(predicate,
-          builder.greaterThanOrEqualTo(root.get(CREATED_DATE), initiatedDateFrom));
-    }
-    initiatedDateTo = null; // TODO: OLMIS-1182 this needs to search Javers for initiated date
-    if (initiatedDateTo != null) {
-      predicate = builder.and(predicate,
-          builder.lessThanOrEqualTo(root.get(CREATED_DATE), initiatedDateTo));
-    }
-    */
 
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
@@ -398,21 +377,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     String idString;
     UUID requisitionId;
     ValueChange valueChange;
-    LocalDateTime jodaLocalDateTime;
-    ZonedDateTime javaZonedDateTime;
+    LocalDateTime javersLocalDateTime;
+    ZonedDateTime javersDateTimeWithZone;
     List<UUID> results = new ArrayList<UUID>();
 
+
     if (startDate == null) {
-      Date minDate = getMinDate();
-      LocalDateTime ldt = LocalDateTime.fromDateFields(minDate);
-      startDate = ZonedDateTime.ofInstant(getInstant(ldt) , getTimeZoneId());
+      startDate = JaVersDateProvider.getMinDateTime();
     }
 
     if (endDate == null) {
-      Date maxDate = getMaxDate();
-      LocalDateTime ldt = LocalDateTime.fromDateFields(maxDate);
-      endDate = ZonedDateTime.ofInstant(getInstant(ldt) , getTimeZoneId());
+      endDate = JaVersDateProvider.getMaxDateTime();
     }
+
 
     for (int i = 0; i < changes.size(); i++) {
       valueChange = (ValueChange) changes.get(i);
@@ -424,9 +401,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       }
 
       //Get the commit's DateTime
-      jodaLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
-      javaZonedDateTime = getZonedDateTime(jodaLocalDateTime);
-
+      javersLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
+      javersDateTimeWithZone = JaVersDateProvider.getZonedDateTime(javersLocalDateTime,
+                                                                             startDate.getZone());
       //Get the UUID of the requisition
       idString = valueChange.getAffectedGlobalId().value();
       idString = idString.substring((idString.lastIndexOf('/') + 1));
@@ -434,7 +411,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
       //Note the commit if appropriate
       if ( !results.contains(requisitionId)
-           && (!javaZonedDateTime.isBefore(startDate) && !javaZonedDateTime.isAfter(endDate))  ) {
+           && (!javersDateTimeWithZone.isBefore(startDate)
+           && !javersDateTimeWithZone.isAfter(endDate))) {
         results.add(requisitionId);
       }
     }
@@ -484,8 +462,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           commitAuthorUuid = null;
         }
 
+        ZoneId jaVersTimeZone = ZoneId.of(JaVersDateProvider.DATE_TIME_ZONE.getID());
         jodaLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
-        javaZonedDateTime = getZonedDateTime(jodaLocalDateTime);
+        javaZonedDateTime = JaVersDateProvider.getZonedDateTime(jodaLocalDateTime, jaVersTimeZone);
 
         AuditLogEntry auditLogEntry = new AuditLogEntry(commitAuthorUuid, javaZonedDateTime);
         statusChanges.put(newValue, auditLogEntry);
@@ -494,43 +473,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     requisition.setStatusChanges(statusChanges);
     return requisition;
-  }
-
-  private Date getMinDate() {
-    Date minDate = new Date(Long.MIN_VALUE);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(minDate);
-    calendar.add(Calendar.YEAR, 1);
-    return calendar.getTime();
-  }
-
-  private Date getMaxDate() {
-    Date minDate = new Date(Long.MAX_VALUE);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(minDate);
-    calendar.add(Calendar.YEAR, -1);
-    return calendar.getTime();
-  }
-
-  private ZonedDateTime getZonedDateTime(LocalDateTime ldt) {
-    Instant instant = getInstant(ldt);
-    return ZonedDateTime.ofInstant( instant, getTimeZoneId() );
-  }
-
-  private Instant getInstant(LocalDateTime ldt) {
-    long epoch = ldt.toDateTime().getMillis();
-    return Instant.ofEpochMilli(epoch);
-  }
-
-  private ZoneId getTimeZoneId() {
-    ZoneId systemZoneId;
-    try {
-      systemZoneId = ZoneId.of(
-              configurationSettingService.getStringValue(REQUISITION_TIME_ZONE_ID));
-    } catch (Exception ex) {
-      systemZoneId = ZoneId.of("UTC");
-    }
-    return systemZoneId;
   }
 
 }
