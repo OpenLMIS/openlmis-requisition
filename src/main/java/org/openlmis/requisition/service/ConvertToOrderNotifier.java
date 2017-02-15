@@ -58,7 +58,7 @@ public class ConvertToOrderNotifier {
     }
 
     AuditLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
-    if (initiateAuditEntry == null) {
+    if (initiateAuditEntry == null || initiateAuditEntry.getAuthorId() == null) {
       LOGGER.warn("Could not find requisition initiator to notify for convert to order.");
       return;
     }
