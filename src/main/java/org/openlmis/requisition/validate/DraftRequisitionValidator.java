@@ -10,6 +10,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISM
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.time.ZonedDateTime;
@@ -74,6 +75,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         RequisitionLineItem.STOCK_ON_HAND);
     rejectIfCalculatedAndNotNull(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(errors,
+        requisition.getNumberOfMonthsInPeriod(), item);
 
     validateApprovalFields(errors, requisition, item);
   }
@@ -94,6 +97,20 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         expectedStatus, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.REMARKS_COLUMN));
 
+  }
+
+  private void rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(Errors errors, int
+      monthsInPeriod, RequisitionLineItem requisitionLineItem) {
+    if (requisitionLineItem.getTotalStockoutDays() == null) {
+      return;
+    }
+
+    int totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
+
+    if (totalStockoutDays > monthsInPeriod * 30) {
+      rejectValue(errors, REQUISITION_LINE_ITEMS,
+          new Message(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
+    }
   }
 
   private void rejectIfCalculatedAndNotNull(Errors errors, RequisitionTemplate template,
