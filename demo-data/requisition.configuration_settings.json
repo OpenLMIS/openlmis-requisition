@@ -17,7 +17,7 @@
   },
   {
     "key": "requisition.email.statusUpdate.content",
-    "value": "Dear {0}:\nThis email is informing you that the {1} requisition submitted on {2} for the Period {3} and {4} at {5} has been {6} by {7} on {8}.\nPlease login to see the requisition.\n{9}\nThank you."
+    "value": "Dear ${initiator}:\nThis email is informing you that the ${requisitionType} requisition submitted on ${submittedDate} for the Period ${periodName} and ${programName} at ${facilityName} has been ${requisitionStatus} by ${author} on ${changeDate}.\nPlease login to see the requisition.\n${requisitionUrl}\nThank you."
   },
   {
     "key": "requisition.email.actionRequired.subject",

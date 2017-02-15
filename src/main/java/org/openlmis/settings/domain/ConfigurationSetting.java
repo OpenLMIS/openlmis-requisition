@@ -21,7 +21,7 @@ public class ConfigurationSetting {
   @Setter
   private String key;
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "text")
   @Getter
   @Setter
   private String value;

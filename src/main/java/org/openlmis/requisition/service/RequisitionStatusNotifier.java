@@ -6,6 +6,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STAT
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
 import org.openlmis.requisition.domain.AuditLogEntry;
@@ -30,11 +31,11 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.time.ZonedDateTime;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.FormatStyle;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -97,7 +98,6 @@ public class RequisitionStatusNotifier {
           + "for requisition status change.");
       return;
     }
-    ZonedDateTime submittedDate = submitAuditEntry.getChangeDate();
 
     CommitMetadata commitMetadata = change.getCommitMetadata().get();
     UUID commitAuthorUuid;
@@ -107,11 +107,6 @@ public class RequisitionStatusNotifier {
       LOGGER.warn("Could not find valid commit author UUID.");
       return;
     }
-
-    String subject = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
-    String content = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
 
     String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
         configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
@@ -128,12 +123,26 @@ public class RequisitionStatusNotifier {
     String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
         FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
 
-    Object[] msgArgs = {initiator.getUsername(), requisitionType, submittedDate.format(
-        DateTimeFormatter.ofPattern(datePattern)), period.getName(), program.getName(),
-        facility.getName(), requisition.getStatus().toString(), author.getUsername(),
-        commitMetadata.getCommitDate().toString(datePattern), requisitionUrl};
+    Map<String, String> valuesMap = new HashMap<>();
+    valuesMap.put("initiator", initiator.getUsername());
+    valuesMap.put("requisitionType", requisitionType);
+    valuesMap.put("submittedDate", submitAuditEntry.getChangeDate().format(
+        DateTimeFormatter.ofPattern(datePattern)));
+    valuesMap.put("periodName", period.getName());
+    valuesMap.put("programName", program.getName());
+    valuesMap.put("facilityName", facility.getName());
+    valuesMap.put("requisitionStatus", requisition.getStatus().toString());
+    valuesMap.put("author", author.getUsername());
+    valuesMap.put("changeDate", commitMetadata.getCommitDate().toString(datePattern));
+    valuesMap.put("requisitionUrl", requisitionUrl);
 
-    content = MessageFormat.format(content, msgArgs);
+    String subject = configurationSettingService
+        .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
+    String content = configurationSettingService
+        .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+
+    StrSubstitutor sub = new StrSubstitutor(valuesMap);
+    content = sub.replace(content);
 
     notificationService.notify(initiator, subject, content);
   }
