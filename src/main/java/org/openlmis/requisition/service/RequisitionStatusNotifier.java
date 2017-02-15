@@ -22,6 +22,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
+import org.openlmis.utils.NotifierHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +86,10 @@ public class RequisitionStatusNotifier {
       return;
     }
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.getAuthorId());
+
+    if (!NotifierHelper.canBeNotified(initiator)) {
+      return;
+    }
 
     AuditLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
     if (submitAuditEntry == null) {

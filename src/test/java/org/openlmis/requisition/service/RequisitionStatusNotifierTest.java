@@ -96,6 +96,10 @@ public class RequisitionStatusNotifierTest {
     when(submitAuditEntry.getChangeDate()).thenReturn(ZonedDateTime.now());
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
 
+    when(user.getAllowNotify()).thenReturn(true);
+    when(user.isActive()).thenReturn(true);
+    when(user.isVerified()).thenReturn(true);
+
     Change change = mock(Change.class);
     CommitMetadata commitMetadata = mock(CommitMetadata.class);
     when(commitMetadata.getAuthor()).thenReturn(userId.toString());
