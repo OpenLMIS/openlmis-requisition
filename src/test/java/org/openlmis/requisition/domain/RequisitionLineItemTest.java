@@ -162,28 +162,66 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldReturnApprovedQuantityWhenItIsNotNull() {
+    // given
     RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(new Requisition());
+    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
     item.setApprovedQuantity(4);
 
-    assertEquals(4, item.getOrderQuantity().intValue());
+    // when
+    Integer quantity = item.getOrderQuantity();
+
+    // then
+    assertEquals(4, quantity.intValue());
   }
 
   @Test
   public void shouldReturnRequestedQuantityWhenItIsNotNullAndApprovedQuantityIsNull() {
     RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(new Requisition());
+    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
     item.setRequestedQuantity(5);
     item.setApprovedQuantity(null);
 
-    assertEquals(5, item.getOrderQuantity().intValue());
+    // when
+    Integer quantity = item.getOrderQuantity();
+
+    // then
+    assertEquals(5, quantity.intValue());
   }
 
   @Test
   public void shouldReturnZeroWhenApprovedQuantityAndRequestedQuantityIsNull() {
+    // given
     RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(new Requisition());
+    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
+
     item.setApprovedQuantity(null);
     item.setRequestedQuantity(null);
 
-    assertEquals(0, item.getOrderQuantity().intValue());
+    // when
+    Integer quantity = item.getOrderQuantity();
+
+    // then
+    assertEquals(0, quantity.intValue());
+  }
+
+  @Test
+  public void shouldNotReturnApprovedQuantityIfRequisitionIsPreAuthorized() {
+    // given
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(new Requisition());
+    item.getRequisition().setStatus(RequisitionStatus.SUBMITTED);
+
+    item.setApprovedQuantity(10);
+    item.setRequestedQuantity(5);
+
+    // when
+    Integer quantity = item.getOrderQuantity();
+
+    // then
+    assertEquals(5, quantity.intValue());
   }
 
   @Test
