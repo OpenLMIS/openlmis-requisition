@@ -27,12 +27,17 @@ import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
+import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
 @Component
@@ -96,9 +101,13 @@ public class ApprovalNotifier {
     String content = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
 
+    Locale locale = LocaleContextHolder.getLocale();
+    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
+        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern);
+
     for (UserDto approver : approvers) {
       if (NotifierHelper.canBeNotified(approver)) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm");
         String url = System.getenv("BASE_URL") + MessageFormat.format(
             configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
         Object[] msgArgs = {approver.getUsername(), reqType,
