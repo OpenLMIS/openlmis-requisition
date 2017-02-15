@@ -99,10 +99,7 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
-    when(approver.getAllowNotify()).thenReturn(true);
-    when(approver.isVerified()).thenReturn(true);
-    when(approver.isActive()).thenReturn(true);
-    when(approver.getUsername()).thenReturn("approver");
+    allowNotify(approver, "approver");
 
     mockChangeDate();
 
@@ -113,13 +110,15 @@ public class ApprovalNotifierTest {
   }
 
   @Test
-  public void shouldCallNotificationServiceTwoTimes() throws Exception {
+  public void shouldCallNotificationServiceTwoTimesForTwoApproversWithProperUsernameInContent()
+      throws Exception {
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
         .thenReturn(Arrays.asList(approver, approver2));
     when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-    allowNotify();
+    allowNotify(approver, "approver1");
+    allowNotify(approver2, "approver2");
 
     mockChangeDate();
 
@@ -191,16 +190,11 @@ public class ApprovalNotifierTest {
     verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
   }
 
-  private void allowNotify() {
+  private void allowNotify(UserDto approver, String username) {
     when(approver.getAllowNotify()).thenReturn(true);
     when(approver.isVerified()).thenReturn(true);
     when(approver.isActive()).thenReturn(true);
-    when(approver.getUsername()).thenReturn("approver1");
-
-    when(approver2.getAllowNotify()).thenReturn(true);
-    when(approver2.isVerified()).thenReturn(true);
-    when(approver2.isActive()).thenReturn(true);
-    when(approver2.getUsername()).thenReturn("approver2");
+    when(approver.getUsername()).thenReturn(username);
   }
 
   private void mockChangeDate() {
