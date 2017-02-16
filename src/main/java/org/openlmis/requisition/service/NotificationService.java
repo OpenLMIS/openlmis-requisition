@@ -48,7 +48,7 @@ public class NotificationService {
         .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
     NotificationRequest request = new NotificationRequest(
-        from, user.getEmail(), subject, content, null
+        from, user.getEmail(), subject, content
     );
     
     try {
