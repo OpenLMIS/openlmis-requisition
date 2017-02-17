@@ -147,7 +147,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       Integer calculated = item.getCalculatedOrderQuantity();
       String explanation = item.getRequestedQuantityExplanation();
 
-      if (!Objects.equals(requested, calculated) && isBlank(explanation)) {
+      if (!Objects.equals(requested, calculated) && requested > 0 && isBlank(explanation)) {
         rejectValue(errors, REQUISITION_LINE_ITEMS,
             new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED));
       }

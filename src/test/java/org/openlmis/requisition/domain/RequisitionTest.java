@@ -396,64 +396,8 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
-  }
-
-  @Test
-  public void shouldInitiateBeginningBalanceToZeroIfNoPreviousRequisition() {
-    // given
-    final UUID productId1 = UUID.randomUUID();
-    final UUID productId2 = UUID.randomUUID();
-
-    ApprovedProductDto product1 = mockApprovedProduct(productId1);
-    ApprovedProductDto product2 = mockApprovedProduct(productId2);
-
-    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
-
-    // when
-    Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2), Collections.emptyList(), 0, null);
-
-    // then
-    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
-
-    assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(0));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(0));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
-  }
-
-  @Test
-  public void shouldInitiateBeginningBalanceToZeroIfNotVisible() {
-    // given
-    final UUID productId1 = UUID.randomUUID();
-    final UUID productId2 = UUID.randomUUID();
-
-    Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
-    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
-
-    // should not initiate beginning balance because of this
-    when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(false);
-
-    ApprovedProductDto product1 = mockApprovedProduct(productId1);
-    ApprovedProductDto product2 = mockApprovedProduct(productId2);
-
-    // when
-    Requisition req = new Requisition();
-    req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, null);
-
-    // then
-    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
-
-    assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(0));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(0));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
   }
 
   @Test
@@ -530,8 +474,8 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(0));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(0));
+    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
+    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
   }
 
   @Test

@@ -255,16 +255,7 @@ public class Requisition extends BaseTimestampedEntity {
             .collect(Collectors.toList())
     );
 
-    getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> {
-      if (null == line.getBeginningBalance()) {
-        // Firstly, we set the Beginning Balance to zero for all lines.
-        line.setBeginningBalance(0);
-        // same for total received quantity
-        line.setTotalReceivedQuantity(0);
-      }
-    });
-
-    // Secondly, if we display the column ...
+    // Firstly, if we display the column ...
     // ... and if the previous requisition exists ...
     if (!previousRequisitions.isEmpty()
         && null != previousRequisitions.get(0)
@@ -281,7 +272,7 @@ public class Requisition extends BaseTimestampedEntity {
       });
     }
 
-    // Thirdly, if Proof Of Delivery exists and it is submitted ...
+    // Secondly, if Proof Of Delivery exists and it is submitted ...
     if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
       // .. for each line from the current requisition ...
       getNonSkippedFullSupplyRequisitionLineItems().forEach(requisitionLine -> {
