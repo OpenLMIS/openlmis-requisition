@@ -260,7 +260,6 @@ public class RequisitionLineItem extends BaseEntity {
    */
   public RequisitionLineItem() {
     stockAdjustments = new ArrayList<>();
-    this.numberOfNewPatientsAdded = 0;
     this.skipped = false;
     previousAdjustedConsumptions = new ArrayList<>();
   }

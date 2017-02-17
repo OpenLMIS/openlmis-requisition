@@ -264,13 +264,6 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldReturnZeroWhenNumberOfNewPatientsAddedIsNotSet() {
-    RequisitionLineItem item = new RequisitionLineItem();
-
-    assertEquals(0, item.getNumberOfNewPatientsAdded().intValue());
-  }
-
-  @Test
   public void shouldReturnFalseWhenSkippedIsNotSet() {
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
     RequisitionLineItem requisitionLineItem =
