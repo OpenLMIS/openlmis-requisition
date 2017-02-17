@@ -19,8 +19,8 @@ import org.javers.common.date.DateProvider;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
 
-import java.time.Instant;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -32,23 +32,24 @@ import java.time.ZonedDateTime;
  */
 public class JaVersDateProvider implements DateProvider {
   public static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.UTC;
+  public static final ZoneId ZONE_ID = ZoneId.of(DATE_TIME_ZONE.getID());
 
   public LocalDateTime now() {
     return LocalDateTime.now(DATE_TIME_ZONE);
   }
 
   /**
-   * Converts the specified LocalDateTime to a ZonedDateTime, given the specified zoneId.
+   * Converts the specified LocalDateTime to a ZonedDateTime in UTC.
    */
-  public static ZonedDateTime getZonedDateTime(LocalDateTime localDateTime, ZoneId zoneId) {
+  public static ZonedDateTime getZonedDateTime(LocalDateTime localDateTime) {
 
     /* Get an instant representing localDateTime with the understanding that it was stored
        using JaVersDateProvider.DATE_TIME_ZONE */
     long epoch = localDateTime.toDateTime(DATE_TIME_ZONE).getMillis();
     Instant instant = Instant.ofEpochMilli(epoch);
 
-    //Convert the instant to a ZonedDateTime using the specified zoneId.
-    return ZonedDateTime.ofInstant( instant, zoneId );
+    //Convert the instant to a ZonedDateTime in UTC.
+    return ZonedDateTime.ofInstant( instant, ZONE_ID );
   }
 
   /**
@@ -61,7 +62,7 @@ public class JaVersDateProvider implements DateProvider {
     Instant minInstant = Instant.MIN.plus(Duration.ofDays(366));
 
     //Because we're returning such an extreme value, its timezone is irrelevant.
-    return ZonedDateTime.ofInstant(minInstant, ZoneId.of("UTC"));
+    return ZonedDateTime.ofInstant(minInstant, ZONE_ID);
   }
 
   /**
@@ -69,6 +70,6 @@ public class JaVersDateProvider implements DateProvider {
    */
   public static ZonedDateTime getMaxDateTime() {
     Instant maxInstant = Instant.MAX.minus(Duration.ofDays(366));
-    return ZonedDateTime.ofInstant(maxInstant, ZoneId.of("UTC"));
+    return ZonedDateTime.ofInstant(maxInstant, ZONE_ID);
   }
 }

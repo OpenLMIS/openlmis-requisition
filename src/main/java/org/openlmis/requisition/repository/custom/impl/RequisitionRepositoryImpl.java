@@ -22,9 +22,9 @@ import org.javers.repository.jql.JqlQuery;
 import org.javers.repository.jql.QueryBuilder;
 import org.joda.time.LocalDateTime;
 import org.openlmis.JaVersDateProvider;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -390,7 +389,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     UUID requisitionId;
     ValueChange valueChange;
     LocalDateTime javersLocalDateTime;
-    ZonedDateTime javersDateTimeWithZone;
+    ZonedDateTime javersZonedDateTime;
     List<UUID> results = new ArrayList<UUID>();
 
     if (startDate == null) {
@@ -413,8 +412,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
       //Get the commit's DateTime
       javersLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
-      javersDateTimeWithZone = JaVersDateProvider.getZonedDateTime(javersLocalDateTime,
-              startDate.getZone());
+      javersZonedDateTime = JaVersDateProvider.getZonedDateTime(javersLocalDateTime);
+      
       //Get the UUID of the requisition
       idString = valueChange.getAffectedGlobalId().value();
       idString = idString.substring((idString.lastIndexOf('/') + 1));
@@ -422,8 +421,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
       //Note the commit if appropriate
       if ( !results.contains(requisitionId)
-              && (!javersDateTimeWithZone.isBefore(startDate)
-              && !javersDateTimeWithZone.isAfter(endDate))) {
+              && (!javersZonedDateTime.isBefore(startDate)
+              && !javersZonedDateTime.isAfter(endDate))) {
         results.add(requisitionId);
       }
     }
@@ -453,8 +452,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     String newValue;
     String commitAuthorString;
     UUID commitAuthorUuid;
-    LocalDateTime jodaLocalDateTime;
-    ZonedDateTime javaZonedDateTime;
+    LocalDateTime javersLocalDateTime;
+    ZonedDateTime javersZonedDateTime;
     ValueChange valueChange;
     Map<String, StatusLogEntry> statusChanges = new HashMap<String, StatusLogEntry>();
 
@@ -477,11 +476,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         }
 
         //Get a ZonedDateTime coresponding to the commit's LocalDateTime
-        ZoneId jaVersTimeZone = ZoneId.of(JaVersDateProvider.DATE_TIME_ZONE.getID());
-        jodaLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
-        javaZonedDateTime = JaVersDateProvider.getZonedDateTime(jodaLocalDateTime, jaVersTimeZone);
+        javersLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
+        javersZonedDateTime = JaVersDateProvider.getZonedDateTime(javersLocalDateTime);
 
-        StatusLogEntry statusLogEntry = new StatusLogEntry(commitAuthorUuid, javaZonedDateTime);
+        StatusLogEntry statusLogEntry = new StatusLogEntry(commitAuthorUuid, javersZonedDateTime);
         statusChanges.put(newValue, statusLogEntry);
       }
     }
