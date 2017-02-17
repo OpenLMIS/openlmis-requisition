@@ -22,7 +22,7 @@ import org.javers.repository.jql.JqlQuery;
 import org.javers.repository.jql.QueryBuilder;
 import org.joda.time.LocalDateTime;
 import org.openlmis.JaVersDateProvider;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
@@ -101,16 +101,16 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
+              builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
     }
     if (supervisoryNode != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNode));
+              builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNode));
     }
     predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
     if (null != emergency) {
       predicate = builder.and(predicate,
-          builder.equal(root.get(EMERGENCY), emergency));
+              builder.equal(root.get(EMERGENCY), emergency));
     }
 
     queryMain.where(predicate);
@@ -131,8 +131,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     //Get requisitions initiated between the initiatedDateFrom and initiatedDateTo dates
     List<UUID> validIds = getSortedRequisitionIdValuesInitiatedBetweenDates(initiatedDateFrom,
-                                                                            initiatedDateTo, true);
-
+            initiatedDateTo, true);
     //Remove requisitions which aren't included in the above list
     for (int i = 0; i < results.size(); i++) {
       UUID resultId = results.get(i).getId();
@@ -182,15 +181,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
+              builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
     }
     if (facility != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get(FACILITY_ID), facility));
+              builder.equal(root.get(FACILITY_ID), facility));
     }
     if (program != null) {
       predicate = builder.and(predicate,
-          builder.equal(root.get(PROGRAM_ID), program));
+              builder.equal(root.get(PROGRAM_ID), program));
     }
     query.where(predicate);
     List<Requisition> results = entityManager.createQuery(query).getResultList();
@@ -217,8 +216,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Path<UUID> facility = root.get(FACILITY_ID);
     Path<UUID> program = root.get(PROGRAM_ID);
 
-    Predicate predicate =
-        setFiltering(filterBy, builder, root, facility, program, desiredUuids);
+    Predicate predicate = setFiltering(filterBy, builder, root, facility, program, desiredUuids);
 
     criteriaQuery = criteriaQuery.where(predicate);
     List<Requisition> results = entityManager.createQuery(criteriaQuery).getResultList();
@@ -338,8 +336,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     if (requisitionStatuses != null && !requisitionStatuses.isEmpty()) {
       Predicate statusPredicate = builder.disjunction();
       for (RequisitionStatus status : requisitionStatuses) {
-        statusPredicate = builder.or(statusPredicate,
-            builder.equal(root.get(STATUS), status));
+        statusPredicate = builder.or(statusPredicate, builder.equal(root.get(STATUS), status));
       }
       predicateToUse = builder.and(predicate, statusPredicate);
     }
@@ -396,7 +393,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     ZonedDateTime javersDateTimeWithZone;
     List<UUID> results = new ArrayList<UUID>();
 
-
     if (startDate == null) {
       startDate = JaVersDateProvider.getMinDateTime();
     }
@@ -418,7 +414,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       //Get the commit's DateTime
       javersLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
       javersDateTimeWithZone = JaVersDateProvider.getZonedDateTime(javersLocalDateTime,
-                                                                             startDate.getZone());
+              startDate.getZone());
       //Get the UUID of the requisition
       idString = valueChange.getAffectedGlobalId().value();
       idString = idString.substring((idString.lastIndexOf('/') + 1));
@@ -426,8 +422,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
       //Note the commit if appropriate
       if ( !results.contains(requisitionId)
-           && (!javersDateTimeWithZone.isBefore(startDate)
-           && !javersDateTimeWithZone.isAfter(endDate))) {
+              && (!javersDateTimeWithZone.isBefore(startDate)
+              && !javersDateTimeWithZone.isAfter(endDate))) {
         results.add(requisitionId);
       }
     }
@@ -460,16 +456,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     LocalDateTime jodaLocalDateTime;
     ZonedDateTime javaZonedDateTime;
     ValueChange valueChange;
-    Map<String, AuditLogEntry> statusChanges = new HashMap<String, AuditLogEntry>();
+    Map<String, StatusLogEntry> statusChanges = new HashMap<String, StatusLogEntry>();
 
     for (int i = 0; i < changes.size(); i++) {
+
+      //Get the newValue
       valueChange = (ValueChange)changes.get(i);
       newValue = valueChange.getRight().toString().replace("value:", "");
 
       if (!statusChanges.containsKey(newValue)) {
 
-        //The commitAuthorString isn't guaranteed to be a valid UUID –
-        //it may be something like "unauthenticated user."
+        /* Get the commitAuthorString.
+           Note that it isn't guaranteed to be a valid UUID because it may be something like
+           "unauthenticated user."  */
         commitAuthorString = valueChange.getCommitMetadata().get().getAuthor();
         try {
           commitAuthorUuid = UUID.fromString(commitAuthorString);
@@ -477,12 +476,13 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           commitAuthorUuid = null;
         }
 
+        //Get a ZonedDateTime coresponding to the commit's LocalDateTime
         ZoneId jaVersTimeZone = ZoneId.of(JaVersDateProvider.DATE_TIME_ZONE.getID());
         jodaLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
         javaZonedDateTime = JaVersDateProvider.getZonedDateTime(jodaLocalDateTime, jaVersTimeZone);
 
-        AuditLogEntry auditLogEntry = new AuditLogEntry(commitAuthorUuid, javaZonedDateTime);
-        statusChanges.put(newValue, auditLogEntry);
+        StatusLogEntry statusLogEntry = new StatusLogEntry(commitAuthorUuid, javaZonedDateTime);
+        statusChanges.put(newValue, statusLogEntry);
       }
     }
 

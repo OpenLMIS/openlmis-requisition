@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -100,9 +100,9 @@ public class RequisitionStatusNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    AuditLogEntry initiateAuditEntry = mock(AuditLogEntry.class);
-    AuditLogEntry submitAuditEntry = mock(AuditLogEntry.class);
-    Map<String, AuditLogEntry> statusChangesMap = new HashMap<>();
+    StatusLogEntry initiateAuditEntry = mock(StatusLogEntry.class);
+    StatusLogEntry submitAuditEntry = mock(StatusLogEntry.class);
+    Map<String, StatusLogEntry> statusChangesMap = new HashMap<>();
     statusChangesMap.put(RequisitionStatus.INITIATED.toString(), initiateAuditEntry);
     statusChangesMap.put(RequisitionStatus.SUBMITTED.toString(), submitAuditEntry);
 

@@ -153,7 +153,7 @@ public class Requisition extends BaseTimestampedEntity {
   @Transient
   @Getter
   @Setter
-  private Map<String, AuditLogEntry> statusChanges;
+  private Map<String, StatusLogEntry> statusChanges;
 
   @Column(nullable = false)
   @Getter
@@ -611,7 +611,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setStatus(RequisitionStatus status);
 
-    void setStatusChanges(Map<String, AuditLogEntry> statusChanges);
+    void setStatusChanges(Map<String, StatusLogEntry> statusChanges);
 
     void setEmergency(Boolean emergency);
 
@@ -644,7 +644,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     RequisitionStatus getStatus();
 
-    Map<String, AuditLogEntry> getStatusChanges();
+    Map<String, StatusLogEntry> getStatusChanges();
 
     Boolean getEmergency();
 

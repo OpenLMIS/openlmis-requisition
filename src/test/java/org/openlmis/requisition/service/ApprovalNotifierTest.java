@@ -35,7 +35,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -214,7 +214,7 @@ public class ApprovalNotifierTest {
   }
 
   private void mockChangeDate() {
-    AuditLogEntry submitAuditEntry = mock(AuditLogEntry.class);
+    StatusLogEntry submitAuditEntry = mock(StatusLogEntry.class);
     when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
         RequisitionStatus.SUBMITTED.toString(), submitAuditEntry));
     when(submitAuditEntry.getChangeDate()).thenReturn(ZonedDateTime.now());

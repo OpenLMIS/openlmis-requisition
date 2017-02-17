@@ -22,7 +22,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTI
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -100,13 +100,13 @@ public class ApprovalNotifier {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
 
-    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    Map<String, StatusLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
       LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
       return;
     }
 
-    AuditLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
+    StatusLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
     if (submitAuditEntry == null) {
       LOGGER.warn("Could not find requisition submitter to notify for requisition status change.");
       return;

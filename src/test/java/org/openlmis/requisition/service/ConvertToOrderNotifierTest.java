@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -76,7 +76,7 @@ public class ConvertToOrderNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    AuditLogEntry initiateAuditEntry = mock(AuditLogEntry.class);
+    StatusLogEntry initiateAuditEntry = mock(StatusLogEntry.class);
 
     when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
         RequisitionStatus.INITIATED.toString(), initiateAuditEntry));

@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service;
 
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -66,13 +66,13 @@ public class ConvertToOrderNotifier {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
 
-    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    Map<String, StatusLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
       LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
       return;
     }
 
-    AuditLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
+    StatusLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
     if (initiateAuditEntry == null || initiateAuditEntry.getAuthorId() == null) {
       LOGGER.warn("Could not find requisition initiator to notify for convert to order.");
       return;

@@ -24,7 +24,7 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.diff.Change;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -88,14 +88,14 @@ public class RequisitionStatusNotifier {
    * @param change Javers change containing requisition's status, the author, the time, etc.
    */
   public void notifyStatusChanged(Requisition requisition, Change change) {
-    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    Map<String, StatusLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
       LOGGER.error("Could not find status changes for requisition " + requisition.getId() + "to " 
           + "notify for requisition status change.");
       return;
     }
 
-    AuditLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
+    StatusLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
     if (initiateAuditEntry == null || initiateAuditEntry.getAuthorId() == null) {
       LOGGER.warn("Could not find initiator for requisition " + requisition.getId() + " to notify " 
           + "for requisition status change.");
@@ -107,7 +107,7 @@ public class RequisitionStatusNotifier {
       return;
     }
 
-    AuditLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
+    StatusLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
     if (submitAuditEntry == null) {
       LOGGER.warn("Could not find submitter for requisition " + requisition.getId() + " to notify "
           + "for requisition status change.");

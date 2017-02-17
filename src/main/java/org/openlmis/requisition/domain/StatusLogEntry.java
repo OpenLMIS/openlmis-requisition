@@ -19,15 +19,16 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * AuditLogEntry is used to encapsulate data within our audit-log's entries.
+ * StatusLogEntry is used to encapsulate data (author and dateTime) associated with a
+ * requisition's status change.
  */
-public class AuditLogEntry {
+public class StatusLogEntry {
   private UUID authorId;
   private ZonedDateTime changeDate;
 
-  public AuditLogEntry(){}
+  public StatusLogEntry(){}
 
-  public AuditLogEntry(UUID authorId, ZonedDateTime changeDate) {
+  public StatusLogEntry(UUID authorId, ZonedDateTime changeDate) {
     this.authorId = authorId;
     this.changeDate = changeDate;
   }

@@ -18,7 +18,7 @@ package org.openlmis.requisition.web;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.openlmis.requisition.domain.AuditLogEntry;
+import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -60,23 +60,23 @@ public class RequisitionReportDtoBuilder {
     reportDto.setNonFullSupplyTotalCost(requisition.getNonFullSupplyTotalCost());
     reportDto.setTotalCost(requisition.getTotalCost());
 
-    Map<String, AuditLogEntry> statusChanges = requisition.getStatusChanges();
+    Map<String, StatusLogEntry> statusChanges = requisition.getStatusChanges();
     if (statusChanges != null) {
-      AuditLogEntry initiatedEntry = statusChanges.getOrDefault(
+      StatusLogEntry initiatedEntry = statusChanges.getOrDefault(
           RequisitionStatus.INITIATED.toString(), null);
       if (Objects.nonNull(initiatedEntry)) {
         reportDto.setInitiatedBy(userReferenceDataService.findOne(initiatedEntry.getAuthorId()));
         reportDto.setInitiatedDate(initiatedEntry.getChangeDate());
       }
 
-      AuditLogEntry submittedEntry = statusChanges.getOrDefault(
+      StatusLogEntry submittedEntry = statusChanges.getOrDefault(
           RequisitionStatus.SUBMITTED.toString(), null);
       if (Objects.nonNull(submittedEntry)) {
         reportDto.setSubmittedBy(userReferenceDataService.findOne(submittedEntry.getAuthorId()));
         reportDto.setSubmittedDate(submittedEntry.getChangeDate());
       }
 
-      AuditLogEntry authorizedEntry = statusChanges.getOrDefault(
+      StatusLogEntry authorizedEntry = statusChanges.getOrDefault(
           RequisitionStatus.AUTHORIZED.toString(), null);
       if (Objects.nonNull(authorizedEntry)) {
         reportDto.setAuthorizedBy(userReferenceDataService.findOne(authorizedEntry.getAuthorId()));
