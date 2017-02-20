@@ -15,6 +15,7 @@
 	<parameter name="Program" class="java.lang.String">
 		<property name="displayName" value="Program Name"/>
 		<property name="selectExpression" value="/api/programs"/>
+		<property name="selectProperty" value="name"/>
 	</parameter>
 	<!--<parameter name="Facility" class="java.lang.String">-->
 		<!--<property name="displayName" value="Facility Name"/>-->

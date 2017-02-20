@@ -4,7 +4,8 @@
     "dataType": "java.lang.String",
     "displayName": "Program Name",
     "name": "Program",
-    "selectSql": "SELECT p.name FROM referencedata.programs p ORDER BY p.name",
+    "selectExpression": "/api/programs",
+    "selectProperty": "name",
     "templateId": "4a052c83-4607-4a32-9e78-1f18c94d88e4"
   }
 ]
