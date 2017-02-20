@@ -75,9 +75,9 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
         .build()
     );
     Change lastStatusChange = (statusChanges.isEmpty()) ? null :
-        statusChanges.get(statusChanges.size() - 1);
+        statusChanges.get(0);
     Change lastNodeChange = (nodeChanges.isEmpty()) ? null :
-        nodeChanges.get(nodeChanges.size() - 1);
+        nodeChanges.get(0);
     // If node change was after status change, return it
     if (lastStatusChange != null && lastNodeChange != null
         && lastNodeChange.getCommitMetadata().get().getCommitDate().isAfter(
