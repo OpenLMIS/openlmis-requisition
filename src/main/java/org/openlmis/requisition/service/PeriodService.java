@@ -90,6 +90,17 @@ public class PeriodService {
           return !currentDate.isBefore(period.getStartDate())
               && !currentDate.isAfter(period.getEndDate());
         })
+        .filter(period -> {
+          // check if regular requisition with the period are submitted. If the given period does
+          // not have a regular requisition or the regular requisition has pre submitted status
+          // then that period should be omitted.
+          List<Requisition> requisitions =
+              requisitionRepository.searchRequisitions(
+                  period.getId(), facilityId, programId, false);
+
+          return !(null == requisitions || requisitions.isEmpty())
+              && requisitions.stream().allMatch(Requisition::isPostSubmitted);
+        })
         .collect(Collectors.toList());
   }
 
