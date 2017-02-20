@@ -28,7 +28,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import java.time.ZonedDateTime;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -39,6 +38,8 @@ import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
+
+import java.time.ZonedDateTime;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
@@ -62,8 +63,6 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
 
     validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
-
-    validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
     if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()

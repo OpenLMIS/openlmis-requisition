@@ -264,7 +264,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
-                                             @PathVariable("id") UUID requisitionId) {
+                                          @PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
@@ -275,7 +275,8 @@ public class RequisitionController extends BaseController {
     }
 
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
-        requisitionToUpdate.getTemplate());
+        requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
+        requisitionToUpdate.getStatus());
 
     if (requisition.getId() == null) {
       requisition.setId(requisitionId);
@@ -303,7 +304,7 @@ public class RequisitionController extends BaseController {
 
       requisitionToUpdate.updateFrom(requisition,
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-              requisition.getProgramId()), orderableReferenceDataService.findAll());
+              requisitionToUpdate.getProgramId()), orderableReferenceDataService.findAll());
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
@@ -311,7 +312,7 @@ public class RequisitionController extends BaseController {
       return requisitionDtoBuilder.build(requisitionToUpdate);
     } else {
       throw new ValidationMessageException(new Message(ERROR_CANNOT_UPDATE_WITH_STATUS,
-          requisition.getStatus()));
+          requisitionToUpdate.getStatus()));
     }
   }
 

@@ -116,6 +116,46 @@ public final class RequisitionBuilder {
     return requisition;
   }
 
+  /**
+   * Creates new requisition object based on data from {@link Requisition.Importer} for update.
+   *
+   * @param importer instance of {@link Requisition.Importer}.
+   * @param template the requisition template of updated requisition.
+   * @param programId the program id of updated requisition.
+   * @param requisitionStatus the requisition status of updated requisition.
+   * @return new instance of requisition.
+   */
+  public static Requisition newRequisition(Requisition.Importer importer,
+                                           RequisitionTemplate template,
+                                           UUID programId,
+                                           RequisitionStatus requisitionStatus) {
+    Requisition requisition = new Requisition();
+    requisition.setRequisitionLineItems(new ArrayList<>());
+
+    if (importer.getRequisitionLineItems() != null) {
+      for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
+        Optional<ProgramOrderableDto> program = requisitionLineItem
+            .getOrderable()
+            .getPrograms()
+            .stream()
+            .filter(e -> programId.equals(e.getProgramId()))
+            .findFirst();
+
+        RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
+        program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
+
+        if (isSkipped(requisitionLineItem) && requisitionStatus.isPreAuthorize()) {
+          item.skipLineItem(template);
+        }
+        requisition.getRequisitionLineItems().add(item);
+      }
+    }
+    requisition.setNumberOfMonthsInPeriod(importer.getProcessingPeriod().getDurationInMonths());
+    requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
+
+    return requisition;
+  }
+
   private static boolean isSkipped(RequisitionLineItem.Importer requisitionLineItem) {
     return requisitionLineItem.getSkipped() != null && requisitionLineItem.getSkipped();
   }

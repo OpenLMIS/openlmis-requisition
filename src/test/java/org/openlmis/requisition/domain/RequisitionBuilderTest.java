@@ -21,11 +21,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -37,6 +32,12 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionBuilderTest {
@@ -65,6 +66,10 @@ public class RequisitionBuilderTest {
 
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
 
+  private static final String DRAFT_STATUS_MESSAGE = "draft status message";
+  private static final Integer MONTHS_IN_PERIOD = 5;
+
+
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
@@ -78,8 +83,11 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(requisitionDto.getModifiedDate()).thenReturn(modifiedDate);
+    when(requisitionDto.getDraftStatusMessage()).thenReturn(DRAFT_STATUS_MESSAGE);
+    when(requisitionDto.getEmergency()).thenReturn(false);
 
     when(processingPeriodDto.getId()).thenReturn(processingPeriodUuid);
+    when(processingPeriodDto.getDurationInMonths()).thenReturn(MONTHS_IN_PERIOD);
     when(facilityDto.getId()).thenReturn(facilityUuid);
     when(programDto.getId()).thenReturn(programUuid);
   }
@@ -125,6 +133,25 @@ public class RequisitionBuilderTest {
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());
     assertEquals(modifiedDate, requisition.getModifiedDate());
+  }
+
+  @Test
+  public void shouldInitializeRequisitionFromDtoImporterForUpdate() {
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, programUuid, RequisitionStatus.INITIATED);
+
+    assertNotNull(requisition);
+    assertEquals(MONTHS_IN_PERIOD, requisition.getNumberOfMonthsInPeriod());
+    assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
+    assertEquals(DRAFT_STATUS_MESSAGE, requisition.getDraftStatusMessage());
+    assertEquals(null, requisition.getId());
+    assertEquals(null, requisition.getFacilityId());
+    assertEquals(null, requisition.getProgramId());
+    assertEquals(null, requisition.getProcessingPeriodId());
+    assertEquals(null, requisition.getSupervisoryNodeId());
+    assertEquals(null, requisition.getStatus());
+    assertEquals(null, requisition.getModifiedDate());
+    assertEquals(null, requisition.getEmergency());
   }
 
   @Test
