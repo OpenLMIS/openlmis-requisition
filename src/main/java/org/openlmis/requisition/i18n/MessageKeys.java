@@ -27,17 +27,15 @@ public abstract class MessageKeys {
   public static final String ERROR_JASPER_TEMPLATE_NOT_FOUND = ERROR_PREFIX
       + ".jasper.templateNotFound";
   public static final String ERROR_REPORTING_CREATION = ERROR_PREFIX + ".reporting.creation";
-  public static final String ERROR_REPORTING_EXTRA_PROPERTIES = ERROR_PREFIX
-      + ".reporting.extra-properties";
   public static final String ERROR_REPORTING_FILE_EMPTY = ERROR_PREFIX + ".reporting.file.empty";
   public static final String ERROR_REPORTING_FILE_INCORRECT_TYPE = ERROR_PREFIX
-      + ".reporting.file.incorrect-type";
+      + ".reporting.file.incorrectType";
   public static final String ERROR_REPORTING_FILE_INVALID = ERROR_PREFIX
       + ".reporting.file.invalid";
   public static final String ERROR_REPORTING_FILE_MISSING = ERROR_PREFIX
       + ".reporting.file.missing";
   public static final String ERROR_REPORTING_PARAMETER_INCORRECT_TYPE = ERROR_PREFIX
-      + ".reporting.parameter.incorrect-type";
+      + ".reporting.parameter.incorrectType";
   public static final String ERROR_REPORTING_PARAMETER_MISSING = ERROR_PREFIX
       + ".reporting.parameter.missing";
   public static final String ERROR_REPORTING_TEMPLATE_EXIST = ERROR_PREFIX

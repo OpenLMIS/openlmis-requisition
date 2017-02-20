@@ -21,7 +21,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_CREATION;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_EXTRA_PROPERTIES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_EMPTY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_INCORRECT_TYPE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_INVALID;
@@ -29,6 +28,19 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_MIS
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_INCORRECT_TYPE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperReport;
+
+import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.domain.JasperTemplateParameter;
+import org.openlmis.requisition.exception.ReportingException;
+import org.openlmis.requisition.repository.JasperTemplateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,25 +52,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperReport;
-import org.apache.log4j.Logger;
-import org.openlmis.requisition.domain.JasperTemplate;
-import org.openlmis.requisition.domain.JasperTemplateParameter;
-import org.openlmis.requisition.exception.ReportingException;
-import org.openlmis.requisition.repository.JasperTemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateService {
-
-  private static final Logger LOGGER = Logger.getLogger(JasperTemplateService.class);
 
   @Autowired
   private JasperTemplateRepository jasperTemplateRepository;
@@ -164,38 +163,37 @@ public class JasperTemplateService {
    */
   private JasperTemplateParameter createParameter(JRParameter jrParameter)
       throws ReportingException {
-    String[] propertyNames = jrParameter.getPropertiesMap().getPropertyNames();
-    //Check # of properties and that required ones are given.
-    if (propertyNames.length > 2) {
-      throw new ReportingException(ERROR_REPORTING_EXTRA_PROPERTIES);
-    }
     String displayName = jrParameter.getPropertiesMap().getProperty("displayName");
+
     if (isBlank(displayName)) {
       throw new ReportingException(
           ERROR_REPORTING_PARAMETER_MISSING, "displayName");
     }
-    //Look for sql for select and that data type is supported string.
+
     String dataType = jrParameter.getValueClassName();
-    String selectSql = jrParameter.getPropertiesMap().getProperty("selectSql");
-    //Sql selects need String data type.
-    if (isNotBlank(selectSql) && !"java.lang.String".equals(dataType)) {
-      throw new ReportingException(
-          ERROR_REPORTING_PARAMETER_INCORRECT_TYPE, "sql", "string");
+    if (isNotBlank(dataType)) {
+      try {
+        Class.forName(dataType);
+      } catch (ClassNotFoundException err) {
+        throw new ReportingException(err, ERROR_REPORTING_PARAMETER_INCORRECT_TYPE,
+            jrParameter.getName(), dataType);
+      }
     }
-    //Set parameters.
+
+    // Set parameters.
     JasperTemplateParameter jasperTemplateParameter = new JasperTemplateParameter();
     jasperTemplateParameter.setName(jrParameter.getName());
     jasperTemplateParameter.setDisplayName(displayName);
     jasperTemplateParameter.setDescription(jrParameter.getDescription());
     jasperTemplateParameter.setDataType(dataType);
-    if (isNotBlank(selectSql)) {
-      LOGGER.debug("SQL from report parameter: " + selectSql);
-      jasperTemplateParameter.setSelectSql(selectSql);
-    }
+    jasperTemplateParameter.setSelectExpression(
+        jrParameter.getPropertiesMap().getProperty("selectExpression"));
+
     if (jrParameter.getDefaultValueExpression() != null) {
       jasperTemplateParameter.setDefaultValue(jrParameter.getDefaultValueExpression()
           .getText().replace("\"", "").replace("\'", ""));
     }
+
     return jasperTemplateParameter;
   }
 

@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_EXTRA_PROPERTIES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_EMPTY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_INCORRECT_TYPE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_INVALID;
@@ -37,20 +36,12 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRPropertiesMap;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,6 +60,17 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(BlockJUnit4ClassRunner.class)
@@ -178,33 +180,6 @@ public class JasperTemplateServiceTest {
   }
 
   @Test
-  public void shouldThrowErrorIfThereAreExtraParameterProperties() throws Exception {
-    expectedException.expect(ReportingException.class);
-    expectedException.expectMessage(ERROR_REPORTING_EXTRA_PROPERTIES);
-    MultipartFile file = mock(MultipartFile.class);
-    when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
-
-    mockStatic(JasperCompileManager.class);
-    JasperReport report = mock(JasperReport.class);
-    InputStream inputStream = mock(InputStream.class);
-    when(file.getInputStream()).thenReturn(inputStream);
-
-    JRParameter param1 = mock(JRParameter.class);
-    JRPropertiesMap propertiesMap = mock(JRPropertiesMap.class);
-
-    when(report.getParameters()).thenReturn(new JRParameter[]{param1});
-    when(JasperCompileManager.compileReport(inputStream)).thenReturn(report);
-    when(param1.getPropertiesMap()).thenReturn(propertiesMap);
-    String[] propertyNames = {"name1", "name2", "name3"};
-    when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
-    JasperTemplate jasperTemplate = new JasperTemplate();
-
-    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
-
-    verify(jasperTemplateService, never()).saveWithParameters(jasperTemplate);
-  }
-
-  @Test
   public void shouldValidateFileAndSetData() throws Exception {
     MultipartFile file = mock(MultipartFile.class);
     when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
@@ -226,14 +201,14 @@ public class JasperTemplateServiceTest {
     when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(PARAM_DISPLAY_NAME);
 
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
-    when(param1.getValueClassName()).thenReturn("String");
+    when(param1.getValueClassName()).thenReturn("java.lang.String");
     when(param1.getName()).thenReturn("name");
     when(param1.getDescription()).thenReturn("desc");
     when(param1.getDefaultValueExpression()).thenReturn(jrExpression);
     when(jrExpression.getText()).thenReturn("text");
 
     when(param2.getPropertiesMap()).thenReturn(propertiesMap);
-    when(param2.getValueClassName()).thenReturn("Integer");
+    when(param2.getValueClassName()).thenReturn("java.lang.Integer");
     when(param2.getName()).thenReturn("name");
     when(param2.getDescription()).thenReturn("desc");
     when(param2.getDefaultValueExpression()).thenReturn(jrExpression);
@@ -280,12 +255,12 @@ public class JasperTemplateServiceTest {
     when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(PARAM_DISPLAY_NAME);
 
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
-    when(param1.getValueClassName()).thenReturn("String");
+    when(param1.getValueClassName()).thenReturn("java.lang.String");
     when(param1.getDefaultValueExpression()).thenReturn(jrExpression);
     when(jrExpression.getText()).thenReturn("text");
 
     when(param2.getPropertiesMap()).thenReturn(propertiesMap);
-    when(param2.getValueClassName()).thenReturn("Integer");
+    when(param2.getValueClassName()).thenReturn("java.lang.Integer");
     when(param2.getDefaultValueExpression()).thenReturn(null);
 
     ByteArrayOutputStream byteOutputStream = mock(ByteArrayOutputStream.class);

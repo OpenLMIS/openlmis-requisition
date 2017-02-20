@@ -15,11 +15,8 @@
 
 package org.openlmis.requisition.web;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
-import org.openlmis.requisition.domain.JasperTemplateParameter;
 import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
@@ -44,7 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -132,20 +128,9 @@ public class JasperTemplateController extends BaseController {
     if (jasperTemplate == null) {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
-    } else {
-      // run select sql and populate returned values for every template parameter
-      for (JasperTemplateParameter tp : jasperTemplate.getTemplateParameters()) {
-        if (isNotBlank(tp.getSelectSql())) {
-          LOGGER.debug("Template Parameter " + jasperTemplate.getName() + " has select sql: "
-              + tp.getSelectSql());
-          List<String> selectValues = jasperTemplateRepository.runArbitrarySql(tp.getSelectSql());
-          LOGGER.debug("Template Parameter " + jasperTemplate.getName() + " select values: "
-              + selectValues);
-          tp.setSelectValues(selectValues);
-        }
-      }
-      return JasperTemplateDto.newInstance(jasperTemplate);
     }
+
+    return JasperTemplateDto.newInstance(jasperTemplate);
   }
 
   /**

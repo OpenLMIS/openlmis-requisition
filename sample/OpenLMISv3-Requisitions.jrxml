@@ -14,11 +14,11 @@
 	<property name="net.sf.jasperreports.export.csv.exclude.origin.band.0" value="title"/>
 	<parameter name="Program" class="java.lang.String">
 		<property name="displayName" value="Program Name"/>
-		<property name="selectSql" value="SELECT p.name FROM referencedata.programs p ORDER BY p.name"/>
+		<property name="selectExpression" value="/api/programs"/>
 	</parameter>
 	<!--<parameter name="Facility" class="java.lang.String">-->
 		<!--<property name="displayName" value="Facility Name"/>-->
-		<!--<property name="selectSql" value="SELECT f.name FROM referencedata.facilities f ORDER BY f.name"/>-->
+		<!--<property name="selectExpression" value="SELECT f.name FROM referencedata.facilities f ORDER BY f.name"/>-->
 	<!--</parameter>-->
 	<queryString language="SQL">
 		<![CDATA[SELECT facilities.name AS FacilityName

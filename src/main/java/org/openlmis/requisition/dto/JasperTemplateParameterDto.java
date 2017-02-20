@@ -16,13 +16,14 @@
 package org.openlmis.requisition.dto;
 
 
-import java.util.List;
+import org.openlmis.requisition.domain.JasperTemplateParameter;
+
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.domain.JasperTemplateParameter;
 
 @Getter
 @Setter
@@ -36,9 +37,9 @@ public class JasperTemplateParameterDto implements JasperTemplateParameter.Impor
   private String displayName;
   private String defaultValue;
   private String dataType;
-  private String selectSql;
+  private String selectExpression;
+  private String selectProperty;
   private String description;
-  private List<String> selectValues;
 
   /**
    * Create new instance of JasperTemplateParameterDto based on given {@link

@@ -15,16 +15,15 @@
 
 package org.openlmis.requisition.domain;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -62,20 +61,20 @@ public class JasperTemplateParameter extends BaseEntity {
   @Setter
   private String dataType;
 
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
+  @Getter
+  @Setter
+  private String selectExpression;
+
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
-  private String selectSql;
+  private String selectProperty;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String description;
-
-  @Transient
-  @Getter
-  @Setter
-  private List<String> selectValues = new ArrayList<>();
 
   /**
    * Create new instance of JasperTemplateParameter based on given
@@ -90,7 +89,7 @@ public class JasperTemplateParameter extends BaseEntity {
     jasperTemplateParameter.setName(importer.getName());
     jasperTemplateParameter.setDisplayName(importer.getDisplayName());
     jasperTemplateParameter.setDefaultValue(importer.getDefaultValue());
-    jasperTemplateParameter.setSelectSql(importer.getSelectSql());
+    jasperTemplateParameter.setSelectExpression(importer.getSelectExpression());
     jasperTemplateParameter.setDescription(importer.getDescription());
     jasperTemplateParameter.setDataType(importer.getDataType());
     return jasperTemplateParameter;
@@ -108,8 +107,7 @@ public class JasperTemplateParameter extends BaseEntity {
     exporter.setDataType(dataType);
     exporter.setDefaultValue(defaultValue);
     exporter.setDisplayName(displayName);
-    exporter.setSelectSql(selectSql);
-    exporter.setSelectValues(selectValues);
+    exporter.setSelectExpression(selectExpression);
   }
 
   public interface Exporter {
@@ -123,11 +121,9 @@ public class JasperTemplateParameter extends BaseEntity {
 
     void setDataType(String dataType);
 
-    void setSelectSql(String selectSql);
+    void setSelectExpression(String selectExpression);
 
     void setDescription(String description);
-    
-    void setSelectValues(List<String> selectValues);
 
   }
 
@@ -142,7 +138,7 @@ public class JasperTemplateParameter extends BaseEntity {
 
     String getDataType();
 
-    String getSelectSql();
+    String getSelectExpression();
 
     String getDescription();
 
