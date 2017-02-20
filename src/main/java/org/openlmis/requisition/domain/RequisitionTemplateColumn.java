@@ -17,16 +17,10 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.BaseEntity.TEXT_COLUMN_DEFINITION;
 
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -47,6 +41,7 @@ public class RequisitionTemplateColumn {
   private String name;
 
   @Getter
+  @Setter
   private String label;
 
   @Getter
@@ -91,17 +86,6 @@ public class RequisitionTemplateColumn {
   }
 
   /**
-   * Validate name of new label and change it if it's alphanumeric.
-   */
-  public void setLabel(String labelName) {
-    if (!validateString(labelName)) {
-      throw new ValidationMessageException(
-          new Message("requisition.error.only-alphanumeric-label-is-accepted"));
-    }
-    this.label = labelName;
-  }
-
-  /**
    * Allows changing visibility of specific column.
    * Modifies display order if column represents product code.
    *
@@ -114,9 +98,4 @@ public class RequisitionTemplateColumn {
     this.isDisplayed = isDisplayed;
   }
 
-  private boolean validateString(String string) {
-    Pattern pattern = Pattern.compile("^[a-zA-z0-9/]+[a-zA-Z0-9/ ]+$");
-    Matcher matcher = pattern.matcher(string);
-    return matcher.find();
-  }
 }

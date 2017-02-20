@@ -25,9 +25,12 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 abstract class BaseValidator implements Validator {
-
+  private static final String ALPHANUMERIC_REGEX = "^[a-zA-z0-9/]+[a-zA-Z0-9/ ]+$";
+  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile(ALPHANUMERIC_REGEX);
+  
   @Autowired
   private MessageService messageService;
 
@@ -47,6 +50,12 @@ abstract class BaseValidator implements Validator {
 
   void rejectIfLengthTooLong(Errors errors, String value, int max, String field, Message message) {
     if (length(value) > max) {
+      rejectValue(errors, field, message);
+    }
+  }
+
+  void rejectIfNotAlphanumeric(Errors errors, String value, String field, Message message) {
+    if (null == value || !ALPHANUMERIC_PATTERN.matcher(value).find()) {
       rejectValue(errors, field, message);
     }
   }

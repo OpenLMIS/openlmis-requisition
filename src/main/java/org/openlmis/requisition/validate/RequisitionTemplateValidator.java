@@ -23,6 +23,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
@@ -171,6 +172,11 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
   private void validateColumns(Errors errors, RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+      rejectIfNotAlphanumeric(
+          errors, column.getLabel(), COLUMNS_MAP,
+          new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED)
+      );
+
       validateColumnDefinition(errors, column);
       validateChosenSources(errors, template, column);
 
@@ -228,5 +234,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
       );
     }
   }
+
+  
 
 }

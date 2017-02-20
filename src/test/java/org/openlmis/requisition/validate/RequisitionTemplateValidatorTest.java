@@ -31,6 +31,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
@@ -74,6 +75,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -85,6 +87,8 @@ public class RequisitionTemplateValidatorTest {
   private static final String COLUMN_NAME = "test";
   private static final String MUST_BE_DISPLAYED_WHEN_ADJUSTED_CONSUMPTION_IS_CALCULATED =
       " must be displayed when adjusted consumption is calculated.";
+  private static final String ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED =
+      "only alphanumeric label is accepted";
 
   private static final List<String> CALCULATED_ONLY = Arrays.asList("total", "packsToShip",
       "totalCost", "adjustedConsumption", "averageConsumption", "maximumStockQuantity",
@@ -368,6 +372,81 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfColumnLabelIsInvalid() {
+    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
+    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    columnMap.get(STOCK_ON_HAND).setLabel("New not valid name with wrong signs: !@#$%^&*()");
+    validator.validate(new RequisitionTemplate(columnMap), errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
+  public void shouldRejectIfColumnLabelNameHasSpecialCharacters() {
+    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
+    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    columnMap.get(STOCK_ON_HAND).setLabel(")(*&^%$#@!");
+    validator.validate(new RequisitionTemplate(columnMap), errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
+  public void shouldRejectIfColumnLabelIsNull() {
+    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
+    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    columnMap.get(STOCK_ON_HAND).setLabel(null);
+    validator.validate(new RequisitionTemplate(columnMap), errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
+  public void shouldRejectIfColumnLabelIsEmpty() {
+    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
+    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    columnMap.get(STOCK_ON_HAND).setLabel("");
+    validator.validate(new RequisitionTemplate(columnMap), errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
+  public void shouldRejectIfColumnLabelNameHasOnlyWhiteSpace() {
+    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
+    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
+
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    columnMap.get(STOCK_ON_HAND).setLabel(" ");
+    validator.validate(new RequisitionTemplate(columnMap), errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+  }
+
+  @Test
   public void shouldRejectIfProgramWithSpecifiedIdDoesNotExist() throws Exception {
     UUID programId = UUID.randomUUID();
     when(programReferenceDataService.findOne(programId)).thenReturn(null);
@@ -460,6 +539,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplateColumn.setName(name);
     requisitionTemplateColumn.setIsDisplayed(true);
     requisitionTemplateColumn.setSource(columnDefinition.getSources().iterator().next());
+    requisitionTemplateColumn.setLabel(name.toLowerCase(Locale.ENGLISH));
 
     return requisitionTemplateColumn;
   }

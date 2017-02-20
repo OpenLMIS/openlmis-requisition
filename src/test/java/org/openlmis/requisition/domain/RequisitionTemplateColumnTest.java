@@ -18,7 +18,6 @@ package org.openlmis.requisition.domain;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.exception.ValidationMessageException;
 
 public class RequisitionTemplateColumnTest {
   private RequisitionTemplateColumn requisitionTemplateColumn;
@@ -38,23 +37,4 @@ public class RequisitionTemplateColumnTest {
         requisitionTemplateColumn.getLabel());
   }
 
-  @Test(expected = ValidationMessageException.class)
-  public void testShouldNotChangeLabelIfLabelNameIsInvalid() {
-    requisitionTemplateColumn.setLabel("New not valid name with wrong signs: !@#$%^&*()");
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void testShouldNotChangeLabelIfLabelNameHasSpecialCharacters() {
-    requisitionTemplateColumn.setLabel(")(*&^%$#@!");
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void testShouldNotChangeLabelIfLabelNameIsEmpty() {
-    requisitionTemplateColumn.setLabel("");
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void testShouldNotChangeLabelIfLabelNameHasOnlyWhiteSpace() {
-    requisitionTemplateColumn.setLabel(" ");
-  }
 }

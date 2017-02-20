@@ -15,18 +15,13 @@
 
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,11 +32,20 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -369,6 +373,27 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         + " must be displayed";
 
     assertTrue(response.contains(expectedMessage));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSaveWhenColumnLabelIsIncorrect() {
+    requisitionTemplate.changeColumnLabel(
+        STOCK_ON_HAND, "New not valid name with wrong signs: !@#$%^&*()"
+    );
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionTemplate.getId())
+        .body(requisitionTemplate)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .extract().asString();
+
+    assertThat(response, containsString(MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
