@@ -186,7 +186,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldNotReturnCurrentPeriodIfThereIsNoRequisition() throws Exception {
+  public void shouldReturnCurrentPeriodIfThereIsNoRequisition() throws Exception {
     doReturn(Collections.singletonList(period1))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
@@ -198,7 +198,7 @@ public class PeriodServiceTest {
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
 
-    assertThat(currentPeriods, hasSize(0));
+    assertThat(currentPeriods, hasSize(1));
   }
 
   @Test
@@ -214,7 +214,7 @@ public class PeriodServiceTest {
   }
 
   @Test
-  public void shouldNotReturnCurrentPeriodIfThereIsNonSubmittedRequisition() throws Exception {
+  public void shouldReturnCurrentPeriodIfThereIsNonSubmittedRequisition() throws Exception {
     Requisition requisition = new Requisition();
     requisition.setStatus(INITIATED);
 
@@ -229,7 +229,7 @@ public class PeriodServiceTest {
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
 
-    assertThat(currentPeriods, hasSize(0));
+    assertThat(currentPeriods, hasSize(1));
   }
 
   @Test
