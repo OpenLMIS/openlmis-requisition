@@ -174,7 +174,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
       rejectIfNotAlphanumeric(
           errors, column.getLabel(), COLUMNS_MAP,
-          new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED)
+          new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, column.getName())
       );
 
       validateColumnDefinition(errors, column);
