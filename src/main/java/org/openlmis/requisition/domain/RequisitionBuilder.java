@@ -102,7 +102,6 @@ public final class RequisitionBuilder {
     }
 
     requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
-    requisition.setPreviousRequisitions(importer.getPreviousRequisitions());
 
     if (null != importer.getAvailableNonFullSupplyProducts()) {
       requisition.setAvailableNonFullSupplyProducts(

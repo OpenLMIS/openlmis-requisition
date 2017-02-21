@@ -493,7 +493,6 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
-    exporter.setPreviousRequisitions(previousRequisitions);
   }
 
   /**
@@ -623,8 +622,6 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setDraftStatusMessage(String draftStatusMessage);
 
-    void setPreviousRequisitions(List<Requisition> previousRequisitions);
-
   }
 
   public interface Importer {
@@ -655,8 +652,6 @@ public class Requisition extends BaseTimestampedEntity {
     RequisitionTemplate getTemplate();
 
     String getDraftStatusMessage();
-
-    List<Requisition> getPreviousRequisitions();
 
     Set<OrderableDto> getAvailableNonFullSupplyProducts();
   }

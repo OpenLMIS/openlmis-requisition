@@ -15,15 +15,16 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusLogEntry;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -90,10 +91,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private List<Requisition> previousRequisitions;
-
-  @Getter
-  @Setter
   private Set<OrderableDto> availableNonFullSupplyProducts;
 
   @Getter
@@ -106,4 +103,5 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
         Optional.ofNullable(requisitionLineItems).orElse(Collections.emptyList())
     );
   }
+  
 }
