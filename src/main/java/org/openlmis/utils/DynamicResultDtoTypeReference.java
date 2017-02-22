@@ -18,6 +18,8 @@ package org.openlmis.utils;
 import org.openlmis.requisition.dto.ResultDto;
 import org.springframework.core.ParameterizedTypeReference;
 
+import java.lang.reflect.Type;
+
 /**
  * Extension of {@link ParameterizedTypeReference} from Spring that allows dynamically changing
  * the type it represents at runtime. Since generic hacks are generally ugly, so is this class.
@@ -35,6 +37,11 @@ public class DynamicResultDtoTypeReference<T>
    */
   public DynamicResultDtoTypeReference(Class<?> valueType) {
     super(valueType);
+  }
+
+  @Override
+  protected Type getBaseType() {
+    return ResultDto.class;
   }
 
 }

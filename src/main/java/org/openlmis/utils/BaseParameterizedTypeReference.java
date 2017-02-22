@@ -15,7 +15,6 @@
 
 package org.openlmis.utils;
 
-import org.openlmis.requisition.dto.ResultDto;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.lang.reflect.ParameterizedType;
@@ -27,7 +26,7 @@ import java.lang.reflect.Type;
  * It eases the usage of the rest template however, allowing easily retrieving objects with the
  * provided generic type at runtime.
  */
-public class BaseParameterizedTypeReference<T> extends ParameterizedTypeReference<T> {
+public abstract class BaseParameterizedTypeReference<T> extends ParameterizedTypeReference<T> {
   private final Class<?> valueType;
 
   /**
@@ -38,6 +37,8 @@ public class BaseParameterizedTypeReference<T> extends ParameterizedTypeReferenc
   public BaseParameterizedTypeReference(Class<?> valueType) {
     this.valueType = valueType;
   }
+
+  protected abstract Type getBaseType();
 
   @Override
   public Type getType() {
@@ -51,7 +52,7 @@ public class BaseParameterizedTypeReference<T> extends ParameterizedTypeReferenc
 
       @Override
       public Type getRawType() {
-        return ResultDto.class;
+        return getBaseType();
       }
 
       @Override
