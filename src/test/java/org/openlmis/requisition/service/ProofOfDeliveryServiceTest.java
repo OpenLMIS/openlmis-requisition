@@ -93,7 +93,7 @@ public class ProofOfDeliveryServiceTest {
         requisition.getProcessingPeriodId(), null
     )).thenReturn(Lists.newArrayList(order));
 
-    when(orderFulfillmentService.getProofOfDeliveries(order.getId()))
+    when(orderFulfillmentService.getProofOfDelivery(order.getId()))
         .thenReturn(null);
 
     assertThat(proofOfDeliveryService.get(requisition), is(nullValue()));
@@ -106,8 +106,8 @@ public class ProofOfDeliveryServiceTest {
         requisition.getProcessingPeriodId(), null
     )).thenReturn(Lists.newArrayList(order));
 
-    when(orderFulfillmentService.getProofOfDeliveries(order.getId()))
-        .thenReturn(Lists.newArrayList(proofOfDelivery));
+    when(orderFulfillmentService.getProofOfDelivery(order.getId()))
+        .thenReturn(proofOfDelivery);
 
     assertThat(proofOfDeliveryService.get(requisition), is(proofOfDelivery));
   }

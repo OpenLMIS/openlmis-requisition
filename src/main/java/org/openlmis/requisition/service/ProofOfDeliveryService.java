@@ -53,10 +53,7 @@ public class ProofOfDeliveryService {
 
     OrderDto order = orders.iterator().next();
 
-    Collection<ProofOfDeliveryDto> proofOfDeliveries = orderFulfillmentService
-        .getProofOfDeliveries(order.getId());
-
-    return isEmpty(proofOfDeliveries) ? null : proofOfDeliveries.iterator().next();
+    return orderFulfillmentService.getProofOfDelivery(order.getId());
   }
 
 }

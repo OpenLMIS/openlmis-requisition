@@ -35,7 +35,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+@SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,7 +52,7 @@ public abstract class BaseCommunicationService<T> {
   protected abstract Class<T[]> getArrayResultClass();
 
   /**
-   * Return one object from Reference data service.
+   * Return one object from service.
    *
    * @param id UUID of requesting object.
    * @return Requesting reference data object.
@@ -62,13 +62,25 @@ public abstract class BaseCommunicationService<T> {
   }
 
   /**
-   * Return one object from Reference data service.
+   * Return one object from service.
    *
    * @param resourceUrl Endpoint url.
    * @param parameters  Map of query parameters.
    * @return one reference data T objects.
    */
   public T findOne(String resourceUrl, RequestParameters parameters) {
+    return findOne(resourceUrl, parameters, getResultClass());
+  }
+
+  /**
+   * Return one object from service.
+   *
+   * @param resourceUrl Endpoint url.
+   * @param parameters  Map of query parameters.
+   * @param type        set to what type a response should be converted.
+   * @return one reference data T objects.
+   */
+  public <P> P findOne(String resourceUrl, RequestParameters parameters, Class<P> type) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
     RequestParameters params = RequestParameters
@@ -78,7 +90,7 @@ public abstract class BaseCommunicationService<T> {
 
     try {
       return restTemplate
-          .getForEntity(createUri(url, params), getResultClass())
+          .getForEntity(createUri(url, params), type)
           .getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null

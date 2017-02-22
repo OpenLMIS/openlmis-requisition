@@ -71,8 +71,15 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
     return findAll("search", parameters);
   }
 
-  public List<ProofOfDeliveryDto> getProofOfDeliveries(UUID orderId) {
-    return findAll(orderId + "/proofOfDeliveries", ProofOfDeliveryDto[].class);
+  /**
+   * Finds proof of delivery related with the given order.
+   */
+  public ProofOfDeliveryDto getProofOfDelivery(UUID orderId) {
+    return findOne(
+        orderId + "/proofOfDeliveries",
+        RequestParameters.init(),
+        ProofOfDeliveryDto.class
+    );
   }
 
   @Override

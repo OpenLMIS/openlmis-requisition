@@ -16,7 +16,6 @@
 package org.openlmis.requisition.service.fulfillment;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -36,7 +35,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<OrderDto> {
@@ -88,19 +86,19 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
     pod.setId(UUID.randomUUID());
 
-    ResponseEntity<ProofOfDeliveryDto[]> response = mock(ResponseEntity.class);
-    when(restTemplate.getForEntity(any(URI.class), eq(ProofOfDeliveryDto[].class)))
+    ResponseEntity<ProofOfDeliveryDto> response = mock(ResponseEntity.class);
+    when(restTemplate.getForEntity(any(URI.class), eq(ProofOfDeliveryDto.class)))
         .thenReturn(response);
-    when(response.getBody()).thenReturn(new ProofOfDeliveryDto[]{pod});
+    when(response.getBody()).thenReturn(pod);
 
     // when
     OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
     OrderDto order = generateInstance();
-    List<ProofOfDeliveryDto> list = service.getProofOfDeliveries(order.getId());
+    ProofOfDeliveryDto actual = service.getProofOfDelivery(order.getId());
 
     // then
     verify(restTemplate).getForEntity(
-        uriCaptor.capture(), eq(ProofOfDeliveryDto[].class)
+        uriCaptor.capture(), eq(ProofOfDeliveryDto.class)
     );
 
     URI uri = uriCaptor.getValue();
@@ -108,8 +106,6 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
         + "/proofOfDeliveries?" + ACCESS_TOKEN;
 
     assertThat(uri.toString(), is(equalTo(url)));
-    
-    assertThat(list, hasSize(1));
-    assertThat(list.get(0).getId(), is(equalTo(pod.getId())));
+    assertThat(actual.getId(), is(equalTo(pod.getId())));
   }
 }
