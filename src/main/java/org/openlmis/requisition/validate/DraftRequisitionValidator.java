@@ -64,6 +64,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
+    validateInvariantsDidntChange(errors, requisition, savedRequisition);
+
     if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, savedRequisition, i));
@@ -144,7 +146,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   }
 
   private void rejectIfValueChanged(Errors errors, Object value, Object savedValue, String field) {
-    if (savedValue != null && !savedValue.equals(value)) {
+    if (value != null && savedValue != null && !savedValue.equals(value)) {
       rejectValue(errors, field, new Message(ERROR_IS_INVARIANT, field));
     }
   }

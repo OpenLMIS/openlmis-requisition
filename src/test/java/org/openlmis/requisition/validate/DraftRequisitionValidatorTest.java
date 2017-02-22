@@ -23,9 +23,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,6 +88,53 @@ public class DraftRequisitionValidatorTest {
     requisitionTemplate.setColumnsMap(columnsMap);
     requisition = generateRequisition();
     mockRepositoriesAndObjects();
+  }
+
+  @Test
+  public void shouldRejectIfInvariantValueChanged() {
+    Requisition updatedRequisition = generateRequisition();
+
+    updatedRequisition.setProgramId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getProgramId(), updatedRequisition.getProgramId());
+    updatedRequisition.setFacilityId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getFacilityId(), updatedRequisition.getFacilityId());
+    updatedRequisition.setProcessingPeriodId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getProcessingPeriodId(),
+        updatedRequisition.getProcessingPeriodId());
+    updatedRequisition.setSupervisoryNodeId(UUID.randomUUID());
+    Assert.assertNotEquals(requisition.getSupervisoryNodeId(),
+        updatedRequisition.getSupervisoryNodeId());
+    updatedRequisition.setEmergency(false);
+
+    Message message1 = new Message(ERROR_IS_INVARIANT, Requisition.PROGRAM_ID);
+    Message message2 = new Message(ERROR_IS_INVARIANT, Requisition.FACILITY_ID);
+    Message message3 = new Message(ERROR_IS_INVARIANT, Requisition.PROCESSING_PERIOD_ID);
+    Message message4 = new Message(ERROR_IS_INVARIANT, Requisition.EMERGENCY);
+    Message message6 = new Message(ERROR_IS_INVARIANT, Requisition.SUPERVISORY_NODE_ID);
+
+    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
+        ERROR_IS_INVARIANT));
+    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
+        ERROR_IS_INVARIANT));
+    when(messageService.localize(message3)).thenReturn(message3.new LocalizedMessage(
+        ERROR_IS_INVARIANT));
+    when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
+        ERROR_IS_INVARIANT));
+    when(messageService.localize(message6)).thenReturn(message6.new LocalizedMessage(
+        ERROR_IS_INVARIANT));
+
+    draftRequisitionValidator.validate(updatedRequisition, errors);
+
+    verify(errors).rejectValue(eq(Requisition.PROGRAM_ID),
+        contains(ERROR_IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.FACILITY_ID),
+        contains(ERROR_IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.PROCESSING_PERIOD_ID),
+        contains(ERROR_IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.EMERGENCY),
+        contains(ERROR_IS_INVARIANT));
+    verify(errors).rejectValue(eq(Requisition.SUPERVISORY_NODE_ID),
+        contains(ERROR_IS_INVARIANT));
   }
 
   @Test

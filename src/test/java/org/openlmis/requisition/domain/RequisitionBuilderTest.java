@@ -120,22 +120,6 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldInitializeRequisitionFromDtoImporter() {
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
-
-    assertNotNull(requisition);
-    assertEquals(requisitionUuid, requisition.getId());
-    assertEquals(facilityUuid, requisition.getFacilityId());
-    assertEquals(programUuid, requisition.getProgramId());
-    assertEquals(processingPeriodUuid, requisition.getProcessingPeriodId());
-    assertEquals(supervisoryNodeUuid, requisition.getSupervisoryNodeId());
-    assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
-    assertEquals(RequisitionStatus.INITIATED, requisition.getStatus());
-    assertEquals(modifiedDate, requisition.getModifiedDate());
-  }
-
-  @Test
   public void shouldInitializeRequisitionFromDtoImporterForUpdate() {
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, programUuid, RequisitionStatus.INITIATED);
@@ -160,8 +144,8 @@ public class RequisitionBuilderTest {
         .thenReturn(true);
     prepareForTestSkip(new RequisitionLineItemDto());
 
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+            requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -174,59 +158,56 @@ public class RequisitionBuilderTest {
     lineItemDto.setSkipped(true);
     prepareForTestSkip(lineItemDto);
 
-    RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+    RequisitionBuilder
+        .newRequisition(requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
   }
 
   @Test
   public void shouldNotSetSkippedIfRequisitionStatusIsAuthorized() {
-    prepareForTestSkippedDependOnStatus(RequisitionStatus.AUTHORIZED);
+    prepareForTestSkipped();
 
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.AUTHORIZED);
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
   public void shouldNotSetSkippedIfRequisitionStatusIsApproved() {
-    prepareForTestSkippedDependOnStatus(RequisitionStatus.APPROVED);
+    prepareForTestSkipped();
 
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.APPROVED);
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
   public void shouldSetSkippedIfRequisitionStatusIsInitiated() {
-    prepareForTestSkippedDependOnStatus(RequisitionStatus.INITIATED);
+    prepareForTestSkipped();
 
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
   public void shouldSetSkippedIfRequisitionStatusIsSubmitted() {
-    prepareForTestSkippedDependOnStatus(RequisitionStatus.SUBMITTED);
+    prepareForTestSkipped();
 
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.SUBMITTED);
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
-  public void shouldInitializeRequisitionFromDtoImporterWhenProgramAndFacilityAreNull() {
-    when(requisitionDto.getFacility()).thenReturn(null);
-    when(requisitionDto.getProgram()).thenReturn(null);
-
-    Requisition requisition =
-        RequisitionBuilder.newRequisition(requisitionDto, requisitionTemplate);
+  public void shouldInitializeRequisitionFromDtoImporterWhenProgramIsNull() {
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
 
     assertNotNull(requisition);
-    assertNull(requisition.getFacilityId());
     assertNull(requisition.getProgramId());
   }
 
@@ -238,10 +219,9 @@ public class RequisitionBuilderTest {
         .thenReturn(Collections.singletonList(lineItemDto));
   }
 
-  private void prepareForTestSkippedDependOnStatus(RequisitionStatus initiated) {
+  private void prepareForTestSkipped() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(true);
-    when(requisitionDto.getStatus()).thenReturn(initiated);
     RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
     lineItemDto.setSkipped(true);
     prepareForTestSkip(lineItemDto);
