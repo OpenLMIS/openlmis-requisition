@@ -33,6 +33,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.UUID;
 
@@ -91,7 +92,7 @@ public class ProofOfDeliveryServiceTest {
     when(orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null
-    )).thenReturn(Lists.newArrayList(order));
+    )).thenReturn(new PageImpl<>(Lists.newArrayList(order)));
 
     when(orderFulfillmentService.getProofOfDelivery(order.getId()))
         .thenReturn(null);
@@ -104,7 +105,7 @@ public class ProofOfDeliveryServiceTest {
     when(orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null
-    )).thenReturn(Lists.newArrayList(order));
+    )).thenReturn(new PageImpl<>(Lists.newArrayList(order)));
 
     when(orderFulfillmentService.getProofOfDelivery(order.getId()))
         .thenReturn(proofOfDelivery);

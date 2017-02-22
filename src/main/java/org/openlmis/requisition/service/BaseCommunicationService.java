@@ -19,10 +19,12 @@ import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
-import org.openlmis.utils.DynamicParameterizedTypeReference;
+import org.openlmis.utils.DynamicPageTypeReference;
+import org.openlmis.utils.DynamicResultDtoTypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -173,6 +175,28 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
+  protected Page<T> getPage(String resourceUrl, RequestParameters parameters) {
+    return getPage(resourceUrl, parameters, getResultClass());
+  }
+
+  protected <P> Page<P> getPage(String resourceUrl, RequestParameters parameters,
+                                Class<P> type) {
+    String url = getServiceUrl() + getUrl() + resourceUrl;
+    RequestParameters params = RequestParameters
+        .init()
+        .setAll(parameters)
+        .set(ACCESS_TOKEN, authService.obtainAccessToken());
+
+    ResponseEntity<Page<P>> response = restTemplate.exchange(
+        createUri(url, params),
+        HttpMethod.GET,
+        null,
+        new DynamicPageTypeReference<>(type)
+    );
+
+    return response.getBody();
+  }
+
   protected <P> ResultDto<P> getResult(String resourceUrl, RequestParameters parameters,
                                        Class<P> type) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
@@ -185,7 +209,7 @@ public abstract class BaseCommunicationService<T> {
         createUri(url, params),
         HttpMethod.GET,
         null,
-        new DynamicParameterizedTypeReference<>(type)
+        new DynamicResultDtoTypeReference<>(type)
     );
 
     return response.getBody();

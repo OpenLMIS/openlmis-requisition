@@ -21,11 +21,11 @@ import static org.openlmis.utils.RequestHelper.createUri;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -58,7 +58,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   /**
    * Finds orders that matched the provided parameters.
    */
-  public List<OrderDto> search(UUID supplyingFacility, UUID requestingFacility,
+  public Page<OrderDto> search(UUID supplyingFacility, UUID requestingFacility,
                                UUID program, UUID processingPeriod, String status) {
     RequestParameters parameters = RequestParameters
         .init()
@@ -68,7 +68,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
         .set("processingPeriod", processingPeriod)
         .set("status", status);
 
-    return findAll("search", parameters);
+    return getPage("search", parameters);
   }
 
   /**

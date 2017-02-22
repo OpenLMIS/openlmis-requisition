@@ -24,9 +24,10 @@ import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 public class ProofOfDeliveryService {
@@ -43,17 +44,19 @@ public class ProofOfDeliveryService {
       return null;
     }
 
-    Collection<OrderDto> orders = orderFulfillmentService.search(
+    Page<OrderDto> orders = orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null);
 
-    if (isEmpty(orders)) {
+    if (null == orders) {
       return null;
     }
 
-    OrderDto order = orders.iterator().next();
+    List<OrderDto> content = orders.getContent();
 
-    return orderFulfillmentService.getProofOfDelivery(order.getId());
+    return !isEmpty(content)
+        ? orderFulfillmentService.getProofOfDelivery(content.get(0).getId())
+        : null;
   }
 
 }
