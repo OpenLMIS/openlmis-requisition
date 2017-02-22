@@ -15,25 +15,26 @@
 
 package org.openlmis.utils;
 
+import org.openlmis.util.PageImplRepresentation;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
 
 import java.lang.reflect.Type;
 
 /**
  * Extension of {@link ParameterizedTypeReference} from Spring that allows dynamically changing
  * the type it represents at runtime. Since generic hacks are generally ugly, so is this class.
- * It eases the usage of the rest template however, allowing easily retrieving {@link Page}
- * objects with the provided generic type at runtime.
+ * It eases the usage of the rest template however, allowing easily retrieving
+ * {@link PageImplRepresentation} objects with the provided generic type at runtime.
  */
 public class DynamicPageTypeReference<T>
-    extends BaseParameterizedTypeReference<Page<T>> {
+    extends BaseParameterizedTypeReference<PageImplRepresentation<T>> {
 
   /**
-   * Constructs an instance that will represents {@link Page} wrappers for the given type.
+   * Constructs an instance that will represents {@link PageImplRepresentation} wrappers for the
+   * given type.
    *
-   * @param valueType the value type (generic type) of the {@link Page} type that this will
-   *                  represent
+   * @param valueType the value type (generic type) of the {@link PageImplRepresentation} type that
+   *                  this will represent
    */
   public DynamicPageTypeReference(Class<?> valueType) {
     super(valueType);
@@ -41,7 +42,7 @@ public class DynamicPageTypeReference<T>
 
   @Override
   protected Type getBaseType() {
-    return Page.class;
+    return PageImplRepresentation.class;
   }
 
 }
