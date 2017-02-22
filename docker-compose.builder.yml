@@ -46,7 +46,7 @@ services:
     image: openlmis/requisition
 
   db:
-    image: openlmis/postgres
+    image: openlmis/postgres:9.4
     env_file: .env
 
   log:
