@@ -24,13 +24,21 @@
       "type": "string",
       "title": "dataType"
     },
-    "selectSql": {
+    "selectExpression": {
       "type": "string",
-      "title": "selectSql"
+      "title": "selectExpression"
     },
     "description": {
       "type": "string",
       "title": "description"
+    },
+    "selectProperty": {
+      "type": "string",
+      "title": "selectProperty"
+    },
+    "displayProperty": {
+      "type": "string",
+      "title": "displayProperty"
     }
   },
   "required": [

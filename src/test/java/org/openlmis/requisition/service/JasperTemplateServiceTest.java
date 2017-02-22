@@ -306,7 +306,7 @@ public class JasperTemplateServiceTest {
   @Test
   public void mapRequestParametersToTemplateShouldReturnEmptyMapIfNoRequestParameters() {
     JasperTemplateParameter templateParameter = new JasperTemplateParameter(template, PARAM1, 
-        null, null, null, null, null, null);
+        null, null, null, null, null, null, null);
 
     when(request.getParameterMap()).thenReturn(Collections.emptyMap());
     when(template.getTemplateParameters()).thenReturn(Collections.singletonList(templateParameter));
@@ -321,9 +321,9 @@ public class JasperTemplateServiceTest {
   public void mapRequestParametersToTemplateShouldReturnMatchingParameters() {
     List<JasperTemplateParameter> templateParameterList = new ArrayList<>();
     templateParameterList.add(new JasperTemplateParameter(template, PARAM1, null, null, null, 
-        null, null, null));
+        null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param2", null, null, null, 
-        null, null, null));
+        null, null, null, null));
     
     Map<String, String[]> requestParameterMap = new HashMap<>();
     requestParameterMap.put(PARAM1, new String[]{"value1"});
@@ -344,13 +344,13 @@ public class JasperTemplateServiceTest {
   public void mapRequestParametersToTemplateShouldNotReturnBlankNullOrUndefinedStringValues() {
     List<JasperTemplateParameter> templateParameterList = new ArrayList<>();
     templateParameterList.add(new JasperTemplateParameter(template, PARAM1, null, null, null,
-        null, null, null));
+        null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param2", null, null, null,
-        null, null, null));
+        null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param3", null, null, null,
-        null, null, null));
+        null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param4", null, null, null,
-        null, null, null));
+        null, null, null, null));
 
     Map<String, String[]> requestParameterMap = new HashMap<>();
     requestParameterMap.put(PARAM1, new String[]{""});

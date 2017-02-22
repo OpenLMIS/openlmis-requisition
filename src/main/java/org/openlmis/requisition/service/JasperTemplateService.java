@@ -188,6 +188,10 @@ public class JasperTemplateService {
     jasperTemplateParameter.setDataType(dataType);
     jasperTemplateParameter.setSelectExpression(
         jrParameter.getPropertiesMap().getProperty("selectExpression"));
+    jasperTemplateParameter.setSelectProperty(
+        jrParameter.getPropertiesMap().getProperty("selectProperty"));
+    jasperTemplateParameter.setDisplayProperty(
+        jrParameter.getPropertiesMap().getProperty("displayProperty"));
 
     if (jrParameter.getDefaultValueExpression() != null) {
       jasperTemplateParameter.setDefaultValue(jrParameter.getDefaultValueExpression()
