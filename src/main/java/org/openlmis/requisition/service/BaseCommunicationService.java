@@ -19,6 +19,7 @@ import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
+import org.openlmis.util.PageImplRepresentation;
 import org.openlmis.utils.DynamicPageTypeReference;
 import org.openlmis.utils.DynamicResultDtoTypeReference;
 import org.slf4j.Logger;
@@ -187,7 +188,7 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters)
         .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
-    ResponseEntity<Page<P>> response = restTemplate.exchange(
+    ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
         createUri(url, params),
         HttpMethod.GET,
         null,
