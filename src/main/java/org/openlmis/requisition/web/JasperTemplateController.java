@@ -52,6 +52,7 @@ import javax.servlet.http.HttpServletRequest;
 public class JasperTemplateController extends BaseController {
 
   private static final String CONSISTENCY_REPORT = "Consistency Report";
+  private static final String TIMELINESS_REPORT = "Timeliness Report";
 
   private static final Logger LOGGER = Logger.getLogger(JasperTemplateController.class);
 
@@ -175,9 +176,14 @@ public class JasperTemplateController extends BaseController {
 
     JasperReportsMultiFormatView jasperView = jasperReportsViewService
         .getJasperReportsView(template, request);
+
     Map<String, Object> map = jasperTemplateService.mapRequestParametersToTemplate(
         request, template);
     map.put("format", format);
+
+    if (TIMELINESS_REPORT.equals(template.getType())) {
+      return jasperReportsViewService.getTimelinessJasperReportView(jasperView, map);
+    }
 
     return new ModelAndView(jasperView, map);
   }

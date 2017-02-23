@@ -28,6 +28,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 
@@ -35,8 +36,14 @@ import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.openlmis.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +62,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +81,15 @@ public class JasperReportsViewService {
 
   @Autowired
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
 
   /**
    * Create Jasper Report View.
@@ -122,6 +140,31 @@ public class JasperReportsViewService {
       jasperView.setApplicationContext(getApplicationContext(request));
     }
     return new ModelAndView(jasperView, params);
+  }
+
+  /**
+   * Get customized Jasper Report View for Timeliness Report.
+   *
+   * @param jasperView generic jasper report view
+   * @param parameters template parameters populated with values from the request
+   * @return customized jasper view.
+   */
+  public ModelAndView getTimelinessJasperReportView(JasperReportsMultiFormatView jasperView,
+                                                    Map<String, Object> parameters) {
+    ProgramDto program = programReferenceDataService.findOne(
+        UUID.fromString(parameters.get("program").toString())
+    );
+    ProcessingPeriodDto period = periodReferenceDataService.findOne(
+        UUID.fromString(parameters.get("period").toString())
+    );
+    // TODO: filter and sort facilities
+    List<FacilityDto> facilities = facilityReferenceDataService.findAll();
+
+    parameters.put("datasource", new JRBeanCollectionDataSource(facilities));
+    parameters.put("program", program);
+    parameters.put("period", period);
+
+    return new ModelAndView(jasperView, parameters);
   }
 
   private JasperDesign createCustomizedRequisitionLineSubreport(RequisitionTemplate template)
