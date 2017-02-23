@@ -19,7 +19,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -48,7 +48,7 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @param name Filed with string to find similar name.
    * @return List of FacilityDtos with similar code or name.
    */
-  public Collection<FacilityDto> search(String code, String name, UUID zoneId) {
+  public List<FacilityDto> search(String code, String name, UUID zoneId) {
     RequestParameters parameters = RequestParameters
         .init()
         .set("code", code)
@@ -65,7 +65,7 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @param supervisoryNodeId UUID of the supervisory node
    * @return A list of supply lines matching search criteria
    */
-  public Collection<FacilityDto> searchSupplyingDepots(UUID programId, UUID supervisoryNodeId) {
+  public List<FacilityDto> searchSupplyingDepots(UUID programId, UUID supervisoryNodeId) {
     RequestParameters parameters = RequestParameters
         .init()
         .set("programId", programId)

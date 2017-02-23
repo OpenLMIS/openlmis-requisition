@@ -37,11 +37,13 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
@@ -90,6 +92,9 @@ public class JasperReportsViewService {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private GeographicZoneReferenceDataService geographicZoneReferenceDataService;
 
   /**
    * Create Jasper Report View.
@@ -157,12 +162,18 @@ public class JasperReportsViewService {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         UUID.fromString(parameters.get("period").toString())
     );
-    // TODO: filter and sort facilities
-    List<FacilityDto> facilities = facilityReferenceDataService.findAll();
+    GeographicZoneDto district = null;
+    Object districtId = parameters.get("district");
+    if (districtId != null && !districtId.toString().isEmpty()) {
+      district = geographicZoneReferenceDataService.findOne(
+          UUID.fromString(districtId.toString()));
+    }
+    List<FacilityDto> facilities = getFacilitiesForTimelinessReport(program, period, district);
 
     parameters.put("datasource", new JRBeanCollectionDataSource(facilities));
     parameters.put("program", program);
     parameters.put("period", period);
+    parameters.put("district", district);
 
     return new ModelAndView(jasperView, parameters);
   }
@@ -260,5 +271,13 @@ public class JasperReportsViewService {
     } catch (ClassNotFoundException exp) {
       throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
     }
+  }
+
+  private List<FacilityDto> getFacilitiesForTimelinessReport(
+      ProgramDto program, ProcessingPeriodDto processingPeriod, GeographicZoneDto district) {
+    List<FacilityDto> facilities = (district == null) ? facilityReferenceDataService.findAll()
+        : facilityReferenceDataService.search(null, null, district.getId());
+    // TODO: filter and sort facilities
+    return facilities;
   }
 }

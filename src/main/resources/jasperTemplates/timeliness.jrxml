@@ -20,6 +20,12 @@
 			<style backcolor="#F3F3F3"/>
 		</conditionalStyle>
 	</style>
+	<parameter name="district" class="org.openlmis.requisition.dto.GeographicZoneDto" isForPrompting="true">
+		<property name="displayName" value="District"/>
+		<property name="selectExpression" value="/api/geographicZones/search?levelNumber=3"/>
+		<property name="selectProperty" value="id"/>
+		<property name="displayProperty" value="name"/>
+	</parameter>
 	<parameter name="program" class="org.openlmis.requisition.dto.ProgramDto" isForPrompting="true">
 		<property name="displayName" value="Program Name"/>
 		<property name="selectExpression" value="/api/programs"/>
