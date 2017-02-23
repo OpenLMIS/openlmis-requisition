@@ -64,7 +64,7 @@ import javax.sql.DataSource;
 @Service
 public class JasperReportsViewService {
   private static final String REQUISITION_REPORT_DIR = "/jasperTemplates/requisition.jrxml";
-  private static final String REQUISITION_LINE_REPORT_DIR = "/reports/requisitionLines.jrxml";
+  private static final String REQUISITION_LINE_REPORT_DIR = "/jasperTemplates/requisitionLines.jrxml";
 
   @Autowired
   private DataSource replicationDataSource;
