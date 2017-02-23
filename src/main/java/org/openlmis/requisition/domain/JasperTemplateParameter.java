@@ -29,6 +29,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Defines a parameter of Jasper Template, meant to be passed on printing.
+ * <p>
+ * selectExpression is used to indicate how the parameter values should be retrieved (API path).
+ * selectProperty indicates which property of objects should be passed as parameter (ex. ID).
+ * displayProperty is used to indicate which property of object should be displayed for choice.
+ * </p>
+ */
 @Entity
 @Table(name = "template_parameters")
 @NoArgsConstructor
