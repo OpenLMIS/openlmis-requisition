@@ -15,7 +15,6 @@
 
 package org.openlmis.utils;
 
-import org.openlmis.util.PageImplRepresentation;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.lang.reflect.Type;

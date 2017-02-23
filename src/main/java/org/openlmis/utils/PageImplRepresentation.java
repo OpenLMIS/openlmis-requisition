@@ -13,14 +13,14 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.framework;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.openlmis.utils;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PageImplRepresentation offers a convenient substitute for PageImpl.

@@ -19,9 +19,9 @@ import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
-import org.openlmis.util.PageImplRepresentation;
 import org.openlmis.utils.DynamicPageTypeReference;
 import org.openlmis.utils.DynamicResultDtoTypeReference;
+import org.openlmis.utils.PageImplRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

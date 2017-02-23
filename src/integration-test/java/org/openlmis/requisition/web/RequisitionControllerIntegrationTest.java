@@ -65,7 +65,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.framework.PageImplRepresentation;
+import org.openlmis.utils.PageImplRepresentation;
 import org.openlmis.requisition.i18n.ExposedMessageSource;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
