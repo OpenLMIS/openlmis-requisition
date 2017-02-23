@@ -44,14 +44,14 @@ public class GeographicZoneReferenceDataService
   /**
    * This method retrieves geographic zones filtered by geographic level and parent zone.
    *
-   * @param level ID of geographic level
+   * @param levelNumber geographic level number
    * @param parent ID of parent geographic zone
    * @return List of matched geographic zones.
    */
-  public Collection<GeographicZoneDto> search(UUID level, UUID parent) {
+  public Collection<GeographicZoneDto> search(Integer levelNumber, UUID parent) {
     RequestParameters parameters = RequestParameters
         .init()
-        .set("level", level)
+        .set("levelNumber", levelNumber)
         .set("parent", parent);
 
     return findAll("search", parameters);
