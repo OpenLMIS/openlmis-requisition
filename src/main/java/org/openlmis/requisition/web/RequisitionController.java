@@ -284,6 +284,7 @@ public class RequisitionController extends BaseController {
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
         requisitionToUpdate.getStatus());
+    requisition.setId(requisitionId);
 
     requisitionVersionValidator.validateRequisitionTimestamps(
         requisition, requisitionToUpdate
