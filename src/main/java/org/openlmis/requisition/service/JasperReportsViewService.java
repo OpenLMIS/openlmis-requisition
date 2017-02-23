@@ -34,6 +34,7 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -49,6 +50,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.openlmis.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -62,11 +64,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -95,6 +101,9 @@ public class JasperReportsViewService {
 
   @Autowired
   private GeographicZoneReferenceDataService geographicZoneReferenceDataService;
+
+  @Autowired
+  private RequisitionService requisitionService;
 
   /**
    * Create Jasper Report View.
@@ -275,9 +284,25 @@ public class JasperReportsViewService {
 
   private List<FacilityDto> getFacilitiesForTimelinessReport(
       ProgramDto program, ProcessingPeriodDto processingPeriod, GeographicZoneDto district) {
+    Set<RequisitionStatus> validStatuses = Arrays.stream(RequisitionStatus.values())
+        .filter(RequisitionStatus::isPostSubmitted)
+        .collect(Collectors.toSet());
+
     List<FacilityDto> facilities = (district == null) ? facilityReferenceDataService.findAll()
         : facilityReferenceDataService.search(null, null, district.getId());
-    // TODO: filter and sort facilities
-    return facilities;
+
+    List<FacilityDto> facilitiesMissingRnR = new ArrayList<>();
+    // find active facilities that are missing R&R
+    for (FacilityDto facility : facilities) {
+      if (facility.getActive()) {
+        Page<Requisition> requisitions = requisitionService.searchRequisitions(
+            facility.getId(), program.getId(), null, null, processingPeriod.getId(),
+            null, validStatuses, null, null);
+        if (requisitions.getTotalElements() == 0) {
+          facilitiesMissingRnR.add(facility);
+        }
+      }
+    }
+    return facilitiesMissingRnR;
   }
 }
