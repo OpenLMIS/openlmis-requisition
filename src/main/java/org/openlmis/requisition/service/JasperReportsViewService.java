@@ -22,6 +22,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_CREATION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_FORMAT;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID;
 
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRException;
@@ -41,13 +42,17 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReportingRateReportDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
+import org.openlmis.utils.Message;
 import org.openlmis.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -105,6 +110,9 @@ public class JasperReportsViewService {
   @Autowired
   private RequisitionService requisitionService;
 
+  @Autowired
+  private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
+
   /**
    * Create Jasper Report View.
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
@@ -121,6 +129,42 @@ public class JasperReportsViewService {
     setExportParams(jasperView);
     jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
     jasperView.setJdbcDataSource(replicationDataSource);
+
+    if (getApplicationContext(request) != null) {
+      jasperView.setApplicationContext(getApplicationContext(request));
+    }
+    return jasperView;
+  }
+
+  /**
+   * Get customized Jasper Report View for Timeliness Report.
+   *
+   * @param jasperTemplate jasper template for report
+   * @param request http request for filling application context
+   * @param params template parameters populated with values from the request
+   * @return customized jasper view.
+   */
+  public JasperReportsMultiFormatView getReportingRateJasperReportsView(
+      JasperTemplate jasperTemplate, HttpServletRequest request, Map<String, Object> params)
+      throws JasperReportViewException {
+    JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
+    setExportParams(jasperView);
+    jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
+
+    UUID programId = processUuidParameter(params, "Program", true);
+    ProgramDto program = programReferenceDataService.findOne(programId);
+
+    UUID periodId = processUuidParameter(params, "Period", true);
+    ProcessingPeriodDto period = periodReferenceDataService.findOne(periodId);
+
+    UUID zoneId = processUuidParameter(params, "GeographicZone", false);
+    GeographicZoneDto zone = null;
+    if (zoneId != null) {
+      zone = geographicZoneReferenceDataService.findOne(zoneId);
+    }
+
+    ReportingRateReportDto reportDto = reportingRateReportDtoBuilder.build(program, period, zone);
+    params.put("datasource", new JRBeanCollectionDataSource(Collections.singletonList(reportDto)));
 
     if (getApplicationContext(request) != null) {
       jasperView.setApplicationContext(getApplicationContext(request));
@@ -304,5 +348,23 @@ public class JasperReportsViewService {
       }
     }
     return facilitiesMissingRnR;
+  }
+
+  private UUID processUuidParameter(Map<String, Object> params, String key, boolean required) {
+    Message errorMessage = new Message(ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID, key);
+
+    try {
+      if (!params.containsKey(key)) {
+        if (required) {
+          throw new ValidationMessageException(errorMessage);
+        } else {
+          return null;
+        }
+      }
+
+      return UUID.fromString((String)params.get(key));
+    } catch (ClassCastException | IllegalArgumentException err) {
+      throw new ValidationMessageException(errorMessage, err);
+    }
   }
 }

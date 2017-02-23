@@ -37,5 +37,35 @@
     "selectProperty" : "id",
     "displayProperty" : "name",
     "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3"
+  },
+  {
+    "id" : "2bffed39-b764-4709-8106-417ff43d61d3",
+    "name": "GeographicZone",
+    "displayName": "Geographic Zone",
+    "dataType": "java.lang.String",
+    "selectExpression": "/api/geographicZones/search?levelNumber=3",
+    "selectProperty": "id",
+    "displayProperty": "name",
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad"
+  },
+  {
+    "id" : "5a7e6bc3-66c2-4b6b-b4d1-f2b38d8b8309",
+    "name": "Program",
+    "displayName": "Program",
+    "dataType": "java.lang.String",
+    "selectExpression": "/api/programs",
+    "selectProperty": "id",
+    "displayProperty": "name",
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad"
+  },
+  {
+    "id" : "2550a167-b6db-48bc-a08f-6495357061a1",
+    "name": "Period",
+    "displayName": "Processing Period",
+    "dataType": "java.lang.String",
+    "selectExpression": "/api/processingPeriods",
+    "selectProperty": "id",
+    "displayProperty": "name",
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad"
   }
 ]

@@ -53,6 +53,7 @@ public class JasperTemplateController extends BaseController {
 
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String TIMELINESS_REPORT = "Timeliness Report";
+  private static final String REPORTING_RATE_REPORT = "Reporting Rate Report";
 
   private static final Logger LOGGER = Logger.getLogger(JasperTemplateController.class);
 
@@ -165,7 +166,6 @@ public class JasperTemplateController extends BaseController {
   public ModelAndView generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
-
     permissionService.canViewReports();
 
     JasperTemplate template = jasperTemplateRepository.findOne(templateId);
@@ -177,13 +177,19 @@ public class JasperTemplateController extends BaseController {
     JasperReportsMultiFormatView jasperView = jasperReportsViewService
         .getJasperReportsView(template, request);
 
-    Map<String, Object> map = jasperTemplateService.mapRequestParametersToTemplate(
-        request, template);
+    Map<String, Object> map = jasperTemplateService
+        .mapRequestParametersToTemplate(request, template);
     map.put("format", format);
 
     if (TIMELINESS_REPORT.equals(template.getType())) {
       return jasperReportsViewService.getTimelinessJasperReportView(jasperView, map);
     }
+
+    if (REPORTING_RATE_REPORT.equals(template.getType())) {
+      jasperView = jasperReportsViewService
+          .getReportingRateJasperReportsView(template, request, map);
+    }
+
 
     return new ModelAndView(jasperView, map);
   }

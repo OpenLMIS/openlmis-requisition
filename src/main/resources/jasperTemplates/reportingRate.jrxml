@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-23T13:07:00 -->
+<!-- 2017-02-23T22:26:16 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportingRate" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4e1d9a97-c93a-4ad3-87e1-e305d6e7da2e">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="java.lang.*"/>
@@ -55,17 +55,30 @@
 		<field name="late" class="java.lang.Double">
 			<fieldDescription><![CDATA[late]]></fieldDescription>
 		</field>
+		<variable name="NumberFormat" class="java.lang.String">
+			<variableExpression><![CDATA["%.0f%%"]]></variableExpression>
+			<initialValueExpression><![CDATA["%.0f%%"]]></initialValueExpression>
+		</variable>
 	</subDataset>
 	<parameter name="Program" class="java.lang.String">
 		<property name="displayName" value="Program"/>
+		<property name="selectExpression" value="/api/programs"/>
+		<property name="selectProperty" value="id"/>
+		<property name="displayProperty" value="name"/>
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="Period" class="java.lang.String">
 		<property name="displayName" value="Period"/>
+		<property name="selectExpression" value="/api/processingPeriods"/>
+		<property name="displayProperty" value="name"/>
+		<property name="selectProperty" value="id"/>
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="GeographicZone" class="java.lang.String">
 		<property name="displayName" value="Geographic Zone"/>
+		<property name="selectExpression" value="/api/geographicZones/search?levelNumber=3"/>
+		<property name="displayProperty" value="name"/>
+		<property name="selectProperty" value="id"/>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
@@ -204,7 +217,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="1dfa41cf-7344-4dbd-96f4-5f227215cea4"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[Period]]></text>
+								<text><![CDATA[Periods]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
@@ -230,7 +243,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="c76ce979-1d2c-4b28-af83-7bc5a1626a2d"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{completed} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{completed} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -248,7 +261,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="533abb65-b858-4042-acba-4c67310920ce"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{onTime} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{onTime} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -266,7 +279,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="32465b83-c463-4b16-97a4-830b0a074daf"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{late} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{late} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -286,7 +299,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="49b0377d-e4fc-4d23-82a5-47562053bc71"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{missed} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{missed} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -294,38 +307,42 @@
 			</componentElement>
 			<stackedBarChart>
 				<chart evaluationTime="Report">
-					<reportElement x="0" y="50" width="555" height="230" uuid="29109383-7b85-41be-8c00-6e549ae458fc"/>
+					<reportElement x="0" y="50" width="555" height="230" uuid="ed54ff7f-5288-41c8-8ea6-78a2cd8f5f69"/>
 					<chartTitle/>
 					<chartSubtitle/>
 					<chartLegend/>
 				</chart>
 				<categoryDataset>
 					<dataset>
-						<datasetRun subDataset="ReportingRateByPeriod" uuid="f2d9c622-4cc9-4774-9db8-21820477dff9">
+						<datasetRun subDataset="ReportingRateByPeriod" uuid="2078cd84-d697-4dcc-a124-48db54e1aff1">
 							<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{completionByPeriod})]]></dataSourceExpression>
 						</datasetRun>
 					</dataset>
 					<categorySeries>
 						<seriesExpression><![CDATA["On Time"]]></seriesExpression>
-						<categoryExpression><![CDATA["P1"]]></categoryExpression>
+						<categoryExpression><![CDATA[$F{grouping}]]></categoryExpression>
 						<valueExpression><![CDATA[$F{onTime} * 100]]></valueExpression>
 						<labelExpression><![CDATA["On Time"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
-						<seriesExpression><![CDATA["Not Reported"]]></seriesExpression>
-						<categoryExpression><![CDATA["P2"]]></categoryExpression>
-						<valueExpression><![CDATA[$F{missed} * 100]]></valueExpression>
-						<labelExpression><![CDATA["Not Reported"]]></labelExpression>
-					</categorySeries>
-					<categorySeries>
 						<seriesExpression><![CDATA["Late"]]></seriesExpression>
-						<categoryExpression><![CDATA["P3"]]></categoryExpression>
+						<categoryExpression><![CDATA[$F{grouping}]]></categoryExpression>
 						<valueExpression><![CDATA[$F{late} * 100]]></valueExpression>
 						<labelExpression><![CDATA["Late"]]></labelExpression>
 					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["Not Reported"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{grouping}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{missed} * 100]]></valueExpression>
+						<labelExpression><![CDATA["Not Reported"]]></labelExpression>
+					</categorySeries>
 				</categoryDataset>
 				<barPlot>
-					<plot/>
+					<plot>
+						<seriesColor seriesOrder="0" color="#E9C04F"/>
+						<seriesColor seriesOrder="1" color="#B5D8F6"/>
+						<seriesColor seriesOrder="2" color="#BF5A53"/>
+					</plot>
 					<itemLabel/>
 					<categoryAxisFormat>
 						<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000"/>
@@ -367,7 +384,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="7fa71eb4-df17-41d7-a7f4-13486a02659b"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[Period]]></text>
+								<text><![CDATA[Districts]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
@@ -393,7 +410,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="99413dd5-0f84-4b07-b36d-2bc60d97b567"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{completed} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{completed} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -411,7 +428,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="6098848d-3396-4ec0-9627-51467a43e0b2"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{onTime} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{onTime} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -429,7 +446,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="af00bd95-fa13-4baf-894e-339a41baac57"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{late} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{late} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -449,7 +466,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="f74f1b72-b6a5-4a54-8772-e6f3fc79c3c9"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{missed} * 100]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{missed} * 100)]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
