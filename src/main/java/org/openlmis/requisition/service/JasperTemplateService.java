@@ -59,6 +59,8 @@ import javax.servlet.http.HttpServletRequest;
 @SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateService {
 
+  private static final String REPORT_TYPE_PROPERTY = "reportType";
+
   @Autowired
   private JasperTemplateRepository jasperTemplateRepository;
 
@@ -126,6 +128,12 @@ public class JasperTemplateService {
 
     try {
       JasperReport report = JasperCompileManager.compileReport(file.getInputStream());
+
+      String reportType = report.getProperty(REPORT_TYPE_PROPERTY);
+      if (reportType != null) {
+        jasperTemplate.setType(reportType);
+      }
+
       JRParameter[] jrParameters = report.getParameters();
 
       if (jrParameters != null && jrParameters.length > 0) {
