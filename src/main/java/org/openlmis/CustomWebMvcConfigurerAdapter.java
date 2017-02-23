@@ -15,7 +15,7 @@
 
 package org.openlmis;
 
-import org.openlmis.util.Pagination;
+import org.openlmis.utils.Pagination;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
