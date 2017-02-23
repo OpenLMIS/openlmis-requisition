@@ -563,12 +563,12 @@ public class RequisitionService {
     }
     if (filterAll || "facilityCode".equals(filterBy)) {
       Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.search(filterValue, null);
+          facilityReferenceDataService.search(filterValue, null, null);
       foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
     if (filterAll || "facilityName".equals(filterBy)) {
       Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.search(null, filterValue);
+          facilityReferenceDataService.search(null, filterValue, null);
       foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     }
     return uuidsToReturn;

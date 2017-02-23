@@ -72,7 +72,7 @@ public class JasperTemplateService {
   public void validateFileAndInsertTemplate(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
     throwIfTemplateWithSameNameAlreadyExists(jasperTemplate.getName());
-    validateFile(jasperTemplate, file);
+    validateFileAndSetData(jasperTemplate, file);
     saveWithParameters(jasperTemplate);
   }
 
@@ -86,7 +86,7 @@ public class JasperTemplateService {
     if (templateTmp != null) {
       jasperTemplateRepository.delete(templateTmp.getId());
     }
-    validateFile(jasperTemplate, file);
+    validateFileAndSetData(jasperTemplate, file);
     saveWithParameters(jasperTemplate);
   }
 
@@ -118,7 +118,7 @@ public class JasperTemplateService {
    * report file as ".jasper" in byte array in Template class. If report is not valid throw
    * exception.
    */
-  private void validateFile(JasperTemplate jasperTemplate, MultipartFile file)
+  private void validateFileAndSetData(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
     throwIfFileIsNull(file);
     throwIfIncorrectFileType(file);
@@ -148,7 +148,7 @@ public class JasperTemplateService {
     ArrayList<JasperTemplateParameter> parameters = new ArrayList<>();
 
     for (JRParameter jrParameter : jrParameters) {
-      if (!jrParameter.isSystemDefined()) {
+      if (!jrParameter.isSystemDefined() && jrParameter.isForPrompting()) {
         JasperTemplateParameter jasperTemplateParameter = createParameter(jrParameter);
         jasperTemplateParameter.setTemplate(jasperTemplate);
         parameters.add(jasperTemplateParameter);

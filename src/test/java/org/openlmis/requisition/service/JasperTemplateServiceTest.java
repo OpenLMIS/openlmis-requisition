@@ -169,6 +169,9 @@ public class JasperTemplateServiceTest {
     when(report.getParameters()).thenReturn(new JRParameter[]{param1, param2});
     when(JasperCompileManager.compileReport(inputStream)).thenReturn(report);
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
+    when(param1.isForPrompting()).thenReturn(true);
+    when(param2.isForPrompting()).thenReturn(true);
+
     String[] propertyNames = {"name1"};
     when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
     when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(null);
@@ -203,6 +206,7 @@ public class JasperTemplateServiceTest {
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
     when(param1.getValueClassName()).thenReturn("java.lang.String");
     when(param1.getName()).thenReturn("name");
+    when(param1.isForPrompting()).thenReturn(true);
     when(param1.getDescription()).thenReturn("desc");
     when(param1.getDefaultValueExpression()).thenReturn(jrExpression);
     when(jrExpression.getText()).thenReturn("text");
@@ -210,6 +214,7 @@ public class JasperTemplateServiceTest {
     when(param2.getPropertiesMap()).thenReturn(propertiesMap);
     when(param2.getValueClassName()).thenReturn("java.lang.Integer");
     when(param2.getName()).thenReturn("name");
+    when(param2.isForPrompting()).thenReturn(true);
     when(param2.getDescription()).thenReturn("desc");
     when(param2.getDefaultValueExpression()).thenReturn(jrExpression);
 
@@ -256,11 +261,13 @@ public class JasperTemplateServiceTest {
 
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
     when(param1.getValueClassName()).thenReturn("java.lang.String");
+    when(param1.isForPrompting()).thenReturn(true);
     when(param1.getDefaultValueExpression()).thenReturn(jrExpression);
     when(jrExpression.getText()).thenReturn("text");
 
     when(param2.getPropertiesMap()).thenReturn(propertiesMap);
     when(param2.getValueClassName()).thenReturn("java.lang.Integer");
+    when(param2.isForPrompting()).thenReturn(true);
     when(param2.getDefaultValueExpression()).thenReturn(null);
 
     ByteArrayOutputStream byteOutputStream = mock(ByteArrayOutputStream.class);

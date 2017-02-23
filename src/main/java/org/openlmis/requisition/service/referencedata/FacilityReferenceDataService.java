@@ -48,11 +48,12 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @param name Filed with string to find similar name.
    * @return List of FacilityDtos with similar code or name.
    */
-  public Collection<FacilityDto> search(String code, String name) {
+  public Collection<FacilityDto> search(String code, String name, UUID zoneId) {
     RequestParameters parameters = RequestParameters
         .init()
         .set("code", code)
-        .set("name", name);
+        .set("name", name)
+        .set("zone", zoneId);
 
     return findAll("search", parameters);
   }

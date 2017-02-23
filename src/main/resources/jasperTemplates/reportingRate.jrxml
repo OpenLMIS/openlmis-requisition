@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-15T17:51:59 -->
+<!-- 2017-02-23T13:07:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportingRate" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4e1d9a97-c93a-4ad3-87e1-e305d6e7da2e">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<import value="java.lang.*"/>
 	<import value="java.util.*"/>
+	<import value="org.openlmis.requisition.dto.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<import value="java.util.stream.*"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
@@ -39,12 +41,20 @@
 			<![CDATA[]]>
 		</queryString>
 		<field name="grouping" class="java.lang.String">
-			<fieldDescription><![CDATA[]]></fieldDescription>
+			<fieldDescription><![CDATA[grouping]]></fieldDescription>
 		</field>
-		<field name="completed" class="java.lang.Double"/>
-		<field name="missed" class="java.lang.Double"/>
-		<field name="onTime" class="java.lang.Double"/>
-		<field name="late" class="java.lang.Double"/>
+		<field name="completed" class="java.lang.Double">
+			<fieldDescription><![CDATA[completed]]></fieldDescription>
+		</field>
+		<field name="missed" class="java.lang.Double">
+			<fieldDescription><![CDATA[missed]]></fieldDescription>
+		</field>
+		<field name="onTime" class="java.lang.Double">
+			<fieldDescription><![CDATA[onTime]]></fieldDescription>
+		</field>
+		<field name="late" class="java.lang.Double">
+			<fieldDescription><![CDATA[late]]></fieldDescription>
+		</field>
 	</subDataset>
 	<parameter name="Program" class="java.lang.String">
 		<property name="displayName" value="Program"/>
@@ -220,7 +230,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="c76ce979-1d2c-4b28-af83-7bc5a1626a2d"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{completed}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{completed} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -238,7 +248,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="533abb65-b858-4042-acba-4c67310920ce"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{onTime}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{onTime} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -256,7 +266,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="32465b83-c463-4b16-97a4-830b0a074daf"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{late}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{late} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -276,7 +286,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="49b0377d-e4fc-4d23-82a5-47562053bc71"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{missed}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{missed} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -284,33 +294,33 @@
 			</componentElement>
 			<stackedBarChart>
 				<chart evaluationTime="Report">
-					<reportElement x="0" y="50" width="555" height="230" uuid="4495baf6-87b8-45d6-aba3-304d18b383a9"/>
+					<reportElement x="0" y="50" width="555" height="230" uuid="29109383-7b85-41be-8c00-6e549ae458fc"/>
 					<chartTitle/>
 					<chartSubtitle/>
 					<chartLegend/>
 				</chart>
 				<categoryDataset>
 					<dataset>
-						<datasetRun subDataset="ReportingRateByPeriod" uuid="3b779a1f-9537-4353-b463-2a2284a8f3ad">
-							<dataSourceExpression><![CDATA[$F{completionByPeriod}]]></dataSourceExpression>
+						<datasetRun subDataset="ReportingRateByPeriod" uuid="f2d9c622-4cc9-4774-9db8-21820477dff9">
+							<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{completionByPeriod})]]></dataSourceExpression>
 						</datasetRun>
 					</dataset>
 					<categorySeries>
-						<seriesExpression><![CDATA["OnTimeSeries"]]></seriesExpression>
-						<categoryExpression><![CDATA["MONTH"]]></categoryExpression>
-						<valueExpression><![CDATA[String.format("%.2f%", $F{onTime})]]></valueExpression>
+						<seriesExpression><![CDATA["On Time"]]></seriesExpression>
+						<categoryExpression><![CDATA["P1"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{onTime} * 100]]></valueExpression>
 						<labelExpression><![CDATA["On Time"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
-						<seriesExpression><![CDATA["MissedSeries"]]></seriesExpression>
-						<categoryExpression><![CDATA["MONTH"]]></categoryExpression>
-						<valueExpression><![CDATA[String.format("%.2f%", $F{late})]]></valueExpression>
+						<seriesExpression><![CDATA["Not Reported"]]></seriesExpression>
+						<categoryExpression><![CDATA["P2"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{missed} * 100]]></valueExpression>
 						<labelExpression><![CDATA["Not Reported"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
-						<seriesExpression><![CDATA["LateSeries"]]></seriesExpression>
-						<categoryExpression><![CDATA["MONTH"]]></categoryExpression>
-						<valueExpression><![CDATA[String.format("%.2f%", $F{missed})]]></valueExpression>
+						<seriesExpression><![CDATA["Late"]]></seriesExpression>
+						<categoryExpression><![CDATA["P3"]]></categoryExpression>
+						<valueExpression><![CDATA[$F{late} * 100]]></valueExpression>
 						<labelExpression><![CDATA["Late"]]></labelExpression>
 					</categorySeries>
 				</categoryDataset>
@@ -327,6 +337,7 @@
 			</stackedBarChart>
 		</band>
 		<band height="90">
+			<printWhenExpression><![CDATA[!$F{completionByZone}.isEmpty()]]></printWhenExpression>
 			<staticText>
 				<reportElement mode="Opaque" x="0" y="0" width="555" height="20" forecolor="#FFFFFF" backcolor="#666666" uuid="7c06d4c6-e88a-46c0-bfae-4fde6763a279">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -382,7 +393,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="99413dd5-0f84-4b07-b36d-2bc60d97b567"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{completed}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{completed} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -400,7 +411,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="6098848d-3396-4ec0-9627-51467a43e0b2"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{onTime}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{onTime} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -418,7 +429,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="af00bd95-fa13-4baf-894e-339a41baac57"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{late}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{late} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -438,7 +449,7 @@
 								<reportElement x="0" y="0" width="111" height="30" uuid="f74f1b72-b6a5-4a54-8772-e6f3fc79c3c9"/>
 								<box padding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{missed}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{missed} * 100]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
