@@ -82,8 +82,7 @@ public class JasperTemplateParameter extends BaseEntity {
   private String description;
 
   /**
-
-    Create new instance of JasperTemplateParameter based on given
+   * Create new instance of JasperTemplateParameter based on given
    * {@link JasperTemplateParameter.Importer}
    *
    * @param importer instance of {@link JasperTemplateParameter.Importer}
