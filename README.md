@@ -120,3 +120,6 @@ This will set the similarly named environment variable and limit the profile in 
 expected use-case for this is when this service is deployed through the
 [Reference Distribution](https://github.com/openlmis/openlmis-ref-distro).
 
+## Environment variables
+
+Environment variables common to all services are listed here: https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#environment-variables
