@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_AUTHORIZATION_TO_BE_SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
@@ -267,9 +269,14 @@ public class RequisitionController extends BaseController {
                                           @PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
 
+    if (isNotTrue(isNull(requisitionDto.getId()))
+        && isNotTrue(requisitionId.equals(requisitionDto.getId()))) {
+      throw new ValidationMessageException(new Message(ERROR_ID_MISMATCH));
+    }
+
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
 
-    if (requisitionToUpdate == null) {
+    if (isNull(requisitionToUpdate)) {
       throw new ContentNotFoundMessageException(new Message(
           ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
@@ -277,12 +284,6 @@ public class RequisitionController extends BaseController {
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
         requisitionToUpdate.getStatus());
-
-    if (requisition.getId() == null) {
-      requisition.setId(requisitionId);
-    } else if (!requisitionId.equals(requisition.getId())) {
-      throw new ValidationMessageException(new Message(ERROR_ID_MISMATCH));
-    }
 
     requisitionVersionValidator.validateRequisitionTimestamps(
         requisition, requisitionToUpdate

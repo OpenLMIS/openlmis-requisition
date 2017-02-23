@@ -385,7 +385,7 @@ resourceTypes:
                             schema: localizedMessage
           put:
               is: [ secured ]
-              description: Update existing requisition. Do not change invariants – id, createdDate, facility, program, supplyingFacility, status, emergency, supervisoryNode.
+              description: Update existing requisition. Do not change invariants – id, createdDate, facility, program, supplyingFacility, status, emergency, supervisoryNode, such attempts will be ignored.
               body:
                   application/json:
                     schema: requisitionDto
