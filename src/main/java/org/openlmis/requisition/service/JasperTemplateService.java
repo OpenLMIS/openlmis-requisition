@@ -59,7 +59,7 @@ import javax.servlet.http.HttpServletRequest;
 @SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateService {
 
-  private static final String REPORT_TYPE_PROPERTY = "reportType";
+  protected static final String REPORT_TYPE_PROPERTY = "reportType";
 
   @Autowired
   private JasperTemplateRepository jasperTemplateRepository;

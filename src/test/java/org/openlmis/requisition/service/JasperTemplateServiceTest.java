@@ -30,6 +30,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_INV
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FILE_MISSING;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST;
+import static org.openlmis.requisition.service.JasperTemplateService.REPORT_TYPE_PROPERTY;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -199,6 +200,7 @@ public class JasperTemplateServiceTest {
 
     String[] propertyNames = {DISPLAY_NAME};
     when(report.getParameters()).thenReturn(new JRParameter[]{param1, param2});
+    when(report.getProperty(REPORT_TYPE_PROPERTY)).thenReturn("test type");
     when(JasperCompileManager.compileReport(inputStream)).thenReturn(report);
     when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
     when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(PARAM_DISPLAY_NAME);
@@ -232,6 +234,7 @@ public class JasperTemplateServiceTest {
 
     verify(jasperTemplateRepository).save(jasperTemplate);
 
+    assertEquals("test type", jasperTemplate.getType());
     assertThat(jasperTemplate.getTemplateParameters().get(0).getDisplayName(),
         is(PARAM_DISPLAY_NAME));
     assertThat(jasperTemplate.getTemplateParameters().get(0).getDescription(), is("desc"));
