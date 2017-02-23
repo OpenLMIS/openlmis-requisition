@@ -19,7 +19,7 @@ services:
     env_file: .env
 
   log:
-    image: openlmis/rsyslog
+    image: openlmis/rsyslog:1
     ports:
       - "514:514"
     volumes:
