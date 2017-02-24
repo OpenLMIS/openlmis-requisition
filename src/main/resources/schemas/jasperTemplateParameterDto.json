@@ -39,6 +39,10 @@
     "displayProperty": {
       "type": "string",
       "title": "displayProperty"
+    },
+    "required": {
+      "type": "boolean",
+      "title": "required"
     }
   },
   "required": [

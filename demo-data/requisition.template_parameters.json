@@ -6,7 +6,8 @@
     "name": "Program",
     "selectExpression": "/api/programs",
     "selectProperty": "name",
-    "templateId": "4a052c83-4607-4a32-9e78-1f18c94d88e4"
+    "templateId": "4a052c83-4607-4a32-9e78-1f18c94d88e4",
+    "required": true
   },
   {
     "id" : "5c8037ff-f887-4537-969a-975019b926ff",
@@ -16,7 +17,8 @@
     "selectExpression" : "/api/geographicZones/search?levelNumber=3",
     "selectProperty" : "id",
     "displayProperty" : "name",
-    "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3"
+    "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3",
+    "required": false
   },
   {
     "id" : "e83765b9-9799-4062-ad4d-792c690eed7e",
@@ -26,7 +28,8 @@
     "selectExpression" : "/api/programs",
     "selectProperty" : "id",
     "displayProperty" : "name",
-    "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3"
+    "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3",
+    "required": true
   },
   {
     "id" : "bcd7bb13-6018-4375-9467-abf52bba0533",
@@ -36,7 +39,8 @@
     "selectExpression" : "/api/processingPeriods",
     "selectProperty" : "id",
     "displayProperty" : "name",
-    "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3"
+    "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3",
+    "required": true
   },
   {
     "id" : "2bffed39-b764-4709-8106-417ff43d61d3",
@@ -46,7 +50,8 @@
     "selectExpression": "/api/geographicZones/search?levelNumber=3",
     "selectProperty": "id",
     "displayProperty": "name",
-    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad"
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad",
+    "required": false
   },
   {
     "id" : "5a7e6bc3-66c2-4b6b-b4d1-f2b38d8b8309",
@@ -56,7 +61,8 @@
     "selectExpression": "/api/programs",
     "selectProperty": "id",
     "displayProperty": "name",
-    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad"
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad",
+    "required": true
   },
   {
     "id" : "2550a167-b6db-48bc-a08f-6495357061a1",
@@ -66,6 +72,7 @@
     "selectExpression": "/api/processingPeriods",
     "selectProperty": "id",
     "displayProperty": "name",
-    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad"
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad",
+    "required": true
   }
 ]

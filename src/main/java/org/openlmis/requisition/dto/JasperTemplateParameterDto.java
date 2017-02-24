@@ -41,6 +41,7 @@ public class JasperTemplateParameterDto implements JasperTemplateParameter.Impor
   private String selectProperty;
   private String displayProperty;
   private String description;
+  private Boolean required;
 
   /**
    * Create new instance of JasperTemplateParameterDto based on given {@link

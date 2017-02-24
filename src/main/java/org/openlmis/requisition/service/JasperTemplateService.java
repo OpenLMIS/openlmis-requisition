@@ -200,6 +200,11 @@ public class JasperTemplateService {
         jrParameter.getPropertiesMap().getProperty("selectProperty"));
     jasperTemplateParameter.setDisplayProperty(
         jrParameter.getPropertiesMap().getProperty("displayProperty"));
+    String required = jrParameter.getPropertiesMap().getProperty("required");
+    if (required != null) {
+      jasperTemplateParameter.setRequired(Boolean.parseBoolean(
+          jrParameter.getPropertiesMap().getProperty("required")));
+    }
 
     if (jrParameter.getDefaultValueExpression() != null) {
       jasperTemplateParameter.setDefaultValue(jrParameter.getDefaultValueExpression()

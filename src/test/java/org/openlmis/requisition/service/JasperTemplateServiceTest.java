@@ -91,6 +91,7 @@ public class JasperTemplateServiceTest {
   private static final String NAME_OF_FILE = "report.jrxml";
   private static final String DISPLAY_NAME = "displayName";
   private static final String PARAM_DISPLAY_NAME = "Param Display Name";
+  private static final String REQUIRED = "required";
   private static final String PARAM1 = "param1";
   
   private HttpServletRequest request;
@@ -204,6 +205,7 @@ public class JasperTemplateServiceTest {
     when(JasperCompileManager.compileReport(inputStream)).thenReturn(report);
     when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
     when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(PARAM_DISPLAY_NAME);
+    when(propertiesMap.getProperty(REQUIRED)).thenReturn("true");
 
     when(param1.getPropertiesMap()).thenReturn(propertiesMap);
     when(param1.getValueClassName()).thenReturn("java.lang.String");
@@ -239,6 +241,7 @@ public class JasperTemplateServiceTest {
         is(PARAM_DISPLAY_NAME));
     assertThat(jasperTemplate.getTemplateParameters().get(0).getDescription(), is("desc"));
     assertThat(jasperTemplate.getTemplateParameters().get(0).getName(), is("name"));
+    assertThat(jasperTemplate.getTemplateParameters().get(0).getRequired(), is(true));
   }
 
   @Test
@@ -316,7 +319,7 @@ public class JasperTemplateServiceTest {
   @Test
   public void mapRequestParametersToTemplateShouldReturnEmptyMapIfNoRequestParameters() {
     JasperTemplateParameter templateParameter = new JasperTemplateParameter(template, PARAM1, 
-        null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null);
 
     when(request.getParameterMap()).thenReturn(Collections.emptyMap());
     when(template.getTemplateParameters()).thenReturn(Collections.singletonList(templateParameter));
@@ -331,9 +334,9 @@ public class JasperTemplateServiceTest {
   public void mapRequestParametersToTemplateShouldReturnMatchingParameters() {
     List<JasperTemplateParameter> templateParameterList = new ArrayList<>();
     templateParameterList.add(new JasperTemplateParameter(template, PARAM1, null, null, null, 
-        null, null, null, null));
+        null, null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param2", null, null, null, 
-        null, null, null, null));
+        null, null, null, null, null));
     
     Map<String, String[]> requestParameterMap = new HashMap<>();
     requestParameterMap.put(PARAM1, new String[]{"value1"});
@@ -354,13 +357,13 @@ public class JasperTemplateServiceTest {
   public void mapRequestParametersToTemplateShouldNotReturnBlankNullOrUndefinedStringValues() {
     List<JasperTemplateParameter> templateParameterList = new ArrayList<>();
     templateParameterList.add(new JasperTemplateParameter(template, PARAM1, null, null, null,
-        null, null, null, null));
+        null, null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param2", null, null, null,
-        null, null, null, null));
+        null, null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param3", null, null, null,
-        null, null, null, null));
+        null, null, null, null, null));
     templateParameterList.add(new JasperTemplateParameter(template, "param4", null, null, null,
-        null, null, null, null));
+        null, null, null, null, null));
 
     Map<String, String[]> requestParameterMap = new HashMap<>();
     requestParameterMap.put(PARAM1, new String[]{""});

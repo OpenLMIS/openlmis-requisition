@@ -89,6 +89,11 @@ public class JasperTemplateParameter extends BaseEntity {
   @Setter
   private String description;
 
+  @Column
+  @Getter
+  @Setter
+  private Boolean required;
+
   /**
    * Create new instance of JasperTemplateParameter based on given
    * {@link JasperTemplateParameter.Importer}
@@ -107,6 +112,7 @@ public class JasperTemplateParameter extends BaseEntity {
     jasperTemplateParameter.setDataType(importer.getDataType());
     jasperTemplateParameter.setSelectProperty(importer.getSelectProperty());
     jasperTemplateParameter.setDisplayProperty(importer.getDisplayProperty());
+    jasperTemplateParameter.setRequired(importer.getRequired());
     return jasperTemplateParameter;
   }
 
@@ -125,6 +131,7 @@ public class JasperTemplateParameter extends BaseEntity {
     exporter.setSelectExpression(selectExpression);
     exporter.setSelectProperty(selectProperty);
     exporter.setDisplayProperty(displayProperty);
+    exporter.setRequired(required);
   }
 
   public interface Exporter {
@@ -146,6 +153,8 @@ public class JasperTemplateParameter extends BaseEntity {
 
     void setDisplayProperty(String displayProperty);
 
+    void setRequired(Boolean required);
+
   }
 
   public interface Importer {
@@ -166,6 +175,8 @@ public class JasperTemplateParameter extends BaseEntity {
     String getSelectProperty();
 
     String getDisplayProperty();
+
+    Boolean getRequired();
 
   }
 }

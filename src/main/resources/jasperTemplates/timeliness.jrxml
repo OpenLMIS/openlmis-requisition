@@ -25,18 +25,22 @@
 		<property name="selectExpression" value="/api/geographicZones/search?levelNumber=3"/>
 		<property name="selectProperty" value="id"/>
 		<property name="displayProperty" value="name"/>
+		<property name="required" value="false"/>
+
 	</parameter>
 	<parameter name="program" class="org.openlmis.requisition.dto.ProgramDto">
 		<property name="displayName" value="Program Name"/>
 		<property name="selectExpression" value="/api/programs"/>
 		<property name="selectProperty" value="id"/>
 		<property name="displayProperty" value="name"/>
+		<property name="required" value="true"/>
 	</parameter>
 	<parameter name="period" class="org.openlmis.requisition.dto.ProcessingPeriodDto">
 		<property name="displayName" value="Period Name"/>
 		<property name="selectExpression" value="/api/processingPeriods"/>
 		<property name="selectProperty" value="id"/>
 		<property name="displayProperty" value="name"/>
+		<property name="required" value="true"/>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
