@@ -333,8 +333,12 @@ public class JasperReportsViewService {
         .filter(RequisitionStatus::isApproved)
         .collect(Collectors.toSet());
 
-    List<FacilityDto> facilities = (district == null) ? facilityReferenceDataService.findAll()
-        : facilityReferenceDataService.search(null, null, district.getId());
+    List<FacilityDto> facilities;
+    if (district != null) {
+      facilities = facilityReferenceDataService.search(null, null, district.getId(), true);
+    } else {
+      facilities = facilityReferenceDataService.findAll();
+    }
 
     List<FacilityDto> facilitiesMissingRnR = new ArrayList<>();
     // find active facilities that are missing R&R

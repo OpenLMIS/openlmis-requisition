@@ -110,7 +110,7 @@ public class ReportingRateReportDtoBuilder {
       LocalDate dueDate = period.getEndDate().plusDays(DAYS_DUE);
       Collection<Requisition> requisitions = new ArrayList<>();
       Collection<FacilityDto> zoneFacilities =
-          facilityReferenceDataService.search(null, null, zone.getId());
+          facilityReferenceDataService.search(null, null, zone.getId(), false);
 
       for (FacilityDto facility : zoneFacilities) {
         requisitions.addAll(requisitionRepository
@@ -163,7 +163,7 @@ public class ReportingRateReportDtoBuilder {
   private Collection<FacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
     List<FacilityDto> facilities = new ArrayList<>();
     for (GeographicZoneDto zone : zones) {
-      facilities.addAll(facilityReferenceDataService.search(null, null, zone.getId()));
+      facilities.addAll(facilityReferenceDataService.search(null, null, zone.getId(), false));
     }
     return facilities;
   }
