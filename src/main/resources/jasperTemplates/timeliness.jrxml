@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-22T14:54:07 -->
+<!-- 2017-02-24T15:27:58 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="timeliness" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="341cf801-7355-4499-bd5c-182e5275caa1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -20,19 +20,19 @@
 			<style backcolor="#F3F3F3"/>
 		</conditionalStyle>
 	</style>
-	<parameter name="district" class="org.openlmis.requisition.dto.GeographicZoneDto" isForPrompting="true">
+	<parameter name="district" class="org.openlmis.requisition.dto.GeographicZoneDto">
 		<property name="displayName" value="District"/>
 		<property name="selectExpression" value="/api/geographicZones/search?levelNumber=3"/>
 		<property name="selectProperty" value="id"/>
 		<property name="displayProperty" value="name"/>
 	</parameter>
-	<parameter name="program" class="org.openlmis.requisition.dto.ProgramDto" isForPrompting="true">
+	<parameter name="program" class="org.openlmis.requisition.dto.ProgramDto">
 		<property name="displayName" value="Program Name"/>
 		<property name="selectExpression" value="/api/programs"/>
 		<property name="selectProperty" value="id"/>
 		<property name="displayProperty" value="name"/>
 	</parameter>
-	<parameter name="period" class="org.openlmis.requisition.dto.ProcessingPeriodDto" isForPrompting="true">
+	<parameter name="period" class="org.openlmis.requisition.dto.ProcessingPeriodDto">
 		<property name="displayName" value="Period Name"/>
 		<property name="selectExpression" value="/api/processingPeriods"/>
 		<property name="selectProperty" value="id"/>
@@ -88,6 +88,9 @@
 	</field>
 	<field name="class" class="java.lang.Class">
 		<fieldDescription><![CDATA[class]]></fieldDescription>
+	</field>
+	<field name="district" class="org.openlmis.requisition.dto.GeographicZoneDto">
+		<fieldDescription><![CDATA[district]]></fieldDescription>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -242,7 +245,7 @@ Non Reporting Facility Report]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{geographicZone}.getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{district}.getName()]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
