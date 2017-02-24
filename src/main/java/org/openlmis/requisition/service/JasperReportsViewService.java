@@ -72,6 +72,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -347,7 +348,13 @@ public class JasperReportsViewService {
         }
       }
     }
-    return facilitiesMissingRnR;
+    // sort alphabetically by district and then facility name
+    Comparator<FacilityDto> comparator = Comparator.comparing(
+        facility -> facility.getDistrict().getName());
+    comparator = comparator.thenComparing(Comparator.comparing(FacilityDto::getName));
+
+    return facilitiesMissingRnR.stream()
+        .sorted(comparator).collect(Collectors.toList());
   }
 
   private UUID processUuidParameter(Map<String, Object> params, String key, boolean required) {

@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,4 +40,18 @@ public class FacilityDto {
   private GeographicZoneDto geographicZone;
   private FacilityOperatorDto operator;
   private FacilityTypeDto type;
+
+  /**
+   * Get district by traversing up geographicZone hierachy if needed.
+   * @return district of the facility.
+   */
+  @JsonIgnore
+  public GeographicZoneDto getDistrict() {
+    GeographicZoneDto district = geographicZone;
+    while (null != district && null != district.getParent()
+        && district.getLevel().getLevelNumber() > 3) {
+      district = district.getParent();
+    }
+    return district;
+  }
 }
