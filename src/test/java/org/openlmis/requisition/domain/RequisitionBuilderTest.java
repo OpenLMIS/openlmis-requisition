@@ -134,8 +134,10 @@ public class RequisitionBuilderTest {
     assertEquals(null, requisition.getProcessingPeriodId());
     assertEquals(null, requisition.getSupervisoryNodeId());
     assertEquals(null, requisition.getStatus());
-    assertEquals(null, requisition.getModifiedDate());
     assertEquals(null, requisition.getEmergency());
+
+    // modified date is required for timestamp checks
+    assertEquals(modifiedDate, requisition.getModifiedDate());
   }
 
   @Test

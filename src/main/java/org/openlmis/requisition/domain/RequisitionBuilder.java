@@ -84,6 +84,9 @@ public final class RequisitionBuilder {
     requisition.setNumberOfMonthsInPeriod(importer.getProcessingPeriod().getDurationInMonths());
     requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
 
+    // required for conflict check
+    requisition.setModifiedDate(importer.getModifiedDate());
+
     return requisition;
   }
 
