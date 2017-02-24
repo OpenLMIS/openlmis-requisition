@@ -16,33 +16,34 @@ Defined in requisition.requisition_templates.json and requisition.columns_maps.j
   * Total Received Quantity
   * Total Consumed Quantity
   * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
-  * Stock On Hand
+  * Total Stockout Days
+  * Stock On Hand (calculated)
+  * Average Consumption (periods to average from: 3)
+  * Calculated Order Quantity
+  * Price Per Pack
+  * Dispensing Unit
   * Requested Quantity
   * Requested Quantity Explanation
   * Approved Quantity
   * Remarks
-  * Total Stockout Days
-  * Total
-  * Unit/Unit of Issue
-  * Packs To Ship
-  * Price Per Pack
 2. Essential Meds (currently the template is nearly identical to Family Planning, with Unit/Unit of
   Issue the only difference)
   * Product Code
   * Product Name
   * Beginning Balance
   * Total Received Quantity
-  * Total Consumed Quantity
   * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
-  * Stock On Hand
+  * Stock On Hand (user input)
+  * Total Consumed Quantity (calculated)
+  * Average Consumption (periods to average from: 3)
+  * Calculated Order Quantity
+  * Price Per Pack
+  * Unit of Issue
+  * Packs To Ship
   * Requested Quantity
   * Requested Quantity Explanation
   * Approved Quantity
   * Remarks
-  * Total Stockout Days
-  * Total
-  * Packs To Ship
-  * Price Per Pack
 3. New Program (identical to Essential Meds template)
   * Product Code
   * Product Name
@@ -50,7 +51,7 @@ Defined in requisition.requisition_templates.json and requisition.columns_maps.j
   * Total Received Quantity
   * Total Consumed Quantity
   * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
-  * Stock On Hand
+  * Stock On Hand (calculated)
   * Requested Quantity
   * Requested Quantity Explanation
   * Approved Quantity
@@ -59,6 +60,12 @@ Defined in requisition.requisition_templates.json and requisition.columns_maps.j
   * Total
   * Packs To Ship
   * Price Per Pack
+  * Number of New Patients Added
+  * Total Cost
+  * Adjusted Consumption
+  * Average Consumption
+  * Maximum Stock Quantity
+  * Calculated Order Quantity
 
 ## Requisitions
 
