@@ -42,4 +42,8 @@ public enum RequisitionStatus {
     return value >= 2;
   }
 
+  @JsonIgnore
+  public boolean isApproved() {
+    return value >= 5;
+  }
 }

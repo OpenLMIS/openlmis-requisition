@@ -330,7 +330,7 @@ public class JasperReportsViewService {
   private List<FacilityDto> getFacilitiesForTimelinessReport(
       ProgramDto program, ProcessingPeriodDto processingPeriod, GeographicZoneDto district) {
     Set<RequisitionStatus> validStatuses = Arrays.stream(RequisitionStatus.values())
-        .filter(RequisitionStatus::isPostSubmitted)
+        .filter(RequisitionStatus::isApproved)
         .collect(Collectors.toSet());
 
     List<FacilityDto> facilities = (district == null) ? facilityReferenceDataService.findAll()
