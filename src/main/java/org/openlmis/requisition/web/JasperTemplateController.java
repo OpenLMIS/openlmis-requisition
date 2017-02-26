@@ -190,7 +190,6 @@ public class JasperTemplateController extends BaseController {
           .getReportingRateJasperReportsView(template, request, map);
     }
 
-
     return new ModelAndView(jasperView, map);
   }
 }

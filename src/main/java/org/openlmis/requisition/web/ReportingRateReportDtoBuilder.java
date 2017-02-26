@@ -35,16 +35,21 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
 public class ReportingRateReportDtoBuilder {
-  // TODO: MAKE THOSE CONFIGURABLE, OR SET AS LOCAL VARIABLES
-  private static int GEOGRAPHIC_ZONE_LEVEL = 2;
   private static int DAYS_DUE = 10;
   private static int LATEST_PERIODS = 3;
+  private static int GEOGRAPHIC_ZONE_LEVEL = 3;
   private static RequisitionStatus REQUIRED_STATUS = RequisitionStatus.APPROVED;
+
+  private static String ON_TIME = "ON_TIME";
+  private static String MISSED = "MISSED";
+  private static String LATE = "LATE";
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -75,7 +80,7 @@ public class ReportingRateReportDtoBuilder {
     Collection<FacilityDto> facilities = getAvailableFacilities(zones);
 
     report.setCompletionByPeriod(getCompletionsByPeriod(program, periods, facilities));
-    report.setCompletionByZone(getCompletionsByZone(program, period, zones));
+    report.setCompletionByZone(getCompletionsByZone(program, periods, zones));
 
     return report;
   }
@@ -86,15 +91,8 @@ public class ReportingRateReportDtoBuilder {
     List<RequisitionCompletionDto> completionByPeriod = new ArrayList<>();
 
     for (ProcessingPeriodDto period : periods) {
-      LocalDate dueDate = period.getEndDate().plusDays(DAYS_DUE);
-      List<Requisition> requisitions = new ArrayList<>();
-
-      for (FacilityDto facility : facilities) {
-        requisitions.addAll(requisitionRepository
-            .searchRequisitions(period.getId(), facility.getId(), program.getId(), false));
-      }
-
-      RequisitionCompletionDto completion = getCompletionForRequisitions(requisitions, dueDate);
+      RequisitionCompletionDto completion =
+          getCompletionForFacilities(program, Collections.singletonList(period), facilities);
       completion.setGrouping(period.getName());
       completionByPeriod.add(completion);
     }
@@ -103,21 +101,16 @@ public class ReportingRateReportDtoBuilder {
   }
 
   private List<RequisitionCompletionDto> getCompletionsByZone(
-      ProgramDto program, ProcessingPeriodDto period, Collection<GeographicZoneDto> zones) {
+      ProgramDto program, Collection<ProcessingPeriodDto> periods,
+      Collection<GeographicZoneDto> zones) {
     List<RequisitionCompletionDto> completionByZone = new ArrayList<>();
 
     for (GeographicZoneDto zone : zones) {
-      LocalDate dueDate = period.getEndDate().plusDays(DAYS_DUE);
-      Collection<Requisition> requisitions = new ArrayList<>();
-      Collection<FacilityDto> zoneFacilities =
-          facilityReferenceDataService.search(null, null, zone.getId(), false);
+      Collection<FacilityDto> facilities = facilityReferenceDataService
+          .search(null, null, zone.getId(), true);
 
-      for (FacilityDto facility : zoneFacilities) {
-        requisitions.addAll(requisitionRepository
-            .searchRequisitions(period.getId(), facility.getId(), program.getId(), false));
-      }
-
-      RequisitionCompletionDto completion = getCompletionForRequisitions(requisitions, dueDate);
+      RequisitionCompletionDto completion =
+          getCompletionForFacilities(program, periods, facilities);
       completion.setGrouping(zone.getName());
       completionByZone.add(completion);
     }
@@ -125,16 +118,62 @@ public class ReportingRateReportDtoBuilder {
     return completionByZone;
   }
 
-  private RequisitionCompletionDto getCompletionForRequisitions(
-      Collection<Requisition> requisitions, LocalDate dueDate) {
+  private RequisitionCompletionDto getCompletionForFacilities(
+      ProgramDto program, Collection<ProcessingPeriodDto> periods,
+      Collection<FacilityDto> facilities ) {
+    if (facilities.isEmpty()) {
+      RequisitionCompletionDto completion = new RequisitionCompletionDto();
+      completion.setCompleted(0);
+      completion.setMissed(1);
+      completion.setOnTime(0);
+      completion.setLate(0);
+
+      return completion;
+    }
+
+    return getCompletionForFacilitiesImpl(program, periods, facilities);
+  }
+
+  private RequisitionCompletionDto getCompletionForFacilitiesImpl(
+      ProgramDto program, Collection<ProcessingPeriodDto> periods,
+      Collection<FacilityDto> facilities) {
+    Map<String, Integer> completions = new HashMap<>();
+    completions.put(ON_TIME, 0);
+    completions.put(MISSED, 0);
+    completions.put(LATE, 0);
+
+    for (ProcessingPeriodDto period : periods) {
+      LocalDate dueDate = period.getEndDate().plusDays(DAYS_DUE);
+
+      for (FacilityDto facility : facilities) {
+        List<Requisition> requisitions = requisitionRepository
+            .searchRequisitions(period.getId(), facility.getId(), program.getId(), false);
+
+        updateCompletionsWithRequisitions(completions, requisitions, dueDate);
+      }
+    }
+
+    int onTime = completions.get(ON_TIME);
+    int missed = completions.get(MISSED);
+    int late = completions.get(LATE);
+    int total = onTime + late + missed;
+
     RequisitionCompletionDto completion = new RequisitionCompletionDto();
+    completion.setCompleted(((double)(onTime + late)) / total);
+    completion.setMissed(((double)missed) / total);
+    completion.setOnTime(((double)onTime) / total);
+    completion.setLate(((double)late) / total);
 
-    int total = requisitions.size();
-    if (total > 0) {
-      int late = 0;
-      int missed = 0;
-      int onTime = 0;
+    return completion;
+  }
 
+  private void updateCompletionsWithRequisitions(
+      Map<String, Integer> completions, List<Requisition> requisitions, LocalDate dueDate) {
+    int missed = completions.get(MISSED);
+    int late = completions.get(LATE);
+    int onTime = completions.get(ON_TIME);
+
+    if (!requisitions.isEmpty()) {
       for (Requisition requisition : requisitions) {
         StatusLogEntry entry = requisition.getStatusChanges().get(REQUIRED_STATUS.toString());
         if (entry == null) {
@@ -148,16 +187,13 @@ public class ReportingRateReportDtoBuilder {
           }
         }
       }
-
-      completion.setCompleted(((double)(onTime + late)) / total);
-      completion.setMissed(((double)missed) / total);
-      completion.setOnTime(((double)onTime) / total);
-      completion.setLate(((double)late) / total);
     } else {
-      completion.setMissed(1);
+      missed++;
     }
 
-    return completion;
+    completions.put(MISSED, missed);
+    completions.put(LATE, late);
+    completions.put(ON_TIME, onTime);
   }
 
   private Collection<FacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
@@ -192,7 +228,7 @@ public class ReportingRateReportDtoBuilder {
     if (zone == null) {
       return geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, null);
     } else {
-      return Collections.singletonList(zone);
+      return geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, zone.getId());
     }
   }
 }
