@@ -42,14 +42,14 @@ public class FacilityDto {
   private FacilityTypeDto type;
 
   /**
-   * Get district by traversing up geographicZone hierachy if needed.
+   * Get zone with given level number by traversing up geographicZone hierachy if needed.
    * @return district of the facility.
    */
   @JsonIgnore
-  public GeographicZoneDto getDistrict() {
+  public GeographicZoneDto getZoneByLevelNumber(Integer levelNumber) {
     GeographicZoneDto district = geographicZone;
     while (null != district && null != district.getParent()
-        && district.getLevel().getLevelNumber() > 3) {
+        && district.getLevel().getLevelNumber() > levelNumber) {
       district = district.getParent();
     }
     return district;

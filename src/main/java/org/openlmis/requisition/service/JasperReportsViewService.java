@@ -355,7 +355,7 @@ public class JasperReportsViewService {
 
     // sort alphabetically by district and then facility name
     Comparator<FacilityDto> comparator = Comparator.comparing(
-        facility -> facility.getDistrict().getName());
+        facility -> facility.getZoneByLevelNumber(3).getName());
     comparator = comparator.thenComparing(Comparator.comparing(FacilityDto::getName));
 
     return facilitiesMissingRnR.stream()
