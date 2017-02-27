@@ -18,6 +18,7 @@ package org.openlmis.requisition.service;
 import static java.io.File.createTempFile;
 import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
+import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_CREATION;
@@ -44,6 +45,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReportingRateReportDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
+import org.openlmis.requisition.dto.TimelinessReportFacilityDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -340,7 +342,7 @@ public class JasperReportsViewService {
       facilities = facilityReferenceDataService.findAll();
     }
 
-    List<FacilityDto> facilitiesMissingRnR = new ArrayList<>();
+    List<TimelinessReportFacilityDto> facilitiesMissingRnR = new ArrayList<>();
     // find active facilities that are missing R&R
     for (FacilityDto facility : facilities) {
       if (facility.getActive()) {
@@ -348,14 +350,16 @@ public class JasperReportsViewService {
             facility.getId(), program.getId(), null, null, processingPeriod.getId(),
             null, validStatuses, null, null);
         if (requisitions.getTotalElements() == 0) {
-          facilitiesMissingRnR.add(facility);
+          TimelinessReportFacilityDto timelinessFacility = new TimelinessReportFacilityDto();
+          facility.export(timelinessFacility);
+          facilitiesMissingRnR.add(timelinessFacility);
         }
       }
     }
 
     // sort alphabetically by district and then facility name
     Comparator<FacilityDto> comparator = Comparator.comparing(
-        facility -> facility.getDistrict().getName());
+        facility -> facility.getZoneByLevelNumber(DISTRICT_LEVEL).getName());
     comparator = comparator.thenComparing(Comparator.comparing(FacilityDto::getName));
 
     return facilitiesMissingRnR.stream()
