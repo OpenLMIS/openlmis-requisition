@@ -27,6 +27,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReportingRateReportDto {
+  /**
+   * List of requisition completions grouped by periods.
+   */
   private List<RequisitionCompletionDto> completionByPeriod;
+
+  /**
+   * List of requisition completions grouped by geographic zones.
+   */
   private List<RequisitionCompletionDto> completionByZone;
 }

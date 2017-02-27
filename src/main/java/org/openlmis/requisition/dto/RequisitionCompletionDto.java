@@ -23,9 +23,28 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RequisitionCompletionDto {
+  /**
+   * Name for the grouping, telling what is this completion for (ex. period, zone).
+   */
   private String grouping;
+
+  /**
+   * Percentage of completed requisitions (approved in requisition due), as number from 0 to 1.
+   */
   private double completed;
+
+  /**
+   * Percentage of missed requisitions (not reported), as number from 0 to 1.
+   */
   private double missed;
+
+  /**
+   * Percentage of requisitions reported on time, as number from 0 to 1.
+   */
   private double onTime;
+
+  /**
+   * Percentage of requisitions reported late, as number from 0 to 1.
+   */
   private double late;
 }
