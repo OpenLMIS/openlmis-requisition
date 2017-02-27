@@ -65,6 +65,7 @@
 		<property name="selectExpression" value="/api/programs"/>
 		<property name="selectProperty" value="id"/>
 		<property name="displayProperty" value="name"/>
+		<property name="required" value="true"/>
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="Period" class="java.lang.String">
@@ -72,6 +73,7 @@
 		<property name="selectExpression" value="/api/processingPeriods"/>
 		<property name="displayProperty" value="name"/>
 		<property name="selectProperty" value="id"/>
+		<property name="required" value="true"/>
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="GeographicZone" class="java.lang.String">
@@ -79,6 +81,7 @@
 		<property name="selectExpression" value="/api/geographicZones/search?levelNumber=2"/>
 		<property name="displayProperty" value="name"/>
 		<property name="selectProperty" value="id"/>
+		<property name="required" value="false"/>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
