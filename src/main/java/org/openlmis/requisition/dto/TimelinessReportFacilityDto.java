@@ -26,7 +26,7 @@ public class TimelinessReportFacilityDto extends FacilityDto implements Facility
    * @return district of the facility.
    */
   @JsonIgnore
-  public GeographicZoneDto getDistrict() {
+  public GeographicZoneDto getThirdLevel() {
     return getZoneByLevelNumber(DISTRICT_LEVEL);
   }
 }

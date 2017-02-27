@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-27T15:45:24 -->
+<!-- 2017-02-27T22:05:10 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="timeliness" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="341cf801-7355-4499-bd5c-182e5275caa1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -77,9 +77,6 @@
 	<field name="geographicZone" class="org.openlmis.requisition.dto.GeographicZoneDto">
 		<fieldDescription><![CDATA[geographicZone]]></fieldDescription>
 	</field>
-	<field name="district" class="org.openlmis.requisition.dto.GeographicZoneDto">
-		<fieldDescription><![CDATA[district]]></fieldDescription>
-	</field>
 	<field name="name" class="java.lang.String">
 		<fieldDescription><![CDATA[name]]></fieldDescription>
 	</field>
@@ -91,6 +88,9 @@
 	</field>
 	<field name="class" class="java.lang.Class">
 		<fieldDescription><![CDATA[class]]></fieldDescription>
+	</field>
+	<field name="thirdLevel" class="org.openlmis.requisition.dto.GeographicZoneDto">
+		<fieldDescription><![CDATA[thirdLevel]]></fieldDescription>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -245,7 +245,7 @@ Non Reporting Facility Report]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{district}.getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{thirdLevel}.getName()]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
