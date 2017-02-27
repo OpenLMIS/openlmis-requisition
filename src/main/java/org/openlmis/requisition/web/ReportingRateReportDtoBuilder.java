@@ -106,13 +106,14 @@ public class ReportingRateReportDtoBuilder {
     List<RequisitionCompletionDto> completionByZone = new ArrayList<>();
 
     for (GeographicZoneDto zone : zones) {
-      Collection<FacilityDto> facilities = facilityReferenceDataService
-          .search(null, null, zone.getId(), true);
+      Collection<FacilityDto> facilities = getAvailableFacilities(Collections.singletonList(zone));
 
-      RequisitionCompletionDto completion =
-          getCompletionForFacilities(program, periods, facilities);
-      completion.setGrouping(zone.getName());
-      completionByZone.add(completion);
+      if (!facilities.isEmpty()) {
+        RequisitionCompletionDto completion =
+            getCompletionForFacilities(program, periods, facilities);
+        completion.setGrouping(zone.getName());
+        completionByZone.add(completion);
+      }
     }
 
     // Sort by zone names
@@ -123,22 +124,6 @@ public class ReportingRateReportDtoBuilder {
   }
 
   private RequisitionCompletionDto getCompletionForFacilities(
-      ProgramDto program, Collection<ProcessingPeriodDto> periods,
-      Collection<FacilityDto> facilities ) {
-    if (facilities.isEmpty()) {
-      RequisitionCompletionDto completion = new RequisitionCompletionDto();
-      completion.setCompleted(0);
-      completion.setMissed(1);
-      completion.setOnTime(0);
-      completion.setLate(0);
-
-      return completion;
-    }
-
-    return getCompletionForFacilitiesImpl(program, periods, facilities);
-  }
-
-  private RequisitionCompletionDto getCompletionForFacilitiesImpl(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
       Collection<FacilityDto> facilities) {
     Map<String, Integer> completions = new HashMap<>();
@@ -161,6 +146,11 @@ public class ReportingRateReportDtoBuilder {
     int missed = completions.get(MISSED);
     int late = completions.get(LATE);
     int total = onTime + late + missed;
+
+    if (total == 0) {
+      missed = 1;
+      total = 1;
+    }
 
     RequisitionCompletionDto completion = new RequisitionCompletionDto();
     completion.setCompleted(((double)(onTime + late)) / total);
@@ -203,9 +193,13 @@ public class ReportingRateReportDtoBuilder {
   private Collection<FacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
     List<FacilityDto> facilities = new ArrayList<>();
     for (GeographicZoneDto zone : zones) {
-      facilities.addAll(facilityReferenceDataService.search(null, null, zone.getId(), false));
+      facilities.addAll(facilityReferenceDataService.search(null, null, zone.getId(), true));
     }
-    return facilities;
+
+    return facilities
+        .stream()
+        .filter(FacilityDto::getActive)
+        .collect(Collectors.toList());
   }
 
   private Collection<ProcessingPeriodDto> getLatestPeriods(ProcessingPeriodDto latest, int amount) {
