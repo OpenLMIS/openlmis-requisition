@@ -33,6 +33,7 @@ Defined in requisition.requisition_templates.json and requisition.columns_maps.j
   * Beginning Balance
   * Total Received Quantity
   * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
+  * Total Stockout Days
   * Stock On Hand (user input)
   * Total Consumed Quantity (calculated)
   * Average Consumption (periods to average from: 3)
