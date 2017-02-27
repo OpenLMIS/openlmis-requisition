@@ -115,7 +115,11 @@ public class ReportingRateReportDtoBuilder {
       completionByZone.add(completion);
     }
 
-    return completionByZone;
+    // Sort by zone names
+    return completionByZone
+        .stream()
+        .sorted((left, right) -> left.getGrouping().compareTo(right.getGrouping()))
+        .collect(Collectors.toList());
   }
 
   private RequisitionCompletionDto getCompletionForFacilities(

@@ -47,7 +47,7 @@
     "name": "GeographicZone",
     "displayName": "Geographic Zone",
     "dataType": "java.lang.String",
-    "selectExpression": "/api/geographicZones/search?levelNumber=3",
+    "selectExpression": "/api/geographicZones/search?levelNumber=2",
     "selectProperty": "id",
     "displayProperty": "name",
     "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad",
