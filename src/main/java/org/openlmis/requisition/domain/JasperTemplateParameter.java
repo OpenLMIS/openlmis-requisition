@@ -69,7 +69,7 @@ public class JasperTemplateParameter extends BaseEntity {
   @Setter
   private String dataType;
 
-  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String selectExpression;

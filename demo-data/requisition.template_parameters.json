@@ -74,5 +74,13 @@
     "displayProperty": "name",
     "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad",
     "required": true
+  },
+  {
+    "id" : "dcdde3cc-0839-4cd8-9dc1-de39d405632d",
+    "name": "DueDays",
+    "displayName": "Due date (days)",
+    "dataType": "java.lang.Integer",
+    "templateId": "ea05b845-0f3c-4672-9dda-08279c0c9dad",
+    "required": false
   }
 ]

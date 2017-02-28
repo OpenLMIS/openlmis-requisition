@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class ReportingRateReportDtoBuilder {
-  private static int DAYS_DUE = 10;
+  private static int DUE_DAYS = 10;
   private static int LATEST_PERIODS = 3;
   private static int GEOGRAPHIC_ZONE_LEVEL = 3;
   private static RequisitionStatus REQUIRED_STATUS = RequisitionStatus.APPROVED;
@@ -72,27 +72,30 @@ public class ReportingRateReportDtoBuilder {
    * @return newly created report dto
    */
   public ReportingRateReportDto build(
-      ProgramDto program, ProcessingPeriodDto period, GeographicZoneDto zone) {
+      ProgramDto program, ProcessingPeriodDto period, GeographicZoneDto zone, Integer dueDays) {
+    if (dueDays == null) {
+      dueDays = DUE_DAYS;
+    }
     ReportingRateReportDto report = new ReportingRateReportDto();
 
     Collection<ProcessingPeriodDto> periods = getLatestPeriods(period, LATEST_PERIODS);
     Collection<GeographicZoneDto> zones = getAvailableGeographicZones(zone);
     Collection<FacilityDto> facilities = getAvailableFacilities(zones);
 
-    report.setCompletionByPeriod(getCompletionsByPeriod(program, periods, facilities));
-    report.setCompletionByZone(getCompletionsByZone(program, periods, zones));
+    report.setCompletionByPeriod(getCompletionsByPeriod(program, periods, facilities, dueDays));
+    report.setCompletionByZone(getCompletionsByZone(program, periods, zones, dueDays));
 
     return report;
   }
 
   private List<RequisitionCompletionDto> getCompletionsByPeriod(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
-      Collection<FacilityDto> facilities) {
+      Collection<FacilityDto> facilities, Integer dueDays) {
     List<RequisitionCompletionDto> completionByPeriod = new ArrayList<>();
 
     for (ProcessingPeriodDto period : periods) {
-      RequisitionCompletionDto completion =
-          getCompletionForFacilities(program, Collections.singletonList(period), facilities);
+      RequisitionCompletionDto completion = getCompletionForFacilities(
+          program, Collections.singletonList(period), facilities, dueDays);
       completion.setGrouping(period.getName());
       completionByPeriod.add(completion);
     }
@@ -102,7 +105,7 @@ public class ReportingRateReportDtoBuilder {
 
   private List<RequisitionCompletionDto> getCompletionsByZone(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
-      Collection<GeographicZoneDto> zones) {
+      Collection<GeographicZoneDto> zones, Integer dueDays) {
     List<RequisitionCompletionDto> completionByZone = new ArrayList<>();
 
     for (GeographicZoneDto zone : zones) {
@@ -110,7 +113,7 @@ public class ReportingRateReportDtoBuilder {
 
       if (!facilities.isEmpty()) {
         RequisitionCompletionDto completion =
-            getCompletionForFacilities(program, periods, facilities);
+            getCompletionForFacilities(program, periods, facilities, dueDays);
         completion.setGrouping(zone.getName());
         completionByZone.add(completion);
       }
@@ -125,14 +128,14 @@ public class ReportingRateReportDtoBuilder {
 
   private RequisitionCompletionDto getCompletionForFacilities(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
-      Collection<FacilityDto> facilities) {
+      Collection<FacilityDto> facilities, Integer dueDays) {
     Map<String, Integer> completions = new HashMap<>();
     completions.put(ON_TIME, 0);
     completions.put(MISSED, 0);
     completions.put(LATE, 0);
 
     for (ProcessingPeriodDto period : periods) {
-      LocalDate dueDate = period.getEndDate().plusDays(DAYS_DUE);
+      LocalDate dueDate = period.getEndDate().plusDays(dueDays);
 
       for (FacilityDto facility : facilities) {
         List<Requisition> requisitions = requisitionRepository

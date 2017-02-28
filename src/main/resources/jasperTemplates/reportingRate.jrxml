@@ -83,6 +83,10 @@
 		<property name="selectProperty" value="id"/>
 		<property name="required" value="false"/>
 	</parameter>
+	<parameter name="DueDays" class="java.lang.Integer">
+		<property name="displayName" value="Due date (days)"/>
+		<property name="required" value="false"/>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>

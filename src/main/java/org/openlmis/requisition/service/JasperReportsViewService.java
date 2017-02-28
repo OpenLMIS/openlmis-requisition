@@ -154,19 +154,26 @@ public class JasperReportsViewService {
     setExportParams(jasperView);
     jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
 
-    UUID programId = processUuidParameter(params, "Program", true);
+    UUID programId = (UUID) processParameter(params, "Program", true, UUID.class);
     ProgramDto program = programReferenceDataService.findOne(programId);
 
-    UUID periodId = processUuidParameter(params, "Period", true);
+    UUID periodId = (UUID) processParameter(params, "Period", true, UUID.class);
     ProcessingPeriodDto period = periodReferenceDataService.findOne(periodId);
 
-    UUID zoneId = processUuidParameter(params, "GeographicZone", false);
+    UUID zoneId = (UUID) processParameter(params, "GeographicZone", false, UUID.class);
     GeographicZoneDto zone = null;
     if (zoneId != null) {
       zone = geographicZoneReferenceDataService.findOne(zoneId);
     }
 
-    ReportingRateReportDto reportDto = reportingRateReportDtoBuilder.build(program, period, zone);
+    Integer dueDays = (Integer) processParameter(params, "DueDays", false, Integer.class);
+    if (dueDays != null && dueDays < 0) {
+      throw new ValidationMessageException(
+          new Message(ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID, "DueDays"));
+    }
+
+    ReportingRateReportDto reportDto = reportingRateReportDtoBuilder.build(program, period, zone,
+        dueDays);
     params.put("datasource", new JRBeanCollectionDataSource(Collections.singletonList(reportDto)));
 
     if (getApplicationContext(request) != null) {
@@ -366,7 +373,8 @@ public class JasperReportsViewService {
         .sorted(comparator).collect(Collectors.toList());
   }
 
-  private UUID processUuidParameter(Map<String, Object> params, String key, boolean required) {
+  private Object processParameter(Map<String, Object> params, String key, boolean required,
+                                  Class paramType) {
     Message errorMessage = new Message(ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID, key);
 
     try {
@@ -377,8 +385,14 @@ public class JasperReportsViewService {
           return null;
         }
       }
+      String paramValue = (String) params.get(key);
 
-      return UUID.fromString((String)params.get(key));
+      if (UUID.class.equals(paramType)) {
+        return UUID.fromString(paramValue);
+      } else if (Integer.class.equals(paramType)) {
+        return Integer.valueOf(paramValue);
+      }
+      return paramValue;
     } catch (ClassCastException | IllegalArgumentException err) {
       throw new ValidationMessageException(errorMessage, err);
     }
