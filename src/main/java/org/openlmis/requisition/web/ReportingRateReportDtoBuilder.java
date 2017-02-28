@@ -209,11 +209,14 @@ public class ReportingRateReportDtoBuilder {
       // Retrieve list of periods prior to latest one
       List<ProcessingPeriodDto> previousPeriods =
           periodReferenceDataService.search(latest.getProcessingSchedule().getId(), null)
-          .stream()
-          .filter(p -> p.getStartDate().isBefore(latest.getStartDate()))
-          .sorted((left, right) -> left.getStartDate().compareTo(right.getStartDate()))
-          .limit(amount - 1)
-          .collect(Collectors.toList());
+              .stream()
+              .filter(p -> p.getStartDate().isBefore(latest.getStartDate()))
+              // Sort by date descending -> get 2 most recent
+              .sorted((left, right) -> right.getStartDate().compareTo(left.getStartDate()))
+              .limit(amount - 1)
+              // Sort by date ascending -> return as normal
+              .sorted((left, right) -> left.getStartDate().compareTo(right.getStartDate()))
+              .collect(Collectors.toList());
 
       periods.addAll(previousPeriods);
     }
