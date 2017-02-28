@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-23T22:26:16 -->
+<!-- 2017-02-28T11:07:46 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportingRate" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4e1d9a97-c93a-4ad3-87e1-e305d6e7da2e">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="java.lang.*"/>
@@ -176,9 +176,11 @@
 					</rectangle>
 				</frame>
 				<staticText>
-					<reportElement x="20" y="25" width="30" height="9" uuid="18450719-aae7-4893-97db-58f698d14464"/>
+					<reportElement x="20" y="25" width="30" height="9" uuid="18450719-aae7-4893-97db-58f698d14464">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
 					<textElement verticalAlignment="Middle">
-						<font size="4"/>
+						<font size="7"/>
 					</textElement>
 					<text><![CDATA[on time]]></text>
 				</staticText>
@@ -187,16 +189,16 @@
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 					<textElement verticalAlignment="Middle">
-						<font size="4"/>
+						<font size="7"/>
 					</textElement>
 					<text><![CDATA[late]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="155" y="25" width="30" height="9" uuid="ee430f14-1640-4620-9891-b5951c5ac21b">
+					<reportElement x="155" y="25" width="45" height="9" uuid="ee430f14-1640-4620-9891-b5951c5ac21b">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 					<textElement verticalAlignment="Middle">
-						<font size="4"/>
+						<font size="7"/>
 					</textElement>
 					<text><![CDATA[not reported]]></text>
 				</staticText>
@@ -309,7 +311,7 @@
 				</jr:table>
 			</componentElement>
 			<stackedBarChart>
-				<chart evaluationTime="Report">
+				<chart isShowLegend="false" evaluationTime="Report">
 					<reportElement x="0" y="50" width="555" height="230" uuid="ed54ff7f-5288-41c8-8ea6-78a2cd8f5f69"/>
 					<chartTitle/>
 					<chartSubtitle/>
