@@ -336,7 +336,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    */
   public boolean isApprovable() {
-    return status == RequisitionStatus.AUTHORIZED || status == RequisitionStatus.IN_APPROVAL;
+    return status.duringApproval();
   }
 
   /**

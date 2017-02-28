@@ -46,4 +46,8 @@ public enum RequisitionStatus {
   public boolean isApproved() {
     return value >= 5;
   }
+
+  public boolean duringApproval() {
+    return value == 3 || value == 4;
+  }
 }

@@ -38,6 +38,9 @@ import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,9 +59,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -291,7 +291,7 @@ public class RequisitionLineItem extends BaseEntity {
    * @param requisitionLineItem RequisitionLineItem with new values.
    */
   public void updateFrom(RequisitionLineItem requisitionLineItem) {
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
+    if (requisition.isApprovable()) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();
     } else {

@@ -53,8 +53,7 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
       } else {
         requisitionStatusNotifier.notifyStatusChanged(requisition, lastChange);
       }
-      if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
-          || requisition.getStatus() == RequisitionStatus.IN_APPROVAL) {
+      if (requisition.isApprovable()) {
         approvalNotifier.notifyApprovers(requisition);
       }
     } else {

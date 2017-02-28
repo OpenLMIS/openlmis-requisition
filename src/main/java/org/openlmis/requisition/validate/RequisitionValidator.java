@@ -175,7 +175,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateApprovedQuantity(Errors errors, RequisitionTemplate template,
                                         Requisition requisition, RequisitionLineItem item) {
-    if (requisition.getStatus() == RequisitionStatus.AUTHORIZED
+    if (requisition.isApprovable()
         || (configurationSettingService.getBoolValue("skipAuthorization")
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 

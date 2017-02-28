@@ -70,7 +70,7 @@ public class RequisitionStatusProcessorTest {
   @Test
   public void shouldNotifyApproversWhenAuthorized() {
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+    when(requisition.isApprovable()).thenReturn(true);
     mockChange();
 
     requisitionStatusProcessor.statusChange(requisition);
@@ -81,7 +81,7 @@ public class RequisitionStatusProcessorTest {
   @Test
   public void shouldNotifyApproversWhenInApproval() {
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+    when(requisition.isApprovable()).thenReturn(true);
     mockChange();
 
     requisitionStatusProcessor.statusChange(requisition);

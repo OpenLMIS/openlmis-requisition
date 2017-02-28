@@ -105,20 +105,13 @@ public class RequisitionLineItemTest {
   @Test
   public void shouldOnlyUpdateApprovedFieldsWhenRequisitionStatusIsAuthorized() {
     Requisition requisition = mockReq(RequisitionStatus.AUTHORIZED);
+    assertOnlyApprovalFieldsEditable(requisition);
+  }
 
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setApprovedQuantity(1);
-    requisitionLineItem.setRemarks("Remarks");
-    requisitionLineItem.setStockOnHand(5);
-
-    RequisitionLineItem updatedItem = new RequisitionLineItem();
-    updatedItem.setRequisition(requisition);
-    updatedItem.updateFrom(requisitionLineItem);
-
-    assertEquals(1, updatedItem.getApprovedQuantity().intValue());
-    assertEquals("Remarks", updatedItem.getRemarks());
-    assertNull(updatedItem.getStockOnHand());
+  @Test
+  public void shouldOnlyUpdateApprovedFieldsWhenRequisitionStatusIsInApproval() {
+    Requisition requisition = mockReq(RequisitionStatus.IN_APPROVAL);
+    assertOnlyApprovalFieldsEditable(requisition);
   }
 
   @Test
@@ -291,6 +284,22 @@ public class RequisitionLineItemTest {
     assertEquals(3L, requisitionLineItem.getAverageConsumption().longValue());
   }
 
+  private void assertOnlyApprovalFieldsEditable(Requisition requisition) {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setApprovedQuantity(1);
+    requisitionLineItem.setRemarks("Remarks");
+    requisitionLineItem.setStockOnHand(5);
+
+    RequisitionLineItem updatedItem = new RequisitionLineItem();
+    updatedItem.setRequisition(requisition);
+    updatedItem.updateFrom(requisitionLineItem);
+
+    assertEquals(1, updatedItem.getApprovedQuantity().intValue());
+    assertEquals("Remarks", updatedItem.getRemarks());
+    assertNull(updatedItem.getStockOnHand());
+  }
+
   private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap) {
     RequisitionLineItem item =
         new RequisitionLineItem(initiatedRequisition, ftap);
@@ -379,6 +388,7 @@ public class RequisitionLineItemTest {
   private Requisition mockReq(RequisitionStatus status) {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(status);
+    when(requisition.isApprovable()).thenReturn(status.duringApproval());
     return requisition;
   }
 }

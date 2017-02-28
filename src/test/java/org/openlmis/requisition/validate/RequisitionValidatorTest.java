@@ -160,6 +160,27 @@ public class RequisitionValidatorTest {
             + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
   }
 
+  @Test
+  public void shouldRejectIfApprovedQuantityIsNullForApprovableState() {
+    when(requisition.isApprovable()).thenReturn(true);
+
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setApprovedQuantity(null);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED,
+        RequisitionLineItem.APPROVED_QUANTITY);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        RequisitionLineItem.APPROVED_QUANTITY
+            + ERROR_VALUE_MUST_BE_ENTERED));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionLineItem.APPROVED_QUANTITY
+            + ERROR_VALUE_MUST_BE_ENTERED));
+  }
+
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
     RequisitionLineItem lineItem = generateLineItem();
