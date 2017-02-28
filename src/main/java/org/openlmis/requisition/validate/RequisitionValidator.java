@@ -39,6 +39,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -147,7 +148,9 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       Integer calculated = item.getCalculatedOrderQuantity();
       String explanation = item.getRequestedQuantityExplanation();
 
-      if (!Objects.equals(requested, calculated) && requested > 0 && isBlank(explanation)) {
+      if (!Objects.equals(requested, calculated)
+          && ObjectUtils.compare(requested, 0) > 0
+          && isBlank(explanation)) {
         rejectValue(errors, REQUISITION_LINE_ITEMS,
             new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED));
       }

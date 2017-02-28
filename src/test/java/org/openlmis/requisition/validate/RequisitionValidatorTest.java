@@ -144,7 +144,7 @@ public class RequisitionValidatorTest {
   @Test
   public void shouldRejectIfValueIsNull() {
     RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setTotalStockoutDays(null);
+    lineItem.setRequestedQuantity(null);
     requisitionLineItems.add(lineItem);
 
     Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED,
