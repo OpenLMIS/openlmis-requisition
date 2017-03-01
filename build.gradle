@@ -54,7 +54,7 @@ dependencies {
     compile 'org.springframework:spring-context-support'
     compile 'commons-jxpath:commons-jxpath:1.3'
     compile 'org.webjars:swagger-ui:2.2.6'
-    compile 'org.openlmis:openlmis-service-util:3.0.0-SNAPSHOT'
+    compile 'org.openlmis:openlmis-service-util:3.0.0'
     compile 'org.joda:joda-money:0.12'
     compile 'org.jadira.usertype:usertype.core:5.0.0.GA'
     compile 'org.apache.poi:poi:3.10.1'
