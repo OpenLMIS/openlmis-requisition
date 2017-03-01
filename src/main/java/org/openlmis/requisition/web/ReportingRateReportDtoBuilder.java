@@ -35,10 +35,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Component
 public class ReportingRateReportDtoBuilder {
@@ -46,10 +48,6 @@ public class ReportingRateReportDtoBuilder {
   private static int LATEST_PERIODS = 3;
   private static int GEOGRAPHIC_ZONE_LEVEL = 3;
   private static RequisitionStatus REQUIRED_STATUS = RequisitionStatus.APPROVED;
-
-  private static String ON_TIME = "ON_TIME";
-  private static String MISSED = "MISSED";
-  private static String LATE = "LATE";
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -129,10 +127,7 @@ public class ReportingRateReportDtoBuilder {
   private RequisitionCompletionDto getCompletionForFacilities(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
       Collection<FacilityDto> facilities, Integer dueDays) {
-    Map<String, Integer> completions = new HashMap<>();
-    completions.put(ON_TIME, 0);
-    completions.put(MISSED, 0);
-    completions.put(LATE, 0);
+    CompletionCounter completions = new CompletionCounter();
 
     for (ProcessingPeriodDto period : periods) {
       LocalDate dueDate = period.getEndDate().plusDays(dueDays);
@@ -145,9 +140,9 @@ public class ReportingRateReportDtoBuilder {
       }
     }
 
-    int onTime = completions.get(ON_TIME);
-    int missed = completions.get(MISSED);
-    int late = completions.get(LATE);
+    int onTime = completions.getOnTime();
+    int missed = completions.getMissed();
+    int late = completions.getLate();
     int total = onTime + late + missed;
 
     if (total == 0) {
@@ -164,11 +159,11 @@ public class ReportingRateReportDtoBuilder {
     return completion;
   }
 
-  private void updateCompletionsWithRequisitions(
-      Map<String, Integer> completions, List<Requisition> requisitions, LocalDate dueDate) {
-    int missed = completions.get(MISSED);
-    int late = completions.get(LATE);
-    int onTime = completions.get(ON_TIME);
+  void updateCompletionsWithRequisitions(
+      CompletionCounter completions, List<Requisition> requisitions, LocalDate dueDate) {
+    int missed = completions.getMissed();
+    int late = completions.getLate();
+    int onTime = completions.getOnTime();
 
     if (!requisitions.isEmpty()) {
       for (Requisition requisition : requisitions) {
@@ -188,12 +183,12 @@ public class ReportingRateReportDtoBuilder {
       missed++;
     }
 
-    completions.put(MISSED, missed);
-    completions.put(LATE, late);
-    completions.put(ON_TIME, onTime);
+    completions.setMissed(missed);
+    completions.setOnTime(onTime);
+    completions.setLate(late);
   }
 
-  private Collection<FacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
+  Collection<FacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
     List<FacilityDto> facilities = new ArrayList<>();
     for (GeographicZoneDto zone : zones) {
       facilities.addAll(facilityReferenceDataService.search(null, null, zone.getId(), true));
@@ -205,7 +200,7 @@ public class ReportingRateReportDtoBuilder {
         .collect(Collectors.toList());
   }
 
-  private Collection<ProcessingPeriodDto> getLatestPeriods(ProcessingPeriodDto latest, int amount) {
+  Collection<ProcessingPeriodDto> getLatestPeriods(ProcessingPeriodDto latest, int amount) {
     List<ProcessingPeriodDto> periods = new ArrayList<>();
 
     if (amount > 1) {
@@ -228,11 +223,20 @@ public class ReportingRateReportDtoBuilder {
     return periods;
   }
 
-  private Collection<GeographicZoneDto> getAvailableGeographicZones(GeographicZoneDto zone) {
+  Collection<GeographicZoneDto> getAvailableGeographicZones(GeographicZoneDto zone) {
     if (zone == null) {
       return geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, null);
     } else {
       return geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, zone.getId());
     }
+  }
+
+  @Getter
+  @Setter
+  @NoArgsConstructor
+  class CompletionCounter {
+    int missed;
+    int late;
+    int onTime;
   }
 }
