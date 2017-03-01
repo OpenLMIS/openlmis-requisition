@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.validate;
 
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
@@ -187,7 +188,7 @@ public class DraftRequisitionValidatorTest {
   @Test
   public void shouldRejectIfValueIsPresentWithInvalidRequisitionStatus() {
     requisition.setStatus(RequisitionStatus.INITIATED);
-    RequisitionLineItem lineItem = getInvalidRequisitionLineItemForInitializedStatus();
+    RequisitionLineItem lineItem = getRequisitionLineItemWithApprovalFieldsSet();
 
     requisitionLineItems.add(lineItem);
 
@@ -215,10 +216,38 @@ public class DraftRequisitionValidatorTest {
             + " is only available during the approval step of the requisition process."));
   }
 
+
+  @Test
+  public void shouldAllowApprovalFieldsForAuthorizedRequisition() {
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    RequisitionLineItem lineItem = getRequisitionLineItemWithApprovalFieldsSet();
+
+    requisitionLineItems.add(lineItem);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(any(), any());
+    assertFalse(errors.hasErrors());
+  }
+
+
+  @Test
+  public void shouldAllowApprovalFieldsForInApprovalRequisition() {
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    RequisitionLineItem lineItem = getRequisitionLineItemWithApprovalFieldsSet();
+
+    requisitionLineItems.add(lineItem);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(any(), any());
+    assertFalse(errors.hasErrors());
+  }
+
   @Test
   public void shouldNotValidateSkippedLineItems() {
     requisition.setStatus(RequisitionStatus.INITIATED);
-    RequisitionLineItem lineItem = getInvalidRequisitionLineItemForInitializedStatus();
+    RequisitionLineItem lineItem = getRequisitionLineItemWithApprovalFieldsSet();
     lineItem.setSkipped(true);
 
     RequisitionLineItem lineItem2 = generateLineItem();
@@ -272,7 +301,7 @@ public class DraftRequisitionValidatorTest {
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
   }
 
-  private RequisitionLineItem getInvalidRequisitionLineItemForInitializedStatus() {
+  private RequisitionLineItem getRequisitionLineItemWithApprovalFieldsSet() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setApprovedQuantity(1);
     lineItem.setRemarks("Remarks");

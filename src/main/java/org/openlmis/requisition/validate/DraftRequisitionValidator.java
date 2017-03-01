@@ -40,6 +40,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
@@ -101,18 +103,19 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateApprovalFields(Errors errors, Requisition requisition,
                                       RequisitionLineItem item) {
-    RequisitionStatus expectedStatus;
+    Set<RequisitionStatus> expectedStatuses = new HashSet<>();
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
-      expectedStatus = RequisitionStatus.SUBMITTED;
+      expectedStatuses.add(RequisitionStatus.SUBMITTED);
     } else {
-      expectedStatus = RequisitionStatus.AUTHORIZED;
+      expectedStatuses.add(RequisitionStatus.AUTHORIZED);
+      expectedStatuses.add(RequisitionStatus.IN_APPROVAL);
     }
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
-        expectedStatus, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
+        expectedStatuses, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.APPROVED_QUANTITY));
 
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getRemarks(),
-        expectedStatus, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
+        expectedStatuses, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.REMARKS_COLUMN));
 
   }
@@ -139,8 +142,9 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   }
 
   private void rejectIfInvalidStatusAndNotNull(Errors errors, Requisition requisition, Object value,
-                                               RequisitionStatus expectedStatus, Message message) {
-    if (requisition.getStatus() != expectedStatus && value != null) {
+                                               Set<RequisitionStatus> expectedStatuses, Message
+                                                   message) {
+    if (!expectedStatuses.contains(requisition.getStatus()) && value != null) {
       rejectValue(errors, REQUISITION_LINE_ITEMS, message);
     }
   }
