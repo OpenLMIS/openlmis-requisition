@@ -104,11 +104,11 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   private void validateApprovalFields(Errors errors, Requisition requisition,
                                       RequisitionLineItem item) {
     Set<RequisitionStatus> expectedStatuses = new HashSet<>();
+    expectedStatuses.add(RequisitionStatus.IN_APPROVAL);
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
       expectedStatuses.add(RequisitionStatus.SUBMITTED);
     } else {
       expectedStatuses.add(RequisitionStatus.AUTHORIZED);
-      expectedStatuses.add(RequisitionStatus.IN_APPROVAL);
     }
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
         expectedStatuses, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
