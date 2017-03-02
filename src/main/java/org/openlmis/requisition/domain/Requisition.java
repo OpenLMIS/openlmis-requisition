@@ -15,11 +15,19 @@
 
 package org.openlmis.requisition.domain;
 
+import static java.util.Objects.isNull;
+import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
+import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -40,6 +48,22 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -55,25 +79,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
-import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -326,6 +331,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     updateConsumptionsAndTotalCost(products);
+    populateApprovedQuantity();
 
     status = RequisitionStatus.AUTHORIZED;
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
@@ -390,10 +396,6 @@ public class Requisition extends BaseTimestampedEntity {
 
   public boolean isPreAuthorize() {
     return status.isPreAuthorize();
-  }
-
-  public boolean isPostSubmitted() {
-    return status.isPostSubmitted();
   }
 
   /**
@@ -552,6 +554,22 @@ public class Requisition extends BaseTimestampedEntity {
         LineItemFieldsCalculator.calculateTotalCost(line,
             CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE))
     ));
+  }
+
+  private void populateApprovedQuantity() {
+    if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> {
+        if (isNull(line.getRequestedQuantity())) {
+          line.setApprovedQuantity(line.getCalculatedOrderQuantity());
+        } else {
+          line.setApprovedQuantity(line.getRequestedQuantity());
+        }
+      });
+    } else {
+      getNonSkippedFullSupplyRequisitionLineItems().forEach(line ->
+          line.setApprovedQuantity(line.getRequestedQuantity())
+      );
+    }
   }
 
   private void updateReqLines(Collection<RequisitionLineItem> newLineItems) {

@@ -68,6 +68,8 @@ public class RequisitionTest {
   private static final int AVERAGE_CONSUMPTION = 1;
   private static final Money TOTAL_COST = Money.of(CURRENCY_UNIT, 5);
   private static final int MONTHS_IN_PERIOD = 1;
+  private static final int CALCULATED_ORDER_QUANTITY = 5;
+  private static final int REQUESTED_QUANTITY = 10;
 
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
@@ -83,11 +85,12 @@ public class RequisitionTest {
     requisitionLineItem = new RequisitionLineItem();
 
     requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setRequestedQuantity(10);
+    requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
     requisitionLineItem.setStockOnHand(20);
     requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setOrderableId(productId);
+    requisitionLineItem.setCalculatedOrderQuantity(CALCULATED_ORDER_QUANTITY);
 
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
@@ -188,6 +191,65 @@ public class RequisitionTest {
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
+  }
+
+  @Test
+  public void shouldPopulateWithCalcOrderQuantityWhenColumnDisplayedAndRequestedQuantityIsNull() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(true);
+
+    requisitionLineItem.setRequestedQuantity(null);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(CALCULATED_ORDER_QUANTITY),
+        requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
+  public void shouldPopulateWithReqQuantityWhenIsNotNullAndCalcOrderQuantityColumnDisplayed() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(true);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
+  public void shouldPopulateWithRequestedQuantityWhenCalculatedOrderQuantityIsNotDisplayed() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+
+    requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
+  public void shouldPopulateWithNullRequestedQuantityWhenCalculatedOrderQuantityIsNotDisplayed() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+
+    requisitionLineItem.setRequestedQuantity(null);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(null, requisitionLineItem.getApprovedQuantity());
   }
 
   @Test
@@ -874,10 +936,7 @@ public class RequisitionTest {
   }
 
   private SupervisoryNodeDto mockSupervisoryParentNode(UUID parentId) {
-    SupervisoryNodeDto supervisoryNodeDto = mock(SupervisoryNodeDto.class);
     SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
-    when(supervisoryNodeDto.getParentNode()).thenReturn(parentNode);
-    parentNode.setId(parentId);
     when(parentNode.getId()).thenReturn(parentId);
     return parentNode;
   }
