@@ -45,9 +45,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -87,16 +89,16 @@ public class ReportingRateDtoBuilderTest {
     assertNotNull(result);
 
     List<ProcessingPeriodDto> resultList = new ArrayList<>(result);
-    //    List<ProcessingPeriodDto> expected = periods
-    //        .stream()
-    //        .skip(2)
-    //        .limit(3)
-    //        .collect(Collectors.toList());
+    List<ProcessingPeriodDto> expected = periods
+        .stream()
+        .skip(2)
+        .limit(3)
+        .collect(Collectors.toList());
 
     assertEquals(3, resultList.size());
-    //    assertEquals(expected.get(0), resultList.get(0));
-    //    assertEquals(expected.get(1), resultList.get(1));
-    //    assertEquals(expected.get(2), resultList.get(2));
+    assertEquals(expected.get(0), resultList.get(0));
+    assertEquals(expected.get(1), resultList.get(1));
+    assertEquals(expected.get(2), resultList.get(2));
   }
 
   @Test
@@ -269,12 +271,20 @@ public class ReportingRateDtoBuilderTest {
       schedule.setId(UUID.randomUUID());
     }
 
+    Set<Integer> pickedNumbers = new HashSet<>();
     for (int i = 0; i < amount; i++) {
       ProcessingPeriodDto period = new ProcessingPeriodDto();
       period.setId(UUID.randomUUID());
 
+      // Do not generate more than one period with the same start date
+      int variation;
+      do {
+        variation = random.nextInt(50);
+      } while (pickedNumbers.contains(variation));
+      pickedNumbers.add(variation);
+
       LocalDate startDate = LocalDate.now()
-          .minusWeeks(random.nextInt(50));
+          .minusWeeks(variation);
 
       LocalDate endDate = startDate
           .plusWeeks(random.nextInt(50));
