@@ -188,6 +188,36 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
+  public void shouldGetTimelinessReportViewWithFacilitiesFromAllZonesIfDistrictNotSpecified() {
+    //given
+    UUID zone1Id = UUID.randomUUID();
+    UUID zone2Id = UUID.randomUUID();
+
+    List<FacilityDto> facilitiesToReturn = Arrays.asList(
+        // active facilities missing RnR from different zones
+        mockFacility(true, true, zone1Id, "district A", "f1"),
+        mockFacility(true, true, zone1Id, "district A", "f2"),
+        mockFacility(true, true, zone2Id, "district B", "f3"),
+        mockFacility(true, true, zone2Id, "district B", "f4")
+    );
+
+    when(facilityReferenceDataService.findAll()).thenReturn(facilitiesToReturn);
+
+    // when
+    ModelAndView view = service.getTimelinessJasperReportView(
+        new JasperReportsMultiFormatView(), reportParams);
+    List<FacilityDto> facilities = extractFacilitiesFromOutputParams(view.getModel());
+
+    // then
+    Assert.assertEquals(4, facilities.size());
+    List<UUID> facilityIds = facilities.stream()
+        .map(FacilityDto::getId).collect(Collectors.toList());
+    for (FacilityDto facility : facilitiesToReturn) {
+      Assert.assertTrue(facilityIds.contains(facility.getId()));
+    }
+  }
+
+  @Test
   public void shouldSortFacilitiesReturnedWithTimelinessReportView() {
     //given
     UUID zone1Id = UUID.randomUUID();
@@ -220,11 +250,11 @@ public class JasperReportsViewServiceTest {
     return (List<FacilityDto>) datasource.getData();
   }
 
-  private FacilityDto mockFacility(Boolean isActive, Boolean isMissingRnR) {
+  private FacilityDto mockFacility(boolean isActive, boolean isMissingRnR) {
     return mockFacility(isActive, isMissingRnR, UUID.randomUUID(), "test", "test");
   }
 
-  private FacilityDto mockFacility(Boolean isActive, Boolean isMissingRnR, UUID districtId,
+  private FacilityDto mockFacility(boolean isActive, boolean isMissingRnR, UUID districtId,
                                    String districtName, String facilityName) {
     FacilityDto facility = new FacilityDto();
 
