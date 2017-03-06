@@ -239,6 +239,22 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldPopulateNonFullSupplyLineItems() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+
+    requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
+    requisitionLineItem.setNonFullSupply(true);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
   public void shouldPopulateWithNullRequestedQuantityWhenCalculatedOrderQuantityIsNotDisplayed() {
     requisition.setTemplate(template);
     requisition.setStatus(RequisitionStatus.SUBMITTED);

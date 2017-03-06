@@ -558,7 +558,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void populateApprovedQuantity() {
     if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> {
+      getNonSkippedRequisitionLineItems().forEach(line -> {
         if (isNull(line.getRequestedQuantity())) {
           line.setApprovedQuantity(line.getCalculatedOrderQuantity());
         } else {
@@ -566,7 +566,7 @@ public class Requisition extends BaseTimestampedEntity {
         }
       });
     } else {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line ->
+      getNonSkippedRequisitionLineItems().forEach(line ->
           line.setApprovedQuantity(line.getRequestedQuantity())
       );
     }
