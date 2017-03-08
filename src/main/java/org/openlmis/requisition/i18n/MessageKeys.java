@@ -185,6 +185,8 @@ public abstract class MessageKeys {
   public static final String REQUISITION_TYPE_REGULAR = "requisition.type.regular";
   public static final String REQUISITION_TYPE_EMERGENCY = "requisition.type.emergency";
 
+  public static final String SYSTEM = "requisition.system";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }
