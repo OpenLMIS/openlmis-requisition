@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.validate;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
@@ -34,12 +33,10 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_STOCKOUT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -105,9 +102,10 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   private void validateFullSupplyLineItem(Errors errors, Requisition requisition,
                                           RequisitionLineItem item) {
     RequisitionTemplate template = requisition.getTemplate();
-    rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
+    
+    rejectIfLessThanZero(errors, template, item.getRequestedQuantity(),
         REQUESTED_QUANTITY);
-
+    
     rejectIfNullOrNegative(errors, template, item.getBeginningBalance(),
         BEGINNING_BALANCE);
 
@@ -135,25 +133,27 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
     validateCalculations(errors, template, item);
 
+    validateRequestedQuantityAndExplanation(errors, item, template);
+    
     validateStockAdjustments(errors, requisition, item);
-
-    validateOrderQuantity(errors, template, item);
   }
 
-  private void validateOrderQuantity(Errors errors, RequisitionTemplate template,
-                                     RequisitionLineItem item) {
-    if (template.isColumnDisplayed(REQUESTED_QUANTITY)
-        && template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
-      Integer requested = item.getRequestedQuantity();
-      Integer calculated = item.getCalculatedOrderQuantity();
-      String explanation = item.getRequestedQuantityExplanation();
-
-      if (!Objects.equals(requested, calculated)
-          && ObjectUtils.compare(requested, 0) > 0
-          && isBlank(explanation)) {
-        rejectValue(errors, REQUISITION_LINE_ITEMS,
-            new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED));
+  private void validateRequestedQuantityAndExplanation(Errors errors, RequisitionLineItem item,
+      RequisitionTemplate template) {
+    if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+      if (template.isColumnDisplayed(REQUESTED_QUANTITY)) {
+        if (!Objects.equals(item.getRequestedQuantity(), item.getCalculatedOrderQuantity())
+            && item.getRequestedQuantity() != null) {
+          rejectIfEmpty(errors, template, item.getRequestedQuantityExplanation(),
+              REQUESTED_QUANTITY_EXPLANATION);
+        }
+      } else {
+        checkTemplate(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
+        checkTemplate(errors, template, item.getRequestedQuantityExplanation(), 
+            REQUESTED_QUANTITY_EXPLANATION);
       }
+    } else {
+      rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
     }
   }
 

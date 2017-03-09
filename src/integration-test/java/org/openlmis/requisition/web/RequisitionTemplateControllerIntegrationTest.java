@@ -65,6 +65,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private static final String STOCK_ON_HAND = "stockOnHand";
   private static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
   private static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
+  private static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -483,6 +484,15 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     ));
     columnMap.put(ADJUSTED_CONSUMPTION, column);
 
+    column = new RequisitionTemplateColumn(columnDefinition);
+    column.setName(CALCULATED_ORDER_QUANTITY);
+    column.setLabel("Calculated Order Quantity");
+    column.setIsDisplayed(true);
+    column.setColumnDefinition(availableRequisitionColumnRepository.findOne(
+        UUID.fromString("5528576b-b1e7-48d9-bf32-fd0eefefaa9a")
+    ));
+    columnMap.put(CALCULATED_ORDER_QUANTITY, column);
+
     RequisitionTemplate reqTemplate = new RequisitionTemplate(columnMap);
     reqTemplate.changeColumnSource(REQUESTED_QUANTITY, SourceType.USER_INPUT);
     reqTemplate.changeColumnSource(STOCK_ON_HAND, SourceType.USER_INPUT);
@@ -493,6 +503,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     reqTemplate.changeColumnSource(TOTAL_LOSSES_AND_ADJUSTMENTS, SourceType.USER_INPUT);
     reqTemplate.changeColumnSource(TOTAL_STOCKOUT_DAYS, SourceType.USER_INPUT);
     reqTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
+    reqTemplate.changeColumnSource(CALCULATED_ORDER_QUANTITY, SourceType.CALCULATED);
     reqTemplate.setProgramId(generateProgram().getId());
     requisitionTemplateRepository.save(reqTemplate);
     return reqTemplate;

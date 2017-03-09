@@ -27,6 +27,7 @@ import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
@@ -52,6 +53,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQ
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.STOCK_ON_HAND;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS;
+import static org.openlmis.requisition.validate.RequisitionTemplateValidator.CALCULATED_ORDER_QUANTITY;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
@@ -125,27 +127,30 @@ public class RequisitionTemplateValidatorTest {
     Message message7 = new Message(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED,
         STOCK_ON_HAND);
-    Message message8 = new Message(ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED,
+    Message message8 = new Message(
+        ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED,
         TOTAL_CONSUMED_QUANTITY);
+    Message message9 = new Message(
+        ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED,
+        CALCULATED_ORDER_QUANTITY);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
         REQUESTED_QUANTITY_EXPLANATION + " must be displayed when "
             + "requested quantity is displayed."));
-
     when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
         REQUESTED_QUANTITY + " must be "
             + "displayed when requested quantity explanation is displayed."));
-
     when(messageService.localize(message3)).thenReturn(message3.new LocalizedMessage(
         TOTAL_CONSUMED_QUANTITY + " and "
             + STOCK_ON_HAND
             + " cannot be calculated at the same time."));
-
     when(messageService.localize(message7)).thenReturn(message7.new LocalizedMessage(
         "must be displayed when total consumed quantity is calculated."));
-
     when(messageService.localize(message8)).thenReturn(message8.new LocalizedMessage(
         "must be displayed when stock on hand is calculated."));
+    when(messageService.localize(message9)).thenReturn(message9.new LocalizedMessage(
+        REQUESTED_QUANTITY
+            + " must be displayed when calculated order quantity is not displayed."));
   }
 
   @Test
@@ -164,6 +169,20 @@ public class RequisitionTemplateValidatorTest {
     verify(errors).rejectValue(eq(COLUMNS_MAP),
         contains(REQUESTED_QUANTITY_EXPLANATION
             + " must be displayed when requested quantity is displayed."));
+  }
+
+  @Test
+  public void shouldRejectWhenRequestedQuantityAndCalcOrderQuantityAreNotDisplayed() {
+    RequisitionTemplate requisitionTemplate = generateTemplate();
+    requisitionTemplate.changeColumnDisplay(REQUESTED_QUANTITY, false);
+    requisitionTemplate.changeColumnDisplay(REQUESTED_QUANTITY_EXPLANATION, false);
+    requisitionTemplate.changeColumnDisplay(CALCULATED_ORDER_QUANTITY, false);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        contains(REQUESTED_QUANTITY 
+            + " must be displayed when calculated order quantity is not displayed."));
   }
 
   @Test
@@ -488,6 +507,8 @@ public class RequisitionTemplateValidatorTest {
 
   private Map<String, RequisitionTemplateColumn> getRequisitionTemplateColumnMap() {
     Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
+    columnMap.put(CALCULATED_ORDER_QUANTITY, 
+        generateTemplateColumn(CALCULATED_ORDER_QUANTITY, "I"));
     columnMap.put(REQUESTED_QUANTITY, generateTemplateColumn(REQUESTED_QUANTITY, "J"));
     columnMap.put(REQUESTED_QUANTITY_EXPLANATION,
         generateTemplateColumn(REQUESTED_QUANTITY_EXPLANATION, "W"));

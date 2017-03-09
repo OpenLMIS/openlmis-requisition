@@ -19,6 +19,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.utils.Message;
@@ -66,11 +67,18 @@ abstract class AbstractRequisitionValidator extends BaseValidator {
     }
   }
 
-  void rejectIfNull(Errors errors, RequisitionTemplate template,
-                    Object value, String field) {
+  void rejectIfNull(Errors errors, RequisitionTemplate template, Object value, String field) {
     boolean templateValid = checkTemplate(errors, template, value, field);
 
     if (templateValid && value == null) {
+      rejectValue(errors, REQUISITION_LINE_ITEMS, new Message(ERROR_VALUE_MUST_BE_ENTERED, field));
+    }
+  }
+
+  void rejectIfEmpty(Errors errors, RequisitionTemplate template, String value, String field) {
+    boolean templateValid = checkTemplate(errors, template, value, field);
+
+    if (templateValid && StringUtils.isBlank(value)) {
       rejectValue(errors, REQUISITION_LINE_ITEMS, new Message(ERROR_VALUE_MUST_BE_ENTERED, field));
     }
   }

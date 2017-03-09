@@ -29,7 +29,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
@@ -139,25 +138,6 @@ public class RequisitionValidatorTest {
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionLineItem.TOTAL_STOCKOUT_DAYS
             + " must be a non-negative value."));
-  }
-
-  @Test
-  public void shouldRejectIfValueIsNull() {
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setRequestedQuantity(null);
-    requisitionLineItems.add(lineItem);
-
-    Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED,
-        RequisitionLineItem.TOTAL_STOCKOUT_DAYS);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        RequisitionLineItem.TOTAL_STOCKOUT_DAYS
-            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
-
-    requisitionValidator.validate(requisition, errors);
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(RequisitionLineItem.TOTAL_STOCKOUT_DAYS
-            + ENTERED_PRIOR_SUBMISSION_NOTIFICATION));
   }
 
   @Test
@@ -400,13 +380,15 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfRequiredQuantityIsDifferentCalculatedAndExplenationIsNotGiven() {
+  public void shouldRejectIfRequestedQuantityNotEqualsCalculatedAndExplanationIsNotGiven() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
+    lineItem.setRequestedQuantityExplanation(null);
     requisitionLineItems.add(lineItem);
 
-    Message message = new Message(ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED);
-    String msg = "Missing value in requested quantity explanation column";
+    Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED,
+        RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION);
+    String msg = "requestedQuantityExplanation required";
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
 
@@ -416,7 +398,7 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectIfRequiredQuantityIsDifferentCalculatedAndExplenationIsGiven() {
+  public void shouldNotRejectIfRequestedQuantityNotEqualsCalculatedAndExplenationIsGiven() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
     lineItem.setRequestedQuantityExplanation("I need more");
@@ -427,9 +409,92 @@ public class RequisitionValidatorTest {
     verifyZeroInteractions(errors);
   }
 
+  @Test
+  public void shouldNotRejectWhenRequestedQuantityEqualsCalculatedAndExplenationIsNotGiven() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity());
+    lineItem.setRequestedQuantityExplanation(null);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
+  }
+
+  @Test
+  public void shouldNotRejectWhenRequestedQuantityIsNullAndExplenationIsNotGiven() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(null);
+    lineItem.setRequestedQuantityExplanation(null);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
+  }
+
+  @Test
+  public void shouldNotRejectWhenCalcOrderQuantityNotOnTemplateAndExplenationIsNotGiven() {
+    columnsMap.get(RequisitionLineItem.CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
+    lineItem.setCalculatedOrderQuantity(null);
+    lineItem.setRequestedQuantityExplanation(null);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
+  }
+
+  @Test
+  public void shouldRejectWhenRequestedQuantityIsNullAndCalcOrderQuantityNotOnTemplate() {
+    columnsMap.get(RequisitionLineItem.CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
+
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(null);
+    lineItem.setCalculatedOrderQuantity(null);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED,
+        RequisitionLineItem.REQUESTED_QUANTITY);
+    String msg = "requestedQuantity required";
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS), contains(msg));
+  }
+
+  @Test
+  public void shouldNotRejectWhenRequestedQuantityIsNullAndCalcOrderQuantityOnTemplate() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(null);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
+  }
+  
+  @Test
+  public void shouldNotRejectWhenRequestedQuantityIsNotNullAndCalcOrderQuantityNotOnTemplate() {
+    columnsMap.get(RequisitionLineItem.CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
+
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setCalculatedOrderQuantity(null);
+    requisitionLineItems.add(lineItem);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
+  }
+
   private RequisitionLineItem generateLineItem() {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setRequestedQuantity(1);
+    lineItem.setRequestedQuantityExplanation("explanation");
     lineItem.setBeginningBalance(1);
     lineItem.setApprovedQuantity(1);
     lineItem.setTotalReceivedQuantity(1);

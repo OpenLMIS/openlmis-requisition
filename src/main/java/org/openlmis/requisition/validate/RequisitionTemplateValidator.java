@@ -32,6 +32,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
@@ -63,6 +64,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
   static final String AVERAGE_CONSUMPTION = "averageConsumption";
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
+  static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
 
   @Autowired
@@ -128,6 +130,8 @@ public class RequisitionTemplateValidator extends BaseValidator {
   private void validateRequestedQuantity(Errors errors, RequisitionTemplate template) {
     boolean quantityDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY);
     boolean explanationDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY_EXPLANATION);
+    boolean calcOrderQuantityDisplayed =
+        template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY);
 
     if (quantityDisplayed) {
       if (!explanationDisplayed) {
@@ -141,6 +145,11 @@ public class RequisitionTemplateValidator extends BaseValidator {
             new Message(ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED,
                 REQUESTED_QUANTITY));
       }
+    }
+    if (!calcOrderQuantityDisplayed && !quantityDisplayed) {
+      rejectValue(errors, COLUMNS_MAP,
+          new Message(ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED,
+              REQUESTED_QUANTITY));
     }
   }
 

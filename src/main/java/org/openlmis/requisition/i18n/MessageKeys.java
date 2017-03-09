@@ -140,6 +140,8 @@ public abstract class MessageKeys {
       + ".validation.displayedWhenRequestedQuantityDisplayed";
   public static final String ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED =
       ERROR_PREFIX + ".validation.displayedWhenRequestedQuantityExplanationDisplayed";
+  public static final String ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED =
+      ERROR_PREFIX + ".validation.displayedWhenCalcOrderQuantityExplanationIsNotDisplayed";
   public static final String ERROR_MUST_BE_DISPLAYED =
       ERROR_PREFIX + ".validation.mustBeDisplayed";
   public static final String ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED =
