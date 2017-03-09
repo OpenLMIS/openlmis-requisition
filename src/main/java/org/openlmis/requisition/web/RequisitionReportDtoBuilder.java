@@ -109,7 +109,7 @@ public class RequisitionReportDtoBuilder {
        * their ETL process.
       */
       Message.LocalizedMessage localizedMessage = messageService.localize(
-          new Message(MessageKeys.SYSTEM));
+          new Message(MessageKeys.STATUS_CHANGE_USER_SYSTEM));
       String system = localizedMessage.asMessage();
 
       user = new UserDto();

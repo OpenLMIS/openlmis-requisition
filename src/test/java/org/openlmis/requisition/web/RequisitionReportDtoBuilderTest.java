@@ -113,7 +113,7 @@ public class RequisitionReportDtoBuilderTest {
     when(exportHelper.exportToDtos(nonFullSupply))
         .thenReturn(nonFullSupplyLineItems);
 
-    Message msg = new Message(MessageKeys.SYSTEM);
+    Message msg = new Message(MessageKeys.STATUS_CHANGE_USER_SYSTEM);
     when(messageService.localize(msg))
       .thenReturn(msg. new LocalizedMessage(SYSTEM));
 
