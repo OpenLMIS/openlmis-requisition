@@ -18,7 +18,6 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.joda.money.CurrencyUnit;
@@ -82,10 +81,16 @@ public class RequisitionReportDtoBuilderTest {
   private UserDto user2;
 
   @Mock
-  private List<RequisitionLineItemDto> fullSupplyLineItems;
+  private List<RequisitionLineItemDto> fullSupplyDtos;
 
   @Mock
-  private List<RequisitionLineItemDto> nonFullSupplyLineItems;
+  private List<RequisitionLineItemDto> nonFullSupplyLineDtos;
+
+  @Mock
+  private List<RequisitionLineItem> fullSupply;
+
+  @Mock
+  private List<RequisitionLineItem> nonFullSupply;
 
   private UUID userId1 = UUID.randomUUID();
   private UUID userId2 = UUID.randomUUID();
@@ -102,16 +107,14 @@ public class RequisitionReportDtoBuilderTest {
     when(userReferenceDataService.findOne(userId2)).thenReturn(user2);
     when(requisitionDtoBuilder.build(requisition)).thenReturn(requisitionDto);
 
-    List<RequisitionLineItem> fullSupply = mock(List.class);
-    List<RequisitionLineItem> nonFullSupply = mock(List.class);
     when(requisition.getNonSkippedFullSupplyRequisitionLineItems())
         .thenReturn(fullSupply);
     when(requisition.getNonSkippedNonFullSupplyRequisitionLineItems())
         .thenReturn(nonFullSupply);
     when(exportHelper.exportToDtos(fullSupply))
-        .thenReturn(fullSupplyLineItems);
+        .thenReturn(fullSupplyDtos);
     when(exportHelper.exportToDtos(nonFullSupply))
-        .thenReturn(nonFullSupplyLineItems);
+        .thenReturn(nonFullSupplyLineDtos);
 
     Message msg = new Message(MessageKeys.STATUS_CHANGE_USER_SYSTEM);
     when(messageService.localize(msg))
@@ -186,8 +189,8 @@ public class RequisitionReportDtoBuilderTest {
 
   private void commonReportDtoAsserts(RequisitionReportDto dto) {
     assertEquals(requisitionDto, dto.getRequisition());
-    assertEquals(fullSupplyLineItems, dto.getFullSupply());
-    assertEquals(nonFullSupplyLineItems, dto.getNonFullSupply());
+    assertEquals(fullSupplyDtos, dto.getFullSupply());
+    assertEquals(nonFullSupplyLineDtos, dto.getNonFullSupply());
     assertEquals(TOTAL_COST, dto.getTotalCost());
     assertEquals(FS_TOTAL_COST, dto.getFullSupplyTotalCost());
     assertEquals(NFS_TOTAL_COST, dto.getNonFullSupplyTotalCost());
