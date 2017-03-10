@@ -37,12 +37,11 @@ import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import com.google.common.collect.Lists;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
-
+import com.google.common.collect.Lists;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Assert;
@@ -65,7 +64,6 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.utils.PageImplRepresentation;
 import org.openlmis.requisition.i18n.ExposedMessageSource;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -73,18 +71,16 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
+import org.openlmis.utils.PageImplRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -707,18 +703,19 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockDetailedRoleAssignmentDto();
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     requisitionRepository.save(requisition);
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
 
-    RequisitionDto[] response = restAssured.given()
+    response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(REQ_FOR_APPROVAL_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionDto[].class);
+        .extract().as(response.getClass());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    List<RequisitionDto> responseList = Arrays.asList(response);
+    List<RequisitionDto> responseList = response.getContent();
     List<Requisition> expectedRequisitionList = Collections.singletonList(requisition);
 
     for (int i = 0; i < responseList.size(); i++) {

@@ -39,21 +39,6 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -113,6 +98,22 @@ import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -456,12 +457,25 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId);
+    Page page = Pagination.getPage(Collections.singletonList(requisitions), null);
 
-    assertEquals(2, requisitionsForApproval.size());
-    assertTrue(requisitionsForApproval.contains(requisitions.get(0)));
-    assertTrue(requisitionsForApproval.contains(requisitions.get(1)));
+    when(requisitionRepository.searchRequisitions(
+        requisition.getFacilityId(),
+        requisition.getProgramId(),
+        requisition.getCreatedDate().minusDays(2),
+        requisition.getCreatedDate().plusDays(2),
+        requisition.getProcessingPeriodId(),
+        requisition.getSupervisoryNodeId(),
+        EnumSet.of(requisition.getStatus()), null, null))
+        .thenReturn(page);
+
+    //when(requisitionService.getRequisitionsForApproval(any()))
+    Page<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId, null);
+
+    assertEquals(2, requisitionsForApproval.getTotalElements());
+    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(0)));
+    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(1)));
   }
 
   @Test
@@ -484,10 +498,10 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId);
+    Page<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId, null);
 
-    assertEquals(0, requisitionsForApproval.size());
+    assertEquals(0, requisitionsForApproval.getTotalElements());
   }
 
   @Test
@@ -511,10 +525,10 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId);
+    Page<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId, null);
 
-    assertEquals(0, requisitionsForApproval.size());
+    assertEquals(0, requisitionsForApproval.getTotalElements());
   }
 
   @Test
@@ -538,10 +552,10 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId);
+    Page<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId, null);
 
-    assertEquals(0, requisitionsForApproval.size());
+    assertEquals(0, requisitionsForApproval.getTotalElements());
   }
 
   @Test

@@ -350,7 +350,7 @@ public class RequisitionService {
   /**
    * Get requisitions to approve for the specified user.
    */
-  public Set<Requisition> getRequisitionsForApproval(UUID userId) {
+  public Page<Requisition> getRequisitionsForApproval(UUID userId, Pageable pageable) {
     Set<Requisition> requisitionsForApproval = new HashSet<>();
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
     Set<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
@@ -368,7 +368,7 @@ public class RequisitionService {
         }
       }
     }
-    return requisitionsForApproval;
+    return Pagination.getPage(requisitionsForApproval, pageable);
   }
 
   /**

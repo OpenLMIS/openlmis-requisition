@@ -458,15 +458,20 @@ public class RequisitionController extends BaseController {
 
   /**
    * Get requisitions to approve for right supervisor.
+   *
+   * @return Approved requisitions.
    */
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Collection<RequisitionDto> listForApproval() {
+  public Page<RequisitionDto> requisitionsForApproval(Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
-    Set<Requisition> approvalRequisitions = requisitionService
-        .getRequisitionsForApproval(user.getId());
-    return requisitionDtoBuilder.build(approvalRequisitions);
+    Page<Requisition> approvalRequisitions = requisitionService
+        .getRequisitionsForApproval(user.getId(), pageable);
+
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(approvalRequisitions.getContent());
+
+    return Pagination.getPage(dtoList, pageable, approvalRequisitions.getTotalElements());
   }
 
   /**

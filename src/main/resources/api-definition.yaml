@@ -582,13 +582,12 @@ resourceTypes:
                             schema: localizedMessage
       /requisitionsForApproval:
           get:
-              is: [ secured ]
+              is: [ secured, paginated ]
               description: Get requisitions to approve for right supervisor.
               responses:
                   "200":
                       body:
                         application/json:
-                            schema: requisitionDtoArray
                   "500":
       /requisitionsForConvert:
           get:
