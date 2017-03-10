@@ -103,9 +103,6 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
                                           RequisitionLineItem item) {
     RequisitionTemplate template = requisition.getTemplate();
     
-    rejectIfLessThanZero(errors, template, item.getRequestedQuantity(),
-        REQUESTED_QUANTITY);
-    
     rejectIfNullOrNegative(errors, template, item.getBeginningBalance(),
         BEGINNING_BALANCE);
 
@@ -140,10 +137,13 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateRequestedQuantityAndExplanation(Errors errors, RequisitionLineItem item,
       RequisitionTemplate template) {
+    rejectIfLessThanZero(errors, template, item.getRequestedQuantity(),
+        REQUESTED_QUANTITY);
+
     if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
       if (template.isColumnDisplayed(REQUESTED_QUANTITY)) {
-        if (!Objects.equals(item.getRequestedQuantity(), item.getCalculatedOrderQuantity())
-            && item.getRequestedQuantity() != null) {
+        if (item.getRequestedQuantity() != null
+            && !Objects.equals(item.getRequestedQuantity(), item.getCalculatedOrderQuantity())) {
           rejectIfEmpty(errors, template, item.getRequestedQuantityExplanation(),
               REQUESTED_QUANTITY_EXPLANATION);
         }
@@ -153,7 +153,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
             REQUESTED_QUANTITY_EXPLANATION);
       }
     } else {
-      rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
+      rejectIfNull(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
     }
   }
 
