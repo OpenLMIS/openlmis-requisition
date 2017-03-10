@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.domain;
 
+import org.hibernate.annotations.Type;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,6 +35,7 @@ public class StockAdjustment extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
+  @Type(type = UUID)
   private UUID reasonId;
 
   @Column(nullable = false)

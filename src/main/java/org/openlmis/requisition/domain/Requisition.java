@@ -98,8 +98,6 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String MODIFIED_DATE = "modifiedDate";
   public static final String STATUS = "status";
 
-  private static final String UUID = "pg-uuid";
-
   @OneToMany(
       mappedBy = "requisition",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -191,8 +189,8 @@ public class Requisition extends BaseTimestampedEntity {
       joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
+  @Type(type = UUID)
   private Set<UUID> availableNonFullSupplyProducts;
-
 
   /**
    * Constructor.
