@@ -398,7 +398,7 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectIfRequestedQuantityNotEqualsCalculatedAndExplenationIsGiven() {
+  public void shouldNotRejectIfRequestedQuantityNotEqualsCalculatedAndExplanationIsGiven() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
     lineItem.setRequestedQuantityExplanation("I need more");
@@ -410,7 +410,7 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenRequestedQuantityEqualsCalculatedAndExplenationIsNotGiven() {
+  public void shouldNotRejectWhenRequestedQuantityEqualsCalculatedAndExplanationIsNotGiven() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity());
     lineItem.setRequestedQuantityExplanation(null);
@@ -422,7 +422,7 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenRequestedQuantityIsNullAndExplenationIsNotGiven() {
+  public void shouldNotRejectWhenRequestedQuantityIsNullAndExplanationIsNotGiven() {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(null);
     lineItem.setRequestedQuantityExplanation(null);
@@ -434,7 +434,7 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenCalcOrderQuantityNotOnTemplateAndExplenationIsNotGiven() {
+  public void shouldNotRejectWhenCalcOrderQuantityNotOnTemplateAndExplanationIsNotGiven() {
     columnsMap.get(RequisitionLineItem.CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setRequestedQuantity(lineItem.getCalculatedOrderQuantity() + 5);
@@ -489,6 +489,23 @@ public class RequisitionValidatorTest {
     requisitionValidator.validate(requisition, errors);
 
     verifyZeroInteractions(errors);
+  }
+
+  @Test
+  public void shouldRejectWhenRequestedQuantityIsLessThanZero() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setRequestedQuantity(-1);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(ERROR_MUST_BE_NON_NEGATIVE,
+        RequisitionLineItem.REQUESTED_QUANTITY);
+    String msg = "requestedQuantity must be non negative";
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS), contains(msg));
   }
 
   private RequisitionLineItem generateLineItem() {
