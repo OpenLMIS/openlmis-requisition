@@ -39,7 +39,7 @@ public class UserDto {
 
   /**
    * Prints the name of the user for display purposes.
-   * Teh format is "firstName lastName". If of them is missing, it is
+   * The format is "firstName lastName". If one of them is missing, it is
    * omitted and the space is trimmed. If they are both missing, the
    * user name is used.
    * @return the name of the user for display purposes
