@@ -17,11 +17,17 @@ package org.openlmis.requisition.dto;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class UserDtoTest {
 
   private UserDto userDto = new UserDto();
+
+  @Before
+  public void setUp() {
+    userDto.setUsername("jdoe");
+  }
 
   @Test
   public void shouldPrintNameAsFirstLastName() {
@@ -47,8 +53,6 @@ public class UserDtoTest {
 
   @Test
   public void shouldPrintNameAsUsername() {
-    userDto.setUsername("jdoe");
-
     assertEquals("jdoe", userDto.printName());
   }
 }
