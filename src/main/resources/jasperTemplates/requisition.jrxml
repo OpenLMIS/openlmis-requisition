@@ -349,7 +349,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{initiatedBy}.getFirstName(), $F{initiatedBy}.getLastName(), $F{initiatedDate}.toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{initiatedBy}.printName(), $F{initiatedDate}.toLocalDate().toString())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="140" y="130" width="350" height="10" uuid="ffd6b808-1a5a-4b04-aa73-cd434c8c1bdf">
@@ -358,7 +358,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{submittedBy}.getFirstName(), $F{submittedBy}.getLastName(), $F{submittedDate}.toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{submittedBy}.printName(), $F{submittedDate}.toLocalDate().toString())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="140" y="150" width="350" height="10" uuid="4372bf9c-feff-4449-8944-1726d7d65d43">
@@ -367,7 +367,7 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} {1} on {2}", $F{authorizedBy}.getFirstName(), $F{authorizedBy}.getLastName(), $F{authorizedDate}.toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{authorizedBy}.printName(), $F{authorizedDate}.toLocalDate().toString())]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

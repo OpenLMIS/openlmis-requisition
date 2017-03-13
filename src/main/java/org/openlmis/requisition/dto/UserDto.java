@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.dto;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,4 +36,20 @@ public class UserDto {
   private Set<RoleAssignmentDto> roleAssignments;
   private Boolean allowNotify;
   private boolean active;
+
+  /**
+   * Prints the name of the user for display purposes.
+   * Teh format is "firstName lastName". If of them is missing, it is
+   * omitted and the space is trimmed. If they are both missing, the
+   * user name is used.
+   * @return the name of the user for display purposes
+   */
+  public String printName() {
+    if (StringUtils.isBlank(firstName) && StringUtils.isBlank(lastName)) {
+      return username;
+    } else {
+      return StringUtils.trim(StringUtils.defaultString(firstName) + ' '
+          + StringUtils.defaultString(lastName));
+    }
+  }
 }
