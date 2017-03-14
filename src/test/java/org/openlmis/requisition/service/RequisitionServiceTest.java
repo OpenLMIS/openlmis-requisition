@@ -470,12 +470,12 @@ public class RequisitionServiceTest {
         .thenReturn(page);
 
     //when(requisitionService.getRequisitionsForApproval(any()))
-    Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
 
-    assertEquals(2, requisitionsForApproval.getTotalElements());
-    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(0)));
-    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(1)));
+    assertEquals(2, requisitionsForApproval.size());
+    assertTrue(requisitionsForApproval.contains(requisitions.get(0)));
+    assertTrue(requisitionsForApproval.contains(requisitions.get(1)));
   }
 
   @Test
@@ -498,10 +498,10 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
 
-    assertEquals(0, requisitionsForApproval.getTotalElements());
+    assertEquals(0, requisitionsForApproval.size());
   }
 
   @Test
@@ -525,10 +525,10 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
 
-    assertEquals(0, requisitionsForApproval.getTotalElements());
+    assertEquals(0, requisitionsForApproval.size());
   }
 
   @Test
@@ -552,10 +552,10 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+    Set<Requisition> requisitionsForApproval =
+        requisitionService.getRequisitionsForApproval(userId);
 
-    assertEquals(0, requisitionsForApproval.getTotalElements());
+    assertEquals(0, requisitionsForApproval.size());
   }
 
   @Test

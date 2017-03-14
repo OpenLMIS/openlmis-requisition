@@ -59,6 +59,7 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
+import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -466,12 +468,13 @@ public class RequisitionController extends BaseController {
   @ResponseBody
   public Page<RequisitionDto> requisitionsForApproval(Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
-    Page<Requisition> approvalRequisitions = requisitionService
-        .getRequisitionsForApproval(user.getId(), pageable);
+    Set<Requisition> approvalRequisitions = requisitionService
+        .getRequisitionsForApproval(user.getId());
 
-    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(approvalRequisitions.getContent());
+    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(approvalRequisitions);
+    Collections.sort(dtoList, new RequisitionDtoComparator("id"));
 
-    return Pagination.getPage(dtoList, pageable, approvalRequisitions.getTotalElements());
+    return Pagination.getPage(dtoList, pageable);
   }
 
   /**
