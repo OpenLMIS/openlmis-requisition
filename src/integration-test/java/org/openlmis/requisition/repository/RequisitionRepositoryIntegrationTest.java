@@ -20,6 +20,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -36,14 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<Requisition> {
@@ -53,7 +52,7 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private RequisitionTemplateRepository templateRepository;
-
+  
   private RequisitionTemplate testTemplate;
 
   private List<Requisition> requisitions;
@@ -76,8 +75,9 @@ public class RequisitionRepositoryIntegrationTest
   public void setUp() {
     testTemplate = templateRepository.save(new RequisitionTemplate());
     requisitions = new ArrayList<>();
+    UUID authorId = UUID.randomUUID();
     for (int count = 0; count < 5; ++count) {
-      requisitions.add(repository.save(generateInstance()));
+      requisitions.add(repository.saveWithStatusChange(generateInstance(), authorId));
     }
   }
 
@@ -86,11 +86,10 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(), requisitions.get(0).getProcessingPeriodId(),
         requisitions.get(0).getStatus(), requisitions.get(0).getEmergency());
-    requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    repository.save(requisition);
+    repository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
@@ -138,11 +137,10 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(), requisitions.get(0).getProcessingPeriodId(),
         requisitions.get(0).getStatus(), false);
-    requisition.setCreatedDate(requisitions.get(0).getCreatedDate().plusDays(1));
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    repository.save(requisition);
+    repository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),

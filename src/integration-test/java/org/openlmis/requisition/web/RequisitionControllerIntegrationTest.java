@@ -42,6 +42,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Assert;
@@ -75,19 +87,6 @@ import org.openlmis.utils.PageImplRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -227,7 +226,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition2.setStatus(RequisitionStatus.SUBMITTED);
     requisition2.setProgramId(programDto2.getId());
     requisition2.setTemplate(template2);
-    requisitionRepository.save(requisition2);
+    requisitionRepository.saveWithStatusChange(requisition2, UUID.randomUUID());
 
     configureRequisition(requisition);
     requisitionForSearch.setStatus(RequisitionStatus.INITIATED);
@@ -327,16 +326,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldTrackRequisitionStatusChanges() {
     //save a requisition with different statuses to test if jasper logs are created for each
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisitionRepository.save(requisition);
+    UUID authorId = UUID.randomUUID();
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
     requisition.setStatus(RequisitionStatus.APPROVED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
 
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
             .queryParam(ACCESS_TOKEN, getToken())
@@ -360,11 +358,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertEquals(1, content.size());
     RequisitionDto requisitionDto = content.get(0);
-    assertTrue(requisitionDto.getStatusChanges().containsKey("INITIATED"));
-    assertTrue(requisitionDto.getStatusChanges().containsKey("SUBMITTED"));
-    assertTrue(requisitionDto.getStatusChanges().containsKey("AUTHORIZED"));
-    assertTrue(requisitionDto.getStatusChanges().containsKey("IN_APPROVAL"));
-    assertTrue(requisitionDto.getStatusChanges().containsKey("APPROVED"));
+    assertNotNull(requisitionDto.getStatusChanges());
+    // Five status changes: INITIATED,SUBMITTED,AUTHORIZED,IN_APPROVAL,APPROVED
+    assertEquals(5, requisitionDto.getStatusChanges().size());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -376,7 +372,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configureRequisitionForSearch(req);
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -409,7 +405,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     configureRequisitionForSearch(req);
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     PageImplRepresentation<RequisitionDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -783,7 +779,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetSubmittedRequisitions() {
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
     response = restAssured.given()
@@ -805,7 +801,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     denyUserRightToProgram(programDto2.getId());
 
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
     response = restAssured.given()
@@ -1462,7 +1458,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
 
-    return requisitionRepository.save(requisition);
+    return requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
   }
 
   private Requisition configureRequisitionForSearch(Requisition requisition) {
@@ -1475,17 +1471,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
 
-    return requisitionRepository.save(requisition);
+    return requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
   }
 
   private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
     Requisition requisition = new Requisition(facility, UUID.randomUUID(), UUID.randomUUID(),
         requisitionStatus, true);
-    requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(createdDate.now());
     requisition.setTemplate(template);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisitionRepository.save(requisition);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
 
     return requisition;
   }
