@@ -15,9 +15,19 @@
 
 package org.openlmis.requisition.web;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -30,17 +40,6 @@ import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDat
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Component
 public class ReportingRateReportDtoBuilder {
@@ -167,11 +166,13 @@ public class ReportingRateReportDtoBuilder {
 
     if (!requisitions.isEmpty()) {
       for (Requisition requisition : requisitions) {
-        StatusLogEntry entry = requisition.getStatusChanges().get(REQUIRED_STATUS.toString());
-        if (entry == null) {
+        Optional<StatusChange> entry = requisition.getStatusChanges().stream()
+            .filter(statusChange -> statusChange.getStatus() == REQUIRED_STATUS)
+            .findFirst();
+        if (!entry.isPresent()) {
           missed++;
         } else {
-          LocalDate submissionDate = entry.getChangeDate().toLocalDate();
+          LocalDate submissionDate = entry.get().getCreatedDate().toLocalDate();
           if (submissionDate.isAfter(dueDate)) {
             late++;
           } else {

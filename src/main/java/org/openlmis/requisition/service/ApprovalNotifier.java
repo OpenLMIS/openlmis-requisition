@@ -21,10 +21,22 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTI
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
+import java.text.MessageFormat;
+import java.time.ZonedDateTime;
+import java.time.chrono.Chronology;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -45,17 +57,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
-
-import java.text.MessageFormat;
-import java.time.ZonedDateTime;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 @Component
 public class ApprovalNotifier {
@@ -100,18 +101,20 @@ public class ApprovalNotifier {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
 
-    Map<String, StatusLogEntry> statusChanges = requisition.getStatusChanges();
+    List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
       LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
       return;
     }
 
-    StatusLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
-    if (submitAuditEntry == null) {
+    Optional<StatusChange> submitAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
+        .findFirst();
+    if (!submitAuditEntry.isPresent()) {
       LOGGER.warn("Could not find requisition submitter to notify for requisition status change.");
       return;
     }
-    ZonedDateTime submittedDate = submitAuditEntry.getChangeDate();
+    ZonedDateTime submittedDate = submitAuditEntry.get().getCreatedDate();
 
     String subject = configurationSettingService
         .getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT);

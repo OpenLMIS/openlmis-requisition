@@ -26,19 +26,20 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STAT
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
-import org.javers.common.collections.Optional;
-import org.javers.core.commit.CommitMetadata;
-import org.javers.core.diff.Change;
-import org.joda.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -51,12 +52,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.context.MessageSource;
-
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -100,26 +95,28 @@ public class RequisitionStatusNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    StatusLogEntry initiateAuditEntry = mock(StatusLogEntry.class);
-    StatusLogEntry submitAuditEntry = mock(StatusLogEntry.class);
-    Map<String, StatusLogEntry> statusChangesMap = new HashMap<>();
-    statusChangesMap.put(RequisitionStatus.INITIATED.toString(), initiateAuditEntry);
-    statusChangesMap.put(RequisitionStatus.SUBMITTED.toString(), submitAuditEntry);
-
-    when(requisition.getStatusChanges()).thenReturn(statusChangesMap);
-    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
-    when(submitAuditEntry.getChangeDate()).thenReturn(ZonedDateTime.now());
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+
+    StatusChange initiateAuditEntry = mock(StatusChange.class);
+    StatusChange submitAuditEntry = mock(StatusChange.class);
+    StatusChange authorizeAuditEntry = mock(StatusChange.class);
+    List<StatusChange> statusChanges = new ArrayList<>();
+    statusChanges.add(initiateAuditEntry);
+    statusChanges.add(submitAuditEntry);
+    statusChanges.add(authorizeAuditEntry);
+
+    when(requisition.getStatusChanges()).thenReturn(statusChanges);
+    when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
+    when(submitAuditEntry.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    when(submitAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
+    when(authorizeAuditEntry.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+    when(authorizeAuditEntry.getAuthorId()).thenReturn(userId);
+    when(authorizeAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
 
     when(user.getAllowNotify()).thenReturn(true);
     when(user.isActive()).thenReturn(true);
     when(user.isVerified()).thenReturn(true);
-
-    Change change = mock(Change.class);
-    CommitMetadata commitMetadata = mock(CommitMetadata.class);
-    when(commitMetadata.getAuthor()).thenReturn(userId.toString());
-    when(commitMetadata.getCommitDate()).thenReturn(LocalDateTime.now());
-    when(change.getCommitMetadata()).thenReturn(Optional.of(commitMetadata));
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
@@ -130,7 +127,7 @@ public class RequisitionStatusNotifierTest {
     when(configurationSettingService.getStringValue(REQUISITION_URI))
         .thenReturn("/requisition/");
 
-    requisitionStatusNotifier.notifyStatusChanged(requisition, change);
+    requisitionStatusNotifier.notifyStatusChanged(requisition);
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT),

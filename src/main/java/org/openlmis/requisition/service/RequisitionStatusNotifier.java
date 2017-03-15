@@ -21,12 +21,20 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STAT
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
+import java.text.MessageFormat;
+import java.time.chrono.Chronology;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.javers.core.commit.CommitMetadata;
-import org.javers.core.diff.Change;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -44,16 +52,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
-
-import java.text.MessageFormat;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 @Component
 public class RequisitionStatusNotifier {
@@ -85,41 +83,45 @@ public class RequisitionStatusNotifier {
    * Notify user(s) that the requisition's status has changed.
    *
    * @param requisition a requisition that has just changed its status
-   * @param change Javers change containing requisition's status, the author, the time, etc.
    */
-  public void notifyStatusChanged(Requisition requisition, Change change) {
-    Map<String, StatusLogEntry> statusChanges = requisition.getStatusChanges();
+  public void notifyStatusChanged(Requisition requisition) {
+
+    List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
-      LOGGER.error("Could not find status changes for requisition " + requisition.getId() + "to " 
+      LOGGER.error("Could not find status changes for requisition " + requisition.getId() + "to "
           + "notify for requisition status change.");
       return;
     }
 
-    StatusLogEntry initiateAuditEntry = statusChanges.get(RequisitionStatus.INITIATED.toString());
-    if (initiateAuditEntry == null || initiateAuditEntry.getAuthorId() == null) {
-      LOGGER.warn("Could not find initiator for requisition " + requisition.getId() + " to notify " 
+    Optional<StatusChange> initiateAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.INITIATED)
+        .findFirst();
+    if (!initiateAuditEntry.isPresent() || initiateAuditEntry.get().getAuthorId() == null) {
+      LOGGER.warn("Could not find initiator for requisition " + requisition.getId() + " to notify "
           + "for requisition status change.");
       return;
     }
-    UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.getAuthorId());
+    UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
 
     if (!NotifierHelper.canBeNotified(initiator)) {
       return;
     }
 
-    StatusLogEntry submitAuditEntry = statusChanges.get(RequisitionStatus.SUBMITTED.toString());
-    if (submitAuditEntry == null) {
+    Optional<StatusChange> submitAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
+        .findFirst();
+    if (!submitAuditEntry.isPresent()) {
       LOGGER.warn("Could not find submitter for requisition " + requisition.getId() + " to notify "
           + "for requisition status change.");
       return;
     }
 
-    CommitMetadata commitMetadata = change.getCommitMetadata().get();
-    UUID commitAuthorUuid;
-    try {
-      commitAuthorUuid = UUID.fromString(commitMetadata.getAuthor());
-    } catch (Exception ex) {
-      LOGGER.warn("Could not find valid commit author UUID.");
+    Optional<StatusChange> currentAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == requisition.getStatus())
+        .findFirst();
+    if (!currentAuditEntry.isPresent() || currentAuditEntry.get().getAuthorId() == null) {
+      LOGGER.warn("Could not find author of current status change for requisition "
+          + requisition.getId() + " to notify for requisition status change.");
       return;
     }
 
@@ -132,7 +134,7 @@ public class RequisitionStatusNotifier {
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
-    UserDto author = userReferenceDataService.findOne(commitAuthorUuid);
+    UserDto author = userReferenceDataService.findOne(currentAuditEntry.get().getAuthorId());
 
     Locale locale = LocaleContextHolder.getLocale();
     String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
@@ -141,14 +143,15 @@ public class RequisitionStatusNotifier {
     Map<String, String> valuesMap = new HashMap<>();
     valuesMap.put("initiator", initiator.getUsername());
     valuesMap.put("requisitionType", requisitionType);
-    valuesMap.put("submittedDate", submitAuditEntry.getChangeDate().format(
+    valuesMap.put("submittedDate", submitAuditEntry.get().getCreatedDate().format(
         DateTimeFormatter.ofPattern(datePattern)));
     valuesMap.put("periodName", period.getName());
     valuesMap.put("programName", program.getName());
     valuesMap.put("facilityName", facility.getName());
     valuesMap.put("requisitionStatus", requisition.getStatus().toString());
     valuesMap.put("author", author.getUsername());
-    valuesMap.put("changeDate", commitMetadata.getCommitDate().toString(datePattern));
+    valuesMap.put("changeDate", currentAuditEntry.get().getCreatedDate().format(
+        DateTimeFormatter.ofPattern(datePattern)));
     valuesMap.put("requisitionUrl", requisitionUrl);
 
     String subject = configurationSettingService

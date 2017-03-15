@@ -28,6 +28,11 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTI
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,9 +40,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -52,12 +57,6 @@ import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceD
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
-
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApprovalNotifierTest {
@@ -214,10 +213,10 @@ public class ApprovalNotifierTest {
   }
 
   private void mockChangeDate() {
-    StatusLogEntry submitAuditEntry = mock(StatusLogEntry.class);
-    when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
-        RequisitionStatus.SUBMITTED.toString(), submitAuditEntry));
-    when(submitAuditEntry.getChangeDate()).thenReturn(ZonedDateTime.now());
+    StatusChange submitAuditEntry = mock(StatusChange.class);
+    when(requisition.getStatusChanges()).thenReturn(Collections.singletonList(submitAuditEntry));
+    when(submitAuditEntry.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    when(submitAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
   }
 
   private void mockRequisition() {

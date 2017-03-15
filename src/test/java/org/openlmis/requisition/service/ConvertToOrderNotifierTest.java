@@ -32,9 +32,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -76,10 +76,10 @@ public class ConvertToOrderNotifierTest {
   @Test
   public void shouldCallNotificationService() throws Exception {
     Requisition requisition = mock(Requisition.class);
-    StatusLogEntry initiateAuditEntry = mock(StatusLogEntry.class);
+    StatusChange initiateAuditEntry = mock(StatusChange.class);
 
-    when(requisition.getStatusChanges()).thenReturn(Collections.singletonMap(
-        RequisitionStatus.INITIATED.toString(), initiateAuditEntry));
+    when(requisition.getStatusChanges()).thenReturn(Collections.singletonList(initiateAuditEntry));
+    when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);

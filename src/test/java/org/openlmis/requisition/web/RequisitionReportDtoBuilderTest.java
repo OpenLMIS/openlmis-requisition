@@ -18,8 +18,14 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -31,7 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
@@ -41,12 +47,6 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionExportHelper;
-
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionReportDtoBuilderTest {
@@ -143,13 +143,22 @@ public class RequisitionReportDtoBuilderTest {
     ZonedDateTime initDt = ZonedDateTime.now().minusDays(11);
     ZonedDateTime submitDt = ZonedDateTime.now().minusDays(6);
     ZonedDateTime authorizeDt = ZonedDateTime.now().minusDays(2);
-    Map<String, StatusLogEntry> statusChanges = new HashMap<>();
-    statusChanges.put(RequisitionStatus.INITIATED.toString(),
-        new StatusLogEntry(userId1, initDt));
-    statusChanges.put(RequisitionStatus.SUBMITTED.toString(),
-        new StatusLogEntry(userId2, submitDt));
-    statusChanges.put(RequisitionStatus.AUTHORIZED.toString(),
-        new StatusLogEntry(userId1, authorizeDt));
+    StatusChange initStatusChange = mock(StatusChange.class);
+    StatusChange submitStatusChange = mock(StatusChange.class);
+    StatusChange authorizeStatusChange = mock(StatusChange.class);
+    when(initStatusChange.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    when(initStatusChange.getCreatedDate()).thenReturn(initDt);
+    when(initStatusChange.getAuthorId()).thenReturn(userId1);
+    when(submitStatusChange.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    when(submitStatusChange.getCreatedDate()).thenReturn(submitDt);
+    when(submitStatusChange.getAuthorId()).thenReturn(userId2);
+    when(authorizeStatusChange.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+    when(authorizeStatusChange.getCreatedDate()).thenReturn(authorizeDt);
+    when(authorizeStatusChange.getAuthorId()).thenReturn(userId1);
+    List<StatusChange> statusChanges = new ArrayList<>();
+    statusChanges.add(initStatusChange);
+    statusChanges.add(submitStatusChange);
+    statusChanges.add(authorizeStatusChange);
     when(requisition.getStatusChanges()).thenReturn(statusChanges);
 
     RequisitionReportDto dto = requisitionReportDtoBuilder.build(requisition);
@@ -166,9 +175,10 @@ public class RequisitionReportDtoBuilderTest {
   @Test
   public void shouldBuildDtoWithSystemStatusChange() {
     ZonedDateTime now = ZonedDateTime.now();
-    Map<String, StatusLogEntry> statusChanges = new HashMap<>();
-    statusChanges.put(RequisitionStatus.INITIATED.toString(),
-        new StatusLogEntry(null, now));
+    StatusChange initStatusChange = mock(StatusChange.class);
+    when(initStatusChange.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    when(initStatusChange.getCreatedDate()).thenReturn(now);
+    List<StatusChange> statusChanges = Collections.singletonList(initStatusChange);
     when(requisition.getStatusChanges()).thenReturn(statusChanges);
 
     RequisitionReportDto dto = requisitionReportDtoBuilder.build(requisition);

@@ -28,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -193,15 +192,15 @@ public class ReportingRateDtoBuilderTest {
     List<Requisition> requisitions = new ArrayList<>();
 
     // on-time requisition
-    requisitions.add(mockRequisitionWithStatusLogEntry(
+    requisitions.add(mockRequisitionWithStatusChanges(
         RequisitionStatus.APPROVED, ZonedDateTime.of(dueDate, zoneId)));
 
     // late requisition
-    requisitions.add(mockRequisitionWithStatusLogEntry(
+    requisitions.add(mockRequisitionWithStatusChanges(
         RequisitionStatus.APPROVED, ZonedDateTime.of(dueDate.plusDays(5), zoneId)));
 
     // missed requisition
-    requisitions.add(mockRequisitionWithStatusLogEntry(
+    requisitions.add(mockRequisitionWithStatusChanges(
         RequisitionStatus.SUBMITTED, ZonedDateTime.of(dueDate.minusDays(5), zoneId)));
 
     // when
@@ -249,11 +248,12 @@ public class ReportingRateDtoBuilderTest {
     return zone;
   }
 
-  private Requisition mockRequisitionWithStatusLogEntry(
+  private Requisition mockRequisitionWithStatusChanges(
       RequisitionStatus status, ZonedDateTime date) {
-    StatusLogEntry entry = mock(StatusLogEntry.class);
-    when(entry.getChangeDate()).thenReturn(date);
-    Map<String, StatusLogEntry> changes = Collections.singletonMap(status.toString(), entry);
+    StatusChange entry = mock(StatusChange.class);
+    when(entry.getStatus()).thenReturn(status);
+    when(entry.getCreatedDate()).thenReturn(date);
+    List<StatusChange> changes = Collections.singletonList(entry);
 
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatusChanges()).thenReturn(changes);
