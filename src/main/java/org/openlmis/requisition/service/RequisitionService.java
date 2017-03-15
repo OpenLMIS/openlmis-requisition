@@ -76,7 +76,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -351,13 +351,13 @@ public class RequisitionService {
    * Get requisitions to approve for the specified user.
    */
   public Set<Requisition> getRequisitionsForApproval(UUID userId) {
-    Set<Requisition> requisitionsForApproval = new HashSet<>();
+    Set<Requisition> requisitionsForApproval = new LinkedHashSet<>();
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
-    Set<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
+    List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
         .getRoleAssignments(userId)
         .stream()
         .filter(r -> r.getRole().getRights().contains(right))
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
 
     if (roleAssignments != null) {
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {

@@ -469,7 +469,6 @@ public class RequisitionServiceTest {
         EnumSet.of(requisition.getStatus()), null, null))
         .thenReturn(page);
 
-    //when(requisitionService.getRequisitionsForApproval(any()))
     Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(userId);
 

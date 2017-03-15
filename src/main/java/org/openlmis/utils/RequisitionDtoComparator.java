@@ -34,9 +34,6 @@ public class RequisitionDtoComparator implements Comparator<RequisitionDto> {
   @Override
   public int compare(RequisitionDto o1, RequisitionDto o2) {
     switch (compareCondition) {
-      case "id": {
-        return o1.getId().compareTo(o2.getId());
-      }
       case "programName": {
         return o1.getProgram().getName().compareTo(o2.getProgram().getName());
       }
