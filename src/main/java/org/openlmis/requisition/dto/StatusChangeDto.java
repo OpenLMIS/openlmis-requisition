@@ -13,17 +13,30 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.repository;
+package org.openlmis.requisition.dto;
 
-import java.util.List;
+import java.time.ZonedDateTime;
 import java.util.UUID;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 
-public interface RequisitionRepository extends
-    PagingAndSortingRepository<Requisition, UUID>,
-    RequisitionRepositoryCustom {
-  List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
+@AllArgsConstructor
+@NoArgsConstructor
+public class StatusChangeDto implements StatusChange.Exporter {
+
+  @Getter
+  @Setter
+  private RequisitionStatus status;
+
+  @Getter
+  @Setter
+  private UUID authorId;
+
+  @Getter
+  @Setter
+  private ZonedDateTime createdDate;
 }

@@ -15,25 +15,22 @@
 
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StatusLogEntry;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusChange;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -94,8 +91,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   private Set<OrderableDto> availableNonFullSupplyProducts;
 
   @Getter
-  @Setter
-  private Map<String, StatusLogEntry> statusChanges;
+  private List<StatusChangeDto> statusChanges = new ArrayList<>();
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
@@ -103,5 +99,22 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
         Optional.ofNullable(requisitionLineItems).orElse(Collections.emptyList())
     );
   }
-  
+
+  /**
+   * Convert status changes to DTO.
+   * 
+   * @param statusChanges status changes to convert
+   */
+  @Override
+  public void setStatusChanges(List<StatusChange> statusChanges) {
+    if (statusChanges == null) {
+      return;
+    }
+
+    for (StatusChange statusChange : statusChanges) {
+      StatusChangeDto statusChangeDto = new StatusChangeDto();
+      statusChange.export(statusChangeDto);
+      this.statusChanges.add(statusChangeDto);
+    }
+  }
 }

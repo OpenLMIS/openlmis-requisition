@@ -15,36 +15,31 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
-import org.javers.core.Javers;
-import org.javers.core.diff.Change;
-import org.javers.core.diff.changetype.ValueChange;
-import org.javers.repository.jql.JqlQuery;
-import org.javers.repository.jql.QueryBuilder;
-import org.joda.time.LocalDateTime;
-import org.openlmis.JaVersDateProvider;
+import static java.util.stream.Collectors.toList;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.repository.StatusChangeRepository;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -56,13 +51,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
 
-  @Autowired
-  private Javers javers;
-
   @PersistenceContext
   private EntityManager entityManager;
 
-
+  @Autowired
+  private StatusChangeRepository statusChangeRepository;
+  
   /**
    * Method returns all Requisitions with matched parameters.
    *
@@ -77,13 +71,13 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    */
   @Override
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              ZonedDateTime initiatedDateFrom,
-                                              ZonedDateTime initiatedDateTo,
-                                              UUID processingPeriod,
-                                              UUID supervisoryNode,
-                                              Set<RequisitionStatus> requisitionStatuses,
-                                              Boolean emergency,
-                                              Pageable pageable) {
+      ZonedDateTime initiatedDateFrom,
+      ZonedDateTime initiatedDateTo,
+      UUID processingPeriod,
+      UUID supervisoryNode,
+      Set<RequisitionStatus> requisitionStatuses,
+      Boolean emergency,
+      Pageable pageable) {
     //Retrieve a paginated set of results
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
@@ -100,21 +94,36 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
+          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
     }
     if (supervisoryNode != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNode));
+          builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNode));
     }
     predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
     if (null != emergency) {
       predicate = builder.and(predicate,
-              builder.equal(root.get(EMERGENCY), emergency));
+          builder.equal(root.get(EMERGENCY), emergency));
+    }
+
+    Join<Requisition, StatusChange> statusChange = root.join("statusChanges",
+        JoinType.LEFT);
+    predicate = builder.and(predicate, builder.equal(statusChange.get(STATUS),
+        RequisitionStatus.INITIATED));
+
+    if (initiatedDateFrom != null && initiatedDateTo != null) {
+      predicate = builder.and(predicate, builder.between(statusChange.get(CREATED_DATE),
+          initiatedDateFrom, initiatedDateTo));
+    } else if (initiatedDateFrom != null) {
+      predicate = builder.and(predicate, builder.greaterThanOrEqualTo(
+          statusChange.get(CREATED_DATE), initiatedDateFrom));
+    } else if (initiatedDateTo != null) {
+      predicate = builder.and(predicate, builder.lessThanOrEqualTo(
+          statusChange.get(CREATED_DATE), initiatedDateTo));
     }
 
     queryMain.where(predicate);
-    queryMain.orderBy(builder.asc(root.get(CREATED_DATE)));
-
+    queryMain.orderBy(builder.asc(statusChange.get(CREATED_DATE)));
 
     /*
     int pageNumber = Pagination.getPageNumber(pageable);
@@ -127,20 +136,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                 */
 
     List<Requisition> results = entityManager.createQuery(queryMain).getResultList();
-
-    //Get requisitions initiated between the initiatedDateFrom and initiatedDateTo dates
-    List<UUID> validIds = getSortedRequisitionIdValuesInitiatedBetweenDates(initiatedDateFrom,
-            initiatedDateTo, true);
-    //Remove requisitions which aren't included in the above list
-    for (int i = 0; i < results.size(); i++) {
-      UUID resultId = results.get(i).getId();
-      if (!validIds.contains(resultId)) {
-        results.remove(i);
-        i--;
-      }
-    }
-
-    addStatusChangesToRequisitions(results);
+    List<Requisition> distinctResults = results.stream().distinct().collect(toList());
 
     //Having retrieved just paginated values we care about, determine
     //the total number of values in the system which meet our criteria.
@@ -151,8 +147,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     queryCount.where(predicate);
     Long count = entityManager.createQuery(queryCount).getSingleResult(); */
 
-
-    return Pagination.getPage(results, pageable);
+    return Pagination.getPage(distinctResults, pageable);
   }
 
 
@@ -167,9 +162,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    */
   @Override
   public List<Requisition> searchRequisitions(UUID processingPeriod,
-                                              UUID facility,
-                                              UUID program,
-                                              Boolean emergency) {
+      UUID facility,
+      UUID program,
+      Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);
@@ -180,20 +175,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
     if (processingPeriod != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
+          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
     }
     if (facility != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get(FACILITY_ID), facility));
+          builder.equal(root.get(FACILITY_ID), facility));
     }
     if (program != null) {
       predicate = builder.and(predicate,
-              builder.equal(root.get(PROGRAM_ID), program));
+          builder.equal(root.get(PROGRAM_ID), program));
     }
     query.where(predicate);
     List<Requisition> results = entityManager.createQuery(query).getResultList();
 
-    addStatusChangesToRequisitions(results);
     return results;
   }
 
@@ -220,7 +214,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     criteriaQuery = criteriaQuery.where(predicate);
     List<Requisition> results = entityManager.createQuery(criteriaQuery).getResultList();
 
-    addStatusChangesToRequisitions(results);
     return results;
   }
 
@@ -249,42 +242,21 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
     predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
 
-    query.where(predicate);
-    // TODO: OLMIS-1182 this needs to search Javers for initiated date
-    query.orderBy(builder.desc(root.get(CREATED_DATE)));
+    Join<Requisition, StatusChange> statusChange = root.join("statusChanges");
+    predicate = builder.and(predicate, builder.equal(statusChange.get(STATUS),
+        RequisitionStatus.INITIATED));
 
-    /*
+    query.where(predicate);
+    query.orderBy(builder.desc(statusChange.get(CREATED_DATE)));
+
     List<Requisition> requisitionList = entityManager.createQuery(query)
                                         .setMaxResults(1).getResultList();
 
     if (requisitionList == null || requisitionList.isEmpty()) {
       return null;
+    } else {
+      return requisitionList.get(0);
     }
-
-    Requisition requisition = requisitionList.get(0); */
-
-    List<Requisition> requisitionList = entityManager.createQuery(query).getResultList();
-    if (requisitionList == null || requisitionList.isEmpty()) {
-      return null;
-    }
-
-    //Retrieve requisitions in descending order of their status' change to INITIATED
-    List<UUID> sortedIds = getSortedRequisitionIdValuesInitiatedBetweenDates(null, null, false);
-
-    //Return the first requisition in sortedIds which appears in requisitionList
-    UUID uuid;
-    Requisition requisition;
-    for (int i = 0; i < sortedIds.size(); i++) {
-      uuid = sortedIds.get(i);
-      for (int x = 0; x < requisitionList.size(); x++) {
-        requisition = requisitionList.get(x);
-        if (requisition.getId().equals(uuid)) {
-          return addStatusChangesToRequisition(requisition);
-        }
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -298,15 +270,40 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     if (requisitionId == null) {
       throw new IllegalArgumentException("Requisition's id must be provided");
     }
-    Requisition requisition = entityManager.find(Requisition.class, requisitionId);
-    if (requisition != null) {
-      addStatusChangesToRequisition(requisition);
+    return entityManager.find(Requisition.class, requisitionId);
+  }
+
+  /**
+   * Save a requisition based on an object, including recording a status change.
+   *
+   * @param requisition the requisition object
+   * @param userId the user ID that changed the status
+   * @return the saved requisition object
+   */
+  @Transactional
+  public Requisition saveWithStatusChange(Requisition requisition, UUID userId) {
+
+    Requisition persistedRequisition = null;
+
+    UUID requisitionId = requisition.getId();
+    if (requisitionId != null) {
+      persistedRequisition = findOne(requisitionId);
     }
-    return requisition;
+
+    if (persistedRequisition == null) {
+      entityManager.persist(requisition);
+      persistedRequisition = requisition;
+    } else {
+      persistedRequisition = entityManager.merge(requisition);
+    }
+
+    saveStatusChangeToRequisition(persistedRequisition, userId);
+
+    return persistedRequisition;
   }
 
   private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,
-                                 Path<UUID> facility, Path<UUID> program, List<UUID> desiredUuids) {
+      Path<UUID> facility, Path<UUID> program, List<UUID> desiredUuids) {
 
     //Add first important filter
     Predicate predicate = builder.equal(root.get(STATUS), RequisitionStatus.APPROVED);
@@ -327,8 +324,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   private Predicate filterByStatuses(CriteriaBuilder builder, Predicate predicate,
-                                     Set<RequisitionStatus> requisitionStatuses,
-                                     Root<Requisition> root) {
+      Set<RequisitionStatus> requisitionStatuses,
+      Root<Requisition> root) {
 
     Predicate predicateToUse = predicate;
 
@@ -343,149 +340,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return predicateToUse;
   }
 
-
-  /**
-   * <p> Returns the UUID values of requisitions which have had their status set to INITIATED
-   * within a specified time range.
-   * </p><p>
-   * Note that it's possible for requisitions to be set to INITIATED, then to something else,
-   * and then back to INITIATED. This might happen several times. Only the initial or the most
-   * recent status change to INITIATED is examined by this method, depending on the value of
-   * useInitialChange.
-   * </p><p>
-   * The UUIDs are returned in order of their associated changes. If useInitialChange is true, the
-   * order is ascending. Otherwise it's descending.
-   * </p><p>
-   * The startDate and endDate arguments may be null, in which case they're effectively ignored.
-   * </p>
-   * @param startDate The DateTime before which requisitions set to INITIATED should be excluded.
-   * @param endDate The DateTime after which requisitions set to INITIATED should be excluded.
-   * @param useInitialChange If true, specifies that the DateTime of the first status-change to
-   *                         INITIATED should be used. If false, specifies that the DateTime of the
-   *                         most recent status change to INITIATED should be used.
-   */
-  private List<UUID> getSortedRequisitionIdValuesInitiatedBetweenDates(ZonedDateTime startDate,
-                                                                       ZonedDateTime endDate,
-                                                                       boolean useInitialChange) {
-    //Get JaVers' audit log
-    JqlQuery jqlQuery = QueryBuilder.byClass(Requisition.class).withChildValueObjects()
-            .withNewObjectChanges().andProperty("status").build();
-
-    List<Change> changes = javers.findChanges(jqlQuery);
-
-    //Sort it...
-    if (useInitialChange) {
-      //... in ascending order...
-      changes.sort((o1, o2) -> 1 * o1.getCommitMetadata().get().getCommitDate()
-              .compareTo(o2.getCommitMetadata().get().getCommitDate()));
-    } else {
-      //...or descending order.
-      changes.sort((o1, o2) -> -1 * o1.getCommitMetadata().get().getCommitDate()
-              .compareTo(o2.getCommitMetadata().get().getCommitDate()));
-    }
-
-    String newValue;
-    String idString;
-    UUID requisitionId;
-    ValueChange valueChange;
-    LocalDateTime javersLocalDateTime;
-    ZonedDateTime javersZonedDateTime;
-    List<UUID> results = new ArrayList<UUID>();
-
-    if (startDate == null) {
-      startDate = JaVersDateProvider.getMinDateTime();
-    }
-
-    if (endDate == null) {
-      endDate = JaVersDateProvider.getMaxDateTime();
-    }
-
-
-    for (int i = 0; i < changes.size(); i++) {
-      valueChange = (ValueChange) changes.get(i);
-      newValue = valueChange.getRight().toString().replace("value:", "");
-
-      //...heeding only INITIATED ones
-      if (!newValue.equals("INITIATED")) {
-        continue;
-      }
-
-      //Get the commit's DateTime
-      javersLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
-      javersZonedDateTime = JaVersDateProvider.getZonedDateTime(javersLocalDateTime);
-      
-      //Get the UUID of the requisition
-      idString = valueChange.getAffectedGlobalId().value();
-      idString = idString.substring((idString.lastIndexOf('/') + 1));
-      requisitionId = UUID.fromString(idString);
-
-      //Note the commit if appropriate
-      if ( !results.contains(requisitionId)
-              && (!javersZonedDateTime.isBefore(startDate)
-              && !javersZonedDateTime.isAfter(endDate))) {
-        results.add(requisitionId);
-      }
-    }
-
-    return results;
+  private void saveStatusChangeToRequisition(Requisition requisition, UUID authorId) {
+    StatusChange newStatusChange = StatusChange.newStatusChange(requisition, authorId);
+    statusChangeRepository.save(newStatusChange);
   }
-
-
-  private List<Requisition> addStatusChangesToRequisitions(List<Requisition> requisitions) {
-    for (Requisition requisition : requisitions) {
-      addStatusChangesToRequisition(requisition);
-    }
-    return requisitions;
-  }
-
-  private Requisition addStatusChangesToRequisition(Requisition requisition) {
-    JqlQuery jqlQuery = QueryBuilder.byInstanceId(requisition.getId(), Requisition.class)
-            .withChildValueObjects().withNewObjectChanges()
-            .andProperty("status").build();
-
-    List<Change> changes = javers.findChanges(jqlQuery);
-
-    //Sort: most recent commits first
-    changes.sort((o1, o2) -> -1 * o1.getCommitMetadata().get().getCommitDate()
-            .compareTo(o2.getCommitMetadata().get().getCommitDate()));
-
-    String newValue;
-    String commitAuthorString;
-    UUID commitAuthorUuid;
-    LocalDateTime javersLocalDateTime;
-    ZonedDateTime javersZonedDateTime;
-    ValueChange valueChange;
-    Map<String, StatusLogEntry> statusChanges = new HashMap<String, StatusLogEntry>();
-
-    for (int i = 0; i < changes.size(); i++) {
-
-      //Get the newValue
-      valueChange = (ValueChange)changes.get(i);
-      newValue = valueChange.getRight().toString().replace("value:", "");
-
-      if (!statusChanges.containsKey(newValue)) {
-
-        /* Get the commitAuthorString.
-           Note that it isn't guaranteed to be a valid UUID because it may be something like
-           "unauthenticated user."  */
-        commitAuthorString = valueChange.getCommitMetadata().get().getAuthor();
-        try {
-          commitAuthorUuid = UUID.fromString(commitAuthorString);
-        } catch (Exception ex) {
-          commitAuthorUuid = null;
-        }
-
-        //Get a ZonedDateTime coresponding to the commit's LocalDateTime
-        javersLocalDateTime = valueChange.getCommitMetadata().get().getCommitDate();
-        javersZonedDateTime = JaVersDateProvider.getZonedDateTime(javersLocalDateTime);
-
-        StatusLogEntry statusLogEntry = new StatusLogEntry(commitAuthorUuid, javersZonedDateTime);
-        statusChanges.put(newValue, statusLogEntry);
-      }
-    }
-
-    requisition.setStatusChanges(statusChanges);
-    return requisition;
-  }
-
 }

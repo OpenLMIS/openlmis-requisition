@@ -27,7 +27,33 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -47,38 +73,6 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -148,15 +142,12 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private RequisitionStatus status;
 
-  /*
-   * Used to convey a small subset of the requisition-related data collected via JaVers' audit-log.
-   * This is primarily used to allow users the ability to see when the RequisitionStatus changed.
-   * A more holistic approach to audit logging is forthcoming.
-   */
-  @Transient
+  @OneToMany(
+      mappedBy = "requisition",
+      cascade = {CascadeType.REFRESH, CascadeType.REMOVE})
   @Getter
   @Setter
-  private Map<String, StatusLogEntry> statusChanges;
+  private List<StatusChange> statusChanges;
 
   @Column(nullable = false)
   @Getter
@@ -175,8 +166,8 @@ public class Requisition extends BaseTimestampedEntity {
 
   @ManyToMany
   @JoinTable(name = "requisitions_previous_requisitions",
-      joinColumns = { @JoinColumn(name = "requisitionId") },
-      inverseJoinColumns = { @JoinColumn(name = "previousRequisitionId") })
+      joinColumns = {@JoinColumn(name = "requisitionId")},
+      inverseJoinColumns = {@JoinColumn(name = "previousRequisitionId")})
   @DiffIgnore
   @Getter
   @Setter
@@ -202,7 +193,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param emergency          whether this Requisition is emergency
    */
   public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId,
-                     RequisitionStatus status, Boolean emergency) {
+      RequisitionStatus status, Boolean emergency) {
     this.facilityId = facilityId;
     this.programId = programId;
     this.processingPeriodId = processingPeriodId;
@@ -244,10 +235,10 @@ public class Requisition extends BaseTimestampedEntity {
    *                             list if there are no previous requisitions.
    */
   public void initiate(RequisitionTemplate template,
-                       Collection<ApprovedProductDto> products,
-                       List<Requisition> previousRequisitions,
-                       int numberOfPreviousPeriodsToAverage,
-                       ProofOfDeliveryDto proofOfDelivery) {
+      Collection<ApprovedProductDto> products,
+      List<Requisition> previousRequisitions,
+      int numberOfPreviousPeriodsToAverage,
+      ProofOfDeliveryDto proofOfDelivery) {
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
@@ -374,7 +365,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param productId UUID of orderable product
    * @return first RequisitionLineItem that have productId property equals to the given productId
-   *     argument; otherwise null;
+   *         argument; otherwise null;
    */
   public RequisitionLineItem findLineByProductId(UUID productId) {
     if (null == requisitionLineItems) {
@@ -626,7 +617,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setStatus(RequisitionStatus status);
 
-    void setStatusChanges(Map<String, StatusLogEntry> statusChanges);
+    void setStatusChanges(List<StatusChange> statusChanges);
 
     void setEmergency(Boolean emergency);
 
@@ -656,8 +647,6 @@ public class Requisition extends BaseTimestampedEntity {
     ProcessingPeriodDto getProcessingPeriod();
 
     RequisitionStatus getStatus();
-
-    Map<String, StatusLogEntry> getStatusChanges();
 
     Boolean getEmergency();
 

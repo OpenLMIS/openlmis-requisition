@@ -27,6 +27,8 @@ import java.util.UUID;
 
 public interface RequisitionRepositoryCustom {
 
+  Requisition saveWithStatusChange(Requisition requisition, UUID userId);
+  
   Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                        ZonedDateTime initiatedDateFrom,
                                        ZonedDateTime initiatedDateTo,

@@ -408,6 +408,8 @@ public class RequisitionControllerTest {
         .thenReturn(Collections.singletonList(approvedRequsition));
     when(requisitionRepository.save(initiatedRequsition))
         .thenReturn(initiatedRequsition);
+    when(requisitionService.saveRequisitionWithStatusChange(initiatedRequsition))
+        .thenReturn(initiatedRequsition);
     when(requisitionRepository.findOne(uuid1))
         .thenReturn(initiatedRequsition);
     when(requisitionRepository.findOne(authorizedRequsition.getId()))

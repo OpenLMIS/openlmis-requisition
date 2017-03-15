@@ -17,13 +17,10 @@ package org.openlmis.requisition.repository;
 
 import java.util.List;
 import java.util.UUID;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.openlmis.requisition.domain.StatusChange;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
 
-public interface RequisitionRepository extends
-    PagingAndSortingRepository<Requisition, UUID>,
-    RequisitionRepositoryCustom {
-  List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
+public interface StatusChangeRepository extends PagingAndSortingRepository<StatusChange, UUID> {
+
+  List<StatusChange> findByRequisitionId(UUID requisitionId);
 }
