@@ -20,11 +20,12 @@ import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Controller
 public class SettingController extends BaseController {
@@ -39,8 +40,9 @@ public class SettingController extends BaseController {
    * @return Configuration setting with given key.
    */
   @RequestMapping(value = "/settings/{key}", method = RequestMethod.GET)
-  public ResponseEntity<?> getByKey(@PathVariable(value = "key") String key) {
-    ConfigurationSetting setting = configurationSettingService.getByKey(key);
-    return new ResponseEntity<>(setting, HttpStatus.OK);
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public ConfigurationSetting getByKey(@PathVariable(value = "key") String key) {
+    return configurationSettingService.getByKey(key);
   }
 }

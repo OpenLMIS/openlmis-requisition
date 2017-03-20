@@ -176,8 +176,7 @@ public class RequisitionTemplateController extends BaseController {
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRequisitionTemplate(@PathVariable("id")
-                                                         UUID requisitionTemplateId) {
+  public void deleteRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate();
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);

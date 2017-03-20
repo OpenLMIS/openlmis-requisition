@@ -15,6 +15,8 @@
 
 package org.openlmis.utils;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
+
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -49,8 +51,8 @@ public class FacilitySupportsProgramHelper {
     List<SupportedProgramDto> supportedPrograms = facility.getSupportedPrograms();
 
     if (!isProgramSupported(supportedPrograms, programId)) {
-      throw new ValidationMessageException(new Message(
-          "requisition.error.facility-does-not-support-program", facilityId, programId));
+      throw new ValidationMessageException(
+          new Message(ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM, facilityId, programId));
     }
   }
 

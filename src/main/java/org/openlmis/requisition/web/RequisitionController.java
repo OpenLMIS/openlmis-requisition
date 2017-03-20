@@ -82,7 +82,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -362,9 +361,8 @@ public class RequisitionController extends BaseController {
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency, pageable);
     List<Requisition> resultList = requisitionsPage.getContent();
-    List<Requisition> filteredList = new ArrayList<>();
 
-    filteredList = resultList.stream().filter(req -> {
+    List<Requisition> filteredList = resultList.stream().filter(req -> {
       try {
         permissionService.canViewRequisition(req.getId());
       } catch (PermissionMessageException ex) {

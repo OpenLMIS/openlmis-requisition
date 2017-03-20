@@ -43,8 +43,8 @@ public class ConfigurationSettingService {
   public ConfigurationSetting getByKey(String key) {
     ConfigurationSetting setting = configurationSettingRepository.findOne(key);
     if (setting == null) {
-      throw new ContentNotFoundMessageException(new Message(ERROR_CONFIGURATION_SETTING_NOT_FOUND,
-          key));
+      throw new ContentNotFoundMessageException(
+          new Message(ERROR_CONFIGURATION_SETTING_NOT_FOUND, key));
     }
     return setting;
   }

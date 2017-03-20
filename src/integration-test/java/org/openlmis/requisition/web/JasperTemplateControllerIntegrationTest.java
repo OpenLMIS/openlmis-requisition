@@ -16,218 +16,271 @@
 package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
+import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openlmis.requisition.service.JasperReportsViewService;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-@SuppressWarnings({"PMD.UnusedPrivateField","PMD.TooManyMethods"})
+@SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+
   private static final String RESOURCE_URL = "/api/reports/templates/requisitions";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String FORMAT_PARAM = "format";
   private static final String REPORT_URL = ID_URL + "/{" + FORMAT_PARAM + "}";
-  private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
-  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
-  @Autowired
+  @MockBean
   private JasperTemplateRepository jasperTemplateRepository;
 
-  private JasperTemplate jasperTemplate = new JasperTemplate();
-  private JasperTemplateDto jasperTemplateDto;
-  private Integer currentInstanceNumber;
+  @MockBean
+  private JasperReportsViewService jasperReportsViewService;
 
   @Before
   public void setUp() {
-    currentInstanceNumber = 0;
-
-    jasperTemplate.setId(UUID.randomUUID());
-    jasperTemplate.setName(TEMPLATE_CONTROLLER_TEST + generateInstanceNumber());
-    jasperTemplateDto = JasperTemplateDto.newInstance(jasperTemplate);
+    mockUserAuthenticated();
   }
 
-  private Integer generateInstanceNumber() {
-    currentInstanceNumber += 1;
-    return currentInstanceNumber;
-  }
-
-  @Test
-  public void shouldAddReportTemplate() throws IOException {
-    ClassPathResource requisitionReport =
-        new ClassPathResource("jasperTemplates/requisition.jrxml");
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-        .multiPart("file", requisitionReport.getFilename(), requisitionReport.getInputStream())
-        .formParam("name", TEMPLATE_CONTROLLER_TEST)
-        .formParam("description", TEMPLATE_CONTROLLER_TEST)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldDeleteTemplate() {
-    jasperTemplate = jasperTemplateRepository.save(jasperTemplate);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", jasperTemplate.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(204);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotDeleteNonexistentTemplate() {
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", jasperTemplate.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
+  // GET /api/reports/templates/requisitions
 
   @Test
   public void shouldGetAllTemplates() {
-    jasperTemplateRepository.save(jasperTemplate);
+    // given
+    JasperTemplate[] templates = { generateTemplate(), generateTemplate(), generateTemplate() };
+    given(jasperTemplateRepository.findAll()).willReturn(Arrays.asList(templates));
 
-    JasperTemplateDto[] response = restAssured.given()
+    // when
+    JasperTemplateDto[] result = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(JasperTemplateDto[].class);
 
-    Iterable<JasperTemplateDto> templates = Arrays.asList(response);
-    assertTrue(templates.iterator().hasNext());
+    // then
+    assertNotNull(result);
+    assertEquals(3, result.length);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // POST /api/reports/templates/requisitions
+
+  @Test
+  public void shouldAddValidReportTemplate() throws IOException {
+    // given
+    ClassPathResource requisitionReport =
+        new ClassPathResource("jasperTemplates/requisition.jrxml");
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+        .multiPart("file", requisitionReport.getFilename(), requisitionReport.getInputStream())
+        .formParam("name", "name")
+        .formParam("description", "description")
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(200);
+
+    // then
+    verify(jasperTemplateRepository, atLeastOnce()).save(any(JasperTemplate.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // DELETE /api/reports/templates/requisitions
+
+  @Test
+  public void shouldDeleteExistentTemplate() {
+    // given
+    JasperTemplate template = generateTemplate();
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", template.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(204);
+
+    // then
+    verify(jasperTemplateRepository, atLeastOnce()).delete(eq(template));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldGetChosenTemplate() {
-    jasperTemplate = jasperTemplateRepository.save(jasperTemplate);
+  public void shouldNotDeleteNonExistentTemplate() {
+    // given
+    given(jasperTemplateRepository.findOne(any(UUID.class))).willReturn(null);
 
-    JasperTemplateDto response = restAssured.given()
+    // when
+    restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", jasperTemplate.getId())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", UUID.randomUUID())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(404);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // GET /api/reports/templates/requisitions/{id}
+
+  @Test
+  public void shouldGetExistentTemplate() {
+    // given
+    JasperTemplate template = generateTemplate();
+
+    // when
+    JasperTemplateDto result = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", template.getId())
         .when()
         .get(ID_URL)
         .then()
         .statusCode(200)
         .extract().as(JasperTemplateDto.class);
 
-    assertEquals(jasperTemplate.getId(), response.getId());
+    // then
+    assertEquals(template.getId(), result.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotGetNonexistentTemplate() {
+  public void shouldNotGetNonExistentTemplate() {
+    // given
+    given(jasperTemplateRepository.findOne(any(UUID.class))).willReturn(null);
+
+    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", jasperTemplate.getId())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", UUID.randomUUID())
         .when()
         .get(ID_URL)
         .then()
         .statusCode(404);
 
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-  
-  @Test
-  @Ignore //Once the integration tests actually mock services, this should be re-enabled with mocks
-  public void generateReportShouldReturnReports() {
-
-    jasperTemplate = jasperTemplateRepository.save(jasperTemplate);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", jasperTemplate.getId())
-        .pathParam(FORMAT_PARAM, "pdf")
-        .when()
-        .get(REPORT_URL)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", jasperTemplate.getId())
-        .pathParam(FORMAT_PARAM, "csv")
-        .when()
-        .get(REPORT_URL)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", jasperTemplate.getId())
-        .pathParam(FORMAT_PARAM, "xls")
-        .when()
-        .get(REPORT_URL)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", jasperTemplate.getId())
-        .pathParam(FORMAT_PARAM, "html")
-        .when()
-        .get(REPORT_URL)
-        .then()
-        .statusCode(200);
-
+    // them
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test
-  public void generateReportShouldReturnNotFoundIfReportTemplateDoesNotExist() {
+  // GET /api/reports/templates/requisitions/{id}/{format}
 
+  @Test
+  public void generateReportShouldReturnNotFoundWhenReportTemplateDoesNotExist() {
+    // given
+    given(jasperTemplateRepository.findOne(any(UUID.class))).willReturn(null);
+
+    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", jasperTemplate.getId())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", UUID.randomUUID())
         .pathParam(FORMAT_PARAM, "pdf")
         .when()
         .get(REPORT_URL)
         .then()
         .statusCode(404);
 
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGenerateReportInPdfFormat() throws JasperReportViewException {
+    testGenerateReportInGivenFormat("application/pdf", "pdf");
+  }
+
+  @Test
+  public void shouldGenerateReportInCsvFormat() throws JasperReportViewException {
+    testGenerateReportInGivenFormat("application/csv", "csv");
+  }
+
+  @Test
+  public void shouldGenerateReportInXlsFormat() throws JasperReportViewException {
+    testGenerateReportInGivenFormat("application/xls", "xls");
+  }
+
+  @Test
+  public void shouldGenerateReportInHtmlFormat() throws JasperReportViewException {
+    testGenerateReportInGivenFormat("text/html", "html");
+  }
+
+  // Helper methods
+
+  private void testGenerateReportInGivenFormat(String contentType, String formatParam)
+      throws JasperReportViewException {
+    // given
+    JasperTemplate template = generateTemplate();
+
+    JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
+    given(view.getContentType()).willReturn(contentType);
+    given(view.getContentDispositionMappings()).willReturn(mock(Properties.class));
+    given(view.getContentDispositionMappings().getProperty("attachment.pdf")).willReturn("text");
+
+    given(jasperTemplateRepository.findOne(template.getId())).willReturn(template);
+    given(jasperReportsViewService
+        .getJasperReportsView(any(JasperTemplate.class), any(HttpServletRequest.class)))
+        .willReturn(view);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", template.getId())
+        .pathParam(FORMAT_PARAM, formatParam)
+        .when()
+        .get(REPORT_URL)
+        .then()
+        .statusCode(200);
+  }
+
+  private JasperTemplate generateTemplate() {
+    return generateTemplate(true);
+  }
+
+  private JasperTemplate generateTemplate(boolean persistent) {
+    JasperTemplate template = new JasperTemplate();
+
+    template.setId(UUID.randomUUID());
+    template.setName("name");
+
+    if (persistent) {
+      given(jasperTemplateRepository.findOne(template.getId())).willReturn(template);
+    }
+
+    return template;
   }
 }

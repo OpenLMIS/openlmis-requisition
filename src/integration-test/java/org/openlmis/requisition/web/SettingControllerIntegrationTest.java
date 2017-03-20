@@ -15,67 +15,86 @@
 
 package org.openlmis.requisition.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.settings.domain.ConfigurationSetting;
 import org.openlmis.settings.repository.ConfigurationSettingRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-@SuppressWarnings("PMD.TooManyMethods")
 public class SettingControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "api/settings";
   private static final String KEY_URL = RESOURCE_URL + "/{key}";
-  private static final String key = "key";
-  private static final String value = "value";
+  private static final String KEY_PARAM = "key";
 
-  private ConfigurationSetting setting = new ConfigurationSetting();
-
-  @Autowired
+  @MockBean
   private ConfigurationSettingRepository configurationSettingRepository;
+
+  // GET /api/settings/{key}
 
   @Before
   public void setUp() {
-    setting.setKey(key);
-    setting.setValue(value);
-    configurationSettingRepository.save(setting);
+    mockUserAuthenticated();
   }
 
   @Test
   public void shouldReturnSettingWithExistingKey() {
+    // given
+    String key = "randomKey";
+    String value = "randomValue";
+    ConfigurationSetting setting = generateSetting(key, value);
 
-    ConfigurationSetting response = restAssured.given()
+    // when
+    ConfigurationSetting result = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("key", key)
+        .pathParam(KEY_PARAM, setting.getKey())
         .when()
         .get(KEY_URL)
         .then()
         .statusCode(200)
         .extract().as(ConfigurationSetting.class);
 
-    assertTrue(configurationSettingRepository.exists(response.getKey()));
+    // then
+    assertEquals(key, result.getKey());
+    assertEquals(value, result.getValue());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotReturnSettingWithNonexistentKey() {
+  public void shouldNotReturnSettingWithNonExistentKey() {
+    // given
+    given(configurationSettingRepository.findOne(any(String.class))).willReturn(null);
 
+    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("key", "emptyKey")
+        .pathParam(KEY_PARAM, "emptyKey")
         .when()
         .get(KEY_URL)
         .then()
         .statusCode(404);
 
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // Helper methods
+
+  private ConfigurationSetting generateSetting(String key, String value) {
+    ConfigurationSetting setting = new ConfigurationSetting(key, value);
+
+    given(configurationSettingRepository.findOne(key)).willReturn(setting);
+
+    return setting;
   }
 }

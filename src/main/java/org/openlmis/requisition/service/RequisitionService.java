@@ -18,12 +18,15 @@ package org.openlmis.requisition.service;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -88,12 +91,6 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionService {
 
-  private static final String CAN_NOT_SKIP_PERIOD_STATUS =
-      "requisition.error.canNotSkipPeriod.status";
-  private static final String CAN_NOT_SKIP_PERIOD_PROGRAM =
-      "requisition.error.canNotSkipPeriod.program";
-  private static final String CAN_NOT_SKIP_EMERGENCY_REQUISITION =
-      "requisition.error.canNotSkipPeriod.emergency";
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
 
   @Autowired
@@ -273,11 +270,11 @@ public class RequisitionService {
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
       if (requisition.getStatus() != RequisitionStatus.INITIATED) {
-        throw new ValidationMessageException(new Message(CAN_NOT_SKIP_PERIOD_STATUS));
+        throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
       } else if (!program.getPeriodsSkippable()) {
-        throw new ValidationMessageException(new Message(CAN_NOT_SKIP_PERIOD_PROGRAM));
+        throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
       } else if (requisition.getEmergency()) {
-        throw new ValidationMessageException(new Message(CAN_NOT_SKIP_EMERGENCY_REQUISITION));
+        throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
       } else {
         LOGGER.debug("Requisition skipped");
 
