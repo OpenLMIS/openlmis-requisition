@@ -58,12 +58,11 @@ public abstract class MessageKeys {
       + ".reject.requisitionMustBeWaitingForApproval";
   public static final String ERROR_REQUISITION_MUST_BE_APPROVED = ERROR_PREFIX
       + ".release.requisitionMustBeApproved";
-  public static final String ERROR_SKIP_FAILED_EMERGENCY = ERROR_PREFIX
-      + ".canNotSkipPeriod.emergency";
+  public static final String ERROR_COMMENT_NOT_FOUND = ERROR_PREFIX + ".commentNotFound";
   public static final String ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP = ERROR_PREFIX
-      + ".canNotSkipPeriod.program";
-  public static final String ERROR_SKIP_FAILED_WRONG_STATUS = ERROR_PREFIX
-      + ".canNotSkipPeriod.status";
+      + ".programDoesNotAllowSkip";
+  public static final String ERROR_SKIP_FAILED_WRONG_STATUS_ = ERROR_PREFIX
+      + ".badStatus.skip";
   public static final String ERROR_DELETE_FAILED_WRONG_STATUS = ERROR_PREFIX
       + ".badStatus.delete";
   public static final String ERROR_REQUISITION_NOT_FOUND = ERROR_PREFIX
@@ -92,8 +91,6 @@ public abstract class MessageKeys {
       + ".convertingRequisitionToOrder";
   public static final String ERROR_MUST_HAVE_SUPPLYING_FACILITY = ERROR_PREFIX
       + ".release.mustHaveSupplyingFacility";
-  public static final String ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM = ERROR_PREFIX
-      + ".facilityDoesNotSupportProgram";
   public static final String ERROR_PROGRAM_ID_CANNOT_BE_NULL = ERROR_PREFIX
       + ".programIdCannotBeNull";
   public static final String ERROR_REQUISITION_TEMPLATE_NOT_FOUND = ERROR_PREFIX

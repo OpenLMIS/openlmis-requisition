@@ -44,14 +44,14 @@ import java.util.UUID;
 public class PermissionService {
   private static final String REQUISITION_BASE = "REQUISITION_";
 
-  public static final String REQUISITION_CREATE = REQUISITION_BASE + "CREATE";
-  public static final String REQUISITION_APPROVE = REQUISITION_BASE + "APPROVE";
-  public static final String REQUISITION_AUTHORIZE = REQUISITION_BASE + "AUTHORIZE";
-  public static final String REQUISITION_DELETE = REQUISITION_BASE + "DELETE";
-  public static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
-  public static final String REQUISITION_TEMPLATES_MANAGE = "REQUISITION_TEMPLATES_MANAGE";
-  public static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
-  public static final String REPORTS_VIEW = "REPORTS_VIEW";
+  static final String REQUISITION_CREATE = REQUISITION_BASE + "CREATE";
+  static final String REQUISITION_APPROVE = REQUISITION_BASE + "APPROVE";
+  static final String REQUISITION_AUTHORIZE = REQUISITION_BASE + "AUTHORIZE";
+  static final String REQUISITION_DELETE = REQUISITION_BASE + "DELETE";
+  static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
+  static final String REQUISITION_TEMPLATES_MANAGE = "REQUISITION_TEMPLATES_MANAGE";
+  static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
+  static final String REPORTS_VIEW = "REPORTS_VIEW";
 
   static final String ORDERS_EDIT = "ORDERS_EDIT";
 

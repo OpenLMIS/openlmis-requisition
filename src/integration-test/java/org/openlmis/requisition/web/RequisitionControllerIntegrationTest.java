@@ -15,92 +15,83 @@
 
 package org.openlmis.requisition.web;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
+import static org.openlmis.utils.FacilitySupportsProgramHelper.REQUISITION_TIME_ZONE_ID;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
+import com.google.common.collect.Lists;
+import guru.nidi.ramltester.junit.RamlMatchers;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.openlmis.CurrencyConfig;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
-import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.i18n.ExposedMessageSource;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.StatusMessageRepository;
-import org.openlmis.requisition.service.PeriodService;
-import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.RequisitionStatusProcessor;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.validate.RequisitionValidator;
-import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.FacilitySupportsProgramHelper;
-import org.openlmis.utils.Message;
+import org.openlmis.settings.domain.ConfigurationSetting;
+import org.openlmis.settings.repository.ConfigurationSettingRepository;
 import org.openlmis.utils.PageImplRepresentation;
-import org.openlmis.utils.Pagination;
-import org.openlmis.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String REQUISITION_REPOSITORY_NAME = "RequisitionRepositoryIntegrationTest";
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
   private static final String APPROVE_URL = RESOURCE_URL + "/{id}/approve";
@@ -109,159 +100,551 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
   private static final String SUBMITTED_URL = RESOURCE_URL + "/submitted";
   private static final String AUTHORIZATION_URL = RESOURCE_URL + "/{id}/authorize";
-  private static final String CONVERT_TO_ORDER_URL = RESOURCE_URL + "/convertToOrder";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String REQ_FOR_APPROVAL_URL = RESOURCE_URL + "/requisitionsForApproval";
-  private static final String PERIODS_FOR_INITIATE_URL = RESOURCE_URL + "/periodsForInitiate";
-  private static final String APPROVED_REQUISITIONS_SEARCH_URL = RESOURCE_URL
-      + "/requisitionsForConvert";
-
+  private static final String PERIODS_FOR_INITIATE = RESOURCE_URL + "/periodsForInitiate";
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String FACILITY = "facility";
+  private static final String APPROVED_REQUISITIONS_SEARCH_URL =
+      RESOURCE_URL + "/requisitionsForConvert";
+  private static final UUID PERIOD_UUID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
+  private static final UUID PROGRAM_UUID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
+  private static final UUID FACILITY_UUID = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
   private static final String PROGRAM = "program";
   private static final String SUGGESTED_PERIOD = "suggestedPeriod";
   private static final String EMERGENCY = "emergency";
   private static final String MESSAGE = "message";
+  private static final String FACILITY_CODE = "facilityCode";
   private static final String REQUISITION_STATUS = "requisitionStatus";
+  private static final String SUPERVISORY_SEARCH_URL = "/api/supervisoryNodes/search";
+  private static final String SUPERVISORY_URL = "/api/supervisoryNodes/";
+  private static final String SUBJECT = "subject";
+  private static final String CONTENT = "content";
   private static final String SUPERVISORY_NODE = "supervisoryNode";
   static final String PROCESSING_PERIOD = "processingPeriod";
   static final String INITIATED_DATE_FROM = "initiatedDateFrom";
   static final String INITIATED_DATE_TO = "initiatedDateTo";
 
-  @MockBean
+  @Autowired
   private RequisitionRepository requisitionRepository;
 
-  @MockBean
-  private StatusMessageRepository statusMessageRepository;
-
-  @MockBean
-  private RequisitionDtoBuilder requisitionDtoBuilder;
-
-  @MockBean
-  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
-
-  @MockBean
-  private RequisitionStatusProcessor requisitionStatusProcessor;
-
-  @MockBean
-  private RequisitionValidator requisitionValidator;
-
-  @MockBean
-  private PeriodService periodService;
-
-  @MockBean
-  private PermissionService permissionService;
-
-  @MockBean
-  private RequisitionService requisitionService;
-
-  @MockBean
-  private ConfigurationSettingService configurationSettingService;
-
-  @MockBean
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-
-  @MockBean
-  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
-
-  @MockBean
-  private OrderableReferenceDataService orderableReferenceDataService;
+  @Autowired
+  private ConfigurationSettingRepository configurationSettingRepository;
 
   @Autowired
-  private MessageService messageService;
+  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
-  // GET /api/requisitions/{id}
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private ExposedMessageSource messageSource;
+
+  private RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+  private Requisition requisition = new Requisition();
+  private Requisition requisition2 = new Requisition();
+  private Requisition requisitionForSearch = new Requisition();
+  private ProcessingPeriodDto period = new ProcessingPeriodDto();
+  private OrderableDto ordereble = new OrderableDto();
+  private ProgramDto programDto = new ProgramDto();
+  private ProgramDto programDto2 = new ProgramDto();
+  private FacilityDto facilityDto = new FacilityDto();
+  private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
+  private SupervisoryNodeDto parentSupervisoryNode = new SupervisoryNodeDto();
+  private UserDto user;
+  private ZonedDateTime createdDate = ZonedDateTime.now();
+  private RequisitionTemplate template;
+  private RequisitionTemplate template2;
 
   @Before
-  public void setUp() {
-    mockRepositorySaveAnswer();
-    mockRequisitionDtoBuilderResponses();
-    mockUserAuthenticated();
+  public void setUp() throws IOException {
+    user = new UserDto();
+    user.setId(INITIAL_USER_ID);
+    user.setUsername("admin");
+    user.setFirstName("Admin");
+    user.setLastName("User");
+    user.setEmail("example@mail.com");
+
+    ordereble.setId(UUID.fromString("cd9e1412-8703-11e6-ae22-56b6b6499611"));
+
+    programDto.setId(UUID.fromString("86191d25-4846-4775-a968-12df732e6004"));
+    programDto.setCode(REQUISITION_REPOSITORY_NAME);
+    programDto.setPeriodsSkippable(true);
+
+    programDto2.setId(UUID.fromString("20518141-779c-47b0-92a6-ed2247c2b4bc"));
+    programDto2.setCode(REQUISITION_REPOSITORY_NAME);
+    programDto2.setPeriodsSkippable(true);
+
+    facilityDto.setId(getSharedFacilityId());
+    facilityDto.setCode(FACILITY_CODE);
+    facilityDto.setActive(true);
+    facilityDto.setEnabled(true);
+
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
+    processingScheduleDto.setId(UUID.fromString("c73ad6a4-895c-11e6-ae22-56b6b6499611"));
+    processingScheduleDto.setCode("Schedule Code");
+    processingScheduleDto.setName("Schedule Name");
+
+    period.setId(UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611"));
+    period.setName("Period Name");
+    period.setProcessingSchedule(processingScheduleDto);
+    period.setDescription("Period Description");
+    period.setStartDate(LocalDate.of(2016, 3, 1));
+    period.setEndDate(LocalDate.of(2017, 3, 1));
+
+    supervisoryNode.setId(UUID.randomUUID());
+    supervisoryNode.setName("name");
+    supervisoryNode.setCode("code");
+    supervisoryNode.setDescription("description");
+    supervisoryNode.setFacility(facilityDto);
+    parentSupervisoryNode.setId(UUID.randomUUID());
+    supervisoryNode.setParentNode(parentSupervisoryNode);
+
+    template = new RequisitionTemplate();
+    template.setColumnsMap(generateTemplateColumns());
+    template.setProgramId(programDto.getId());
+    template.setNumberOfPeriodsToAverage(5);
+
+    template2 = new RequisitionTemplate();
+    template2.setColumnsMap(generateTemplateColumns());
+    template2.setProgramId(programDto2.getId());
+    template2.setNumberOfPeriodsToAverage(5);
+
+    requisitionTemplateRepository.save(template);
+    requisitionTemplateRepository.save(template2);
+
+    requisition2.setFacilityId(FACILITY_UUID);
+    requisition2.setProcessingPeriodId(PERIOD_UUID);
+    requisition2.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition2.setCreatedDate(createdDate);
+    requisition2.setEmergency(false);
+    requisition2.setNumberOfMonthsInPeriod(1);
+    requisition2.setStatus(RequisitionStatus.SUBMITTED);
+    requisition2.setProgramId(programDto2.getId());
+    requisition2.setTemplate(template2);
+    requisitionRepository.saveWithStatusChange(requisition2, UUID.randomUUID());
+
+    configureRequisition(requisition);
+    requisitionForSearch.setStatus(RequisitionStatus.INITIATED);
+    configureRequisitionForSearch(requisitionForSearch);
+
+    requisitionLineItem.setOrderableId(ordereble.getId());
+    requisitionLineItem.setMaxPeriodsOfStock(BigDecimal.valueOf(2));
+    requisitionLineItem.setRequestedQuantity(1);
+    requisitionLineItem.setRequestedQuantityExplanation("Requested Quantity Explanation");
+    requisitionLineItem.setStockOnHand(2);
+    requisitionLineItem.setTotalConsumedQuantity(1);
+    requisitionLineItem.setBeginningBalance(1);
+    requisitionLineItem.setTotalReceivedQuantity(1);
+    requisitionLineItem.setTotalLossesAndAdjustments(1);
+    requisitionLineItem.setApprovedQuantity(1);
+    requisitionLineItem.setTotalStockoutDays(0);
+    requisitionLineItem.setTotal(0);
+    requisitionLineItem.setNumberOfNewPatientsAdded(0);
+    requisitionLineItem.setAverageConsumption(2);
+    requisitionLineItem.setMaximumStockQuantity(4);
+    requisitionLineItem.setCalculatedOrderQuantity(2);
+    requisitionLineItem.setRequisition(requisition);
+    requisitionLineItem.setPricePerPack(
+        Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 13.55));
+
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(requisitionLineItem);
+
+    requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition = requisitionRepository.save(requisition);
+
+    configurationSettingRepository.save(new ConfigurationSetting(REQUISITION_TIME_ZONE_ID, "UTC"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_NOREPLY, "noreply@openlmis.org"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_URI, "/requisition/"));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, SUBJECT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, CONTENT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT, SUBJECT));
+    configurationSettingRepository
+        .save(new ConfigurationSetting(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT, CONTENT));
   }
 
   @Test
-  public void shouldGetChosenRequisition() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
+  public void shouldFindRequisitions() {
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, PROGRAM_UUID)
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
 
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-    doNothing().when(permissionService).canViewRequisition(requisition.getId());
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionDto>>() {
+        });
 
-    // when
-    RequisitionDto result = restAssured.given()
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertEquals(1, content.size());
+    for (RequisitionDto receivedRequisition : content) {
+      assertEquals(
+          receivedRequisition.getProgram().getId(),
+          PROGRAM_UUID);
+      assertEquals(
+          receivedRequisition.getProcessingPeriod().getId(),
+          PERIOD_UUID);
+      assertEquals(
+          receivedRequisition.getFacility().getId(),
+          FACILITY_UUID);
+      assertEquals(
+          receivedRequisition.getSupervisoryNode(),
+          supervisoryNode.getId());
+      assertEquals(
+          receivedRequisition.getStatus(),
+          RequisitionStatus.INITIATED);
+      assertTrue(
+          receivedRequisition.getCreatedDate().isBefore(createdDate.plusDays(2)));
+      assertTrue(
+          receivedRequisition.getCreatedDate().isAfter(createdDate.minusDays(2)));
+    }
+  }
+
+
+  @Test
+  public void shouldTrackRequisitionStatusChanges() {
+    //save a requisition with different statuses to test if jasper logs are created for each
+    UUID authorId = UUID.randomUUID();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisitionRepository.saveWithStatusChange(requisition, authorId);
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
+            .queryParam(PROGRAM, requisition.getProgramId())
+            .queryParam(PROCESSING_PERIOD, requisition.getProcessingPeriodId())
+            .queryParam(FACILITY, requisition.getFacilityId())
+            .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+            .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+            .when()
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(PageImplRepresentation.class);
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionDto> content = mapper.convertValue(response.getContent(),
+          new TypeReference<List<RequisitionDto>>() {
+          });
+
+    assertEquals(1, content.size());
+    RequisitionDto requisitionDto = content.get(0);
+    assertNotNull(requisitionDto.getStatusChanges());
+    // Five status changes: INITIATED,SUBMITTED,AUTHORIZED,IN_APPROVAL,APPROVED
+    assertEquals(5, requisitionDto.getStatusChanges().size());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldFindRequisitionsWithStatuses() {
+    Requisition req = new Requisition();
+    req.setStatus(RequisitionStatus.INITIATED);
+    configureRequisitionForSearch(req);
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, PROGRAM_UUID)
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    List<RequisitionDto> content = Lists.newArrayList(response.getContent());
+
+    assertEquals(2, content.size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnOnlyRequisitionsForWhichUserHasRights() {
+    denyUserRightToProgram(programDto2.getId());
+
+    Requisition req = new Requisition();
+    req.setStatus(RequisitionStatus.INITIATED);
+    configureRequisitionForSearch(req);
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    List<RequisitionDto> content = Lists.newArrayList(response.getContent());
+
+    assertEquals(2, content.size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfUserHasNoRightsToSeeFoundedRequisitions() {
+    denyUserAllRights();
+
+    PageImplRepresentation<RequisitionDto> response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, PROGRAM_UUID)
+        .queryParam(PROCESSING_PERIOD, PERIOD_UUID)
+        .queryParam(FACILITY, FACILITY_UUID)
+        .queryParam(SUPERVISORY_NODE, supervisoryNode.getId())
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
+        .queryParam(REQUISITION_STATUS, RequisitionStatus.SUBMITTED)
+        .queryParam(INITIATED_DATE_FROM, createdDate.minusDays(2).toString())
+        .queryParam(INITIATED_DATE_TO, createdDate.plusDays(2).toString())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    List<RequisitionDto> content = Lists.newArrayList(response.getContent());
+
+    assertTrue(content.isEmpty());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldSubmitCorrectRequisition() {
+    RequisitionDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
-        .get(ID_URL)
+        .post(SUBMIT_URL)
         .then()
         .statusCode(200)
         .extract().as(RequisitionDto.class);
+    assertNotNull(response.getId());
 
-    // then
-    assertNotNull(result);
-    assertEquals(requisition.getId(), result.getId());
-
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.SUBMITTED, response.getStatus());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotGetChosenRequisitionWhenUserHasNoRightForView() {
-    // given
-    UUID requisitionId = UUID.randomUUID();
+  public void shouldSerializeMoneyOnSubmit() {
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+    assertNotNull(response.getId());
 
-    String missingPermission = REQUISITION_AUTHORIZE;
+    RequisitionLineItem.Importer importer = response.getRequisitionLineItems().get(0);
+    assertEquals(new BigDecimal("13.55"), importer.getPricePerPack().getAmount());
+    assertEquals(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE),
+        importer.getPricePerPack().getCurrencyUnit());
+  }
 
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService)
-        .canViewRequisition(any(UUID.class));
-
-    // when
+  @Test
+  public void shouldSkipRequisition() {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
-        .get(ID_URL)
+        .put(SKIP_URL)
         .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
+        .statusCode(200);
 
-    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotGetNonExistentRequisition() {
-    // given
-    given(requisitionRepository.findOne(any(UUID.class))).willReturn(null);
-    doNothing().when(permissionService).canViewRequisition(any(UUID.class));
+  public void shouldNotSkipRequisitionIfUserHasNoRights() {
+    denyUserAllRights();
 
-    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotReturnPeriodsForInitiateIfUserHasNoRightsToInitiateRequisition() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("programId", PROGRAM_UUID)
+        .queryParam("facilityId", FACILITY_UUID)
+        .queryParam("emergency", false)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(PERIODS_FOR_INITIATE)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfItIsNotInitiated() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfItIsEmergency() {
+    requisition.setEmergency(true);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundWhenSkippingNotExistingRequisition() {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
-        .get(ID_URL)
+        .put(SKIP_URL)
         .then()
         .statusCode(404);
 
-    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // DELETE /api/requisitions/{id}
+  @Test
+  public void shouldRejectRequisition() {
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionIfUserHasNoRights() {
+
+    denyUserAllRights();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotRejectWithWrongStatus() {
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 
   @Test
   public void shouldDeleteRequisition() {
-    // given
-    Requisition requisition = generateRequisition();
 
-    doNothing().when(requisitionService).delete(requisition.getId());
-    mockCanDeleteRequisition(requisition);
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisitionRepository.save(requisition);
 
-    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -271,1062 +654,364 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(204);
 
-    // then
-    verify(requisitionService).delete(requisition.getId());
+    assertFalse(requisitionRepository.exists(requisition.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotDeleteRequisitionWhenUserHasNoRightForDelete() {
-    // given
-    Requisition requisition = generateRequisition();
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
+  public void shouldNotDeleteNonexistentRequisition() {
 
-    String missingPermission = REQUISITION_DELETE;
+    requisitionRepository.delete(requisition);
 
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canDeleteRequisition(requisition.getId());
-
-    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisitionRepository, never()).delete(any(UUID.class));
-    verify(requisitionRepository, never()).delete(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotDeleteNonExistentRequisition() {
-    // given
-    UUID requisitionId = UUID.randomUUID();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(null);
-
-    String errorKey = MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-
-    ContentNotFoundMessageException exception = mockNotFoundException(errorKey, requisitionId);
-    doThrow(exception).when(permissionService).canDeleteRequisition(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .delete(ID_URL)
         .then()
         .statusCode(404);
 
-    // then
-    verify(requisitionRepository, never()).delete(any(UUID.class));
-    verify(requisitionRepository, never()).delete(any(Requisition.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotDeleteRequisitionWithWrongStatus() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    UUID requisitionId = requisition.getId();
-    doNothing().when(permissionService).canDeleteRequisition(requisitionId);
 
-    String errorKey = MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
 
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(requisitionService).delete(requisitionId);
-
-    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .delete(ID_URL)
         .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisitionRepository, never()).delete(any(UUID.class));
-    verify(requisitionRepository, never()).delete(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // GET /api/requisitions/search
-
-  @Test
-  public void shouldFindRequisitionsByParameters() {
-    // given
-    UUID periodId = UUID.randomUUID();
-    UUID programId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
-    UUID supervisoryNodeId = UUID.randomUUID();
-    ZonedDateTime dateFrom = ZonedDateTime.now().minusDays(10);
-    ZonedDateTime dateTo = ZonedDateTime.now().plusDays(10);
-    Set<RequisitionStatus> statuses = Collections.singleton(RequisitionStatus.INITIATED);
-
-    Requisition requisition = generateRequisition();
-    List<Requisition> requisitions = Collections.singletonList(requisition);
-
-    doNothing().when(permissionService).canViewRequisition(requisition.getId());
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-    given(requisitionService.searchRequisitions(
-        eq(facilityId), eq(programId), any(ZonedDateTime.class), any(ZonedDateTime.class),
-        eq(periodId), eq(supervisoryNodeId), eq(statuses), eq(null), any())
-    ).willReturn(Pagination.getPage(requisitions, null));
-
-    // when
-    PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, programId)
-        .queryParam(PROCESSING_PERIOD, periodId)
-        .queryParam(FACILITY, facilityId)
-        .queryParam(SUPERVISORY_NODE, supervisoryNodeId)
-        .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
-        .queryParam(INITIATED_DATE_FROM, dateFrom.minusDays(2).toString())
-        .queryParam(INITIATED_DATE_TO, dateTo.plusDays(2).toString())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertNotNull(resultPage);
-    assertEquals(1, resultPage.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldFindRequisitionsByMultipleStatuses() {
-    // given
-    RequisitionStatus[] searchedStatuses = {
-        RequisitionStatus.SUBMITTED, RequisitionStatus.AUTHORIZED };
-    Set<RequisitionStatus> statusSet = new HashSet<>(Arrays.asList(searchedStatuses));
-    List<Requisition> requisitions = generateRequisitionsWithMockedAccess(searchedStatuses);
-
-    given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(statusSet), eq(null), any())
-    ).willReturn(Pagination.getPage(requisitions, null));
-
-    // when
-    PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(REQUISITION_STATUS, searchedStatuses[0])
-        .queryParam(REQUISITION_STATUS, searchedStatuses[1])
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertNotNull(resultPage);
-    assertEquals(2, resultPage.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnOnlyRequisitionsForWhichUserHasRights() {
-    // given
-    Requisition accessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    doNothing().when(permissionService).canViewRequisition(accessibleRequisition.getId());
-
-    Requisition inaccessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    doThrow(PermissionMessageException.class)
-        .when(permissionService).canViewRequisition(inaccessibleRequisition.getId());
-
-    List<Requisition> requisitions = Arrays.asList(accessibleRequisition, inaccessibleRequisition);
-    given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), any())
-    ).willReturn(Pagination.getPage(requisitions, null));
-
-    // when
-    PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertNotNull(resultPage);
-    assertEquals(1, resultPage.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnEmptyListIfUserHasNoRightsToSeeFoundRequisitions() {
-    // given
-    Requisition inaccessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    doThrow(PermissionMessageException.class)
-        .when(permissionService).canViewRequisition(inaccessibleRequisition.getId());
-
-    List<Requisition> requisitions = Collections.singletonList(inaccessibleRequisition);
-    given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), any())
-    ).willReturn(Pagination.getPage(requisitions, null));
-
-    // when
-    PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertNotNull(resultPage);
-    assertTrue(resultPage.getContent().isEmpty());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // POST /api/requisitions/{id}/submit
-
-  @Test
-  public void shouldSubmitValidRequisition() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.INITIATED));
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-    given(orderableReferenceDataService.findAll()).willReturn(Collections.emptyList());
-
-    doNothing().when(requisition).submit(any(), any(UUID.class));
-    doNothing().when(permissionService).canViewRequisition(requisitionId);
-    mockValidationSuccess();
-
-    // when
-    RequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .post(SUBMIT_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto.class);
-
-    // then
-    assertNotNull(result);
-    assertEquals(requisitionId, result.getId());
-    verify(requisition, atLeastOnce()).submit(any(), any(UUID.class));
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSubmitRequisitionWhenUserHasNoRightForSubmit() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.INITIATED));
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-
-    String missingPermission = REQUISITION_CREATE;
-
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canSubmitRequisition(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .post(SUBMIT_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), any(UUID.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSubmitIfFacilityDoesNotSupportProgram() throws Exception {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.INITIATED));
-    UUID requisitionId = requisition.getId();
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-
-    doNothing().when(permissionService).canSubmitRequisition(requisitionId);
-    doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-
-    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(facilityId, programId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .post(SUBMIT_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisition, never()).submit(any(), any());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // PUT /api/requisitions/{id}/skip
-
-  @Test
-  public void shouldSkipRequisition() {
-    // given
-    Requisition requisition = generateRequisition();
-    UUID requisitionId = requisition.getId();
-
-    doNothing().when(permissionService).canViewRequisition(requisitionId);
-    mockValidationSuccess();
-
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-    given(requisitionService.skip(requisition.getId())).willReturn(requisition);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(200);
-
-    // then
-    verify(requisitionService, atLeastOnce()).skip(requisitionId);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfUserHasNoRightForCreate() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-
-    String missingPermission = REQUISITION_CREATE;
-
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canUpdateRequisition(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisitionService, never()).skip(requisition.getId());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfItIsNotInitiated() {
-    // given
-    doNothing().when(permissionService).canUpdateRequisition(any(UUID.class));
-
-    String errorKey = MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(requisitionService).skip(any(UUID.class));
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", UUID.randomUUID())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisitionService, atLeastOnce()).skip(any(UUID.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfItIsEmergency() {
-    // given
-    doNothing().when(permissionService).canUpdateRequisition(any(UUID.class));
-
-    String errorKey = MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(requisitionService).skip(any(UUID.class));
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", UUID.randomUUID())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisitionService, atLeastOnce()).skip(any(UUID.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnNotFoundWhenSkippingNonExistentRequisition() {
-    // given
-    UUID requisitionId = UUID.randomUUID();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(null);
-
-    String errorKey = MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-
-    ContentNotFoundMessageException exception = mockNotFoundException(errorKey, requisitionId);
-    doThrow(exception).when(requisitionService).skip(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(404)
-        .body(MESSAGE, equalTo(getMessage(errorKey, requisitionId)));
-
-    // then
-    verify(requisitionRepository, never()).save(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // PUT /api/requisitions/{id}/reject
-
-  @Test
-  public void shouldRejectRequisition() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition.getId())).willReturn(requisition);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(REJECT_URL)
-        .then()
-        .statusCode(200);
-
-    // then
-    verify(requisitionService, atLeastOnce()).reject(requisition.getId());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotRejectRequisitionWhenUserHasNoRightForApprove() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.AUTHORIZED));
-    UUID requisitionId = requisition.getId();
-
-    String missingPermission = REQUISITION_APPROVE;
-
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canApproveRequisition(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
-        .when()
-        .put(REJECT_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisitionService, never()).reject(requisitionId);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotRejectRequisitionWithWrongStatus() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-
-    doNothing().when(permissionService).canUpdateRequisition(requisitionId);
-
-    String errorKey = MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
-
-    ValidationMessageException exception = mockValidationException(errorKey, requisitionId);
-    doThrow(exception).when(requisitionService).reject(requisition.getId());
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(REJECT_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey, requisitionId)));
-
-    // then
-    verify(requisitionRepository, never()).save(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // PUT /api/requisitions/{id}/authorize
-
-  @Test
-  public void shouldAuthorizeRequisition() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.SUBMITTED));
-    UUID requisitionId = requisition.getId();
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
-    given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
-
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-    given(configurationSettingService.getBoolValue(any(String.class))).willReturn(false);
-    given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
-        .willReturn(supervisoryNode);
-    given(orderableReferenceDataService.findAll()).willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
-    mockValidationSuccess();
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(AUTHORIZATION_URL)
-        .then()
-        .statusCode(200);
-
-    // then
-    verify(requisition, atLeastOnce()).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotAuthorizeRequisitionWhenUserHasNoRightForAuthorize() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.SUBMITTED));
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-
-    String missingPermission = REQUISITION_AUTHORIZE;
-
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canAuthorizeRequisition(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(AUTHORIZATION_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisition, never()).authorize(anyCollectionOf(OrderableDto.class), any(UUID.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotAuthorizeWhenAuthorizationIsSkipped() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.SUBMITTED));
-    UUID requisitionId = requisition.getId();
-
-    doNothing().when(permissionService).canApproveRequisition(requisitionId);
-    given(configurationSettingService.getBoolValue("skipAuthorization")).willReturn(true);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(AUTHORIZATION_URL)
-        .then()
         .statusCode(400);
 
-    // then
-    verify(requisition, never()).authorize(anyCollectionOf(OrderableDto.class), any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
-
-  @Test
-  public void shouldNotAuthorizeIfFacilityDoesNotSupportProgram() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.SUBMITTED));
-    UUID requisitionId = requisition.getId();
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-
-    doNothing().when(permissionService).canAuthorizeRequisition(requisitionId);
-    doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-    given(configurationSettingService.getBoolValue(anyString())).willReturn(false);
-
-    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(facilityId, programId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(AUTHORIZATION_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisition, never()).authorize(any(), any());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // POST /api/requisitions/{id}/initiate
-
-  @Test
-  public void shouldInitiateRequisition() {
-    // given
-    Requisition requisition = spy(generateRequisition());
-    UUID programId = requisition.getProgramId();
-    UUID periodId = requisition.getProcessingPeriodId();
-    UUID facilityId = requisition.getFacilityId();
-
-    doNothing().when(permissionService).canInitRequisition(programId, facilityId);
-    given(requisitionService.initiate(programId, facilityId, periodId, false))
-        .willReturn(requisition);
-    mockValidationSuccess();
-
-    // when
-    RequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, programId)
-        .queryParam(FACILITY, facilityId)
-        .queryParam(SUGGESTED_PERIOD, periodId)
-        .queryParam(EMERGENCY, false)
-        .when()
-        .post(INITIATE_URL)
-        .then()
-        .statusCode(201)
-        .extract().as(RequisitionDto.class);
-
-    // then
-    assertNotNull(result);
-    assertEquals(requisition.getId(), result.getId());
-    verify(requisitionService, atLeastOnce()).initiate(programId, facilityId, periodId, false);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotInitiateRequisitionWhenPeriodDoesNotExist() {
-    // given
-    Requisition requisition = generateRequisition();
-    UUID programId = requisition.getProgramId();
-    UUID periodId = requisition.getProcessingPeriodId();
-    UUID facilityId = requisition.getFacilityId();
-
-    ValidationMessageException err =
-        mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
-
-    doNothing().when(permissionService).canInitRequisition(programId, facilityId);
-    given(requisitionService.initiate(programId, facilityId, periodId, false)).willThrow(err);
-    mockValidationSuccess();
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, programId)
-        .queryParam(FACILITY, facilityId)
-        .queryParam(SUGGESTED_PERIOD, periodId)
-        .queryParam(EMERGENCY, false)
-        .when()
-        .post(INITIATE_URL)
-        .then()
-        .statusCode(400);
-
-    // then
-    verify(requisitionRepository, never()).save(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotInitiateRequisitionWhenFacilityDoesNotSupportProgram() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.AUTHORIZED));
-    UUID requisitionId = requisition.getId();
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-
-    doNothing().when(permissionService).canAuthorizeRequisition(requisitionId);
-    doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-    given(configurationSettingService.getBoolValue(anyString())).willReturn(false);
-
-    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(facilityId, programId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, programId)
-        .queryParam(FACILITY, facilityId)
-        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
-        .queryParam(EMERGENCY, false)
-        .when()
-        .post(INITIATE_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisition, never()).initiate(any(), any(), any(), anyInt(), any());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotInitiateRequisitionWhenUserHasNoRight() {
-    // given
-    UUID programId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
-
-    String missingPermission = REQUISITION_CREATE;
-
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canInitRequisition(programId, facilityId);
-
-    // then
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, programId)
-        .queryParam(FACILITY, facilityId)
-        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
-        .queryParam(EMERGENCY, false)
-        .when()
-        .post(INITIATE_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisitionService, never())
-        .initiate(any(UUID.class), any(UUID.class), any(UUID.class), anyBoolean());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // PUT /api/requisitions/{id}/approve
-
-  @Test
-  public void shouldApproveSubmittedRequisitionWhenSkippedAuthorization() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.SUBMITTED));
-    UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-
-    UUID supervisoryNodeId = requisition.getSupervisoryNodeId();
-    given(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
-        .willReturn(new SupervisoryNodeDto());
-
-    given(orderableReferenceDataService.findAll()).willReturn(Collections.emptyList());
-    given(configurationSettingService.getBoolValue("skipAuthorization")).willReturn(true);
-    doNothing().when(permissionService).canApproveRequisition(requisitionId);
-    doNothing().when(requisition).approve(any(UUID.class), anyCollectionOf(OrderableDto.class));
-    mockValidationSuccess();
-
-    // when
-    RequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(APPROVE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionDto.class);
-
-    // then
-    assertNotNull(result);
-    assertEquals(requisitionId, result.getId());
-    verify(requisition, atLeastOnce())
-        .approve(any(UUID.class), anyCollectionOf(OrderableDto.class));
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotApproveRequisitionWhenUserHasNoRightForApprove() {
-    // given
-    Requisition requisition = spy(generateRequisition());
-    UUID requisitionId = requisition.getId();
-
-    String missingPermission = REQUISITION_APPROVE;
-
-    PermissionMessageException exception = mockPermissionException(missingPermission);
-    doThrow(exception).when(permissionService).canApproveRequisition(requisitionId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(APPROVE_URL)
-        .then()
-        .statusCode(403)
-        .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
-
-    // then
-    verify(requisition, never()).approve(any(UUID.class), anyCollectionOf(OrderableDto.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotApproveWhenFacilityDoesNotSupportProgram() {
-    // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.AUTHORIZED));
-    UUID requisitionId = requisition.getId();
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-
-    doNothing().when(permissionService).canAuthorizeRequisition(requisitionId);
-    doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-    given(configurationSettingService.getBoolValue(anyString())).willReturn(false);
-
-    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(facilityId, programId);
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", requisitionId)
-        .when()
-        .post(APPROVE_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(errorKey)));
-
-    // then
-    verify(requisition, never()).approve(any(), any());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // GET /api/requisitions/submitted
-
-  @Test
-  public void shouldGetSubmittedRequisitions() {
-    // given
-    Requisition[] requisitions = { generateRequisition(), generateRequisition() };
-    given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class), any(Pageable.class)))
-        .willReturn(Pagination.getPage(Arrays.asList(requisitions), null));
-
-    // when
-    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
-    response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(SUBMITTED_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(response.getClass());
-
-    // then
-    assertEquals(2, response.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnOnlySubmittedRequisitionsForWhichUserHasRight() {
-    // given
-    Requisition availableRequisition = generateRequisition(RequisitionStatus.SUBMITTED);
-    Requisition unavailableRequisition = generateRequisition(RequisitionStatus.SUBMITTED);
-    Requisition[] requisitions = { availableRequisition, unavailableRequisition };
-
-    given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class), any(Pageable.class)))
-        .willReturn(Pagination.getPage(Arrays.asList(requisitions), null));
-
-    PermissionMessageException exception = mock(PermissionMessageException.class);
-    doThrow(exception).when(permissionService).canViewRequisition(availableRequisition.getId());
-
-    // when
-    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
-    response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(SUBMITTED_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(response.getClass());
-
-    // then
-    assertEquals(1, response.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnEmptyListWhenUserHasNoRightsToSeeSubmittedRequisitions() {
-    // given
-    List<Requisition> requisitions = Arrays.asList(
-        generateRequisition(RequisitionStatus.SUBMITTED),
-        generateRequisition(RequisitionStatus.SUBMITTED));
-
-    PermissionMessageException exception = mock(PermissionMessageException.class);
-    doThrow(exception).when(permissionService).canViewRequisition(anyUuid());
-
-    given(requisitionService.searchRequisitions(
-        eq(EnumSet.of(RequisitionStatus.SUBMITTED)), any(Pageable.class)))
-        .willReturn(Pagination.getPage(requisitions, null));
-
-    // when
-    PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(SUBMITTED_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertEquals(0, response.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // GET /api/requisitions/periodsForInitiate
-
-  @Test
-  public void shouldNotReturnPeriodsForInitiateIfUserHasNoRightsToInitiateRequisition() {
-    // given
-    String[] errorKeys = {
-        PermissionService.REQUISITION_CREATE, PermissionService.REQUISITION_AUTHORIZE };
-    PermissionMessageException exception = mockPermissionException(errorKeys);
-
-    doThrow(exception).when(permissionService)
-        .canInitOrAuthorizeRequisition(any(UUID.class), any(UUID.class));
-
-    // when
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("programId", UUID.randomUUID())
-        .queryParam("facilityId", UUID.randomUUID())
-        .queryParam("emergency", false)
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(PERIODS_FOR_INITIATE_URL)
-        .then()
-        .statusCode(403);
-
-    // then
-    verify(periodService, never()).getPeriods(any(UUID.class), any(UUID.class), anyBoolean());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  // GET /api/requisitions/requisitionsForApproval
 
   @Test
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    Set<Requisition> requisitions = Collections.singleton(requisition);
+    mockFacility();
+    mockDetailedRoleAssignmentDto();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisitionRepository.save(requisition);
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
 
-    given(requisitionService.getRequisitionsForApproval(any(UUID.class))).willReturn(requisitions);
-
-    // when
-    PageImplRepresentation result = restAssured.given()
+    response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(REQ_FOR_APPROVAL_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(response.getClass());
 
-    // then
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    List<RequisitionDto> responseList = response.getContent();
+    List<Requisition> expectedRequisitionList = Collections.singletonList(requisition);
+
+    for (int i = 0; i < responseList.size(); i++) {
+      assertEquals(expectedRequisitionList.get(i).getId(), responseList.get(i).getId());
+    }
+  }
+
+  @Test
+  public void shouldApproveSubmittedRequisitionIfSkippedAuthorization() {
+    configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    mockSupervisoryNode();
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+
+    assertEquals(requisition.getId(), response.getId());
+    assertEquals(RequisitionStatus.APPROVED, response.getStatus());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // GET /api/requisitions
+  @Test
+  public void shouldNotInitializeRequisitionWithIncorrectSuggestedPeriodId() {
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, programDto.getId())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldInitiateRequisition() {
+    requisitionRepository.delete(requisition);
+    requisitionRepository.delete(requisitionForSearch);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, programDto.getId())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, period.getId())
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetSubmittedRequisitions() {
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
+
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
+    response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(SUBMITTED_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(response.getClass());
+
+    Iterable<RequisitionDto> requisitions = response.getContent();
+    assertTrue(requisitions.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnOnlySubmittedRequisitionsForWhichUserHasRight() {
+    denyUserRightToProgram(programDto2.getId());
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
+
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
+    response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(SUBMITTED_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(response.getClass());
+
+    List<RequisitionDto> resultList = Lists.newArrayList(response.getContent());
+    assertEquals(1, resultList.size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfUserHasNoRightsToSeeSubmittedRequisitions() {
+    denyUserAllRights();
+
+    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
+    response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(SUBMITTED_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(response.getClass());
+
+    Iterable<RequisitionDto> requisitions = response.getContent();
+    assertFalse(requisitions.iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldAuthorizeRequisition() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    mockSupervisoryNodeSearch();
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(200);
+
+    requisition = requisitionRepository.findOne(requisition.getId());
+    assertEquals(ID, requisition.getSupervisoryNodeId());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNullSkippedRequisitionLineItems() {
+
+    RequisitionDto response = getRequisitionDtoForCheckNullingLineItemsValues();
+
+    List<RequisitionLineItem.Importer> requisitionLineItemsRetrieved =
+        response.getRequisitionLineItems();
+
+    requisitionLineItemsRetrieved.stream()
+        .filter(RequisitionLineItem.Importer::getSkipped)
+        .forEach(line -> {
+          assertEquals(null, line.getBeginningBalance());
+          assertEquals(null, line.getTotalReceivedQuantity());
+          assertEquals(null, line.getTotalLossesAndAdjustments());
+          assertEquals(null, line.getStockOnHand());
+          assertEquals(null, line.getRequestedQuantityExplanation());
+          assertEquals(null, line.getRemarks());
+          assertEquals(null, line.getApprovedQuantity());
+          assertEquals(null, line.getRequestedQuantity());
+          assertEquals(null, line.getTotalConsumedQuantity());
+          assertEquals(null, line.getTotal());
+          assertEquals(null, line.getRequestedQuantityExplanation());
+          assertEquals(null, line.getTotalStockoutDays());
+          assertEquals(null, line.getPacksToShip());
+          assertEquals(null, line.getPricePerPack());
+          assertEquals(null, line.getTotalCost());
+          assertEquals(null, line.getNumberOfNewPatientsAdded());
+          assertEquals(null, line.getAdjustedConsumption());
+          assertEquals(null, line.getAverageConsumption());
+          assertEquals(0, line.getStockAdjustments().size());
+        });
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotNullNotSkippedRequisitionLineItems() {
+
+    RequisitionDto response = getRequisitionDtoForCheckNullingLineItemsValues();
+
+    List<RequisitionLineItem.Importer> requisitionLineItemsRetrieved =
+        response.getRequisitionLineItems();
+
+    requisitionLineItemsRetrieved.stream()
+        .filter(line -> !line.getSkipped())
+        .forEach(line -> {
+          assertNotNull(line.getBeginningBalance());
+          assertNotNull(line.getTotalReceivedQuantity());
+          assertNotNull(line.getTotalLossesAndAdjustments());
+          assertNotNull(line.getStockOnHand());
+          assertNotNull(line.getRequestedQuantityExplanation());
+          assertNotNull(line.getApprovedQuantity());
+          assertNotNull(line.getRequestedQuantity());
+          assertNotNull(line.getTotalConsumedQuantity());
+          assertNotNull(line.getTotal());
+          assertNotNull(line.getRequestedQuantityExplanation());
+          assertNotNull(line.getTotalStockoutDays());
+          assertNotNull(line.getPacksToShip());
+          assertNotNull(line.getNumberOfNewPatientsAdded());
+          assertNotNull(line.getAdjustedConsumption());
+          assertNotNull(line.getAverageConsumption());
+        });
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private RequisitionDto getRequisitionDtoForCheckNullingLineItemsValues() {
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionLineItem.setSkipped(true);
+
+    List<RequisitionLineItem> requisitionLineItems =
+        requisition.getRequisitionLineItems();
+    requisitionLineItems.add(requisitionLineItem);
+
+    requisition.setRequisitionLineItems(requisitionLineItems);
+
+    requisitionRepository.save(requisition);
+
+    mockSupervisoryNodeSearch();
+    return restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+  }
+
+  @Test
+  public void shouldNotAuthorizeIfSkippedAuthorization() {
+    configurationSettingRepository.save(new ConfigurationSetting("skipAuthorization", "true"));
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionRepository.save(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetChosenRequisition() {
+
+    RequisitionDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionDto.class);
+
+    assertTrue(requisitionRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotGetNonexistentRequisition() {
+
+    requisitionRepository.delete(requisition);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 
   @Test
   public void shouldGetApprovedRequisitionsWithSortByAscendingFilterByAndPaging() {
-    // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    int numberOfRequisitions = 20;
+    int pageSize = 10;
+    generateRequisitions(numberOfRequisitions);
+    String filterValue = "facility NameA";
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
-    Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
-
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
-
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
-
-    String filterValue = "Hospital";
-    String filterBy = "facilityName";
-    String sortBy = "facilityCode";
-    Boolean descending = false;
-    int size = 10;
-    int page = 0;
-
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(filterValue), eq(filterBy), eq(sortBy), eq(descending), any(Pageable.class),
-        eq(managedFacilitiesIds)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
-
-    // when
-    PageImplRepresentation response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
-        .queryParam("filterBy", filterBy)
-        .queryParam("sortBy", sortBy)
-        .queryParam("descending", descending.toString())
-        .queryParam("page", page)
-        .queryParam("size", size)
+        .queryParam("filterBy", "facilityName")
+        .queryParam("sortBy", FACILITY_CODE)
+        .queryParam("descending", Boolean.FALSE.toString())
+        .queryParam("page", 0)
+        .queryParam("size", pageSize)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1334,50 +1019,61 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
 
-    // then
-    assertNotNull(response);
-    assertEquals(1, response.getContent().size());
+    Assert.assertEquals(response.getTotalElements(), numberOfRequisitions);
+    Assert.assertEquals(response.getNumberOfElements(), pageSize);
+    Assert.assertTrue(response.isFirst());
+    Assert.assertFalse(response.isLast());
+
+    RequisitionDto previousRequisition = null;
+    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId(), ID)
+        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionWithSupplyingDepotsDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionWithSupplyingDepotsDto>>() {
+        });
+
+    for (RequisitionWithSupplyingDepotsDto dto : content) {
+      RequisitionDto requisition = dto.getRequisition();
+      Assert.assertTrue(requisition.getStatus().equals(RequisitionStatus.APPROVED));
+
+      String facilityName = requisition.getFacility().getName();
+      Assert.assertTrue(facilityName.contains(filterValue));
+
+      List<FacilityDto> facilities = dto.getSupplyingDepots();
+      for (FacilityDto facility : facilities) {
+        Assert.assertTrue(userFacilities.contains(facility.getId()));
+      }
+
+      if (previousRequisition != null) {
+        ProgramDto program1 = previousRequisition.getProgram();
+        ProgramDto program2 = requisition.getProgram();
+
+        Assert.assertTrue(program1.getName().compareTo(program2.getName()) <= 0);
+      }
+
+      previousRequisition = requisition;
+    }
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldGetApprovedRequisitionsWithSortByDescendingFilterByAndPaging() {
-    // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    int numberOfRequisitions = 30;
+    generateRequisitions(numberOfRequisitions);
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
-    Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
-
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
-
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
-
-    String filterValue = "Hospital";
-    String filterBy = "facilityName";
-    String sortBy = "facilityCode";
-    Boolean descending = true;
-    int size = 10;
-    int page = 0;
-
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(filterValue), eq(filterBy), eq(sortBy), eq(descending), any(Pageable.class),
-        eq(managedFacilitiesIds)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
-
-    // when
-    PageImplRepresentation response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam("filterValue", filterValue)
-        .queryParam("filterBy", filterBy)
-        .queryParam("sortBy", sortBy)
-        .queryParam("descending", descending.toString())
-        .queryParam("page", page)
-        .queryParam("size", size)
+        .queryParam("filterValue", FACILITY)
+        .queryParam("filterBy", FACILITY_CODE)
+        .queryParam("sortBy", "programName")
+        .queryParam("descending", Boolean.TRUE.toString())
+        .queryParam("page", 0)
+        .queryParam("size", numberOfRequisitions)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1385,31 +1081,62 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
 
-    // then
-    assertNotNull(response);
-    assertEquals(1, response.getContent().size());
+    Assert.assertEquals(response.getTotalElements(), numberOfRequisitions);
+    Assert.assertEquals(response.getNumberOfElements(), numberOfRequisitions);
+    Assert.assertTrue(response.isFirst());
+    Assert.assertTrue(response.isLast());
+
+    RequisitionDto previousRequisition = null;
+    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+        .getFulfillmentFacilities(user.getId(), ID)
+        .stream().map(FacilityDto::getId).collect(Collectors.toSet());
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionWithSupplyingDepotsDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionWithSupplyingDepotsDto>>() {
+        });
+
+    for (RequisitionWithSupplyingDepotsDto dto : content) {
+      RequisitionDto requisition = dto.getRequisition();
+      Assert.assertTrue(requisition.getStatus().equals(RequisitionStatus.APPROVED));
+
+      String facilityCode = requisition.getFacility().getCode();
+      Assert.assertTrue(facilityCode.contains(FACILITY));
+
+      List<FacilityDto> facilities = dto.getSupplyingDepots();
+      for (FacilityDto facility : facilities) {
+        Assert.assertTrue(userFacilities.contains(facility.getId()));
+      }
+
+      if (previousRequisition != null) {
+        ProgramDto program1 = previousRequisition.getProgram();
+        ProgramDto program2 = requisition.getProgram();
+
+        Assert.assertTrue(program1.getName().compareTo(program2.getName()) >= 0);
+      }
+
+      previousRequisition = requisition;
+    }
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotGetApprovedRequisitionsIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    generateRequisitions(5);
+    final String fulfillmentFacilitiesResult = "[]";
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
-
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        any(UUID.class), eq(right.getId()))).willReturn(Collections.emptySet());
-
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        any(), any(), any(), any(), any(), eq(Collections.emptyList())))
-        .willReturn(Pagination.getPage(Collections.emptyList(), null));
+    wireMockRule.stubFor(
+        get(urlMatching("/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(fulfillmentFacilitiesResult)));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -1419,34 +1146,38 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(PageImplRepresentation.class);
 
     // then
-    assertNotNull(response);
-    assertEquals(0, response.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertEquals(response.getContent().size(), 0);
   }
 
   @Test
   public void shouldGetApprovedRequisitionsWithUserFulfillmentRights() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    int requisitionsAmount = 5;
+    generateRequisitions(requisitionsAmount);
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
-    Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
+    wireMockRule.stubFor(get(
+        urlMatching("/api/facilities/supplying.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("[]")));
 
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
+    for (Requisition requisition : requisitionRepository.findAll()) {
+      if (requisition.getFacilityId().toString().equals(FACILITY_ID)) {
+        ValueMatchingStrategy strategy = new ValueMatchingStrategy();
+        strategy.setMatches(requisition.getProgramId().toString());
 
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
-
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        any(), any(), any(), any(), any(), eq(managedFacilitiesIds)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+        // This mocks searching for supplying facilities
+        wireMockRule.stubFor(get(
+            urlMatching("/api/facilities/supplying.*"))
+            .withQueryParam("programId", strategy)
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(MOCK_SEARCH_SUPPLYING_FACILITY_RESULT)));
+      }
+    }
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageImplRepresentation<RequisitionWithSupplyingDepotsDto> response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -1456,185 +1187,394 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(PageImplRepresentation.class);
 
     // then
-    assertNotNull(response);
-    assertEquals(1, response.getContent().size());
+    assertEquals(requisitionsAmount, response.getNumberOfElements());
+
+    //Extract typed content from the PageImpl response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.findAndRegisterModules();
+    List<RequisitionWithSupplyingDepotsDto> content = mapper.convertValue(response.getContent(),
+        new TypeReference<List<RequisitionWithSupplyingDepotsDto>>() {
+        });
+
+    for (RequisitionWithSupplyingDepotsDto dto : content) {
+      Assert.assertTrue(dto.getRequisition().getStatus().equals(RequisitionStatus.APPROVED));
+    }
+  }
+
+  @Test
+  public void shouldNotInitiateIfFacilityDoesNotSupportProgram() throws Exception {
+    UUID programId = UUID.randomUUID();
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, programId)
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(facilityDto.getId(), programId)));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // POST /api/requisitions/convertToOrder
+  @Test
+  public void shouldNotSubmitIfFacilityDoesNotSupportProgram() throws Exception {
+    UUID programId = UUID.randomUUID();
+    setProgramIdInRequisitionAndTemplate(programId);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(getSharedFacilityId(), programId)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeIfFacilityDoesNotSupportProgram() throws Exception {
+    UUID programId = UUID.randomUUID();
+    setProgramIdInRequisitionAndTemplate(programId);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(getSharedFacilityId(), programId)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveIfFacilityDoesNotSupportProgram() throws Exception {
+    UUID programId = UUID.randomUUID();
+    setProgramIdInRequisitionAndTemplate(programId);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(BAD_REQUEST.value())
+        .body(MESSAGE, equalTo(getMessage(getSharedFacilityId(), programId)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotInitiateIfUserHasNoRight() throws Exception {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, programDto.getId())
+        .queryParam(FACILITY, facilityDto.getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitIfUserHasNoRight() throws Exception {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteIfUserHasNoRight() throws Exception {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotRetrieveIfUserHasNoRight() throws Exception {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveIfUserHasNoRight() throws Exception {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeIfUserHasNoRight() throws Exception {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 
   @Test
   public void shouldConvertRequisitionToOrder() {
-    // given
-    ConvertToOrderDto convertDto = new ConvertToOrderDto();
-    convertDto.setSupplyingDepotId(UUID.randomUUID());
-    convertDto.setRequisitionId(UUID.randomUUID());
-    List<ConvertToOrderDto> requisitions = Collections.singletonList(convertDto);
 
-    doNothing().when(permissionService).canConvertToOrder(eq(requisitions));
-    doNothing().when(requisitionService).convertToOrder(any(), any());
+    Requisition requisition = new Requisition();
+    requisition.setProgramId(programDto.getId());
+    requisition.setFacilityId(facilityDto.getId());
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisition.setEmergency(false);
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
 
-    // when
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, "subject"));
+    configurationSettingRepository.save(
+        new ConfigurationSetting(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, "content"));
+
+    wireMockRule.stubFor(
+        post(urlMatching("/api/orders.*"))
+            .willReturn(aResponse().withStatus(200)));
+
+    requisitionRepository.save(requisition);
+
+    UUID supplyingFacility = FACILITY_UUID;
+    ConvertToOrderDto convertToOrderDto = new ConvertToOrderDto(
+        requisition.getId(), supplyingFacility
+    );
+
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(requisitions)
+        .body(Collections.singletonList(convertToOrderDto))
         .when()
-        .post(CONVERT_TO_ORDER_URL)
+        .post("/api/requisitions/convertToOrder")
         .then()
         .statusCode(201);
 
-    // then
-    verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
-    // given
-    ConvertToOrderDto convertDto = new ConvertToOrderDto();
-    convertDto.setSupplyingDepotId(UUID.randomUUID());
-    convertDto.setRequisitionId(UUID.randomUUID());
-    List<ConvertToOrderDto> requisitions = Collections.singletonList(convertDto);
+  public void shouldNotConvertRequisitionToOrderIfSupplyingDepotsNotProvided() {
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), null);
 
-    doNothing().when(permissionService).canConvertToOrder(eq(requisitions));
-
-    String errorKey = MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(requisitionService).convertToOrder(any(), any());
-
-    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(requisitions)
+        .body(Collections.singletonList(convertToOrderDto))
         .when()
-        .post(CONVERT_TO_ORDER_URL)
+        .post("/api/requisitions/convertToOrder")
         .then()
         .statusCode(400);
-
-    // then
-    verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private void mockCanDeleteRequisition(Requisition requisition) {
-    doNothing().when(permissionService).canDeleteRequisition(requisition.getId());
+  @Test
+  public void shouldNotConvertRequisitionToOrderIfUserHasNoFulfillmentRightsForFacility() {
+    final String fulfillmentFacilitiesResult = "[]";
+    UUID supplyingFacility = FACILITY_UUID;
+
+    wireMockRule.stubFor(
+        get(urlMatching("/api/users/" + UUID_REGEX + "/fulfillmentFacilities.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody(fulfillmentFacilitiesResult)));
+
+    ConvertToOrderDto convertToOrderDto =
+        new ConvertToOrderDto(requisition.getId(), supplyingFacility);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(Collections.singletonList(convertToOrderDto))
+        .when()
+        .post("/api/requisitions/convertToOrder")
+        .then()
+        .statusCode(400);
   }
 
-  private void mockValidationSuccess() {
-    given(statusMessageRepository.save(any(StatusMessage.class))).willReturn(null);
-    doNothing().when(requisitionStatusProcessor).statusChange(any(Requisition.class));
+  private Requisition configureRequisition(Requisition requisition) {
+    requisition.setFacilityId(facilityDto.getId());
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setProgramId(programDto.getId());
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setCreatedDate(createdDate);
+    requisition.setEmergency(false);
+    requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
 
-    doNothing().when(requisitionValidator).validate(any(Object.class), any(Errors.class));
-    doNothing().when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(any(UUID.class), any(UUID.class));
+    return requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
   }
 
-  private void mockRequisitionDtoBuilderResponses() {
-    given(requisitionDtoBuilder.build(any(Requisition.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
-        .willAnswer(new BuildListOfRequisitionDtosAnswer());
+  private Requisition configureRequisitionForSearch(Requisition requisition) {
+    requisition.setFacilityId(FACILITY_UUID);
+    requisition.setProcessingPeriodId(PERIOD_UUID);
+    requisition.setProgramId(PROGRAM_UUID);
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setCreatedDate(createdDate);
+    requisition.setEmergency(false);
+    requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
+
+    return requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
   }
 
-  private void mockRepositorySaveAnswer() {
-    given(requisitionRepository.save(any(Requisition.class))).willAnswer(new SaveAnswer<>());
+  private Requisition generateRequisition(RequisitionStatus requisitionStatus, UUID facility) {
+    Requisition requisition = new Requisition(facility, UUID.randomUUID(), UUID.randomUUID(),
+        requisitionStatus, true);
+    requisition.setCreatedDate(createdDate.now());
+    requisition.setTemplate(template);
+    requisition.setNumberOfMonthsInPeriod(1);
+    requisitionRepository.saveWithStatusChange(requisition, UUID.randomUUID());
+
+    return requisition;
   }
 
-  private ValidationMessageException mockValidationException(String key, Object... args) {
-    ValidationMessageException exception = mock(ValidationMessageException.class);
-    Message errorMessage = new Message(key, args);
-    given(exception.asMessage()).willReturn(errorMessage);
-
-    return exception;
-  }
-
-  private ContentNotFoundMessageException mockNotFoundException(String key, Object... args) {
-    ContentNotFoundMessageException exception = mock(ContentNotFoundMessageException.class);
-    Message errorMessage = new Message(key, args);
-    given(exception.asMessage()).willReturn(errorMessage);
-
-    return exception;
-  }
-
-  private List<Requisition> generateRequisitionsWithMockedAccess(RequisitionStatus... statuses) {
-    List<Requisition> requisitions = new ArrayList<>();
-
-    for (RequisitionStatus status : statuses) {
-      Requisition requisition = generateRequisition(status);
-      requisitions.add(requisition);
-
-      doNothing().when(permissionService).canViewRequisition(requisition.getId());
-    }
-
-    return requisitions;
-  }
-
-  private String getMessage(String messageKey, Object... messageParams) {
-    return messageService.localize(new Message(messageKey, messageParams)).asMessage();
-  }
-
-  protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {
-
-    @Override
-    public RequisitionDto answer(InvocationOnMock invocation) throws Throwable {
-      Requisition requisition = (Requisition) invocation.getArguments()[0];
-
-      if (null == requisition) {
-        return null;
-      }
-
-      return export(requisition);
-    }
-
-    public static RequisitionDto export(Requisition requisition) {
-      RequisitionDto dto = new RequisitionDto();
-      requisition.export(dto);
-
-      dto.setTemplate(requisition.getTemplate());
-      dto.setRequisitionLineItems(Collections.emptyList());
-
-      FacilityDto facility = null;
-      if (requisition.getFacilityId() != null) {
-        facility = new FacilityDto();
-        facility.setId(requisition.getFacilityId());
-      }
-
-      ProgramDto program = null;
-      if (requisition.getProgramId() != null) {
-        program = new ProgramDto();
-        program.setId(requisition.getProgramId());
-      }
-
-      ProcessingPeriodDto period = null;
-      if (requisition.getSupervisoryNodeId() != null) {
-        period = new ProcessingPeriodDto();
-        period.setId(requisition.getProcessingPeriodId());
-      }
-
-      dto.setProcessingPeriod(period);
-      dto.setFacility(facility);
-      dto.setProgram(program);
-
-      return dto;
+  private void generateRequisitions(int amount) {
+    for (int i = 0; i < amount; i++) {
+      generateRequisition(RequisitionStatus.APPROVED, UUID.fromString(FACILITY_ID));
+      generateRequisition(RequisitionStatus.APPROVED, getSharedFacilityId());
+      generateRequisition(RequisitionStatus.SUBMITTED, UUID.randomUUID());
     }
   }
 
-  protected static class BuildListOfRequisitionDtosAnswer implements Answer<List<RequisitionDto>> {
+  private Map<String, RequisitionTemplateColumn> generateTemplateColumns() {
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
 
-    @Override
-    public List<RequisitionDto> answer(InvocationOnMock invocation) throws Throwable {
-      Collection<Requisition> collection = (Collection) invocation.getArguments()[0];
+    for (AvailableRequisitionColumn columnDefinition :
+        availableRequisitionColumnRepository.findAll()) {
+      RequisitionTemplateColumn column = new RequisitionTemplateColumn(columnDefinition);
+      column.setName(columnDefinition.getName());
+      column.setLabel(columnDefinition.getLabel());
+      column.setIsDisplayed(true);
 
-      if (null == collection) {
-        return null;
+      if (!isEmpty(columnDefinition.getOptions())) {
+        column.setOption(columnDefinition.getOptions().iterator().next());
+      }
+      if (!isEmpty(columnDefinition.getSources())) {
+        column.setSource(columnDefinition.getSources().iterator().next());
       }
 
-      return collection
-          .stream()
-          .map(BuildRequisitionDtoAnswer::export)
-          .collect(Collectors.toList());
+      columns.put(columnDefinition.getName(), column);
     }
+    return columns;
+  }
+
+  private void mockSupervisoryNodeSearch() {
+    wireMockRule.stubFor(
+        get(urlMatching(SUPERVISORY_SEARCH_URL + ".*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("[{ \"id\":\"" + ID + "\"}]"))
+    );
+  }
+
+  private void mockSupervisoryNode() {
+    wireMockRule.stubFor(
+        get(urlMatching(SUPERVISORY_URL + UUID_REGEX + ".*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{"
+                    + "\"id\":\"" + supervisoryNode.getId() + "\",\n"
+                    + "\"code\":\"C1234\",\n"
+                    + "\"name\":\"N1234\",\n"
+                    + "\"description\":\"D1234\"\n"
+                    + "}"))
+    );
+  }
+
+  private void mockDetailedRoleAssignmentDto() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/roleAssignments.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("[{ "
+                    + "\"role\":{ \"rights\":" + MOCK_RIGHT_SEARCH + "},"
+                    + " \"programId\":\"86191d25-4846-4775-a968-12df732e6004\","
+                    + " \"supervisoryNodeId\":\"bb0c6821-df46-44d2-ba3f-48f613abe4c4\" }]"))
+    );
+  }
+
+  private void mockFacility() {
+    wireMockRule.stubFor(get(urlMatching("/api/facilities/aaf12a5a-8b16-11e6-ae22-56b6b6499611.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody("{"
+                + " \"id\":\"aaf12a5a-8b16-11e6-ae22-56b6b6499611\",\n"
+                + " \"name\":\"facilityName\",\n"
+                + " \"code\":\"facilityCode\",\n"
+                + " \"active\":true,\n"
+                + " \"enabled\":true,\n"
+                + " \"geographicZone\":\"bf2b810b-cdbf-48b2-b569-149b3cf42387\","
+                + " \"operator\":\"9456c3e9-c4a6-4a28-9e08-47ceb16a4121\","
+                + " \"type\":\"ac1d268b-ce10-455f-bf87-9c667da8f060\""
+                + "}")));
+  }
+
+  private void setProgramIdInRequisitionAndTemplate(UUID programId) {
+    requisition.setProgramId(programId);
+    requisitionRepository.save(requisition);
+    template.setProgramId(requisition.getProgramId());
+    requisitionTemplateRepository.save(template);
+  }
+
+  private String getMessage(UUID facilityId, UUID programId) {
+    return messageSource.getMessage("requisition.error.facility-does-not-support-program",
+        new Object[]{facilityId, programId}, LocaleContextHolder.getLocale());
   }
 }

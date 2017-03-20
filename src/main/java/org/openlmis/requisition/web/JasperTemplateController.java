@@ -81,6 +81,7 @@ public class JasperTemplateController extends BaseController {
   public void createJasperReportTemplate(
       @RequestPart("file") MultipartFile file, String name, String description)
       throws ReportingException {
+
     permissionService.canEditReportTemplates();
 
     JasperTemplate jasperTemplateToUpdate = jasperTemplateRepository.findByName(name);
