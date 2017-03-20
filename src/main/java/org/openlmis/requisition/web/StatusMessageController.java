@@ -38,13 +38,16 @@ import java.util.stream.Collectors;
 public class StatusMessageController extends BaseController {
 
   @Autowired
-  StatusMessageRepository statusMessageRepository;
+  private StatusMessageRepository statusMessageRepository;
 
   @Autowired
-  PermissionService permissionService;
+  private PermissionService permissionService;
 
   /**
    * Get all status messages for the specified requisition.
+   *
+   * @param id ID of requisition to get messages for.
+   * @return List of status messages.
    */
   @RequestMapping(value = "/requisitions/{id}/statusMessages", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)

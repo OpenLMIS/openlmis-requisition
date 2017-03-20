@@ -15,64 +15,69 @@
 
 package org.openlmis.requisition.web;
 
-import net.sf.jasperreports.engine.JRException;
+import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
+
   private static final String PRINT_URL = "/api/requisitions/{id}/print";
 
-  @Autowired
+  @MockBean
   private RequisitionRepository requisitionRepository;
 
-  @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
+  @Before
+  public void setUp() {
+    mockUserAuthenticated();
+  }
+
+  // GET /api/requisitions/{id}/print
 
   @Test
-  public void shouldNotPrintRequisitionIfDoesNotExist() {
+  public void shouldNotPrintRequisitionWhenDoesNotExist() {
+    // given
+    given(requisitionRepository.findOne(anyUuid())).willReturn(null);
+
+    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .when()
         .get(PRINT_URL)
         .then()
         .statusCode(404);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldPrintRequisition() throws IOException, JRException {
-    Requisition requisition = generateRequisition();
+  public void shouldPrintRequisitionWhenExists() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
 
+    // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON)
         .pathParam("id", requisition.getId())
         .when()
         .get(PRINT_URL)
         .then()
         .statusCode(200);
-  }
 
-  private Requisition generateRequisition() {
-    RequisitionTemplate template = requisitionTemplateRepository.save(new RequisitionTemplate());
-    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), RequisitionStatus.INITIATED, true);
-
-    requisition.setId(UUID.randomUUID());
-    requisition.setCreatedDate(ZonedDateTime.now());
-    requisition.setTemplate(template);
-    requisition.setNumberOfMonthsInPeriod(1);
-    return requisitionRepository.save(requisition);
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

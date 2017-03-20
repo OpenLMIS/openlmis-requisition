@@ -493,7 +493,14 @@ resourceTypes:
               responses:
                   200:
                       body:
+#                        application/vnd.ms-excel:
                         application/pdf:
+#                        text/html:
+#                        text/csv:
+                  404:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /{id}/statusMessages:
           get:
               is: [ secured ]
@@ -636,6 +643,10 @@ resourceTypes:
                   schema: convertToOrderDtoArray
               responses:
                   "201":
+                  "400":
+                      body:
+                        application/json:
+                          schema: localizedMessage
                   "403":
                       body:
                         application/json:
