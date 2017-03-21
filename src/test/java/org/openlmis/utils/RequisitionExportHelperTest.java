@@ -156,7 +156,7 @@ public class RequisitionExportHelperTest {
         singletonList(requisitionLineItem)));
     orderableDto = new OrderableDto();
     orderableDto.setId(UUID.randomUUID());
-    orderableDto.setPackSize(PACK_SIZE);
+    orderableDto.setNetContent(PACK_SIZE);
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,

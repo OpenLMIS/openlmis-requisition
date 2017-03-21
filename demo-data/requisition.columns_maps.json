@@ -25,7 +25,7 @@
   {
     "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
     "key": "productName",
-    "name": "orderable.name",
+    "name": "orderable.fullProductName",
     "label": "Product",
     "indicator": "R",
     "displayOrder": 3,
@@ -306,7 +306,7 @@
   {
     "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "key": "productName",
-    "name": "orderable.name",
+    "name": "orderable.fullProductName",
     "label": "Product",
     "indicator": "R",
     "displayOrder": 3,
@@ -586,7 +586,7 @@
   {
     "requisitionTemplateId": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "key": "productName",
-    "name": "orderable.name",
+    "name": "orderable.fullProductName",
     "label": "Product",
     "indicator": "R",
     "displayOrder": 3,

@@ -420,7 +420,7 @@
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productName").getIsDisplayed() ? $F{orderable}.getName() : null]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productName").getIsDisplayed() ? $F{orderable}.getFullProductName() : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="productCode" x="10" y="0" width="50" height="20" uuid="364650f2-c5ab-49b6-b74a-89aa733eeda5">

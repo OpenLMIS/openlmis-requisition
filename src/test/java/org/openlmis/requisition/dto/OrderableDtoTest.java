@@ -44,7 +44,7 @@ public class OrderableDtoTest {
   @Test
   public void shouldCalculatePacksToOrderWhenPackRoundingThresholdIsSmallerThanRemainder() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(10);
+    productDto.setNetContent(10);
     productDto.setPackRoundingThreshold(4);
     productDto.setRoundToZero(false);
 
@@ -56,7 +56,7 @@ public class OrderableDtoTest {
   @Test
   public void shouldCalculatePacksToOrderWhenPackRoundingThresholdIsGreaterThanRemainder() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(10);
+    productDto.setNetContent(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(false);
 
@@ -68,7 +68,7 @@ public class OrderableDtoTest {
   @Test
   public void shouldCalculatePacksToOrderWhenCanRoundToZero() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(10);
+    productDto.setNetContent(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
 
@@ -80,7 +80,7 @@ public class OrderableDtoTest {
   @Test
   public void shouldCalculatePacksToOrderWhenCanNotRoundToZero() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(10);
+    productDto.setNetContent(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(false);
 
@@ -90,9 +90,9 @@ public class OrderableDtoTest {
   }
 
   @Test
-  public void shouldReturnZeroPacksToOrderIfPackSizeIsZero() {
+  public void shouldReturnZeroPacksToOrderIfNetContentIsZero() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(0);
+    productDto.setNetContent(0);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
     long packsToOrder = productDto.packsToOrder(6);
@@ -103,7 +103,7 @@ public class OrderableDtoTest {
   @Test
   public void shouldReturnZeroPacksToOrderIfOrderQuantityIsZero() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(10);
+    productDto.setNetContent(10);
     productDto.setRoundToZero(false);
 
     long packsToOrder = productDto.packsToOrder(0);
@@ -112,9 +112,9 @@ public class OrderableDtoTest {
   }
 
   @Test
-  public void shouldReturnZeroPackToOrderIfOrderQuantityIsOneAndRoundToZeroTrueWithPackSizeTen() {
+  public void shouldReturnZeroPackToOrderIfOrderQuantityIsOneAndRoundToZeroTrueWithNetContentTen() {
     OrderableDto productDto = new OrderableDto();
-    productDto.setPackSize(10);
+    productDto.setNetContent(10);
     productDto.setPackRoundingThreshold(7);
     productDto.setRoundToZero(true);
 
@@ -126,7 +126,7 @@ public class OrderableDtoTest {
   @Test
   public void shouldNotRoundUpWhenEqualToThreshold() {
     OrderableDto product = new OrderableDto();
-    product.setPackSize(100);
+    product.setNetContent(100);
     product.setPackRoundingThreshold(50);
 
     long packsToOrder = product.packsToOrder(250);
