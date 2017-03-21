@@ -57,6 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -145,11 +146,11 @@ public abstract class BaseWebIntegrationTest {
     return UUID.randomUUID().toString();
   }
 
-  protected Requisition generateRequisition() {
+  protected final Requisition generateRequisition() {
     return generateRequisition(RequisitionStatus.INITIATED);
   }
 
-  protected Requisition generateRequisition(RequisitionStatus requisitionStatus) {
+  protected final Requisition generateRequisition(RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition(
         UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), requisitionStatus, true);
 
@@ -157,10 +158,36 @@ public abstract class BaseWebIntegrationTest {
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setRequisitionLineItems(new ArrayList<>());
-    requisition.setTemplate(new RequisitionTemplate());
+    requisition.setTemplate(generateRequisitionTemplate());
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
+  }
+
+  protected final RequisitionTemplate generateRequisitionTemplate() {
+    RequisitionTemplate template = new RequisitionTemplate();
+
+    template.setId(UUID.randomUUID());
+    template.setColumnsMap(new HashMap<>());
+    template.setProgramId(UUID.randomUUID());
+    template.setNumberOfPeriodsToAverage(1);
+
+    return template;
+  }
+
+  protected void mockExternalAuthorization() {
+    // This mocks the auth check to always return valid admin credentials.
+    wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_CHECK_RESULT)));
+
+    // This mocks the auth token request response
+    wireMockRule.stubFor(post(urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
+
   }
 
   protected static class SaveAnswer<T extends BaseEntity> implements Answer<T> {
@@ -189,21 +216,6 @@ public abstract class BaseWebIntegrationTest {
     void extraSteps(T obj) {
       // should be overridden if any extra steps are required.
     }
-
-  }
-
-  private void mockExternalAuthorization() {
-    // This mocks the auth check to always return valid admin credentials.
-    wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_CHECK_RESULT)));
-
-    // This mocks the auth token request response
-    wireMockRule.stubFor(post(urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
 
   }
 }
