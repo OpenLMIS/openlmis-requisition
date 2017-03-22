@@ -372,7 +372,7 @@ public class RequisitionController extends BaseController {
     }).collect(Collectors.toList());
 
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
-    return Pagination.getPage(dtoList, pageable, requisitionsPage.getTotalElements());
+    return Pagination.getPage(dtoList, pageable, dtoList.size());
   }
 
   /**
@@ -495,7 +495,7 @@ public class RequisitionController extends BaseController {
 
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
 
-    return Pagination.getPage(dtoList, pageable, submittedRequisitionsPage.getTotalElements());
+    return Pagination.getPage(dtoList, pageable, dtoList.size());
   }
 
   /**
