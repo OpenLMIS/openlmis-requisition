@@ -16,9 +16,11 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
+import org.openlmis.requisition.dto.StatusChangeDto;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.StatusMessageRepository;
@@ -93,6 +95,14 @@ public class OrderDtoBuilder {
             ))
             .collect(Collectors.toList())
     );
+
+    List<StatusChangeDto> statusChanges = new ArrayList<>();
+    for (StatusChange statusChange : requisition.getStatusChanges()) {
+      StatusChangeDto statusChangeDto = new StatusChangeDto();
+      statusChange.export(statusChangeDto);
+      statusChanges.add(statusChangeDto);
+    }
+    order.setStatusChanges(statusChanges);
 
     order.setCreatedBy(user);
 

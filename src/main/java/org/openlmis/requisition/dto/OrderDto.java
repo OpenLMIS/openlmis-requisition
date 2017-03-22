@@ -48,4 +48,5 @@ public class OrderDto {
   private BigDecimal quotedCost;
   private List<OrderLineItemDto> orderLineItems;
   private List<StatusMessageDto> statusMessages;
+  private List<StatusChangeDto> statusChanges;
 }
