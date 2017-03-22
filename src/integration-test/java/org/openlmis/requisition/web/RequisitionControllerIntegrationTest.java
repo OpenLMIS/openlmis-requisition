@@ -88,6 +88,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -1240,13 +1241,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotGetApprovedRequisitionsIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
-
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        anyUuid(), eq(right.getId()))).willReturn(Collections.emptySet());
-
+    mockConvertToOrderRightAndFulfillmentFacilities();
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
         any(), any(), any(), any(), any(), eq(Collections.emptyList())))
         .willReturn(Pagination.getPage(Collections.emptyList(), null));
@@ -1269,17 +1264,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithUserFulfillmentRights() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
-
     FacilityDto facility = new FacilityDto();
     facility.setId(UUID.randomUUID());
-    Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
-
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
+    List<UUID> managedFacilitiesIds = mockConvertToOrderRightAndFulfillmentFacilities(facility);
 
     RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
@@ -1306,10 +1293,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldConvertRequisitionToOrder() {
     // given
-    ConvertToOrderDto convertDto = new ConvertToOrderDto();
-    convertDto.setSupplyingDepotId(UUID.randomUUID());
-    convertDto.setRequisitionId(UUID.randomUUID());
-    List<ConvertToOrderDto> requisitions = Collections.singletonList(convertDto);
+    List<ConvertToOrderDto> requisitions = Collections.singletonList(generateConvertToOrderDto());
 
     doNothing().when(permissionService).canConvertToOrder(eq(requisitions));
     doNothing().when(requisitionService).convertToOrder(any(), any());
@@ -1332,10 +1316,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
     // given
-    ConvertToOrderDto convertDto = new ConvertToOrderDto();
-    convertDto.setSupplyingDepotId(UUID.randomUUID());
-    convertDto.setRequisitionId(UUID.randomUUID());
-    List<ConvertToOrderDto> requisitions = Collections.singletonList(convertDto);
+    List<ConvertToOrderDto> requisitions = Collections.singletonList(generateConvertToOrderDto());
 
     doNothing().when(permissionService).canConvertToOrder(eq(requisitions));
 
@@ -1406,6 +1387,23 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .checkIfFacilitySupportsProgram(facilityId, programId);
   }
 
+  private List<UUID> mockConvertToOrderRightAndFulfillmentFacilities(FacilityDto... facilities) {
+    RightDto right = new RightDto();
+    right.setId(UUID.randomUUID());
+    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+
+    Set<FacilityDto> facilitySet = new HashSet<>();
+    Collections.addAll(facilitySet, facilities);
+
+    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
+        anyUuid(), eq(right.getId()))).willReturn(facilitySet);
+
+    return facilitySet
+        .stream()
+        .map(FacilityDto::getId)
+        .collect(Collectors.toList());
+  }
+
   private void mockRequisitionDtoBuilderResponses() {
     given(requisitionDtoBuilder.build(any(Requisition.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
@@ -1439,6 +1437,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(exception.asMessage()).willReturn(errorMessage);
 
     return exception;
+  }
+
+  private ConvertToOrderDto generateConvertToOrderDto() {
+    ConvertToOrderDto convertDto = new ConvertToOrderDto();
+    convertDto.setSupplyingDepotId(UUID.randomUUID());
+    convertDto.setRequisitionId(UUID.randomUUID());
+
+    return convertDto;
   }
 
   private List<Requisition> generateRequisitionsWithMockedAccess(RequisitionStatus... statuses) {
