@@ -57,6 +57,8 @@ import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.CurrencyConfig;
@@ -74,6 +76,7 @@ import org.openlmis.utils.RequisitionHelper;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
+@TypeName("Requisition")
 @Table(name = "requisitions")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -95,6 +98,7 @@ public class Requisition extends BaseTimestampedEntity {
       fetch = FetchType.EAGER,
       orphanRemoval = true)
   @Fetch(FetchMode.SELECT)
+  @DiffIgnore
   @Getter
   @Setter
   private List<RequisitionLineItem> requisitionLineItems;
@@ -104,6 +108,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @ManyToOne
   @JoinColumn(name = "templateId", nullable = false)
+  @DiffIgnore
   @Getter
   @Setter
   private RequisitionTemplate template;
@@ -140,6 +145,7 @@ public class Requisition extends BaseTimestampedEntity {
   @OneToMany(
       mappedBy = "requisition",
       cascade = {CascadeType.REFRESH, CascadeType.REMOVE})
+  @DiffIgnore
   @Getter
   @Setter
   private List<StatusChange> statusChanges;
@@ -163,6 +169,7 @@ public class Requisition extends BaseTimestampedEntity {
   @JoinTable(name = "requisitions_previous_requisitions",
       joinColumns = {@JoinColumn(name = "requisitionId")},
       inverseJoinColumns = {@JoinColumn(name = "previousRequisitionId")})
+  @DiffIgnore
   @Getter
   @Setter
   private List<Requisition> previousRequisitions;

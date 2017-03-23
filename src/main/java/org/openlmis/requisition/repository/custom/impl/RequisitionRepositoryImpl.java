@@ -30,7 +30,6 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
@@ -280,7 +279,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param userId the user ID that changed the status
    * @return the saved requisition object
    */
-  @Transactional
   public Requisition saveWithStatusChange(Requisition requisition, UUID userId) {
 
     Requisition persistedRequisition = null;
