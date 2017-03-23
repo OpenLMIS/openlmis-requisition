@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -31,8 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,10 +39,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import java.util.UUID;
-
-import javax.validation.Valid;
 
 @Controller
 @Transactional
@@ -63,25 +59,25 @@ public class RequisitionTemplateController extends BaseController {
   @Autowired
   private PermissionService permissionService;
 
-  @InitBinder
-  protected void initBinder(final WebDataBinder binder) {
-    binder.addValidators(validator);
-  }
-
   /**
    * Allows creating a new Requisition Template.
    * If the id is specified, it will be ignored.
    *
-   * @param requisitionTemplate A requisitionTemplate bound to the request body
-   * @param bindingResult       Object used for validation.
+   * @param requisitionTemplateDto A requisitionTemplateDto bound to the request body.
+   * @param bindingResult          Object used for validation.
    * @return created requisitionTemplate.
    */
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public RequisitionTemplate createRequisitionTemplate(
-      @RequestBody @Valid RequisitionTemplate requisitionTemplate, BindingResult bindingResult) {
+      @RequestBody RequisitionTemplateDto requisitionTemplateDto, BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
+
+    RequisitionTemplate requisitionTemplate =
+        RequisitionTemplate.newInstance(requisitionTemplateDto);
+
+    validator.validate(requisitionTemplate, bindingResult);
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }
@@ -102,17 +98,17 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Iterable<RequisitionTemplate> getAllRequisitionTemplates() {
+  public Iterable<RequisitionTemplateDto> getAllRequisitionTemplates() {
     permissionService.canManageRequisitionTemplate();
 
-    return requisitionTemplateRepository.findAll();
+    return RequisitionTemplateDto.newInstance(requisitionTemplateRepository.findAll());
   }
 
   /**
    * Allows updating requisitionTemplates.
    *
    * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
-   * @param requisitionTemplate   A requisitionTemplate bound to the request body
+   * @param requisitionTemplateDto   A requisitionTemplateDto bound to the request body
    * @param bindingResult         Object used for validation.
    * @return updated requisitionTemplate.
    */
@@ -121,9 +117,14 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseBody
   public RequisitionTemplate updateRequisitionTemplate(
       @PathVariable("id") UUID requisitionTemplateId,
-      @RequestBody @Valid RequisitionTemplate requisitionTemplate,
+      @RequestBody RequisitionTemplateDto requisitionTemplateDto,
       BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
+
+    RequisitionTemplate requisitionTemplate =
+        RequisitionTemplate.newInstance(requisitionTemplateDto);
+
+    validator.validate(requisitionTemplate, bindingResult);
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }
@@ -155,7 +156,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RequisitionTemplate getRequisitionTemplate(
+  public RequisitionTemplateDto getRequisitionTemplate(
       @PathVariable("id") UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate();
 
@@ -165,7 +166,7 @@ public class RequisitionTemplateController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
-      return requisitionTemplate;
+      return RequisitionTemplateDto.newInstance(requisitionTemplate);
     }
   }
 
@@ -197,9 +198,10 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RequisitionTemplate getTemplateByProgram(
+  public RequisitionTemplateDto getTemplateByProgram(
       @RequestParam(value = "program", required = false) UUID program) {
     permissionService.canManageRequisitionTemplate();
-    return requisitionTemplateService.getTemplateForProgram(program);
+    return RequisitionTemplateDto.newInstance(
+        requisitionTemplateService.getTemplateForProgram(program));
   }
 }

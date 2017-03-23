@@ -15,12 +15,16 @@
 
 package org.openlmis.requisition.domain;
 
+import static java.util.Objects.isNull;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
+import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
 import java.util.HashSet;
 import java.util.Set;
-
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -32,9 +36,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "available_requisition_columns", schema = "requisition")
@@ -124,5 +125,105 @@ public class AvailableRequisitionColumn extends BaseEntity {
         .append(definition)
         .append(columnType)
         .toHashCode();
+  }
+
+  /**
+   * Create a new instance of available requisition column based on data from {@link Importer}
+   *
+   * @param importer instance of {@link Importer}
+   * @return new instance of available requisition column.
+   */
+  public static AvailableRequisitionColumn newInstance(Importer importer) {
+    if (isNull(importer)) {
+      return null;
+    }
+    AvailableRequisitionColumn availableRequisitionColumn = new AvailableRequisitionColumn();
+    availableRequisitionColumn.setId(importer.getId());
+    availableRequisitionColumn.setName(importer.getName());
+    availableRequisitionColumn.setSources(importer.getSources());
+    availableRequisitionColumn.setOptions(new HashSet<>());
+    importer.getOptions().forEach(option -> availableRequisitionColumn.getOptions()
+        .add(AvailableRequisitionColumnOption.newInstance(option)));
+    availableRequisitionColumn.setLabel(importer.getLabel());
+    availableRequisitionColumn.setIndicator(importer.getIndicator());
+    availableRequisitionColumn.setMandatory(importer.getMandatory());
+    availableRequisitionColumn.setIsDisplayRequired(importer.getIsDisplayRequired());
+    availableRequisitionColumn.setCanChangeOrder(importer.getCanChangeOrder());
+    availableRequisitionColumn.setCanBeChangedByUser(importer.getCanBeChangedByUser());
+    availableRequisitionColumn.setDefinition(importer.getDefinition());
+    availableRequisitionColumn.setColumnType(importer.getColumnType());
+    return availableRequisitionColumn;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setName(name);
+    exporter.setSources(sources);
+    exporter.setOptions(AvailableRequisitionColumnOptionDto.newInstance(options));
+    exporter.setLabel(label);
+    exporter.setIndicator(indicator);
+    exporter.setMandatory(mandatory);
+    exporter.setIsDisplayRequired(isDisplayRequired);
+    exporter.setCanChangeOrder(canChangeOrder);
+    exporter.setCanBeChangedByUser(canBeChangedByUser);
+    exporter.setDefinition(definition);
+    exporter.setColumnType(columnType);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    String getName();
+
+    Set<SourceType> getSources();
+
+    Set<AvailableRequisitionColumnOptionDto> getOptions();
+
+    String getLabel();
+
+    String getIndicator();
+
+    Boolean getMandatory();
+
+    Boolean getIsDisplayRequired();
+
+    Boolean getCanChangeOrder();
+
+    Boolean getCanBeChangedByUser();
+
+    String getDefinition();
+
+    ColumnType getColumnType();
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setName(String name);
+
+    void setSources(Set<SourceType> sources);
+
+    void setOptions(Set<AvailableRequisitionColumnOptionDto> options);
+
+    void setLabel(String label);
+
+    void setIndicator(String indicator);
+
+    void setMandatory(Boolean mandatory);
+
+    void setIsDisplayRequired(Boolean isDisplayRequired);
+
+    void setCanChangeOrder(Boolean canChangeOrder);
+
+    void setCanBeChangedByUser(Boolean canBeChangedByUser);
+
+    void setDefinition(String definition);
+
+    void setColumnType(ColumnType columnType);
   }
 }

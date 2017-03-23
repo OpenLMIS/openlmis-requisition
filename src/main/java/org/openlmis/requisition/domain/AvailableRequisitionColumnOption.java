@@ -15,22 +15,22 @@
 
 package org.openlmis.requisition.domain;
 
+import static java.util.Objects.isNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.Objects;
-
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "available_requisition_column_options", schema = "requisition")
@@ -76,4 +76,50 @@ public class AvailableRequisitionColumnOption extends BaseEntity {
   public int hashCode() {
     return Objects.hash(getOptionName());
   }
+
+  /**
+   * Create a new instance of available requisition column option based on data
+   * from {@link Importer}
+   *
+   * @param importer instance of {@link Importer}
+   * @return new instance of available requisition column option.
+   */
+  public static AvailableRequisitionColumnOption newInstance(Importer importer) {
+    if (isNull(importer)) {
+      return null;
+    }
+    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption();
+    option.setId(importer.getId());
+    option.setOptionName(importer.getOptionName());
+    option.setOptionLabel(importer.getOptionLabel());
+    return option;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setOptionName(optionName);
+    exporter.setOptionLabel(optionLabel);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    String getOptionName();
+
+    String getOptionLabel();
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setOptionName(String optionName);
+
+    void setOptionLabel(String optionLabel) ;
+  }
+
 }

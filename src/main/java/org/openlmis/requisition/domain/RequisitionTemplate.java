@@ -23,15 +23,14 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILAB
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import org.hibernate.annotations.Type;
+import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
-
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -276,5 +275,71 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       throw new ValidationMessageException(new Message(ERROR_COLUMNS_MAP_IS_NULL));
     }
     return columnsMap.get(name);
+  }
+
+  /**
+   * Create a new instance of requisiton template based on data
+   * from {@link RequisitionTemplate.Importer}
+   *
+   * @param importer instance of {@link RequisitionTemplate.Importer}
+   * @return new instance od template.
+   */
+  public static RequisitionTemplate newInstance(RequisitionTemplate.Importer importer) {
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate.setId(importer.getId());
+    requisitionTemplate.setCreatedDate(importer.getCreatedDate());
+    requisitionTemplate.setModifiedDate(importer.getModifiedDate());
+    requisitionTemplate.setProgramId(importer.getProgramId());
+    requisitionTemplate.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
+    requisitionTemplate.setColumnsMap(new HashMap<>());
+
+    importer.getColumnsMap()
+        .forEach((key, column) ->
+            requisitionTemplate.getColumnsMap()
+                .put(key, RequisitionTemplateColumn.newInstance(column)));
+
+
+    return requisitionTemplate;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(RequisitionTemplate.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setCreatedDate(getCreatedDate());
+    exporter.setModifiedDate(getModifiedDate());
+    exporter.setProgramId(programId);
+    exporter.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    ZonedDateTime getCreatedDate();
+
+    ZonedDateTime getModifiedDate();
+
+    UUID getProgramId();
+
+    Integer getNumberOfPeriodsToAverage();
+
+    Map<String, RequisitionTemplateColumnDto> getColumnsMap();
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setCreatedDate(ZonedDateTime createdDate);
+
+    void setModifiedDate(ZonedDateTime modifiedDate);
+
+    void setProgramId(UUID programId);
+
+    void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
+
+    void setColumnsMap(Map<String, RequisitionTemplateColumnDto> columnsMap);
   }
 }
