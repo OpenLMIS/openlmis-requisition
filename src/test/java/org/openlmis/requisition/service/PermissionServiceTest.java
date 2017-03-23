@@ -19,6 +19,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -42,6 +43,7 @@ import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.PermissionMessageException;
@@ -252,8 +254,10 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canDeleteRequisition() throws Exception {
+  public void canDeleteInitiatedRequisitionWhenHasCreateRight() {
     hasRight(requisitionDeleteRightId, true);
+    hasRight(requisitionCreateRightId, true);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
     permissionService.canDeleteRequisition(requisitionId);
 
@@ -262,8 +266,48 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotDeleteRequisition() throws Exception {
+  public void cannotDeleteInitiatedRequisitionWhenHasNoCreateRight() {
+    hasRight(requisitionDeleteRightId, true);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+
+    expectException(REQUISITION_CREATE);
+    permissionService.canDeleteRequisition(requisitionId);
+  }
+
+  @Test
+  public void canDeleteSubmittedRequisitionWhenHasAuthorizeRight() {
+    hasRight(requisitionDeleteRightId, true);
+    hasRight(requisitionAuthorizeRightId, true);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+
+    permissionService.canDeleteRequisition(requisitionId);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
+  }
+
+  @Test
+  public void cannotDeleteSubmittedRequisitionWhenHasNoAuthorizeRight() {
+    hasRight(requisitionDeleteRightId, true);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+
+    expectException(REQUISITION_AUTHORIZE);
+    permissionService.canDeleteRequisition(requisitionId);
+  }
+
+  @Test
+  public void cannotDeleteRequisitionWhenHasNoDeleteRight() {
     expectException(REQUISITION_DELETE);
+
+    permissionService.canDeleteRequisition(requisitionId);
+  }
+
+  @Test
+  public void shouldThrowContentNotFoundMessageExceptionRequisitionWhenIsNotInRepository() {
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
+
+    exception.expect(ContentNotFoundMessageException.class);
+    exception.expectMessage(ERROR_REQUISITION_NOT_FOUND + ": " + requisitionId);
 
     permissionService.canDeleteRequisition(requisitionId);
   }

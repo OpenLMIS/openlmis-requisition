@@ -20,6 +20,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -141,7 +142,18 @@ public class PermissionService {
    * Checks if current user has permission to delete a requisition.
    */
   public void canDeleteRequisition(UUID requisitionId) {
-    checkPermission(REQUISITION_DELETE, requisitionId);
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    if (requisition != null) {
+      checkPermission(REQUISITION_DELETE, requisition);
+      if (requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
+        checkPermission(REQUISITION_CREATE, requisition);
+      } else if (requisition.getStatus().equals(RequisitionStatus.SUBMITTED)) {
+        checkPermission(REQUISITION_AUTHORIZE, requisition);
+      }
+    } else {
+      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
+          requisitionId));
+    }
   }
 
   /**
@@ -192,11 +204,15 @@ public class PermissionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
     if (null != requisition) {
-      checkPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
+      checkPermission(rightName, requisition);
     } else {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
     }
+  }
+
+  private void checkPermission(String rightName, Requisition requisition) {
+    checkPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
   }
 
   private void checkPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
