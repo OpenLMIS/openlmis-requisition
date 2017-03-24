@@ -17,6 +17,7 @@ package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
@@ -30,10 +31,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
@@ -46,7 +48,6 @@ import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -267,7 +268,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
   private void rejectIfNumberOfPeriodsToAverageIsNull(RequisitionTemplate requisitionTemplate) {
     if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
       rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
-          new Message("requisition.error.validation.fieldCanNotBeNull",
+          new Message(ERROR_VALIDATION_FIELD_CANNOT_BE_NULL,
               NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION));
     }
   }
@@ -276,7 +277,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
         && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
       rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
-          new Message("requisition.error.validation.fieldMustBeGreaterOrEqual",
+          new Message(ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL,
               NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
     }
   }

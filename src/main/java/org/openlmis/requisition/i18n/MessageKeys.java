@@ -175,6 +175,10 @@ public abstract class MessageKeys {
       + ".validation.cannotUpdateRequisition";
   public static final String ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE = ERROR_PREFIX
       + ".validation.fieldMustBeInTemplate";
+  public static final String ERROR_VALIDATION_FIELD_CANNOT_BE_NULL = ERROR_PREFIX
+      + ".validation.fieldCanNotBeNull";
+  public static final String ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL = ERROR_PREFIX
+      + ".validation.fieldMustBeGreaterOrEqual";
   public static final String ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST = ERROR_PREFIX
       + ".validation.referencedObjectDoesNotExist";
   public static final String ERROR_USER_NOT_FOUND = ERROR_PREFIX

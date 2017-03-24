@@ -21,7 +21,6 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
@@ -257,7 +256,7 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -293,7 +292,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, true);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -304,7 +303,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -324,7 +323,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, true);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -336,7 +335,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -347,7 +346,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, false);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -357,7 +356,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, true);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -370,7 +369,7 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, false);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
