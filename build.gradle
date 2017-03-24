@@ -49,7 +49,6 @@ dependencies {
     compile "net.sf.jasperreports:jasperreports:6.3.0"
     compile "com.lowagie:itext:2.1.7"
     compile "org.olap4j:olap4j:1.2.0"
-    compile 'net.sf.jasperreports:jasperreports:6.1.1'
     compile 'commons-io:commons-io:2.4'
     compile 'org.springframework:spring-context-support'
     compile 'commons-jxpath:commons-jxpath:1.3'
