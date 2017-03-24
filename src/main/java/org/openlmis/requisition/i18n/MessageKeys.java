@@ -167,6 +167,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.mustBeDisplayedWhenConsumedQuantityIsCalculated";
   public static final String ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED = ERROR_PREFIX
       + ".validation.mustBeDisplayedWhenConsumptionIsCalculated";
+  public static final String ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED =
+      ERROR_PREFIX + ".validation.mustBeDisplayedWhenAverageConsumptionIsCalculated";
   public static final String ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE = ERROR_PREFIX
       + ".validation.valueDoesNotMatchCalculatedValue";
   public static final String ERROR_CANNOT_UPDATE_REQUISITION = ERROR_PREFIX

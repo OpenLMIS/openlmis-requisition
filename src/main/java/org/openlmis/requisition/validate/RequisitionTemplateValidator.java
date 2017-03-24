@@ -20,6 +20,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_A
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
@@ -51,6 +52,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Component
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateValidator extends BaseValidator {
 
   static final String COLUMNS_MAP = "columnsMap";
@@ -67,8 +69,11 @@ public class RequisitionTemplateValidator extends BaseValidator {
   static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
 
+  private Errors errors;
+
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
 
@@ -79,45 +84,26 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
   @Override
   public void validate(Object target, Errors errors) {
+    this.errors = errors;
+
     RequisitionTemplate requisitionTemplate = (RequisitionTemplate) target;
 
-    validateRequestedQuantity(errors, requisitionTemplate);
-    validateColumns(errors, requisitionTemplate);
-    validateCalculatedFields(errors, requisitionTemplate);
+    validateRequestedQuantity(requisitionTemplate);
+    validateColumns(requisitionTemplate);
+    validateCalculatedFields(requisitionTemplate);
 
     if (!errors.hasErrors()) {
-      validateCalculatedField(errors, requisitionTemplate, STOCK_ON_HAND,
+      validateCalculatedField(requisitionTemplate, STOCK_ON_HAND,
           ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY
       );
-      validateCalculatedField(errors, requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
+      validateCalculatedField(requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
           ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED, STOCK_ON_HAND
       );
-      if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-        validateCalculatedField(errors, requisitionTemplate, ADJUSTED_CONSUMPTION,
-            ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
-            TOTAL_STOCKOUT_DAYS
-        );
-      }
-      if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-        if (!requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-          rejectValue(errors, COLUMNS_MAP,
-              new Message("requisition.error.validation.fieldMustBeInTemplate",
-                  AVERAGE_CONSUMPTION, ADJUSTED_CONSUMPTION));
-        }
-        if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
-          rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
-              new Message("requisition.error.validation.fieldCanNotBeNull",
-                  NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION));
-        }
-      }
+      validateForAdjustedConsumption(requisitionTemplate);
+      validateForAverageConsumption(requisitionTemplate);
     }
 
-    if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
-        && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
-      rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
-          new Message("requisition.error.validation.fieldMustBeGreaterOrEqual",
-              NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
-    }
+    validateNumberOfPeriodsToAverage(requisitionTemplate);
 
     UUID programId = requisitionTemplate.getProgramId();
     if (null != programId && null == programReferenceDataService.findOne(programId)) {
@@ -127,11 +113,10 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateRequestedQuantity(Errors errors, RequisitionTemplate template) {
+  private void validateRequestedQuantity(RequisitionTemplate template) {
     boolean quantityDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY);
     boolean explanationDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY_EXPLANATION);
-    boolean calcOrderQuantityDisplayed =
-        template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY);
+    boolean calcOrderQuantityDisplayed = template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY);
 
     if (quantityDisplayed) {
       if (!explanationDisplayed) {
@@ -153,7 +138,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateCalculatedFields(Errors errors, RequisitionTemplate template) {
+  private void validateCalculatedFields(RequisitionTemplate template) {
     if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
         && template.isColumnCalculated(STOCK_ON_HAND)) {
       rejectValue(errors, COLUMNS_MAP, new Message(ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME,
@@ -161,17 +146,12 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateCalculatedField(Errors errors, RequisitionTemplate template, String field,
+  private void validateCalculatedField(RequisitionTemplate template, String field,
                                        String suffix, String... requiredFields) {
-    if (template.isColumnCalculated(field)) {
+    if (template.isColumnInTemplate(field) && template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
-        if (!template.isColumnInTemplate(requiredField)) {
-          rejectValue(
-              errors, COLUMNS_MAP,
-              new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE, requiredField, field)
-          );
-        }
-        if (template.isColumnUserInput(requiredField)) {
+        if (template.isColumnInTemplate(requiredField)
+            && template.isColumnUserInput(requiredField)) {
           rejectIfNotDisplayed(errors, template, requiredField, COLUMNS_MAP,
               new Message(suffix, requiredField));
         }
@@ -179,15 +159,15 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateColumns(Errors errors, RequisitionTemplate template) {
+  private void validateColumns(RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
       rejectIfNotAlphanumeric(
           errors, column.getLabel(), COLUMNS_MAP,
           new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, column.getName())
       );
 
-      validateColumnDefinition(errors, column);
-      validateChosenSources(errors, template, column);
+      validateColumnDefinition(column);
+      validateChosenSources(template, column);
 
       Set<AvailableRequisitionColumnOption> options = column.getColumnDefinition().getOptions();
       Optional.ofNullable(column.getOption())
@@ -201,7 +181,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateColumnDefinition(Errors errors, RequisitionTemplateColumn column) {
+  private void validateColumnDefinition(RequisitionTemplateColumn column) {
     AvailableRequisitionColumn actual = column.getColumnDefinition();
     AvailableRequisitionColumn expected = availableRequisitionColumnRepository
         .findOne(actual.getId());
@@ -219,7 +199,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateChosenSources(Errors errors, RequisitionTemplate template,
+  private void validateChosenSources(RequisitionTemplate template,
                                      RequisitionTemplateColumn column) {
     SourceType chosenSource = column.getSource();
 
@@ -244,6 +224,61 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  
+  private void validateForAdjustedConsumption(RequisitionTemplate requisitionTemplate) {
+    if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+      rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(requisitionTemplate);
+      if (requisitionTemplate.isColumnDisplayed(ADJUSTED_CONSUMPTION)) {
+        validateCalculatedField(requisitionTemplate, ADJUSTED_CONSUMPTION,
+            ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
+            TOTAL_STOCKOUT_DAYS);
+      }
+    }
+  }
+
+  private void rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
+      RequisitionTemplate requisitionTemplate) {
+    if (!requisitionTemplate.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)) {
+      rejectValue(errors, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
+              TOTAL_CONSUMED_QUANTITY, ADJUSTED_CONSUMPTION));
+    }
+    if (!requisitionTemplate.isColumnInTemplate(TOTAL_STOCKOUT_DAYS)) {
+      rejectValue(errors, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
+              TOTAL_STOCKOUT_DAYS, ADJUSTED_CONSUMPTION));
+    }
+  }
+
+  private void validateForAverageConsumption(RequisitionTemplate requisitionTemplate) {
+    if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      if (!requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+        rejectValue(errors, COLUMNS_MAP,
+            new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
+                AVERAGE_CONSUMPTION, ADJUSTED_CONSUMPTION));
+      } else if (requisitionTemplate.isColumnDisplayed(AVERAGE_CONSUMPTION)) {
+        rejectIfNotDisplayed(errors, requisitionTemplate, ADJUSTED_CONSUMPTION, COLUMNS_MAP,
+            new Message(ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED,
+                ADJUSTED_CONSUMPTION));
+      }
+      rejectIfNumberOfPeriodsToAverageIsNull(requisitionTemplate);
+    }
+  }
+
+  private void rejectIfNumberOfPeriodsToAverageIsNull(RequisitionTemplate requisitionTemplate) {
+    if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
+      rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
+          new Message("requisition.error.validation.fieldCanNotBeNull",
+              NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION));
+    }
+  }
+
+  private void validateNumberOfPeriodsToAverage(RequisitionTemplate requisitionTemplate) {
+    if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
+        && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
+      rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
+          new Message("requisition.error.validation.fieldMustBeGreaterOrEqual",
+              NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
+    }
+  }
 
 }
