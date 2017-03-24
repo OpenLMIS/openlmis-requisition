@@ -37,6 +37,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,9 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setTemplate(testTemplate);
+    List<StatusChange> statusChanges = new ArrayList<>();
+    statusChanges.add(StatusChange.newStatusChange(requisition, UUID.randomUUID()));
+    requisition.setStatusChanges(statusChanges);
     return requisition;
   }
 
@@ -75,9 +79,8 @@ public class RequisitionRepositoryIntegrationTest
   public void setUp() {
     testTemplate = templateRepository.save(new RequisitionTemplate());
     requisitions = new ArrayList<>();
-    UUID authorId = UUID.randomUUID();
     for (int count = 0; count < 5; ++count) {
-      requisitions.add(repository.saveWithStatusChange(generateInstance(), authorId));
+      requisitions.add(repository.save(generateInstance()));
     }
   }
 
@@ -89,7 +92,9 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    repository.saveWithStatusChange(requisition, UUID.randomUUID());
+    requisition.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+    repository.save(requisition);
 
     Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
@@ -140,7 +145,9 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    repository.saveWithStatusChange(requisition, UUID.randomUUID());
+    requisition.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+    repository.save(requisition);
 
     Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
@@ -265,7 +272,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0, null);
+        Collections.emptyList(), 0, null, UUID.randomUUID());
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

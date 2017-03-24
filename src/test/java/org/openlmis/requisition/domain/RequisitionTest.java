@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -31,7 +32,13 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
-
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -49,13 +56,6 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
@@ -105,7 +105,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.reject(Collections.emptyList());
+    requisition.reject(Collections.emptyList(), UUID.randomUUID());
 
     // then
     assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
@@ -126,7 +126,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyList());
+    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -137,7 +137,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyList());
+    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -148,7 +148,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
 
-    requisition.approve(parentNode.getId(), Collections.emptyList());
+    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -159,7 +159,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
 
-    requisition.approve(parentNode.getId(), Collections.emptyList());
+    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -467,7 +467,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, null);
+        Collections.singletonList(previousRequisition), 0, null, UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -506,7 +506,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, pod);
+        Collections.singletonList(previousRequisition), 0, pod, UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -545,7 +545,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, pod);
+        Collections.singletonList(previousRequisition), 0, pod, UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -658,7 +658,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.approve(null, Collections.singletonList(product));
+    requisition.approve(null, Collections.singletonList(product), UUID.randomUUID());
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -685,7 +685,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     //when
-    requisition.reject(Collections.emptyList());
+    requisition.reject(Collections.emptyList(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -754,7 +754,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(null, Collections.emptyList());
+    requisition.approve(null, Collections.emptyList(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -869,7 +869,92 @@ public class RequisitionTest {
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
 
+  @Test
+  public void shouldRecordStatusChangeOnInitiate() {
+    UUID initiatorId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    
+    requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null, 
+        initiatorId);
 
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED, 
+        initiatorId);
+  }
+
+  @Test
+  public void shouldRecordStatusChangeOnSubmit() {
+    UUID submitterId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    requisition.setTemplate(template);
+
+    requisition.submit(Collections.emptyList(), submitterId);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED, 
+        submitterId);
+  }
+
+  @Test
+  public void shouldRecordStatusChangeOnAuthorize() {
+    UUID authorizerId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.SUBMITTED);
+    requisition.setTemplate(template);
+    requisition.setRequisitionLineItems(Collections.emptyList());
+
+    requisition.authorize(Collections.emptyList(), authorizerId);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.AUTHORIZED, 
+        authorizerId);
+  }
+
+  @Test
+  public void shouldRecordStatusChangeOnApprove() {
+    UUID approverId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.AUTHORIZED);
+    requisition.setTemplate(template);
+    requisition.setRequisitionLineItems(Collections.emptyList());
+
+    requisition.approve(null, Collections.emptyList(), approverId);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.APPROVED,
+        approverId);
+  }
+
+  @Test
+  public void shouldRecordStatusChangeOnReject() {
+    UUID rejectorId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.AUTHORIZED);
+    requisition.setTemplate(template);
+
+    requisition.reject(Collections.emptyList(), rejectorId);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
+        rejectorId);
+  }
+
+  @Test
+  public void shouldRecordStatusChangeOnRelease() {
+    UUID releaserId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.APPROVED);
+
+    requisition.release(releaserId);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.RELEASED,
+        releaserId);
+  }
+
+  private Requisition createRequisitionWithStatusOf(RequisitionStatus status) {
+    return new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID
+        .randomUUID(), status, false);
+  }
+  
+  private void assertStatusChangeExistsAndAuthorIdMatches(Requisition requisition, 
+      RequisitionStatus status, UUID authorId) {
+    Optional<StatusChange> change = requisition.getStatusChanges().stream()
+        .filter(statusChange -> statusChange.getStatus() == status)
+        .findFirst();
+    assertTrue(change.isPresent());
+    assertEquals(authorId, change.get().getAuthorId());
+  }
 
   private void setUpGetTotalCost(BigDecimal fullSupplyCost, BigDecimal nonFullSupplyCost) {
     CurrencyUnit currency = CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE);

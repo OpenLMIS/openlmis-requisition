@@ -977,7 +977,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(configurationSettingService.getBoolValue("skipAuthorization")).willReturn(true);
     doNothing().when(permissionService).canApproveRequisition(requisitionId);
-    doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class));
+    doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+        anyUuid());
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -994,7 +995,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     assertEquals(requisitionId, result.getId());
-    verify(requisition, atLeastOnce()).approve(anyUuid(), anyCollectionOf(OrderableDto.class));
+    verify(requisition, atLeastOnce()).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+        anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1019,7 +1021,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class));
+    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1046,7 +1048,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM)));
 
     // then
-    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class));
+    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -33,10 +33,8 @@ import javax.persistence.criteria.Root;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.repository.StatusChangeRepository;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.utils.Pagination;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -53,9 +51,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   @PersistenceContext
   private EntityManager entityManager;
 
-  @Autowired
-  private StatusChangeRepository statusChangeRepository;
-  
   /**
    * Method returns all Requisitions with matched parameters.
    *
@@ -272,34 +267,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return entityManager.find(Requisition.class, requisitionId);
   }
 
-  /**
-   * Save a requisition based on an object, including recording a status change.
-   *
-   * @param requisition the requisition object
-   * @param userId the user ID that changed the status
-   * @return the saved requisition object
-   */
-  public Requisition saveWithStatusChange(Requisition requisition, UUID userId) {
-
-    Requisition persistedRequisition = null;
-
-    UUID requisitionId = requisition.getId();
-    if (requisitionId != null) {
-      persistedRequisition = findOne(requisitionId);
-    }
-
-    if (persistedRequisition == null) {
-      entityManager.persist(requisition);
-      persistedRequisition = requisition;
-    } else {
-      persistedRequisition = entityManager.merge(requisition);
-    }
-
-    saveStatusChangeToRequisition(persistedRequisition, userId);
-
-    return persistedRequisition;
-  }
-
   private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,
       Path<UUID> facility, Path<UUID> program, List<UUID> desiredUuids) {
 
@@ -336,10 +303,5 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return predicateToUse;
-  }
-
-  private void saveStatusChangeToRequisition(Requisition requisition, UUID authorId) {
-    StatusChange newStatusChange = StatusChange.newStatusChange(requisition, authorId);
-    statusChangeRepository.save(newStatusChange);
   }
 }

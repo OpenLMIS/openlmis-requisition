@@ -144,11 +144,11 @@ public class Requisition extends BaseTimestampedEntity {
 
   @OneToMany(
       mappedBy = "requisition",
-      cascade = {CascadeType.REFRESH, CascadeType.REMOVE})
+      cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
   @DiffIgnore
   @Getter
   @Setter
-  private List<StatusChange> statusChanges;
+  private List<StatusChange> statusChanges = new ArrayList<>();
 
   @Column(nullable = false)
   @Getter
@@ -239,7 +239,8 @@ public class Requisition extends BaseTimestampedEntity {
       Collection<ApprovedProductDto> products,
       List<Requisition> previousRequisitions,
       int numberOfPreviousPeriodsToAverage,
-      ProofOfDeliveryDto proofOfDelivery) {
+      ProofOfDeliveryDto proofOfDelivery,
+      UUID initiator) {
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
@@ -285,6 +286,10 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
+
+    status = RequisitionStatus.INITIATED;
+
+    statusChanges.add(StatusChange.newStatusChange(this, initiator));
   }
 
   /**
@@ -307,6 +312,8 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptionsAndTotalCost(products);
 
     status = RequisitionStatus.SUBMITTED;
+    
+    statusChanges.add(StatusChange.newStatusChange(this, submitter));
   }
 
   /**
@@ -325,6 +332,8 @@ public class Requisition extends BaseTimestampedEntity {
 
     status = RequisitionStatus.AUTHORIZED;
     RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
+
+    statusChanges.add(StatusChange.newStatusChange(this, authorizer));
   }
 
   /**
@@ -341,7 +350,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param parentNodeId supervisoryNodeDto parent node of the supervisoryNode for this requisition.
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void approve(UUID parentNodeId, Collection<OrderableDto> products) {
+  public void approve(UUID parentNodeId, Collection<OrderableDto> products, UUID approver) {
     if (parentNodeId == null) {
       status = RequisitionStatus.APPROVED;
     } else {
@@ -350,16 +359,28 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     updateConsumptionsAndTotalCost(products);
+
+    statusChanges.add(StatusChange.newStatusChange(this, approver));
   }
 
   /**
    * Rejects given requisition.
    */
-  public void reject(Collection<OrderableDto> products) {
+  public void reject(Collection<OrderableDto> products, UUID rejector) {
     status = RequisitionStatus.INITIATED;
     updateConsumptionsAndTotalCost(products);
+
+    statusChanges.add(StatusChange.newStatusChange(this, rejector));
   }
 
+  /**
+   * Release the requisition.
+   */
+  public void release(UUID releaser) {
+    status = RequisitionStatus.RELEASED;
+    statusChanges.add(StatusChange.newStatusChange(this, releaser));
+  }
+  
   /**
    * Finds first RequisitionLineItem that have productId property equals to the given productId
    * argument.

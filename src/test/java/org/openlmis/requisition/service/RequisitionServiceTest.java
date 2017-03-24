@@ -1193,7 +1193,6 @@ public class RequisitionServiceTest {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
 
-    UUID currentUserId = UUID.randomUUID();
     when(requisitionRepository
         .findOne(requisition.getId()))
         .thenReturn(requisition);
@@ -1201,7 +1200,7 @@ public class RequisitionServiceTest {
         .save(requisition))
         .thenReturn(requisition);
     when(requisitionRepository
-        .saveWithStatusChange(requisition, currentUserId))
+        .save(requisition))
         .thenReturn(requisition);
     when(programReferenceDataService
         .findOne(any()))
@@ -1267,7 +1266,8 @@ public class RequisitionServiceTest {
             return order;
           }
         });
-    
+
+    UUID currentUserId = UUID.randomUUID();
     UserDto currentUser = new UserDto();
     currentUser.setId(currentUserId);
     when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);

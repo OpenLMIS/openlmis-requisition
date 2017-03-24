@@ -303,18 +303,26 @@ public class RequisitionControllerTest {
     when(parentNode.getId()).thenReturn(parentNodeId);
     when(supervisoryNode.getParentNode()).thenReturn(parentNode);
 
+    UserDto approver = mock(UserDto.class);
+    when(approver.getId()).thenReturn(UUID.randomUUID());
+    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any());
+    verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
   }
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
     mockSupervisoryNode();
 
+    UserDto approver = mock(UserDto.class);
+    when(approver.getId()).thenReturn(UUID.randomUUID());
+    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(authorizedRequsition, times(1)).approve(eq(null), any());
+    verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
   }
 
   @Test
@@ -337,6 +345,10 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldProcessStatusChangeWhenApprovingRequisition() throws Exception {
+    UserDto approver = mock(UserDto.class);
+    when(approver.getId()).thenReturn(UUID.randomUUID());
+    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionStatusProcessor).statusChange(authorizedRequsition);

@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.After;
@@ -67,8 +68,10 @@ public class StatusChangeRepositoryIntegrationTest
         false);
     requisition.setNumberOfMonthsInPeriod(3);
     requisition.setTemplate(requisitionTemplate);
+    requisition.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition, userId)));
 
-    requisitionRepository.saveWithStatusChange(requisition, userId);
+    requisitionRepository.save(requisition);
   }
 
   @After

@@ -440,7 +440,8 @@ public class RequisitionController extends BaseController {
           parentNodeId = parentNode.getId();
         }
       }
-      requisition.approve(parentNodeId, orderableReferenceDataService.findAll());
+      requisition.approve(parentNodeId, orderableReferenceDataService.findAll(), 
+          authenticationHelper.getCurrentUser().getId());
 
       saveStatusMessage(requisition);
 

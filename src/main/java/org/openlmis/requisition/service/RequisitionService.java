@@ -193,7 +193,7 @@ public class RequisitionService {
     ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
 
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
-        numberOfPreviousPeriodsToAverage, pod);
+        numberOfPreviousPeriodsToAverage, pod, authenticationHelper.getCurrentUser().getId());
 
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId(), false)
@@ -300,7 +300,8 @@ public class RequisitionService {
           requisitionId));
     } else if (requisition.isApprovable()) {
       LOGGER.debug("Requisition rejected: {}", requisitionId);
-      requisition.reject(orderableReferenceDataService.findAll());
+      requisition.reject(orderableReferenceDataService.findAll(),
+          authenticationHelper.getCurrentUser().getId());
       return saveRequisitionWithStatusChange(requisition);
     } else {
       throw new ValidationMessageException(new Message(
@@ -309,8 +310,7 @@ public class RequisitionService {
   }
   
   public Requisition saveRequisitionWithStatusChange(Requisition requisition) {
-    return requisitionRepository.saveWithStatusChange(requisition,
-        authenticationHelper.getCurrentUser().getId());
+    return requisitionRepository.save(requisition);
   }
 
   /**
@@ -410,7 +410,7 @@ public class RequisitionService {
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
 
       if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
-        loadedRequisition.setStatus(RequisitionStatus.RELEASED);
+        loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
       } else {
         throw new ValidationMessageException(new Message(ERROR_REQUISITION_MUST_BE_APPROVED,
             loadedRequisition.getId()));
