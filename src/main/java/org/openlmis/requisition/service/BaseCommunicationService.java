@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -177,23 +178,46 @@ public abstract class BaseCommunicationService<T> {
   }
 
   protected Page<T> getPage(String resourceUrl, RequestParameters parameters) {
-    return getPage(resourceUrl, parameters, getResultClass());
+    return getPage(resourceUrl, parameters, null, HttpMethod.GET, getResultClass());
   }
 
-  protected <P> Page<P> getPage(String resourceUrl, RequestParameters parameters,
-                                Class<P> type) {
+  /**
+   * Return all reference data T objects for Page that need to be retrieved with POST request.
+   *
+   * @param resourceUrl Endpoint url.
+   * @param parameters  Map of query parameters.
+   * @param payload     body to include with the outgoing request.
+   * @return Page of reference data T objects.
+   */
+  protected Page<T> getPage(String resourceUrl, RequestParameters parameters, Object payload) {
+    return getPage(resourceUrl, parameters, payload, HttpMethod.POST, getResultClass());
+  }
+
+  protected <P> Page<P> getPage(String resourceUrl, RequestParameters parameters, Object payload,
+                                HttpMethod method, Class<P> type) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
     RequestParameters params = RequestParameters
         .init()
         .setAll(parameters)
         .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
-    ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
-        createUri(url, params),
-        HttpMethod.GET,
-        null,
-        new DynamicPageTypeReference<>(type)
-    );
+    ResponseEntity<PageImplRepresentation<P>> response;
+
+    if (HttpMethod.GET == method) {
+      response = restTemplate.exchange(
+          createUri(url, params),
+          HttpMethod.GET,
+          null,
+          new DynamicPageTypeReference<>(type)
+      );
+    } else {
+      response = restTemplate.exchange(
+          createUri(url, params),
+          HttpMethod.POST,
+          new HttpEntity<>(payload),
+          new DynamicPageTypeReference<>(type)
+      );
+    }
 
     return response.getBody();
   }

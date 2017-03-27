@@ -18,10 +18,10 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,8 +53,8 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     Map<String, Object> requestBody = new HashMap<>();
     requestBody.put("username", name);
 
-    List<UserDto> users = findAll("search", RequestParameters.init(), requestBody);
-    return users.isEmpty() ? null : users.get(0);
+    Page<UserDto> users = getPage("search", RequestParameters.init(), requestBody);
+    return users.getContent().isEmpty() ? null : users.getContent().get(0);
   }
 
   /**
