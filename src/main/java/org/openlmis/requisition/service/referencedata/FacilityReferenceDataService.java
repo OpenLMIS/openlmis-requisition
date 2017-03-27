@@ -19,7 +19,9 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -49,14 +51,13 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @return List of FacilityDtos with similar code or name.
    */
   public List<FacilityDto> search(String code, String name, UUID zoneId, boolean recurse) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("code", code)
-        .set("name", name)
-        .set("zone", zoneId)
-        .set("recurse", recurse);
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("code", code);
+    requestBody.put("name", name);
+    requestBody.put("zone", zoneId);
+    requestBody.put("recurse", recurse);
 
-    return findAll("search", parameters);
+    return findAll("search", RequestParameters.init(), requestBody);
   }
 
   /**
