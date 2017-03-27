@@ -144,7 +144,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @OneToMany(
       mappedBy = "requisition",
-      cascade = {CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
+      cascade = CascadeType.ALL)
   @DiffIgnore
   @Getter
   @Setter
