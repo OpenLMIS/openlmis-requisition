@@ -276,6 +276,38 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
+  public void shouldNotRejectWhenAdjustedConsumptionInTemplateAndConsumedQuantityInTemplate() {
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+
+    columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
+    RequisitionTemplate requisitionTemplate =
+        addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate(columnMap);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors, never()).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  public void shouldRejectWhenAdjustedConsumptionInTemplateAnConsumedQuantityNotInTemplate() {
+    when(messageService.localize(
+        new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
+        .thenReturn(message);
+
+    Map<String, RequisitionTemplateColumn> columnMap = getColumnMapWithRequiredFields();
+
+    columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
+    columnMap.put(ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N"));
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
+
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
+  }
+
+  @Test
   public void shouldRejectWhenAverageIsDisplayedAndAdjustedConsumptionIsNotDisplayed() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED);
@@ -611,16 +643,21 @@ public class RequisitionTemplateValidatorTest {
   }
 
   private Map<String, RequisitionTemplateColumn> getRequisitionTemplateColumnMap() {
+    Map<String, RequisitionTemplateColumn> columnMap = getColumnMapWithRequiredFields();
+    columnMap.put(TOTAL_CONSUMED_QUANTITY,
+        generateTemplateColumn(TOTAL_CONSUMED_QUANTITY, "C"));
+    columnMap.put(STOCK_ON_HAND, generateTemplateColumn(STOCK_ON_HAND, "E"));
+
+    return columnMap;
+  }
+
+  private Map<String, RequisitionTemplateColumn> getColumnMapWithRequiredFields() {
     Map<String, RequisitionTemplateColumn> columnMap = new HashMap<>();
     columnMap.put(CALCULATED_ORDER_QUANTITY,
         generateTemplateColumn(CALCULATED_ORDER_QUANTITY, "I"));
     columnMap.put(REQUESTED_QUANTITY, generateTemplateColumn(REQUESTED_QUANTITY, "J"));
     columnMap.put(REQUESTED_QUANTITY_EXPLANATION,
         generateTemplateColumn(REQUESTED_QUANTITY_EXPLANATION, "W"));
-    columnMap.put(TOTAL_CONSUMED_QUANTITY,
-        generateTemplateColumn(TOTAL_CONSUMED_QUANTITY, "C"));
-    columnMap.put(STOCK_ON_HAND, generateTemplateColumn(STOCK_ON_HAND, "E"));
-
     return columnMap;
   }
 

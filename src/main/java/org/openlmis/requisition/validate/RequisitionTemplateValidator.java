@@ -140,7 +140,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
   }
 
   private void validateCalculatedFields(RequisitionTemplate template) {
-    if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
+    if (template.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)
+        && template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
+        && template.isColumnInTemplate(STOCK_ON_HAND)
         && template.isColumnCalculated(STOCK_ON_HAND)) {
       rejectValue(errors, COLUMNS_MAP, new Message(ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME,
           TOTAL_CONSUMED_QUANTITY, STOCK_ON_HAND));
