@@ -201,7 +201,7 @@ public class RequisitionService {
         .map(ap -> ap.getProgramOrderable().getOrderableId())
         .collect(Collectors.toSet()));
 
-    saveRequisitionWithStatusChange(requisition);
+    requisitionRepository.save(requisition);
     return requisition;
   }
 
@@ -282,7 +282,7 @@ public class RequisitionService {
           item.skipLineItem(requisition.getTemplate());
         }
         requisition.setStatus(RequisitionStatus.SKIPPED);
-        return saveRequisitionWithStatusChange(requisition);
+        return requisitionRepository.save(requisition);
       }
     }
   }
@@ -302,17 +302,13 @@ public class RequisitionService {
       LOGGER.debug("Requisition rejected: {}", requisitionId);
       requisition.reject(orderableReferenceDataService.findAll(),
           authenticationHelper.getCurrentUser().getId());
-      return saveRequisitionWithStatusChange(requisition);
+      return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(
           ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisitionId));
     }
   }
   
-  public Requisition saveRequisitionWithStatusChange(Requisition requisition) {
-    return requisitionRepository.save(requisition);
-  }
-
   /**
    * Finds requisitions matching all of the provided parameters.
    */
@@ -523,7 +519,7 @@ public class RequisitionService {
     for (Requisition requisition : releasedRequisitions) {
       OrderDto order = orderDtoBuilder.build(requisition, user);
       if (orderFulfillmentService.create(order)) {
-        saveRequisitionWithStatusChange(requisition);
+        requisitionRepository.save(requisition);
         requisitionStatusProcessor.statusChange(requisition);
       } else {
         throw new ValidationMessageException(new Message(ERROR_CONVERTING_REQUISITION_TO_ORDER,

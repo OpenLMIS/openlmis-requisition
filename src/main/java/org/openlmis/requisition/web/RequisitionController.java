@@ -237,7 +237,7 @@ public class RequisitionController extends BaseController {
     requisition.submit(orderableReferenceDataService.findAll(), user.getId());
     saveStatusMessage(requisition);
     
-    requisitionService.saveRequisitionWithStatusChange(requisition);
+    requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
@@ -445,7 +445,7 @@ public class RequisitionController extends BaseController {
 
       saveStatusMessage(requisition);
 
-      requisitionService.saveRequisitionWithStatusChange(requisition);
+      requisitionRepository.save(requisition);
       requisitionStatusProcessor.statusChange(requisition);
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
       return requisitionDtoBuilder.build(requisition);
@@ -540,7 +540,7 @@ public class RequisitionController extends BaseController {
 
     saveStatusMessage(requisition);
 
-    requisitionService.saveRequisitionWithStatusChange(requisition);
+    requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 
