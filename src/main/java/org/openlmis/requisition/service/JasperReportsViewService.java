@@ -140,7 +140,7 @@ public class JasperReportsViewService {
   }
 
   /**
-   * Get customized Jasper Report View for Timeliness Report.
+   * Get customized Jasper Report View for Reporting Rate Report.
    *
    * @param jasperTemplate jasper template for report
    * @param request http request for filling application context
