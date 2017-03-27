@@ -18,7 +18,9 @@ package org.openlmis.requisition.dto;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +33,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.StatusLogEntry;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -91,7 +94,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   private Set<OrderableDto> availableNonFullSupplyProducts;
 
   @Getter
-  private List<StatusChangeDto> statusChanges = new ArrayList<>();
+  private Map<String, StatusLogEntry> statusChanges = new HashMap<>();
+  
+  @Getter
+  private List<StatusChangeDto> statusHistory = new ArrayList<>();
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
@@ -110,11 +116,26 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
     if (statusChanges == null) {
       return;
     }
-
+    
     for (StatusChange statusChange : statusChanges) {
-      StatusChangeDto statusChangeDto = new StatusChangeDto();
-      statusChange.export(statusChangeDto);
-      this.statusChanges.add(statusChangeDto);
+      addToStatusChanges(statusChange);
+      addToStatusHistory(statusChange);
     }
+  }
+  
+  private void addToStatusChanges(StatusChange statusChange) {
+    StatusLogEntry existing = this.statusChanges.get(statusChange.getStatus().toString());
+    // Only add entry if none exists or existing one has later date
+    if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
+      StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
+          statusChange.getCreatedDate());
+      this.statusChanges.put(statusChange.getStatus().toString(), entry);
+    }
+  }
+  
+  private void addToStatusHistory(StatusChange statusChange) {
+    StatusChangeDto statusChangeDto = new StatusChangeDto();
+    statusChange.export(statusChangeDto);
+    this.statusHistory.add(statusChangeDto);
   }
 }
