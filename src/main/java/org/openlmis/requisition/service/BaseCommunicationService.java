@@ -201,25 +201,18 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters)
         .set(ACCESS_TOKEN, authService.obtainAccessToken());
 
-    ResponseEntity<PageImplRepresentation<P>> response;
+    try {
+      ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
+              createUri(url, params),
+              method,
+              (payload != null) ? new HttpEntity<>(payload) : null,
+              new DynamicPageTypeReference<>(type)
+      );
+      return response.getBody();
 
-    if (HttpMethod.GET == method) {
-      response = restTemplate.exchange(
-          createUri(url, params),
-          HttpMethod.GET,
-          null,
-          new DynamicPageTypeReference<>(type)
-      );
-    } else {
-      response = restTemplate.exchange(
-          createUri(url, params),
-          HttpMethod.POST,
-          new HttpEntity<>(payload),
-          new DynamicPageTypeReference<>(type)
-      );
+    } catch (HttpStatusCodeException ex) {
+      throw buildDataRetrievalException(ex);
     }
-
-    return response.getBody();
   }
 
   protected <P> ResultDto<P> getResult(String resourceUrl, RequestParameters parameters,
