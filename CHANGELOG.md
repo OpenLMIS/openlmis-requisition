@@ -43,17 +43,17 @@ Bug fixes, security and performance improvements, also backwards-compatible:
     those rights, allow them to delete. When in any other state (AUTHORIZED, APPROVED, RELEASED), delete is not allowed at all.
 * [OLMIS-2027](https://openlmis.atlassian.net/browse/OLMIS-2027): Add unit tests for Timeliness and Reporting Rate reports
 * [OLMIS-2081](https://openlmis.atlassian.net/browse/OLMIS-2081): Add missing unit tests for RequisitionTemplateValidator
-* [OLMIS-1142](https://openlmis.atlassian.net/browse/OLMIS-1142): Fix column types (UUID) for some entities
-  * This change includes two database migrations that run automatically to change column type without data loss.
-* [OLMIS-2112](https://openlmis.atlassian.net/browse/OLMIS-2112): Refactor web layer to use DTOs, not domain objects
+* [OLMIS-1142](https://openlmis.atlassian.net/browse/OLMIS-1142): Migrated service to Spring Boot 1.4.1
+  * Fix Jackson configuration on AvailableRequisitionColumnOption
+  * Fix column types (UUID) for some entities
+    * This change includes two database migrations that run automatically to change column type without data loss.
+  * Refractor controller integration tests, extract common logics into utility methods
+* [OLMIS-2112](https://openlmis.atlassian.net/browse/OLMIS-2112): Refactor web layer for requisition templates to use DTOs, not domain objects
 * [OLMIS-2139](https://openlmis.atlassian.net/browse/OLMIS-2139): Fix demo data to initiate Family Planning requisition
 * [OLMIS-2082](https://openlmis.atlassian.net/browse/OLMIS-2082): Fix demo data requisition template skip instructions
 * [OLMIS-1917](https://openlmis.atlassian.net/browse/OLMIS-1917): Fix demo data for requisition statusChanges missing a user ID
   * Also handle null user names in requisition report gracefully
 * Add unit test for RequisitionReportDtoBuilder
-* Fix generating periods in ReportingRateDtoBuilderTest
-* Extract common logic into utility methods in requisition controller integration test
-* Fix Jackson configuration on AvailableRequisitionColumnOption
 * Correct JasperReportsViewService's javadoc
 
 3.0.0 / 2017-03-01
