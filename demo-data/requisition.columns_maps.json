@@ -259,7 +259,7 @@
     "label": "Adjusted consumption",
     "indicator": "N",
     "displayOrder": 22,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "definition": "Total consumed quantity after adjusting for stockout days. Quantified in dispensing units.",
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
@@ -541,7 +541,7 @@
     "label": "Adjusted consumption",
     "indicator": "N",
     "displayOrder": 22,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "definition": "Total consumed quantity after adjusting for stockout days. Quantified in dispensing units.",
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
