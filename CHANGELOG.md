@@ -1,3 +1,9 @@
+3.1.1 / 2017-03-30
+==================
+
+* [OLMIS-2220](https://openlmis.atlassian.net/browse/OLMIS-2220): Changed the request body parameter for searching facilities from zone to zoneId, to match openlmis-referencedata 4.0.0 API changes.
+* [OLMIS-2203](https://openlmis.atlassian.net/browse/OLMIS-2203): Changed requisition template column for Adjusted Consumption to be initially visible in demo data
+
 3.1.0 / 2017-03-28
 ==================
 
