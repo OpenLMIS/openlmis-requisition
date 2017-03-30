@@ -551,24 +551,29 @@ public class RequisitionService {
 
   private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
     List<UUID> uuidsToReturn = new ArrayList<>();
-
     boolean filterAll = "all".equals(filterBy);
+    boolean filterByCode = "facilityCode".equals(filterBy);
+    boolean filterByName = "facilityName".equals(filterBy);
 
     if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
-      Collection<ProgramDto> foundPrograms =
-          programReferenceDataService.search(filterValue);
+      Collection<ProgramDto> foundPrograms = programReferenceDataService.search(filterValue);
       foundPrograms.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
     }
-    if (filterAll || "facilityCode".equals(filterBy)) {
-      Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.search(filterValue, null, null, false);
-      foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
+
+    Collection<FacilityDto> foundFacilities = new ArrayList<>();
+    if (filterAll && filterValue.isEmpty()) {
+      foundFacilities.addAll(facilityReferenceDataService.findAll());
+    } else {
+      if (filterAll || filterByCode) {
+        foundFacilities.addAll(facilityReferenceDataService.search(filterValue, null, null, false));
+      }
+
+      if (filterAll || filterByName) {
+        foundFacilities.addAll(facilityReferenceDataService.search(null, filterValue, null, false));
+      }
     }
-    if (filterAll || "facilityName".equals(filterBy)) {
-      Collection<FacilityDto> foundFacilities =
-          facilityReferenceDataService.search(null, filterValue, null, false);
-      foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
-    }
+
+    foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
     return uuidsToReturn;
   }
 
