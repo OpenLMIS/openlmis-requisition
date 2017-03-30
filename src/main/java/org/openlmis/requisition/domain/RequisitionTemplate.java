@@ -232,6 +232,17 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     return getRequisitionTemplateColumn(columnName) != null;
   }
 
+
+  /**
+   * Checks if column with given name is defined in the template and displayed.
+   *
+   * @param columnName name of requisition column.
+   * @return return true if column is defined in the template and displayed.
+   */
+  public boolean isColumnInTemplateAndDisplayed(String columnName) {
+    return isColumnInTemplate(columnName) && isColumnDisplayed(columnName);
+  }
+
   private void moveDownAllColumnsBelowIndex(int beginIndex) {
     for (RequisitionTemplateColumn column : columnsMap.values()) {
       if (column.getDisplayOrder() >= beginIndex) {

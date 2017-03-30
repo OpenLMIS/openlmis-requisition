@@ -251,8 +251,8 @@ public class JasperReportsViewService {
       Map<String, RequisitionTemplateColumn> columns =
           ReportUtils.getSortedTemplateColumnsForPrint(template.getColumnsMap());
 
-      ReportUtils.customizeBandWithTemplateFields(detail, columns, design.getPageWidth(), 10);
-      ReportUtils.customizeBandWithTemplateFields(header, columns, design.getPageWidth(), 10);
+      ReportUtils.customizeBandWithTemplateFields(detail, columns, design.getPageWidth(), 9);
+      ReportUtils.customizeBandWithTemplateFields(header, columns, design.getPageWidth(), 9);
 
       return design;
     } catch (IOException err) {

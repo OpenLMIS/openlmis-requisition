@@ -993,7 +993,7 @@ public class RequisitionTest {
         .calculateAverageConsumption(Collections.singletonList(ADJUSTED_CONSUMPTION)))
         .thenReturn(AVERAGE_CONSUMPTION);
 
-    when(template.isColumnInTemplate(any())).thenReturn(true);
+    when(template.isColumnInTemplateAndDisplayed(any())).thenReturn(true);
     requisition.setTemplate(template);
   }
 
@@ -1014,8 +1014,10 @@ public class RequisitionTest {
   }
 
   private void setUpValidRequisitionTemplate() {
-    when(template.isColumnInTemplate(RequisitionLineItem.ADJUSTED_CONSUMPTION)).thenReturn(true);
-    when(template.isColumnInTemplate(RequisitionLineItem.AVERAGE_CONSUMPTION)).thenReturn(true);
+    when(template.isColumnInTemplateAndDisplayed(RequisitionLineItem.ADJUSTED_CONSUMPTION))
+        .thenReturn(true);
+    when(template.isColumnInTemplateAndDisplayed(RequisitionLineItem.AVERAGE_CONSUMPTION))
+        .thenReturn(true);
     requisition.setTemplate(template);
   }
 

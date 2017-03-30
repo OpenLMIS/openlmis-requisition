@@ -218,7 +218,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
-    updateConsumptionsAndTotalCost(products);
+    updateTotalCostAndPacksToShip(products);
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     setModifiedDate(ZonedDateTime.now());
@@ -309,7 +309,8 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
 
-    updateConsumptionsAndTotalCost(products);
+    updateConsumptions();
+    updateTotalCostAndPacksToShip(products);
 
     status = RequisitionStatus.SUBMITTED;
     
@@ -327,7 +328,8 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    updateConsumptionsAndTotalCost(products);
+    updateConsumptions();
+    updateTotalCostAndPacksToShip(products);
     populateApprovedQuantity();
 
     status = RequisitionStatus.AUTHORIZED;
@@ -358,7 +360,8 @@ public class Requisition extends BaseTimestampedEntity {
       supervisoryNodeId = parentNodeId;
     }
 
-    updateConsumptionsAndTotalCost(products);
+    updateConsumptions();
+    updateTotalCostAndPacksToShip(products);
 
     statusChanges.add(StatusChange.newStatusChange(this, approver));
   }
@@ -368,7 +371,8 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void reject(Collection<OrderableDto> products, UUID rejector) {
     status = RequisitionStatus.INITIATED;
-    updateConsumptionsAndTotalCost(products);
+    updateConsumptions();
+    updateTotalCostAndPacksToShip(products);
 
     statusChanges.add(StatusChange.newStatusChange(this, rejector));
   }
@@ -547,19 +551,23 @@ public class Requisition extends BaseTimestampedEntity {
             numberOfMonthsInPeriod));
   }
 
-  private void updateConsumptionsAndTotalCost(Collection<OrderableDto> products) {
-    getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
+  private void updateConsumptions() {
 
-    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+
+    if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
           LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
       ));
     }
 
-    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+    if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
     }
+  }
+
+  private void updateTotalCostAndPacksToShip(Collection<OrderableDto> products) {
+    getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
 
     getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
         LineItemFieldsCalculator.calculateTotalCost(line,
