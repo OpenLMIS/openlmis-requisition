@@ -59,10 +59,11 @@ public final class ReportUtils {
    * @param map map of column keys to columns.
    * @return sorted map.
    */
-  public static LinkedHashMap<String, RequisitionTemplateColumn>
-      getSortedTemplateColumnsForPrint(Map<String, RequisitionTemplateColumn> map) {
+  public static Map<String, RequisitionTemplateColumn> getSortedTemplateColumnsForPrint(
+      Map<String, RequisitionTemplateColumn> map) {
     List<Map.Entry<String, RequisitionTemplateColumn>> sorted = map.entrySet().stream()
         .filter(ent -> !ent.getKey().equals("skipped"))
+        .filter(ent -> ent.getValue().getIsDisplayed())
         .sorted(Comparator.comparingInt(ent -> ent.getValue().getDisplayOrder()))
         .collect(Collectors.toList());
 
@@ -89,7 +90,8 @@ public final class ReportUtils {
         .filter(child -> child instanceof JRDesignTextField)
         .map(child -> (JRDesignTextField)child)
         .collect(Collectors.toList());
-    double widthMultipier = (double)foundColumns.size() / foundTemplateKeys.size();
+
+    double widthMultipier = getWidthMultipier(width, margin, foundTemplateKeys, foundColumns);
 
     JRDesignTextField prevField = null;
     for (String key : foundTemplateKeys) {
@@ -102,6 +104,22 @@ public final class ReportUtils {
 
     fillWidthGap(prevField, width, margin);
     removeSpareColumns(band, foundColumns, foundTemplateKeys);
+  }
+
+  private static double getWidthMultipier(int width, int margin, List<String> foundTemplateKeys,
+                                          List<JRDesignTextField> foundColumns) {
+    int toFill = 0;
+    for (JRDesignTextField field : foundColumns) {
+      if (!foundTemplateKeys.contains(field.getKey())) {
+        toFill += field.getWidth();
+      }
+    }
+
+    int lineWidth = width - 2 * margin;
+    if (toFill != 0) {
+      return (double)lineWidth / (lineWidth - toFill);
+    }
+    return 1;
   }
 
   private static void removeSpareColumns(

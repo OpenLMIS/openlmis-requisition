@@ -21,12 +21,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
 
+import net.sf.jasperreports.engine.JRBand;
+import net.sf.jasperreports.engine.JRChild;
+import net.sf.jasperreports.engine.design.JRDesignTextField;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.springframework.context.i18n.LocaleContextHolder;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -34,6 +43,18 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class ReportUtilsTest {
+
+  private static final int FIELD_ONE_WIDTH = 10;
+  private static final int FIELD_TWO_WIDTH = 10;
+  private static final int FIELD_THREE_WIDTH = 6;
+
+  private static final int WIDTH_WITHOUT_MARGIN = 26;
+  private static final int WIDTH = 30;
+  private static final int MARGIN = 2;
+
+  private static final int DELTA = 1000;
+
+
   @Test
   public void shouldCreateDefaultParametersMap() {
     // when
@@ -60,15 +81,15 @@ public class ReportUtilsTest {
     Map<String, RequisitionTemplateColumn> map = new HashMap<>();
 
     RequisitionTemplateColumn firstColumn = mock(RequisitionTemplateColumn.class);
-    when(firstColumn.getDisplayOrder()).thenReturn(1);
+    stubDisplay(firstColumn, 1);
     map.put("first", firstColumn);
 
     RequisitionTemplateColumn secondColumn = mock(RequisitionTemplateColumn.class);
-    when(secondColumn.getDisplayOrder()).thenReturn(5);
+    stubDisplay(secondColumn, 5);
     map.put("second", secondColumn);
 
     RequisitionTemplateColumn thirdColumn = mock(RequisitionTemplateColumn.class);
-    when(thirdColumn.getDisplayOrder()).thenReturn(10);
+    stubDisplay(thirdColumn, 10);
     map.put("third", thirdColumn);
 
     // when
@@ -76,7 +97,7 @@ public class ReportUtilsTest {
         ReportUtils.getSortedTemplateColumnsForPrint(map);
 
     // then
-    assertEquals(result.size(), map.size());
+    assertEquals(map.size(), result.size());
 
     List<RequisitionTemplateColumn> columns = result.values().stream().collect(Collectors.toList());
     assertEquals(columns.get(0), firstColumn);
@@ -96,5 +117,85 @@ public class ReportUtilsTest {
 
     // then
     assertTrue(result.isEmpty());
+  }
+
+  private void stubDisplay(RequisitionTemplateColumn firstColumn, int displayOrder) {
+    when(firstColumn.getDisplayOrder()).thenReturn(displayOrder);
+    when(firstColumn.getIsDisplayed()).thenReturn(true);
+  }
+
+  @Test
+  public void shouldSetProperFieldsWidthWhenSomeFieldNotInRequisitionTemplate() {
+    // given
+    JRBand jrBand = mock(JRBand.class);
+    JRDesignTextField fieldOne = getField(ADJUSTED_CONSUMPTION, FIELD_ONE_WIDTH);
+    JRDesignTextField fieldTwo = getField(AVERAGE_CONSUMPTION, FIELD_TWO_WIDTH);
+    JRDesignTextField fieldThree = getField(BEGINNING_BALANCE, FIELD_THREE_WIDTH);
+
+    stubJrFields(jrBand, fieldOne, fieldTwo, fieldThree);
+
+    // when
+    ReportUtils.customizeBandWithTemplateFields(jrBand,
+        getReqTemplateColumnsMapWithoutFieldTwo(), WIDTH, MARGIN);
+
+    // then
+    assertEquals(WIDTH_WITHOUT_MARGIN, fieldOne.getWidth() + fieldThree.getWidth());
+    assertEquals(getExpectedWidth(FIELD_ONE_WIDTH), fieldOne.getWidth(), DELTA);
+    assertEquals(getExpectedWidth(FIELD_THREE_WIDTH), fieldThree.getWidth(), DELTA);
+  }
+
+  @Test
+  public void shouldSetProperFieldsWidthWhenAllFieldsInRequisitionTemplate() {
+    // given
+    JRBand jrBand = mock(JRBand.class);
+    JRDesignTextField fieldOne = getField(ADJUSTED_CONSUMPTION, FIELD_ONE_WIDTH);
+    JRDesignTextField fieldTwo = getField(AVERAGE_CONSUMPTION, FIELD_TWO_WIDTH);
+    JRDesignTextField fieldThree = getField(BEGINNING_BALANCE, FIELD_THREE_WIDTH);
+
+    stubJrFields(jrBand, fieldOne, fieldTwo, fieldThree);
+
+    // when
+    ReportUtils.customizeBandWithTemplateFields(jrBand,
+        getReqTemplateColumnsMapWithAllFields(), WIDTH, MARGIN);
+
+    // then
+    assertEquals(WIDTH_WITHOUT_MARGIN,
+        fieldOne.getWidth() + fieldOne.getWidth() + fieldThree.getWidth());
+    assertEquals(FIELD_ONE_WIDTH, fieldOne.getWidth(), DELTA);
+    assertEquals(FIELD_TWO_WIDTH, fieldOne.getWidth(), DELTA);
+    assertEquals(FIELD_THREE_WIDTH, fieldThree.getWidth(), DELTA);
+  }
+
+  private Map<String, RequisitionTemplateColumn> getReqTemplateColumnsMapWithoutFieldTwo() {
+    Map<String, RequisitionTemplateColumn> columnMap = new LinkedHashMap<>();
+    columnMap.put(ADJUSTED_CONSUMPTION, new RequisitionTemplateColumn());
+    columnMap.put(BEGINNING_BALANCE, new RequisitionTemplateColumn());
+    return columnMap;
+  }
+
+  private Map<String, RequisitionTemplateColumn> getReqTemplateColumnsMapWithAllFields() {
+    Map<String, RequisitionTemplateColumn> columnMap = getReqTemplateColumnsMapWithoutFieldTwo();
+    columnMap.put(AVERAGE_CONSUMPTION, new RequisitionTemplateColumn());
+    return columnMap;
+  }
+
+  private JRDesignTextField getField(String columnName, int width) {
+    JRDesignTextField fieldOne = new JRDesignTextField();
+    fieldOne.setKey(columnName);
+    fieldOne.setWidth(width);
+    return fieldOne;
+  }
+
+  private void stubJrFields(JRBand jrBand, JRDesignTextField fieldOne, JRDesignTextField fieldTwo,
+                            JRDesignTextField fieldThree) {
+    LinkedList<JRChild> children = new LinkedList<>(Arrays.asList(fieldOne, fieldTwo, fieldThree));
+    when(jrBand.getChildren()).thenReturn(children);
+    when(jrBand.getElementByKey(ADJUSTED_CONSUMPTION)).thenReturn(fieldOne);
+    when(jrBand.getElementByKey(AVERAGE_CONSUMPTION)).thenReturn(fieldTwo);
+    when(jrBand.getElementByKey(BEGINNING_BALANCE)).thenReturn(fieldThree);
+  }
+
+  private double getExpectedWidth(int width) {
+    return (double)width * WIDTH_WITHOUT_MARGIN / (WIDTH_WITHOUT_MARGIN - FIELD_TWO_WIDTH);
   }
 }
