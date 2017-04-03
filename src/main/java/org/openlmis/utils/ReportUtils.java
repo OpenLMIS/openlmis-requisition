@@ -115,8 +115,8 @@ public final class ReportUtils {
       }
     }
 
-    int lineWidth = width - 2 * margin;
     if (toFill != 0) {
+      int lineWidth = width - 2 * margin;
       return (double)lineWidth / (lineWidth - toFill);
     }
     return 1;

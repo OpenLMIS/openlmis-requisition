@@ -119,11 +119,6 @@ public class ReportUtilsTest {
     assertTrue(result.isEmpty());
   }
 
-  private void stubDisplay(RequisitionTemplateColumn firstColumn, int displayOrder) {
-    when(firstColumn.getDisplayOrder()).thenReturn(displayOrder);
-    when(firstColumn.getIsDisplayed()).thenReturn(true);
-  }
-
   @Test
   public void shouldSetProperFieldsWidthWhenSomeFieldNotInRequisitionTemplate() {
     // given
@@ -166,24 +161,30 @@ public class ReportUtilsTest {
     assertEquals(FIELD_THREE_WIDTH, fieldThree.getWidth(), DELTA);
   }
 
-  private Map<String, RequisitionTemplateColumn> getReqTemplateColumnsMapWithoutFieldTwo() {
-    Map<String, RequisitionTemplateColumn> columnMap = new LinkedHashMap<>();
-    columnMap.put(ADJUSTED_CONSUMPTION, new RequisitionTemplateColumn());
-    columnMap.put(BEGINNING_BALANCE, new RequisitionTemplateColumn());
-    return columnMap;
+  private void stubDisplay(RequisitionTemplateColumn column, int displayOrder) {
+    when(column.getDisplayOrder()).thenReturn(displayOrder);
+    when(column.getIsDisplayed()).thenReturn(true);
   }
 
   private Map<String, RequisitionTemplateColumn> getReqTemplateColumnsMapWithAllFields() {
-    Map<String, RequisitionTemplateColumn> columnMap = getReqTemplateColumnsMapWithoutFieldTwo();
+    Map<String, RequisitionTemplateColumn> columnMap = new LinkedHashMap<>();
+    columnMap.put(ADJUSTED_CONSUMPTION, new RequisitionTemplateColumn());
+    columnMap.put(BEGINNING_BALANCE, new RequisitionTemplateColumn());
     columnMap.put(AVERAGE_CONSUMPTION, new RequisitionTemplateColumn());
     return columnMap;
   }
 
+  private Map<String, RequisitionTemplateColumn> getReqTemplateColumnsMapWithoutFieldTwo() {
+    Map<String, RequisitionTemplateColumn> columnMap = getReqTemplateColumnsMapWithAllFields();
+    columnMap.remove(AVERAGE_CONSUMPTION);
+    return columnMap;
+  }
+
   private JRDesignTextField getField(String columnName, int width) {
-    JRDesignTextField fieldOne = new JRDesignTextField();
-    fieldOne.setKey(columnName);
-    fieldOne.setWidth(width);
-    return fieldOne;
+    JRDesignTextField field = new JRDesignTextField();
+    field.setKey(columnName);
+    field.setWidth(width);
+    return field;
   }
 
   private void stubJrFields(JRBand jrBand, JRDesignTextField fieldOne, JRDesignTextField fieldTwo,
