@@ -234,7 +234,6 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setRemarks(importer.getRemarks());
     requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
     requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
-    requisitionLineItem.setTotal(importer.getTotal());
     requisitionLineItem.setPacksToShip(importer.getPacksToShip());
     requisitionLineItem.setPricePerPack(importer.getPricePerPack());
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
