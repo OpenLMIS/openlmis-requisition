@@ -489,7 +489,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem} on update.
    */
   private void calculateAndSetAverageConsumption(RequisitionTemplate template) {
-    if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       Integer averageConsumptionPassed = this.getAverageConsumption();
       calculateAndSetAverageConsumption();
 
@@ -568,7 +568,7 @@ public class RequisitionLineItem extends BaseEntity {
    */
   private void calculateAndSetAdjustedConsumption(RequisitionTemplate template,
                                                  Integer monthsInThePeriod) {
-    if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       int calculated = calculateAdjustedConsumption(this, monthsInThePeriod);
 
       if (getAdjustedConsumption() != null
