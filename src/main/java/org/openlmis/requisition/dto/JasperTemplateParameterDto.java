@@ -18,6 +18,7 @@ package org.openlmis.requisition.dto;
 
 import org.openlmis.requisition.domain.JasperTemplateParameter;
 
+import java.util.List;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -42,6 +43,7 @@ public class JasperTemplateParameterDto implements JasperTemplateParameter.Impor
   private String displayProperty;
   private String description;
   private Boolean required;
+  private List<String> options;
 
   /**
    * Create new instance of JasperTemplateParameterDto based on given {@link
