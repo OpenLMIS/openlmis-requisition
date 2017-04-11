@@ -49,8 +49,7 @@ import java.util.Locale;
 
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
-@EntityScan(basePackageClasses = {BaseEntity.class, ConfigurationSetting.class},
-    basePackages = "org.openlmis.util.converter")
+@EntityScan(basePackageClasses = {BaseEntity.class, ConfigurationSetting.class})
 public class Application {
   private Logger logger = LoggerFactory.getLogger(Application.class);
 
