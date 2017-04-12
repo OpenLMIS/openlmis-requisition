@@ -43,6 +43,13 @@
     "required": {
       "type": "boolean",
       "title": "required"
+    },
+    "options": {
+      "type": ["array", "null"],
+      "title": "options",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
