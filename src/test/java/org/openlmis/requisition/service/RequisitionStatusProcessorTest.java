@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,9 +56,19 @@ public class RequisitionStatusProcessorTest {
   }
 
   @Test
-  public void shouldNotifyForRequisitionStatus() {
+  public void shouldNotNotifyForRequisitionStatusWhenPreAuthorized() {
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    when(requisition.isPreAuthorize()).thenReturn(true);
+
+    requisitionStatusProcessor.statusChange(requisition);
+
+    verify(requisitionStatusNotifier, never()).notifyStatusChanged(eq(requisition));
+  }
+
+  @Test
+  public void shouldNotifyForRequisitionStatusWhenAuthorized() {
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.isPreAuthorize()).thenReturn(false);
 
     requisitionStatusProcessor.statusChange(requisition);
 

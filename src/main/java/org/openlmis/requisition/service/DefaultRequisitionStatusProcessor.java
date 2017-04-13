@@ -37,10 +37,11 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
    * Process requisition status change.
    * @param requisition a requisition that has just changed its status
    */
+  @Override
   public void statusChange(Requisition requisition) {
     if (requisition.getStatus() == RequisitionStatus.RELEASED) {
       convertToOrderNotifier.notifyConvertToOrder(requisition);
-    } else {
+    } else if (!requisition.isPreAuthorize()) {
       requisitionStatusNotifier.notifyStatusChanged(requisition);
     }
     if (requisition.isApprovable()) {
