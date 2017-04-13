@@ -608,6 +608,41 @@ public class RequisitionTemplateValidatorTest {
     return new RequisitionTemplate(columnMap);
   }
 
+  private RequisitionTemplate addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate(
+      Map<String, RequisitionTemplateColumn> columnMap) {
+    columnMap.put(ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N"));
+    columnMap.put(AVERAGE_CONSUMPTION, generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
+    setConsumptionsInTemplate(requisitionTemplate);
+    return requisitionTemplate;
+  }
+
+  private RequisitionTemplate mockMessageAndGetRequisitionTemplate(String messageKey) {
+    when(messageService.localize(new Message(messageKey))).thenReturn(message);
+
+    RequisitionTemplate requisitionTemplate =
+        getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
+    requisitionTemplate.setNumberOfPeriodsToAverage(2);
+    return requisitionTemplate;
+  }
+
+  private RequisitionTemplate getRequisitionTemplateForTestAdjustedAndAverageConsumptionField() {
+    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
+    columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
+    columnMap.put(ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N"));
+    columnMap.put(AVERAGE_CONSUMPTION, generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
+    requisitionTemplate.changeColumnSource(AVERAGE_CONSUMPTION, SourceType.CALCULATED);
+    requisitionTemplate.changeColumnSource(TOTAL_STOCKOUT_DAYS, SourceType.USER_INPUT);
+    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
+    requisitionTemplate.changeColumnSource(STOCK_ON_HAND, SourceType.USER_INPUT);
+    return requisitionTemplate;
+  }
+
   private Map<String, RequisitionTemplateColumn> getRequisitionTemplateColumnMap() {
     Map<String, RequisitionTemplateColumn> columnMap = getColumnMapWithRequiredFields();
     columnMap.put(TOTAL_CONSUMED_QUANTITY,
@@ -625,21 +660,6 @@ public class RequisitionTemplateValidatorTest {
     columnMap.put(REQUESTED_QUANTITY_EXPLANATION,
         generateTemplateColumn(REQUESTED_QUANTITY_EXPLANATION, "W"));
     return columnMap;
-  }
-
-  private RequisitionTemplate getRequisitionTemplateForTestAdjustedAndAverageConsumptionField() {
-    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
-    columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
-    columnMap.put(ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N"));
-    columnMap.put(AVERAGE_CONSUMPTION, generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
-
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
-    requisitionTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
-    requisitionTemplate.changeColumnSource(AVERAGE_CONSUMPTION, SourceType.CALCULATED);
-    requisitionTemplate.changeColumnSource(TOTAL_STOCKOUT_DAYS, SourceType.USER_INPUT);
-    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
-    requisitionTemplate.changeColumnSource(STOCK_ON_HAND, SourceType.USER_INPUT);
-    return requisitionTemplate;
   }
 
   private RequisitionTemplateColumn generateTemplateColumn(String name, String indicator) {
@@ -673,26 +693,6 @@ public class RequisitionTemplateValidatorTest {
     requisitionTemplateColumn.setLabel(name.toLowerCase(Locale.ENGLISH));
 
     return requisitionTemplateColumn;
-  }
-
-  private RequisitionTemplate mockMessageAndGetRequisitionTemplate(String messageKey) {
-    when(messageService.localize(new Message(messageKey))).thenReturn(message);
-
-    RequisitionTemplate requisitionTemplate =
-        getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
-    requisitionTemplate.setNumberOfPeriodsToAverage(2);
-    return requisitionTemplate;
-  }
-
-  private RequisitionTemplate addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate(
-      Map<String, RequisitionTemplateColumn> columnMap) {
-    columnMap.put(ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N"));
-    columnMap.put(AVERAGE_CONSUMPTION, generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
-
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
-    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
-    setConsumptionsInTemplate(requisitionTemplate);
-    return requisitionTemplate;
   }
 
   private void setConsumptionsInTemplate(RequisitionTemplate requisitionTemplate) {
