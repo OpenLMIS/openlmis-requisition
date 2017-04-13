@@ -21,6 +21,7 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
@@ -229,24 +230,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldRejectWhenAverageInTemplateAndAdjustedConsumptionNotInTemplate() {
-    when(messageService.localize(
-        new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
-        .thenReturn(message);
-
-    Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
-    columnMap.put(AVERAGE_CONSUMPTION,
-        generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
-
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
-    requisitionTemplate.setNumberOfPeriodsToAverage(2);
-    validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
-  }
-
-  @Test
-  public void shouldNotRejectWhenAdjustedConsumptionInTemplateAndStockoutDaysInTemplate() {
+  public void shouldNotRejectWhenConsumptionsInTemplateAndStockoutDaysInTemplate() {
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
 
     columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
@@ -260,7 +244,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldRejectWhenAdjustedConsumptionInTemplateAndStockoutDaysNotInTemplate() {
+  public void shouldRejectWhenConsumptionsInTemplateAndStockoutDaysNotInTemplate() {
     when(messageService.localize(
         new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
         .thenReturn(message);
@@ -272,11 +256,11 @@ public class RequisitionTemplateValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
+    verify(errors, times(2)).rejectValue(COLUMNS_MAP, message.toString());
   }
 
   @Test
-  public void shouldNotRejectWhenAdjustedConsumptionInTemplateAndConsumedQuantityInTemplate() {
+  public void shouldNotRejectWhenConsumptionsInTemplateAndConsumedQuantityInTemplate() {
     Map<String, RequisitionTemplateColumn> columnMap = getRequisitionTemplateColumnMap();
 
     columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
@@ -289,7 +273,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldRejectWhenAdjustedConsumptionInTemplateAnConsumedQuantityNotInTemplate() {
+  public void shouldRejectWhenConsumptionsInTemplateAnConsumedQuantityNotInTemplate() {
     when(messageService.localize(
         new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
         .thenReturn(message);
@@ -298,44 +282,14 @@ public class RequisitionTemplateValidatorTest {
 
     columnMap.put(TOTAL_STOCKOUT_DAYS, generateTemplateColumn(TOTAL_STOCKOUT_DAYS, "X"));
     columnMap.put(ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N"));
+    columnMap.put(AVERAGE_CONSUMPTION, generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
-    requisitionTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
+    setConsumptionsInTemplate(requisitionTemplate);
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
-  }
-
-  @Test
-  public void shouldRejectWhenAverageIsDisplayedAndAdjustedConsumptionIsNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
-        ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, false);
-    validator.validate(requisitionTemplate, errors);
-
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
-  }
-
-  @Test
-  public void shouldNotRejectWhenAverageIsDisplayedAndAdjustedConsumptionIsDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
-        ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, true);
-    validator.validate(requisitionTemplate, errors);
-
-    verify(errors, never()).rejectValue(anyString(), anyString());
-  }
-
-  @Test
-  public void shouldNotRejectWhenAverageIsNotDisplayedAndAdjustedConsumptionIsNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
-        ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, false);
-    requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
-    validator.validate(requisitionTemplate, errors);
-
-    verify(errors, never()).rejectValue(anyString(), anyString());
+    verify(errors, times(2)).rejectValue(COLUMNS_MAP, message.toString());
   }
 
   @Test
@@ -343,13 +297,25 @@ public class RequisitionTemplateValidatorTest {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
     requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
+    requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(COLUMNS_MAP, message.toString());
   }
 
   @Test
-  public void shouldNotRejectWhenAdjustedConsumptionIsDisplayedAndStockoutDaysIsDisplayed() {
+  public void shouldRejectWhenAverageConsumptionIsDisplayedAndStockoutDaysIsNotDisplayed() {
+    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+        ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED);
+    requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
+    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, false);
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
+  }
+
+  @Test
+  public void shouldNotRejectWhenConsumptionsAreDisplayedAndStockoutDaysIsDisplayed() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
     requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, true);
@@ -359,7 +325,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenAdjustedConsumptionIsNotDisplayedAndStockoutDaysIsNotDisplayed() {
+  public void shouldNotRejectWhenConsumptionsAreNotDisplayedAndStockoutDaysIsNotDisplayed() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
     requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
@@ -371,7 +337,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenAdjustedConsumptionIsDisplayedAndConsumedQuantityIsCalculated() {
+  public void shouldNotRejectWhenConsumptionsAreDisplayedAndConsumedQuantityIsCalculated() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
     requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
@@ -382,7 +348,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenAdjustedConsumptionIsDisplayedAndConsumedQuantityIsDisplayed() {
+  public void shouldNotRejectWhenConsumptionsAreDisplayedAndConsumedQuantityIsDisplayed() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
     requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, true);
@@ -392,7 +358,7 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenAdjustedConsumptionAndConsumedQuantityAreNotDisplayed() {
+  public void shouldNotRejectWhenConsumptionsAndConsumedQuantityAreNotDisplayed() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
     requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
@@ -724,10 +690,14 @@ public class RequisitionTemplateValidatorTest {
     columnMap.put(AVERAGE_CONSUMPTION, generateTemplateColumn(AVERAGE_CONSUMPTION, "P"));
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(columnMap);
+    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
+    setConsumptionsInTemplate(requisitionTemplate);
+    return requisitionTemplate;
+  }
+
+  private void setConsumptionsInTemplate(RequisitionTemplate requisitionTemplate) {
     requisitionTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
     requisitionTemplate.changeColumnSource(AVERAGE_CONSUMPTION, SourceType.CALCULATED);
-    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.USER_INPUT);
-    requisitionTemplate.setNumberOfPeriodsToAverage(3);
-    return requisitionTemplate;
+    requisitionTemplate.setNumberOfPeriodsToAverage(2);
   }
 }

@@ -229,7 +229,8 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
   private void validateForAdjustedConsumption(RequisitionTemplate requisitionTemplate) {
     if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(requisitionTemplate);
+      rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
+          requisitionTemplate, ADJUSTED_CONSUMPTION);
       if (requisitionTemplate.isColumnDisplayed(ADJUSTED_CONSUMPTION)) {
         validateCalculatedField(requisitionTemplate, ADJUSTED_CONSUMPTION,
             ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
@@ -238,34 +239,32 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
-      RequisitionTemplate requisitionTemplate) {
-    if (!requisitionTemplate.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)) {
-      rejectValue(errors, COLUMNS_MAP,
-          new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
-              TOTAL_CONSUMED_QUANTITY, ADJUSTED_CONSUMPTION));
-    }
-    if (!requisitionTemplate.isColumnInTemplate(TOTAL_STOCKOUT_DAYS)) {
-      rejectValue(errors, COLUMNS_MAP,
-          new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
-              TOTAL_STOCKOUT_DAYS, ADJUSTED_CONSUMPTION));
-    }
-  }
-
   private void validateForAverageConsumption(RequisitionTemplate requisitionTemplate) {
     if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      if (!requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-        rejectValue(errors, COLUMNS_MAP,
-            new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
-                AVERAGE_CONSUMPTION, ADJUSTED_CONSUMPTION));
-      } else if (requisitionTemplate.isColumnDisplayed(AVERAGE_CONSUMPTION)) {
-        rejectIfNotDisplayed(errors, requisitionTemplate, ADJUSTED_CONSUMPTION, COLUMNS_MAP,
-            new Message(ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED,
-                ADJUSTED_CONSUMPTION));
+      rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(requisitionTemplate, AVERAGE_CONSUMPTION);
+      if (requisitionTemplate.isColumnDisplayed(AVERAGE_CONSUMPTION)) {
+        validateCalculatedField(requisitionTemplate, AVERAGE_CONSUMPTION,
+            ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
+            TOTAL_STOCKOUT_DAYS);
       }
       rejectIfNumberOfPeriodsToAverageIsNull(requisitionTemplate);
     }
   }
+
+  private void rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
+      RequisitionTemplate requisitionTemplate, String validatedColumn) {
+    if (!requisitionTemplate.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)) {
+      rejectValue(errors, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
+              TOTAL_CONSUMED_QUANTITY, validatedColumn));
+    }
+    if (!requisitionTemplate.isColumnInTemplate(TOTAL_STOCKOUT_DAYS)) {
+      rejectValue(errors, COLUMNS_MAP,
+          new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
+              TOTAL_STOCKOUT_DAYS, validatedColumn));
+    }
+  }
+
 
   private void rejectIfNumberOfPeriodsToAverageIsNull(RequisitionTemplate requisitionTemplate) {
     if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
