@@ -33,7 +33,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -49,7 +48,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "template_parameters")
 @NoArgsConstructor
-@AllArgsConstructor
 public class JasperTemplateParameter extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)

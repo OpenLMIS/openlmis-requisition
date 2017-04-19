@@ -1,5 +1,5 @@
 --
--- Name: jaspertemplateparameter_options; Type: TABLE; Schema: reports; Owner: postgres
+-- Name: jasper_template_parameter_dependencies; Type: TABLE; Schema: requisition; Owner: postgres
 --
 
 CREATE TABLE jasper_template_parameter_dependencies (
@@ -10,8 +10,8 @@ CREATE TABLE jasper_template_parameter_dependencies (
 );
 
 --
--- Name: jaspertemplateparameter_options fkpxphnoksec55h63evgb3obfxq; Type: FK CONSTRAINT; Schema: reports; Owner: postgres
+-- Name: jasper_template_parameter_dependencies fkpxphnoksec55h63evgb3obfxq; Type: FK CONSTRAINT; Schema: requisition; Owner: postgres
 --
 
 ALTER TABLE ONLY jasper_template_parameter_dependencies
-    ADD CONSTRAINT fkpxphnoksec55h63evgb3obfxq FOREIGN KEY (parameterid) REFERENCES template_parameters(id);
+    ADD CONSTRAINT fk_parameterid_template_parameters FOREIGN KEY (parameterid) REFERENCES template_parameters(id);
