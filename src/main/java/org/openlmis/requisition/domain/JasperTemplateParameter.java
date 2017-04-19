@@ -15,18 +15,24 @@
 
 package org.openlmis.requisition.domain;
 
+import org.openlmis.requisition.dto.JasperTemplateParameterDependencyDto;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,7 +48,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "template_parameters")
 @NoArgsConstructor
-@AllArgsConstructor
 public class JasperTemplateParameter extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)
@@ -96,10 +101,27 @@ public class JasperTemplateParameter extends BaseEntity {
   @Setter
   private List<String> options;
 
+  @OneToMany(
+      mappedBy = "parameter",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
+  @Getter
+  @Setter
+  private List<JasperTemplateParameterDependency> dependencies;
+
   @Column
   @Getter
   @Setter
   private Boolean required;
+
+  @PrePersist
+  @PreUpdate
+  private void preSave() {
+    if (dependencies != null) {
+      dependencies.forEach(dependency -> dependency.setParameter(this));
+    }
+  }
 
   /**
    * Create new instance of JasperTemplateParameter based on given
@@ -121,6 +143,11 @@ public class JasperTemplateParameter extends BaseEntity {
     jasperTemplateParameter.setDisplayProperty(importer.getDisplayProperty());
     jasperTemplateParameter.setRequired(importer.getRequired());
     jasperTemplateParameter.setOptions(importer.getOptions());
+    jasperTemplateParameter.setDependencies(importer.getDependencies()
+        .stream()
+        .map(JasperTemplateParameterDependency::newInstance)
+        .collect(Collectors.toList())
+    );
     return jasperTemplateParameter;
   }
 
@@ -141,6 +168,11 @@ public class JasperTemplateParameter extends BaseEntity {
     exporter.setDisplayProperty(displayProperty);
     exporter.setRequired(required);
     exporter.setOptions(options);
+    exporter.setDependencies(dependencies
+        .stream()
+        .map(JasperTemplateParameterDependencyDto::newInstance)
+        .collect(Collectors.toList())
+    );
   }
 
   public interface Exporter {
@@ -166,6 +198,7 @@ public class JasperTemplateParameter extends BaseEntity {
 
     void setOptions(List<String> options);
 
+    void setDependencies(List<JasperTemplateParameterDependencyDto> dependencies);
   }
 
   public interface Importer {
@@ -191,5 +224,6 @@ public class JasperTemplateParameter extends BaseEntity {
 
     List<String> getOptions();
 
+    List<JasperTemplateParameterDependencyDto> getDependencies();
   }
 }

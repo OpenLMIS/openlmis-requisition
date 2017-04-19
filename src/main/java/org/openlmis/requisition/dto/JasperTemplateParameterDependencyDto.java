@@ -15,10 +15,8 @@
 
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.JasperTemplateParameterDependency;
 
-import org.openlmis.requisition.domain.JasperTemplateParameter;
-
-import java.util.List;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -30,33 +28,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class JasperTemplateParameterDto implements JasperTemplateParameter.Importer,
-    JasperTemplateParameter.Exporter {
+public class JasperTemplateParameterDependencyDto implements
+    JasperTemplateParameterDependency.Importer, JasperTemplateParameterDependency.Exporter {
 
   private UUID id;
-  private String name;
-  private String displayName;
-  private String defaultValue;
-  private String dataType;
-  private String selectExpression;
-  private String selectProperty;
-  private String displayProperty;
-  private String description;
-  private Boolean required;
-  private List<String> options;
-  private List<JasperTemplateParameterDependencyDto> dependencies;
+  private String dependency;
+  private String placeholder;
 
   /**
-   * Create new instance of JasperTemplateParameterDto based on given {@link
-   * JasperTemplateParameter}
+   * Create new instance of JasperTemplateParameterDependencyDto based on given {@link
+   * JasperTemplateParameterDependency}
    *
-   * @param jasperTemplateParameter instance of Template
-   * @return new instance of JasperTemplateDto.
+   * @param dependency instance of parameter dependency
+   * @return new instance of JasperTemplateParameterDependencyDto.
    */
-  public static JasperTemplateParameterDto newInstance(
-      JasperTemplateParameter jasperTemplateParameter) {
-    JasperTemplateParameterDto jasperTemplateParameterDto = new JasperTemplateParameterDto();
-    jasperTemplateParameter.export(jasperTemplateParameterDto);
-    return jasperTemplateParameterDto;
+  public static JasperTemplateParameterDependencyDto newInstance(
+      JasperTemplateParameterDependency dependency) {
+    JasperTemplateParameterDependencyDto dto = new JasperTemplateParameterDependencyDto();
+    dependency.export(dto);
+    return dto;
   }
 }
