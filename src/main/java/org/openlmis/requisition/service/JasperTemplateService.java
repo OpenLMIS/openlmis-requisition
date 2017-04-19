@@ -36,6 +36,7 @@ import net.sf.jasperreports.engine.JasperReport;
 
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.JasperTemplateParameter;
+import org.openlmis.requisition.domain.JasperTemplateParameterDependency;
 import org.openlmis.requisition.exception.ReportingException;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,14 +214,8 @@ public class JasperTemplateService {
           .getText().replace("\"", "").replace("\'", ""));
     }
 
-    String optionsProperty = jrParameter.getPropertiesMap().getProperty("options");
-    if (optionsProperty != null) {
-      // split by unescaped commas
-      List<String> options = Arrays.stream(optionsProperty.split("(?<!\\\\),"))
-              .map(option -> option.replace("\\,", ","))
-              .collect(Collectors.toList());
-      jasperTemplateParameter.setOptions(options);
-    }
+    jasperTemplateParameter.setOptions(extractOptions(jrParameter));
+    jasperTemplateParameter.setDependencies(extractDependencies(jrParameter));
 
     return jasperTemplateParameter;
   }
@@ -289,5 +284,34 @@ public class JasperTemplateService {
     if (file == null) {
       throw new ReportingException(ERROR_REPORTING_FILE_MISSING);
     }
+  }
+
+  private List<String> extractOptions(JRParameter parameter) {
+    return extractListProperties(parameter, "options");
+  }
+
+  private List<JasperTemplateParameterDependency> extractDependencies(JRParameter parameter) {
+    return extractListProperties(parameter, "dependencies")
+        .stream()
+        .map(option -> {
+          // split by colons
+          String[] properties = option.split(":");
+          return new JasperTemplateParameterDependency(properties[0], properties[1]);
+        })
+        .collect(Collectors.toList());
+  }
+
+  private List<String> extractListProperties(JRParameter parameter, String property) {
+    String dependencyProperty = parameter.getPropertiesMap().getProperty(property);
+
+    if (dependencyProperty != null) {
+      // split by unescaped commas
+      return Arrays
+          .stream(dependencyProperty.split("(?<!\\\\),"))
+          .map(option -> option.replace("\\,", ","))
+          .collect(Collectors.toList());
+    }
+
+    return new ArrayList<>();
   }
 }

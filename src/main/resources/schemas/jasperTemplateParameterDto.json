@@ -50,6 +50,14 @@
       "items": {
         "type": "string"
       }
+    },
+    "dependencies": {
+      "type": ["array", "null"],
+      "title": "dependencies",
+      "items": {
+        "type": "object",
+        "$ref": "jasperTemplateParameterDependencyDto.json"
+      }
     }
   },
   "required": [
