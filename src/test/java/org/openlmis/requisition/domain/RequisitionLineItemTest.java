@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 
+import com.google.common.collect.Sets;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -45,6 +46,9 @@ import java.util.UUID;
 public class RequisitionLineItemTest {
 
   private Requisition initiatedRequisition;
+
+  private UUID programId = UUID.randomUUID();
+  private UUID orderableId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -318,17 +322,24 @@ public class RequisitionLineItemTest {
     item.setRequestedQuantityExplanation("explanation");
     item.setTotalCost(Money.of(CurrencyUnit.USD, 30));
     item.setNumberOfNewPatientsAdded(10);
+    item.setOrderableId(orderableId);
 
     return item;
   }
 
   private ApprovedProductDto createDefaultApprovedProduct(Money pricePerPack) {
-    UUID orderableId = UUID.randomUUID();
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
+    programOrderable.setProgramId(programId);
     programOrderable.setOrderableId(orderableId);
+    OrderableDto orderable = new OrderableDto();
+    orderable.setId(orderableId);
+    orderable.setPrograms(Sets.newHashSet(programOrderable));
     ApprovedProductDto ftap = new ApprovedProductDto();
-    ftap.setProgramOrderable(programOrderable);
+    ProgramDto programMock = mock(ProgramDto.class);
+    when(programMock.getId()).thenReturn(programId);
+    ftap.setProgram(programMock);
+    ftap.setOrderable(orderable);
     ftap.setMaxPeriodsOfStock(7.25);
 
     return ftap;
@@ -337,7 +348,7 @@ public class RequisitionLineItemTest {
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
     ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
 
-    ProgramOrderableDto programOrderable = ftap.getProgramOrderable();
+    ProgramOrderableDto programOrderable = ftap.getOrderable().findProgramOrderableDto(programId);
     ProgramDto program = new ProgramDto();
     program.setId(UUID.randomUUID());
 

@@ -27,6 +27,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -39,6 +40,8 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -261,12 +264,21 @@ public class RequisitionRepositoryIntegrationTest
     Money pricePerPack = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 14.57);
     UUID productId = UUID.randomUUID();
 
+    ProgramDto program = new ProgramDto();
+    program.setId(UUID.randomUUID());
+
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
     programOrderable.setOrderableId(productId);
+    programOrderable.setProgramId(program.getId());
+
+    OrderableDto orderable = new OrderableDto();
+    orderable.setId(productId);
+    orderable.setPrograms(Sets.newHashSet(programOrderable));
 
     ApprovedProductDto ftap = new ApprovedProductDto();
-    ftap.setProgramOrderable(programOrderable);
+    ftap.setOrderable(orderable);
+    ftap.setProgram(program);
     ftap.setMaxPeriodsOfStock(7.25);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),

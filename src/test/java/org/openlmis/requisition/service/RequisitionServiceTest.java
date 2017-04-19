@@ -39,6 +39,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -1120,11 +1121,22 @@ public class RequisitionServiceTest {
   }
 
   private void mockApprovedProduct(UUID productId, boolean fullSupply) {
+    ProgramDto program = new ProgramDto();
+    program.setId(UUID.randomUUID());
+
     ProgramOrderableDto product = new ProgramOrderableDto();
     product.setOrderableId(productId);
+    product.setProgramId(program.getId());
     product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
+
+    OrderableDto orderable = new OrderableDto();
+    orderable.setId(productId);
+    orderable.setPrograms(Sets.newHashSet(product));
+
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
-    approvedProductDto.setProgramOrderable(product);
+    approvedProductDto.setId(PRODUCT_ID);
+    approvedProductDto.setOrderable(orderable);
+    approvedProductDto.setProgram(program);
     approvedProductDto.setMaxPeriodsOfStock(7.25);
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), eq(fullSupply)))

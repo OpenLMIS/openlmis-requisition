@@ -32,13 +32,6 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -48,6 +41,7 @@ import org.mockito.Mock;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
@@ -56,6 +50,13 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
@@ -477,6 +478,24 @@ public class RequisitionTest {
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
     assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
     assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldInitiateRequisitionLineItemFieldWithOrderableId() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+
+    // when
+    Requisition req = new Requisition();
+    req.initiate(template, Collections.singleton(product1),
+        Collections.emptyList(), 0, null, UUID.randomUUID());
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertThat(lineItems.get(0).getOrderableId(), is(productId1));
   }
 
   @Test
@@ -1033,9 +1052,15 @@ public class RequisitionTest {
 
   private ApprovedProductDto mockApprovedProduct(UUID orderableId) {
     ApprovedProductDto approvedProductDto = mock(ApprovedProductDto.class);
-    ProgramOrderableDto programOrderable = mock(ProgramOrderableDto.class);
-    when(approvedProductDto.getProgramOrderable()).thenReturn(programOrderable);
-    when(programOrderable.getOrderableId()).thenReturn(orderableId);
+    OrderableDto orderableDto = mock(OrderableDto.class);
+    ProgramDto programDto = mock(ProgramDto.class);
+    when(approvedProductDto.getOrderable()).thenReturn(orderableDto);
+    when(approvedProductDto.getProgram()).thenReturn(programDto);
+    when(orderableDto.getId()).thenReturn(orderableId);
+    UUID programId = UUID.randomUUID();
+    when(programDto.getId()).thenReturn(programId);
+    when(orderableDto.findProgramOrderableDto(programId))
+        .thenReturn(mock(ProgramOrderableDto.class));
     return approvedProductDto;
   }
 
