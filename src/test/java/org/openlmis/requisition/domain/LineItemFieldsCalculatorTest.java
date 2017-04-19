@@ -40,6 +40,8 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 public class LineItemFieldsCalculatorTest {
 
+  private static final int STOCK_ON_HAND = 3789;
+
   @Test
   public void shouldCalculateTotalLossesAndAdjustments() throws Exception {
     // given
@@ -91,10 +93,9 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateBeginningBalanceBasedOnPrevious() throws Exception {
     RequisitionLineItem previous = new RequisitionLineItem();
-    previous.setStockOnHand(3789);
-    previous.setApprovedQuantity(714);
+    previous.setStockOnHand(STOCK_ON_HAND);
 
-    assertThat(LineItemFieldsCalculator.calculateBeginningBalance(previous), is(4503));
+    assertThat(LineItemFieldsCalculator.calculateBeginningBalance(previous), is(STOCK_ON_HAND));
   }
 
   @Test

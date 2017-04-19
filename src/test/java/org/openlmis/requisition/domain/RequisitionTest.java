@@ -72,6 +72,8 @@ public class RequisitionTest {
   private static final int MONTHS_IN_PERIOD = 1;
   private static final int CALCULATED_ORDER_QUANTITY = 5;
   private static final int REQUESTED_QUANTITY = 10;
+  private static final int STOCK_ON_HAND = 10;
+  private static final int STOCK_ON_HAND_2 = 11;
 
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
@@ -457,8 +459,8 @@ public class RequisitionTest {
     final UUID productId2 = UUID.randomUUID();
 
     Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
-    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
+    mockReqLine(previousRequisition, productId1, STOCK_ON_HAND);
+    mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -474,8 +476,8 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
     assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
     assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
   }
@@ -505,8 +507,8 @@ public class RequisitionTest {
     final UUID productId2 = UUID.randomUUID();
 
     Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
-    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
+    mockReqLine(previousRequisition, productId1, STOCK_ON_HAND);
+    mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -531,8 +533,8 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
     assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(10));
     assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(15));
   }
@@ -544,8 +546,8 @@ public class RequisitionTest {
     final UUID productId2 = UUID.randomUUID();
 
     Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, 10, 20); // 10 + 20 = 30 beginning balance
-    mockReqLine(previousRequisition, productId2, 11, 22); // 11 + 22 = 33 beginning balance
+    mockReqLine(previousRequisition, productId1, STOCK_ON_HAND);
+    mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -570,8 +572,8 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(30));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(33));
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
     assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
     assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
   }
@@ -1041,11 +1043,10 @@ public class RequisitionTest {
   }
 
   private void mockReqLine(Requisition requisition, UUID productId,
-                           int stockOnHand, int approvedQuantity) {
+                           int stockOnHand) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
     when(item.getOrderableId()).thenReturn(productId);
     when(item.getStockOnHand()).thenReturn(stockOnHand);
-    when(item.getApprovedQuantity()).thenReturn(approvedQuantity);
 
     when(requisition.findLineByProductId(productId)).thenReturn(item);
   }

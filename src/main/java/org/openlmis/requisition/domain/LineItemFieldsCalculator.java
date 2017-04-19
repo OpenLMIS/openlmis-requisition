@@ -23,7 +23,6 @@ import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
@@ -46,8 +45,7 @@ public final class LineItemFieldsCalculator {
    */
   public static int calculateBeginningBalance(RequisitionLineItem previous) {
     if (null != previous) {
-      return zeroIfNull(previous.getStockOnHand())
-          + zeroIfNull(previous.getApprovedQuantity());
+      return zeroIfNull(previous.getStockOnHand());
     }
     return 0;
   }
