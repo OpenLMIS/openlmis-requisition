@@ -488,10 +488,10 @@
 		<band height="30">
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="0" y="20" width="555" height="10" uuid="a4fbc135-0b20-4dd1-a860-f4dd2183c8dc"/>
-				<textElement>
+				<textElement textAlignment="Center">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0}\n{1} days after the end of the period", java.time.LocalDate.now(), $P{DueDays})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0} {1} days after the end of the period", java.time.LocalDate.now(), $P{DueDays})]]></textFieldExpression>
 			</textField>
 		</band>
 
