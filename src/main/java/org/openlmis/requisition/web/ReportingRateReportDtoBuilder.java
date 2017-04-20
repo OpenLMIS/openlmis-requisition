@@ -150,10 +150,11 @@ public class ReportingRateReportDtoBuilder {
     }
 
     RequisitionCompletionDto completion = new RequisitionCompletionDto();
-    completion.setCompleted(((double)(onTime + late)) / total);
-    completion.setMissed(((double)missed) / total);
-    completion.setOnTime(((double)onTime) / total);
-    completion.setLate(((double)late) / total);
+    completion.setCompleted((onTime + late));
+    completion.setMissed(missed);
+    completion.setOnTime(onTime);
+    completion.setLate(late);
+    completion.setTotal(total);
 
     return completion;
   }

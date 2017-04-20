@@ -29,22 +29,27 @@ public class RequisitionCompletionDto {
   private String grouping;
 
   /**
-   * Percentage of completed requisitions (approved in requisition due), as number from 0 to 1.
+   * Number of completed requisitions (approved in requisition due).
    */
-  private double completed;
+  private int completed;
 
   /**
-   * Percentage of missed requisitions (not reported), as number from 0 to 1.
+   * Number of missed requisitions (not reported).
    */
-  private double missed;
+  private int missed;
 
   /**
-   * Percentage of requisitions reported on time, as number from 0 to 1.
+   * Number of requisitions reported on time.
    */
-  private double onTime;
+  private int onTime;
 
   /**
-   * Percentage of requisitions reported late, as number from 0 to 1.
+   * Number of requisitions reported late.
    */
-  private double late;
+  private int late;
+
+  /**
+   * Number of total reported requisitions.
+   */
+  private int total;
 }

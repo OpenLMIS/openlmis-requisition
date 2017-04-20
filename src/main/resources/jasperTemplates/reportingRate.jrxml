@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-28T11:07:46 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportingRate" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4e1d9a97-c93a-4ad3-87e1-e305d6e7da2e">
+<!-- 2017-04-20T12:55:09 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportingRate" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="4e1d9a97-c93a-4ad3-87e1-e305d6e7da2e">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="java.lang.*"/>
 	<import value="java.util.*"/>
@@ -43,20 +43,23 @@
 		<field name="grouping" class="java.lang.String">
 			<fieldDescription><![CDATA[grouping]]></fieldDescription>
 		</field>
-		<field name="completed" class="java.lang.Double">
+		<field name="completed" class="java.lang.Integer">
 			<fieldDescription><![CDATA[completed]]></fieldDescription>
 		</field>
-		<field name="missed" class="java.lang.Double">
+		<field name="missed" class="java.lang.Integer">
 			<fieldDescription><![CDATA[missed]]></fieldDescription>
 		</field>
-		<field name="onTime" class="java.lang.Double">
+		<field name="onTime" class="java.lang.Integer">
 			<fieldDescription><![CDATA[onTime]]></fieldDescription>
 		</field>
-		<field name="late" class="java.lang.Double">
+		<field name="late" class="java.lang.Integer">
 			<fieldDescription><![CDATA[late]]></fieldDescription>
 		</field>
-		<variable name="NumberFormat" class="java.lang.String">
-			<variableExpression><![CDATA["%.0f%%"]]></variableExpression>
+		<field name="total" class="java.lang.Integer">
+			<fieldDescription><![CDATA[total]]></fieldDescription>
+		</field>
+		<variable name="PercentAndNumberFormat" class="java.lang.String">
+			<variableExpression><![CDATA["%1$.0f%% (%2$d)"]]></variableExpression>
 			<initialValueExpression><![CDATA["%.0f%%"]]></initialValueExpression>
 		</variable>
 	</subDataset>
@@ -220,10 +223,10 @@
 					<datasetRun subDataset="ReportingRateByPeriod" uuid="3f5dceba-45d4-43cf-a6d2-80caf0e6f0b4">
 						<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{completionByPeriod})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:column width="111" uuid="bddbac36-e7a6-4e95-81d9-5e416d7dae27">
+					<jr:column width="83" uuid="bddbac36-e7a6-4e95-81d9-5e416d7dae27">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="1dfa41cf-7344-4dbd-96f4-5f227215cea4"/>
+								<reportElement x="0" y="0" width="83" height="30" uuid="1dfa41cf-7344-4dbd-96f4-5f227215cea4"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
 								<text><![CDATA[Periods]]></text>
@@ -231,84 +234,84 @@
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="66d43f08-fb57-48c3-a69b-bb4d9b54894b"/>
+								<reportElement x="0" y="0" width="83" height="30" uuid="66d43f08-fb57-48c3-a69b-bb4d9b54894b"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
 								<textFieldExpression><![CDATA[$F{grouping}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="7cdf4b24-f89e-488c-95f9-baa3dd9fe67c">
+					<jr:column width="118" uuid="7cdf4b24-f89e-488c-95f9-baa3dd9fe67c">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="18437627-b70d-4a24-a301-f8b0acaa0ec9"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="18437627-b70d-4a24-a301-f8b0acaa0ec9"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% Reporting]]></text>
+								<text><![CDATA[% Reporting (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="c76ce979-1d2c-4b28-af83-7bc5a1626a2d"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="c76ce979-1d2c-4b28-af83-7bc5a1626a2d"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{completed} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{completed}/$F{total}*100, $F{completed})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="356abb06-38d6-4f60-b8f1-48d1aca79e86">
+					<jr:column width="118" uuid="356abb06-38d6-4f60-b8f1-48d1aca79e86">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="2b3610da-df75-4d52-beee-6cc1dc25f19f"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="2b3610da-df75-4d52-beee-6cc1dc25f19f"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% On Time Rep]]></text>
+								<text><![CDATA[% On Time Rep (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="533abb65-b858-4042-acba-4c67310920ce"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="533abb65-b858-4042-acba-4c67310920ce"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{onTime} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{onTime}/$F{total}*100, $F{onTime})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="39fbaedd-02c8-4405-80ae-ab95ea78c938">
+					<jr:column width="118" uuid="39fbaedd-02c8-4405-80ae-ab95ea78c938">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="92db07b9-0cc8-462b-8d6c-1f13dca27c7f"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="92db07b9-0cc8-462b-8d6c-1f13dca27c7f"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% Late Rep]]></text>
+								<text><![CDATA[% Late Rep (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="32465b83-c463-4b16-97a4-830b0a074daf"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="32465b83-c463-4b16-97a4-830b0a074daf"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{late} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{late}/$F{total}*100, $F{late})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="7d25d6c5-211b-44b1-bfad-b13fd6b7bf16">
+					<jr:column width="118" uuid="7d25d6c5-211b-44b1-bfad-b13fd6b7bf16">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="6b549939-bb77-4aff-8bcf-2e8fb3f572a7">
+								<reportElement x="0" y="0" width="118" height="30" uuid="6b549939-bb77-4aff-8bcf-2e8fb3f572a7">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								</reportElement>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% Not Reported]]></text>
+								<text><![CDATA[% Not Reported (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="49b0377d-e4fc-4d23-82a5-47562053bc71"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="49b0377d-e4fc-4d23-82a5-47562053bc71"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{missed} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{missed}/$F{total}*100, $F{missed})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -330,19 +333,19 @@
 					<categorySeries>
 						<seriesExpression><![CDATA["On Time"]]></seriesExpression>
 						<categoryExpression><![CDATA[$F{grouping}]]></categoryExpression>
-						<valueExpression><![CDATA[$F{onTime} * 100]]></valueExpression>
+						<valueExpression><![CDATA[(double)$F{onTime}/$F{total}*100]]></valueExpression>
 						<labelExpression><![CDATA["On Time"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
 						<seriesExpression><![CDATA["Late"]]></seriesExpression>
 						<categoryExpression><![CDATA[$F{grouping}]]></categoryExpression>
-						<valueExpression><![CDATA[$F{late} * 100]]></valueExpression>
+						<valueExpression><![CDATA[(double)$F{late}/$F{total}*100]]></valueExpression>
 						<labelExpression><![CDATA["Late"]]></labelExpression>
 					</categorySeries>
 					<categorySeries>
 						<seriesExpression><![CDATA["Not Reported"]]></seriesExpression>
 						<categoryExpression><![CDATA[$F{grouping}]]></categoryExpression>
-						<valueExpression><![CDATA[$F{missed} * 100]]></valueExpression>
+						<valueExpression><![CDATA[(double)$F{missed}/$F{total}*100]]></valueExpression>
 						<labelExpression><![CDATA["Not Reported"]]></labelExpression>
 					</categorySeries>
 				</categoryDataset>
@@ -387,10 +390,10 @@
 					<datasetRun subDataset="ReportingRateByPeriod" uuid="98483d6f-f388-40fa-b29e-427f6dc05393">
 						<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{completionByZone})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:column width="111" uuid="78d31c95-ced7-4700-a34f-d21fb9758a98">
+					<jr:column width="83" uuid="78d31c95-ced7-4700-a34f-d21fb9758a98">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="7fa71eb4-df17-41d7-a7f4-13486a02659b"/>
+								<reportElement x="0" y="0" width="83" height="30" uuid="7fa71eb4-df17-41d7-a7f4-13486a02659b"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
 								<text><![CDATA[Districts]]></text>
@@ -398,89 +401,99 @@
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="2884d7b8-fe56-4153-afe8-3970bef3b265"/>
+								<reportElement x="0" y="0" width="83" height="30" uuid="2884d7b8-fe56-4153-afe8-3970bef3b265"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
 								<textFieldExpression><![CDATA[$F{grouping}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="37f0c5d3-870c-44dd-b708-34760c787b36">
+					<jr:column width="118" uuid="37f0c5d3-870c-44dd-b708-34760c787b36">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="45afdcba-545c-4700-9984-c689db69084a"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="45afdcba-545c-4700-9984-c689db69084a"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% Reporting]]></text>
+								<text><![CDATA[% Reporting (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="99413dd5-0f84-4b07-b36d-2bc60d97b567"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="99413dd5-0f84-4b07-b36d-2bc60d97b567"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{completed} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{completed}/$F{total}*100, $F{completed})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="36deb7dd-0971-4930-ad82-52e69571d367">
+					<jr:column width="118" uuid="36deb7dd-0971-4930-ad82-52e69571d367">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="add31fc1-3b72-4458-8e3e-df1c8d8f09f9"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="add31fc1-3b72-4458-8e3e-df1c8d8f09f9"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% On Time Rep]]></text>
+								<text><![CDATA[% On Time Rep (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="6098848d-3396-4ec0-9627-51467a43e0b2"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="6098848d-3396-4ec0-9627-51467a43e0b2"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{onTime} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{onTime}/$F{total}*100, $F{onTime})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="2bcf4445-bb10-4a9f-8111-70ae37631da9">
+					<jr:column width="118" uuid="2bcf4445-bb10-4a9f-8118-70ae37631da9">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="bc42f5e4-5711-402f-9d18-b2a59d09f4e9"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="bc42f5e4-5711-402f-9d18-b2a59d09f4e9"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% Late Rep]]></text>
+								<text><![CDATA[% Late Rep (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="af00bd95-fa13-4baf-894e-339a41baac57"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="af00bd95-fa13-4baf-894e-339a41baac57"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{late} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{late}/$F{total}*100, $F{late})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="111" uuid="c6d75d3a-7411-46f3-a79f-6d1e06fb0dbd">
+					<jr:column width="118" uuid="c6d75d3a-7411-46f3-a79f-6d1e06fb0dbd">
 						<jr:columnHeader style="Table_CH" height="30">
 							<staticText>
-								<reportElement x="0" y="0" width="111" height="30" uuid="7ba5a6fb-2872-472e-9b81-fdf14b96c310">
+								<reportElement x="0" y="0" width="118" height="30" uuid="7ba5a6fb-2872-472e-9b81-fdf14b96c310">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								</reportElement>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<text><![CDATA[% Not Reported]]></text>
+								<text><![CDATA[% Not Reported (Count)]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
 							<textField>
-								<reportElement x="0" y="0" width="111" height="30" uuid="f74f1b72-b6a5-4a54-8772-e6f3fc79c3c9"/>
+								<reportElement x="0" y="0" width="118" height="30" uuid="f74f1b72-b6a5-4a54-8772-e6f3fc79c3c9"/>
 								<box padding="2"/>
-								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{NumberFormat}, $F{missed} * 100)]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{missed}/$F{total}*100, $F{missed})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
 				</jr:table>
 			</componentElement>
 		</band>
+		<band height="30">
+			<textField isStretchWithOverflow="true" pattern="">
+				<reportElement x="0" y="20" width="555" height="10" uuid="a4fbc135-0b20-4dd1-a860-f4dd2183c8dc"/>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0}\n{1} days after the end of the period", java.time.LocalDate.now(), $P{DueDays})]]></textFieldExpression>
+			</textField>
+		</band>
+
 	</detail>
 </jasperReport>
