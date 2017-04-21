@@ -86,7 +86,7 @@
 		<property name="selectProperty" value="id"/>
 		<property name="required" value="false"/>
 	</parameter>
-	<parameter name="DueDays" class="java.lang.Integer">
+	<parameter name="DueDays" class="java.lang.String">
 		<property name="displayName" value="Due date (days)"/>
 		<property name="required" value="false"/>
 	</parameter>
@@ -491,7 +491,7 @@
 				<textElement textAlignment="Center">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0} {1} days after the end of the period", java.time.LocalDate.now(), $P{DueDays})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0}\n{1} days after the end of the period", java.time.LocalDate.now(), java.lang.Integer.valueOf($P{DueDays}))]]></textFieldExpression>
 			</textField>
 		</band>
 

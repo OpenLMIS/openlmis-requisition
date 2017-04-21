@@ -40,10 +40,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
-
 import java.util.Map;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
 
 @Controller
@@ -54,6 +52,7 @@ public class JasperTemplateController extends BaseController {
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String TIMELINESS_REPORT = "Timeliness Report";
   private static final String REPORTING_RATE_REPORT = "Reporting Rate Report";
+  private static final int DUE_DAYS = 10;
 
   private static final Logger LOGGER = Logger.getLogger(JasperTemplateController.class);
 
@@ -185,6 +184,7 @@ public class JasperTemplateController extends BaseController {
     }
 
     if (REPORTING_RATE_REPORT.equals(template.getType())) {
+      map.putIfAbsent("DueDays", String.valueOf(DUE_DAYS));
       jasperView = jasperReportsViewService
           .getReportingRateJasperReportsView(template, request, map);
     }

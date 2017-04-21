@@ -43,7 +43,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ReportingRateReportDtoBuilder {
-  private static int DUE_DAYS = 10;
   private static int LATEST_PERIODS = 3;
   private static int GEOGRAPHIC_ZONE_LEVEL = 3;
   private static RequisitionStatus REQUIRED_STATUS = RequisitionStatus.APPROVED;
@@ -70,9 +69,6 @@ public class ReportingRateReportDtoBuilder {
    */
   public ReportingRateReportDto build(
       ProgramDto program, ProcessingPeriodDto period, GeographicZoneDto zone, Integer dueDays) {
-    if (dueDays == null) {
-      dueDays = DUE_DAYS;
-    }
     ReportingRateReportDto report = new ReportingRateReportDto();
 
     Collection<ProcessingPeriodDto> periods = getLatestPeriods(period, LATEST_PERIODS);
