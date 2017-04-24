@@ -54,10 +54,10 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
     Map<String, Object> requestBody = new HashMap<>();
     requestBody.put("code", code);
     requestBody.put("name", name);
-    requestBody.put("zoneId", zoneId);
     requestBody.put("recurse", recurse);
 
-    return findAll("search", RequestParameters.init(), requestBody);
+    requestBody.put("zoneId", zoneId);
+    return getPage("search", RequestParameters.init(), requestBody).getContent();
   }
 
   /**
