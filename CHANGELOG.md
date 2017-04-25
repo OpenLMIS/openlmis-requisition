@@ -1,3 +1,33 @@
+3.1.2 / coming soon
+===================
+
+Bug fixes and performance improvements which are backwards-compatible:
+
+* [OLMIS-2307](https://openlmis.atlassian.net/browse/OLMIS-2307): Requisition Beginning Balance includes SOH and Approved Quantity
+* [OLMIS-2218](https://openlmis.atlassian.net/browse/OLMIS-2218): Requisition column Total Losses and Adjustments validation
+* [OLMIS-2302](https://openlmis.atlassian.net/browse/OLMIS-2302): Requisition template configuration validation for Adjusted Consumption
+* [OLMIS-2158](https://openlmis.atlassian.net/browse/OLMIS-2158): Requisition print out populating quantities and display order
+* [OLMIS-2314](https://openlmis.atlassian.net/browse/OLMIS-2314): Creator should not be notified when requisition is submitted
+* [OLMIS-2330](https://openlmis.atlassian.net/browse/OLMIS-2330): Update Reporting Rate report
+  * Display additional raw counts on the report, as well as the date generated and due date.
+* [OLMIS-2320](https://openlmis.atlassian.net/browse/OLMIS-2320): Cannot create new FacilityTypeApprovedProduct
+* [OLMIS-2155](https://openlmis.atlassian.net/browse/OLMIS-2155): Performance issue with custom ZonedDateTimeAttributeConverter
+
+Dev and tooling updates made in a backwards-compatible manner:
+
+* [OLMIS-1972](https://openlmis.atlassian.net/browse/OLMIS-1972): Update Postgres from 9.4 to 9.6
+  * This upgrade will apply automatically and all data will migrate.
+* [OLMIS-2330](https://openlmis.atlassian.net/browse/OLMIS-2330): Update for ReferenceData pagination of the facility search endpoint
+* Update [Docker Dev Image](https://github.com/OpenLMIS/docker-dev) for builds from v1 to v2
+  * Moves the sync_transifex.sh script out of each service and into the Docker Dev Image.
+* Add possibility to define filter options in a Jasper template parameter
+  * Thanks to the Malawi implementation team for [Pull Request 18](https://github.com/OpenLMIS/openlmis-requisition/pull/18)
+    and [Pull Request 21](https://github.com/OpenLMIS/openlmis-requisition/pull/21).
+* Improve demo data
+  * Add multiple authorized requisitions for the Family Planning program Mar2017 period.
+  * Add stock adjustments into requisition line items in demo data.
+  * Note: New demo data is available for fresh installations, but it will not be loaded into any system in Production mode.
+
 3.1.1 / 2017-03-30
 ==================
 
