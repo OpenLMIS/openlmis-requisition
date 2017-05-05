@@ -34,7 +34,7 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
   private ApprovalNotifier approvalNotifier;
 
   @Autowired
-  private ApprovedNotifier approvedNotifier;
+  private ApprovedRequisitionNotifier approvedRequisitionNotifier;
 
   /**
    * Process requisition status change.
@@ -53,7 +53,7 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
     }
 
     if (requisition.getStatus() == RequisitionStatus.APPROVED) {
-      approvedNotifier.notifyClerks(requisition);
+      approvedRequisitionNotifier.notifyClerks(requisition);
     }
   }
 }
