@@ -28,6 +28,14 @@
     "value": "Dear ${approver}:\nThis email is informing you that the ${requisitionType} requisition submitted on ${submittedDate} for the Period ${periodName} and ${programName} at ${facilityName} is ready for review. Please login to review the requisition.\n${requisitionUrl}\nThank you."
   },
   {
+    "key": "requisition.email.requisitionApproved.subject",
+    "value": "Action Required"
+  },
+  {
+    "key": "requisition.email.requisitionApproved.content",
+    "value": "Dear ${username}:\nThis email is informing you that the ${requisitionType} requisition approved on ${finalApprovalDate} for the Period ${period} and &{program} at ${facility} is ready to be converted to an order. Please login to convert the requisition to an order.\n${url}\nThank you."
+  },
+  {
     "key": "requisition.time.zoneId",
     "value": "UTC"
   },

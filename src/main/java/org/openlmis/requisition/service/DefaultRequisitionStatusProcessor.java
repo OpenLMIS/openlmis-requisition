@@ -33,6 +33,9 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
   @Autowired
   private ApprovalNotifier approvalNotifier;
 
+  @Autowired
+  private ApprovedNotifier approvedNotifier;
+
   /**
    * Process requisition status change.
    * @param requisition a requisition that has just changed its status
@@ -44,8 +47,13 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
     } else if (!requisition.isPreAuthorize()) {
       requisitionStatusNotifier.notifyStatusChanged(requisition);
     }
+
     if (requisition.isApprovable()) {
       approvalNotifier.notifyApprovers(requisition);
+    }
+
+    if (requisition.getStatus() == RequisitionStatus.APPROVED) {
+      approvedNotifier.notifyClerks(requisition);
     }
   }
 }

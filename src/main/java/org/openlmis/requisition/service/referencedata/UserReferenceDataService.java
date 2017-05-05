@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,6 +56,25 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
 
     Page<UserDto> users = getPage("search", RequestParameters.init(), requestBody);
     return users.getContent().isEmpty() ? null : users.getContent().get(0);
+  }
+
+  /**
+   * Searches users by the given right ID, program ID, supervisory node ID and warehouse ID.
+   *
+   * @param right  (required) the right UUID
+   * @param program  (optional) the program UUID
+   * @param supervisoryNode  (optional) the supervisory node UUID
+   * @param warehouse  (optional) the warehouse UUID
+   * @return the list of all matching users
+   */
+  public List<UserDto> findUsers(UUID right, UUID program, UUID supervisoryNode, UUID warehouse) {
+    RequestParameters parameters = RequestParameters.init()
+            .set("rightId", right)
+            .set("programId", program)
+            .set("supervisoryNodeId", supervisoryNode)
+            .set("warehouseId", warehouse);
+
+    return findAll("/rightSearch", parameters);
   }
 
   /**
