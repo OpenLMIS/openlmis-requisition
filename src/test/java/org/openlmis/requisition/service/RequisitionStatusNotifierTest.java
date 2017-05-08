@@ -26,11 +26,6 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STAT
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +47,12 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.context.MessageSource;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -117,6 +118,7 @@ public class RequisitionStatusNotifierTest {
     when(user.getAllowNotify()).thenReturn(true);
     when(user.isActive()).thenReturn(true);
     when(user.isVerified()).thenReturn(true);
+    when(user.getEmail()).thenReturn("some@email.com");
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT))
         .thenReturn(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);

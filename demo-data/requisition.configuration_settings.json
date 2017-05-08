@@ -33,7 +33,7 @@
   },
   {
     "key": "requisition.email.requisitionApproved.content",
-    "value": "Dear ${username}:\nThis email is informing you that the ${requisitionType} requisition approved on ${finalApprovalDate} for the Period ${period} and &{program} at ${facility} is ready to be converted to an order. Please login to convert the requisition to an order.\n${url}\nThank you."
+    "value": "Dear ${user}:\nThis email is informing you that the ${requisitionType} requisition approved on ${finalApprovalDate} for the Period ${period} and ${program} at ${facility} is ready to be converted to an order. Please login to convert the requisition to an order.\n${url}\nThank you."
   },
   {
     "key": "requisition.time.zoneId",

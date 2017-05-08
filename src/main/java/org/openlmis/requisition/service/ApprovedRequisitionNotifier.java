@@ -21,12 +21,15 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.Message;
+import org.openlmis.utils.NotifierHelper;
 import org.openlmis.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -45,11 +48,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
 
 @Component
-public class ApprovedNotifier {
+public class ApprovedRequisitionNotifier {
 
   private static final String CONVERT_TO_ORDER_URL = System.getenv("BASE_URL")
       + "/#!/requisitions/convertToOrder";
@@ -78,6 +83,9 @@ public class ApprovedNotifier {
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
+  @Autowired
+  private MessageService messageService;
+
   /**
    * Notifies all the clerks that the requisition has been approved and is ready to be converted to
    * order.
@@ -99,13 +107,14 @@ public class ApprovedNotifier {
     messageParams.put("period", getPeriod(requisition));
 
     for (UserDto user : getClerks(requisition)) {
-      messageParams.put("username", user.getUsername());
+      messageParams.put("user", user.getUsername());
       notificationService.notify(user, subject, new StrSubstitutor(messageParams).replace(content));
     }
   }
 
   private String getRequisitionType(Requisition requisition) {
-    return requisition.getEmergency() ? "emergency" : "regular";
+    return messageService.localize(new Message(requisition.getEmergency()
+        ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
   }
 
   private String getFinalApprovalDate(Requisition requisition) {
@@ -127,7 +136,7 @@ public class ApprovedNotifier {
   }
 
   private String getProgram(Requisition requisition) {
-    return programReferenceDataService.findOne(requisition.getTemplate().getProgramId()).getName();
+    return programReferenceDataService.findOne(requisition.getProgramId()).getName();
   }
 
   private String getPeriod(Requisition requisition) {
@@ -147,6 +156,6 @@ public class ApprovedNotifier {
         ))
     );
 
-    return users.stream().filter(UserDto::getAllowNotify).collect(Collectors.toSet());
+    return users.stream().filter(NotifierHelper::canBeNotified).collect(Collectors.toSet());
   }
 }

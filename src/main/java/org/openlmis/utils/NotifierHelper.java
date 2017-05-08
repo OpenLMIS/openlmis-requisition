@@ -28,7 +28,7 @@ public class NotifierHelper {
    */
   public static boolean canBeNotified(UserDto user) {
     return user.getAllowNotify() != null && user.getAllowNotify()
-        && user.isActive() && user.isVerified();
+        && user.isActive() && user.isVerified() && user.getEmail() != null;
   }
 
 }

@@ -28,11 +28,6 @@ import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTI
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,6 +52,12 @@ import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceD
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
+
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApprovalNotifierTest {
@@ -210,6 +211,7 @@ public class ApprovalNotifierTest {
     when(approver.isVerified()).thenReturn(true);
     when(approver.isActive()).thenReturn(true);
     when(approver.getUsername()).thenReturn(username);
+    when(approver.getEmail()).thenReturn(username + "@some.where");
   }
 
   private void mockChangeDate() {
