@@ -170,7 +170,7 @@ public class ApprovedRequisitionNotifierTest {
         + "This email is informing you that the regular requisition approved on May 8, 2017 "
         + "10:15:30 AM for the Period Mock Period and Mock Program at Mock Facility is ready to be "
         + "converted to an order. Please login to convert the requisition to an order.\\n"
-        + "http://192.168.88.249/#!/requisitions/convertToOrder\\n"
+        + System.getenv("BASE_URL") + "/#!/requisitions/convertToOrder\\n"
         + "Thank you.";
 
     approvedRequisitionNotifier.notifyClerks(requisition);
