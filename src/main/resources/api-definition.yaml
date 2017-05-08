@@ -591,6 +591,13 @@ resourceTypes:
           get:
               is: [ secured, paginated ]
               description: Get requisitions to approve for right supervisor.
+              queryParameters:
+                  program:
+                      displayName: program
+                      description: This parameter contains program UUID.
+                      type: string
+                      required: false
+                      repeat: false
               responses:
                   "200":
                       body:

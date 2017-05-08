@@ -1172,7 +1172,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Set<Requisition> requisitions = Collections.singleton(requisition);
 
     UUID userId = authenticationHelper.getCurrentUser().getId();
-    given(requisitionService.getRequisitionsForApproval(userId)).willReturn(requisitions);
+    given(requisitionService.getRequisitionsForApproval(userId, null)).willReturn(requisitions);
 
     // when
     PageImplRepresentation result = restAssured.given()
@@ -1183,6 +1183,32 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
+
+    // then
+    assertEquals(1, result.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetRequisitionsForApprovalForSpecificUserAndProgram() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    Set<Requisition> requisitions = Collections.singleton(requisition);
+    UUID program = UUID.randomUUID();
+
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+    given(requisitionService.getRequisitionsForApproval(userId, program)).willReturn(requisitions);
+
+    // when
+    PageImplRepresentation result = restAssured.given()
+            .queryParam(ACCESS_TOKEN, getToken())
+            .queryParam(PROGRAM, program)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(REQ_FOR_APPROVAL_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(PageImplRepresentation.class);
 
     // then
     assertEquals(1, result.getContent().size());

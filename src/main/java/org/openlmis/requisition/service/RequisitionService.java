@@ -348,7 +348,7 @@ public class RequisitionService {
   /**
    * Get requisitions to approve for the specified user.
    */
-  public Set<Requisition> getRequisitionsForApproval(UUID userId) {
+  public Set<Requisition> getRequisitionsForApproval(UUID userId, UUID program) {
     Set<Requisition> requisitionsForApproval = new LinkedHashSet<>();
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
     List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
@@ -360,7 +360,8 @@ public class RequisitionService {
     if (roleAssignments != null) {
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
         if (roleAssignment.getSupervisoryNodeId() != null
-            && roleAssignment.getProgramId() != null) {
+            && roleAssignment.getProgramId() != null
+                && (program == null || program == roleAssignment.getProgramId())) {
           requisitionsForApproval.addAll(getApprovableRequisitions(
               roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
         }
