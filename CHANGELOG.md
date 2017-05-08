@@ -1,5 +1,9 @@
-3.1.2 / coming soon
+3.1.2 / 2017-05-08
 ===================
+
+New functionality added in a backwards-compatible manner:
+
+* [OLMIS-2420](https://openlmis.atlassian.net/browse/OLMIS-2420): Requisition forApproval endpoint uses optional program filter
 
 Bug fixes and performance improvements which are backwards-compatible:
 
