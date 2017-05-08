@@ -361,7 +361,7 @@ public class RequisitionService {
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
         if (roleAssignment.getSupervisoryNodeId() != null
             && roleAssignment.getProgramId() != null
-                && (program == null || program == roleAssignment.getProgramId())) {
+                && (program == null || program.equals(roleAssignment.getProgramId()))) {
           requisitionsForApproval.addAll(getApprovableRequisitions(
               roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
         }
