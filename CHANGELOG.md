@@ -7,6 +7,7 @@ Bug fixes and performance improvements which are backwards-compatible:
 * [OLMIS-2218](https://openlmis.atlassian.net/browse/OLMIS-2218): Requisition column Total Losses and Adjustments validation
 * [OLMIS-2302](https://openlmis.atlassian.net/browse/OLMIS-2302): Requisition template configuration validation for Adjusted Consumption
 * [OLMIS-2158](https://openlmis.atlassian.net/browse/OLMIS-2158): Requisition print out populating quantities and display order
+* [OLMIS-2322](https://openlmis.atlassian.net/browse/OLMIS-2322): Notify warehouse clerk when a requisition is ready to convert to order
 * [OLMIS-2314](https://openlmis.atlassian.net/browse/OLMIS-2314): Creator should not be notified when requisition is submitted
 * [OLMIS-2330](https://openlmis.atlassian.net/browse/OLMIS-2330): Update Reporting Rate report
   * Display additional raw counts on the report, as well as the date generated and due date.
