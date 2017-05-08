@@ -42,6 +42,9 @@ public class RequisitionStatusProcessorTest {
   @Mock
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
+  @Mock
+  private ApprovedRequisitionNotifier approvedRequisitionNotifier;
+
   @InjectMocks
   private DefaultRequisitionStatusProcessor requisitionStatusProcessor;
 
@@ -83,5 +86,15 @@ public class RequisitionStatusProcessorTest {
     requisitionStatusProcessor.statusChange(requisition);
 
     verify(approvalNotifier).notifyApprovers(eq(requisition));
+  }
+
+  @Test
+  public void shouldNotifyClerks() {
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    requisitionStatusProcessor.statusChange(requisition);
+
+    verify(approvedRequisitionNotifier).notifyClerks(requisition);
   }
 }
