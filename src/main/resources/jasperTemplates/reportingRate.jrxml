@@ -491,7 +491,7 @@
 				<textElement textAlignment="Center">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0}\n{1} days after the end of the period", java.time.LocalDate.now(), java.lang.Integer.valueOf($P{DueDays}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("Report generated on {0}\nDue date: {1} days after the end of the period", java.time.LocalDate.now(), java.lang.Integer.valueOf($P{DueDays}))]]></textFieldExpression>
 			</textField>
 		</band>
 
