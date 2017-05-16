@@ -147,7 +147,9 @@ public class PermissionServiceTest {
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getFacilityId()).thenReturn(facilityId);
     when(requisition.getSupplyingFacilityId()).thenReturn(facilityId);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
+    when(securityContext.getAuthentication()).thenReturn(userClient);
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
     when(authenticationHelper.getRight(REQUISITION_CREATE)).thenReturn(requisitionCreateRight);
@@ -348,7 +350,6 @@ public class PermissionServiceTest {
 
   @Test
   public void canManageRequisitionTemplate() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
     hasRight(manageRequisitionTemplateRightId, true);
 
     permissionService.canManageRequisitionTemplate();
@@ -359,16 +360,29 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotManageRequisitionTemplate() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
     expectException(REQUISITION_TEMPLATES_MANAGE);
 
     permissionService.canManageRequisitionTemplate();
   }
 
   @Test
-  public void shouldAllowTrustedClientsManageRequisitionTemplate() {
+  public void serviceLevelTokensShouldHaveAllThePermissions() {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
 
+    // Requisition permissions
+    permissionService.canViewRequisition(requisitionId);
+    permissionService.canInitOrAuthorizeRequisition(programId, facilityId);
+    permissionService.canInitRequisition(programId, facilityId);
+    permissionService.canApproveRequisition(requisitionId);
+    permissionService.canAuthorizeRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisitionId);
+    permissionService.canSubmitRequisition(requisitionId);
+    permissionService.canUpdateRequisition(requisitionId);
+    permissionService.canConvertToOrder(convertToOrderDtos);
+
+    // Report permissions
+    permissionService.canViewReports();
+    permissionService.canEditReportTemplates();
     permissionService.canManageRequisitionTemplate();
   }
 

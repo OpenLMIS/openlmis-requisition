@@ -184,12 +184,7 @@ public class PermissionService {
    * Checks if current user has permission to manage a requisition template.
    */
   public void canManageRequisitionTemplate() {
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
-        .getAuthentication();
-
-    if (!authentication.isClientOnly()) {
-      checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
-    }
+    checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
   }
 
   public void canEditReportTemplates() {
@@ -222,6 +217,11 @@ public class PermissionService {
   }
 
   private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+            .getAuthentication();
+    if (authentication.isClientOnly()) {
+      return true;
+    }
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result = userReferenceDataService.hasRight(
