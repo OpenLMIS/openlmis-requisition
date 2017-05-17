@@ -1,10 +1,12 @@
 3.1.3 / WIP
 ===================
 
-New functionality added in a backwards-compatible manner:
+Bug fixes added in a backwards-compatible manner:
 
-* Skip permission checks for service level tokens
-* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): add pagination to getAll Orderables
+* [OLMIS-2407](https://openlmis.atlassian.net/browse/OLMIS-2407): Add due date label on the reporting rate report
+* [Pull Request 23](https://github.com/OpenLMIS/openlmis-requisition/pull/23): Skip permission checks and add unit tests for service level tokens
+* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): Update to accomodate referencedata 6.0.0 API change
+  * Use pagination for calls to referencedata getAll Orderables
 
 3.1.2 / 2017-05-08
 ===================
