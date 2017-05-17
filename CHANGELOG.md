@@ -1,3 +1,11 @@
+3.1.3 / WIP
+===================
+
+New functionality added in a backwards-compatible manner:
+
+* Skip permission checks for service level tokens
+* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): add pagination to getAll Orderables
+
 3.1.2 / 2017-05-08
 ===================
 
