@@ -16,7 +16,9 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class OrderableReferenceDataService
@@ -35,5 +37,10 @@ public class OrderableReferenceDataService
   @Override
   protected Class<OrderableDto[]> getArrayResultClass() {
     return OrderableDto[].class;
+  }
+
+  @Override
+  public List<OrderableDto> findAll() {
+    return getPage("", RequestParameters.init()).getContent();
   }
 }
