@@ -2,6 +2,8 @@
 ===================
 
 Bug fixes added in a backwards-compatible manner:
+* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): Update to accomodate referencedata 6.0.0 API change
+  * Use pagination for calls to referencedata getAll Orderables
 
 
 3.1.3 / 2017-05-17
