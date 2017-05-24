@@ -16,7 +16,6 @@
 package org.openlmis.requisition.service;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
@@ -43,23 +42,18 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
-import org.springframework.context.MessageSource;
-
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionStatusNotifierTest {
 
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
+  public static final String TEST_KEY = "testKey";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -78,9 +72,6 @@ public class RequisitionStatusNotifierTest {
 
   @Mock
   private MessageService messageService;
-
-  @Mock
-  private MessageSource messageSource;
 
   @InjectMocks
   private RequisitionStatusNotifier requisitionStatusNotifier;
@@ -123,12 +114,6 @@ public class RequisitionStatusNotifierTest {
     when(user.isVerified()).thenReturn(true);
     when(user.getEmail()).thenReturn("some@email.com");
 
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT))
-        .thenReturn(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
-
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT))
-        .thenReturn(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
-
     requisitionStatusNotifier.notifyStatusChanged(requisition);
 
     verify(notificationService).notify(refEq(user),
@@ -144,9 +129,20 @@ public class RequisitionStatusNotifierTest {
     when(facilityReferenceDataService.findOne(any())).thenReturn(
         mock(FacilityDto.class));
     when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
-    when(messageSource.getMessage(anyString(), any(), any())).thenReturn("test");
-    Message.LocalizedMessage localizedMessage = new Message("test")
-        .localMessage(messageSource, Locale.getDefault());
+    mockMessages();
+  }
+
+  private void mockMessages() {
+    Message.LocalizedMessage localizedMessage = new Message(TEST_KEY)
+        .new LocalizedMessage("test");
     when(messageService.localize(any())).thenReturn(localizedMessage);
+    localizedMessage = new Message(TEST_KEY)
+        .new LocalizedMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
+    when(messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT)))
+        .thenReturn(localizedMessage);
+    localizedMessage = new Message(TEST_KEY)
+        .new LocalizedMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+    when(messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT)))
+        .thenReturn(localizedMessage);
   }
 }

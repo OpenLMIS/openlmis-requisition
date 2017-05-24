@@ -17,19 +17,9 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 
-import java.text.MessageFormat;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -43,7 +33,6 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.NotifierHelper;
 import org.slf4j.Logger;
@@ -52,6 +41,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
+import java.text.MessageFormat;
+import java.time.chrono.Chronology;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class RequisitionStatusNotifier {
@@ -69,9 +68,6 @@ public class RequisitionStatusNotifier {
 
   @Autowired
   private NotificationService notificationService;
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -157,10 +153,10 @@ public class RequisitionStatusNotifier {
         DateTimeFormatter.ofPattern(datePattern)));
     valuesMap.put("requisitionUrl", requisitionUrl);
 
-    String subject = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
-    String content = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+    String subject =
+        messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT)).asMessage();
+    String content =
+        messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT)).asMessage();
 
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
     content = sub.replace(content);
