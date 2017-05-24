@@ -17,8 +17,6 @@ package org.openlmis.utils;
 
 public abstract class ConfigurationSettingKeys {
 
-  public static final String REQUISITION_EMAIL_NOREPLY
-      = "requisition.email.noreply";
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT
@@ -35,8 +33,6 @@ public abstract class ConfigurationSettingKeys {
       = "requisition.email.requisitionApproved.subject";
   public static final String REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT
       = "requisition.email.requisitionApproved.content";
-  public static final String REQUISITION_URI
-      = "requisition.requisitionUri";
 
   private ConfigurationSettingKeys() {
     throw new UnsupportedOperationException();

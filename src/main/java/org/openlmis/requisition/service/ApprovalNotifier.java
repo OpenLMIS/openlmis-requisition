@@ -17,9 +17,8 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
@@ -48,13 +47,13 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.NotifierHelper;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -73,9 +72,6 @@ public class ApprovalNotifier {
   private NotificationService notificationService;
 
   @Autowired
-  private ConfigurationSettingService configurationSettingService;
-
-  @Autowired
   private SupervisingUsersReferenceDataService supervisingUsersReferenceDataService;
 
   @Autowired
@@ -86,6 +82,9 @@ public class ApprovalNotifier {
 
   @Autowired
   private MessageService messageService;
+
+  @Value("${requisitionUri}")
+  private String requisitionUri;
 
   /**
    * Notify requisition's creator that it was converted to order.
@@ -116,18 +115,15 @@ public class ApprovalNotifier {
     }
     ZonedDateTime submittedDate = submitAuditEntry.get().getCreatedDate();
 
-    String subject = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT);
-    String content = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
+    String subject =
+        messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)).asMessage();
+    String content =
+        messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT)).asMessage();
 
-    Locale locale = LocaleContextHolder.getLocale();
-    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
-        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern);
+    DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 
-    String url = System.getenv("BASE_URL") + MessageFormat.format(
-        configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
+    String url = System.getenv("BASE_URL")
+        + MessageFormat.format(requisitionUri, requisition.getId());
 
     Map<String, String> valuesMap =
         getValuesMap(reqType, period, program, facility, submittedDate, dateTimeFormatter, url);
@@ -140,6 +136,14 @@ public class ApprovalNotifier {
         notificationService.notify(approver, subject, sub.replace(content));
       }
     }
+  }
+
+  private DateTimeFormatter getDateTimeFormatter() {
+    Locale locale = LocaleContextHolder.getLocale();
+
+    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
+        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
+    return DateTimeFormatter.ofPattern(datePattern);
   }
 
   private Map<String, String> getValuesMap(String reqType, ProcessingPeriodDto period,

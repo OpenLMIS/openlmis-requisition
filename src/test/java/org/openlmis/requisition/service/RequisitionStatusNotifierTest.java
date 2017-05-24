@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +47,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.context.MessageSource;
 
+import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,8 +89,11 @@ public class RequisitionStatusNotifierTest {
   private UUID userId = UUID.randomUUID();
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     mockServices();
+    Field field = RequisitionStatusNotifier.class.getDeclaredField("requisitionUri");
+    field.setAccessible(true);
+    field.set(requisitionStatusNotifier, "/requisition/");
   }
 
   @Test
@@ -125,9 +128,6 @@ public class RequisitionStatusNotifierTest {
 
     when(configurationSettingService.getStringValue(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT))
         .thenReturn(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
-
-    when(configurationSettingService.getStringValue(REQUISITION_URI))
-        .thenReturn("/requisition/");
 
     requisitionStatusNotifier.notifyStatusChanged(requisition);
 

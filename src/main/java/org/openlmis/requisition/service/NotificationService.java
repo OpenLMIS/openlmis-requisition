@@ -16,10 +16,8 @@
 package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_NOREPLY;
 
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.util.NotificationRequest;
 import org.openlmis.utils.RequestHelper;
 import org.slf4j.Logger;
@@ -36,13 +34,13 @@ public class NotificationService {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Autowired
-  private ConfigurationSettingService configurationSettingService;
-
-  @Autowired
   private AuthService authService;
 
   @Value("${notification.url}")
   private String notificationUrl;
+
+  @Value("${email.noreply}")
+  private String from;
 
   private RestOperations restTemplate = new RestTemplate();
 
@@ -55,7 +53,6 @@ public class NotificationService {
    * @return true if success, false if failed.
    */
   boolean notify(UserDto user, String subject, String content) {
-    String from = configurationSettingService.getStringValue(REQUISITION_EMAIL_NOREPLY);
     String url = notificationUrl + "/api/notification";
 
     RequestParameters parameters = RequestParameters

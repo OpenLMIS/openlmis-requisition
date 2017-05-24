@@ -19,7 +19,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGEN
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
 
 import java.text.MessageFormat;
 import java.time.chrono.Chronology;
@@ -50,6 +49,7 @@ import org.openlmis.utils.NotifierHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -78,6 +78,9 @@ public class RequisitionStatusNotifier {
 
   @Autowired
   private MessageService messageService;
+
+  @Value("${requisitionUri}")
+  private String requisitionUri;
 
   /**
    * Notify user(s) that the requisition's status has changed.
@@ -126,7 +129,7 @@ public class RequisitionStatusNotifier {
     }
 
     String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
-        configurationSettingService.getStringValue(REQUISITION_URI), requisition.getId());
+        requisitionUri, requisition.getId());
     String requisitionType = messageService.localize(new Message(requisition.getEmergency()
         ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
 

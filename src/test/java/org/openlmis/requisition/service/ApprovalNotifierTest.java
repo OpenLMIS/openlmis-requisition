@@ -24,9 +24,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_URI;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -49,10 +48,9 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
-
+import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,8 +59,7 @@ import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApprovalNotifierTest {
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
+  public static final String TEST_KEY = "testKey";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -103,8 +100,12 @@ public class ApprovalNotifierTest {
       + "the requisition.${requisitionUrl}Thank you.";
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     mockServices();
+
+    Field field = ApprovalNotifier.class.getDeclaredField("requisitionUri");
+    field.setAccessible(true);
+    field.set(approvalNotifier, "/requisition/");
   }
 
   @Test
@@ -231,16 +232,17 @@ public class ApprovalNotifierTest {
     when(periodReferenceDataService.findOne(any())).thenReturn(mock(ProcessingPeriodDto.class));
     when(programReferenceDataService.findOne(any())).thenReturn(mock(ProgramDto.class));
     when(facilityReferenceDataService.findOne(any())).thenReturn(mock(FacilityDto.class));
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT))
-        .thenReturn(SUBJECT);
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT))
-        .thenReturn(CONTENT);
-    when(configurationSettingService.getStringValue(REQUISITION_URI))
-        .thenReturn("/requisition/");
   }
 
   private void mockMessages() {
-    Message.LocalizedMessage localizedMessage = new Message("test").new LocalizedMessage("test");
+    Message.LocalizedMessage localizedMessage = new Message(TEST_KEY).new LocalizedMessage("test");
     when(messageService.localize(any())).thenReturn(localizedMessage);
+
+    localizedMessage = new Message(TEST_KEY).new LocalizedMessage(SUBJECT);
+    when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)))
+        .thenReturn(localizedMessage);
+    localizedMessage = new Message(TEST_KEY).new LocalizedMessage(CONTENT);
+    when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT)))
+        .thenReturn(localizedMessage);
   }
 }
