@@ -15,26 +15,27 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Optional;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ConvertToOrderNotifier {
@@ -51,10 +52,10 @@ public class ConvertToOrderNotifier {
   private NotificationService notificationService;
 
   @Autowired
-  private ConfigurationSettingService configurationSettingService;
+  private UserReferenceDataService userReferenceDataService;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
+  private MessageService messageService;
 
   /**
    * Notify requisition's creator that it was converted to order.
@@ -82,10 +83,14 @@ public class ConvertToOrderNotifier {
 
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
 
-    String subject = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
-    String content = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
+    String subject =
+        messageService
+            .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
+            .asMessage();
+    String content =
+        messageService
+            .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
+            .asMessage();
 
     Object[] msgArgs = {initiator.getFirstName(), initiator.getLastName(),
         program.getName(), period.getName()};

@@ -21,11 +21,9 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
-import java.util.Collections;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,17 +36,17 @@ import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.Message;
+import java.util.Collections;
+import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class ConvertToOrderNotifierTest {
-
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -62,6 +60,9 @@ public class ConvertToOrderNotifierTest {
   @Mock
   private UserReferenceDataService userReferenceDataService;
 
+  @Mock
+  private MessageService messageService;
+
   @InjectMocks
   private ConvertToOrderNotifier convertToOrderNotifier;
 
@@ -71,6 +72,7 @@ public class ConvertToOrderNotifierTest {
   @Before
   public void setUp() {
     mockServices();
+    mockMessages();
   }
 
   @Test
@@ -81,11 +83,6 @@ public class ConvertToOrderNotifierTest {
     when(requisition.getStatusChanges()).thenReturn(Collections.singletonList(initiateAuditEntry));
     when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
-        .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
-
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
-        .thenReturn(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
 
     convertToOrderNotifier.notifyConvertToOrder(requisition);
 
@@ -100,5 +97,19 @@ public class ConvertToOrderNotifierTest {
     when(periodReferenceDataService.findOne(any())).thenReturn(
         mock(ProcessingPeriodDto.class));
     when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
+  }
+
+  private void mockMessages() {
+    Message convertToOrderSubject = new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
+    Message.LocalizedMessage localizedMessage =
+        convertToOrderSubject.new LocalizedMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
+    when(messageService.localize(convertToOrderSubject))
+        .thenReturn(localizedMessage);
+    Message convertToOrderContent =
+        new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
+    localizedMessage = convertToOrderContent
+        .new LocalizedMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
+    when(messageService.localize(convertToOrderContent))
+        .thenReturn(localizedMessage);
   }
 }
