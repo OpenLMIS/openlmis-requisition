@@ -15,6 +15,11 @@
 
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
+
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.Requisition;
@@ -26,7 +31,6 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.NotifierHelper;
@@ -34,7 +38,6 @@ import org.openlmis.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
-
 import java.time.ZonedDateTime;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
@@ -48,19 +51,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
-
 @Component
 public class ApprovedRequisitionNotifier {
 
   private static final String CONVERT_TO_ORDER_URL = System.getenv("BASE_URL")
       + "/#!/requisitions/convertToOrder";
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -93,10 +88,14 @@ public class ApprovedRequisitionNotifier {
    * @param requisition  the requisition to notify the clerks for
    */
   public void notifyClerks(Requisition requisition) {
-    String subject = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);
-    String content = configurationSettingService
-        .getStringValue(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
+    String subject =
+        messageService
+            .localize(new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT))
+            .asMessage();
+    String content =
+        messageService
+            .localize(new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT))
+            .asMessage();
 
     Map<String, String> messageParams = new HashedMap();
     messageParams.put("requisitionType", getRequisitionType(requisition));

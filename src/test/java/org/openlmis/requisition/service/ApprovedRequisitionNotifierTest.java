@@ -22,10 +22,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
-import static org.openlmis.utils.ConfigurationSettingKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,16 +46,15 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
-
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class ApprovedRequisitionNotifierTest {
 
   private static final String SUBJECT = "Action Required";
@@ -65,9 +64,6 @@ public class ApprovedRequisitionNotifierTest {
       + "be converted to an order. Please login to convert the requisition to an order.\\n"
       + "${url}\\n"
       + "Thank you.";
-
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -227,10 +223,6 @@ public class ApprovedRequisitionNotifierTest {
   }
 
   private void mockServices() {
-    when(messageService.localize(eq(regularRequisitionMessage)))
-        .thenReturn(regularRequisitionMessage.new LocalizedMessage("regular"));
-    when(messageService.localize(eq(emergencyRequisitionMessage)))
-        .thenReturn(emergencyRequisitionMessage.new LocalizedMessage("emergency"));
 
     when(facilityReferenceDataService.findOne(eq(facilityId))).thenReturn(facility);
     when(programReferenceDataService.findOne(eq(programId))).thenReturn(program);
@@ -238,10 +230,6 @@ public class ApprovedRequisitionNotifierTest {
     when(requisitionService.getAvailableSupplyingDepots(eq(requisitionId)))
         .thenReturn(Arrays.asList(warehouseOne, warehouseTwo));
     when(authenticationHelper.getRight(RightName.ORDERS_EDIT)).thenReturn(right);
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT))
-        .thenReturn(SUBJECT);
-    when(configurationSettingService.getStringValue(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT))
-        .thenReturn(CONTENT);
     when(userReferenceDataService.findUsers(
         rightId,
         null,
@@ -254,6 +242,27 @@ public class ApprovedRequisitionNotifierTest {
         null,
         warehouseTwoId
     )).thenReturn(Arrays.asList(clerkThree, clerkTwo, clerkFour));
+
+    mockMessages();
+  }
+
+  private void mockMessages() {
+    when(messageService.localize(regularRequisitionMessage))
+        .thenReturn(regularRequisitionMessage.new LocalizedMessage("regular"));
+    when(messageService.localize(emergencyRequisitionMessage))
+        .thenReturn(emergencyRequisitionMessage.new LocalizedMessage("emergency"));
+
+    Message requisitionApprovedSubject =
+        new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);
+    Message.LocalizedMessage localizedMessage =
+        requisitionApprovedSubject.new LocalizedMessage(SUBJECT);
+    when(messageService.localize(requisitionApprovedSubject))
+        .thenReturn(localizedMessage);
+    Message requisitionApprovedContent =
+        new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
+    localizedMessage = requisitionApprovedContent.new LocalizedMessage(CONTENT);
+    when(messageService.localize(requisitionApprovedContent))
+        .thenReturn(localizedMessage);
   }
 
   private void prepareStatusChange() {
