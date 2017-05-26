@@ -1,4 +1,4 @@
-3.1.4 / WIP 
+3.1.4 / 2017-05-26
 ===================
 
 Bug fixes added in a backwards-compatible manner:
