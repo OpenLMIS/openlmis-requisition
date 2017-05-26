@@ -176,7 +176,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersThatCanNotBeNotified() {
-    when(clerkOne.getAllowNotify()).thenReturn(false);
+    when(clerkOne.allowNotify()).thenReturn(false);
 
     approvedRequisitionNotifier.notifyClerks(requisition);
 
@@ -192,6 +192,8 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersThatAreNotVerified() {
+    when(clerkOne.activeAndVerified()).thenCallRealMethod();
+    when(clerkOne.isActive()).thenReturn(true);
     when(clerkOne.isVerified()).thenReturn(false);
 
     approvedRequisitionNotifier.notifyClerks(requisition);
@@ -281,10 +283,9 @@ public class ApprovedRequisitionNotifierTest {
 
   private void mockClerk(UserDto clerk, String username) {
     when(clerk.getUsername()).thenReturn(username);
-    when(clerk.getAllowNotify()).thenReturn(true);
+    when(clerk.allowNotify()).thenReturn(true);
     when(clerk.getEmail()).thenReturn("someEmail");
-    when(clerk.isActive()).thenReturn(true);
-    when(clerk.isVerified()).thenReturn(true);
+    when(clerk.activeAndVerified()).thenReturn(true);
   }
 
 }

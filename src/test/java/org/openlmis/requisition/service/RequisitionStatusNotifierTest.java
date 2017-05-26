@@ -109,9 +109,8 @@ public class RequisitionStatusNotifierTest {
     when(authorizeAuditEntry.getAuthorId()).thenReturn(userId);
     when(authorizeAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
 
-    when(user.getAllowNotify()).thenReturn(true);
-    when(user.isActive()).thenReturn(true);
-    when(user.isVerified()).thenReturn(true);
+    when(user.allowNotify()).thenReturn(true);
+    when(user.activeAndVerified()).thenReturn(true);
     when(user.getEmail()).thenReturn("some@email.com");
 
     requisitionStatusNotifier.notifyStatusChanged(requisition);

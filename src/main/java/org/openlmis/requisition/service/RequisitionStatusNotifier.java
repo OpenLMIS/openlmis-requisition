@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 
@@ -28,32 +26,25 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.NotifierHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
-import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
-public class RequisitionStatusNotifier {
+public class RequisitionStatusNotifier extends BaseNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionStatusNotifier.class);
 
@@ -72,9 +63,6 @@ public class RequisitionStatusNotifier {
   @Autowired
   private UserReferenceDataService userReferenceDataService;
 
-  @Autowired
-  private MessageService messageService;
-
   @Value("${requisitionUri}")
   private String requisitionUri;
 
@@ -92,42 +80,24 @@ public class RequisitionStatusNotifier {
       return;
     }
 
-    Optional<StatusChange> initiateAuditEntry = statusChanges.stream()
-        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.INITIATED)
-        .findFirst();
-    if (!initiateAuditEntry.isPresent() || initiateAuditEntry.get().getAuthorId() == null) {
-      LOGGER.warn("Could not find initiator for requisition " + requisition.getId() + " to notify "
-          + "for requisition status change.");
-      return;
-    }
-    UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
-
-    if (!NotifierHelper.canBeNotified(initiator)) {
+    UserDto initiator = getInitiator(statusChanges, requisition.getId());
+    if (!canBeNotified(initiator)) {
       return;
     }
 
-    Optional<StatusChange> submitAuditEntry = statusChanges.stream()
-        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
-        .findFirst();
+    Optional<StatusChange> submitAuditEntry = getSubmitAuditEntry(requisition, statusChanges);
     if (!submitAuditEntry.isPresent()) {
-      LOGGER.warn("Could not find submitter for requisition " + requisition.getId() + " to notify "
-          + "for requisition status change.");
       return;
     }
 
-    Optional<StatusChange> currentAuditEntry = statusChanges.stream()
-        .filter(statusChange -> statusChange.getStatus() == requisition.getStatus())
-        .findFirst();
-    if (!currentAuditEntry.isPresent() || currentAuditEntry.get().getAuthorId() == null) {
-      LOGGER.warn("Could not find author of current status change for requisition "
-          + requisition.getId() + " to notify for requisition status change.");
+    Optional<StatusChange> currentAuditEntry = getCurrentAuditEntry(requisition, statusChanges);
+    if (!currentAuditEntry.isPresent()) {
       return;
     }
 
     String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
         requisitionUri, requisition.getId());
-    String requisitionType = messageService.localize(new Message(requisition.getEmergency()
-        ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
+    String requisitionType = getMessage(getEmergencyKey(requisition));
 
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
@@ -135,32 +105,67 @@ public class RequisitionStatusNotifier {
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
     UserDto author = userReferenceDataService.findOne(currentAuditEntry.get().getAuthorId());
 
-    Locale locale = LocaleContextHolder.getLocale();
-    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
-        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
+    DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 
     Map<String, String> valuesMap = new HashMap<>();
     valuesMap.put("initiator", initiator.getUsername());
     valuesMap.put("requisitionType", requisitionType);
     valuesMap.put("submittedDate", submitAuditEntry.get().getCreatedDate().format(
-        DateTimeFormatter.ofPattern(datePattern)));
+        dateTimeFormatter));
     valuesMap.put("periodName", period.getName());
     valuesMap.put("programName", program.getName());
     valuesMap.put("facilityName", facility.getName());
     valuesMap.put("requisitionStatus", requisition.getStatus().toString());
     valuesMap.put("author", author.getUsername());
     valuesMap.put("changeDate", currentAuditEntry.get().getCreatedDate().format(
-        DateTimeFormatter.ofPattern(datePattern)));
+        dateTimeFormatter));
     valuesMap.put("requisitionUrl", requisitionUrl);
 
-    String subject =
-        messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT)).asMessage();
-    String content =
-        messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT)).asMessage();
+    String subject = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
+    String content = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
 
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
     content = sub.replace(content);
 
     notificationService.notify(initiator, subject, content);
+  }
+
+  private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {
+    Optional<StatusChange> initiateAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.INITIATED)
+        .findFirst();
+    if (!initiateAuditEntry.isPresent() || initiateAuditEntry.get().getAuthorId() == null) {
+      LOGGER.warn("Could not find initiator for requisition %s to notify "
+          + "for requisition status change.", requisitionId);
+      return null;
+    }
+
+    return userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
+  }
+
+  private Optional<StatusChange> getSubmitAuditEntry(Requisition requisition,
+                                                     List<StatusChange> statusChanges) {
+    Optional<StatusChange> submitAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
+        .findFirst();
+    if (!submitAuditEntry.isPresent()) {
+      LOGGER.warn("Could not find submitter for requisition " + requisition.getId() + " to notify "
+          + "for requisition status change.");
+      return Optional.empty();
+    }
+    return submitAuditEntry;
+  }
+
+  private Optional<StatusChange> getCurrentAuditEntry(Requisition requisition,
+                                                      List<StatusChange> statusChanges) {
+    Optional<StatusChange> currentAuditEntry = statusChanges.stream()
+        .filter(statusChange -> statusChange.getStatus() == requisition.getStatus())
+        .findFirst();
+    if (!currentAuditEntry.isPresent() || currentAuditEntry.get().getAuthorId() == null) {
+      LOGGER.warn("Could not find author of current status change for requisition "
+          + requisition.getId() + " to notify for requisition status change.");
+      return Optional.empty();
+    }
+    return currentAuditEntry;
   }
 }

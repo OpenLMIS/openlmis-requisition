@@ -15,44 +15,35 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
-import org.openlmis.utils.NotifierHelper;
 import org.openlmis.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
-public class ApprovedRequisitionNotifier {
+public class ApprovedRequisitionNotifier extends BaseNotifier {
 
   private static final String CONVERT_TO_ORDER_URL = System.getenv("BASE_URL")
       + "/#!/requisitions/convertToOrder";
@@ -78,9 +69,6 @@ public class ApprovedRequisitionNotifier {
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
-  @Autowired
-  private MessageService messageService;
-
   /**
    * Notifies all the clerks that the requisition has been approved and is ready to be converted to
    * order.
@@ -88,16 +76,10 @@ public class ApprovedRequisitionNotifier {
    * @param requisition  the requisition to notify the clerks for
    */
   public void notifyClerks(Requisition requisition) {
-    String subject =
-        messageService
-            .localize(new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT))
-            .asMessage();
-    String content =
-        messageService
-            .localize(new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT))
-            .asMessage();
+    String subject = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);
+    String content = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
 
-    Map<String, String> messageParams = new HashedMap();
+    Map<String, String> messageParams = new HashMap<>();
     messageParams.put("requisitionType", getRequisitionType(requisition));
     messageParams.put("finalApprovalDate", getFinalApprovalDate(requisition));
     messageParams.put("facility", getFacilityName(requisition));
@@ -117,17 +99,13 @@ public class ApprovedRequisitionNotifier {
   }
 
   private String getFinalApprovalDate(Requisition requisition) {
-    Optional<StatusChange> approvedAuditEntry = requisition.getStatusChanges().stream()
+    ZonedDateTime approvedDate = requisition.getStatusChanges().stream()
         .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.APPROVED)
-        .findFirst();
-    ZonedDateTime approvedDate = approvedAuditEntry.get().getCreatedDate();
+        .map(BaseTimestampedEntity::getCreatedDate)
+        .findFirst()
+        .orElse(ZonedDateTime.now());
 
-    Locale locale = LocaleContextHolder.getLocale();
-    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
-        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(datePattern);
-
-    return approvedDate.format(dateTimeFormatter);
+    return approvedDate.format(getDateTimeFormatter());
   }
 
   private String getFacilityName(Requisition requisition) {
@@ -155,6 +133,6 @@ public class ApprovedRequisitionNotifier {
         ))
     );
 
-    return users.stream().filter(NotifierHelper::canBeNotified).collect(Collectors.toSet());
+    return users.stream().filter(BaseNotifier::canBeNotified).collect(Collectors.toSet());
   }
 }

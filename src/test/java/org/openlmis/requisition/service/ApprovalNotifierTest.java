@@ -158,7 +158,8 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
-    when(approver.getAllowNotify()).thenReturn(true);
+    when(approver.allowNotify()).thenReturn(true);
+    when(approver.activeAndVerified()).thenCallRealMethod();
     when(approver.isVerified()).thenReturn(true);
     when(approver.isActive()).thenReturn(false);
 
@@ -177,7 +178,8 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
-    when(approver.getAllowNotify()).thenReturn(true);
+    when(approver.allowNotify()).thenReturn(true);
+    when(approver.activeAndVerified()).thenCallRealMethod();
     when(approver.isVerified()).thenReturn(false);
     when(approver.isActive()).thenReturn(true);
 
@@ -196,9 +198,8 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
-    when(approver.getAllowNotify()).thenReturn(false);
-    when(approver.isVerified()).thenReturn(true);
-    when(approver.isActive()).thenReturn(true);
+    when(approver.allowNotify()).thenReturn(false);
+    when(approver.activeAndVerified()).thenReturn(true);
 
     mockChangeDate();
 
@@ -208,11 +209,10 @@ public class ApprovalNotifierTest {
   }
 
   private void allowNotifyAndMockUsername(UserDto approver, String username) {
-    when(approver.getAllowNotify()).thenReturn(true);
-    when(approver.isVerified()).thenReturn(true);
-    when(approver.isActive()).thenReturn(true);
-    when(approver.getUsername()).thenReturn(username);
+    when(approver.allowNotify()).thenReturn(true);
+    when(approver.activeAndVerified()).thenReturn(true);
     when(approver.getEmail()).thenReturn(username + "@some.where");
+    when(approver.getUsername()).thenReturn(username);
   }
 
   private void mockChangeDate() {

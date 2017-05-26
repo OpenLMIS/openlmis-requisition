@@ -52,4 +52,12 @@ public class UserDto {
           + StringUtils.defaultString(lastName));
     }
   }
+
+  public boolean allowNotify() {
+    return this.getAllowNotify() != null && this.getAllowNotify();
+  }
+
+  public boolean activeAndVerified() {
+    return this.isActive() && this.isVerified();
+  }
 }

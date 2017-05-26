@@ -24,7 +24,6 @@ import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -33,12 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
 @Component
-public class ConvertToOrderNotifier {
+public class ConvertToOrderNotifier extends BaseNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConvertToOrderNotifier.class);
 
@@ -53,9 +51,6 @@ public class ConvertToOrderNotifier {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
-
-  @Autowired
-  private MessageService messageService;
 
   /**
    * Notify requisition's creator that it was converted to order.
@@ -83,18 +78,11 @@ public class ConvertToOrderNotifier {
 
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
 
-    String subject =
-        messageService
-            .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT))
-            .asMessage();
-    String content =
-        messageService
-            .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT))
-            .asMessage();
-
-    Object[] msgArgs = {initiator.getFirstName(), initiator.getLastName(),
-        program.getName(), period.getName()};
-    content = MessageFormat.format(content, msgArgs);
+    String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
+    String content = messageService
+        .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, initiator.getFirstName(),
+            initiator.getLastName(), program.getName(), period.getName()))
+        .asMessage();
 
     notificationService.notify(initiator, subject, content);
   }

@@ -15,23 +15,9 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 
-import java.text.MessageFormat;
-import java.time.ZonedDateTime;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -41,24 +27,28 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.NotifierHelper;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
+import java.text.MessageFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
-public class ApprovalNotifier {
+public class ApprovalNotifier extends BaseNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ApprovalNotifier.class);
 
@@ -80,9 +70,6 @@ public class ApprovalNotifier {
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
 
-  @Autowired
-  private MessageService messageService;
-
   @Value("${requisitionUri}")
   private String requisitionUri;
 
@@ -93,8 +80,7 @@ public class ApprovalNotifier {
    */
   public void notifyApprovers(Requisition requisition) {
     Collection<UserDto> approvers = getApprovers(requisition);
-    String reqType = messageService.localize(new Message(requisition.getEmergency()
-        ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
+    String reqType = getMessage(getEmergencyKey(requisition));
     ProcessingPeriodDto period =
         periodReferenceDataService.findOne(requisition.getProcessingPeriodId());
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
@@ -115,10 +101,8 @@ public class ApprovalNotifier {
     }
     ZonedDateTime submittedDate = submitAuditEntry.get().getCreatedDate();
 
-    String subject =
-        messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)).asMessage();
-    String content =
-        messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT)).asMessage();
+    String subject = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT);
+    String content = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
 
     DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 
@@ -131,19 +115,11 @@ public class ApprovalNotifier {
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
 
     for (UserDto approver : approvers) {
-      if (NotifierHelper.canBeNotified(approver)) {
+      if (canBeNotified(approver)) {
         valuesMap.put("approver", approver.getUsername());
         notificationService.notify(approver, subject, sub.replace(content));
       }
     }
-  }
-
-  private DateTimeFormatter getDateTimeFormatter() {
-    Locale locale = LocaleContextHolder.getLocale();
-
-    String datePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
-        FormatStyle.MEDIUM, FormatStyle.MEDIUM, Chronology.ofLocale(locale), locale);
-    return DateTimeFormatter.ofPattern(datePattern);
   }
 
   private Map<String, String> getValuesMap(String reqType, ProcessingPeriodDto period,
