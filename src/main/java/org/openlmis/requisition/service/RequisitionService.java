@@ -342,6 +342,14 @@ public class RequisitionService {
   }
 
   /**
+   * Finds requisitions matching supervisory node and program.
+   */
+  public List<Requisition> searchRequisitions(UUID program, UUID supervisoryNode) {
+    return requisitionRepository.searchRequisitions(null, program, null, null, null,
+        supervisoryNode, null, null);
+  }
+
+  /**
    * Get requisitions to approve for the specified user.
    */
   public Set<Requisition> getRequisitionsForApproval(UUID userId, UUID program) {
@@ -370,8 +378,7 @@ public class RequisitionService {
    * Get approvable requisitions for specified program and supervisoryNode.
    */
   public List<Requisition> getApprovableRequisitions(UUID programId, UUID supervisoryNodeId) {
-    List<Requisition> requisitions = searchRequisitions(null, programId,
-        null, null, null, supervisoryNodeId, null, null);
+    List<Requisition> requisitions = searchRequisitions(programId, supervisoryNodeId);
 
     List<Requisition> filteredRequisitions = new ArrayList<>();
     if (requisitions != null) {
