@@ -94,7 +94,6 @@ import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
-import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
@@ -407,11 +406,10 @@ public class RequisitionServiceTest {
   @Test
   public void shouldGetApprovableRequisitionsWhenStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
-    Page page = Pagination.getPage(Collections.singletonList(requisition), null);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, null))
-        .thenReturn(page);
+        null, programId, null, null, null, supervisoryNodeId, null, null))
+        .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
@@ -423,11 +421,10 @@ public class RequisitionServiceTest {
   @Test
   public void shouldGetApprovableRequisitionsWhenStatusIsInApproval() {
     requisition.setStatus(IN_APPROVAL);
-    Page page = Pagination.getPage(Collections.singletonList(requisition), null);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, null))
-        .thenReturn(page);
+        null, programId, null, null, null, supervisoryNodeId, null, null))
+        .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> inApprovalRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
@@ -458,8 +455,6 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    Page page = Pagination.getPage(Collections.singletonList(requisitions), null);
-
     when(requisitionRepository.searchRequisitions(
         requisition.getFacilityId(),
         requisition.getProgramId(),
@@ -467,8 +462,8 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null, null))
-        .thenReturn(page);
+        EnumSet.of(requisition.getStatus()), null))
+        .thenReturn(requisitions);
 
     Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(userId, null);
@@ -500,8 +495,6 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
             .thenReturn(roleAssignmentDtos);
 
-    Page page = Pagination.getPage(Collections.singletonList(requisitions), null);
-
     when(requisitionRepository.searchRequisitions(
             requisition.getFacilityId(),
             requisition.getProgramId(),
@@ -509,8 +502,8 @@ public class RequisitionServiceTest {
             requisition.getCreatedDate().plusDays(2),
             requisition.getProcessingPeriodId(),
             requisition.getSupervisoryNodeId(),
-            EnumSet.of(requisition.getStatus()), null, null))
-            .thenReturn(page);
+            EnumSet.of(requisition.getStatus()), null))
+            .thenReturn(requisitions);
 
     Set<Requisition> requisitionsForApproval =
             requisitionService.getRequisitionsForApproval(userId, programId);
@@ -787,8 +780,6 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFindRequisitionIfItExists() {
 
-    Page page = Pagination.getPage(Collections.singletonList(requisition), null);
-
     when(requisitionRepository.searchRequisitions(
         requisition.getFacilityId(),
         requisition.getProgramId(),
@@ -796,19 +787,17 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null, null))
-        .thenReturn(page);
+        EnumSet.of(requisition.getStatus()), null))
+        .thenReturn(Collections.singletonList(requisition));
 
-    Page<Requisition> receivedRequisitionsPage = requisitionService.searchRequisitions(
+    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
         requisition.getFacilityId(),
         requisition.getProgramId(),
         requisition.getCreatedDate().minusDays(2),
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null, null);
-
-    List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
+        EnumSet.of(requisition.getStatus()), null);
 
     assertEquals(1, receivedRequisitions.size());
     assertEquals(
@@ -1153,18 +1142,15 @@ public class RequisitionServiceTest {
     previousRequisition
         .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
 
-    Page page = Pagination.getPage(Collections.singletonList(previousRequisition), null);
-
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(page);
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(Collections.singletonList(previousRequisition));
   }
 
   private void mockNoPreviousRequisition() {
-    Page page = Pagination.getPage(Collections.emptyList(), null);
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(page);
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(Collections.emptyList());
   }
 
   private void mockApprovedProduct(UUID productId, boolean fullSupply) {
@@ -1240,11 +1226,10 @@ public class RequisitionServiceTest {
     Requisition requisition2 = generateRequisition();
     requisition2.setStatus(AUTHORIZED);
     requisitions.add(requisition2);
-    Page page = Pagination.getPage(requisitions, null);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, null))
-        .thenReturn(page);
+        null, programId, null, null, null, supervisoryNodeId, null, null))
+        .thenReturn(requisitions);
     return requisitions;
   }
 

@@ -44,8 +44,6 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -99,7 +97,7 @@ public class RequisitionRepositoryIntegrationTest
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
     repository.save(requisition);
 
-    Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(),
         requisitions.get(0).getCreatedDate().minusDays(1),
@@ -107,10 +105,7 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.get(0).getProcessingPeriodId(),
         requisitions.get(0).getSupervisoryNodeId(),
         EnumSet.of(requisitions.get(0).getStatus()),
-        requisitions.get(0).getEmergency(),
-        null);
-
-    List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
+        requisitions.get(0).getEmergency());
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -152,12 +147,10 @@ public class RequisitionRepositoryIntegrationTest
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
     repository.save(requisition);
 
-    Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(),
-        null, null, null, null, null, null, null);
-
-    List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
+        null, null, null, null, null, null);
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -174,38 +167,16 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
-    Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
-        null, null, null, null, null, null, null, null, null);
-
-    List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+        null, null, null, null, null, null, null, null);
 
     assertEquals(5, receivedRequisitions.size());
   }
 
-  /* Note that this is intended as a smoke (rather than comprehensive) test of pagination.
-     Full pagination testing is left up to org.openlmis.utils.PaginationTest.  */
-  @Test
-  public void testSearchRequisitionsByAllParametersNullWithPagination() {
-
-    int page = 0;
-    int size = 2;
-    PageRequest pageRequest = new PageRequest(page, size);
-
-    Page<Requisition> receivedRequisitionsPage = repository.searchRequisitions(
-        null, null, null, null, null, null, null, null, pageRequest);
-
-    List<Requisition> receivedRequisitions = receivedRequisitionsPage.getContent();
-
-    assertEquals(2, receivedRequisitions.size());
-  }
-
   @Test
   public void testSearchEmergencyRequsitions() throws Exception {
-    Page<Requisition> emergencyRequisitionsPage = repository.searchRequisitions(
-        null, null, null, null, null, null, null, true, null
-    );
-
-    List<Requisition> emergency = emergencyRequisitionsPage.getContent();
+    List<Requisition> emergency = repository.searchRequisitions(
+        null, null, null, null, null, null, null, true);
 
     assertEquals(2, emergency.size());
     emergency.forEach(requisition -> assertTrue(requisition.getEmergency()));
@@ -213,11 +184,8 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchStandardRequisitions() throws Exception {
-    Page<Requisition> standardRequisitionsPage = repository.searchRequisitions(
-        null, null, null, null, null, null, null, false, null
-    );
-
-    List<Requisition> standard = standardRequisitionsPage.getContent();
+    List<Requisition> standard = repository.searchRequisitions(
+        null, null, null, null, null, null, null, false);
 
     assertEquals(3, standard.size());
     standard.forEach(requisition -> assertFalse(requisition.getEmergency()));

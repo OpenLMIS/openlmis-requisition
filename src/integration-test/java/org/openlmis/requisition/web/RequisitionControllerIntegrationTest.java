@@ -362,9 +362,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         eq(periodId),
         eq(supervisoryNodeId),
         eq(statuses),
-        eq(false),
-        any(Pageable.class))
-    ).willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+        eq(false))
+    ).willReturn(Collections.singletonList(requisition));
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -400,8 +399,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(statusSet), eq(null), any(Pageable.class))
-    ).willReturn(Pagination.getPage(requisitions, null));
+        eq(null), eq(statusSet), eq(null))
+    ).willReturn(requisitions);
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -432,8 +431,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Requisition> requisitions = Arrays.asList(accessibleRequisition, inaccessibleRequisition);
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(null), eq(null), any(Pageable.class))
-    ).willReturn(Pagination.getPage(requisitions, null));
+        eq(null), eq(null), eq(null))
+    ).willReturn(requisitions);
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -459,8 +458,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Requisition> requisitions = Collections.singletonList(inaccessibleRequisition);
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(null), eq(null), any(Pageable.class))
-    ).willReturn(Pagination.getPage(requisitions, null));
+        eq(null), eq(null), eq(null))
+    ).willReturn(requisitions);
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -1059,8 +1058,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     Requisition[] requisitions = { generateRequisition(), generateRequisition() };
     given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class), any(Pageable.class)))
-        .willReturn(Pagination.getPage(Arrays.asList(requisitions), null));
+        anySetOf(RequisitionStatus.class)))
+        .willReturn(Arrays.asList(requisitions));
 
     // when
     PageImplRepresentation response = restAssured.given()
@@ -1085,8 +1084,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Requisition[] requisitions = { availableRequisition, unavailableRequisition };
 
     given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class), any(Pageable.class)))
-        .willReturn(Pagination.getPage(Arrays.asList(requisitions), null));
+        anySetOf(RequisitionStatus.class)))
+        .willReturn(Arrays.asList(requisitions));
 
     PermissionMessageException exception = mock(PermissionMessageException.class);
     doThrow(exception).when(permissionService).canViewRequisition(unavailableRequisition.getId());
@@ -1118,8 +1117,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doThrow(exception).when(permissionService).canViewRequisition(anyUuid());
 
     given(requisitionService.searchRequisitions(
-        eq(EnumSet.of(RequisitionStatus.SUBMITTED)), any(Pageable.class)))
-        .willReturn(Pagination.getPage(requisitions, null));
+        eq(EnumSet.of(RequisitionStatus.SUBMITTED))))
+        .willReturn(requisitions);
 
     // when
     PageImplRepresentation response = restAssured.given()

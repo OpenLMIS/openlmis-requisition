@@ -312,37 +312,33 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public Page<Requisition> searchRequisitions(UUID facility, UUID program,
+  public List<Requisition> searchRequisitions(UUID facility, UUID program,
                                               ZonedDateTime initiatedDateFrom,
                                               ZonedDateTime initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,
-                                              Boolean emergency,
-                                              Pageable pageable) {
+                                              Boolean emergency) {
     return requisitionRepository.searchRequisitions(facility, program, initiatedDateFrom,
-        initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency,
-        pageable);
+        initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency);
   }
 
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public Page<Requisition> searchRequisitions(UUID facility,
+  public List<Requisition> searchRequisitions(UUID facility,
                                               UUID program,
-                                              UUID processingPeriod,
-                                              Pageable pageable) {
-    return requisitionRepository.searchRequisitions(facility, program, null, null, processingPeriod,
-        null, null, null, pageable);
+                                              UUID processingPeriod) {
+    return requisitionRepository.searchRequisitions(facility, program, null, null,
+        processingPeriod, null, null, null);
   }
 
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
-                                              Pageable pageable) {
+  public List<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses) {
     return requisitionRepository.searchRequisitions(null, null, null, null, null,
-        null, requisitionStatuses, null, pageable);
+        null, requisitionStatuses, null);
   }
 
   /**
@@ -374,17 +370,18 @@ public class RequisitionService {
    * Get approvable requisitions for specified program and supervisoryNode.
    */
   public List<Requisition> getApprovableRequisitions(UUID programId, UUID supervisoryNodeId) {
-    List<Requisition> requisitions = new ArrayList<>();
-    Page<Requisition> reqList = searchRequisitions(null, programId,
-        null, null, null, supervisoryNodeId, null, null, null);
-    if (reqList != null) {
-      for (Requisition requisition : reqList.getContent()) {
+    List<Requisition> requisitions = searchRequisitions(null, programId,
+        null, null, null, supervisoryNodeId, null, null);
+
+    List<Requisition> filteredRequisitions = new ArrayList<>();
+    if (requisitions != null) {
+      for (Requisition requisition : requisitions) {
         if (requisition.isApprovable()) {
-          requisitions.add(requisition);
+          filteredRequisitions.add(requisition);
         }
       }
     }
-    return requisitions;
+    return filteredRequisitions;
   }
 
   /**
@@ -595,9 +592,9 @@ public class RequisitionService {
 
   private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
                                                     ProcessingPeriodDto period) {
-    Page<Requisition> requisitions = searchRequisitions(requisition.getFacilityId(),
-        requisition.getProgramId(), period.getId(), null);
-    return requisitions.getContent();
+    return searchRequisitions(requisition.getFacilityId(),
+        requisition.getProgramId(),
+        period.getId());
   }
 
 }

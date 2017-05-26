@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicLevelDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
@@ -32,7 +33,6 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.springframework.data.domain.Page;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
@@ -274,12 +274,12 @@ public class JasperReportsViewServiceTest {
 
     facility.setGeographicZone(geographicZoneDto);
 
-    Page requisitionSearchResult = mock(Page.class);
-    when(requisitionSearchResult.getTotalElements()).thenReturn(
-        (isMissingRnR) ? 0L : 1L);
+    List<Requisition> requisitionSearchResult = mock(List.class);
+    when(requisitionSearchResult.size()).thenReturn(
+        (isMissingRnR) ? 0 : 1);
 
     when(requisitionService.searchRequisitions(eq(facilityId), eq(programId), any(), any(),
-        eq(periodId), any(), any(), any(), any()))
+        eq(periodId), any(), any(), any()))
         .thenReturn(requisitionSearchResult);
     return facility;
   }

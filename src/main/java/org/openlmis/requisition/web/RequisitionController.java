@@ -357,12 +357,11 @@ public class RequisitionController extends BaseController {
           Set<RequisitionStatus> requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
-    Page<Requisition> requisitionsPage = requisitionService.searchRequisitions(facility, program,
+    List<Requisition> requisitions = requisitionService.searchRequisitions(facility, program,
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
-        emergency, pageable);
-    List<Requisition> resultList = requisitionsPage.getContent();
+        emergency);
 
-    List<Requisition> filteredList = resultList.stream().filter(req -> {
+    List<Requisition> filteredList = requisitions.stream().filter(req -> {
       try {
         permissionService.canViewRequisition(req.getId());
       } catch (PermissionMessageException ex) {
@@ -372,7 +371,7 @@ public class RequisitionController extends BaseController {
     }).collect(Collectors.toList());
 
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
-    return Pagination.getPage(dtoList, pageable, dtoList.size());
+    return Pagination.getPage(dtoList, pageable);
   }
 
   /**
@@ -483,10 +482,9 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
-    Page<Requisition> submittedRequisitionsPage = requisitionService.searchRequisitions(
-        EnumSet.of(RequisitionStatus.SUBMITTED), pageable);
+    List<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
+        EnumSet.of(RequisitionStatus.SUBMITTED));
 
-    List<Requisition> submittedRequisitions = submittedRequisitionsPage.getContent();
     List<Requisition> filteredList = submittedRequisitions.stream().filter(req -> {
       try {
         permissionService.canViewRequisition(req.getId());
@@ -498,7 +496,7 @@ public class RequisitionController extends BaseController {
 
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
 
-    return Pagination.getPage(dtoList, pageable, dtoList.size());
+    return Pagination.getPage(dtoList, pageable);
   }
 
   /**

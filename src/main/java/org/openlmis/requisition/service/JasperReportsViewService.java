@@ -57,7 +57,6 @@ import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -353,10 +352,10 @@ public class JasperReportsViewService {
     // find active facilities that are missing R&R
     for (FacilityDto facility : facilities) {
       if (facility.getActive()) {
-        Page<Requisition> requisitions = requisitionService.searchRequisitions(
+        List<Requisition> requisitions = requisitionService.searchRequisitions(
             facility.getId(), program.getId(), null, null, processingPeriod.getId(),
-            null, validStatuses, null, null);
-        if (requisitions.getTotalElements() == 0) {
+            null, validStatuses, null);
+        if (requisitions.size() == 0) {
           TimelinessReportFacilityDto timelinessFacility = new TimelinessReportFacilityDto();
           facility.export(timelinessFacility);
           facilitiesMissingRnR.add(timelinessFacility);

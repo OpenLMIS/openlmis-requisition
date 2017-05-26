@@ -34,9 +34,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.openlmis.utils.Pagination;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -64,15 +61,13 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @return List of Requisitions with matched parameters.
    */
   @Override
-  public Page<Requisition> searchRequisitions(UUID facility, UUID program,
+  public List<Requisition> searchRequisitions(UUID facility, UUID program,
       ZonedDateTime initiatedDateFrom,
       ZonedDateTime initiatedDateTo,
       UUID processingPeriod,
       UUID supervisoryNode,
       Set<RequisitionStatus> requisitionStatuses,
-      Boolean emergency,
-      Pageable pageable) {
-    //Retrieve a paginated set of results
+      Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
     CriteriaQuery<Requisition> queryMain = builder.createQuery(Requisition.class);
@@ -119,29 +114,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     queryMain.where(predicate);
     queryMain.orderBy(builder.asc(statusChange.get(CREATED_DATE)));
 
-    /*
-    int pageNumber = Pagination.getPageNumber(pageable);
-    int pageSize = Pagination.getPageSize(pageable);
-
-    List<Requisition> results = entityManager.createQuery(queryMain)
-                                .setFirstResult(pageNumber * pageSize)
-                                .setMaxResults(pageSize)
-                                .getResultList();
-                                */
-
     List<Requisition> results = entityManager.createQuery(queryMain).getResultList();
     List<Requisition> distinctResults = results.stream().distinct().collect(toList());
 
-    //Having retrieved just paginated values we care about, determine
-    //the total number of values in the system which meet our criteria.
-    /*
-    CriteriaQuery<Long> queryCount = builder.createQuery(Long.class);
-    Root<Requisition> rootQueryCount = queryCount.from(Requisition.class);
-    queryCount.select(builder.count(rootQueryCount));
-    queryCount.where(predicate);
-    Long count = entityManager.createQuery(queryCount).getSingleResult(); */
-
-    return Pagination.getPage(distinctResults, pageable);
+    return distinctResults;
   }
 
 
