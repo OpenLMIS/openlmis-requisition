@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -25,6 +26,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class UserDto {
   private UUID id;
   private String username;
