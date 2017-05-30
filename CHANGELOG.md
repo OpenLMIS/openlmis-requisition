@@ -1,3 +1,10 @@
+3.1.5 /
+==================
+Bug fixes added in a backwards-compatible manner:
+* [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
+endpoint from fulfilment when converting requisitions to orders - all orders are created in a
+single transaction.
+
 3.1.4 / 2017-05-26
 ===================
 
