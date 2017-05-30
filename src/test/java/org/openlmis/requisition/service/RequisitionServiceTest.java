@@ -909,7 +909,7 @@ public class RequisitionServiceTest {
 
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldNotConvertRequisitionToOrderWhenCreatingOrderInFulfillmentServiceFailed()
+  public void shouldNotSwallowExceptionsFromFulfillmentService()
       throws ConfigurationSettingException {
     // given
     int requisitionsCount = 5;

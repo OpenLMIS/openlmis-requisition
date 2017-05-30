@@ -31,9 +31,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 
 import java.net.URI;
 import java.util.UUID;
@@ -88,7 +90,7 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     OrderDto order = generateInstance();
     OrderDto order2 = generateInstance();
 
-    // then
+    // when
     service.create(asList(order, order2));
 
     // then
@@ -104,6 +106,20 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     Object body = entity.getBody();
 
     assertThat(body, is(asList(order, order2)));
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldThrowValidationMessageExceptionWhenCreatingMultipleOrdersFails() {
+    // given
+    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
+    OrderDto order = generateInstance();
+    OrderDto order2 = generateInstance();
+
+    when(restTemplate.postForEntity(any(URI.class), any(), eq(Object.class))).thenThrow(
+        new RestClientException("test"));
+
+    // when
+    service.create(asList(order, order2));
   }
 
   @Test
