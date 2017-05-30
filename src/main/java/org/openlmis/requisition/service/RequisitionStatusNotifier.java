@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,32 +95,21 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     if (!currentAuditEntry.isPresent()) {
       return;
     }
-
-    String requisitionUrl = System.getenv("BASE_URL") + MessageFormat.format(
-        requisitionUri, requisition.getId());
-    String requisitionType = getMessage(getEmergencyKey(requisition));
-
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
-    ProcessingPeriodDto period = periodReferenceDataService.findOne(
-        requisition.getProcessingPeriodId());
-    FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
-    UserDto author = userReferenceDataService.findOne(currentAuditEntry.get().getAuthorId());
-
     DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 
     Map<String, String> valuesMap = new HashMap<>();
     valuesMap.put("initiator", initiator.getUsername());
-    valuesMap.put("requisitionType", requisitionType);
-    valuesMap.put("submittedDate", submitAuditEntry.get().getCreatedDate().format(
-        dateTimeFormatter));
-    valuesMap.put("periodName", period.getName());
-    valuesMap.put("programName", program.getName());
-    valuesMap.put("facilityName", facility.getName());
-    valuesMap.put("requisitionStatus", requisition.getStatus().toString());
-    valuesMap.put("author", author.getUsername());
+    valuesMap.put("requisitionType", getMessage(getEmergencyKey(requisition)));
+    valuesMap.put("submittedDate", submitAuditEntry.get().getCreatedDate()
+        .format(dateTimeFormatter));
+    valuesMap.put("programName", getProgram(requisition).getName());
+    valuesMap.put("periodName", getPeriod(requisition).getName());
+    valuesMap.put("facilityName", getFacility(requisition).getName());
+    valuesMap.put("requisitionStatus", getStatus(requisition));
+    valuesMap.put("author", getAuthor(currentAuditEntry.get()).getUsername());
     valuesMap.put("changeDate", currentAuditEntry.get().getCreatedDate().format(
         dateTimeFormatter));
-    valuesMap.put("requisitionUrl", requisitionUrl);
+    valuesMap.put("requisitionUrl", getRequisitionUrl(requisition));
 
     String subject = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
     String content = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
@@ -143,6 +133,11 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     return userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
   }
 
+  private String getRequisitionUrl(Requisition requisition) {
+    return System.getenv("BASE_URL") + MessageFormat.format(
+        requisitionUri, requisition.getId());
+  }
+
   private Optional<StatusChange> getSubmitAuditEntry(Requisition requisition,
                                                      List<StatusChange> statusChanges) {
     Optional<StatusChange> submitAuditEntry = statusChanges.stream()
@@ -160,12 +155,42 @@ public class RequisitionStatusNotifier extends BaseNotifier {
                                                       List<StatusChange> statusChanges) {
     Optional<StatusChange> currentAuditEntry = statusChanges.stream()
         .filter(statusChange -> statusChange.getStatus() == requisition.getStatus())
-        .findFirst();
+        .max(Comparator.comparing(StatusChange::getCreatedDate));
+
     if (!currentAuditEntry.isPresent() || currentAuditEntry.get().getAuthorId() == null) {
       LOGGER.warn("Could not find author of current status change for requisition "
           + requisition.getId() + " to notify for requisition status change.");
       return Optional.empty();
     }
     return currentAuditEntry;
+  }
+
+  private ProgramDto getProgram(Requisition requisition) {
+    return programReferenceDataService.findOne(requisition.getProgramId());
+  }
+
+  private ProcessingPeriodDto getPeriod(Requisition requisition) {
+    return periodReferenceDataService.findOne(
+        requisition.getProcessingPeriodId());
+  }
+
+  private FacilityDto getFacility(Requisition requisition) {
+    return facilityReferenceDataService.findOne(requisition.getFacilityId());
+  }
+
+  private String getStatus(Requisition requisition) {
+    String statusString;
+    //we don't notify requisition initiator that he initiated requisition so it's safe to
+    //assume that Requsition was rejected if status is INITIATED.
+    if (requisition.getStatus() == RequisitionStatus.INITIATED) {
+      statusString = "REJECTED";
+    } else {
+      statusString = requisition.getStatus().toString();
+    }
+    return statusString;
+  }
+
+  private UserDto getAuthor(StatusChange currentAuditEntry) {
+    return userReferenceDataService.findOne(currentAuditEntry.getAuthorId());
   }
 }
