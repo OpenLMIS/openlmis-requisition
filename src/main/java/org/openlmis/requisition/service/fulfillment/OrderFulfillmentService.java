@@ -20,39 +20,54 @@ import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.RequestParameters;
+import org.openlmis.utils.Message;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
 
   /**
-   * Creates a new instance of order
+   * Creates a new instance of an order.
    *
    * @param order instance that contain data required to save order
-   * @return true if success, false if failed.
    */
-  public boolean create(OrderDto order) {
-    String url = getServiceUrl() + getUrl();
-
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set(ACCESS_TOKEN, authService.obtainAccessToken());
-
-    HttpEntity<OrderDto> body = new HttpEntity<>(order);
-
+  public void create(OrderDto order) {
     try {
-      restTemplate.postForEntity(createUri(url, parameters), body, Object.class);
+      String url = getServiceUrl() + getUrl();
+      HttpEntity<OrderDto> body = new HttpEntity<>(order);
+      postNew(url, body);
     } catch (RestClientException ex) {
-      logger.error("Can not create Order ", ex);
-      return false;
+      throw new ValidationMessageException(
+          new Message(
+              MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER, order.getExternalId()),
+          ex);
     }
-    return true;
+  }
+
+  /**
+   * Creates a new instance of order multiple orders by posting to the
+   * batch order creation endpoint.
+   *
+   * @param orders list of orders to create
+   */
+  public void create(List<OrderDto> orders) {
+    try {
+      String url = getServiceUrl() + getBatchUrl();
+      HttpEntity<List<OrderDto>> body = new HttpEntity<>(orders);
+      postNew(url, body);
+    } catch (RestClientException ex) {
+      throw new ValidationMessageException(
+          new Message(MessageKeys.ERROR_CONVERTING_MULTIPLE_REQUISITIONS), ex);
+    }
   }
 
   /**
@@ -80,6 +95,18 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
         RequestParameters.init(),
         ProofOfDeliveryDto.class
     );
+  }
+
+  private void postNew(String url, HttpEntity<?> body) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set(ACCESS_TOKEN, authService.obtainAccessToken());
+
+    restTemplate.postForEntity(createUri(url, parameters), body, Object.class);
+  }
+
+  protected String getBatchUrl() {
+    return getUrl() + "batch";
   }
 
   @Override

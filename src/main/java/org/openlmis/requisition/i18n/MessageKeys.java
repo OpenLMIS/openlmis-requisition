@@ -90,6 +90,8 @@ public abstract class MessageKeys {
       + ".authorizationToBeSkipped";
   public static final String ERROR_CONVERTING_REQUISITION_TO_ORDER = ERROR_PREFIX
       + ".convertingRequisitionToOrder";
+  public static final String ERROR_CONVERTING_MULTIPLE_REQUISITIONS = ERROR_PREFIX
+      + ".convertingMultipleRequisitions";
   public static final String ERROR_MUST_HAVE_SUPPLYING_FACILITY = ERROR_PREFIX
       + ".release.mustHaveSupplyingFacility";
   public static final String ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM = ERROR_PREFIX

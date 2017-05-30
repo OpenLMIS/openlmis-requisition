@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -78,6 +79,31 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
 
     assertThat(body, instanceOf(OrderDto.class));
     assertThat(((OrderDto) body).getId(), is(equalTo(order.getId())));
+  }
+
+  @Test
+  public void shouldSendRequestToCreateMultipleOrders() {
+    // given
+    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
+    OrderDto order = generateInstance();
+    OrderDto order2 = generateInstance();
+
+    // then
+    service.create(asList(order, order2));
+
+    // then
+    verify(restTemplate)
+        .postForEntity(uriCaptor.capture(), entityCaptor.capture(), eq(Object.class));
+
+    URI uri = uriCaptor.getValue();
+    String url = service.getServiceUrl() + service.getBatchUrl() + "?" + ACCESS_TOKEN;
+
+    assertThat(uri.toString(), is(equalTo(url)));
+
+    HttpEntity entity = entityCaptor.getValue();
+    Object body = entity.getBody();
+
+    assertThat(body, is(asList(order, order2)));
   }
 
   @Test

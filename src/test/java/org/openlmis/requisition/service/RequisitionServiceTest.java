@@ -22,8 +22,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,6 +40,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -898,13 +899,12 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
-    when(orderFulfillmentService.create(any())).thenReturn(true);
 
     // when
     requisitionService.convertToOrder(list, user);
 
     // then
-    verify(orderFulfillmentService, atLeastOnce()).create(any(OrderDto.class));
+    verify(orderFulfillmentService).create(any(List.class));
   }
 
 
@@ -925,7 +925,9 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
-    when(orderFulfillmentService.create(any())).thenReturn(false);
+
+    doThrow(new ValidationMessageException(("test"))).when(
+      orderFulfillmentService).create(any(List.class));
 
     // when
     requisitionService.convertToOrder(list, user);
@@ -944,7 +946,6 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
-    when(orderFulfillmentService.create(any())).thenReturn(true);
 
     requisitionService.convertToOrder(list, user);
 

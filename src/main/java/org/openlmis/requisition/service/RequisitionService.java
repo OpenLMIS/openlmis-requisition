@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
@@ -521,16 +520,16 @@ public class RequisitionService {
   public void convertToOrder(List<ConvertToOrderDto> list, UserDto user) {
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
 
+    List<OrderDto> orders = new ArrayList<>();
     for (Requisition requisition : releasedRequisitions) {
       OrderDto order = orderDtoBuilder.build(requisition, user);
-      if (orderFulfillmentService.create(order)) {
-        requisitionRepository.save(requisition);
-        requisitionStatusProcessor.statusChange(requisition);
-      } else {
-        throw new ValidationMessageException(new Message(ERROR_CONVERTING_REQUISITION_TO_ORDER,
-            order.getExternalId()));
-      }
+      orders.add(order);
+
+      requisitionRepository.save(requisition);
+      requisitionStatusProcessor.statusChange(requisition);
     }
+
+    orderFulfillmentService.create(orders);
   }
 
   private List<RequisitionLineItem> getSupplyItemsBase(UUID requisitionId, boolean fullSupply) {
