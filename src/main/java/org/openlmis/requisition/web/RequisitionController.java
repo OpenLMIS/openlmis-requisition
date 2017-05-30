@@ -46,6 +46,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
@@ -147,6 +148,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionStatusProcessor requisitionStatusProcessor;
+
+  @Autowired
+  private RequisitionStatusNotifier requisitionStatusNotifier;
 
   /**
    * Allows creating new requisitions.
@@ -398,6 +402,7 @@ public class RequisitionController extends BaseController {
     permissionService.canApproveRequisition(id);
     Requisition rejectedRequisition = requisitionService.reject(id);
     requisitionStatusProcessor.statusChange(rejectedRequisition);
+    requisitionStatusNotifier.notifyStatusChanged(rejectedRequisition);
 
     return requisitionDtoBuilder.build(rejectedRequisition);
   }

@@ -55,6 +55,7 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
@@ -141,6 +142,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionStatusProcessor requisitionStatusProcessor;
+
+  @Mock
+  private RequisitionStatusNotifier requisitionStatusNotifier;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -341,6 +345,15 @@ public class RequisitionControllerTest {
         .isInstanceOf(PermissionMessageException.class);
 
     verify(requisitionService, times(0)).reject(uuid4);
+  }
+
+  @Test
+  public void shouldCallRequisitionStatusNotifierWhenReject() {
+    when(requisitionService.reject(authorizedRequsition.getId())).thenReturn(initiatedRequsition);
+
+    requisitionController.rejectRequisition(authorizedRequsition.getId());
+
+    verify(requisitionStatusNotifier).notifyStatusChanged(initiatedRequsition);
   }
 
   @Test
