@@ -247,13 +247,11 @@ public class PeriodService {
     ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods = searchByProgramAndFacility(programId, facilityId);
 
-    List<Requisition> requisitions;
-
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {
-        requisitions = requisitionRepository.searchRequisitions(
+        int count = requisitionRepository.getRequisitionsCount(
             dto.getId(), facilityId, programId, false);
-        if (requisitions == null || requisitions.isEmpty()) {
+        if (count == 0) {
           result = dto;
           break;
         }

@@ -59,10 +59,12 @@ public class RequisitionRepositoryIntegrationTest
 
   private List<Requisition> requisitions;
 
+  @Override
   RequisitionRepository getRepository() {
     return this.repository;
   }
 
+  @Override
   Requisition generateInstance() {
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), RequisitionStatus.INITIATED, getNextInstanceNumber() % 2 == 0);
@@ -174,7 +176,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchEmergencyRequsitions() throws Exception {
+  public void testSearchEmergencyRequsitions() {
     List<Requisition> emergency = repository.searchRequisitions(
         null, null, null, null, null, null, null, true);
 
@@ -183,7 +185,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchStandardRequisitions() throws Exception {
+  public void testSearchStandardRequisitions() {
     List<Requisition> standard = repository.searchRequisitions(
         null, null, null, null, null, null, null, false);
 
@@ -192,7 +194,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void testSearchRequisitionsByPeriodAndEmergencyFlag() throws Exception {
+  public void testSearchRequisitionsByPeriodAndEmergencyFlag() {
     requisitions.forEach(requisition -> {
       List<Requisition> found = repository.searchRequisitions(
           requisition.getProcessingPeriodId(), requisition.getFacilityId(), requisition
@@ -205,6 +207,28 @@ public class RequisitionRepositoryIntegrationTest
         assertEquals(requisition.getNumberOfMonthsInPeriod(), element.getNumberOfMonthsInPeriod());
       });
     });
+  }
+
+  @Test
+  public void testFindRequisitionsCountByPeriodFacilityProgramAndEmergencyFlag() {
+    requisitions.forEach(requisition -> {
+      int count = getRequisitionsCount(requisition);
+      assertEquals(1, count);
+    });
+
+    Requisition entity = generateInstance();
+    repository.save(entity);
+    Requisition entity2 = generateInstanceBasedOn(entity);
+    repository.save(entity2);
+
+    int count = getRequisitionsCount(entity);
+    assertEquals(2, count);
+  }
+
+  @Test
+  public void shouldNotFindAnyRequisition() {
+    assertEquals(0, repository.getRequisitionsCount(
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), true));
   }
 
   @Test
@@ -279,5 +303,21 @@ public class RequisitionRepositoryIntegrationTest
 
     return templateRepository.save(new RequisitionTemplate(
         Collections.singletonMap(RequisitionLineItem.BEGINNING_BALANCE, column)));
+  }
+
+  private Requisition generateInstanceBasedOn(Requisition entity) {
+    Requisition entity2 = generateInstance();
+    entity2.setProcessingPeriodId(entity.getProcessingPeriodId());
+    entity2.setFacilityId(entity.getFacilityId());
+    entity2.setProgramId(entity.getProgramId());
+    entity2.setEmergency(entity.getEmergency());
+    return entity2;
+  }
+
+  private int getRequisitionsCount(Requisition entity) {
+    return repository.getRequisitionsCount(
+        entity.getProcessingPeriodId(), entity.getFacilityId(), entity
+            .getProgramId(), entity.getEmergency()
+    );
   }
 }

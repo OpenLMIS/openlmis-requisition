@@ -131,10 +131,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @return List of Requisitions with matched parameters.
    */
   @Override
-  public List<Requisition> searchRequisitions(UUID processingPeriod,
-      UUID facility,
-      UUID program,
-      Boolean emergency) {
+  public List<Requisition> searchRequisitions(UUID processingPeriod, UUID facility,
+                                              UUID program, Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);

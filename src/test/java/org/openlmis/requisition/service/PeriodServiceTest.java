@@ -38,7 +38,6 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +53,6 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -414,12 +412,12 @@ public class PeriodServiceTest {
 
     //we mock the requisition search to return a requisition for the first period
     // but not for the second
-    doReturn(Collections.singletonList(initiatedRequsition))
+    doReturn(1)
         .when(requisitionRepository)
-        .searchRequisitions(period1.getId(), facilityId, programId, false);
-    doReturn(Collections.EMPTY_LIST)
+        .getRequisitionsCount(period1.getId(), facilityId, programId, false);
+    doReturn(0)
         .when(requisitionRepository)
-        .searchRequisitions(period2.getId(), facilityId, programId, false);
+        .getRequisitionsCount(period2.getId(), facilityId, programId, false);
 
     //when
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
