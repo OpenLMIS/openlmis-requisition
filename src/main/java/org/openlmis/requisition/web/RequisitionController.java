@@ -32,7 +32,6 @@ import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -88,10 +87,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -161,8 +158,10 @@ public class RequisitionController extends BaseController {
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
 
+  @Autowired
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
+  @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
 
   /**
