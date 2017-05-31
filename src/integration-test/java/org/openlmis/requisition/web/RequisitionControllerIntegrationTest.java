@@ -29,6 +29,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,6 +40,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUT
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -59,13 +61,14 @@ import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -81,7 +84,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,8 +95,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -127,9 +127,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   static final String INITIATED_DATE_TO = "initiatedDateTo";
 
   @MockBean
-  private RequisitionRepository requisitionRepository;
-
-  @MockBean
   private StatusMessageRepository statusMessageRepository;
 
   @MockBean
@@ -148,9 +145,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private PeriodService periodService;
 
   @MockBean
-  private PermissionService permissionService;
-
-  @MockBean
   private RequisitionService requisitionService;
 
   @MockBean
@@ -164,6 +158,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @MockBean
   private OrderableReferenceDataService orderableReferenceDataService;
+
+  @MockBean(name = "programReferenceDataService")
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @MockBean(name = "facilityReferenceDataService")
+  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
   private MessageService messageService;
@@ -850,14 +850,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldInitiateRequisition() {
     // given
-    Requisition requisition = generateRequisition();
-    UUID programId = requisition.getProgramId();
+    UUID programId = mockProgram().getId();
+    UUID facilityId = mockFacility().getId();
+    Requisition requisition =
+        generateRequisition(RequisitionStatus.INITIATED, programId, facilityId);
     UUID periodId = requisition.getProcessingPeriodId();
-    UUID facilityId = requisition.getFacilityId();
 
     doNothing().when(permissionService).canInitRequisition(programId, facilityId);
-    given(requisitionService.initiate(programId, facilityId, periodId, false))
-        .willReturn(requisition);
+    doReturn(requisition).when(requisitionService).initiate(programId, facilityId, periodId, false);
     mockValidationSuccess();
 
     // when
@@ -882,10 +882,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotInitiateRequisitionWhenPeriodDoesNotExist() {
     // given
-    Requisition requisition = generateRequisition();
-    UUID programId = requisition.getProgramId();
-    UUID periodId = requisition.getProcessingPeriodId();
-    UUID facilityId = requisition.getFacilityId();
+    UUID programId = mockProgram().getId();
+    UUID facilityId = mockFacility().getId();
+    UUID periodId = UUID.randomUUID();
 
     ValidationMessageException err =
         mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
@@ -913,18 +912,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotInitiateRequisitionWhenFacilityDoesNotSupportProgram() {
     // given
-    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    mockFacilityDoesNotSupportProgram(requisition);
-
-    doNothing().when(permissionService).canAuthorizeRequisition(requisition.getId());
-    doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-    given(configurationSettingService.getBoolValue(anyString())).willReturn(false);
+    UUID programId = mockProgram().getId();
+    FacilityDto facilityDto = mockFacility();
+    UUID facilityId = facilityDto.getId();
+    mockFacilityDoesNotSupportProgram(facilityDto, programId);
 
     // when
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(PROGRAM, requisition.getProgramId())
-        .queryParam(FACILITY, requisition.getFacilityId())
+        .queryParam(PROGRAM, programId)
+        .queryParam(FACILITY, facilityId)
         .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
         .queryParam(EMERGENCY, false)
         .when()
@@ -941,8 +938,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotInitiateRequisitionWhenUserHasNoRight() {
     // given
-    UUID programId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
+    UUID programId = mockProgram().getId();
+    UUID facilityId = mockFacility().getId();
 
     String missingPermission = REQUISITION_CREATE;
     PermissionMessageException exception = mockPermissionException(missingPermission);
@@ -1396,12 +1393,30 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doNothing().when(requisitionValidator).validate(any(Object.class), any(Errors.class));
     doNothing().when(facilitySupportsProgramHelper)
         .checkIfFacilitySupportsProgram(any(UUID.class), any(UUID.class));
+    doNothing().when(facilitySupportsProgramHelper)
+        .checkIfFacilitySupportsProgram(any(FacilityDto.class), any(UUID.class));
   }
 
   private void mockExternalServiceCalls() {
     given(orderableReferenceDataService.findAll()).willReturn(Collections.emptyList());
     given(supervisoryNodeReferenceDataService.findOne(anyUuid()))
         .willReturn(new SupervisoryNodeDto());
+  }
+
+  private ProgramDto mockProgram() {
+    ProgramDto programDto = new ProgramDto();
+    programDto.setId(UUID.randomUUID());
+    given(programReferenceDataService.findOne(anyUuid()))
+        .willReturn(programDto);
+    return programDto;
+  }
+
+  private FacilityDto mockFacility() {
+    FacilityDto facilityDto = new FacilityDto();
+    facilityDto.setId(UUID.randomUUID());
+    given(facilityReferenceDataService.findOne(anyUuid()))
+        .willReturn(facilityDto);
+    return facilityDto;
   }
 
   private void mockFacilityDoesNotSupportProgram(Requisition requisition) {
@@ -1412,6 +1427,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     ValidationMessageException exception = mockValidationException(errorKey);
     doThrow(exception).when(facilitySupportsProgramHelper)
         .checkIfFacilitySupportsProgram(facilityId, programId);
+  }
+
+  private void mockFacilityDoesNotSupportProgram(FacilityDto facility, UUID programId) {
+    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
+    ValidationMessageException exception = mockValidationException(errorKey);
+    doThrow(exception).when(facilitySupportsProgramHelper)
+        .checkIfFacilitySupportsProgram(facility, programId);
   }
 
   private List<UUID> mockConvertToOrderRightAndFulfillmentFacilities(FacilityDto... facilities) {
@@ -1433,6 +1455,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void mockRequisitionDtoBuilderResponses() {
     given(requisitionDtoBuilder.build(any(Requisition.class)))
+        .willAnswer(new BuildRequisitionDtoAnswer());
+    given(requisitionDtoBuilder
+        .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());

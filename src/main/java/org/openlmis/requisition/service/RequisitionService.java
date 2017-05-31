@@ -164,12 +164,9 @@ public class RequisitionService {
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
 
-    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
-    ProgramDto program = programReferenceDataService.findOne(programId);
-
     Collection<ApprovedProductDto> approvedProducts =
         approvedProductReferenceDataService.getApprovedProducts(
-            facility.getId(), program.getId(), true);
+            facilityId, programId, true);
 
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
 
@@ -195,7 +192,7 @@ public class RequisitionService {
         numberOfPreviousPeriodsToAverage, pod, authenticationHelper.getCurrentUser().getId());
 
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
-        .getApprovedProducts(facility.getId(), program.getId(), false)
+        .getApprovedProducts(facilityId, programId, false)
         .stream()
         .map(ap -> ap.getOrderable().getId())
         .collect(Collectors.toSet()));

@@ -68,6 +68,10 @@ public abstract class MessageKeys {
       + ".badStatus.delete";
   public static final String ERROR_REQUISITION_NOT_FOUND = ERROR_PREFIX
       + ".requisitionNotFound";
+  public static final String ERROR_FACILITY_NOT_FOUND = ERROR_PREFIX
+      + ".facilityNotFound";
+  public static final String ERROR_PROGRAM_NOT_FOUND = ERROR_PREFIX
+      + ".programNotFound";
   public static final String ERROR_ID_MISMATCH = ERROR_PREFIX
       + ".idMismatch";
   public static final String ERROR_NO_SUBMITTED_REQUISITIONS = ERROR_PREFIX

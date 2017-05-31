@@ -42,16 +42,27 @@ public class FacilitySupportsProgramHelper {
   /**
    * Method check if facility supports program.
    *
-   * @param facilityId facilityId Uuid of the Facility.
-   * @param programId  programId UUID of the Program.
+   * @param facilityId UUID of the Facility.
+   * @param programId UUID of the Program.
    */
   public void checkIfFacilitySupportsProgram(UUID facilityId, UUID programId) {
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
+
+    checkIfFacilitySupportsProgram(facility, programId);
+  }
+
+  /**
+   * Method check if facility supports program.
+   *
+   * @param facility Facility.
+   * @param programId programId UUID of the Program.
+   */
+  public void checkIfFacilitySupportsProgram(FacilityDto facility, UUID programId) {
     List<SupportedProgramDto> supportedPrograms = facility.getSupportedPrograms();
 
     if (!isProgramSupported(supportedPrograms, programId)) {
       throw new ValidationMessageException(
-          new Message(ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM, facilityId, programId));
+          new Message(ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM, facility.getId(), programId));
     }
   }
 

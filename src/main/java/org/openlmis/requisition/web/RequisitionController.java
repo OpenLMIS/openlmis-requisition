@@ -32,7 +32,9 @@ import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -49,7 +51,9 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -82,11 +86,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -154,13 +159,17 @@ public class RequisitionController extends BaseController {
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
   @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+
+  private FacilityReferenceDataService facilityReferenceDataService;
 
   /**
    * Allows creating new requisitions.
    *
-   * @param program         UUID of Program.
-   * @param facility        UUID of Facility.
+   * @param programId         UUID of Program.
+   * @param facilityId        UUID of Facility.
    * @param emergency       Emergency status.
    * @param suggestedPeriod Period for requisition.
    * @return created requisition.
@@ -168,21 +177,32 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/initiate", method = POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public RequisitionDto initiate(@RequestParam(value = "program") UUID program,
-                    @RequestParam(value = "facility") UUID facility,
+  public RequisitionDto initiate(@RequestParam(value = "program") UUID programId,
+                    @RequestParam(value = "facility") UUID facilityId,
                     @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                     @RequestParam(value = "emergency") boolean emergency) {
-    if (null == facility || null == program) {
+    if (null == facilityId || null == programId) {
       throw new ValidationMessageException(
           new Message(MessageKeys.ERROR_INITIALIZE_MISSING_PARAMETERS));
     }
 
-    permissionService.canInitRequisition(program, facility);
-    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
+    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
+    if (facility == null) {
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_FACILITY_NOT_FOUND, facilityId));
+    }
+    ProgramDto program = programReferenceDataService.findOne(programId);
+    if (program == null) {
+      throw new ContentNotFoundMessageException(
+          new Message(MessageKeys.ERROR_PROGRAM_NOT_FOUND, programId));
+    }
+
+    permissionService.canInitRequisition(programId, facilityId);
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
     Requisition newRequisition = requisitionService
-        .initiate(program, facility, suggestedPeriod, emergency);
-    return requisitionDtoBuilder.build(newRequisition);
+        .initiate(program.getId(), facility.getId(), suggestedPeriod, emergency);
+    return requisitionDtoBuilder.build(newRequisition, facility, program);
   }
 
   /**

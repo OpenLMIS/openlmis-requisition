@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_CHECK_RESULT;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_TOKEN_REQUEST_RESPONSE;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -68,9 +69,10 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext
+@SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseWebIntegrationTest {
 
   protected static final String BASE_URL = System.getenv("BASE_URL");
@@ -153,6 +155,21 @@ public abstract class BaseWebIntegrationTest {
   protected final Requisition generateRequisition(RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition(
         UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), requisitionStatus, true);
+
+    requisition.setId(UUID.randomUUID());
+    requisition.setCreatedDate(ZonedDateTime.now());
+    requisition.setNumberOfMonthsInPeriod(1);
+    requisition.setRequisitionLineItems(new ArrayList<>());
+    requisition.setTemplate(generateRequisitionTemplate());
+
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    return requisition;
+  }
+
+  protected final Requisition generateRequisition(RequisitionStatus requisitionStatus,
+                                                  UUID programId, UUID facilityId) {
+    Requisition requisition = new Requisition(
+        facilityId, programId, UUID.randomUUID(), requisitionStatus, true);
 
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());

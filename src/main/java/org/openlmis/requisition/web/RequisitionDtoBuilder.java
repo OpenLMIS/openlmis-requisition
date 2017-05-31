@@ -16,6 +16,8 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.PeriodService;
@@ -67,6 +69,20 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition) {
+    FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+
+    return build(requisition, facility, program);
+  }
+
+  /**
+   * Create a new instance of RequisitionDto based on data from {@link Requisition}.
+   *
+   * @param requisition instance used to create {@link RequisitionDto} (can be {@code null})
+   * @return new instance of {@link RequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
+   */
+  public RequisitionDto build(Requisition requisition, FacilityDto facility, ProgramDto program) {
     if (null == requisition) {
       return null;
     }
@@ -78,8 +94,8 @@ public class RequisitionDtoBuilder {
         requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
 
     requisitionDto.setTemplate(requisition.getTemplate());
-    requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
-    requisitionDto.setProgram(programReferenceDataService.findOne(requisition.getProgramId()));
+    requisitionDto.setFacility(facility);
+    requisitionDto.setProgram(program);
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()));
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);

@@ -610,10 +610,6 @@ public class RequisitionServiceTest {
         .findOne(requisition.getId()))
         .thenReturn(null);
 
-    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
-    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    /*when(requisitionTemplateService.getTemplateForProgram(programId))
-        .thenReturn(requisitionTemplate);*/
     doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
 
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
@@ -622,8 +618,6 @@ public class RequisitionServiceTest {
     periodDto.setDurationInMonths(1);
     doReturn(periodDto).when(periodService).findPeriod(programId, facilityId, suggestedPeriodId,
         false);
-    /*when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
-        .thenReturn(periodDto);*/
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false
