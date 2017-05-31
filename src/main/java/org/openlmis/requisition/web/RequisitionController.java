@@ -29,6 +29,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -151,6 +152,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
+
+  @Autowired
+  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   /**
    * Allows creating new requisitions.
@@ -347,7 +351,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Page<RequisitionDto> searchRequisitions(
+  public Page<BasicRequisitionDto> searchRequisitions(
       @RequestParam(value = "facility", required = false) UUID facility,
       @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "initiatedDateFrom", required = false)
@@ -374,7 +378,7 @@ public class RequisitionController extends BaseController {
       return true;
     }).collect(Collectors.toList());
 
-    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
+    List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(filteredList);
     return Pagination.getPage(dtoList, pageable);
   }
 

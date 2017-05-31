@@ -18,11 +18,16 @@ package org.openlmis.requisition.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 @Getter
 @Setter
-public class ProgramDto extends BasicProgramDto {
-  private String description;
-  private Boolean active;
-  private Boolean periodsSkippable;
-  private Boolean showNonFullSupplyTab;
+public class BasicProcessingPeriodDto {
+
+  private UUID id;
+  private String name;
+  private LocalDate startDate;
+  private LocalDate endDate;
+
 }

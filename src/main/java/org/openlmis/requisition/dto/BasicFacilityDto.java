@@ -15,14 +15,38 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
-public class ProgramDto extends BasicProgramDto {
-  private String description;
-  private Boolean active;
-  private Boolean periodsSkippable;
-  private Boolean showNonFullSupplyTab;
+@EqualsAndHashCode
+public class BasicFacilityDto {
+
+  private UUID id;
+  private String code;
+  private String name;
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setCode(String code);
+
+    void setName(String name);
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setCode(code);
+    exporter.setName(name);
+  }
+
 }

@@ -23,15 +23,12 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-public class FacilityDto {
-  private UUID id;
-  private String code;
-  private String name;
+@EqualsAndHashCode(callSuper = true)
+public class FacilityDto extends BasicFacilityDto {
+
   private String description;
   private Boolean active;
   private LocalDate goLiveDate;
@@ -58,13 +55,7 @@ public class FacilityDto {
     return district;
   }
 
-  public interface Exporter {
-    void setId(UUID id);
-
-    void setCode(String code);
-
-    void setName(String name);
-
+  public interface Exporter extends BasicFacilityDto.Exporter {
     void setDescription(String description);
 
     void setActive(Boolean active);
@@ -94,9 +85,7 @@ public class FacilityDto {
    * @param exporter exporter to export to
    */
   public void export(Exporter exporter) {
-    exporter.setId(id);
-    exporter.setCode(code);
-    exporter.setName(name);
+    super.export(exporter);
     exporter.setDescription(description);
     exporter.setActive(active);
     exporter.setGoLiveDate(goLiveDate);

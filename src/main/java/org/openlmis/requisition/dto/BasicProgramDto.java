@@ -15,14 +15,21 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Getter
 @Setter
-public class ProgramDto extends BasicProgramDto {
-  private String description;
-  private Boolean active;
-  private Boolean periodsSkippable;
-  private Boolean showNonFullSupplyTab;
+@AllArgsConstructor
+@NoArgsConstructor
+public class BasicProgramDto {
+
+  private UUID id;
+  private String code;
+  private String name;
+
 }

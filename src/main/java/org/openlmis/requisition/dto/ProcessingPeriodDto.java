@@ -15,20 +15,13 @@
 
 package org.openlmis.requisition.dto;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ProcessingPeriodDto {
-  private UUID id;
+public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
   private ProcessingScheduleDto processingSchedule;
-  private String name;
   private String description;
-  private LocalDate startDate;
-  private LocalDate endDate;
   private Integer durationInMonths;
 }
