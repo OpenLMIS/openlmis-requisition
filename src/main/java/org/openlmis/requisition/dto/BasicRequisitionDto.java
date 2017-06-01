@@ -22,6 +22,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.utils.StatusChangeHelper;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -61,13 +62,7 @@ public class BasicRequisitionDto implements Requisition.Exporter {
     }
 
     for (StatusChange statusChange : statusChanges) {
-      StatusLogEntry existing = this.statusChanges.get(statusChange.getStatus().toString());
-      // Only add entry if none exists or existing one has later date
-      if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
-        StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
-            statusChange.getCreatedDate());
-        this.statusChanges.put(statusChange.getStatus().toString(), entry);
-      }
+      StatusChangeHelper.addOrUpdate(this.statusChanges, statusChange);
     }
   }
 

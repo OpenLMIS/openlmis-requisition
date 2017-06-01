@@ -15,6 +15,19 @@
 
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.utils.StatusChangeHelper;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,16 +37,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.domain.StatusLogEntry;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -106,11 +109,6 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
     );
   }
 
-  /**
-   * Convert status changes to DTO.
-   * 
-   * @param statusChanges status changes to convert
-   */
   @Override
   public void setStatusChanges(List<StatusChange> statusChanges) {
     if (statusChanges == null) {
@@ -118,18 +116,8 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
     }
     
     for (StatusChange statusChange : statusChanges) {
-      addToStatusChanges(statusChange);
+      StatusChangeHelper.addOrUpdate(this.statusChanges, statusChange);
       addToStatusHistory(statusChange);
-    }
-  }
-  
-  private void addToStatusChanges(StatusChange statusChange) {
-    StatusLogEntry existing = this.statusChanges.get(statusChange.getStatus().toString());
-    // Only add entry if none exists or existing one has later date
-    if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
-      StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
-          statusChange.getCreatedDate());
-      this.statusChanges.put(statusChange.getStatus().toString(), entry);
     }
   }
   
