@@ -120,7 +120,6 @@ public class RequisitionExportHelperTest {
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid) {
     ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-    programOrderableDto.setOrderableId(orderableDto.getId());
     programOrderableDto.setProgramId(program);
     Set<ProgramOrderableDto> products = new HashSet<>();
     products.add(programOrderableDto);

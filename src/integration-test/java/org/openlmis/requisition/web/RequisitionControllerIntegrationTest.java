@@ -55,6 +55,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -1568,7 +1569,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       RequisitionDto dto = new RequisitionDto();
       requisition.export(dto);
 
-      dto.setTemplate(requisition.getTemplate());
+      dto.setTemplate(RequisitionTemplateDto.newInstance(requisition.getTemplate()));
       dto.setRequisitionLineItems(Collections.emptyList());
 
       FacilityDto facility = null;

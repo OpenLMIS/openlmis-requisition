@@ -1190,7 +1190,6 @@ public class RequisitionServiceTest {
     program.setId(UUID.randomUUID());
 
     ProgramOrderableDto product = new ProgramOrderableDto();
-    product.setOrderableId(productId);
     product.setProgramId(program.getId());
     product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
 

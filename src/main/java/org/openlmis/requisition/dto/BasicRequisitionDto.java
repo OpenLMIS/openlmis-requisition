@@ -16,19 +16,15 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.domain.StatusLogEntry;
-import org.openlmis.utils.StatusChangeHelper;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.StatusLogEntry;
+import org.openlmis.utils.StatusChangeHelper;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -68,25 +64,31 @@ public class BasicRequisitionDto implements Requisition.Exporter {
 
   @Override
   public void setCreatedDate(ZonedDateTime createdDate) {
+    // unsupported operation
   }
 
   @Override
   public void setModifiedDate(ZonedDateTime createdDate) {
+    // unsupported operation
   }
 
   @Override
   public void setSupplyingFacility(UUID supplyingFacility) {
+    // unsupported operation
   }
 
   @Override
   public void setSupervisoryNode(UUID supervisoryNode) {
+    // unsupported operation
   }
 
   @Override
-  public void setTemplate(RequisitionTemplate template) {
+  public void setTemplate(RequisitionTemplateDto template) {
+    // unsupported operation
   }
 
   @Override
   public void setDraftStatusMessage(String draftStatusMessage) {
+    // unsupported operation
   }
 }

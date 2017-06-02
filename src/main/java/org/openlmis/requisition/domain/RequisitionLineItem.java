@@ -24,6 +24,8 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
@@ -37,18 +39,12 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -85,11 +81,11 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
 
-  private static final String UUID = "pg-uuid";
+  private static final String UUID_TYPE = "pg-uuid";
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID orderableId;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
@@ -392,16 +388,6 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setMaxPeriodsOfStock(maxPeriodsOfStock);
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
-
-    // Set product category display name
-    if (orderableDto.getPrograms() != null) {
-      Optional<ProgramOrderableDto> product = orderableDto.getPrograms().stream()
-          .filter(p -> p.getProgramId().equals(requisition.getProgramId())).findFirst();
-
-      if (product.isPresent()) {
-        exporter.setOrderableCategoryDisplayName(product.get().getOrderableCategoryDisplayName());
-      }
-    }
   }
 
   /**
@@ -658,8 +644,6 @@ public class RequisitionLineItem extends BaseEntity {
     void setMaximumStockQuantity(Integer maximumStockQuantity);
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
-
-    void setOrderableCategoryDisplayName(String name);
   }
 
   public interface Importer {

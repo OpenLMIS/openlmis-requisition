@@ -254,18 +254,16 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void shouldPersistWithMoney() {
     Money pricePerPack = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 14.57);
-    UUID productId = UUID.randomUUID();
 
     ProgramDto program = new ProgramDto();
     program.setId(UUID.randomUUID());
 
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
-    programOrderable.setOrderableId(productId);
     programOrderable.setProgramId(program.getId());
 
     OrderableDto orderable = new OrderableDto();
-    orderable.setId(productId);
+    orderable.setId(UUID.randomUUID());
     orderable.setPrograms(Sets.newHashSet(programOrderable));
 
     ApprovedProductDto ftap = new ApprovedProductDto();

@@ -31,6 +31,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
 import java.time.ZonedDateTime;
@@ -57,6 +58,9 @@ public class RequisitionBuilderTest {
   @Mock
   private RequisitionTemplate requisitionTemplate;
 
+  @Mock
+  private RequisitionTemplateDto requisitionTemplateDto;
+
   private UUID requisitionUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
   private UUID processingPeriodUuid = UUID.randomUUID();
@@ -79,7 +83,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getProgram()).thenReturn(programDto);
     when(requisitionDto.getProcessingPeriod()).thenReturn(processingPeriodDto);
     when(requisitionDto.getSupervisoryNode()).thenReturn(supervisoryNodeUuid);
-    when(requisitionDto.getTemplate()).thenReturn(requisitionTemplate);
+    when(requisitionDto.getTemplate()).thenReturn(requisitionTemplateDto);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
     when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(requisitionDto.getModifiedDate()).thenReturn(modifiedDate);

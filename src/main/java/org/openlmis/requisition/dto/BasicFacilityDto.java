@@ -23,10 +23,9 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-public class BasicFacilityDto {
+@EqualsAndHashCode(callSuper = false)
+public class BasicFacilityDto extends BaseDto {
 
-  private UUID id;
   private String code;
   private String name;
 

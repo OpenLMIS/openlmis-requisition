@@ -20,6 +20,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -90,14 +91,22 @@ public class RequisitionDtoBuilder {
     RequisitionDto requisitionDto = new RequisitionDto();
 
     requisition.export(requisitionDto);
-    List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
 
-    requisitionDto.setTemplate(requisition.getTemplate());
+    RequisitionTemplateDto template = RequisitionTemplateDto.newInstance(requisition.getTemplate());
+    if (template != null) {
+      template.setProgramId(null);
+    }
+    requisitionDto.setTemplate(template);
+    if (facility != null) {
+      facility.setSupportedPrograms(null);
+    }
     requisitionDto.setFacility(facility);
     requisitionDto.setProgram(program);
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()));
+
+    List<RequisitionLineItemDto> requisitionLineItemDtoList =
+        requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
     if (null != requisition.getAvailableNonFullSupplyProducts()) {

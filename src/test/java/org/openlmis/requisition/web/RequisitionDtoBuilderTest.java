@@ -36,11 +36,11 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionExportHelper;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,16 +60,8 @@ public class RequisitionDtoBuilderTest {
   @Mock
   private RequisitionExportHelper requisitionExportHelper;
 
-  @InjectMocks
-  private RequisitionDtoBuilder requisitionDtoBuilder = new RequisitionDtoBuilder();
-
-  private Requisition requisition;
-
   @Mock
   private RequisitionLineItem requisitionLineItem;
-
-  @Mock
-  private RequisitionTemplate requisitionTemplate;
 
   @Mock
   private FacilityDto facilityDto;
@@ -79,6 +71,11 @@ public class RequisitionDtoBuilderTest {
 
   @Mock
   private ProgramDto programDto;
+
+  @InjectMocks
+  private RequisitionDtoBuilder requisitionDtoBuilder = new RequisitionDtoBuilder();
+
+  private Requisition requisition;
 
   private List<RequisitionLineItemDto> lineItemDtos = new ArrayList<>();
 
@@ -111,7 +108,9 @@ public class RequisitionDtoBuilderTest {
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
-    assertEquals(requisition.getTemplate(), requisitionDto.getTemplate());
+    assertEquals(RequisitionTemplateDto.newInstance(requisition.getTemplate()).getId(),
+        requisitionDto.getTemplate().getId());
+    assertEquals(null, requisitionDto.getTemplate().getProgramId());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(programDto, requisitionDto.getProgram());
@@ -140,7 +139,10 @@ public class RequisitionDtoBuilderTest {
         RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
-    requisition.setTemplate(requisitionTemplate);
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.setId(UUID.randomUUID());
+    template.setProgramId(UUID.randomUUID());
+    requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
     return requisition;

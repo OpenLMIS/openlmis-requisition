@@ -19,28 +19,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.utils.MoneyDeserializer;
 import org.openlmis.utils.MoneySerializer;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter
-public class RequisitionLineItemDto
+public class RequisitionLineItemDto extends BaseDto
     implements RequisitionLineItem.Exporter, RequisitionLineItem.Importer {
 
-  private UUID id;
   private OrderableDto orderable;
   private Integer beginningBalance;
   private Integer totalReceivedQuantity;
@@ -68,7 +63,6 @@ public class RequisitionLineItemDto
   private BigDecimal maxPeriodsOfStock;
   private Integer maximumStockQuantity;
   private Integer calculatedOrderQuantity;
-  private String orderableCategoryDisplayName;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments;

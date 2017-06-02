@@ -26,10 +26,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class RequisitionTemplateDto implements
+public class RequisitionTemplateDto extends BaseDto implements
     RequisitionTemplate.Importer, RequisitionTemplate.Exporter {
-
-  private UUID id;
 
   private ZonedDateTime createdDate;
 

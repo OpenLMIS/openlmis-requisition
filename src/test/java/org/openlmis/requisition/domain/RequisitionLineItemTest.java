@@ -331,7 +331,6 @@ public class RequisitionLineItemTest {
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
     programOrderable.setProgramId(programId);
-    programOrderable.setOrderableId(orderableId);
     OrderableDto orderable = new OrderableDto();
     orderable.setId(orderableId);
     orderable.setPrograms(Sets.newHashSet(programOrderable));
@@ -386,9 +385,8 @@ public class RequisitionLineItemTest {
   private OrderableDto generateOrderableDto(ProgramDto program,
                                             ProgramOrderableDto programOrderableDto) {
     OrderableDto orderableDto = new OrderableDto();
-    orderableDto.setId(programOrderableDto.getOrderableId());
+    orderableDto.setId(orderableId);
     program.setId(UUID.randomUUID());
-    programOrderableDto.setOrderableId(orderableDto.getId());
     programOrderableDto.setProgramId(program.getId());
     Set<ProgramOrderableDto> products = new HashSet<>();
     products.add(programOrderableDto);

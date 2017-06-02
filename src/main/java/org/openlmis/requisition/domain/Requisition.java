@@ -69,6 +69,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
@@ -655,7 +656,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setSupervisoryNode(UUID supervisoryNode);
 
-    void setTemplate(RequisitionTemplate template);
+    void setTemplate(RequisitionTemplateDto template);
 
     void setDraftStatusMessage(String draftStatusMessage);
 
@@ -684,7 +685,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     UUID getSupervisoryNode();
 
-    RequisitionTemplate getTemplate();
+    RequisitionTemplateDto getTemplate();
 
     String getDraftStatusMessage();
 

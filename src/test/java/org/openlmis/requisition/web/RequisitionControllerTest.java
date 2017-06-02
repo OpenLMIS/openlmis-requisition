@@ -46,6 +46,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.BindingResultException;
@@ -103,6 +104,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionTemplate template;
+
+  @Mock
+  private RequisitionTemplateDto templateDto;
 
   @Mock
   private RequisitionValidator validator;
@@ -272,7 +276,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldNotUpdateWithInvalidRequisition() {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
-    when(requisitionDto.getTemplate()).thenReturn(template);
+    when(requisitionDto.getTemplate()).thenReturn(templateDto);
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));

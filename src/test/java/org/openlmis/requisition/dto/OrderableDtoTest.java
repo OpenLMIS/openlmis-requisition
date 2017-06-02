@@ -139,7 +139,6 @@ public class OrderableDtoTest {
   @Test
   public void shouldFindProgramOrderable() {
     ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-    programOrderableDto.setOrderableId(orderableDto.getId());
     programOrderableDto.setProgramId(program.getId());
     products.add(programOrderableDto);
     orderableDto.setPrograms(products);
@@ -149,8 +148,6 @@ public class OrderableDtoTest {
 
     assertEquals(programOrderableDtoAfterFind, programOrderableDto);
     assertEquals(programOrderableDtoAfterFind.getProgramId(), programOrderableDto.getProgramId());
-    assertEquals(programOrderableDtoAfterFind.getOrderableId(),
-        programOrderableDto.getOrderableId());
   }
 
   private Set<ProgramOrderableDto> genereteProducts(int instances) {
@@ -161,7 +158,6 @@ public class OrderableDtoTest {
       OrderableDto orderableDto = new OrderableDto();
       orderableDto.setId(UUID.randomUUID());
       ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-      programOrderableDto.setOrderableId(orderableDto.getId());
       programOrderableDto.setProgramId(program.getId());
       programs.add(programOrderableDto);
     }
