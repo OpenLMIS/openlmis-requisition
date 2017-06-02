@@ -388,6 +388,30 @@ public class RequisitionService {
   }
 
   /**
+   * Checks if given user has permission to approve requisition.
+   *
+   * @param programId         UUID of program that requisition is assigned to
+   * @param supervisoryNodeId UUID of supervisory node where requisition have to be approved
+   * @param userId            UUID of user that wants to approve requisition
+   * @return true if user has right to approve requisition, false otherwise
+   */
+  public boolean canApproveRequisition(UUID programId, UUID supervisoryNodeId, UUID userId) {
+    if (userId == null) {
+      return false;
+    }
+
+    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+    return userRoleAssignmentsReferenceDataService
+        .getRoleAssignments(userId)
+        .stream()
+        .filter(r -> r.getRole().getRights().contains(right))
+        .anyMatch(r -> r.getSupervisoryNodeId() != null
+            && r.getProgramId() != null
+            && (supervisoryNodeId == null || supervisoryNodeId.equals(r.getSupervisoryNodeId()))
+            && (programId == null || programId.equals(r.getProgramId())));
+  }
+
+  /**
    * Releases the list of given requisitions as order.
    *
    * @param convertToOrderDtos list of Requisitions with their supplyingDepots to be released as

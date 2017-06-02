@@ -35,6 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
@@ -976,6 +977,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
         anyUuid());
 
+    given(requisitionService.canApproveRequisition(
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .willReturn(true);
+
     mockExternalServiceCalls();
     mockValidationSuccess();
 
@@ -1015,6 +1022,34 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(403)
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
+
+    // then
+    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class), anyUuid());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveRequisitionWhenUserHasNoRightToApproveForSupervisoryNode() {
+    // given
+    Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
+    UUID requisitionId = requisition.getId();
+
+    given(requisitionService.canApproveRequisition(
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .willReturn(false);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", requisitionId)
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE, equalTo(getMessage(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION,
+            requisitionId, "")));
 
     // then
     verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class), anyUuid());

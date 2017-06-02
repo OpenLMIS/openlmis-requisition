@@ -311,6 +311,10 @@ public class RequisitionControllerTest {
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
+    when(requisitionService.canApproveRequisition(any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(true);
+
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
@@ -323,6 +327,27 @@ public class RequisitionControllerTest {
     UserDto approver = mock(UserDto.class);
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+
+    when(requisitionService.canApproveRequisition(any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(true);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
+  }
+
+  @Test(expected = PermissionMessageException.class)
+  public void shouldNotApproveIfHasNoPermission() {
+    mockSupervisoryNode();
+
+    UserDto approver = mock(UserDto.class);
+    when(approver.getId()).thenReturn(UUID.randomUUID());
+    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+
+    when(requisitionService.canApproveRequisition(any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(false);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -361,6 +386,10 @@ public class RequisitionControllerTest {
     UserDto approver = mock(UserDto.class);
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+
+    when(requisitionService.canApproveRequisition(any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(true);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
