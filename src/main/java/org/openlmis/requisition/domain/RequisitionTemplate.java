@@ -350,7 +350,5 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setProgramId(UUID programId);
 
     void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
-
-    void setColumnsMap(Map<String, RequisitionTemplateColumnDto> columnsMap);
   }
 }

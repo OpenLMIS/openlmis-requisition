@@ -70,7 +70,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public RequisitionTemplate createRequisitionTemplate(
+  public RequisitionTemplateDto createRequisitionTemplate(
       @RequestBody RequisitionTemplateDto requisitionTemplateDto, BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate();
 
@@ -87,7 +87,7 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate newRequisitionTemplate =
         requisitionTemplateRepository.save(requisitionTemplate);
     LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
-    return newRequisitionTemplate;
+    return RequisitionTemplateDto.newInstance(newRequisitionTemplate);
   }
 
   /**
@@ -115,7 +115,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RequisitionTemplate updateRequisitionTemplate(
+  public RequisitionTemplateDto updateRequisitionTemplate(
       @PathVariable("id") UUID requisitionTemplateId,
       @RequestBody RequisitionTemplateDto requisitionTemplateDto,
       BindingResult bindingResult) {
@@ -144,7 +144,7 @@ public class RequisitionTemplateController extends BaseController {
     requisitionTemplateToUpdate = requisitionTemplateService.save(requisitionTemplateToUpdate);
 
     LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
-    return requisitionTemplateToUpdate;
+    return RequisitionTemplateDto.newInstance(requisitionTemplateToUpdate);
   }
 
   /**

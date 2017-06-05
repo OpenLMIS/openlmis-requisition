@@ -25,12 +25,10 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class RequisitionTemplateDto extends BaseRequisitionTemplateDto
-    implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
+public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
+    implements RequisitionTemplate.Exporter {
 
-  private UUID programId;
-
-  private Map<String, RequisitionTemplateColumnDto> columnsMap;
+  private Map<String, BasicRequisitionTemplateColumnDto> columnsMap;
 
   /**
    * Create new list of RequisitionTemplateDto based on given list of {@link RequisitionTemplate}
@@ -38,10 +36,10 @@ public class RequisitionTemplateDto extends BaseRequisitionTemplateDto
    * @param templates list of {@link RequisitionTemplate}
    * @return new list of RequisitionTemplateDto.
    */
-  public static Iterable<RequisitionTemplateDto> newInstance(
+  public static Iterable<BasicRequisitionTemplateDto> newInstance(
       Iterable<RequisitionTemplate> templates) {
 
-    List<RequisitionTemplateDto> requisitionTemplateDtos = new ArrayList<>();
+    List<BasicRequisitionTemplateDto> requisitionTemplateDtos = new ArrayList<>();
     templates.forEach(t -> requisitionTemplateDtos.add(newInstance(t)));
     return requisitionTemplateDtos;
   }
@@ -52,15 +50,21 @@ public class RequisitionTemplateDto extends BaseRequisitionTemplateDto
    * @param requisitionTemplate instance of Template
    * @return new instance of RequisitionTemplateDto.
    */
-  public static RequisitionTemplateDto newInstance(RequisitionTemplate requisitionTemplate) {
+  public static BasicRequisitionTemplateDto newInstance(
+      RequisitionTemplate requisitionTemplate) {
     if (requisitionTemplate == null) {
       return null;
     }
-    RequisitionTemplateDto requisitionTemplateDto = new RequisitionTemplateDto();
+    BasicRequisitionTemplateDto requisitionTemplateDto = new BasicRequisitionTemplateDto();
     requisitionTemplate.export(requisitionTemplateDto);
     requisitionTemplateDto.setColumnsMap(
-        RequisitionTemplateColumnDto.newInstance(requisitionTemplate.getColumnsMap()));
+        BasicRequisitionTemplateColumnDto.newInstance(requisitionTemplate.getColumnsMap()));
 
     return requisitionTemplateDto;
+  }
+
+  @Override
+  public void setProgramId(UUID programId) {
+    // not supported operation
   }
 }

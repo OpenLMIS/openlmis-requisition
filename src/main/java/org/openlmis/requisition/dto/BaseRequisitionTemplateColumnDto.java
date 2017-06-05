@@ -17,46 +17,25 @@ package org.openlmis.requisition.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.SourceType;
-import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
-public class AvailableRequisitionColumnDto extends BaseAvailableRequisitionColumnDto
-    implements AvailableRequisitionColumn.Importer, AvailableRequisitionColumn.Exporter {
-
-  private UUID id;
+public class BaseRequisitionTemplateColumnDto {
 
   private String name;
-
-  private Set<SourceType> sources;
-
-  private Set<AvailableRequisitionColumnOptionDto> options;
 
   private String label;
 
   private String indicator;
 
-  private Boolean mandatory;
+  private int displayOrder;
 
-  private Boolean isDisplayRequired;
+  private Boolean isDisplayed;
 
-  private Boolean canBeChangedByUser;
+  private SourceType source;
+
+  private AvailableRequisitionColumnOptionDto option;
 
   private String definition;
-
-  /**
-   * Create new instance of AvailableRequisitionColumnDto based
-   * on given {@link AvailableRequisitionColumn}
-   *
-   * @param column instance of AvailableRequisitionColumn
-   * @return new instance of AvailableRequisitionColumnDto.
-   */
-  public static AvailableRequisitionColumnDto newInstance(AvailableRequisitionColumn column) {
-    AvailableRequisitionColumnDto columnDto = new AvailableRequisitionColumnDto();
-    column.export(columnDto);
-    return columnDto;
-  }
 }

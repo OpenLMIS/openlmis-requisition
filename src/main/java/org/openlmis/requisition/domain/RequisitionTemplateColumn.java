@@ -35,7 +35,7 @@ import javax.persistence.ManyToOne;
 @AllArgsConstructor
 public class RequisitionTemplateColumn {
   public static final String COLUMN_DEFINITION = "columnDefinition";
-  public static final String DEFINITION = "definition";
+  public static final String DEFINITION_KEY = "definition";
 
   @Getter
   @Setter
@@ -135,7 +135,6 @@ public class RequisitionTemplateColumn {
     exporter.setDisplayOrder(displayOrder);
     exporter.setIsDisplayed(isDisplayed);
     exporter.setSource(source);
-    exporter.setColumnDefinition(AvailableRequisitionColumnDto.newInstance(columnDefinition));
     exporter.setOption(AvailableRequisitionColumnOptionDto.newInstance(option));
     exporter.setDefinition(definition);
   }
@@ -172,8 +171,6 @@ public class RequisitionTemplateColumn {
     void setIsDisplayed(Boolean isDisplayed);
 
     void setSource(SourceType source);
-
-    void setColumnDefinition(AvailableRequisitionColumnDto columnDefinition);
 
     void setOption(AvailableRequisitionColumnOptionDto option);
 

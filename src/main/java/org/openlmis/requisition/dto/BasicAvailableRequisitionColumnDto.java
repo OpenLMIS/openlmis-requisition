@@ -24,28 +24,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class AvailableRequisitionColumnDto extends BaseAvailableRequisitionColumnDto
-    implements AvailableRequisitionColumn.Importer, AvailableRequisitionColumn.Exporter {
-
-  private UUID id;
-
-  private String name;
-
-  private Set<SourceType> sources;
-
-  private Set<AvailableRequisitionColumnOptionDto> options;
-
-  private String label;
-
-  private String indicator;
-
-  private Boolean mandatory;
-
-  private Boolean isDisplayRequired;
-
-  private Boolean canBeChangedByUser;
-
-  private String definition;
+public class BasicAvailableRequisitionColumnDto extends BaseAvailableRequisitionColumnDto
+    implements AvailableRequisitionColumn.Exporter {
 
   /**
    * Create new instance of AvailableRequisitionColumnDto based
@@ -54,9 +34,60 @@ public class AvailableRequisitionColumnDto extends BaseAvailableRequisitionColum
    * @param column instance of AvailableRequisitionColumn
    * @return new instance of AvailableRequisitionColumnDto.
    */
-  public static AvailableRequisitionColumnDto newInstance(AvailableRequisitionColumn column) {
-    AvailableRequisitionColumnDto columnDto = new AvailableRequisitionColumnDto();
+  public static BasicAvailableRequisitionColumnDto newInstance(
+      AvailableRequisitionColumn column) {
+    BasicAvailableRequisitionColumnDto columnDto = new BasicAvailableRequisitionColumnDto();
     column.export(columnDto);
     return columnDto;
+  }
+
+  @Override
+  public void setId(UUID id) {
+    // not supported operation
+  }
+
+  @Override
+  public void setName(String name) {
+    // not supported operation
+  }
+
+  @Override
+  public void setSources(Set<SourceType> sources) {
+    // not supported operation
+  }
+
+  @Override
+  public void setOptions(Set<AvailableRequisitionColumnOptionDto> options) {
+    // not supported operation
+  }
+
+  @Override
+  public void setLabel(String label) {
+    // not supported operation
+  }
+
+  @Override
+  public void setIndicator(String indicator) {
+    // not supported operation
+  }
+
+  @Override
+  public void setMandatory(Boolean mandatory) {
+    // not supported operation
+  }
+
+  @Override
+  public void setIsDisplayRequired(Boolean isDisplayRequired) {
+    // not supported operation
+  }
+
+  @Override
+  public void setCanBeChangedByUser(Boolean canBeChangedByUser) {
+    // not supported operation
+  }
+
+  @Override
+  public void setDefinition(String definition) {
+    // not supported operation
   }
 }

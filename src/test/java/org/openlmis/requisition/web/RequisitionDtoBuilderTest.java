@@ -110,7 +110,6 @@ public class RequisitionDtoBuilderTest {
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
     assertEquals(RequisitionTemplateDto.newInstance(requisition.getTemplate()).getId(),
         requisitionDto.getTemplate().getId());
-    assertEquals(null, requisitionDto.getTemplate().getProgramId());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(programDto, requisitionDto.getProgram());

@@ -25,7 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
-import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
+import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
@@ -437,8 +437,8 @@ public class RequisitionTemplateValidatorTest {
   @Test
   public void shouldRejectIfColumnDefinitionIsTooLong() throws Exception {
     Message message = new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG,
-        DEFINITION, MAX_COLUMN_DEFINITION_LENGTH);
-    String errorMessage = DEFINITION
+        DEFINITION_KEY, MAX_COLUMN_DEFINITION_LENGTH);
+    String errorMessage = DEFINITION_KEY
         + " is too long. The maximum length is "
         + MAX_COLUMN_DEFINITION_LENGTH;
 

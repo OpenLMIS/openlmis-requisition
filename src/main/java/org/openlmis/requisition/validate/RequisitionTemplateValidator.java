@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.validate;
 
-import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION;
+import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
@@ -179,7 +179,8 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
       rejectIfLengthTooLong(
           errors, column.getDefinition(), MAX_COLUMN_DEFINITION_LENGTH, COLUMNS_MAP,
-          new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG, DEFINITION, MAX_COLUMN_DEFINITION_LENGTH)
+          new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG, DEFINITION_KEY,
+              MAX_COLUMN_DEFINITION_LENGTH)
       );
     }
   }

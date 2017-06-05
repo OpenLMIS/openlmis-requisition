@@ -27,6 +27,29 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.javers.core.metamodel.annotation.TypeName;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.openlmis.CurrencyConfig;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
+import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.utils.Message;
+import org.openlmis.utils.RequisitionHelper;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,29 +74,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Type;
-import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.javers.core.metamodel.annotation.TypeName;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
-import org.openlmis.CurrencyConfig;
-import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProofOfDeliveryDto;
-import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
-import org.openlmis.requisition.dto.RequisitionTemplateDto;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.RequisitionHelper;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -91,7 +91,6 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
   public static final String MODIFIED_DATE = "modifiedDate";
-  public static final String STATUS = "status";
 
   @OneToMany(
       mappedBy = "requisition",
@@ -656,7 +655,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setSupervisoryNode(UUID supervisoryNode);
 
-    void setTemplate(RequisitionTemplateDto template);
+    void setTemplate(BasicRequisitionTemplateDto template);
 
     void setDraftStatusMessage(String draftStatusMessage);
 
@@ -684,8 +683,6 @@ public class Requisition extends BaseTimestampedEntity {
     UUID getSupplyingFacility();
 
     UUID getSupervisoryNode();
-
-    RequisitionTemplateDto getTemplate();
 
     String getDraftStatusMessage();
 

@@ -35,9 +35,8 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasicRequisitionDto implements Requisition.Exporter {
+public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter {
 
-  private UUID id;
   private Boolean emergency;
   private RequisitionStatus status;
   private Map<String, StatusLogEntry> statusChanges = new HashMap<>();
@@ -83,7 +82,7 @@ public class BasicRequisitionDto implements Requisition.Exporter {
   }
 
   @Override
-  public void setTemplate(RequisitionTemplateDto template) {
+  public void setTemplate(BasicRequisitionTemplateDto template) {
     // unsupported operation
   }
 

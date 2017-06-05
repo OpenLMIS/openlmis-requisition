@@ -25,15 +25,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +58,7 @@ public class RequisitionBuilderTest {
   private RequisitionTemplate requisitionTemplate;
 
   @Mock
-  private RequisitionTemplateDto requisitionTemplateDto;
+  private BasicRequisitionTemplateDto requisitionTemplateDto;
 
   private UUID requisitionUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();

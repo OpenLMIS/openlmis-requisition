@@ -142,8 +142,9 @@ public class AvailableRequisitionColumn extends BaseEntity {
     availableRequisitionColumn.setName(importer.getName());
     availableRequisitionColumn.setSources(importer.getSources());
     availableRequisitionColumn.setOptions(new HashSet<>());
-    importer.getOptions().forEach(option -> availableRequisitionColumn.getOptions()
-        .add(AvailableRequisitionColumnOption.newInstance(option)));
+    importer.getOptions().forEach(option ->
+        availableRequisitionColumn.getOptions()
+            .add(AvailableRequisitionColumnOption.newInstance(option)));
     availableRequisitionColumn.setLabel(importer.getLabel());
     availableRequisitionColumn.setIndicator(importer.getIndicator());
     availableRequisitionColumn.setMandatory(importer.getMandatory());

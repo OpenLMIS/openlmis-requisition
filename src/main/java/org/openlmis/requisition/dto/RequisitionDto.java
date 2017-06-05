@@ -87,7 +87,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
 
   @Getter
   @Setter
-  private RequisitionTemplateDto template;
+  private BasicRequisitionTemplateDto template;
 
   @Getter
   @Setter

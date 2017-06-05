@@ -23,10 +23,10 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class RequisitionTemplateColumnDto extends BaseRequisitionTemplateColumnDto
-    implements RequisitionTemplateColumn.Importer, RequisitionTemplateColumn.Exporter {
+public class BasicRequisitionTemplateColumnDto extends BaseRequisitionTemplateColumnDto
+    implements RequisitionTemplateColumn.Exporter {
 
-  private AvailableRequisitionColumnDto columnDefinition;
+  private BasicAvailableRequisitionColumnDto columnDefinition;
 
   /**
    * Create new map of RequisitionTemplateColumnDto based on given list
@@ -35,10 +35,10 @@ public class RequisitionTemplateColumnDto extends BaseRequisitionTemplateColumnD
    * @param columns list of {@link RequisitionTemplateColumn}
    * @return new map of RequisitionTemplateColumn.
    */
-  public static Map<String, RequisitionTemplateColumnDto> newInstance(
+  public static Map<String, BasicRequisitionTemplateColumnDto> newInstance(
       Map<String, RequisitionTemplateColumn> columns) {
 
-    Map<String, RequisitionTemplateColumnDto> columnDtos = new HashMap<>();
+    Map<String, BasicRequisitionTemplateColumnDto> columnDtos = new HashMap<>();
     columns.forEach((key, column) -> columnDtos.put(key, newInstance(column)));
     return columnDtos;
   }
@@ -50,14 +50,16 @@ public class RequisitionTemplateColumnDto extends BaseRequisitionTemplateColumnD
    * @param column instance of RequisitionTemplateColumn
    * @return new instance of RequisitionTemplateColumnDto.
    */
-  public static RequisitionTemplateColumnDto newInstance(RequisitionTemplateColumn column) {
+  public static BasicRequisitionTemplateColumnDto newInstance(
+      RequisitionTemplateColumn column) {
     if (column == null) {
       return null;
     }
-    RequisitionTemplateColumnDto requisitionTemplateDto = new RequisitionTemplateColumnDto();
+    BasicRequisitionTemplateColumnDto requisitionTemplateDto =
+        new BasicRequisitionTemplateColumnDto();
     column.export(requisitionTemplateDto);
     requisitionTemplateDto.setColumnDefinition(
-        AvailableRequisitionColumnDto.newInstance(column.getColumnDefinition()));
+        BasicAvailableRequisitionColumnDto.newInstance(column.getColumnDefinition()));
 
     return requisitionTemplateDto;
   }

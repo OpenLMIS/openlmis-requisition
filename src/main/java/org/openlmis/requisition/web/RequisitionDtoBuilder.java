@@ -16,11 +16,11 @@
 package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -92,11 +92,8 @@ public class RequisitionDtoBuilder {
 
     requisition.export(requisitionDto);
 
-    RequisitionTemplateDto template = RequisitionTemplateDto.newInstance(requisition.getTemplate());
-    if (template != null) {
-      template.setProgramId(null);
-    }
-    requisitionDto.setTemplate(template);
+    requisitionDto.setTemplate(
+        BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
     if (facility != null) {
       facility.setSupportedPrograms(null);
     }
