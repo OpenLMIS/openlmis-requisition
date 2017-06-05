@@ -91,6 +91,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
@@ -601,39 +602,27 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldReturnTrueIfUserCanApproveRequisition() {
-    mockSupervisionRoleAssignmentForCanApprove(programId, supervisoryNodeId,
-        approveRequisitionRight);
+  public void shouldNotThrowExceptionIfUserCanApproveRequisition() {
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        any(RightDto.class),
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .thenReturn(true);
 
-    assertTrue(requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId));
+    requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId);
   }
 
-  @Test
-  public void shouldReturnFalseIfUserHasNoApproveRigthAssigned() {
-    mockSupervisionRoleAssignmentForCanApprove(programId, supervisoryNodeId, convertToOrderRight);
+  @Test(expected = PermissionMessageException.class)
+  public void shouldThrowExceptionIfUserHasNoApproveRightAssigned() {
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        any(RightDto.class),
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .thenReturn(false);
 
-    assertFalse(requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId));
-  }
-
-  @Test
-  public void shouldReturnFalseIfUserHasDifferentSupervisoryNodeAssignedToApproveRight() {
-    mockSupervisionRoleAssignmentForCanApprove(programId, UUID.randomUUID(),
-        approveRequisitionRight);
-
-    assertFalse(requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId));
-  }
-
-  @Test
-  public void shouldReturnFalseIfUserHasDifferentProgramAssignedToApproveRight() {
-    mockSupervisionRoleAssignmentForCanApprove(UUID.randomUUID(), supervisoryNodeId,
-        approveRequisitionRight);
-
-    assertFalse(requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId));
-  }
-
-  @Test
-  public void shouldReturnFalseIfUserWasNotPassedAsArgument() {
-    assertFalse(requisitionService.canApproveRequisition(programId, supervisoryNodeId, null));
+    requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId);
   }
 
   @Test
@@ -1230,21 +1219,6 @@ public class RequisitionServiceTest {
     periodDto.setDurationInMonths(1);
     doReturn(periodDto).when(periodService).findPeriod(programId, facilityId, suggestedPeriodId,
         false);
-  }
-
-  private void mockSupervisionRoleAssignmentForCanApprove(UUID program, UUID node,
-                                                          RightDto right) {
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
-    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program);
-    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(node);
-    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
-
-    Set<RightDto> rights = new HashSet<>();
-    rights.add(right);
-    when(role.getRights()).thenReturn(rights);
-
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
-        .thenReturn(Sets.newHashSet(detailedRoleAssignmentDto));
   }
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {

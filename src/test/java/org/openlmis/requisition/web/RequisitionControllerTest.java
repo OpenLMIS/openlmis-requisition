@@ -314,11 +314,12 @@ public class RequisitionControllerTest {
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
-    when(requisitionService.canApproveRequisition(any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(true);
-
     requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).canApproveRequisition(
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class));
 
     verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
   }
@@ -331,11 +332,12 @@ public class RequisitionControllerTest {
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
-    when(requisitionService.canApproveRequisition(any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(true);
-
     requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).canApproveRequisition(
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class));
 
     verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
   }
@@ -348,13 +350,13 @@ public class RequisitionControllerTest {
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
-    when(requisitionService.canApproveRequisition(any(UUID.class),
+    PermissionMessageException exception = mock(PermissionMessageException.class);
+    doThrow(exception).when(requisitionService).canApproveRequisition(
         any(UUID.class),
-        any(UUID.class))).thenReturn(false);
+        any(UUID.class),
+        any(UUID.class));
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
-
-    verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
   }
 
   @Test
@@ -390,11 +392,12 @@ public class RequisitionControllerTest {
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
-    when(requisitionService.canApproveRequisition(any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(true);
-
     requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).canApproveRequisition(
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class));
 
     verify(requisitionStatusProcessor).statusChange(authorizedRequsition);
   }

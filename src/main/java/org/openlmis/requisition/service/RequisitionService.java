@@ -49,6 +49,7 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
@@ -60,6 +61,7 @@ import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
@@ -388,27 +390,20 @@ public class RequisitionService {
   }
 
   /**
-   * Checks if given user has permission to approve requisition.
+   * Checks if given user has permission to approve requisition, if not exception is thrown.
    *
    * @param programId         UUID of program that requisition is assigned to
    * @param supervisoryNodeId UUID of supervisory node where requisition have to be approved
    * @param userId            UUID of user that wants to approve requisition
-   * @return true if user has right to approve requisition, false otherwise
    */
-  public boolean canApproveRequisition(UUID programId, UUID supervisoryNodeId, UUID userId) {
-    if (userId == null) {
-      return false;
-    }
-
+  public void canApproveRequisition(UUID programId, UUID supervisoryNodeId, UUID userId) {
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
-    return userRoleAssignmentsReferenceDataService
-        .getRoleAssignments(userId)
-        .stream()
-        .filter(r -> r.getRole().getRights().contains(right))
-        .anyMatch(r -> r.getSupervisoryNodeId() != null
-            && r.getProgramId() != null
-            && (supervisoryNodeId == null || supervisoryNodeId.equals(r.getSupervisoryNodeId()))
-            && (programId == null || programId.equals(r.getProgramId())));
+
+    if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
+        programId, supervisoryNodeId)) {
+      throw new PermissionMessageException(
+          new Message(MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION));
+    }
   }
 
   /**

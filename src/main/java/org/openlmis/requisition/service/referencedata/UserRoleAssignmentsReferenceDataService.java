@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
+import org.openlmis.requisition.dto.RightDto;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -42,5 +43,28 @@ public class UserRoleAssignmentsReferenceDataService extends
 
   public Collection<DetailedRoleAssignmentDto> getRoleAssignments(UUID userId) {
     return findAll(userId + "/roleAssignments");
+  }
+
+  /**
+   * Checks if given user has supervision right with given parameters.
+   *
+   * @param right             right to be checked
+   * @param userId            UUID of user that roles will be verified
+   * @param programId         UUID of program assigned to role
+   * @param supervisoryNodeId UUID of supervisory node assigned to role
+   */
+  public boolean hasSupervisionRight(RightDto right, UUID userId, UUID programId,
+                                     UUID supervisoryNodeId) {
+    if (userId == null || right == null) {
+      return false;
+    }
+
+    return getRoleAssignments(userId)
+        .stream()
+        .filter(r -> r.getRole().getRights().contains(right))
+        .anyMatch(r -> r.getSupervisoryNodeId() != null
+            && r.getProgramId() != null
+            && (supervisoryNodeId == null || supervisoryNodeId.equals(r.getSupervisoryNodeId()))
+            && (programId == null || programId.equals(r.getProgramId())));
   }
 }

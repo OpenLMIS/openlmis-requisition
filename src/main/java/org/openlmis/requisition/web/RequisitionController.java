@@ -462,7 +462,8 @@ public class RequisitionController extends BaseController {
           supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
       UUID userId = authenticationHelper.getCurrentUser().getId();
 
-      checkIfUserCanApproveRequisition(requisition, supervisoryNodeDto, userId);
+      requisitionService.canApproveRequisition(requisition.getProgramId(),
+          supervisoryNodeDto != null ? supervisoryNodeDto.getId() : null, userId);
 
       UUID parentNodeId = null;
       if (supervisoryNodeDto != null) {
@@ -637,17 +638,6 @@ public class RequisitionController extends BaseController {
           requisition.getDraftStatusMessage());
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
-    }
-  }
-
-  private void checkIfUserCanApproveRequisition(Requisition requisition,
-                                                SupervisoryNodeDto supervisoryNodeDto,
-                                                UUID userId) {
-    if (!requisitionService.canApproveRequisition(requisition.getProgramId(),
-        supervisoryNodeDto != null ? supervisoryNodeDto.getId() : null, userId)) {
-      throw new PermissionMessageException(new Message(
-          MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION, requisition.getId(),
-          supervisoryNodeDto != null ? supervisoryNodeDto.getCode() : ""));
     }
   }
 }

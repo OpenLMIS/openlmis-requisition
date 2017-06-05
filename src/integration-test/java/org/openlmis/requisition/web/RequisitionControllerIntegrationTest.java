@@ -978,12 +978,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
         anyUuid());
 
-    given(requisitionService.canApproveRequisition(
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class)))
-        .willReturn(true);
-
     mockExternalServiceCalls();
     mockValidationSuccess();
 
@@ -1035,11 +1029,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
     UUID requisitionId = requisition.getId();
 
-    given(requisitionService.canApproveRequisition(
+    PermissionMessageException exception = mock(PermissionMessageException.class);
+    Message errorMessage = new Message(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
+    given(exception.asMessage()).willReturn(errorMessage);
+    doThrow(exception).when(requisitionService).canApproveRequisition(
         any(UUID.class),
         any(UUID.class),
-        any(UUID.class)))
-        .willReturn(false);
+        any(UUID.class));
 
     // when
     restAssured.given()
