@@ -21,6 +21,8 @@ schemas:
 
   - geographicZoneDto: !include schemas/geographicZoneDto.json
 
+  - basicRequisitionDtoPage: !include schemas/basicRequisitionDtoPage.json
+
   - orderableDto: |
       {    "type": "object",
            "$schema": "http://json-schema.org/draft-03/schema",
@@ -563,6 +565,7 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
+                          schema: basicRequisitionDtoPage
                   "400":
                   "500":
       /{id}/approve:

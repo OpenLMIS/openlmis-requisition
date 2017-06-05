@@ -28,18 +28,18 @@
       "type": ["object", "null"],
       "title": "statusChanges"
     },
-    "processingPeriod": {
-      "type": ["object", "null"],
+    "processingPeriod?": {
+      "type": "object",
       "$ref": "basicProcessingPeriod.json",
       "title": "processingPeriod"
     },
-    "facility": {
-      "type": ["object", "null"],
+    "facility?": {
+      "type": "object",
       "$ref": "basicFacilityDto.json",
       "title": "facility"
     },
-    "program": {
-      "type": ["object", "null"],
+    "program?": {
+      "type": "object",
       "$ref": "basicProgramDto.json",
       "title": "program"
     }
