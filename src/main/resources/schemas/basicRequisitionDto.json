@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "BasicRequisitionDto",
+  "description": "Basic information about a single requisition",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "emergency": {
+      "type": "boolean",
+      "title": "emergency"
+    },
+    "status": {
+      "enum": [
+        "INITIATED",
+        "SUBMITTED",
+        "AUTHORIZED",
+        "IN_APPROVAL",
+        "APPROVED",
+        "RELEASED",
+        "SKIPPED"
+      ],
+      "title": "status"
+    },
+    "statusChanges": {
+      "type": ["object", "null"],
+      "title": "statusChanges"
+    },
+    "processingPeriod": {
+      "type": ["object", "null"],
+      "$ref": "basicProcessingPeriod.json",
+      "title": "processingPeriod"
+    },
+    "facility": {
+      "type": ["object", "null"],
+      "$ref": "basicFacilityDto.json",
+      "title": "facility"
+    },
+    "program": {
+      "type": ["object", "null"],
+      "$ref": "basicProgramDto.json",
+      "title": "program"
+    }
+
+  },
+  "required": [
+    "id",
+    "emergency",
+    "status"
+  ]
+}
