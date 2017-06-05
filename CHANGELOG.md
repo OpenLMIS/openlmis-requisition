@@ -1,5 +1,12 @@
-3.1.5 /
+4.0.0 /
 ==================
+
+Contract breaking changes:
+
+* [OLMIS-2566](https://openlmis.atlassian.net/browse/OLMIS-2566): Requisition search endpoint will
+now return new, smaller Dto object, which only contains basic information about the requisition,
+processing period, program and facility.
+
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
 endpoint from fulfilment when converting requisitions to orders - all orders are created in a
