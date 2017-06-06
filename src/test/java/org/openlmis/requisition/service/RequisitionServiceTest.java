@@ -372,6 +372,11 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        any(RightDto.class),
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
     assertEquals(returnedRequisition.getStatus(), INITIATED);
@@ -380,9 +385,25 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsInApproval() {
     requisition.setStatus(IN_APPROVAL);
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        any(RightDto.class),
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
     assertEquals(returnedRequisition.getStatus(), INITIATED);
+  }
+
+  @Test(expected = PermissionMessageException.class)
+  public void shouldThrowExceptionWhenUserHasNoPermissionToApproveThisRequisition() {
+    requisition.setStatus(IN_APPROVAL);
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        any(RightDto.class),
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(false);
+    requisitionService.reject(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -610,7 +631,7 @@ public class RequisitionServiceTest {
         any(UUID.class)))
         .thenReturn(true);
 
-    requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId);
+    requisitionService.checkIfCanApproveRequisition(programId, supervisoryNodeId, userId);
   }
 
   @Test(expected = PermissionMessageException.class)
@@ -622,7 +643,7 @@ public class RequisitionServiceTest {
         any(UUID.class)))
         .thenReturn(false);
 
-    requisitionService.canApproveRequisition(programId, supervisoryNodeId, userId);
+    requisitionService.checkIfCanApproveRequisition(programId, supervisoryNodeId, userId);
   }
 
   @Test

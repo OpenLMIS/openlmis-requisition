@@ -316,7 +316,7 @@ public class RequisitionControllerTest {
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).canApproveRequisition(
+    verify(requisitionService, times(1)).checkIfCanApproveRequisition(
         any(UUID.class),
         any(UUID.class),
         any(UUID.class));
@@ -334,7 +334,7 @@ public class RequisitionControllerTest {
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).canApproveRequisition(
+    verify(requisitionService, times(1)).checkIfCanApproveRequisition(
         any(UUID.class),
         any(UUID.class),
         any(UUID.class));
@@ -351,7 +351,7 @@ public class RequisitionControllerTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
     PermissionMessageException exception = mock(PermissionMessageException.class);
-    doThrow(exception).when(requisitionService).canApproveRequisition(
+    doThrow(exception).when(requisitionService).checkIfCanApproveRequisition(
         any(UUID.class),
         any(UUID.class),
         any(UUID.class));
@@ -394,7 +394,7 @@ public class RequisitionControllerTest {
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).canApproveRequisition(
+    verify(requisitionService, times(1)).checkIfCanApproveRequisition(
         any(UUID.class),
         any(UUID.class),
         any(UUID.class));

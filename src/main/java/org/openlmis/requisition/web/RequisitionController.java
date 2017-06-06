@@ -462,7 +462,7 @@ public class RequisitionController extends BaseController {
           supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
       UUID userId = authenticationHelper.getCurrentUser().getId();
 
-      requisitionService.canApproveRequisition(requisition.getProgramId(),
+      requisitionService.checkIfCanApproveRequisition(requisition.getProgramId(),
           supervisoryNodeDto != null ? supervisoryNodeDto.getId() : null, userId);
 
       UUID parentNodeId = null;

@@ -297,9 +297,12 @@ public class RequisitionService {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
     } else if (requisition.isApprovable()) {
+      UUID userId = authenticationHelper.getCurrentUser().getId();
+      checkIfCanApproveRequisition(requisition.getProgramId(),
+          requisition.getSupervisoryNodeId(), userId);
+
       LOGGER.debug("Requisition rejected: {}", requisitionId);
-      requisition.reject(orderableReferenceDataService.findAll(),
-          authenticationHelper.getCurrentUser().getId());
+      requisition.reject(orderableReferenceDataService.findAll(), userId);
       return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(
@@ -396,7 +399,7 @@ public class RequisitionService {
    * @param supervisoryNodeId UUID of supervisory node where requisition have to be approved
    * @param userId            UUID of user that wants to approve requisition
    */
-  public void canApproveRequisition(UUID programId, UUID supervisoryNodeId, UUID userId) {
+  public void checkIfCanApproveRequisition(UUID programId, UUID supervisoryNodeId, UUID userId) {
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
 
     if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,

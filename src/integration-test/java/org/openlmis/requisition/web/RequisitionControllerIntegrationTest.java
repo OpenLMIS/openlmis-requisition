@@ -1032,7 +1032,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     PermissionMessageException exception = mock(PermissionMessageException.class);
     Message errorMessage = new Message(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
     given(exception.asMessage()).willReturn(errorMessage);
-    doThrow(exception).when(requisitionService).canApproveRequisition(
+    doThrow(exception).when(requisitionService).checkIfCanApproveRequisition(
         any(UUID.class),
         any(UUID.class),
         any(UUID.class));
