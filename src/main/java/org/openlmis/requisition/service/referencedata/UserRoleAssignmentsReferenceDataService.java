@@ -63,7 +63,7 @@ public class UserRoleAssignmentsReferenceDataService extends
 
     return getRoleAssignments(userId).stream()
         .filter(r -> r.getRole().getRights().contains(right))
-        .anyMatch(r-> hasAnySupervisionRoleWithGivenParameters(r, programId, supervisoryNodeId));
+        .anyMatch(r -> hasAnySupervisionRoleWithGivenParameters(r, programId, supervisoryNodeId));
   }
 
   private boolean hasAnySupervisionRoleWithGivenParameters(DetailedRoleAssignmentDto role,
