@@ -17,10 +17,12 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 public class UserRoleAssignmentsReferenceDataService extends
@@ -59,12 +61,17 @@ public class UserRoleAssignmentsReferenceDataService extends
       return false;
     }
 
-    return getRoleAssignments(userId)
-        .stream()
-        .filter(r -> r.getRole().getRights().contains(right))
-        .anyMatch(r -> r.getSupervisoryNodeId() != null
-            && r.getProgramId() != null
-            && (supervisoryNodeId == null || supervisoryNodeId.equals(r.getSupervisoryNodeId()))
-            && (programId == null || programId.equals(r.getProgramId())));
+    return hasAnySupervisionRoleGivenParameters(getRoleAssignments(userId)
+        .stream().filter(r -> r.getRole().getRights().contains(right)),
+        programId, supervisoryNodeId);
+  }
+
+  private boolean hasAnySupervisionRoleGivenParameters(Stream<DetailedRoleAssignmentDto> stream,
+                                                       UUID programId,
+                                                       UUID supervisoryNodeId) {
+    return stream.anyMatch(r -> r.getSupervisoryNodeId() != null
+        && r.getProgramId() != null
+        && (supervisoryNodeId == null || supervisoryNodeId.equals(r.getSupervisoryNodeId()))
+        && (programId == null || programId.equals(r.getProgramId())));
   }
 }
