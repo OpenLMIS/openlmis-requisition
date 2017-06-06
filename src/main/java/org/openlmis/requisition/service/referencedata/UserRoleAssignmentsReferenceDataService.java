@@ -17,12 +17,10 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.RightDto;
-import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 public class UserRoleAssignmentsReferenceDataService extends
