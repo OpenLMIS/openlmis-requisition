@@ -102,6 +102,7 @@ public class PermissionService {
     if (requisition != null) {
       switch (requisition.getStatus()) {
         case INITIATED:
+        case REJECTED:
           checkPermission(REQUISITION_CREATE, requisitionId);
           break;
         case SUBMITTED:
@@ -145,7 +146,7 @@ public class PermissionService {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition != null) {
       checkPermission(REQUISITION_DELETE, requisition);
-      if (requisition.getStatus().equals(RequisitionStatus.INITIATED)) {
+      if (requisition.getStatus().isSubmittable()) {
         checkPermission(REQUISITION_CREATE, requisition);
       } else if (requisition.getStatus().equals(RequisitionStatus.SUBMITTED)) {
         checkPermission(REQUISITION_AUTHORIZE, requisition);

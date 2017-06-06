@@ -105,7 +105,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     valuesMap.put("programName", getProgram(requisition).getName());
     valuesMap.put("periodName", getPeriod(requisition).getName());
     valuesMap.put("facilityName", getFacility(requisition).getName());
-    valuesMap.put("requisitionStatus", getStatus(requisition));
+    valuesMap.put("requisitionStatus", requisition.getStatus().toString());
     valuesMap.put("author", getAuthor(currentAuditEntry.get()).getUsername());
     valuesMap.put("changeDate", currentAuditEntry.get().getCreatedDate().format(
         dateTimeFormatter));
@@ -176,18 +176,6 @@ public class RequisitionStatusNotifier extends BaseNotifier {
 
   private FacilityDto getFacility(Requisition requisition) {
     return facilityReferenceDataService.findOne(requisition.getFacilityId());
-  }
-
-  private String getStatus(Requisition requisition) {
-    String statusString;
-    //we don't notify requisition initiator that he initiated requisition so it's safe to
-    //assume that Requsition was rejected if status is INITIATED.
-    if (requisition.getStatus() == RequisitionStatus.INITIATED) {
-      statusString = "REJECTED";
-    } else {
-      statusString = requisition.getStatus().toString();
-    }
-    return statusString;
   }
 
   private UserDto getAuthor(StatusChange currentAuditEntry) {

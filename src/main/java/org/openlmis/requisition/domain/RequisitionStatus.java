@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public enum RequisitionStatus {
   INITIATED(1),
+  REJECTED(1),
   SUBMITTED(2),
   AUTHORIZED(3),
   IN_APPROVAL(4),
@@ -30,6 +31,11 @@ public enum RequisitionStatus {
 
   RequisitionStatus(int value) {
     this.value = value;
+  }
+
+  @JsonIgnore
+  public boolean isSubmittable() {
+    return value == 1;
   }
 
   @JsonIgnore

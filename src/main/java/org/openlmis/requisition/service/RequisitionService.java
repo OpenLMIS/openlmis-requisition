@@ -267,7 +267,7 @@ public class RequisitionService {
           requisitionId));
     } else {
       ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
-      if (requisition.getStatus() != RequisitionStatus.INITIATED) {
+      if (!requisition.getStatus().isSubmittable()) {
         throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
       } else if (!program.getPeriodsSkippable()) {
         throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
