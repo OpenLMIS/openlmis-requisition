@@ -24,6 +24,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2480](https://openlmis.atlassian.net/browse/OLMIS-2480): Lowered values of maxPeriodsOfStock
 * [OLMIS-2530](https://openlmis.atlassian.net/browse/OLMIS-2530): Fixed pagination on requisition search endpoint.
 * [OLMIS-2491](https://openlmis.atlassian.net/browse/OLMIS-2491): Configuration Settings were moved to Transifex messages and environment variables.
+* [OLMIS-2514](https://openlmis.atlassian.net/browse/OLMIS-2514): Added check for supervisory node and program role assignment to approve/reject endpoints.
 
 3.1.3 / 2017-05-17
 ===================
