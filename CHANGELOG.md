@@ -6,6 +6,9 @@ Contract breaking changes:
 * [OLMIS-2566](https://openlmis.atlassian.net/browse/OLMIS-2566): Requisition search endpoint will
 now return new, smaller Dto object, which only contains basic information about the requisition,
 processing period, program and facility.
+* [OLMIS-2533](https://openlmis.atlassian.net/browse/OLMIS-2533): Requisition endpoints: initiate,
+update, submit, authorize, approve, requisitionsForConvert will now return new, smaller Dto object,
+which only contains basic information required for API client.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
