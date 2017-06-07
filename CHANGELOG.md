@@ -10,6 +10,10 @@ processing period, program and facility.
 update, submit, authorize, approve, requisitionsForConvert will now return new, smaller Dto object,
 which only contains basic information required for API client.
 
+New functionality added in a backwards-compatible manner:
+
+* [OLMIS-2664](https://openlmis.atlassian.net/browse/OLMIS-2664): Requisition reject endpoint saves status messages.
+
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
 endpoint from fulfilment when converting requisitions to orders - all orders are created in a
