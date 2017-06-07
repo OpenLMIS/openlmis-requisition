@@ -425,6 +425,9 @@ public class RequisitionController extends BaseController {
     permissionService.canApproveRequisition(requisitionId);
     Requisition rejectedRequisition = requisitionService.reject(requisitionId);
     requisitionStatusProcessor.statusChange(rejectedRequisition);
+
+    saveStatusMessage(rejectedRequisition);
+
     requisitionStatusNotifier.notifyStatusChanged(rejectedRequisition);
 
     return requisitionDtoBuilder.build(rejectedRequisition);
