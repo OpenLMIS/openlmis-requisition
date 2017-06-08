@@ -47,6 +47,8 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
+import static org.apache.commons.lang3.LocaleUtils.toLocale;
+
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
 @EntityScan(basePackageClasses = {BaseEntity.class, ConfigurationSetting.class})
@@ -66,7 +68,6 @@ public class Application {
   @Value("${spring.jpa.properties.hibernate.default_schema}")
   private String preferredSchema;
 
-
   /**
    * Creates new LocaleResolver.
    *
@@ -76,7 +77,15 @@ public class Application {
   public LocaleResolver localeResolver() {
     CookieLocaleResolver lr = new CookieLocaleResolver();
     lr.setCookieName("lang");
-    lr.setDefaultLocale(Locale.ENGLISH);
+
+    Locale systemLocale;
+    try {
+      systemLocale = toLocale(System.getenv("LOCALE"));
+    } catch (IllegalArgumentException ex) {
+      systemLocale = Locale.ENGLISH;
+    }
+    lr.setDefaultLocale(systemLocale);
+
     return lr;
   }
 
