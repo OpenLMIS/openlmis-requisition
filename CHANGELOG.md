@@ -1,4 +1,4 @@
-4.0.0 /
+4.0.0 / WIP
 ==================
 
 Contract breaking changes:
@@ -13,6 +13,7 @@ which only contains basic information required for API client.
 New functionality added in a backwards-compatible manner:
 
 * [OLMIS-2664](https://openlmis.atlassian.net/browse/OLMIS-2664): Requisition reject endpoint saves status messages.
+* [OLMIS-2611](https://openlmis.atlassian.net/browse/OLMIS-2611): Added using locale from env file.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
