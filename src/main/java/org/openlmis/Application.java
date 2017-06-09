@@ -60,7 +60,7 @@ public class Application {
     SpringApplication.run(Application.class, args);
   }
 
-  @Value("$(defaultLocale)")
+  @Value("${defaultLocale}")
   private Locale defaultLocale;
 
   @Autowired
@@ -84,7 +84,7 @@ public class Application {
 
     String envLocale = System.getenv("LOCALE");
     Locale systemLocale = isBlank(envLocale)
-        ? defaultLocale : toLocale(System.getenv("LOCALE"));
+        ? defaultLocale : toLocale(envLocale);
     lr.setDefaultLocale(systemLocale);
 
     return lr;
