@@ -47,9 +47,6 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang3.LocaleUtils.toLocale;
-
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
 @EntityScan(basePackageClasses = {BaseEntity.class, ConfigurationSetting.class})
@@ -60,8 +57,8 @@ public class Application {
     SpringApplication.run(Application.class, args);
   }
 
-  @Value("${defaultLocale}")
-  private Locale defaultLocale;
+  @Value("${locale}")
+  private Locale locale;
 
   @Autowired
   DialectName dialectName;
@@ -81,12 +78,7 @@ public class Application {
   public LocaleResolver localeResolver() {
     CookieLocaleResolver lr = new CookieLocaleResolver();
     lr.setCookieName("lang");
-
-    String envLocale = System.getenv("LOCALE");
-    Locale systemLocale = isBlank(envLocale)
-        ? defaultLocale : toLocale(envLocale);
-    lr.setDefaultLocale(systemLocale);
-
+    lr.setDefaultLocale(locale);
     return lr;
   }
 
