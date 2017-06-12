@@ -36,6 +36,12 @@ schemas:
            }
       }
 
+  - orderableDtoArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "#/schemas/orderableDto" }
+      }
+
   - processingPeriodDto: !include schemas/processingPeriodDto.json
 
   - processingScheduleDto: |
@@ -512,6 +518,19 @@ resourceTypes:
                       body:
                         application/json:
                           schema: statusMessageArray
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+      /{id}/availableNonFullSupply:
+          get:
+              is: [ secured ]
+              description: Get available non Full supply products associated with a requisition.
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: orderableDtoArray
                   403:
                       body:
                         application/json:
