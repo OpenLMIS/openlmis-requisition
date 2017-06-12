@@ -57,7 +57,7 @@ public class Application {
     SpringApplication.run(Application.class, args);
   }
 
-  @Value("${locale}")
+  @Value("${defaultLocale}")
   private Locale locale;
 
   @Autowired
