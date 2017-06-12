@@ -18,16 +18,11 @@ package org.openlmis.requisition.repository;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import com.google.common.collect.Sets;
+
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -44,6 +39,14 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -292,6 +295,56 @@ public class RequisitionRepositoryIntegrationTest
     requisition = repository.findOne(requisition.getId());
 
     assertEquals(5, requisition.getPreviousRequisitions().size());
+  }
+
+  @Test
+  public void shouldRetrieveLastRegularRequisition() {
+    final UUID clinic = UUID.randomUUID();
+    final UUID hospital = UUID.randomUUID();
+    final UUID essentialMeds = UUID.randomUUID();
+    final UUID familyPlanning = UUID.randomUUID();
+
+    repository.save(generateRequisition(clinic, essentialMeds));
+    repository.save(generateRequisition(clinic, essentialMeds));
+    Requisition thirdClinicEm = generateRequisition(clinic, essentialMeds);
+    thirdClinicEm = repository.save(thirdClinicEm);
+
+    repository.save(generateRequisition(clinic, familyPlanning));
+    Requisition secondClinicFp = generateRequisition(clinic, familyPlanning);
+    secondClinicFp = repository.save(secondClinicFp);
+
+    Requisition firstHospitalEm = generateRequisition(hospital, essentialMeds);
+    firstHospitalEm = repository.save(firstHospitalEm);
+
+    repository.save(generateRequisition(hospital, familyPlanning));
+    repository.save(generateRequisition(hospital, familyPlanning));
+    Requisition thirdHospitalFp = generateRequisition(hospital, familyPlanning);
+    thirdHospitalFp = repository.save(thirdHospitalFp);
+
+    Requisition lastRequisition = repository.getLastRegularRequisition(clinic, essentialMeds);
+    assertNotNull(lastRequisition);
+    assertEquals(thirdClinicEm.getId(), lastRequisition.getId());
+
+    lastRequisition = repository.getLastRegularRequisition(clinic, familyPlanning);
+    assertNotNull(lastRequisition);
+    assertEquals(secondClinicFp.getId(), lastRequisition.getId());
+
+    lastRequisition = repository.getLastRegularRequisition(hospital, essentialMeds);
+    assertNotNull(lastRequisition);
+    assertEquals(firstHospitalEm.getId(), lastRequisition.getId());
+
+    lastRequisition = repository.getLastRegularRequisition(hospital, familyPlanning);
+    assertNotNull(lastRequisition);
+    assertEquals(thirdHospitalFp.getId(), lastRequisition.getId());
+  }
+
+  private Requisition generateRequisition(UUID facility, UUID program) {
+    Requisition requisition = new Requisition(facility, program, UUID.randomUUID(),
+        RequisitionStatus.INITIATED, false);
+    requisition.setNumberOfMonthsInPeriod(1);
+    requisition.setTemplate(testTemplate);
+
+    return requisition;
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
