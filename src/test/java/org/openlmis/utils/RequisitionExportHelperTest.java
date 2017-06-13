@@ -19,6 +19,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
 
 import org.joda.money.CurrencyUnit;
@@ -44,6 +45,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -196,7 +198,7 @@ public class RequisitionExportHelperTest {
         .thenReturn(period2);
     when(periodDto3.getId())
         .thenReturn(period3);
-    when(orderableReferenceDataService.findOne(orderableDto.getId()))
-        .thenReturn(orderableDto);
+    when(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .thenReturn(Collections.singletonList(orderableDto));
   }
 }

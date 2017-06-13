@@ -304,7 +304,9 @@ public class RequisitionService {
           requisition.getSupervisoryNodeId(), userId);
 
       LOGGER.debug("Requisition rejected: {}", requisitionId);
-      requisition.reject(orderableReferenceDataService.findAll(), userId);
+      Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
+              RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+      requisition.reject(orderableReferenceDataService.findByIds(orderableIds), userId);
       saveStatusMessage(requisition);
       return requisitionRepository.save(requisition);
     } else {

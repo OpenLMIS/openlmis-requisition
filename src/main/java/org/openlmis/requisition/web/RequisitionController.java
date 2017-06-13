@@ -27,6 +27,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -261,7 +262,11 @@ public class RequisitionController extends BaseController {
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
     UserDto user = authenticationHelper.getCurrentUser();
-    requisition.submit(orderableReferenceDataService.findAll(), user.getId());
+
+    Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
+            RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+
+    requisition.submit(orderableReferenceDataService.findByIds(orderableIds), user.getId());
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
@@ -330,9 +335,13 @@ public class RequisitionController extends BaseController {
         throw new BindingResultException(getErrors(bindingResult));
       }
 
+      Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
+              RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+
       requisitionToUpdate.updateFrom(requisition,
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-              requisitionToUpdate.getProgramId()), orderableReferenceDataService.findAll());
+              requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
+                      orderableIds));
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
@@ -473,7 +482,11 @@ public class RequisitionController extends BaseController {
           parentNodeId = parentNode.getId();
         }
       }
-      requisition.approve(parentNodeId, orderableReferenceDataService.findAll(), userId);
+      Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
+              RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+
+      requisition.approve(parentNodeId,
+              orderableReferenceDataService.findByIds(orderableIds), userId);
 
       saveStatusMessage(requisition);
 
@@ -565,7 +578,11 @@ public class RequisitionController extends BaseController {
         requisition.getProgramId());
 
     UserDto user = authenticationHelper.getCurrentUser();
-    requisition.authorize(orderableReferenceDataService.findAll(), user.getId());
+
+    Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
+            RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+
+    requisition.authorize(orderableReferenceDataService.findByIds(orderableIds), user.getId());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();

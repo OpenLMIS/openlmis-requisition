@@ -30,8 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -107,13 +107,9 @@ public class RequisitionDtoBuilder {
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
     if (null != requisition.getAvailableNonFullSupplyProducts()) {
-      requisitionDto.setAvailableNonFullSupplyProducts(
-          requisition.getAvailableNonFullSupplyProducts()
-              .stream()
-              .filter(Objects::nonNull)
-              .map(orderableReferenceDataService::findOne)
-              .collect(Collectors.toSet())
-      );
+      requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
+              orderableReferenceDataService.findByIds(
+                      requisition.getAvailableNonFullSupplyProducts())));
     }
 
     return requisitionDto;
