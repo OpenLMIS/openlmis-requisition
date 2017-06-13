@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
@@ -33,6 +34,7 @@ import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
@@ -302,7 +304,10 @@ public class RequisitionService {
           requisition.getSupervisoryNodeId(), userId);
 
       LOGGER.debug("Requisition rejected: {}", requisitionId);
-      requisition.reject(orderableReferenceDataService.findAll(), userId);
+      Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
+              RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+      requisition.reject(orderableReferenceDataService.findByIds(orderableIds), userId);
+      saveStatusMessage(requisition);
       return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(
@@ -622,4 +627,15 @@ public class RequisitionService {
         period.getId());
   }
 
+  private void saveStatusMessage(Requisition requisition) {
+    if (isNotBlank(requisition.getDraftStatusMessage())) {
+      StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
+          authenticationHelper.getCurrentUser().getId(),
+          authenticationHelper.getCurrentUser().getFirstName(),
+          authenticationHelper.getCurrentUser().getLastName(),
+          requisition.getDraftStatusMessage());
+      statusMessageRepository.save(newStatusMessage);
+      requisition.setDraftStatusMessage("");
+    }
+  }
 }

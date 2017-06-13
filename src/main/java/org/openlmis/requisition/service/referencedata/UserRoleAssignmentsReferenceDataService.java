@@ -59,12 +59,17 @@ public class UserRoleAssignmentsReferenceDataService extends
       return false;
     }
 
-    return getRoleAssignments(userId)
-        .stream()
+    return getRoleAssignments(userId).stream()
         .filter(r -> r.getRole().getRights().contains(right))
-        .anyMatch(r -> r.getSupervisoryNodeId() != null
-            && r.getProgramId() != null
-            && (supervisoryNodeId == null || supervisoryNodeId.equals(r.getSupervisoryNodeId()))
-            && (programId == null || programId.equals(r.getProgramId())));
+        .anyMatch(r -> hasAnySupervisionRoleWithGivenParameters(r, programId, supervisoryNodeId));
+  }
+
+  private boolean hasAnySupervisionRoleWithGivenParameters(DetailedRoleAssignmentDto role,
+                                                       UUID programId,
+                                                       UUID supervisoryNodeId) {
+    return role.getSupervisoryNodeId() != null
+        && role.getProgramId() != null
+        && (supervisoryNodeId == null || supervisoryNodeId.equals(role.getSupervisoryNodeId()))
+        && (programId == null || programId.equals(role.getProgramId()));
   }
 }

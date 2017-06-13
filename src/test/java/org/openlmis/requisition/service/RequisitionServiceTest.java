@@ -396,6 +396,21 @@ public class RequisitionServiceTest {
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
+  @Test
+  public void shouldSaveStatusMessageWhileRejectingRequisition() {
+    requisition.setStatus(AUTHORIZED);
+    requisition.setDraftStatusMessage("some_message");
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        any(RightDto.class),
+        any(UUID.class),
+        any(UUID.class),
+        any(UUID.class))).thenReturn(true);
+    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
+
+    assertEquals(returnedRequisition.getStatus(), REJECTED);
+    verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
+  }
+
   @Test(expected = PermissionMessageException.class)
   public void shouldThrowExceptionWhenUserHasNoPermissionToApproveThisRequisition() {
     requisition.setStatus(IN_APPROVAL);

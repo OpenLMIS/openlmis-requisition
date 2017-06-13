@@ -195,6 +195,8 @@ public abstract class MessageKeys {
       + ".authentication.rightCanNotBeFound";
   public static final String ERROR_NO_FOLLOWING_PERMISSION = ERROR_PREFIX
       + ".authorization.noFollowingPermission";
+  public static final String ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE = ERROR_PREFIX
+      + ".authorization.noFollowingPermissionForRequisitionUpdate";
   public static final String ERROR_REQUISITION_TEMPLATE_IN_USE = ERROR_PREFIX
       + ".requisitionTemplateInUse";
   public static final String ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL =

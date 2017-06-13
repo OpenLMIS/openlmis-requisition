@@ -747,7 +747,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(configurationSettingService.getBoolValue(any(String.class))).willReturn(false);
     given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
         .willReturn(supervisoryNode);
-    given(orderableReferenceDataService.findAll()).willReturn(Collections.emptyList());
+    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+            .willReturn(Collections.emptyList());
     doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
     mockValidationSuccess();
 
@@ -1430,7 +1431,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private void mockExternalServiceCalls() {
-    given(orderableReferenceDataService.findAll()).willReturn(Collections.emptyList());
+    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+            .willReturn(Collections.emptyList());
     given(supervisoryNodeReferenceDataService.findOne(anyUuid()))
         .willReturn(new SupervisoryNodeDto());
   }

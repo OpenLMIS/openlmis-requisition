@@ -1,4 +1,4 @@
-4.0.0 /
+4.0.0 / WIP
 ==================
 
 Contract breaking changes:
@@ -6,11 +6,23 @@ Contract breaking changes:
 * [OLMIS-2566](https://openlmis.atlassian.net/browse/OLMIS-2566): Requisition search endpoint will
 now return new, smaller Dto object, which only contains basic information about the requisition,
 processing period, program and facility.
+* [OLMIS-2533](https://openlmis.atlassian.net/browse/OLMIS-2533): Requisition endpoints: initiate,
+update, submit, authorize, approve, requisitionsForConvert will now return new, smaller Dto object,
+which only contains basic information required for API client.
+
+New functionality added in a backwards-compatible manner:
+
+* [OLMIS-2664](https://openlmis.atlassian.net/browse/OLMIS-2664): Requisition reject endpoint saves status messages.
+* [OLMIS-2611](https://openlmis.atlassian.net/browse/OLMIS-2611): Added using locale from env file.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
 endpoint from fulfilment when converting requisitions to orders - all orders are created in a
 single transaction.
+* [OLMIS-2596](https://openlmis.atlassian.net/browse/OLMIS-2596): Update endpoint returns better message when cannot update
+
+Performance improvements added in a backwards-compatible manner:
+* [MW-310](https://openlmis.atlassian.net/browse/MW-310): Improve performance of RequisitionDto by utilizing search orderables
 
 3.1.4 / 2017-05-26
 ===================
@@ -21,6 +33,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2480](https://openlmis.atlassian.net/browse/OLMIS-2480): Lowered values of maxPeriodsOfStock
 * [OLMIS-2530](https://openlmis.atlassian.net/browse/OLMIS-2530): Fixed pagination on requisition search endpoint.
 * [OLMIS-2491](https://openlmis.atlassian.net/browse/OLMIS-2491): Configuration Settings were moved to Transifex messages and environment variables.
+* [OLMIS-2514](https://openlmis.atlassian.net/browse/OLMIS-2514): Added check for supervisory node and program role assignment to approve/reject endpoints.
 
 3.1.3 / 2017-05-17
 ===================

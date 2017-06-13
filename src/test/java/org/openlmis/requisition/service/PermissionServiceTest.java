@@ -19,6 +19,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
@@ -48,12 +49,12 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.Message;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -197,7 +198,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotUpdateRequisition() throws Exception {
-    expectException(REQUISITION_CREATE);
+    expectUpdateException(RequisitionStatus.INITIATED, REQUISITION_CREATE);
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
@@ -402,6 +403,12 @@ public class PermissionServiceTest {
   private void expectException(String rightName) {
     exception.expect(PermissionMessageException.class);
     exception.expectMessage(ERROR_NO_FOLLOWING_PERMISSION + ": " + rightName);
+  }
+
+  private void expectUpdateException(RequisitionStatus status, String rightName) {
+    exception.expect(PermissionMessageException.class);
+    exception.expectMessage(new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
+        status.toString(), rightName).toString());
   }
 
   private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {

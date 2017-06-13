@@ -57,6 +57,9 @@ public class Application {
     SpringApplication.run(Application.class, args);
   }
 
+  @Value("${defaultLocale}")
+  private Locale locale;
+
   @Autowired
   DialectName dialectName;
 
@@ -65,7 +68,6 @@ public class Application {
 
   @Value("${spring.jpa.properties.hibernate.default_schema}")
   private String preferredSchema;
-
 
   /**
    * Creates new LocaleResolver.
@@ -76,7 +78,7 @@ public class Application {
   public LocaleResolver localeResolver() {
     CookieLocaleResolver lr = new CookieLocaleResolver();
     lr.setCookieName("lang");
-    lr.setDefaultLocale(Locale.ENGLISH);
+    lr.setDefaultLocale(locale);
     return lr;
   }
 

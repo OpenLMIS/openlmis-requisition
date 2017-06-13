@@ -27,6 +27,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -261,7 +262,9 @@ public class RequisitionController extends BaseController {
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
     UserDto user = authenticationHelper.getCurrentUser();
-    requisition.submit(orderableReferenceDataService.findAll(), user.getId());
+
+    requisition.submit(orderableReferenceDataService.findByIds(
+            getLineItemOrderableIds(requisition)), user.getId());
     saveStatusMessage(requisition);
     
     requisitionRepository.save(requisition);
@@ -332,7 +335,8 @@ public class RequisitionController extends BaseController {
 
       requisitionToUpdate.updateFrom(requisition,
           stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-              requisitionToUpdate.getProgramId()), orderableReferenceDataService.findAll());
+              requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
+                      getLineItemOrderableIds(requisition)));
 
       requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
@@ -425,6 +429,7 @@ public class RequisitionController extends BaseController {
     permissionService.canApproveRequisition(requisitionId);
     Requisition rejectedRequisition = requisitionService.reject(requisitionId);
     requisitionStatusProcessor.statusChange(rejectedRequisition);
+
     requisitionStatusNotifier.notifyStatusChanged(rejectedRequisition);
 
     return requisitionDtoBuilder.build(rejectedRequisition);
@@ -472,7 +477,9 @@ public class RequisitionController extends BaseController {
           parentNodeId = parentNode.getId();
         }
       }
-      requisition.approve(parentNodeId, orderableReferenceDataService.findAll(), userId);
+
+      requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
+              getLineItemOrderableIds(requisition)), userId);
 
       saveStatusMessage(requisition);
 
@@ -564,7 +571,9 @@ public class RequisitionController extends BaseController {
         requisition.getProgramId());
 
     UserDto user = authenticationHelper.getCurrentUser();
-    requisition.authorize(orderableReferenceDataService.findAll(), user.getId());
+
+    requisition.authorize(orderableReferenceDataService.findByIds(
+            getLineItemOrderableIds(requisition)), user.getId());
 
     UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
         requisition.getProgramId(), requisition.getFacilityId()).getId();
@@ -639,5 +648,10 @@ public class RequisitionController extends BaseController {
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
     }
+  }
+
+  private Set<UUID> getLineItemOrderableIds(Requisition requisition) {
+    return requisition.getRequisitionLineItems().stream().map(
+            RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
   }
 }
