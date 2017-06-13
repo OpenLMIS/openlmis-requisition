@@ -41,7 +41,6 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUT
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -49,6 +48,7 @@ import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -86,6 +86,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -492,7 +495,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockValidationSuccess();
 
     // when
-    RequisitionDto result = restAssured.given()
+    BasicRequisitionDto result = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
@@ -500,7 +503,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .post(SUBMIT_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionDto.class);
+        .extract().as(BasicRequisitionDto.class);
 
     // then
     assertEquals(requisitionId, result.getId());
@@ -982,14 +985,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockValidationSuccess();
 
     // when
-    RequisitionDto result = restAssured.given()
+    BasicRequisitionDto result = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", requisitionId)
         .when()
         .post(APPROVE_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionDto.class);
+        .extract().as(BasicRequisitionDto.class);
 
     // then
     assertEquals(requisitionId, result.getId());

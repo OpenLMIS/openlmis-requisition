@@ -123,6 +123,9 @@ public class RequisitionControllerTest {
   private PermissionService permissionService;
 
   @Mock
+  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+
+  @Mock
   private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @Mock
