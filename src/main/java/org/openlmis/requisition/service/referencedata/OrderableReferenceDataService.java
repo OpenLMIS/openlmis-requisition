@@ -18,12 +18,7 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class OrderableReferenceDataService
@@ -47,18 +42,5 @@ public class OrderableReferenceDataService
   @Override
   public List<OrderableDto> findAll() {
     return getPage("", RequestParameters.init()).getContent();
-  }
-
-  /**
-   * Finds orderables by their ids.
-   *
-   * @param ids ids to look for.
-   * @return a page of orderables
-   */
-  public List<OrderableDto> findByIds(Set<UUID> ids) {
-    Map<String, Object> requestBody = new HashMap<>();
-    requestBody.put("ids", ids);
-
-    return getPage("search", RequestParameters.init(), requestBody).getContent();
   }
 }

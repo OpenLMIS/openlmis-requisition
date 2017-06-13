@@ -17,17 +17,14 @@ package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anySetOf;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.Collections;
 import java.util.UUID;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -39,14 +36,9 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private RequisitionRepository requisitionRepository;
 
-  @MockBean
-  private OrderableReferenceDataService orderableReferenceDataService;
-
   @Before
   public void setUp() {
     mockUserAuthenticated();
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class))).willReturn(
-            Collections.emptyList());
   }
 
   // GET /api/requisitions/{id}/print

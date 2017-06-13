@@ -18,7 +18,6 @@ package org.openlmis.utils;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +26,6 @@ import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -47,7 +44,6 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,9 +78,6 @@ public class RequisitionExportHelperTest {
   @InjectMocks
   private RequisitionExportHelper requisitionExportHelper;
 
-  @Captor
-  private ArgumentCaptor<Set<UUID>> argumentCaptor;
-
   private UUID program = UUID.randomUUID();
   private UUID period1 = UUID.randomUUID();
   private UUID period2 = UUID.randomUUID();
@@ -101,10 +94,6 @@ public class RequisitionExportHelperTest {
   public void shouldExportRequisitionLinesToDtos() {
     RequisitionLineItem requisitionLineItem =
         generateRequisitionLineItemToExport(orderableDto.getId());
-
-    when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
-            .thenReturn(Collections.singletonList(orderableDto));
-
     List<RequisitionLineItemDto> items =
         requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
     RequisitionLineItemDto item = items.get(0);
@@ -127,29 +116,6 @@ public class RequisitionExportHelperTest {
     assertEquals(PRICE_PER_PACK, item.getPricePerPack());
     assertEquals(item.getNumberOfNewPatientsAdded(),
         requisitionLineItem.getNumberOfNewPatientsAdded());
-
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
-    assertTrue(searchedIds.size() == 1);
-  }
-
-  @Test
-  public void exportShouldNotSetOrderableIfNoneReturned() {
-    when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
-            .thenReturn(Collections.emptyList());
-
-    RequisitionLineItem requisitionLineItem =
-            generateRequisitionLineItemToExport(orderableDto.getId());
-    List<RequisitionLineItemDto> items =
-            requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
-    RequisitionLineItemDto item = items.get(0);
-    assertNotNull(item);
-
-    assertEquals(item.getOrderable(), null);
-
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
-    assertTrue(searchedIds.size() == 1);
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid) {
@@ -230,5 +196,7 @@ public class RequisitionExportHelperTest {
         .thenReturn(period2);
     when(periodDto3.getId())
         .thenReturn(period3);
+    when(orderableReferenceDataService.findOne(orderableDto.getId()))
+        .thenReturn(orderableDto);
   }
 }
