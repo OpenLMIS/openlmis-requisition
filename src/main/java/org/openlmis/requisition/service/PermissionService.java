@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -102,14 +103,14 @@ public class PermissionService {
     if (requisition != null) {
       switch (requisition.getStatus()) {
         case INITIATED:
-          checkPermission(REQUISITION_CREATE, requisitionId);
+          checkPermissionOnUpdate(REQUISITION_CREATE, requisition);
           break;
         case SUBMITTED:
-          checkPermission(REQUISITION_AUTHORIZE, requisitionId);
+          checkPermissionOnUpdate(REQUISITION_AUTHORIZE, requisition);
           break;
         case AUTHORIZED:
         case IN_APPROVAL:
-          checkPermission(REQUISITION_APPROVE, requisitionId);
+          checkPermissionOnUpdate(REQUISITION_APPROVE, requisition);
           break;
         default:
           throw new ValidationMessageException(ERROR_CANNOT_UPDATE_REQUISITION);
@@ -195,6 +196,14 @@ public class PermissionService {
     checkPermission(REPORTS_VIEW, null, null, null);
   }
 
+  private void checkPermissionOnUpdate(String rightName, Requisition requisition) {
+    if (!hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null)) {
+      throw new PermissionMessageException(
+          new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
+              requisition.getStatus().toString(), rightName));
+    }
+  }
+
   private void checkPermission(String rightName, UUID requisitionId) {
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
@@ -229,6 +238,5 @@ public class PermissionService {
     );
     return null != result && result.getResult();
   }
-
 
 }
