@@ -198,7 +198,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotUpdateRequisition() throws Exception {
-    expectUpdateException(RequisitionStatus.INITIATED.toString(), REQUISITION_CREATE);
+    expectUpdateException(RequisitionStatus.INITIATED, REQUISITION_CREATE);
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
@@ -405,10 +405,10 @@ public class PermissionServiceTest {
     exception.expectMessage(ERROR_NO_FOLLOWING_PERMISSION + ": " + rightName);
   }
 
-  private void expectUpdateException(String status, String rightName) {
+  private void expectUpdateException(RequisitionStatus status, String rightName) {
     exception.expect(PermissionMessageException.class);
     exception.expectMessage(new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
-        status, rightName).toString());
+        status.toString(), rightName).toString());
   }
 
   private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {

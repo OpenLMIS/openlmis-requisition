@@ -19,6 +19,10 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Use batch order creation
 endpoint from fulfilment when converting requisitions to orders - all orders are created in a
 single transaction.
+* [OLMIS-2596](https://openlmis.atlassian.net/browse/OLMIS-2596): Update endpoint returns better message when cannot update
+
+Performance improvements added in a backwards-compatible manner:
+* [MW-310](https://openlmis.atlassian.net/browse/MW-310): Improve performance of RequisitionDto by utilizing search orderables
 
 3.1.4 / 2017-05-26
 ===================
