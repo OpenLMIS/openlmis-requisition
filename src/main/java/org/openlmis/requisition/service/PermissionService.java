@@ -198,7 +198,7 @@ public class PermissionService {
   private void checkPermissionOnUpdate(String rightName, Requisition requisition) {
     if (!hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null)) {
       RequisitionStatus status = requisition.getStatus();
-      if (requisition.getStatus().duringApproval()) {
+      if (status.duringApproval()) {
         status = RequisitionStatus.AUTHORIZED;
       }
       throw new PermissionMessageException(
