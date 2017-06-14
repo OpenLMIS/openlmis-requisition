@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class RequisitionExportHelper {
@@ -40,14 +42,19 @@ public class RequisitionExportHelper {
    */
   public List<RequisitionLineItemDto> exportToDtos(
       List<RequisitionLineItem> requisitionLineItems) {
-    return requisitionLineItems.stream().map(this::exportToDto).collect(toList());
+    List<OrderableDto> orderables = orderableReferenceDataService.findByIds(
+            requisitionLineItems.stream().map(RequisitionLineItem::getOrderableId)
+                    .collect(Collectors.toSet()));
+    return requisitionLineItems.stream().map(
+        item -> exportToDto(item, orderables)).collect(toList());
   }
 
-  private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem) {
+  private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem,
+                                             List<OrderableDto> orderables) {
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    OrderableDto orderableDto = orderableReferenceDataService.findOne(
-        requisitionLineItem.getOrderableId());
-    requisitionLineItem.export(dto, orderableDto);
+    Optional<OrderableDto> orderableDto = orderables.stream().filter(
+        orderable -> orderable.getId().equals(requisitionLineItem.getOrderableId())).findAny();
+    requisitionLineItem.export(dto, orderableDto.orElse(null));
     return dto;
   }
 }
