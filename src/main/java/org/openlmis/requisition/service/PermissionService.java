@@ -37,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -198,9 +197,13 @@ public class PermissionService {
 
   private void checkPermissionOnUpdate(String rightName, Requisition requisition) {
     if (!hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null)) {
+      RequisitionStatus status = requisition.getStatus();
+      if (requisition.getStatus().duringApproval()) {
+        status = RequisitionStatus.AUTHORIZED;
+      }
       throw new PermissionMessageException(
           new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
-              requisition.getStatus().toString(), rightName));
+              status.toString(), rightName));
     }
   }
 
