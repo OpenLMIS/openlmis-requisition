@@ -240,7 +240,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
+  public RequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canSubmitRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -271,7 +271,7 @@ public class RequisitionController extends BaseController {
     requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
 
-    return basicRequisitionDtoBuilder.build(requisition);
+    return requisitionDtoBuilder.build(requisition);
   }
 
   /**
@@ -411,12 +411,12 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
+  public RequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canUpdateRequisition(requisitionId);
 
     Requisition requisition = requisitionService.skip(requisitionId);
     requisitionStatusProcessor.statusChange(requisition);
-    return basicRequisitionDtoBuilder.build(requisition);
+    return requisitionDtoBuilder.build(requisition);
   }
 
   /**
@@ -425,14 +425,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto rejectRequisition(@PathVariable("id") UUID requisitionId) {
+  public RequisitionDto rejectRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canApproveRequisition(requisitionId);
     Requisition rejectedRequisition = requisitionService.reject(requisitionId);
     requisitionStatusProcessor.statusChange(rejectedRequisition);
 
     requisitionStatusNotifier.notifyStatusChanged(rejectedRequisition);
 
-    return basicRequisitionDtoBuilder.build(rejectedRequisition);
+    return requisitionDtoBuilder.build(rejectedRequisition);
   }
 
   /**
@@ -441,7 +441,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
+  public RequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canApproveRequisition(requisitionId);
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
@@ -486,7 +486,7 @@ public class RequisitionController extends BaseController {
       requisitionRepository.save(requisition);
       requisitionStatusProcessor.statusChange(requisition);
       LOGGER.debug("Requisition with id " + requisitionId + " approved");
-      return basicRequisitionDtoBuilder.build(requisition);
+      return requisitionDtoBuilder.build(requisition);
     } else {
       throw new ValidationMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED, requisitionId));
@@ -547,7 +547,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
+  public RequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canAuthorizeRequisition(requisitionId);
 
     if (configurationSettingService.getBoolValue("skipAuthorization")) {
@@ -585,7 +585,7 @@ public class RequisitionController extends BaseController {
     requisitionStatusProcessor.statusChange(requisition);
     LOGGER.debug("Requisition: " + requisitionId + " authorized.");
 
-    return basicRequisitionDtoBuilder.build(requisition);
+    return requisitionDtoBuilder.build(requisition);
   }
 
   /**

@@ -21,8 +21,6 @@ schemas:
 
   - geographicZoneDto: !include schemas/geographicZoneDto.json
 
-  - basicRequisitionDto: !include schemas/basicRequisitionDto.json
-
   - basicRequisitionDtoPage: !include schemas/basicRequisitionDtoPage.json
 
   - orderableDto: |
@@ -408,7 +406,6 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
-                            schema: basicRequisitionDto
                   "400":
                       body:
                         application/json:
@@ -435,7 +432,6 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
-                            schema: basicRequisitionDto
                   "400":
                       body:
                         application/json:
@@ -456,7 +452,6 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
-                            schema: basicRequisitionDto
                   "400":
                       body:
                         application/json:
@@ -478,7 +473,6 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
-                            schema: basicRequisitionDto
                   "400":
                       body:
                         application/json:
@@ -588,7 +582,6 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
-                            schema: basicRequisitionDto
                   "400":
                       body:
                         application/json:
