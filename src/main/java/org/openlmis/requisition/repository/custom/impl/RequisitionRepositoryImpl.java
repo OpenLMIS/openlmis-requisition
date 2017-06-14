@@ -17,23 +17,22 @@ package org.openlmis.requisition.repository.custom.impl;
 
 import static java.util.stream.Collectors.toList;
 
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -95,24 +94,19 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           builder.equal(root.get(EMERGENCY), emergency));
     }
 
-    Join<Requisition, StatusChange> statusChange = root.join("statusChanges",
-        JoinType.LEFT);
-    predicate = builder.and(predicate, builder.equal(statusChange.get(STATUS),
-        RequisitionStatus.INITIATED));
-
     if (initiatedDateFrom != null && initiatedDateTo != null) {
-      predicate = builder.and(predicate, builder.between(statusChange.get(CREATED_DATE),
+      predicate = builder.and(predicate, builder.between(root.get(CREATED_DATE),
           initiatedDateFrom, initiatedDateTo));
     } else if (initiatedDateFrom != null) {
       predicate = builder.and(predicate, builder.greaterThanOrEqualTo(
-          statusChange.get(CREATED_DATE), initiatedDateFrom));
+          root.get(CREATED_DATE), initiatedDateFrom));
     } else if (initiatedDateTo != null) {
       predicate = builder.and(predicate, builder.lessThanOrEqualTo(
-          statusChange.get(CREATED_DATE), initiatedDateTo));
+          root.get(CREATED_DATE), initiatedDateTo));
     }
 
     queryMain.where(predicate);
-    queryMain.orderBy(builder.asc(statusChange.get(CREATED_DATE)));
+    queryMain.orderBy(builder.asc(root.get(CREATED_DATE)));
 
     List<Requisition> results = entityManager.createQuery(queryMain).getResultList();
     List<Requisition> distinctResults = results.stream().distinct().collect(toList());
@@ -210,21 +204,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
     predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
 
-    Join<Requisition, StatusChange> statusChange = root.join("statusChanges");
-    predicate = builder.and(predicate, builder.equal(statusChange.get(STATUS),
-        RequisitionStatus.INITIATED));
-
     query.where(predicate);
-    query.orderBy(builder.desc(statusChange.get(CREATED_DATE)));
+    query.orderBy(builder.desc(root.get(CREATED_DATE)));
 
     List<Requisition> requisitionList = entityManager.createQuery(query)
                                         .setMaxResults(1).getResultList();
-
-    if (requisitionList == null || requisitionList.isEmpty()) {
-      return null;
-    } else {
-      return requisitionList.get(0);
-    }
+    return (requisitionList == null || requisitionList.isEmpty()) ? null : requisitionList.get(0);
   }
 
   /**
