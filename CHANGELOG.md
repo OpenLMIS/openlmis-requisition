@@ -9,6 +9,7 @@ processing period, program and facility.
 * [OLMIS-2533](https://openlmis.atlassian.net/browse/OLMIS-2533): Requisition endpoints: initiate,
 update, submit, authorize, approve, requisitionsForConvert will now return new, smaller Dto object,
 which only contains basic information required for API client.
+* [MW-305](https://openlmis.atlassian.net/browse/MW-305): Requisition submit, skip, reject, approve and authorize endpoints now are returning smaller basic dto.
 
 New functionality added in a backwards-compatible manner:
 
