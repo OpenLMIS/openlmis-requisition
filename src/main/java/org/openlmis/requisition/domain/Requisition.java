@@ -95,7 +95,7 @@ public class Requisition extends BaseTimestampedEntity {
   @OneToMany(
       mappedBy = "requisition",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
-      fetch = FetchType.EAGER,
+      fetch = FetchType.LAZY,
       orphanRemoval = true)
   @Fetch(FetchMode.SELECT)
   @DiffIgnore
