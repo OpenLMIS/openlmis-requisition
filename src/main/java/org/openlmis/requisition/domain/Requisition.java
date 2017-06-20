@@ -20,7 +20,6 @@ import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
@@ -298,7 +297,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products orderable products that will be used by line items to update packs to ship.
    */
   public void submit(Collection<OrderableDto> products, UUID submitter) {
-    if (!INITIATED.equals(status)) {
+    if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
     }
@@ -370,7 +369,7 @@ public class Requisition extends BaseTimestampedEntity {
    * Rejects given requisition.
    */
   public void reject(Collection<OrderableDto> products, UUID rejector) {
-    status = RequisitionStatus.INITIATED;
+    status = RequisitionStatus.REJECTED;
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
 

@@ -23,7 +23,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_GROUP_
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -117,8 +116,7 @@ public class PeriodService {
                 periodDto.getId(), facility, program, false);
 
         if (requisitions != null && !requisitions.isEmpty()
-            && requisitions.get(0).getStatus() != RequisitionStatus.INITIATED
-            && requisitions.get(0).getStatus() != RequisitionStatus.SUBMITTED) {
+            && !requisitions.get(0).getStatus().isPreAuthorize()) {
           iterator.remove();
         }
       }

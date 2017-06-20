@@ -34,6 +34,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.domain.RequisitionStatus.IN_APPROVAL;
+import static org.openlmis.requisition.domain.RequisitionStatus.REJECTED;
 import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
@@ -379,7 +380,7 @@ public class RequisitionServiceTest {
         any(UUID.class))).thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
-    assertEquals(returnedRequisition.getStatus(), INITIATED);
+    assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
   @Test
@@ -392,7 +393,7 @@ public class RequisitionServiceTest {
         any(UUID.class))).thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
-    assertEquals(returnedRequisition.getStatus(), INITIATED);
+    assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
   @Test
@@ -406,7 +407,7 @@ public class RequisitionServiceTest {
         any(UUID.class))).thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
-    assertEquals(returnedRequisition.getStatus(), INITIATED);
+    assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
   }
 

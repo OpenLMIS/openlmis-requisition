@@ -19,17 +19,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public enum RequisitionStatus {
   INITIATED(1),
+  REJECTED(1),
   SUBMITTED(2),
   AUTHORIZED(3),
-  IN_APPROVAL(4),
-  APPROVED(5),
-  RELEASED(6),
+  IN_APPROVAL(3),
+  APPROVED(4),
+  RELEASED(5),
   SKIPPED(-1);
 
   private int value;
 
   RequisitionStatus(int value) {
     this.value = value;
+  }
+
+  @JsonIgnore
+  public boolean isSubmittable() {
+    return value == 1;
   }
 
   @JsonIgnore
@@ -44,10 +50,10 @@ public enum RequisitionStatus {
 
   @JsonIgnore
   public boolean isApproved() {
-    return value >= 5;
+    return value >= 4;
   }
 
   public boolean duringApproval() {
-    return value == 3 || value == 4;
+    return value == 3;
   }
 }

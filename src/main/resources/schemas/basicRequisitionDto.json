@@ -15,6 +15,7 @@
     "status": {
       "enum": [
         "INITIATED",
+        "REJECTED",
         "SUBMITTED",
         "AUTHORIZED",
         "IN_APPROVAL",

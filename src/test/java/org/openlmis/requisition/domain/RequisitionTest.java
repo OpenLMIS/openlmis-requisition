@@ -102,7 +102,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldChangeStatusToInitiatedAfterReject() {
+  public void shouldChangeStatusToRejectedAfterReject() {
     // given
     requisition.setTemplate(template);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -111,7 +111,25 @@ public class RequisitionTest {
     requisition.reject(Collections.emptyList(), UUID.randomUUID());
 
     // then
-    assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
+    assertEquals(requisition.getStatus(), RequisitionStatus.REJECTED);
+  }
+
+  @Test
+  public void shouldSubmitRequisitionIfItsStatusIsInitiated() {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.setStatus(RequisitionStatus.INITIATED);
+    requisition.submit(Collections.emptyList(), UUID.randomUUID());
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
+  public void shouldSubmitRequisitionIfItsStatusIsRejected() {
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.setStatus(RequisitionStatus.REJECTED);
+    requisition.submit(Collections.emptyList(), UUID.randomUUID());
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
 
   @Test
@@ -948,7 +966,7 @@ public class RequisitionTest {
 
     requisition.reject(Collections.emptyList(), rejectorId);
 
-    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.REJECTED,
         rejectorId);
   }
 
