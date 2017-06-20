@@ -48,6 +48,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.RequisitionSecurityService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
@@ -134,6 +135,9 @@ public class RequisitionController extends BaseController {
 
   @Autowired
   private PermissionService permissionService;
+
+  @Autowired
+  private RequisitionSecurityService requisitionSecurityService;
 
   @Autowired
   private RequisitionDtoBuilder requisitionDtoBuilder;
@@ -392,14 +396,8 @@ public class RequisitionController extends BaseController {
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency);
 
-    List<Requisition> filteredList = requisitions.stream().filter(req -> {
-      try {
-        permissionService.canViewRequisition(req.getId());
-      } catch (PermissionMessageException ex) {
-        return false;
-      }
-      return true;
-    }).collect(Collectors.toList());
+    List<Requisition> filteredList =
+        requisitionSecurityService.filterInaccessibleRequisitions(requisitions);
 
     List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(filteredList);
     return Pagination.getPage(dtoList, pageable);
@@ -524,14 +522,8 @@ public class RequisitionController extends BaseController {
     List<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
         EnumSet.of(RequisitionStatus.SUBMITTED));
 
-    List<Requisition> filteredList = submittedRequisitions.stream().filter(req -> {
-      try {
-        permissionService.canViewRequisition(req.getId());
-      } catch (PermissionMessageException ex) {
-        return false;
-      }
-      return true;
-    }).collect(Collectors.toList());
+    List<Requisition> filteredList =
+        requisitionSecurityService.filterInaccessibleRequisitions(submittedRequisitions);
 
     List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
 
