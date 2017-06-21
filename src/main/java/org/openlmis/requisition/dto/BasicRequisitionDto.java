@@ -39,6 +39,8 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
 
   private Boolean emergency;
   private RequisitionStatus status;
+  private ZonedDateTime modifiedDate;
+
   private Map<String, StatusLogEntry> statusChanges = new HashMap<>();
 
   @JsonSerialize(as = BasicProcessingPeriodDto.class)
@@ -63,11 +65,6 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
 
   @Override
   public void setCreatedDate(ZonedDateTime createdDate) {
-    // unsupported operation
-  }
-
-  @Override
-  public void setModifiedDate(ZonedDateTime createdDate) {
     // unsupported operation
   }
 

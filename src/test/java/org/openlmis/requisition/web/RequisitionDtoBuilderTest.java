@@ -41,6 +41,7 @@ import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionExportHelper;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -114,6 +115,7 @@ public class RequisitionDtoBuilderTest {
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(programDto, requisitionDto.getProgram());
     assertEquals(processingPeriodDto, requisitionDto.getProcessingPeriod());
+    assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
   }
 
@@ -142,6 +144,7 @@ public class RequisitionDtoBuilderTest {
     template.setId(UUID.randomUUID());
     template.setProgramId(UUID.randomUUID());
     requisition.setTemplate(template);
+    requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
     return requisition;
