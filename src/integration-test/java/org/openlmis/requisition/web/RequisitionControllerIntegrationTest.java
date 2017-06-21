@@ -19,10 +19,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
@@ -35,11 +37,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
+
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,6 +71,7 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.RequisitionSecurityService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -164,6 +170,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @MockBean
+  private RequisitionSecurityService requisitionSecurityService;
+
   @MockBean(name = "programReferenceDataService")
   private ProgramReferenceDataService programReferenceDataService;
 
@@ -179,6 +188,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
+
+    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
+        .then(returnsFirstArg());
   }
 
   // GET /api/requisitions/{id}
@@ -357,7 +369,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Set<RequisitionStatus> statuses = EnumSet.of(RequisitionStatus.INITIATED);
 
     Requisition requisition = generateRequisition();
-    doNothing().when(permissionService).canViewRequisition(requisition.getId());
 
     given(requisitionService.searchRequisitions(
         eq(facilityId),
@@ -400,7 +411,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     Set<RequisitionStatus> statusSet = EnumSet.of(submittedStatus, authorizedStatus);
     List<Requisition> requisitions =
-        generateRequisitionsWithMockedAccess(submittedStatus, authorizedStatus);
+        generateRequisitions(submittedStatus, authorizedStatus);
 
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
@@ -427,13 +438,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldReturnOnlyRequisitionsForWhichUserHasRights() {
     // given
     Requisition accessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    doNothing().when(permissionService).canViewRequisition(accessibleRequisition.getId());
-
     Requisition inaccessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    doThrow(PermissionMessageException.class)
-        .when(permissionService).canViewRequisition(inaccessibleRequisition.getId());
-
     List<Requisition> requisitions = Arrays.asList(accessibleRequisition, inaccessibleRequisition);
+
+    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
+        .thenReturn(Lists.newArrayList(accessibleRequisition));
+
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
         eq(null), eq(null), eq(null))
@@ -457,8 +467,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldReturnEmptyListIfUserHasNoRightsToSeeFoundRequisitions() {
     // given
     Requisition inaccessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    doThrow(PermissionMessageException.class)
-        .when(permissionService).canViewRequisition(inaccessibleRequisition.getId());
+
+    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
+        .thenReturn(Collections.emptyList());
 
     List<Requisition> requisitions = Collections.singletonList(inaccessibleRequisition);
     given(requisitionService.searchRequisitions(
@@ -1119,9 +1130,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(requisitionService.searchRequisitions(
         anySetOf(RequisitionStatus.class)))
         .willReturn(Arrays.asList(requisitions));
-
-    PermissionMessageException exception = mock(PermissionMessageException.class);
-    doThrow(exception).when(permissionService).canViewRequisition(unavailableRequisition.getId());
+    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
+        .thenReturn(Lists.newArrayList(availableRequisition));
 
     // when
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
@@ -1146,8 +1156,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         generateRequisition(RequisitionStatus.SUBMITTED),
         generateRequisition(RequisitionStatus.SUBMITTED));
 
-    PermissionMessageException exception = mock(PermissionMessageException.class);
-    doThrow(exception).when(permissionService).canViewRequisition(anyUuid());
+    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
+        .thenReturn(Collections.emptyList());
 
     given(requisitionService.searchRequisitions(
         eq(EnumSet.of(RequisitionStatus.SUBMITTED))))
@@ -1536,14 +1546,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return convertDto;
   }
 
-  private List<Requisition> generateRequisitionsWithMockedAccess(RequisitionStatus... statuses) {
+  private List<Requisition> generateRequisitions(RequisitionStatus... statuses) {
     List<Requisition> requisitions = new ArrayList<>();
 
     for (RequisitionStatus status : statuses) {
       Requisition requisition = generateRequisition(status);
       requisitions.add(requisition);
-
-      doNothing().when(permissionService).canViewRequisition(requisition.getId());
     }
 
     return requisitions;
