@@ -188,14 +188,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @throws IllegalArgumentException if any of arguments is {@code null}.
    */
   @Override
-  public Requisition getLastRegularRequisition(UUID facility, UUID program) {
+  public RequisitionStatus getLastRegularRequisitionStatus(UUID facility, UUID program) {
     if (null == facility || null == program) {
       throw new IllegalArgumentException("facility and program must be provided");
     }
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    CriteriaQuery<RequisitionStatus> query = builder.createQuery(RequisitionStatus.class);
+
 
     Root<Requisition> root = query.from(Requisition.class);
 
@@ -204,10 +205,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
     predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
 
+    query.select(root.get("status"));
     query.where(predicate);
     query.orderBy(builder.desc(root.get(CREATED_DATE)));
 
-    List<Requisition> requisitionList = entityManager.createQuery(query)
+    List<RequisitionStatus> requisitionList = entityManager.createQuery(query)
                                         .setMaxResults(1).getResultList();
     return (requisitionList == null || requisitionList.isEmpty()) ? null : requisitionList.get(0);
   }

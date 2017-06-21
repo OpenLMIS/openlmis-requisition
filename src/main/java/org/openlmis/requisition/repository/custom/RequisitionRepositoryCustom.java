@@ -41,5 +41,5 @@ public interface RequisitionRepositoryCustom {
   List<Requisition> searchApprovedRequisitions(String filterBy,
                                                List<UUID> desiredUuids);
 
-  Requisition getLastRegularRequisition(UUID facility, UUID program);
+  RequisitionStatus getLastRegularRequisitionStatus(UUID facility, UUID program);
 }

@@ -234,11 +234,11 @@ public class PeriodService {
    */
   private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId) {
 
-    Requisition lastRequisition = requisitionRepository.getLastRegularRequisition(
+    RequisitionStatus lastStatus = requisitionRepository.getLastRegularRequisitionStatus(
         facilityId, programId
     );
 
-    if (null != lastRequisition && lastRequisition.isPreAuthorize()) {
+    if (null != lastStatus && lastStatus.isPreAuthorize()) {
       throw new ValidationMessageException(new Message(ERROR_FINISH_PROVIOUS_REQUISITION));
     }
 
