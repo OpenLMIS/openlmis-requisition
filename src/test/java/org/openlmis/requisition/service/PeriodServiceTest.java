@@ -358,9 +358,8 @@ public class PeriodServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus() {
 
-    Requisition requisition = getRequisition(INITIATED);
-    when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
-        .thenReturn(requisition);
+    when(requisitionRepository.getLastRegularRequisitionStatus(facilityId, programId))
+        .thenReturn(INITIATED);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
@@ -368,9 +367,8 @@ public class PeriodServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus() {
 
-    Requisition requisition = getRequisition(SUBMITTED);
-    when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
-        .thenReturn(requisition);
+    when(requisitionRepository.getLastRegularRequisitionStatus(facilityId, programId))
+        .thenReturn(SUBMITTED);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
@@ -453,8 +451,8 @@ public class PeriodServiceTest {
   }
 
   private void setMockForFindPeriod(Requisition requisition) {
-    when(requisitionRepository.getLastRegularRequisition(facilityId, programId))
-        .thenReturn(requisition);
+    when(requisitionRepository.getLastRegularRequisitionStatus(facilityId, programId))
+        .thenReturn(requisition.getStatus());
     List<ProcessingPeriodDto> periods = new ArrayList<>();
     periods.add(period1);
     periods.add(period2);

@@ -16,10 +16,17 @@
 package org.openlmis.requisition.repository;
 
 import static java.util.Collections.singleton;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.RequisitionStatus.IN_APPROVAL;
+import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
 
@@ -70,7 +77,7 @@ public class RequisitionRepositoryIntegrationTest
   @Override
   Requisition generateInstance() {
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), RequisitionStatus.INITIATED, getNextInstanceNumber() % 2 == 0);
+        UUID.randomUUID(), INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
@@ -275,7 +282,7 @@ public class RequisitionRepositoryIntegrationTest
     ftap.setMaxPeriodsOfStock(7.25);
 
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+        UUID.randomUUID(), INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
         Collections.emptyList(), 0, null, UUID.randomUUID());
 
@@ -288,7 +295,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void shouldPersistWithPreviousRequisitions() {
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+        UUID.randomUUID(), INITIATED, false);
     requisition.setPreviousRequisitions(requisitions);
 
     requisition = repository.save(requisition);
@@ -298,49 +305,69 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldRetrieveLastRegularRequisition() {
+  public void shouldRetrieveLastRegularRequisitionStatus() {
     final UUID clinic = UUID.randomUUID();
     final UUID hospital = UUID.randomUUID();
     final UUID essentialMeds = UUID.randomUUID();
     final UUID familyPlanning = UUID.randomUUID();
 
-    repository.save(generateRequisition(clinic, essentialMeds));
-    repository.save(generateRequisition(clinic, essentialMeds));
-    Requisition thirdClinicEm = generateRequisition(clinic, essentialMeds);
-    thirdClinicEm = repository.save(thirdClinicEm);
+    repository.save(generateRequisition(clinic, essentialMeds, RELEASED));
+    repository.save(generateRequisition(clinic, essentialMeds, AUTHORIZED));
+    /* last requisition CLINIC - ESSENTIAL MEDS - */
+    repository.save(generateRequisition(clinic, essentialMeds, INITIATED));
 
-    repository.save(generateRequisition(clinic, familyPlanning));
-    Requisition secondClinicFp = generateRequisition(clinic, familyPlanning);
-    secondClinicFp = repository.save(secondClinicFp);
 
-    Requisition firstHospitalEm = generateRequisition(hospital, essentialMeds);
-    firstHospitalEm = repository.save(firstHospitalEm);
+    repository.save(generateRequisition(clinic, familyPlanning, APPROVED));
+    /* last requisition CLINIC - FAMILY PLANNING - */
+    repository.save(generateRequisition(clinic, familyPlanning, SUBMITTED));
 
-    repository.save(generateRequisition(hospital, familyPlanning));
-    repository.save(generateRequisition(hospital, familyPlanning));
-    Requisition thirdHospitalFp = generateRequisition(hospital, familyPlanning);
-    thirdHospitalFp = repository.save(thirdHospitalFp);
 
-    Requisition lastRequisition = repository.getLastRegularRequisition(clinic, essentialMeds);
-    assertNotNull(lastRequisition);
-    assertEquals(thirdClinicEm.getId(), lastRequisition.getId());
+    /* last requisition HOSPITAL - ESSENTIAL MEDS - */
+    repository.save(generateRequisition(hospital, essentialMeds, AUTHORIZED));
 
-    lastRequisition = repository.getLastRegularRequisition(clinic, familyPlanning);
-    assertNotNull(lastRequisition);
-    assertEquals(secondClinicFp.getId(), lastRequisition.getId());
 
-    lastRequisition = repository.getLastRegularRequisition(hospital, essentialMeds);
-    assertNotNull(lastRequisition);
-    assertEquals(firstHospitalEm.getId(), lastRequisition.getId());
+    repository.save(generateRequisition(hospital, familyPlanning, APPROVED));
+    repository.save(generateRequisition(hospital, familyPlanning, APPROVED));
+    /* last requisition HOSPITAL - FAMILY PLANNING - */
+    repository.save(generateRequisition(hospital, familyPlanning, IN_APPROVAL));
 
-    lastRequisition = repository.getLastRegularRequisition(hospital, familyPlanning);
-    assertNotNull(lastRequisition);
-    assertEquals(thirdHospitalFp.getId(), lastRequisition.getId());
+    RequisitionStatus status = repository.getLastRegularRequisitionStatus(clinic, essentialMeds);
+    assertNotNull(status);
+    assertEquals(INITIATED, status);
+
+    status = repository.getLastRegularRequisitionStatus(clinic, familyPlanning);
+    assertNotNull(status);
+    assertEquals(SUBMITTED, status);
+
+    status = repository.getLastRegularRequisitionStatus(hospital, essentialMeds);
+    assertNotNull(status);
+    assertEquals(AUTHORIZED, status);
+
+    status = repository.getLastRegularRequisitionStatus(hospital, familyPlanning);
+    assertNotNull(status);
+    assertEquals(IN_APPROVAL, status);
   }
 
-  private Requisition generateRequisition(UUID facility, UUID program) {
+  @Test
+  public void shouldReturnNullForLastRegularRequisitionStatusIfNoneAreFound() {
+    final UUID clinic = UUID.randomUUID();
+    final UUID hospital = UUID.randomUUID();
+    final UUID essentialMeds = UUID.randomUUID();
+    final UUID familyPlanning = UUID.randomUUID();
+
+    repository.save(generateRequisition(clinic, essentialMeds, RELEASED));
+    repository.save(generateRequisition(clinic, familyPlanning, APPROVED));
+    repository.save(generateRequisition(hospital, familyPlanning, APPROVED));
+
+    RequisitionStatus status = repository
+        .getLastRegularRequisitionStatus(UUID.randomUUID(), UUID.randomUUID());
+
+    assertNull(status);
+  }
+
+  private Requisition generateRequisition(UUID facility, UUID program, RequisitionStatus status) {
     Requisition requisition = new Requisition(facility, program, UUID.randomUUID(),
-        RequisitionStatus.INITIATED, false);
+        status, false);
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setTemplate(testTemplate);
 
