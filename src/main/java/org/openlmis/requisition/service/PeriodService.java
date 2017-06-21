@@ -23,6 +23,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_GROUP_
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
