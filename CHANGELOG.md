@@ -21,6 +21,7 @@ Bug fixes added in a backwards-compatible manner:
 endpoint from fulfilment when converting requisitions to orders - all orders are created in a
 single transaction.
 * [OLMIS-2596](https://openlmis.atlassian.net/browse/OLMIS-2596): Update endpoint returns better message when cannot update
+* [OLMIS-2280](https://openlmis.atlassian.net/browse/OLMIS-2280): Updated Referencedata Supervisory Node service to use paginated search endpoint.
 
 Performance improvements added in a backwards-compatible manner:
 * [MW-310](https://openlmis.atlassian.net/browse/MW-310): Improve performance of RequisitionDto by utilizing search orderables
