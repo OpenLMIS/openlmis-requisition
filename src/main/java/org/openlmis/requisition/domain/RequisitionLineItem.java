@@ -190,7 +190,7 @@ public class RequisitionLineItem extends BaseEntity {
 
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
-      fetch = FetchType.EAGER,
+      fetch = FetchType.LAZY,
       orphanRemoval = true)
   @Getter
   @Setter

@@ -29,8 +29,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -96,7 +94,6 @@ public class Requisition extends BaseTimestampedEntity {
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY,
       orphanRemoval = true)
-  @Fetch(FetchMode.SELECT)
   @DiffIgnore
   @Getter
   @Setter
@@ -173,7 +170,7 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private List<Requisition> previousRequisitions;
 
-  @ElementCollection(fetch = FetchType.EAGER, targetClass = UUID.class)
+  @ElementCollection(fetch = FetchType.LAZY, targetClass = UUID.class)
   @Column(name = "value")
   @CollectionTable(
       name = "available_non_full_supply_products",
