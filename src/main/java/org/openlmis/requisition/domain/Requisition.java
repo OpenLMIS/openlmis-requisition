@@ -170,7 +170,7 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private List<Requisition> previousRequisitions;
 
-  @ElementCollection(fetch = FetchType.LAZY, targetClass = UUID.class)
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = UUID.class)
   @Column(name = "value")
   @CollectionTable(
       name = "available_non_full_supply_products",
