@@ -52,10 +52,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -247,16 +249,23 @@ public class Requisition extends BaseTimestampedEntity {
             .collect(Collectors.toList())
     );
 
+    List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
     // Firstly, if we display the column ...
     // ... and if the previous requisition exists ...
     if (!previousRequisitions.isEmpty()
         && null != previousRequisitions.get(0)
         && template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)) {
       // .. for each line from the current requisition ...
+      nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems();
+
+      Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions.get(0)
+          .getRequisitionLineItems().stream().collect(
+              Collectors.toMap(RequisitionLineItem::getOrderableId, Function.identity()));
+
       getNonSkippedFullSupplyRequisitionLineItems().forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
-        RequisitionLineItem previousLine = previousRequisitions.get(0)
-            .findLineByProductId(currentLine.getOrderableId());
+        RequisitionLineItem previousLine = productIdToPreviousLine.getOrDefault(
+            currentLine.getOrderableId(), null);
 
         // ... and in the end we use it to calculate beginning balance in a new line.
         currentLine.setBeginningBalance(
@@ -267,10 +276,19 @@ public class Requisition extends BaseTimestampedEntity {
     // Secondly, if Proof Of Delivery exists and it is submitted ...
     if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
       // .. for each line from the current requisition ...
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(requisitionLine -> {
+      nonSkippedFullSupplyItems = (nonSkippedFullSupplyItems == null)
+          ? getNonSkippedFullSupplyRequisitionLineItems() : nonSkippedFullSupplyItems;
+
+      Map<UUID, ProofOfDeliveryLineItemDto> productIdToPodLine = proofOfDelivery
+          .getProofOfDeliveryLineItems().stream().filter(
+              li -> null != li.getOrderLineItem() && null != li.getOrderLineItem().getOrderable())
+          .collect(Collectors.toMap(
+              li -> li.getOrderLineItem().getOrderable().getId(), Function.identity()));
+
+      nonSkippedFullSupplyItems.forEach(requisitionLine -> {
         // ... we try to find line in POD for the same product ...
-        ProofOfDeliveryLineItemDto proofOfDeliveryLine = proofOfDelivery
-            .findLineByProductId(requisitionLine.getOrderableId());
+        ProofOfDeliveryLineItemDto proofOfDeliveryLine = productIdToPodLine.getOrDefault(
+            requisitionLine.getOrderableId(), null);
 
         // ... and if line exists we set value for Total Received Quantity (B) column
         if (null != proofOfDeliveryLine) {

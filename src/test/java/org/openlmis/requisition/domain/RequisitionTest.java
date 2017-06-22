@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -477,8 +478,11 @@ public class RequisitionTest {
     final UUID productId2 = UUID.randomUUID();
 
     Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, STOCK_ON_HAND);
-    mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2);
+    List<RequisitionLineItem> items = new ArrayList<>();
+    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND));
+    items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
+
+    when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -525,8 +529,11 @@ public class RequisitionTest {
     final UUID productId2 = UUID.randomUUID();
 
     Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, STOCK_ON_HAND);
-    mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2);
+    List<RequisitionLineItem> items = new ArrayList<>();
+    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND));
+    items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
+
+    when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -535,9 +542,21 @@ public class RequisitionTest {
     ProofOfDeliveryLineItemDto line2 = mock(ProofOfDeliveryLineItemDto.class);
     when(line1.getQuantityReceived()).thenReturn(10L);
     when(line2.getQuantityReceived()).thenReturn(15L);
+
+    OrderLineItemDto orderLine1 = mock(OrderLineItemDto.class);
+    OrderLineItemDto orderLine2 = mock(OrderLineItemDto.class);
+    when(line1.getOrderLineItem()).thenReturn(orderLine1);
+    when(line2.getOrderLineItem()).thenReturn(orderLine2);
+
     when(pod.isSubmitted()).thenReturn(true);
-    when(pod.findLineByProductId(productId1)).thenReturn(line1);
-    when(pod.findLineByProductId(productId2)).thenReturn(line2);
+    when(pod.getProofOfDeliveryLineItems()).thenReturn(Arrays.asList(line1, line2));
+
+    OrderableDto orderable1 = mock(OrderableDto.class);
+    OrderableDto orderable2 = mock(OrderableDto.class);
+    when(orderable1.getId()).thenReturn(productId1);
+    when(orderable2.getId()).thenReturn(productId2);
+    when(orderLine1.getOrderable()).thenReturn(orderable1);
+    when(orderLine2.getOrderable()).thenReturn(orderable2);
 
     ApprovedProductDto product1 = mockApprovedProduct(productId1);
     ApprovedProductDto product2 = mockApprovedProduct(productId2);
@@ -564,8 +583,11 @@ public class RequisitionTest {
     final UUID productId2 = UUID.randomUUID();
 
     Requisition previousRequisition = mock(Requisition.class);
-    mockReqLine(previousRequisition, productId1, STOCK_ON_HAND);
-    mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2);
+    List<RequisitionLineItem> items = new ArrayList<>();
+    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND));
+    items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
+
+    when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
@@ -1060,13 +1082,14 @@ public class RequisitionTest {
     requisition.setTemplate(template);
   }
 
-  private void mockReqLine(Requisition requisition, UUID productId,
+  private RequisitionLineItem mockReqLine(Requisition requisition, UUID productId,
                            int stockOnHand) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
     when(item.getOrderableId()).thenReturn(productId);
     when(item.getStockOnHand()).thenReturn(stockOnHand);
 
     when(requisition.findLineByProductId(productId)).thenReturn(item);
+    return item;
   }
 
   private ApprovedProductDto mockApprovedProduct(UUID orderableId) {
