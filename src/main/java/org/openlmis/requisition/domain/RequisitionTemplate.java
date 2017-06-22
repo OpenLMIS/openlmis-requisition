@@ -60,7 +60,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Setter
   private Integer numberOfPeriodsToAverage;
 
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
   @CollectionTable(
