@@ -105,7 +105,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
                                       RequisitionLineItem item) {
     Set<RequisitionStatus> expectedStatuses = new HashSet<>();
     expectedStatuses.add(RequisitionStatus.IN_APPROVAL);
-    if (configurationSettingService.getBoolValue("skipAuthorization")) {
+    if (configurationSettingService.getSkipAuthorization()) {
       expectedStatuses.add(RequisitionStatus.SUBMITTED);
     } else {
       expectedStatuses.add(RequisitionStatus.AUTHORIZED);

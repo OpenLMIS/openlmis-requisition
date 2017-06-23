@@ -27,7 +27,6 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
@@ -758,7 +757,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
     given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
 
-    given(configurationSettingService.getBoolValue(any(String.class))).willReturn(false);
+    given(configurationSettingService.getSkipAuthorization()).willReturn(false);
     given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
         .willReturn(supervisoryNode);
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
@@ -812,7 +811,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     UUID requisitionId = requisition.getId();
 
     doNothing().when(permissionService).canApproveRequisition(requisitionId);
-    given(configurationSettingService.getBoolValue("skipAuthorization")).willReturn(true);
+    given(configurationSettingService.getSkipAuthorization()).willReturn(true);
 
     // when
     restAssured.given()
@@ -840,7 +839,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     doNothing().when(permissionService).canAuthorizeRequisition(requisitionId);
     doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-    given(configurationSettingService.getBoolValue(anyString())).willReturn(false);
+    given(configurationSettingService.getSkipAuthorization()).willReturn(false);
 
     String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
     ValidationMessageException exception = mockValidationException(errorKey);
@@ -988,7 +987,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
     UUID requisitionId = requisition.getId();
 
-    given(configurationSettingService.getBoolValue("skipAuthorization")).willReturn(true);
+    given(configurationSettingService.getSkipAuthorization()).willReturn(true);
     doNothing().when(permissionService).canApproveRequisition(requisitionId);
     doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
         anyUuid());
@@ -1076,7 +1075,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     doNothing().when(permissionService).canAuthorizeRequisition(requisitionId);
     doNothing().when(requisitionValidator).validate(eq(requisition), any(BindingResult.class));
-    given(configurationSettingService.getBoolValue(anyString())).willReturn(false);
+    given(configurationSettingService.getSkipAuthorization()).willReturn(false);
 
     mockFacilityDoesNotSupportProgram(requisition);
 

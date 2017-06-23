@@ -93,7 +93,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.PermissionMessageException;
-import org.openlmis.settings.exception.ConfigurationSettingException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.ConvertHelper;
@@ -966,8 +965,7 @@ public class RequisitionServiceTest {
 
 
   @Test(expected = ValidationMessageException.class)
-  public void shouldNotSwallowExceptionsFromFulfillmentService()
-      throws ConfigurationSettingException {
+  public void shouldNotSwallowExceptionsFromFulfillmentService() {
     // given
     int requisitionsCount = 5;
 

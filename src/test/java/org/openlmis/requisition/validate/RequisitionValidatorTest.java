@@ -539,7 +539,7 @@ public class RequisitionValidatorTest {
     when(requisition.getTemplate()).thenReturn(requisitionTemplate);
 
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
-    when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
+    when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
     when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))
         .thenReturn(new ArrayList<>());
   }

@@ -29,7 +29,6 @@ import org.javers.spring.jpa.TransactionalJaversBuilder;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.i18n.ExposedMessageSourceImpl;
 import org.openlmis.security.UserNameProvider;
-import org.openlmis.settings.domain.ConfigurationSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ import java.util.Locale;
 
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
-@EntityScan(basePackageClasses = {BaseEntity.class, ConfigurationSetting.class})
+@EntityScan(basePackageClasses = {BaseEntity.class})
 public class Application {
   private Logger logger = LoggerFactory.getLogger(Application.class);
 

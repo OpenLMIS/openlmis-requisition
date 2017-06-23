@@ -296,7 +296,7 @@ public class DraftRequisitionValidatorTest {
   }
 
   private void mockRepositoriesAndObjects() {
-    when(configurationSettingService.getBoolValue("skipAuthorization")).thenReturn(false);
+    when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
 
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
   }

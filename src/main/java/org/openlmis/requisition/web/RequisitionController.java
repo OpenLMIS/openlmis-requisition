@@ -458,7 +458,7 @@ public class RequisitionController extends BaseController {
         requisition.getProgramId());
 
     if (requisition.isApprovable()
-        || (configurationSettingService.getBoolValue("skipAuthorization")
+        || (configurationSettingService.getSkipAuthorization()
         && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
 
       SupervisoryNodeDto supervisoryNodeDto =
@@ -542,7 +542,7 @@ public class RequisitionController extends BaseController {
   public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canAuthorizeRequisition(requisitionId);
 
-    if (configurationSettingService.getBoolValue("skipAuthorization")) {
+    if (configurationSettingService.getSkipAuthorization()) {
       throw new ValidationMessageException(new Message(ERROR_AUTHORIZATION_TO_BE_SKIPPED));
     }
 
