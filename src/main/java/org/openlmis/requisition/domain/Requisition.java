@@ -277,8 +277,9 @@ public class Requisition extends BaseTimestampedEntity {
     // Secondly, if Proof Of Delivery exists and it is submitted ...
     if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
       // .. for each line from the current requisition ...
-      nonSkippedFullSupplyItems = (nonSkippedFullSupplyItems == null)
-          ? getNonSkippedFullSupplyRequisitionLineItems() : nonSkippedFullSupplyItems;
+      if (nonSkippedFullSupplyItems == null) {
+        nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems();
+      }
 
       Map<UUID, ProofOfDeliveryLineItemDto> productIdToPodLine = proofOfDelivery
           .getProofOfDeliveryLineItems().stream().filter(
