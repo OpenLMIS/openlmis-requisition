@@ -25,6 +25,10 @@ schemas:
 
   - basicRequisitionDtoPage: !include schemas/basicRequisitionDtoPage.json
 
+  - requisitionWithSupplyingDepotsDto: !include schemas/requisitionWithSupplyingDepotsDto.json
+
+  - requisitionWithSupplyingDepotsDtoPage: !include schemas/requisitionWithSupplyingDepotsDtoPage.json
+
   - orderableDto: |
       {    "type": "object",
            "$schema": "http://json-schema.org/draft-03/schema",
@@ -601,6 +605,7 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
+                            schema: basicRequisitionDtoPage
                   "500":
       /requisitionsForConvert:
           get:
@@ -639,6 +644,7 @@ resourceTypes:
                   "200":
                       body:
                         application/json:
+                            schema: requisitionWithSupplyingDepotsDtoPage
                   "500":
       /convertToOrder:
           post:

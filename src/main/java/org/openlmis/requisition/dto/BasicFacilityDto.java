@@ -28,6 +28,7 @@ public class BasicFacilityDto extends BaseDto {
 
   private String code;
   private String name;
+  private GeographicZoneDto geographicZone;
 
   public interface Exporter {
     void setId(UUID id);
@@ -35,6 +36,8 @@ public class BasicFacilityDto extends BaseDto {
     void setCode(String code);
 
     void setName(String name);
+
+    void setGeographicZone(GeographicZoneDto geographicZone);
   }
 
   /**
@@ -46,6 +49,7 @@ public class BasicFacilityDto extends BaseDto {
     exporter.setId(id);
     exporter.setCode(code);
     exporter.setName(name);
+    exporter.setGeographicZone(geographicZone);
   }
 
 }

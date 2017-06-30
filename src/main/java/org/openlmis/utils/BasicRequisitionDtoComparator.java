@@ -17,7 +17,7 @@ package org.openlmis.utils;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING;
 
-import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
 import lombok.AllArgsConstructor;
@@ -27,12 +27,12 @@ import java.util.Comparator;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequisitionDtoComparator implements Comparator<RequisitionDto> {
+public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitionDto> {
 
   private String compareCondition;
 
   @Override
-  public int compare(RequisitionDto o1, RequisitionDto o2) {
+  public int compare(BasicRequisitionDto o1, BasicRequisitionDto o2) {
     switch (compareCondition) {
       case "programName": {
         return o1.getProgram().getName().compareTo(o2.getProgram().getName());

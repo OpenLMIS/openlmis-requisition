@@ -499,14 +499,14 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Page<RequisitionDto> requisitionsForApproval(
+  public Page<BasicRequisitionDto> requisitionsForApproval(
           @RequestParam(value = "program", required = false) UUID program,
           Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
     Set<Requisition> approvalRequisitions = requisitionService
         .getRequisitionsForApproval(user.getId(), program);
 
-    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(approvalRequisitions);
+    List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(approvalRequisitions);
     return Pagination.getPage(dtoList, pageable);
   }
 

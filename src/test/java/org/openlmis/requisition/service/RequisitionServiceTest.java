@@ -58,6 +58,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -68,7 +69,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
-import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
@@ -91,12 +91,12 @@ import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataSer
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.ConvertHelper;
-import org.openlmis.utils.RequisitionDtoComparator;
+import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -193,9 +193,6 @@ public class RequisitionServiceTest {
   private OrderFulfillmentService orderFulfillmentService;
 
   @Mock
-  private ConvertHelper convertHelper;
-
-  @Mock
   private StatusMessageRepository statusMessageRepository;
 
   @Mock
@@ -218,6 +215,9 @@ public class RequisitionServiceTest {
 
   @InjectMocks
   private RequisitionService requisitionService;
+
+  @Mock
+  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
@@ -883,7 +883,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFindAndSortAndPageApprovedRequisitions() {
     // given
-    List<RequisitionDto> requisitionDtos = getRequisitionDtoList();
+    List<BasicRequisitionDto> requisitionDtos = getBasicRequisitionDtoList();
 
     String filterAndSortBy = "programName";
 
@@ -899,10 +899,10 @@ public class RequisitionServiceTest {
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
         supplyingDepots, pageable, pageSize, pageNumber);
 
-    requisitionDtos.sort(new RequisitionDtoComparator(filterAndSortBy));
+    requisitionDtos.sort(new BasicRequisitionDtoComparator(filterAndSortBy));
     Collections.reverse(requisitionDtos);
     
-    List<RequisitionDto> requisitionDtosSubList =
+    List<BasicRequisitionDto> requisitionDtosSubList =
         requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
 
     List<RequisitionWithSupplyingDepotsDto> requisitionWithSupplyingDepotDtos =
@@ -1107,12 +1107,12 @@ public class RequisitionServiceTest {
     return supplyLine;
   }
 
-  private List<RequisitionDto> getRequisitionDtoList() {
-    List<RequisitionDto> requisitionDtos = new ArrayList<>();
+  private List<BasicRequisitionDto> getBasicRequisitionDtoList() {
+    List<BasicRequisitionDto> requisitionDtos = new ArrayList<>();
     String[] programNames = {"one", "two", "three", "four", "five"};
 
     for (String programName : programNames) {
-      RequisitionDto requisitionDto = new RequisitionDto();
+      BasicRequisitionDto requisitionDto = new BasicRequisitionDto();
       ProgramDto programDto = new ProgramDto();
       programDto.setName(programName);
       requisitionDto.setProgram(programDto);
@@ -1152,7 +1152,7 @@ public class RequisitionServiceTest {
         .thenReturn(nonFullSupplyLineProductId));
   }
 
-  private void setupStubsForTestApprovedRequisition(List<RequisitionDto> requisitionDtos,
+  private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
                                                     String filterBy, String programName,
                                                     List<FacilityDto> supplyingDepots,
                                                     Pageable pageable, int pageSize,
@@ -1163,7 +1163,7 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.emptyList());
     when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
         .thenReturn(requisitions);
-    when(convertHelper.convertRequisitionListToRequisitionDtoList(requisitions))
+    when(basicRequisitionDtoBuilder.build(requisitions))
         .thenReturn(requisitionDtos);
     when(requisitionRepository.findOne(any())).thenReturn(mock(Requisition.class));
     when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))

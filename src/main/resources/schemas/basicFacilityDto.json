@@ -15,6 +15,11 @@
     "name": {
       "type": "string",
       "title": "name"
+    },
+    "geographicZone": {
+      "type": "object",
+      "$ref": "geographicZoneDto.json",
+      "title": "geographicZone"
     }
   },
   "required": [
