@@ -36,6 +36,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -45,7 +46,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
-import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -62,13 +62,13 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.ConvertHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
-import org.openlmis.utils.RequisitionDtoComparator;
+import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,9 +127,6 @@ public class RequisitionService {
   private OrderFulfillmentService orderFulfillmentService;
 
   @Autowired
-  private ConvertHelper convertHelper;
-
-  @Autowired
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
@@ -146,6 +143,9 @@ public class RequisitionService {
 
   @Autowired
   private ProofOfDeliveryService proofOfDeliveryService;
+
+  @Autowired
+  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   /**
    * Initiated given requisition if possible.
@@ -514,16 +514,16 @@ public class RequisitionService {
     List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
-    List<RequisitionDto> requisitionDtosList =
-        convertHelper.convertRequisitionListToRequisitionDtoList(requisitionsList);
+    List<BasicRequisitionDto> requisitionDtosList =
+        basicRequisitionDtoBuilder.build(requisitionsList);
 
-    requisitionDtosList.sort(new RequisitionDtoComparator(sortBy));
+    requisitionDtosList.sort(new BasicRequisitionDtoComparator(sortBy));
     if (descending) {
       Collections.reverse(requisitionDtosList);
     }
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
-    for (RequisitionDto requisition : requisitionDtosList) {
+    for (BasicRequisitionDto requisition : requisitionDtosList) {
       List<FacilityDto> facilities = getAvailableSupplyingDepots(requisition.getId())
           .stream()
           .filter(f -> userManagedFacilities.contains(f.getId()))

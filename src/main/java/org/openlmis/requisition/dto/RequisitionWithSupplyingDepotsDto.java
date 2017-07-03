@@ -27,6 +27,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequisitionWithSupplyingDepotsDto {
-  private RequisitionDto requisition;
+  private BasicRequisitionDto requisition;
   private List<FacilityDto> supplyingDepots;
 }

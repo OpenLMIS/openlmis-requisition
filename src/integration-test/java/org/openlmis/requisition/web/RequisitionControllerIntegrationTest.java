@@ -1271,6 +1271,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
 
     RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
+    requisition.setRequisition(generateBasicRequisition());
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -1338,6 +1339,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<UUID> managedFacilitiesIds = mockConvertToOrderRightAndFulfillmentFacilities(facility);
 
     RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
+    requisition.setRequisition(generateBasicRequisition());
+
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
         any(), any(), any(), any(), any(), eq(managedFacilitiesIds)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
@@ -1554,6 +1557,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     }
 
     return requisitions;
+  }
+
+  private BasicRequisitionDto generateBasicRequisition() {
+    Requisition requisition = generateRequisition();
+    BasicRequisitionDto basicRequisitionDto = new BasicRequisitionDto();
+    requisition.export(basicRequisitionDto);
+    return basicRequisitionDto;
   }
 
   private String getMessage(String messageKey, Object... messageParams) {

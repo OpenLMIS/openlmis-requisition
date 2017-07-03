@@ -5,6 +5,7 @@ Contract breaking changes:
 
 * [OLMIS-2612](https://openlmis.atlassian.net/browse/OLMIS-2612): Configuration settings endpoints
 (/api/settings) are no longer available. Use environment variables to configure the application.
+* [MW-365](https://openlmis.atlassian.net/browse/MW-365): Requisition search endpoints: requisitionsForApproval and requisitionsForConvert will now return smaller basic dtos.
 
 
 4.0.0 / 2017-06-23
