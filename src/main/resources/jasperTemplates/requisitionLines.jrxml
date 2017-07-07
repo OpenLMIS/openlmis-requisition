@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-03-30T19:09:53 -->
+<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisitionLines" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="8eeca41d-cefe-475b-b89b-f898f69a4087">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -24,6 +23,7 @@
 		<property name="displayName" value="title"/>
 	</parameter>
 	<parameter name="requisitionStatus" class="org.openlmis.requisition.domain.RequisitionStatus" isForPrompting="false"/>
+	<parameter name="programId" class="java.util.UUID"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -96,11 +96,8 @@
 	<field name="totalCost" class="org.joda.money.Money">
 		<fieldDescription><![CDATA[totalCost]]></fieldDescription>
 	</field>
-	<field name="orderableCategoryDisplayName" class="java.lang.String">
-		<fieldDescription><![CDATA[orderableCategoryDisplayName]]></fieldDescription>
-	</field>
 	<group name="OrderableDisplayCategory">
-		<groupExpression><![CDATA[$F{orderableCategoryDisplayName}]]></groupExpression>
+		<groupExpression><![CDATA[$F{orderable}.findProgramOrderableDto($P{programId}).getOrderableCategoryDisplayName()]]></groupExpression>
 		<groupHeader>
 			<band height="10">
 				<rectangle>
@@ -116,7 +113,7 @@
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{orderableCategoryDisplayName}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{orderable}.findProgramOrderableDto($P{programId}).getOrderableCategoryDisplayName()]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

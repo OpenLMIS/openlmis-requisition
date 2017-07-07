@@ -15,9 +15,9 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
