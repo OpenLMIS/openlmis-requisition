@@ -28,7 +28,7 @@ import lombok.Setter;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.BasicFacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -73,7 +73,7 @@ public class ReportingRateReportDtoBuilder {
 
     Collection<ProcessingPeriodDto> periods = getLatestPeriods(period, LATEST_PERIODS);
     Collection<GeographicZoneDto> zones = getAvailableGeographicZones(zone);
-    Collection<FacilityDto> facilities = getAvailableFacilities(zones);
+    Collection<BasicFacilityDto> facilities = getAvailableFacilities(zones);
 
     report.setCompletionByPeriod(getCompletionsByPeriod(program, periods, facilities, dueDays));
     report.setCompletionByZone(getCompletionsByZone(program, periods, zones, dueDays));
@@ -83,7 +83,7 @@ public class ReportingRateReportDtoBuilder {
 
   private List<RequisitionCompletionDto> getCompletionsByPeriod(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
-      Collection<FacilityDto> facilities, Integer dueDays) {
+      Collection<BasicFacilityDto> facilities, Integer dueDays) {
     List<RequisitionCompletionDto> completionByPeriod = new ArrayList<>();
 
     for (ProcessingPeriodDto period : periods) {
@@ -102,7 +102,8 @@ public class ReportingRateReportDtoBuilder {
     List<RequisitionCompletionDto> completionByZone = new ArrayList<>();
 
     for (GeographicZoneDto zone : zones) {
-      Collection<FacilityDto> facilities = getAvailableFacilities(Collections.singletonList(zone));
+      Collection<BasicFacilityDto> facilities =
+          getAvailableFacilities(Collections.singletonList(zone));
 
       if (!facilities.isEmpty()) {
         RequisitionCompletionDto completion =
@@ -121,13 +122,13 @@ public class ReportingRateReportDtoBuilder {
 
   private RequisitionCompletionDto getCompletionForFacilities(
       ProgramDto program, Collection<ProcessingPeriodDto> periods,
-      Collection<FacilityDto> facilities, Integer dueDays) {
+      Collection<BasicFacilityDto> facilities, Integer dueDays) {
     CompletionCounter completions = new CompletionCounter();
 
     for (ProcessingPeriodDto period : periods) {
       LocalDate dueDate = period.getEndDate().plusDays(dueDays);
 
-      for (FacilityDto facility : facilities) {
+      for (BasicFacilityDto facility : facilities) {
         List<Requisition> requisitions = requisitionRepository
             .searchRequisitions(period.getId(), facility.getId(), program.getId(), false);
 
@@ -186,15 +187,15 @@ public class ReportingRateReportDtoBuilder {
     completions.setLate(late);
   }
 
-  Collection<FacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
-    List<FacilityDto> facilities = new ArrayList<>();
+  Collection<BasicFacilityDto> getAvailableFacilities(Collection<GeographicZoneDto> zones) {
+    List<BasicFacilityDto> facilities = new ArrayList<>();
     for (GeographicZoneDto zone : zones) {
       facilities.addAll(facilityReferenceDataService.search(null, null, zone.getId(), true));
     }
 
     return facilities
         .stream()
-        .filter(FacilityDto::getActive)
+        .filter(BasicFacilityDto::getActive)
         .collect(Collectors.toList());
   }
 

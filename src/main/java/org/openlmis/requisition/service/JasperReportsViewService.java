@@ -39,6 +39,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.BasicFacilityDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -341,16 +342,16 @@ public class JasperReportsViewService {
         .filter(RequisitionStatus::isApproved)
         .collect(Collectors.toSet());
 
-    List<FacilityDto> facilities;
+    List<BasicFacilityDto> facilities;
     if (district != null) {
       facilities = facilityReferenceDataService.search(null, null, district.getId(), true);
     } else {
-      facilities = facilityReferenceDataService.findAll();
+      facilities = facilityReferenceDataService.basicFindAll();
     }
 
     List<TimelinessReportFacilityDto> facilitiesMissingRnR = new ArrayList<>();
     // find active facilities that are missing R&R
-    for (FacilityDto facility : facilities) {
+    for (BasicFacilityDto facility : facilities) {
       if (facility.getActive()) {
         List<Requisition> requisitions = requisitionService.searchRequisitions(
             facility.getId(), program.getId(), null, null, processingPeriod.getId(),
@@ -364,9 +365,9 @@ public class JasperReportsViewService {
     }
 
     // sort alphabetically by district and then facility name
-    Comparator<FacilityDto> comparator = Comparator.comparing(
+    Comparator<BasicFacilityDto> comparator = Comparator.comparing(
         facility -> facility.getZoneByLevelNumber(DISTRICT_LEVEL).getName());
-    comparator = comparator.thenComparing(Comparator.comparing(FacilityDto::getName));
+    comparator = comparator.thenComparing(Comparator.comparing(BasicFacilityDto::getName));
 
     return facilitiesMissingRnR.stream()
         .sorted(comparator).collect(Collectors.toList());

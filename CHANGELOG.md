@@ -7,6 +7,9 @@ Contract breaking changes:
 (/api/settings) are no longer available. Use environment variables to configure the application.
 * [MW-365](https://openlmis.atlassian.net/browse/MW-365): Requisition search endpoints: requisitionsForApproval and requisitionsForConvert will now return smaller basic dtos.
 
+New functionality added in a backwards-compatible manner:
+
+* [OLMIS-2709](https://openlmis.atlassian.net/browse/OLMIS-2709): Changed ReferenceData service facility search and get all endpoints to use smaller dto.
 
 4.0.0 / 2017-06-23
 ==================

@@ -36,6 +36,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.BasicFacilityDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
@@ -588,9 +589,9 @@ public class RequisitionService {
       foundPrograms.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
     }
 
-    Collection<FacilityDto> foundFacilities = new ArrayList<>();
+    Collection<BasicFacilityDto> foundFacilities = new ArrayList<>();
     if (filterAll && filterValue.isEmpty()) {
-      foundFacilities.addAll(facilityReferenceDataService.findAll());
+      foundFacilities.addAll(facilityReferenceDataService.basicFindAll());
     } else {
       if (filterAll || filterByCode) {
         foundFacilities.addAll(facilityReferenceDataService.search(filterValue, null, null, false));

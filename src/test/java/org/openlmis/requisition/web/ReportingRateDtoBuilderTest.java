@@ -29,7 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.BasicFacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
@@ -158,7 +158,8 @@ public class ReportingRateDtoBuilderTest {
     GeographicZoneDto zone2 = mockGeographicZoneWithFacility(true);
 
     // when
-    Collection<FacilityDto> result = builder.getAvailableFacilities(Arrays.asList(zone1, zone2));
+    Collection<BasicFacilityDto> result =
+        builder.getAvailableFacilities(Arrays.asList(zone1, zone2));
 
     // then
     assertNotNull(result);
@@ -172,12 +173,13 @@ public class ReportingRateDtoBuilderTest {
     GeographicZoneDto zone2 = mockGeographicZoneWithFacility(false);
 
     // when
-    Collection<FacilityDto> result = builder.getAvailableFacilities(Arrays.asList(zone1, zone2));
+    Collection<BasicFacilityDto> result =
+        builder.getAvailableFacilities(Arrays.asList(zone1, zone2));
 
     // then
     assertNotNull(result);
 
-    List<FacilityDto> resultList = new ArrayList<>(result);
+    List<BasicFacilityDto> resultList = new ArrayList<>(result);
 
     assertEquals(1, resultList.size());
     assertEquals(zone1, resultList.get(0).getGeographicZone());
@@ -234,13 +236,13 @@ public class ReportingRateDtoBuilderTest {
 
     when(zone.getId()).thenReturn(zoneId);
 
-    FacilityDto facility = mock(FacilityDto.class);
+    BasicFacilityDto facility = mock(BasicFacilityDto.class);
     UUID facilityId = UUID.randomUUID();
 
     when(facility.getId()).thenReturn(facilityId);
     when(facility.getActive()).thenReturn(facilityActive);
     when(facility.getGeographicZone()).thenReturn(zone);
-    List<FacilityDto> facilitiesForZone = Collections.singletonList(facility);
+    List<BasicFacilityDto> facilitiesForZone = Collections.singletonList(facility);
 
     when(facilityReferenceDataService.search(null, null, zone.getId(), true))
         .thenReturn(facilitiesForZone);

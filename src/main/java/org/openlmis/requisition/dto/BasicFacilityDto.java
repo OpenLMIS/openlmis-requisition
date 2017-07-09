@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,7 @@ public class BasicFacilityDto extends BaseDto {
 
   private String code;
   private String name;
+  private Boolean active;
   private GeographicZoneDto geographicZone;
 
   public interface Exporter {
@@ -36,6 +38,8 @@ public class BasicFacilityDto extends BaseDto {
     void setCode(String code);
 
     void setName(String name);
+
+    void setActive(Boolean active);
 
     void setGeographicZone(GeographicZoneDto geographicZone);
   }
@@ -49,7 +53,22 @@ public class BasicFacilityDto extends BaseDto {
     exporter.setId(id);
     exporter.setCode(code);
     exporter.setName(name);
+    exporter.setActive(active);
     exporter.setGeographicZone(geographicZone);
+  }
+
+  /**
+   * Get zone with given level number by traversing up geographicZone hierachy if needed.
+   * @return zone of the facility with given level number.
+   */
+  @JsonIgnore
+  public GeographicZoneDto getZoneByLevelNumber(Integer levelNumber) {
+    GeographicZoneDto district = geographicZone;
+    while (null != district && null != district.getParent()
+        && district.getLevel().getLevelNumber() > levelNumber) {
+      district = district.getParent();
+    }
+    return district;
   }
 
 }

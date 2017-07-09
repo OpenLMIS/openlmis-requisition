@@ -24,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.BasicFacilityDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicLevelDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
@@ -121,11 +122,12 @@ public class JasperReportsViewServiceTest {
   @Test
   public void shouldGetTimelinessReportViewWithActiveFacilitiesMissingRnR() {
     // given
-    List<FacilityDto> facilitiesToReturn = new ArrayList<>();
+    List<BasicFacilityDto> facilitiesToReturn = new ArrayList<>();
 
     // active facilities missing RnR
-    FacilityDto facility = mockFacility(true, true);
-    FacilityDto anotherFacility = mockFacility(true, true);
+    BasicFacilityDto facility = mockBasicFacility(true, true, UUID.randomUUID(), "Test", "Test");
+    BasicFacilityDto anotherFacility = mockBasicFacility(true, true,
+        UUID.randomUUID(), "zone", "facility");
     facilitiesToReturn.add(facility);
     facilitiesToReturn.add(anotherFacility);
 
@@ -136,7 +138,7 @@ public class JasperReportsViewServiceTest {
     facilitiesToReturn.add(mockFacility(false, false));
     facilitiesToReturn.add(mockFacility(false, true));
 
-    when(facilityReferenceDataService.findAll()).thenReturn(facilitiesToReturn);
+    when(facilityReferenceDataService.basicFindAll()).thenReturn(facilitiesToReturn);
 
     // when
     ModelAndView view = service.getTimelinessJasperReportView(
@@ -158,8 +160,9 @@ public class JasperReportsViewServiceTest {
     reportParams.put("district", districtId.toString());
 
     // active facilities missing RnR
-    FacilityDto facility = mockFacility(true, true, districtId, "parent-zone", "f1");
-    FacilityDto childFacility = mockFacility(true, true, UUID.randomUUID(), "child-zone", "f2");
+    BasicFacilityDto facility = mockBasicFacility(true, true, districtId, "parent-zone", "f1");
+    BasicFacilityDto childFacility =
+        mockBasicFacility(true, true, UUID.randomUUID(), "child-zone", "f2");
 
     GeographicLevelDto childLevel = mock(GeographicLevelDto.class);
     when(childLevel.getLevelNumber()).thenReturn(DISTRICT_LEVEL + 1);
@@ -193,15 +196,15 @@ public class JasperReportsViewServiceTest {
     UUID zone1Id = UUID.randomUUID();
     UUID zone2Id = UUID.randomUUID();
 
-    List<FacilityDto> facilitiesToReturn = Arrays.asList(
+    List<BasicFacilityDto> facilitiesToReturn = Arrays.asList(
         // active facilities missing RnR from different zones
-        mockFacility(true, true, zone1Id, "district A", "f1"),
-        mockFacility(true, true, zone1Id, "district A", "f2"),
-        mockFacility(true, true, zone2Id, "district B", "f3"),
-        mockFacility(true, true, zone2Id, "district B", "f4")
+        mockBasicFacility(true, true, zone1Id, "district A", "f1"),
+        mockBasicFacility(true, true, zone1Id, "district A", "f2"),
+        mockBasicFacility(true, true, zone2Id, "district B", "f3"),
+        mockBasicFacility(true, true, zone2Id, "district B", "f4")
     );
 
-    when(facilityReferenceDataService.findAll()).thenReturn(facilitiesToReturn);
+    when(facilityReferenceDataService.basicFindAll()).thenReturn(facilitiesToReturn);
 
     // when
     ModelAndView view = service.getTimelinessJasperReportView(
@@ -212,7 +215,7 @@ public class JasperReportsViewServiceTest {
     Assert.assertEquals(4, facilities.size());
     List<UUID> facilityIds = facilities.stream()
         .map(FacilityDto::getId).collect(Collectors.toList());
-    for (FacilityDto facility : facilitiesToReturn) {
+    for (BasicFacilityDto facility : facilitiesToReturn) {
       Assert.assertTrue(facilityIds.contains(facility.getId()));
     }
   }
@@ -223,12 +226,12 @@ public class JasperReportsViewServiceTest {
     UUID zone1Id = UUID.randomUUID();
     UUID zone2Id = UUID.randomUUID();
 
-    FacilityDto facility1A = mockFacility(true, true, zone1Id, "zone1", "facilityA");
-    FacilityDto facility1B = mockFacility(true, true, zone1Id, "zone1", "facilityB");
-    FacilityDto facility2A = mockFacility(true, true, zone2Id, "zone2", "facilityA");
-    FacilityDto facility2B = mockFacility(true, true, zone2Id, "zone2", "facilityB");
+    BasicFacilityDto facility1A = mockBasicFacility(true, true, zone1Id, "zone1", "facilityA");
+    BasicFacilityDto facility1B = mockBasicFacility(true, true, zone1Id, "zone1", "facilityB");
+    BasicFacilityDto facility2A = mockBasicFacility(true, true, zone2Id, "zone2", "facilityA");
+    BasicFacilityDto facility2B = mockBasicFacility(true, true, zone2Id, "zone2", "facilityB");
 
-    when(facilityReferenceDataService.findAll()).thenReturn(Arrays.asList(
+    when(facilityReferenceDataService.basicFindAll()).thenReturn(Arrays.asList(
         facility2B, facility2A, facility1A, facility1B));
 
     // when
@@ -263,6 +266,30 @@ public class JasperReportsViewServiceTest {
     facility.setActive(isActive);
     facility.setName(facilityName);
 
+    facility.setGeographicZone(
+        mockGeographicZone(districtId, districtName, facilityId, isMissingRnR));
+
+    return facility;
+  }
+
+  private BasicFacilityDto mockBasicFacility(boolean isActive, boolean isMissingRnR,
+                                             UUID districtId, String districtName,
+                                             String facilityName) {
+    BasicFacilityDto facility = new BasicFacilityDto();
+
+    UUID facilityId = UUID.randomUUID();
+    facility.setId(facilityId);
+    facility.setActive(isActive);
+    facility.setName(facilityName);
+
+    facility.setGeographicZone(
+        mockGeographicZone(districtId, districtName, facilityId, isMissingRnR));
+
+    return facility;
+  }
+
+  private GeographicZoneDto mockGeographicZone(UUID districtId, String districtName,
+                                               UUID facilityId, boolean isMissingRnR) {
     GeographicZoneDto geographicZoneDto = mock(GeographicZoneDto.class);
     when(geographicZoneDto.getId()).thenReturn(districtId);
     when(geographicZoneDto.getName()).thenReturn(districtName);
@@ -272,8 +299,6 @@ public class JasperReportsViewServiceTest {
     when(geographicZoneDto.getLevel()).thenReturn(geographicLevelDto);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(geographicZoneDto);
 
-    facility.setGeographicZone(geographicZoneDto);
-
     List<Requisition> requisitionSearchResult = mock(List.class);
     when(requisitionSearchResult.size()).thenReturn(
         (isMissingRnR) ? 0 : 1);
@@ -281,6 +306,7 @@ public class JasperReportsViewServiceTest {
     when(requisitionService.searchRequisitions(eq(facilityId), eq(programId), any(), any(),
         eq(periodId), any(), any(), any()))
         .thenReturn(requisitionSearchResult);
-    return facility;
+
+    return geographicZoneDto;
   }
 }
