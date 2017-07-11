@@ -10,7 +10,7 @@
     },
     "processingSchedule": {
       "type": "object",
-      "$ref": "#/schemas/processingSchedule",
+      "$ref": "processingScheduleDto.json",
       "title": "processingSchedule"
     },
     "name": {

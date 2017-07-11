@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "title": "OrderableDto",
+  "description": "A single orderableDto",
+  "properties": {
+    "id": { "type": "string", "title": "id" },
+    "productCode": { "type": "string", "title": "code" },
+    "name": { "type": "string", "title": "name" },
+    "programs": {"type": "array", "title": "programs", "items": {"type": "object", "$ref": "programOrderableDto.json"}, "uniqueItems": false}
+  },
+  "required": ["id", "productCode", "name"]
+}

@@ -21,5 +21,5 @@
       "items": { "type": "object" }
     }
   },
-  "required": ["content" , "totalPages" , "totalElements", "totalElements" , "size", "number" , "numberOfElements" , "first" , "last"]
+  "required": ["content" , "totalPages" , "totalElements", "size", "number" , "numberOfElements" , "first" , "last"]
 }

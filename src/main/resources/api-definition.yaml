@@ -29,138 +29,25 @@ schemas:
 
   - requisitionWithSupplyingDepotsDtoPage: !include schemas/requisitionWithSupplyingDepotsDtoPage.json
 
-  - orderableDto: |
-      {    "type": "object",
-           "$schema": "http://json-schema.org/draft-03/schema",
-           "title": "OrderableDto",
-           "description": "A single orderableDto",
-           "properties": {
-               "id": { "type": "string", "required": true, "title": "id" },
-               "productCode": { "type": "string", "required": true, "title": "code" },
-               "name": { "type": "string", "required": true, "title": "name" },
-               "programs": {"type": "array", "required": false, "title": "programs", "items": {"type": "object", "$ref": "schemas/programOrderableDto.json"}, "uniqueItems": false}
-           }
-      }
+  - orderableDto: !include schemas/orderableDto.json
 
   - processingPeriodDto: !include schemas/processingPeriodDto.json
 
-  - processingScheduleDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "ProcessingScheduleDto",
-          "description": "A single processingScheduleDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "code": { "type": "string", "required": true, "title": "code" },
-              "description": { "type": "string", "required": true, "title": "description" },
-              "modifiedDate": { "type": "string", "required": true, "title": "modifiedDate" },
-              "name": { "type": "string", "required": true, "title": "name" }
-          }
-      }
+  - processingScheduleDto: !include schemas/processingScheduleDto.json
 
   - programDto: !include schemas/programDto.json
 
   - programOrderableDto: !include schemas/programOrderableDto.json
 
-  - requisition: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "Requisition",
-          "description": "A single requisition",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "createdDate": { "type": "string", "required": false, "title": "createdDate" },
-              "facilityId": { "type": "string", "required": true, "title": "facilityId" },
-              "programId": { "type": "string", "required": true, "title": "programId" },
-              "processingPeriodId": { "type": "string", "required": true, "title": "processingPeriodId" },
-              "supplyingFacilityId" : {"type": "string", "required": false, "title": "supplyingFacilityId"},
-              "status": { "type": "string", "required": true, "title": "status" },
-              "emergency": { "type": "boolean", "required": false, "title": "emergency" },
-              "supervisoryNodeId": { "type": "string", "required": true, "title": "supervisoryNodeId" },
-              "requisitionLineItems": { "type": "array", "required": false, "title":"requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItem" }, "uniqueItems": false }
-          }
-      }
-
-  - requisitionDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "RequisitionDto",
-          "description": "A single requisitionDto",
-          "properties": {
-              "id": { "type": "string", "title": "id" },
-              "createdDate": {"type": "array", "title": "createdDate", "items": {"type": "integer" }, "uniqueItems": false },
-              "facility": { "type": "object", "$ref": "schemas/facilityDto.json", "title": "facility" },
-              "program": { "type": "object", "$ref": "schemas/programDto.json", "title": "program" },
-              "supplyingFacility" : {"type": ["string", "null"], "title": "supplyingFacility"},
-              "status": { "type": "string", "title": "status" },
-              "emergency": { "type": "boolean", "title": "emergency" },
-              "supervisoryNode": { "type": "string", "title": "supervisoryNode" },
-              "processingPeriod": { "type": "object", "$ref": "schemas/processingPeriodDto.json", "title": "processingPeriod" },
-              "draftStatusMessage": { "type": "string", "title": "draftStatusMessage" },
-              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/requisitionLineItemDto" }, "uniqueItems": false }
-          },
-          "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
-      }
+  - requisitionDto: !include schemas/requisitionDto.json
 
   - requisitionDtoArray: |
       {
           "type": "array",
-          "items": { "type": "object", "$ref": "#/schemas/requisitionDto" }
+          "items": { "type": "object", "$ref": "requisitionDto.json" }
       }
 
-  - requisitionLineItem: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "RequisitionLineItem",
-          "description": "A single requisitionLineItem",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "requisition": { "type": "object", "$ref": "#/schemas/requisition", "required": false, "title": "requisition" },
-              "orderableId": { "type": "string", "required": true, "title": "orderableId" },
-              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
-              "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
-              "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },
-              "stockOnHand": { "type": "integer", "required": false, "title": "stockOnHand" },
-              "requestedQuantity": { "type": "integer", "required": false, "title": "requestedQuantity" },
-              "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
-              "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
-              "remarks": {"type": "string", "required": true, "title": "remarks" },
-              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
-              "total": {"type": "integer", "required": false, "title": "total" },
-              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
-              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
-              "skipped": {"type": "boolean", "required": false, "title": "boolean" },
-              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" },
-              "averageConsumption": {"type": "number", "required": false, "title": "averageConsumption" },
-              "orderableCategoryDisplayName": {"type": "string", "required": false, "title": "orderableCategoryDisplayName" }
-          }
-      }
-
-  - requisitionLineItemDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "RequisitionLineItemDto",
-          "description": "A single requisitionLineItemDto",
-          "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "orderable": { "type": "object", "$ref": "#/schemas/orderableDto", "required": true, "title": "orderable" },
-              "beginningBalance": { "type": "integer", "required": false, "title": "beginningBalance" },
-              "totalReceivedQuantity": { "type": "integer", "required": false, "title": "totalReceivedQuantity" },
-              "totalLossesAndAdjustments": { "type": "integer", "required": false, "title": "totalLossesAndAdjustments" },
-              "stockOnHand": { "type": "integer", "required": false, "title": "stockOnHand" },
-              "requestedQuantity": { "type": "integer", "required": false, "title": "requestedQuantity" },
-              "totalConsumedQuantity": { "type": "integer", "required": false, "title": "totalConsumedQuantity" },
-              "requestedQuantityExplanation": { "type": "string", "required": false, "title": "requestedQuantityExplanation" },
-              "remarks": {"type": "string", "required": true, "title": "remarks" },
-              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
-              "total": {"type": "integer", "required": false, "title": "total" },
-              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
-              "numberOfNewPatientsAdded": {"type": "number", "required": false, "title": "numberOfNewPatientsAdded" },
-              "skipped": {"type": "boolean", "required": false, "title": "skipped" },
-              "adjustedConsumption": {"type": "number", "required": false, "title": "adjustedConsumption" },
-              "averageConsumption": {"type": "number", "required": false, "title": "averageConsumption" }
-          }
-      }
+  - requisitionLineItemDto: !include schemas/requisitionLineItemDto.json
 
   - requisitionTemplate: !include schemas/requisitionTemplate.json
 
@@ -174,7 +61,7 @@ schemas:
       {
           "type": "array",
           "items": [
-              { "type": "object", "$ref": "#/schemas/requisition" },
+              { "type": "object", "$ref": "/schemas/requisitionDto.json" },
               { "type": "array", "items": { "type": "object", "$ref": "#/schemas/facility" } }
           ]
       }
