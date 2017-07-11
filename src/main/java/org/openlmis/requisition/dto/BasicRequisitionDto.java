@@ -46,8 +46,8 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   @JsonSerialize(as = BasicProcessingPeriodDto.class)
   private BasicProcessingPeriodDto processingPeriod;
 
-  @JsonSerialize(as = BasicFacilityDto.class)
-  private BasicFacilityDto facility;
+  @JsonSerialize(as = MinimalFacilityDto.class)
+  private MinimalFacilityDto facility;
 
   @JsonSerialize(as = BasicProgramDto.class)
   private BasicProgramDto program;

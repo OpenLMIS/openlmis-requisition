@@ -9,7 +9,7 @@ Contract breaking changes:
 
 New functionality added in a backwards-compatible manner:
 
-* [OLMIS-2709](https://openlmis.atlassian.net/browse/OLMIS-2709): Changed ReferenceData service facility search and get all endpoints to use smaller dto.
+* [OLMIS-2709](https://openlmis.atlassian.net/browse/OLMIS-2709): Changed ReferenceData facility service search endpoint to use smaller dto.
 
 4.0.0 / 2017-06-23
 ==================

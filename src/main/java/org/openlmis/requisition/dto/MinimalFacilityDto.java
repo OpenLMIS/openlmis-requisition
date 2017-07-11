@@ -25,12 +25,12 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
-public class BasicFacilityDto extends BaseDto {
+public class MinimalFacilityDto extends BaseDto {
 
-  private String code;
-  private String name;
-  private Boolean active;
-  private GeographicZoneDto geographicZone;
+  protected String code;
+  protected String name;
+  protected Boolean active;
+  protected GeographicZoneDto geographicZone;
 
   public interface Exporter {
     void setId(UUID id);
@@ -70,5 +70,4 @@ public class BasicFacilityDto extends BaseDto {
     }
     return district;
   }
-
 }

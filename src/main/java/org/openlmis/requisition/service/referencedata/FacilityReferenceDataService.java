@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import org.openlmis.requisition.dto.BasicFacilityDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.data.domain.Page;
@@ -53,7 +53,7 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @param name Filed with string to find similar name.
    * @return List of FacilityDtos with similar code or name.
    */
-  public List<BasicFacilityDto> search(String code, String name, UUID zoneId, boolean recurse) {
+  public List<MinimalFacilityDto> search(String code, String name, UUID zoneId, boolean recurse) {
     Map<String, Object> requestBody = new HashMap<>();
     requestBody.put("code", code);
     requestBody.put("name", name);
@@ -61,16 +61,6 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
 
     requestBody.put("zoneId", zoneId);
     return getBasicFacilityPage("search", RequestParameters.init(), requestBody).getContent();
-  }
-
-  /**
-   * This method retrieves all Facilities using {@link BasicFacilityDto}
-   * with minimal set of properties.
-   *
-   * @return List of {@link BasicFacilityDto}.
-   */
-  public List<BasicFacilityDto> basicFindAll() {
-    return findAll("", BasicFacilityDto[].class);
   }
 
   /**
@@ -89,9 +79,9 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
     return findAll("supplying", parameters);
   }
 
-  protected Page<BasicFacilityDto> getBasicFacilityPage(String resourceUrl,
-                                                        RequestParameters parameters,
-                                                        Object payload) {
-    return getPage(resourceUrl, parameters, payload, HttpMethod.POST, BasicFacilityDto.class);
+  protected Page<MinimalFacilityDto> getBasicFacilityPage(String resourceUrl,
+                                                          RequestParameters parameters,
+                                                          Object payload) {
+    return getPage(resourceUrl, parameters, payload, HttpMethod.POST, MinimalFacilityDto.class);
   }
 }

@@ -29,7 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.dto.BasicFacilityDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
@@ -158,7 +158,7 @@ public class ReportingRateDtoBuilderTest {
     GeographicZoneDto zone2 = mockGeographicZoneWithFacility(true);
 
     // when
-    Collection<BasicFacilityDto> result =
+    Collection<MinimalFacilityDto> result =
         builder.getAvailableFacilities(Arrays.asList(zone1, zone2));
 
     // then
@@ -173,13 +173,13 @@ public class ReportingRateDtoBuilderTest {
     GeographicZoneDto zone2 = mockGeographicZoneWithFacility(false);
 
     // when
-    Collection<BasicFacilityDto> result =
+    Collection<MinimalFacilityDto> result =
         builder.getAvailableFacilities(Arrays.asList(zone1, zone2));
 
     // then
     assertNotNull(result);
 
-    List<BasicFacilityDto> resultList = new ArrayList<>(result);
+    List<MinimalFacilityDto> resultList = new ArrayList<>(result);
 
     assertEquals(1, resultList.size());
     assertEquals(zone1, resultList.get(0).getGeographicZone());
@@ -236,13 +236,13 @@ public class ReportingRateDtoBuilderTest {
 
     when(zone.getId()).thenReturn(zoneId);
 
-    BasicFacilityDto facility = mock(BasicFacilityDto.class);
+    MinimalFacilityDto facility = mock(MinimalFacilityDto.class);
     UUID facilityId = UUID.randomUUID();
 
     when(facility.getId()).thenReturn(facilityId);
     when(facility.getActive()).thenReturn(facilityActive);
     when(facility.getGeographicZone()).thenReturn(zone);
-    List<BasicFacilityDto> facilitiesForZone = Collections.singletonList(facility);
+    List<MinimalFacilityDto> facilitiesForZone = Collections.singletonList(facility);
 
     when(facilityReferenceDataService.search(null, null, zone.getId(), true))
         .thenReturn(facilitiesForZone);

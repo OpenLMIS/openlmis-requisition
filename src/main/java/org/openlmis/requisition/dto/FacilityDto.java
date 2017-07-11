@@ -27,17 +27,15 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-public class FacilityDto extends BasicFacilityDto {
+public class FacilityDto extends MinimalFacilityDto {
 
   private String description;
-  private Boolean active;
   private LocalDate goLiveDate;
   private LocalDate goDownDate;
   private String comment;
   private Boolean enabled;
   private Boolean openLmisAccessible;
   private List<SupportedProgramDto> supportedPrograms;
-  private GeographicZoneDto geographicZone;
   private FacilityOperatorDto operator;
   private FacilityTypeDto type;
 
@@ -47,7 +45,7 @@ public class FacilityDto extends BasicFacilityDto {
    */
   @JsonIgnore
   public GeographicZoneDto getZoneByLevelNumber(Integer levelNumber) {
-    GeographicZoneDto district = geographicZone;
+    GeographicZoneDto district = this.geographicZone;
     while (null != district && null != district.getParent()
         && district.getLevel().getLevelNumber() > levelNumber) {
       district = district.getParent();
@@ -55,7 +53,7 @@ public class FacilityDto extends BasicFacilityDto {
     return district;
   }
 
-  public interface Exporter extends BasicFacilityDto.Exporter {
+  public interface Exporter extends MinimalFacilityDto.Exporter {
     void setDescription(String description);
 
     void setActive(Boolean active);
