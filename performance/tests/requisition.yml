@@ -1,0 +1,73 @@
+execution:
+  - concurrency: 1
+    iterations: 1
+    scenario: initiate-requisition
+  - concurrency: 1
+    iterations: 1
+    scenario: search-one-page
+
+scenarios:
+  initiate-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/oauth/token
+        method: POST
+        headers:
+          Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+        body:
+          grant_type: password
+          username: ${__P(username)}
+          password: ${__P(password)}
+        extract-jsonpath:
+          access_token:
+            jsonpath: $.access_token
+      # program = family planning, facility = comfort health clinic
+      - url: ${__P(base-uri)}/api/requisitions/periodsForInitiate?programId=10845cb9-d365-4aaa-badd-b4fa39c6a26a&facilityId=e6799d64-d10d-4011-b8c2-0e4d4a3f65ce&emergency=false
+        method: GET
+        headers:
+          Authorization: Bearer ${access_token}
+        extract-jsonpath:
+          periodUuid:
+            jsonpath: $.[:1]id
+        jsr223:
+          script-text: |
+            String uuid = vars.get("periodUuid");
+            uuid = uuid.replaceAll(/"|\[|\]/, "");
+            vars.put("periodUuid", uuid);
+      - url: ${__P(base-uri)}/api/requisitions/initiate?program=10845cb9-d365-4aaa-badd-b4fa39c6a26a&facility=e6799d64-d10d-4011-b8c2-0e4d4a3f65ce&suggestedPeriod=${periodUuid}&emergency=false
+        method: POST
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        extract-jsonpath:
+          reqUuid:
+            jsonpath: $.id
+        jsr223:
+          script-text: |
+            String uuid = vars.get("reqUuid");
+            uuid = uuid.replaceAll(/"|\[|\]/, "");
+            vars.put("reqUuid", uuid);
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}
+        method: DELETE
+        headers:
+          Authorization: Bearer ${access_token}
+  search-one-page:
+    requests:
+      - url: ${__P(base-uri)}/api/oauth/token
+        method: POST
+        headers:
+          Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+        body:
+          grant_type: password
+          username: ${__P(username)}
+          password: ${__P(password)}
+        extract-jsonpath:
+          access_token:
+            jsonpath: $.access_token
+      - url: ${__P(base-uri)}/api/requisitions/search
+        method: GET
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        body:
+          page: 1
+          size: 10
