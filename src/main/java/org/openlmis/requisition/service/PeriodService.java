@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -101,8 +102,8 @@ public class PeriodService {
    * @param emergency decide if periods should be find for standard or emergency requisitions.
    * @return a list of periods.
    */
-  public Collection<ProcessingPeriodDto> getPeriods(UUID program, UUID facility,
-                                                    boolean emergency) {
+  public Collection<ProcessingPeriodDto> getPeriods(
+      UUID program, UUID facility, boolean emergency) {
     Collection<ProcessingPeriodDto> periods;
 
     if (emergency) {
@@ -124,17 +125,6 @@ public class PeriodService {
     }
 
     return periods;
-  }
-
-  /**
-   * Find previous period for the given period.
-   *
-   * @param periodId UUID of period
-   * @return previous period or {@code null} if not found.
-   */
-  public ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
-    List<ProcessingPeriodDto> previousPeriods = findPreviousPeriods(periodId, 1);
-    return previousPeriods.isEmpty() ? null : previousPeriods.get(0);
   }
 
   /**
@@ -199,7 +189,7 @@ public class PeriodService {
 
       period = periods.get(0);
     } else {
-      period = findTheOldestPeriod(programId, facilityId);
+      period = findPreviousPeriod(programId, facilityId);
     }
 
     if (period == null
@@ -227,30 +217,47 @@ public class PeriodService {
   }
 
   /**
+   * Find previous period for the given period.
+   *
+   * @param periodId UUID of period
+   * @return previous period or {@code null} if not found.
+   */
+  public ProcessingPeriodDto findPreviousPeriod(UUID periodId) {
+    List<ProcessingPeriodDto> previousPeriods = findPreviousPeriods(periodId, 1);
+    return previousPeriods.isEmpty() ? null : previousPeriods.get(0);
+  }
+
+  /**
    * Return the oldest period which is not associated with any requisition.
    *
    * @param programId  Program for Requisition
    * @param facilityId Facility for Requisition
    * @return ProcessingPeriodDto.
    */
-  private ProcessingPeriodDto findTheOldestPeriod(UUID programId, UUID facilityId) {
-
-    RequisitionStatus lastStatus = requisitionRepository.getLastRegularRequisitionStatus(
-        facilityId, programId
-    );
-
-    if (null != lastStatus && lastStatus.isPreAuthorize()) {
-      throw new ValidationMessageException(new Message(ERROR_FINISH_PROVIOUS_REQUISITION));
-    }
-
+  private ProcessingPeriodDto findPreviousPeriod(UUID programId, UUID facilityId) {
     ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods = searchByProgramAndFacility(programId, facilityId);
 
     if (periods != null) {
+      RequisitionStatus previousStatus = null;
+
       for (ProcessingPeriodDto dto : periods) {
-        int count = requisitionRepository.getRequisitionsCount(
+        List<Requisition> requisitions = requisitionRepository.searchRequisitions(
             dto.getId(), facilityId, programId, false);
-        if (count == 0) {
+
+        Optional<Requisition> lastRequisition = requisitions.stream()
+            .sorted((left, right) -> -left.getCreatedDate().compareTo(right.getCreatedDate()))
+            .findFirst();
+
+        if (lastRequisition.isPresent()) {
+          previousStatus = lastRequisition.get().getStatus();
+        }
+
+        if (requisitions.size() == 0) {
+          if (null != previousStatus && previousStatus.isPreAuthorize()) {
+            throw new ValidationMessageException(new Message(ERROR_FINISH_PROVIOUS_REQUISITION));
+          }
+
           result = dto;
           break;
         }

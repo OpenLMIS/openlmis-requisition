@@ -16,17 +16,10 @@
 package org.openlmis.requisition.repository;
 
 import static java.util.Collections.singleton;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.domain.RequisitionStatus.IN_APPROVAL;
-import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
 
@@ -220,28 +213,6 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void testFindRequisitionsCountByPeriodFacilityProgramAndEmergencyFlag() {
-    requisitions.forEach(requisition -> {
-      int count = getRequisitionsCount(requisition);
-      assertEquals(1, count);
-    });
-
-    Requisition entity = generateInstance();
-    repository.save(entity);
-    Requisition entity2 = generateInstanceBasedOn(entity);
-    repository.save(entity2);
-
-    int count = getRequisitionsCount(entity);
-    assertEquals(2, count);
-  }
-
-  @Test
-  public void shouldNotFindAnyRequisition() {
-    assertEquals(0, repository.getRequisitionsCount(
-        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), true));
-  }
-
-  @Test
   public void testSearchRequisitionsByTemplate() {
     // given
     RequisitionTemplate nonMatchingTemplate = templateRepository.save(new RequisitionTemplate());
@@ -304,67 +275,6 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(5, requisition.getPreviousRequisitions().size());
   }
 
-  @Test
-  public void shouldRetrieveLastRegularRequisitionStatus() {
-    final UUID clinic = UUID.randomUUID();
-    final UUID hospital = UUID.randomUUID();
-    final UUID essentialMeds = UUID.randomUUID();
-    final UUID familyPlanning = UUID.randomUUID();
-
-    repository.save(generateRequisition(clinic, essentialMeds, RELEASED));
-    repository.save(generateRequisition(clinic, essentialMeds, AUTHORIZED));
-    /* last requisition CLINIC - ESSENTIAL MEDS - */
-    repository.save(generateRequisition(clinic, essentialMeds, INITIATED));
-
-
-    repository.save(generateRequisition(clinic, familyPlanning, APPROVED));
-    /* last requisition CLINIC - FAMILY PLANNING - */
-    repository.save(generateRequisition(clinic, familyPlanning, SUBMITTED));
-
-
-    /* last requisition HOSPITAL - ESSENTIAL MEDS - */
-    repository.save(generateRequisition(hospital, essentialMeds, AUTHORIZED));
-
-
-    repository.save(generateRequisition(hospital, familyPlanning, APPROVED));
-    repository.save(generateRequisition(hospital, familyPlanning, APPROVED));
-    /* last requisition HOSPITAL - FAMILY PLANNING - */
-    repository.save(generateRequisition(hospital, familyPlanning, IN_APPROVAL));
-
-    RequisitionStatus status = repository.getLastRegularRequisitionStatus(clinic, essentialMeds);
-    assertNotNull(status);
-    assertEquals(INITIATED, status);
-
-    status = repository.getLastRegularRequisitionStatus(clinic, familyPlanning);
-    assertNotNull(status);
-    assertEquals(SUBMITTED, status);
-
-    status = repository.getLastRegularRequisitionStatus(hospital, essentialMeds);
-    assertNotNull(status);
-    assertEquals(AUTHORIZED, status);
-
-    status = repository.getLastRegularRequisitionStatus(hospital, familyPlanning);
-    assertNotNull(status);
-    assertEquals(IN_APPROVAL, status);
-  }
-
-  @Test
-  public void shouldReturnNullForLastRegularRequisitionStatusIfNoneAreFound() {
-    final UUID clinic = UUID.randomUUID();
-    final UUID hospital = UUID.randomUUID();
-    final UUID essentialMeds = UUID.randomUUID();
-    final UUID familyPlanning = UUID.randomUUID();
-
-    repository.save(generateRequisition(clinic, essentialMeds, RELEASED));
-    repository.save(generateRequisition(clinic, familyPlanning, APPROVED));
-    repository.save(generateRequisition(hospital, familyPlanning, APPROVED));
-
-    RequisitionStatus status = repository
-        .getLastRegularRequisitionStatus(UUID.randomUUID(), UUID.randomUUID());
-
-    assertNull(status);
-  }
-
   private Requisition generateRequisition(UUID facility, UUID program, RequisitionStatus status) {
     Requisition requisition = new Requisition(facility, program, UUID.randomUUID(),
         status, false);
@@ -390,12 +300,5 @@ public class RequisitionRepositoryIntegrationTest
     entity2.setProgramId(entity.getProgramId());
     entity2.setEmergency(entity.getEmergency());
     return entity2;
-  }
-
-  private int getRequisitionsCount(Requisition entity) {
-    return repository.getRequisitionsCount(
-        entity.getProcessingPeriodId(), entity.getFacilityId(), entity
-            .getProgramId(), entity.getEmergency()
-    );
   }
 }

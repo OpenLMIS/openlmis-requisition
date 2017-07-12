@@ -180,41 +180,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   /**
-   * Get last regular requisition for the given facility and program.
-   *
-   * @param facility UUID of facility.
-   * @param program  UUID of program.
-   * @return last regular requisition for the given facility and program. {@code null} if not found.
-   * @throws IllegalArgumentException if any of arguments is {@code null}.
-   */
-  @Override
-  public RequisitionStatus getLastRegularRequisitionStatus(UUID facility, UUID program) {
-    if (null == facility || null == program) {
-      throw new IllegalArgumentException("facility and program must be provided");
-    }
-
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-
-    CriteriaQuery<RequisitionStatus> query = builder.createQuery(RequisitionStatus.class);
-
-
-    Root<Requisition> root = query.from(Requisition.class);
-
-    Predicate predicate = builder.conjunction();
-    predicate = builder.and(predicate, builder.equal(root.get(EMERGENCY), false));
-    predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
-    predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
-
-    query.select(root.get("status"));
-    query.where(predicate);
-    query.orderBy(builder.desc(root.get(CREATED_DATE)));
-
-    List<RequisitionStatus> requisitionList = entityManager.createQuery(query)
-                                        .setMaxResults(1).getResultList();
-    return (requisitionList == null || requisitionList.isEmpty()) ? null : requisitionList.get(0);
-  }
-
-  /**
    * Get requisition with the given id.
    *
    * @param requisitionId UUID of requisition.
