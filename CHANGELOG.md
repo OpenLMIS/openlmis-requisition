@@ -11,6 +11,9 @@ New functionality added in a backwards-compatible manner:
 
 * [OLMIS-2709](https://openlmis.atlassian.net/browse/OLMIS-2709): Changed ReferenceData facility service search endpoint to use smaller dto.
 
+Bug fixes added in a backwards-compatible manner:
+* [OLMIS-2788](https://openlmis.atlassian.net/browse/OLMIS-2788): Fixed print requisition.
+
 4.0.0 / 2017-06-23
 ==================
 
