@@ -13,6 +13,7 @@ New functionality added in a backwards-compatible manner:
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2788](https://openlmis.atlassian.net/browse/OLMIS-2788): Fixed print requisition.
+* [OLMIS-2747](https://openlmis.atlassian.net/browse/OLMIS-2747): Fixed bug preventing user from being able to re-initiate a requisition after being removed, when there's already a requisition for next period.
 
 4.0.0 / 2017-06-23
 ==================
