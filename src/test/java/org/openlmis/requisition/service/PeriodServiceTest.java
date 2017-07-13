@@ -411,6 +411,18 @@ public class PeriodServiceTest {
   }
 
   @Test
+  public void shouldSucceedWhenRequisitionForNextPeriodIsPresent() {
+    setMockForFindPeriod();
+
+    mockRequisitionFound(getRequisition(AUTHORIZED), period1.getId(), facilityId, programId);
+    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(INITIATED), period3.getId(), facilityId, programId);
+
+    ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
+    assertEquals(period2, period);
+  }
+
+  @Test
   public void shouldUseNextAvailablePeriodWhenOneIsTaken() {
     //given
     setMockForFindPeriod();

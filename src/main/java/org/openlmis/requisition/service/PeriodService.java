@@ -41,7 +41,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -189,7 +188,7 @@ public class PeriodService {
 
       period = periods.get(0);
     } else {
-      period = findPreviousPeriod(programId, facilityId);
+      period = findCurrentPeriodForInitiate(programId, facilityId);
     }
 
     if (period == null
@@ -234,7 +233,7 @@ public class PeriodService {
    * @param facilityId Facility for Requisition
    * @return ProcessingPeriodDto.
    */
-  private ProcessingPeriodDto findPreviousPeriod(UUID programId, UUID facilityId) {
+  private ProcessingPeriodDto findCurrentPeriodForInitiate(UUID programId, UUID facilityId) {
     ProcessingPeriodDto result = null;
     Collection<ProcessingPeriodDto> periods = searchByProgramAndFacility(programId, facilityId);
 
@@ -242,18 +241,13 @@ public class PeriodService {
       RequisitionStatus previousStatus = null;
 
       for (ProcessingPeriodDto dto : periods) {
+        // There is always maximum one regular requisition for given period, facility and program
         List<Requisition> requisitions = requisitionRepository.searchRequisitions(
             dto.getId(), facilityId, programId, false);
 
-        Optional<Requisition> lastRequisition = requisitions.stream()
-            .sorted((left, right) -> -left.getCreatedDate().compareTo(right.getCreatedDate()))
-            .findFirst();
-
-        if (lastRequisition.isPresent()) {
-          previousStatus = lastRequisition.get().getStatus();
-        }
-
-        if (requisitions.size() == 0) {
+        if (requisitions.size() > 0) {
+          previousStatus = requisitions.get(0).getStatus();
+        } else {
           if (null != previousStatus && previousStatus.isPreAuthorize()) {
             throw new ValidationMessageException(new Message(ERROR_FINISH_PROVIOUS_REQUISITION));
           }
