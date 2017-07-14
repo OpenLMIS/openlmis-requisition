@@ -516,7 +516,7 @@ resourceTypes:
                   sortBy:
                       displayName: sortBy
                       description: This parameter contains field which we are going to sort by.
-                        There is three possibilities -  facilityCode, facilityName and programName
+                        There is four possibilities - emergency, facilityCode, facilityName and programName
                       type: string
                       required: false
                       repeat: true
