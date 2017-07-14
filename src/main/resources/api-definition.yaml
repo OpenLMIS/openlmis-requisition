@@ -519,7 +519,7 @@ resourceTypes:
                         There is three possibilities -  facilityCode, facilityName and programName
                       type: string
                       required: false
-                      repeat: false
+                      repeat: true
                   descending:
                       displayName: descending
                       description: This parameter contains sorting order. Default it is descending,

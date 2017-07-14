@@ -47,6 +47,7 @@ import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.Requisition;
@@ -761,7 +762,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
         .willReturn(supervisoryNode);
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
-            .willReturn(Collections.emptyList());
+        .willReturn(Collections.emptyList());
     doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
     mockValidationSuccess();
 
@@ -1099,7 +1100,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetSubmittedRequisitions() {
     // given
-    Requisition[] requisitions = { generateRequisition(), generateRequisition() };
+    Requisition[] requisitions = {generateRequisition(), generateRequisition()};
     given(requisitionService.searchRequisitions(
         anySetOf(RequisitionStatus.class)))
         .willReturn(Arrays.asList(requisitions));
@@ -1124,7 +1125,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     Requisition availableRequisition = generateRequisition(RequisitionStatus.SUBMITTED);
     Requisition unavailableRequisition = generateRequisition(RequisitionStatus.SUBMITTED);
-    Requisition[] requisitions = { availableRequisition, unavailableRequisition };
+    Requisition[] requisitions = {availableRequisition, unavailableRequisition};
 
     given(requisitionService.searchRequisitions(
         anySetOf(RequisitionStatus.class)))
@@ -1183,7 +1184,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotReturnPeriodsForInitiateIfUserHasNoRightsToInitiateRequisition() {
     // given
     String[] errorKeys = {
-        PermissionService.REQUISITION_CREATE, PermissionService.REQUISITION_AUTHORIZE };
+        PermissionService.REQUISITION_CREATE, PermissionService.REQUISITION_AUTHORIZE};
     PermissionMessageException exception = mockPermissionException(errorKeys);
     doThrow(exception).when(permissionService).canInitOrAuthorizeRequisition(anyUuid(), anyUuid());
 
@@ -1242,14 +1243,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation result = restAssured.given()
-            .queryParam(ACCESS_TOKEN, getToken())
-            .queryParam(PROGRAM, program)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .when()
-            .get(REQ_FOR_APPROVAL_URL)
-            .then()
-            .statusCode(200)
-            .extract().as(PageImplRepresentation.class);
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(PROGRAM, program)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
 
     // then
     assertEquals(1, result.getContent().size());
@@ -1283,7 +1284,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     int page = 0;
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(filterValue), eq(filterBy), eq(sortBy), eq(false), any(Pageable.class),
+        eq(filterValue), eq(filterBy), anyListOf(String.class), eq(false), any(Pageable.class),
         eq(managedFacilitiesIds)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
@@ -1306,6 +1307,63 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     assertEquals(1, response.getContent().size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetApprovedRequisitionsWithSortBySeveralFilters() {
+    // given
+    RightDto right = new RightDto();
+    right.setId(UUID.randomUUID());
+    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+
+    FacilityDto facility = new FacilityDto();
+    facility.setId(UUID.randomUUID());
+    Set<FacilityDto> managedFacilities = Collections.singleton(facility);
+    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
+
+    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
+    requisition.setRequisition(generateBasicRequisition());
+
+    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
+        any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
+
+    String filterValue = "Hospital";
+    String filterBy = "facilityName";
+    int size = 10;
+    int page = 0;
+
+    ArgumentCaptor<List> sortByCaptor = ArgumentCaptor.forClass(List.class);
+
+    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        eq(filterValue), eq(filterBy), sortByCaptor.capture(), eq(false), any(Pageable.class),
+        eq(managedFacilitiesIds)))
+        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+
+    // when
+    PageImplRepresentation response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("filterValue", filterValue)
+        .queryParam("filterBy", filterBy)
+        .queryParam("sortBy", Requisition.EMERGENCY)
+        .queryParam("sortBy", "facilityCode")
+        .queryParam("descending", Boolean.FALSE.toString())
+        .queryParam("page", page)
+        .queryParam("size", size)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(APPROVED_REQUISITIONS_SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    // then
+    assertEquals(1, response.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    List sortBy = sortByCaptor.getValue();
+    assertEquals(2, sortBy.size());
+    assertEquals(Requisition.EMERGENCY, sortBy.get(0));
+    assertEquals("facilityCode", sortBy.get(1));
   }
 
   @Test
@@ -1447,7 +1505,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void mockExternalServiceCalls() {
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
-            .willReturn(Collections.emptyList());
+        .willReturn(Collections.emptyList());
     given(supervisoryNodeReferenceDataService.findOne(anyUuid()))
         .willReturn(new SupervisoryNodeDto());
   }
@@ -1526,7 +1584,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private ValidationMessageException mockValidationException(String key, Object... args) {
     ValidationMessageException exception = mock(ValidationMessageException.class);
-    Message errorMessage = new Message(key, (Object[])args);
+    Message errorMessage = new Message(key, (Object[]) args);
     given(exception.asMessage()).willReturn(errorMessage);
 
     return exception;
