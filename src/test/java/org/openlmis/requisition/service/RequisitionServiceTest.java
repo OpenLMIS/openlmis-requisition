@@ -917,7 +917,8 @@ public class RequisitionServiceTest {
     //when
     Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, filterAndSortBy, true, pageable, userManagedFacilities);
+            filterAndSortBy, Collections.singletonList(filterAndSortBy), true, pageable,
+            userManagedFacilities);
 
     List<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrievedList =
         requisitionDtosRetrieved.getContent();

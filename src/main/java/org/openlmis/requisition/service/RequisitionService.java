@@ -508,7 +508,7 @@ public class RequisitionService {
   public Page<RequisitionWithSupplyingDepotsDto>
       searchApprovedRequisitionsWithSortAndFilterAndPaging(String filterValue,
                                                            String filterBy,
-                                                           String sortBy,
+                                                           List<String> sortBy,
                                                            Boolean descending,
                                                            Pageable pageable,
                                                            Collection<UUID> userManagedFacilities) {

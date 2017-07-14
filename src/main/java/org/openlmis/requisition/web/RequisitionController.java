@@ -598,7 +598,7 @@ public class RequisitionController extends BaseController {
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) String filterValue,
       @RequestParam(required = false) String filterBy,
-      @RequestParam(required = false, defaultValue = "programName") String sortBy,
+      @RequestParam(required = false) List<String> sortBy,
       @RequestParam(required = false, defaultValue = "true") boolean descending,
       Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
