@@ -586,7 +586,9 @@ public class RequisitionController extends BaseController {
    * @param filterValue Value to be used to filter.
    * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
    *                    "all".
-   * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
+   * @param sortBy      Fields used to sort: "emergency", "programName", "facilityCode" and/or
+   *                    "facilityName". If this parameter is empty/null, data will be sorted by
+   *                    emergency flag and program name.
    * @param descending  Descending direction for sort.
    * @param pageable     Pageable object that allows client to optionally add "page" (page number)
    *                     and "size" (page size) query parameters to the request.
