@@ -508,7 +508,7 @@ resourceTypes:
                   filterBy:
                       displayName: filterBy
                       description: This parameter contains field which we are going to filter by.
-                        There is four possibilities - facilityCode, facilityName, programName
+                        There are four possibilities - facilityCode, facilityName, programName
                         and all
                       type: string
                       required: false
@@ -516,7 +516,8 @@ resourceTypes:
                   sortBy:
                       displayName: sortBy
                       description: This parameter contains field which we are going to sort by.
-                        There is four possibilities - emergency, facilityCode, facilityName and programName
+                        There are four possibilities - emergency, facilityCode, facilityName and programName.
+                        If this parameter is not set, data will be sorted by emergency flag and program name.
                       type: string
                       required: false
                       repeat: true
