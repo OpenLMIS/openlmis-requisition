@@ -113,6 +113,14 @@ traits:
                   type: integer
                   required: false
                   repeat: false
+    - sorted:
+          queryParameters:
+              sort:
+                  description: Sorting criteria in the format "property(,asc|desc)". Default sort order is ascending. Multiple sort criteria are supported.
+                  type: string
+                  required: false
+                  repeat: true
+
 resourceTypes:
     - collection:
         get:
@@ -496,7 +504,7 @@ resourceTypes:
                   "500":
       /requisitionsForConvert:
           get:
-              is: [ secured, paginated ]
+              is: [ secured, paginated, sorted ]
               description: Get requisitions to approve for right supervisor.
               queryParameters:
                   filterValue:
@@ -511,21 +519,6 @@ resourceTypes:
                         There are four possibilities - facilityCode, facilityName, programName
                         and all
                       type: string
-                      required: false
-                      repeat: false
-                  sortBy:
-                      displayName: sortBy
-                      description: This parameter contains field which we are going to sort by.
-                        There are four possibilities - emergency, facilityCode, facilityName and programName.
-                        If this parameter is not set, data will be sorted by emergency flag and program name.
-                      type: string
-                      required: false
-                      repeat: true
-                  descending:
-                      displayName: descending
-                      description: This parameter contains sorting order. Default it is descending,
-                        but if user want to have ascending order there should be false.
-                      type: boolean
                       required: false
                       repeat: false
               responses:

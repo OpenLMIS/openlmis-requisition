@@ -100,6 +100,7 @@ import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -895,12 +896,14 @@ public class RequisitionServiceTest {
     int pageSize = 3;
     int pageNumber = 0;
     Pageable pageable = mock(Pageable.class);
+    Sort sort = new Sort(Sort.Direction.DESC, filterAndSortBy);
+
+    when(pageable.getSort()).thenReturn(sort);
 
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
         supplyingDepots, pageable, pageSize, pageNumber);
 
-    requisitionDtos.sort(new BasicRequisitionDtoComparator(filterAndSortBy));
-    Collections.reverse(requisitionDtos);
+    requisitionDtos.sort(new BasicRequisitionDtoComparator(pageable));
     
     List<BasicRequisitionDto> requisitionDtosSubList =
         requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
@@ -917,8 +920,7 @@ public class RequisitionServiceTest {
     //when
     Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, Collections.singletonList(filterAndSortBy), true, pageable,
-            userManagedFacilities);
+            filterAndSortBy, pageable, userManagedFacilities);
 
     List<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrievedList =
         requisitionDtosRetrieved.getContent();

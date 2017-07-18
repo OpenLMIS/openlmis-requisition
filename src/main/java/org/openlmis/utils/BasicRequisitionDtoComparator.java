@@ -16,7 +16,7 @@
 package org.openlmis.utils;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING;
-import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -25,39 +25,41 @@ import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.collections.comparators.ComparatorChain;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitionDto> {
-  private static final Map<String, FieldComparator> AVAILABLE_COMPARATORS;
+  private static final Map<String, BeanComparator> AVAILABLE_COMPARATORS;
 
   static {
     AVAILABLE_COMPARATORS = Maps.newHashMap();
-    AVAILABLE_COMPARATORS.put("emergency", new FieldComparator("emergency", false));
-    AVAILABLE_COMPARATORS.put("programName",new FieldComparator("program.name"));
-    AVAILABLE_COMPARATORS.put("facilityCode", new FieldComparator("facility.code"));
-    AVAILABLE_COMPARATORS.put("facilityName", new FieldComparator("facility.name"));
+    AVAILABLE_COMPARATORS.put("emergency", new BeanComparator("emergency"));
+    AVAILABLE_COMPARATORS.put("programName", new BeanComparator("program.name"));
+    AVAILABLE_COMPARATORS.put("facilityCode", new BeanComparator("facility.code"));
+    AVAILABLE_COMPARATORS.put("facilityName", new BeanComparator("facility.name"));
   }
 
-  private List<String> compareConditions;
+  private List<Sort.Order> compareConditions;
 
   /**
-   * Creates new instance with a single compare condition.
+   * Creates new instance with the passed pageable instance. If pageable instance does not contain
+   * sort property (it is equal to null), the class will use default sort: emergency DESC and
+   * programName ASC.
    */
-  public BasicRequisitionDtoComparator(String compareCondition) {
-    this(Collections.singletonList(compareCondition));
-  }
+  public BasicRequisitionDtoComparator(Pageable pageable) {
+    Sort sort = pageable.getSort();
 
-  /**
-   * Creates new instance with the passed compare conditions.
-   */
-  public BasicRequisitionDtoComparator(List<String> compareConditions) {
-    this.compareConditions = isEmpty(compareConditions)
-        ? Lists.newArrayList("emergency", "programName")
-        : compareConditions;
+    if (null == sort) {
+      sort = new Sort(
+          new Sort.Order(ASC, "emergency"), new Sort.Order(ASC, "programName")
+      );
+    }
+
+    compareConditions = Lists.newArrayList(sort);
   }
 
   @Override
@@ -65,34 +67,20 @@ public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitio
     ComparatorChain chain = new ComparatorChain();
 
     for (int i = 0, size = compareConditions.size(); i < size; ++i) {
-      String compareCondition = compareConditions.get(i);
-      FieldComparator comparator = AVAILABLE_COMPARATORS.get(compareCondition);
+      Sort.Order order = compareConditions.get(i);
+      String property = order.getProperty();
+      BeanComparator comparator = AVAILABLE_COMPARATORS.get(property);
 
       if (null == comparator) {
         throw new ValidationMessageException(
-            new Message(ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING, compareCondition)
+            new Message(ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING, property)
         );
       }
 
-      chain.addComparator(comparator,  comparator.reverse);
+      chain.addComparator(comparator, order.isAscending());
     }
 
     return chain.compare(o1, o2);
-  }
-
-
-  private static final class FieldComparator extends BeanComparator {
-    private boolean reverse;
-
-    FieldComparator(String property) {
-      this(property, true);
-    }
-
-    FieldComparator(String property, boolean reverse) {
-      super(property);
-      this.reverse = reverse;
-    }
-
   }
 
 }
